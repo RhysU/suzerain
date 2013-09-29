@@ -1,22 +1,44 @@
 #!/usr/bin/env python
 r'''
-Eventually, this is to be a helper module for determining what information
-must be gathered to perform uncertainty quantification for various
-derived quantities of interest.
+Symbolic routines for obtaining uncertainty propagation expressions
+based upon Taylor Series Methods (TSM).
 
 The underlying model is
+
   \vec{d} = \vec{x} - \vec{\beta} - \vec{\epsilon}
+
 where
+
   \vec{x} is some deterministic truth
   \vec{d} is one observation of \vec{x}
   \vec{\epsilon} is a zero-mean, normally-distributed measurement error
   \vec{\beta} is a bias error which is small relative to \vec{\epsilon}
-Additionally, \vec{\beta} is assumed to be independent of \vec{\epsilon}.
-Assume also \vec{\epsilon} is a zero-mean, normally-distributed random
-variable with some known covariance matrix \Sigma containing scalar
-components \sigma_{ij}.
 
-TODO Still very much a slow work in progress
+Additionally, \vec{\beta} is assumed to be independent of \vec{\epsilon}.
+Assume also \vec{\epsilon} is a zero-mean, normally-distributed random variable
+with some known covariance matrix \Sigma containing scalar components
+\sigma_{ij}.
+
+Applying TSM to the underlying model yields
+
+    E[f(x)]   ~= f(d) + (1/2) \sum_{i,j} \sigma_{ij} f_{,ij}(d)
+
+    Var[f(x)] ~=        \sum_{ i } \sigma_{ii} f_{,i}^2(d)
+               +    2   \sum_{i<j} \sigma_{ij} f_{,i}(d) f_{,j}(d)
+               -  f(d)  \sum_{i,j} \sigma_{ij} f_{,ij}(d)
+               - (1/4) (\sum_{i,j} \sigma_{ij} f_{,ij}(d))^2
+
+where f_{,i} denotes partial differentiation with respect to scalar component
+x_i and f_{,ij} denotes differentiation with respect to components x_i and x_j.
+
+Taylor Series Methods are discussed at length by Hugh W. Coleman in
+"Experimentation, validation, and uncertainty analysis for engineers." John
+Wiley & Sons, 3rd edition, 2009. ISBN 0470168889.
+
+Results should be consistent with Table 1 of the article "Notes on the use of
+propagation of error formulas." by H. H. Ku appearing in Journal of Research of
+the National Bureau of Standards. Section C: Engineering and Instrumentation,
+70C(4):263-273, October 1966.  ISSN 0022-4316.
 '''
 from __future__ import division, print_function
 from sympy.parsing.sympy_parser import parse_expr
@@ -134,20 +156,7 @@ def prerequisites(f, df=None, ddf=None):
     r'''
     Given a SymPy expression f or any string parsable as such, return a
     list wherein unique tuples represents moments necessary for computing
-    an estimate of E[f] and Var[f] using Taylor Series Methods (TSM).
-
-    Applying TSM to the underlying model yields
-
-        E[f(x)]   ~= f(d) + (1/2) \sum_{i,j} \sigma_{ij} f_{,ij}(d)
-
-        Var[f(x)] ~=        \sum_{ i } \sigma_{ii} f_{,i}^2(d)
-                   +    2   \sum_{i<j} \sigma_{ij} f_{,i}(d) f_{,j}(d)
-                   -  f(d)  \sum_{i,j} \sigma_{ij} f_{,ij}(d)
-                   - (1/4) (\sum_{i,j} \sigma_{ij} f_{,ij}(d))^2
-
-    where f_{,i} denotes partial differentiation with respect to scalar
-    component x_i and f_{,ij} denotes differentiation with respect to
-    both components x_i and x_j.
+    an estimate of E[f] and Var[f].
 
     >>> prerequisites('1')
     []
@@ -211,11 +220,10 @@ def prerequisites(f, df=None, ddf=None):
 
     return sorted(m)
 
-# TODO Implement something returning simplified expressions
-# Test cases should be based on Table 1 of the article H. H. Ku. Notes
-# on the use of propagation of error formulas. Journal of Research
-# of the National Bureau of Standards. Section C: Engineering and
-# Instrumentation, 70C(4):263-273, October 1966.  ISSN 0022-4316.
+def expectation(f, df=None, ddf=None):
+    r'''
+    '''
+    pass # TODO
 
 # def main(args):
 #     symbol_table = parser([])
