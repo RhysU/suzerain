@@ -69,11 +69,11 @@ def parser(filenames):
     return symbol_table
 
 
-def partials(e):
+def partials(f):
     r'''
-    Given a SymPy expression e or any string parsable as such, produce a
+    Given a SymPy expression f or any string parsable as such, produce a
     defaultdict d where referencing d[x] produces the precomputed result
-    e.diff(x).simplify() for any x.
+    f.diff(x).simplify() for any x.
 
     >>> a, b, c = sympy.symbols('a, b, c')
     >>> d = partials(b**2 + a + 1)
@@ -84,18 +84,18 @@ def partials(e):
     >>> d.keys()
     []
     '''
-    if isinstance(e, basestring):
-        e = parse_expr(e)
+    if isinstance(f, basestring):
+        f = parse_expr(f)
     r = collections.defaultdict(lambda: sympy.Integer(0))
-    for s in e.free_symbols:
-        r[s] = e.diff(s).simplify()
+    for s in f.free_symbols:
+        r[s] = f.diff(s).simplify()
     return r
 
-def mixed_partials(e):
+def mixed_partials(f):
     r'''
-    Given a SymPy expression e or any string parsable as such, produce
+    Given a SymPy expression f or any string parsable as such, produce
     a defaultdict of defaultdicts dd where referencing dd[x][y] produces
-    the precomputed result e.diff(x,y).simplify() for any x and y.
+    the precomputed result f.diff(x,y).simplify() for any x and y.
 
     >>> a, b, c = sympy.symbols('a, b, c')
     >>> dd = mixed_partials(a**2 + a*b + b**2 + 1)
@@ -107,16 +107,16 @@ def mixed_partials(e):
     r = collections.defaultdict(
             lambda: collections.defaultdict(lambda: sympy.Integer(0))
         )
-    for (x, d) in partials(e).iteritems():
+    for (x, d) in partials(f).iteritems():
         r[x] = partials(d)
 
     return r
 
-def prerequisites(e, E=None, Cov=None):
+def prerequisites(f, E=None, Cov=None):
     r'''
-    Given a SymPy expression e or any string parsable as such, produce
+    Given a SymPy expression f or any string parsable as such, produce
     the set of expectations E and covariances Cov necessary to compute
-    an estimate of E[e] and Var[e] using Taylor Series Methods.
+    an estimate of E[f] and Var[f] using Taylor Series Methods.
     '''
     pass # TODO
 
