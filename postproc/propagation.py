@@ -1,11 +1,23 @@
 #!/usr/bin/env python
-"""
-Eventually, this is to be a helper utility for determining what
-information must be gathered to perform uncertainty quantification for
-various derived quantities of interest.
+r'''
+Eventually, this is to be a helper module for determining what information
+must be gathered to perform uncertainty quantification for various
+derived quantities of interest.
+
+The underlying model is
+  \vec{d} = \vec{x} - \vec{\beta} - \vec{\epsilon}
+where
+  \vec{x} is some deterministic truth
+  \vec{d} is one observation of \vec{x}
+  \vec{\epsilon} is a zero-mean, normally-distributed measurement error
+  \vec{\beta} is a bias error which is small relative to \vec{\epsilon}
+Additionally, \vec{\beta} is assumed to be independent of \vec{\epsilon}.
+Assume also \vec{\epsilon} is a zero-mean, normally-distributed random
+variable with some known covariance matrix \Sigma containing scalar
+components \sigma_{ij}.
 
 TODO Still very much a slow work in progress
-"""
+'''
 from __future__ import division, print_function
 from sympy.parsing.sympy_parser import parse_expr
 import collections
@@ -120,7 +132,11 @@ def prerequisites(f, df=None, ddf=None):
     a tuple (E, Cov) where E and Cov are is the set of expectations and
     covariances, respectively, necessary to compute an estimate of E[f]
     and Var[f] using Taylor Series Methods.
+
+    >>> prerequisites("a")
     '''
+    if isinstance(f, basestring):
+        f = parse_expr(f)
     if df is None:
         df = partials(f)
     if ddf is None:
