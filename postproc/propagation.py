@@ -222,11 +222,23 @@ def prerequisites(f, df=None, ddf=None):
 
     return sorted(m)
 
-def expectation(f, df=None, ddf=None):
+def expectation(f, ddf=None):
     r'''
-    TODO
+    Prepare a map detailing how to compute a second-order approximation
+    of E[f(x)].  Keys in the map are either 1 or tuples representing
+    covariances scaling factors pre-multiplying the maps' values.
+    The maps' values should be evaluated using sample means.
     '''
-    pass
+    pass # TODO
+
+def variance(f, ddf=None):
+    r'''
+    Prepare a map detailing how to compute a first-order approximation
+    of var[f(x)].  Keys in the map are either 1 or tuples representing
+    covariances scaling factors pre-multiplying the maps' values.
+    The maps' values should be evaluated using sample means.
+    '''
+    pass # TODO
 
 # def main(args):
 #     symbol_table = parser([])
