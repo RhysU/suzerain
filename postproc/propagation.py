@@ -21,30 +21,27 @@ with some known covariance matrix \Sigma containing scalar components
 
 Applying TSM to the underlying model yields
 
-    E[f(x)]   ~= f(d) + (1/2) \sum_{i,j} \sigma_{ij} f_{,ij}(d)
+    E[f(x)]   ~=  f(d)
+               + (1/2) \sum_{i,j} \sigma_{ij} f_{,ij}(d)
 
-    E[f^2(x)] ~= f^2(d)
-               +        \sum_{ i } \sigma_{ii} f_{,i}^2(d)
-               +    2   \sum_{i<j} \sigma_{ij} f_{,i}(d) f_{,j}(d)
+    Var[f(x)] ~=       \sum_{ i } \sigma_{ii} f_{,i}^2(d)
+               +    2  \sum_{i<j} \sigma_{ij} f_{,i}(d) f_{,j}(d)
 
-which combined imply
+which are accurate to second- and first-order, respectively.  Here f_{,i}
+denotes partial differentiation with respect to scalar component x_i and
+f_{,ij} denotes differentiation with respect to components x_i and x_j.
 
-    Var[f(x)] ~=        \sum_{ i } \sigma_{ii} f_{,i}^2(d)
-               +    2   \sum_{i<j} \sigma_{ij} f_{,i}(d) f_{,j}(d)
-               -  f(d)  \sum_{i,j} \sigma_{ij} f_{,ij}(d)
-               - (1/4) (\sum_{i,j} \sigma_{ij} f_{,ij}(d))^2
+Taylor Series Methods are discussed at length by Hugh W. Coleman
+in "Experimentation, validation, and uncertainty analysis for
+engineers." John Wiley & Sons, 3rd edition, 2009. ISBN 0470168889.
+The results above are derived in section "Estimating uncertainty in
+derived quantities" within Suzerain's perfect gas model document.
 
-where f_{,i} denotes partial differentiation with respect to scalar component
-x_i and f_{,ij} denotes differentiation with respect to components x_i and x_j.
-
-Taylor Series Methods are discussed at length by Hugh W. Coleman in
-"Experimentation, validation, and uncertainty analysis for engineers." John
-Wiley & Sons, 3rd edition, 2009. ISBN 0470168889.
-
-Results should be consistent with Table 1 of the article "Notes on the use of
-propagation of error formulas." by H. H. Ku appearing in Journal of Research of
-the National Bureau of Standards. Section C: Engineering and Instrumentation,
-70C(4):263-273, October 1966.  ISSN 0022-4316.
+Results for Var[f(x)] should be consistent with Table 1 of the article "Notes
+on the use of propagation of error formulas." by H. H. Ku appearing in Journal
+of Research of the National Bureau of Standards. Section C: Engineering and
+Instrumentation, 70C(4):263-273, October 1966.  ISSN 0022-4316.  That article
+discusses only the first-order approximation to E[f(x)].
 '''
 from __future__ import division, print_function
 from sympy.parsing.sympy_parser import parse_expr
@@ -156,8 +153,6 @@ def mixed_partials(f, df=None):
 
     return ddf
 
-# See section "Estimating uncertainty in derived quantities" in Suzerain's
-# writeups/perfectgas.tex for derivation of the TSM results appearing below.
 def prerequisites(f, df=None, ddf=None):
     r'''
     Given a SymPy expression f or any string parsable as such, return a
@@ -192,7 +187,7 @@ def prerequisites(f, df=None, ddf=None):
     # removing those which can be eliminated by smoothness or symmetry.
     m = set()
 
-    # Quantities necessary to compute E[f(x)]
+    # Quantities necessary to compute second-order E[f(x)]
     ## Term:    f(d)
     for s in f.free_symbols:
         m.add((s,))
@@ -205,7 +200,7 @@ def prerequisites(f, df=None, ddf=None):
                     m.add((s,))
                 m.add(tuple(sorted([i, j]))) # Canonicalize
 
-    # Quantities additionally necessary to compute Var[f(x)]
+    # Quantities necessary to compute first-order Var[f(x)]
     ## Term:          \sum_{ i } \sigma_{ii} f_{,i}^2(d)
     for i in df.keys():
         f_i = df[i]
@@ -220,9 +215,6 @@ def prerequisites(f, df=None, ddf=None):
             for s in fifj.free_symbols:
                 m.add((s,))
             m.add(tuple(sorted([i, j])))     # Canonicalize
-    ## These terms require no additional data relative to E[f(x)]:
-    ## Term: -  f(d)  \sum_{i,j} \sigma_{ij} f_{,ij}(d)
-    ## Term: - (1/4) (\sum_{i,j} \sigma_{ij} f_{,ij}(d))^2
 
     return sorted(m)
 

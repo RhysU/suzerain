@@ -5854,12 +5854,12 @@ Taylor Series Method expanded upon in \citet{Coleman2009Experimentation}.
 Consider one observation $\vec{d}$  of some deterministic truth $\vec{x}$
 obscured by bias error $\vec{\beta}$ as well as measurement error
 $\vec{\epsilon}$. That is,
-\begin{align*}
+\begin{align}
   \vec{d} &= \vec{x} - \vec{\beta} - \vec{\epsilon}
-\end{align*}
-Assume $\vec{\beta}$ is small and independent of $\vec{\epsilon}$.  Assume also
-that $\vec{\epsilon} \sim \mathcal{N}(\vec{0}, \Sigma)$ for some known or
-estimable covariance matrix $\Sigma$ containing scalar components
+\end{align}
+Assume $\vec{\beta}$ is relatively small and independent of $\vec{\epsilon}$.
+Assume also that $\vec{\epsilon} \sim \mathcal{N}(\vec{0}, \Sigma)$ for some
+known or estimable covariance matrix $\Sigma$ containing scalar components
 $\sigma_{ij}$.
 
 Given some physically relevant functional $f = f\left(\vec{x}\right)$,
@@ -5867,15 +5867,15 @@ computing the quantities $\expect{f\left(\vec{x}\right)}$ and
 $\operatorname{var} f\left(\vec{x}\right) $ naturally becomes of interest.
 Expanding $f$ about $\vec{d}$ up to $k^\mathrm{th}$ order and evaluating at the
 unknown truth $\vec{x}$,
-\begin{align*}
+\begin{align}
   f(\vec{x})
 &\approx
   \sum_{|\alpha| \le k} \left( \vec{x} - \vec{d} \right)^\alpha
   \frac{\left(D^\alpha f\right)\left(\vec{d}\right)}{\alpha!}
 .
-\end{align*}
+\end{align}
 Choosing $k=2$, expanding the notation, and using the definition of $\vec{d}$,
-\begin{align*}
+\begin{align}
   f\left(\vec{x}\right)
 &\approx
     f\left(\vec{d}\right)
@@ -5892,31 +5892,36 @@ Choosing $k=2$, expanding the notation, and using the definition of $\vec{d}$,
                 \left(\beta_i+\epsilon_i\right)
                 \left(\beta_j+\epsilon_j\right)
                 \left(\partial_{x_i} \partial_{x_j} f\right)\left(\vec{d}\right)
+\label{eq:tsm_k2}
 .
-\end{align*}
+\end{align}
 Taking the expectation, boldly claiming $\expect{\beta_i}\left(\partial_{x_i}
 f\right)\left(\vec{d}\right)$ is negligible, and less courageously dropping
-terms containing $\expect{\beta_i \beta_j}$ yields
-\begin{align*}
+terms containing $\expect{\beta_i \beta_j}$ yields the second-order result
+\begin{align}
   \expect{f\left(\vec{x}\right)}
 &\approx
     f\left(\vec{d}\right)
   + \frac{1}{2} \sum_{i,j}
                 \sigma_{ij}
                 \left(\partial_{x_i} \partial_{x_j} f\right)\left(\vec{d}\right)
+\label{eq:tsm_E2}
 .
-\end{align*}
-Revisiting the expansion and retaining only up to the $k=1$ terms,
-\begin{align*}
+\end{align}
+The $k=2$ result~\eqref{eq:tsm_E2} is the lowest-order approximation that
+corrects for $\Sigma$.  Revisiting expansion~\eqref{eq:tsm_k2} but now
+retaining only up to the $k=1$ terms,
+\begin{align}
   f\left(\vec{x}\right)
 &\approx
     f\left(\vec{d}\right)
   + \sum_i \left(\beta_i+\epsilon_i\right)
            \left(\partial_{x_i} f\right)\left(\vec{d}\right)
+\label{eq:tsm_k1}
 .
-\end{align*}
+\end{align}
 Squaring and expanding products of sums,
-% \begin{align*}
+% \begin{align}
 %   f^2(\vec{x}) \approx f^2(\vec{d})
 %  &+   \left(\sum_i \beta_i    (\partial_{x_i} f)(\vec{d})\right)^2
 % \\
@@ -5928,8 +5933,8 @@ Squaring and expanding products of sums,
 %  &+ 2 \left(\sum_i \beta_i    (\partial_{x_i} f)(\vec{d})\right)
 %       \left(\sum_i \epsilon_i (\partial_{x_i} f)(\vec{d})\right)
 % .
-% \end{align*}
-\begin{align*}
+% \end{align}
+\begin{align}
   f^2\left(\vec{x}\right) \approx f^2\left(\vec{d}\right)
  &+   \sum_i \beta_i^2
              \left(\partial_{x_i} f\right)^2\left(\vec{d}\right)
@@ -5949,11 +5954,11 @@ Squaring and expanding products of sums,
                  \left(\partial_{x_i} f\right)\left(\vec{d}\right)
                  \left(\partial_{x_j} f\right)\left(\vec{d}\right)
 .
-\end{align*}
+\end{align}
 Averaging and again neglecting $\expect{\beta_i}\left(\partial_{x_i}
 f\right)\left(\vec{d}\right)$ and terms involving $\expect{\beta_i \beta_j}$
 gives
-\begin{align*}
+\begin{align}
   \expect{f^2\left(\vec{x}\right)}
 &\approx
     f^2\left(\vec{d}\right)
@@ -5961,28 +5966,23 @@ gives
   + 2\sum_{i<j} \sigma_{ij} \left(\partial_{x_i} f\right)  \left(\vec{d}\right)
                             \left(\partial_{x_j} f\right)  \left(\vec{d}\right)
 .
-\end{align*}
-Subtracting the square of $\expect{f\left(\vec{x}\right)}$ from
-$\expect{f^2\left(\vec{x}\right)}$ one arrives at
-\begin{align*}
+\end{align}
+Subtracting the square of the expectation of~\eqref{eq:tsm_k1}, neglecting the
+same quantities, from $\expect{f^2\left(\vec{x}\right)}$ one arrives at the
+first-order result
+\begin{align}
   \operatorname{var} f\left(\vec{x}\right)
 &\approx
      \sum_i \sigma_{ii}     \left(\partial_{x_i} f\right)^2\left(\vec{d}\right)
   + 2\sum_{i<j} \sigma_{ij} \left(\partial_{x_i} f\right)  \left(\vec{d}\right)
                             \left(\partial_{x_j} f\right)  \left(\vec{d}\right)
-\\
- &- f\left(\vec{d}\right)
-    \sum_{i,j} \sigma_{ij}
-    \left(\partial_{x_i} \partial_{x_j} f\right)\left(\vec{d}\right)
-  - \frac{1}{4} \left(
-      \sum_{i,j} \sigma_{ij}
-      \left(\partial_{x_i} \partial_{x_j} f\right)\left(\vec{d}\right)
-    \right)^2
+\label{eq:tsm_var1}
 .
-\end{align*}
-As expected, having neglected bias error contributions, $\operatorname{var}
-f\left(\vec{x}\right)$ is controlled wholly by the functional form of $f$ as
-well as the measurement error covariances $\sigma_{ij}$.
+\end{align}
+As expected, having neglected bias error contributions,
+approximation~\eqref{eq:tsm_var1} to $\operatorname{var} f\left(\vec{x}\right)$
+is controlled wholly by the functional form of $f$ as well as the measurement
+error covariances $\sigma_{ij}$.
 
 \section{Quantifying statistical quantity convergence}
 \label{sec:quantconvergence}
