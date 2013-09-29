@@ -132,10 +132,9 @@ def mixed_partials(f, df=None):
 # writeups/perfectgas.tex for derivation of the TSM results appearing below.
 def prerequisites(f, df=None, ddf=None):
     r'''
-    Given a SymPy expression f or any string parsable as such, return
-    a tuple (E, Cov) where E and Cov are is the set of expectations and
-    covariances, respectively, necessary to compute an estimate of E[f]
-    and Var[f] using Taylor Series Methods (TSM).
+    Given a SymPy expression f or any string parsable as such, return a
+    list wherein unique tuples represents moments necessary for computing
+    an estimate of E[f] and Var[f] using Taylor Series Methods (TSM).
 
     Applying TSM to the underlying model yields
 
@@ -150,28 +149,14 @@ def prerequisites(f, df=None, ddf=None):
     component x_i and f_{,ij} denotes differentiation with respect to
     both components x_i and x_j.
 
-    The test cases are based on Table 1 of the article H. H. Ku. Notes
-    on the use of propagation of error formulas. Journal of Research
-    of the National Bureau of Standards. Section C: Engineering and
-    Instrumentation, 70C(4):263-273, October 1966.  ISSN 0022-4316.
+    >>> prerequisites('log(x)')
+    [(x,), (x, x)]
 
-    >>> E, Cov = prerequisites('2*x + 3*y')
-    >>> E
-    set([x, y])
-    >>> Cov
-    set([(x, x), (x, y), (y, y)])
+    >>> prerequisites('2*x + 3*y')
+    [(x,), (x, x), (x, y), (y,), (y, y)]
 
-    >>> E, Cov = prerequisites('x*y')
-    >>> E
-    set([x, y])
-    >>> Cov
-    set([(x, x), (x, y), (y, y)])
-
-    >>> E, Cov = prerequisites('log(x)')
-    >>> E
-    set([x])
-    >>> Cov
-    set([(x, x)])
+    >>> prerequisites('x*y')
+    [(x,), (x, x), (x, y), (y,), (y, y)]
     '''
     if isinstance(f, basestring):
         f = parse_expr(f)
@@ -187,37 +172,47 @@ def prerequisites(f, df=None, ddf=None):
     # about he or she wants to compute a subexpression (hinted via
     # df or ddf arguments), we look at all possible terms rather than
     # removing those which can be eliminated by smoothness or symmetry.
-    E, Cov = set(), set()
+    m = set()
 
     # Quantities necessary to compute E[f(x)]
     ## Term:    f(d)
-    E |= f.free_symbols
+    for s in f.free_symbols:
+        m.add((s,))
     ## Term: +  (1/2) \sum_{i,j} \sigma_{ij} f_{,ij}(d)
     for i in ddf.keys():
         for j in ddf[i].keys():
             f_ij = ddf[i][j]
             if not f_ij.is_zero:
-                E |= f_ij.free_symbols
-                Cov.add(tuple(sorted([i, j]))) # Canonicalize
+                for s in f_ij.free_symbols:
+                    m.add((s,))
+                m.add(tuple(sorted([i, j]))) # Canonicalize
 
     # Quantities additionally necessary to compute Var[f(x)]
     ## Term:          \sum_{ i } \sigma_{ii} f_{,i}^2(d)
     for i in df.keys():
         f_i = df[i]
         if not f_i.is_zero:
-            E |= f_i.free_symbols
-            Cov.add((i, i))                    # Canonical
+            for s in f_i.free_symbols:
+                m.add((s,))
+            m.add((i, i))                    # Canonical
     ## Term: +    2   \sum_{i<j} \sigma_{ij} f_{,i}(d) f_{,j}(d)
     for (i, j) in itertools.combinations(df.keys(), 2):
         fifj = (df[i] * df[j]).simplify()
         if not fifj.is_zero:
-            E |= fifj.free_symbols
-            Cov.add(tuple(sorted([i, j])))     # Canonicalize
+            for s in fifj.free_symbols:
+                m.add((s,))
+            m.add(tuple(sorted([i, j])))     # Canonicalize
     ## These terms require no additional data relative to E[f(x)]:
     ## Term: -  f(d)  \sum_{i,j} \sigma_{ij} f_{,ij}(d)
     ## Term: - (1/4) (\sum_{i,j} \sigma_{ij} f_{,ij}(d))^2
 
-    return E, Cov
+    return sorted(m)
+
+# TODO Implement something returning simplified expressions
+# Test cases should be based on Table 1 of the article H. H. Ku. Notes
+# on the use of propagation of error formulas. Journal of Research
+# of the National Bureau of Standards. Section C: Engineering and
+# Instrumentation, 70C(4):263-273, October 1966.  ISSN 0022-4316.
 
 # def main(args):
 #     symbol_table = parser([])
