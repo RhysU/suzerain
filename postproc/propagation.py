@@ -71,46 +71,46 @@ def parser(filenames):
 
 def partials(f):
     r'''
-    Given a SymPy expression f or any string parsable as such, produce a
-    defaultdict d where referencing d[x] produces the precomputed result
-    f.diff(x).simplify() for any x.
+    Given a SymPy expression f or any string parsable as such, produce
+    a defaultdict df where referencing df[x] produces the precomputed
+    result f.diff(x).simplify() for any x.
 
     >>> a, b, c = sympy.symbols('a, b, c')
-    >>> d = partials(b**2 + a + 1)
-    >>> d[a], d[b], d[c]
+    >>> df = partials(b**2 + a + 1)
+    >>> df[a], df[b], df[c]
     (1, 2*b, 0)
 
-    >>> d = partials("1 + 2 + 3")
-    >>> d.keys()
+    >>> df = partials("1 + 2 + 3")
+    >>> df.keys()
     []
     '''
     if isinstance(f, basestring):
         f = parse_expr(f)
-    r = collections.defaultdict(lambda: sympy.Integer(0))
-    for s in f.free_symbols:
-        r[s] = f.diff(s).simplify()
-    return r
+    df = collections.defaultdict(lambda: sympy.Integer(0))
+    for x in f.free_symbols:
+        df[x] = f.diff(x).simplify()
+    return df
 
 def mixed_partials(f):
     r'''
-    Given a SymPy expression f or any string parsable as such, produce
-    a defaultdict of defaultdicts dd where referencing dd[x][y] produces
+    Given a SymPy expression f or any string parsable as such, produce a
+    defaultdict of defaultdicts ddf where referencing ddf[x][y] produces
     the precomputed result f.diff(x,y).simplify() for any x and y.
 
     >>> a, b, c = sympy.symbols('a, b, c')
-    >>> dd = mixed_partials(a**2 + a*b + b**2 + 1)
-    >>> dd[a][a], dd[a][b], dd[b][a], dd[b][b]
+    >>> ddf = mixed_partials(a**2 + a*b + b**2 + 1)
+    >>> ddf[a][a], ddf[a][b], ddf[b][a], ddf[b][b]
     (2, 1, 1, 2)
-    >>> dd[a][c], dd[c][a], dd[c][c]
+    >>> ddf[a][c], ddf[c][a], ddf[c][c]
     (0, 0, 0)
     '''
-    r = collections.defaultdict(
+    ddf = collections.defaultdict(
             lambda: collections.defaultdict(lambda: sympy.Integer(0))
         )
-    for (x, d) in partials(f).iteritems():
-        r[x] = partials(d)
+    for (x, dfdx) in partials(f).iteritems():
+        ddf[x] = partials(dfdx)
 
-    return r
+    return ddf
 
 def prerequisites(f, E=None, Cov=None):
     r'''
