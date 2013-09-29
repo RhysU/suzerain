@@ -22,7 +22,8 @@ with some known covariance matrix \Sigma containing scalar components
 Applying TSM to the underlying model yields
 
     E[f(x)]   ~=  f(d)
-               + (1/2) \sum_{i,j} \sigma_{ij} f_{,ij}(d)
+               + (1/2) \sum_{ i } \sigma_{ii} f_{,ii}(d)
+               +       \sum_{i<j} \sigma_{ij} f_{,ij}(d)
 
     Var[f(x)] ~=       \sum_{ i } \sigma_{ii} f_{,i}^2(d)
                +    2  \sum_{i<j} \sigma_{ij} f_{,i}(d) f_{,j}(d)
@@ -191,21 +192,24 @@ def prerequisites(f, df=None, ddf=None):
     ## Term:    f(d)
     for s in f.free_symbols:
         m.add((s,))
-    ## Term: +  (1/2) \sum_{i,j} \sigma_{ij} f_{,ij}(d)
+    ## Term: + (1/2) \sum_{ i } \sigma_{ii} f_{,ii}(d)
     for i in ddf.keys():
-        for j in ddf[i].keys():
-            f_ij = ddf[i][j]
-            if not f_ij.is_zero:
-                for s in f_ij.free_symbols:
-                    m.add((s,))
-                m.add(tuple(sorted([i, j]))) # Canonicalize
+        if not ddf[i][i].is_zero:
+            for s in ddf[i][i].free_symbols:
+                m.add((s,))
+            m.add((i, i))                    # Canonical
+    ## Term: +       \sum_{i<j} \sigma_{ij} f_{,ij}(d)
+    for (i, j) in itertools.combinations(ddf.keys(), 2):
+        if not ddf[i][j].is_zero:
+            for s in ddf[i][j].free_symbols:
+                m.add((s,))
+            m.add(tuple(sorted([i, j])))     # Canonicalize
 
     # Quantities necessary to compute first-order Var[f(x)]
     ## Term:          \sum_{ i } \sigma_{ii} f_{,i}^2(d)
     for i in df.keys():
-        f_i = df[i]
-        if not f_i.is_zero:
-            for s in f_i.free_symbols:
+        if not df[i].is_zero:
+            for s in df[i].free_symbols:
                 m.add((s,))
             m.add((i, i))                    # Canonical
     ## Term: +    2   \sum_{i<j} \sigma_{ij} f_{,i}(d) f_{,j}(d)

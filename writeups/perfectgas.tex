@@ -5905,6 +5905,15 @@ terms containing $\expect{\beta_i \beta_j}$ yields the second-order result
   + \frac{1}{2} \sum_{i,j}
                 \sigma_{ij}
                 \left(\partial_{x_i} \partial_{x_j} f\right)\left(\vec{d}\right)
+\\
+&\approx
+    f\left(\vec{d}\right)
+  + \frac{1}{2} \sum_{i}
+                \sigma_{ii}
+                \left(\partial_{x_i} \partial_{x_i} f\right)\left(\vec{d}\right)
+  +             \sum_{i<j}
+                \sigma_{ij}
+                \left(\partial_{x_i} \partial_{x_j} f\right)\left(\vec{d}\right)
 \label{eq:tsm_E2}
 .
 \end{align}
