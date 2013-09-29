@@ -23,6 +23,12 @@ Applying TSM to the underlying model yields
 
     E[f(x)]   ~= f(d) + (1/2) \sum_{i,j} \sigma_{ij} f_{,ij}(d)
 
+    E[f^2(x)] ~= f^2(d)
+               +        \sum_{ i } \sigma_{ii} f_{,i}^2(d)
+               +    2   \sum_{i<j} \sigma_{ij} f_{,i}(d) f_{,j}(d)
+
+which combined imply
+
     Var[f(x)] ~=        \sum_{ i } \sigma_{ii} f_{,i}^2(d)
                +    2   \sum_{i<j} \sigma_{ij} f_{,i}(d) f_{,j}(d)
                -  f(d)  \sum_{i,j} \sigma_{ij} f_{,ij}(d)
@@ -84,8 +90,8 @@ def parser(filenames):
             symbol = symbol.strip()
             if symbol in symbol_table:
                 raise LookupError("Duplicate symbol '%s' detected at %s:%d" % (
-                                symbol, fileinput.filename(),
-                                fileinput.filelineno()))
+                                    symbol, fileinput.filename(),
+                                    fileinput.filelineno()))
 
             # ...parse and save the result into the known symbol table
             # augmenting any parsing errors with location information
@@ -156,7 +162,7 @@ def prerequisites(f, df=None, ddf=None):
     r'''
     Given a SymPy expression f or any string parsable as such, return a
     list wherein unique tuples represents moments necessary for computing
-    an estimate of E[f] and Var[f].
+    an estimate of E[f(x)] and Var[f(x)].
 
     >>> prerequisites('1')
     []
@@ -222,8 +228,9 @@ def prerequisites(f, df=None, ddf=None):
 
 def expectation(f, df=None, ddf=None):
     r'''
+    TODO
     '''
-    pass # TODO
+    pass
 
 # def main(args):
 #     symbol_table = parser([])
