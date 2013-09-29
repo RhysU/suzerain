@@ -127,6 +127,8 @@ def mixed_partials(f, df=None):
 
     return ddf
 
+# See section "Estimating uncertainty in derived quantities" in Suzerain's
+# writeups/perfectgas.tex for derivation of the TSM results appearing below.
 def prerequisites(f, df=None, ddf=None):
     r'''
     Given a SymPy expression f or any string parsable as such, return
@@ -136,23 +138,16 @@ def prerequisites(f, df=None, ddf=None):
 
     Applying TSM to the underlying model yields
 
-        E[f(x)]   ~= f(d) + (1/2) \sum_{i,j} \sigma_{ij} f_{i,j}(d)
+        E[f(x)]   ~= f(d) + (1/2) \sum_{i,j} \sigma_{ij} f_{,ij}(d)
 
-        Var[f(x)] ~=  \sum_{i  } \sigma_{ii} f_{i}^2(d)
-                   + 2\sum_{i<j} \sigma_{ij} f_{i}(d) f_{j}(d)
+        Var[f(x)] ~=        \sum_{ i } \sigma_{ii} f_{,i}^2(d)
+                   +    2   \sum_{i<j} \sigma_{ij} f_{,i}(d) f_{,j}(d)
+                   -  f(d)  \sum_{i,j} \sigma_{ij} f_{,ij}(d)
+                   - (1/4) (\sum_{i,j} \sigma_{ij} f_{,ij}(d))^2
 
-FIXME STARTHERE
-&\approx
-\\
- &- f\left(\vec{d}\right)
-    \sum_{i,j} \sigma_{ij}
-    \left(\partial_{x_i} \partial_{x_j} f\right)\left(\vec{d}\right)
-  - \frac{1}{4} \left(
-      \sum_{i,j} \sigma_{ij}
-      \left(\partial_{x_i} \partial_{x_j} f\right)\left(\vec{d}\right)
-    \right)^2
-.
-\end{align*}
+    where f_{,i} denotes partial differentiation with respect to scalar
+    component x_i and f_{,ij} denotes differentiation with respect to
+    both components x_i and x_j.
 
     '''
     if isinstance(f, basestring):
