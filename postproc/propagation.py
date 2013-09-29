@@ -114,13 +114,20 @@ def mixed_partials(f, df=None):
 
     return ddf
 
-def prerequisites(f, E=None, Cov=None):
+def prerequisites(f, df=None, ddf=None):
     r'''
-    Given a SymPy expression f or any string parsable as such, produce
-    the set of expectations E and covariances Cov necessary to compute
-    an estimate of E[f] and Var[f] using Taylor Series Methods.
+    Given a SymPy expression f or any string parsable as such, return
+    a tuple (E, Cov) where E and Cov are is the set of expectations and
+    covariances, respectively, necessary to compute an estimate of E[f]
+    and Var[f] using Taylor Series Methods.
     '''
-    pass # TODO
+    if df is None:
+        df = partials(f)
+    if ddf is None:
+        ddf = mixed_partials(f, df)
+    E, Cov = set(), set()
+
+    return E, Cov
 
 # def main(args):
 #     symbol_table = parser([])
