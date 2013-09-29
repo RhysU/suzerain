@@ -6,17 +6,17 @@ quantification for various derived quantities of interest.
 """
 from __future__ import division, print_function
 from sympy.parsing.sympy_parser import parse_expr
-import fileinput
 import collections
+import fileinput
 import sys
+import tempfile
 
 def parser(filenames):
     r'''
-    Parse the provided filenames (or stdin if empty) into
-    an OrderedDict of symbol -> SymPy expression entries.
+    Parse the provided filenames (or stdin if empty) into a
+    collections.OrderedDict of symbol -> SymPy expression entries.
     See doctests for an example of the accepted syntax.
 
-    >>> import tempfile
     >>> with tempfile.NamedTemporaryFile() as f:
     ...     f.write("a=1       # Comments       \n")
     ...     f.write(" b =  a+1 # Reuse earlier  \n")
