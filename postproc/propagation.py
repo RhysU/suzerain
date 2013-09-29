@@ -103,6 +103,7 @@ def partials(f):
         df[x] = f.diff(x).simplify()
     return df
 
+
 def mixed_partials(f, df=None):
     r'''
     Given a SymPy expression f or any string parsable as such, produce a
@@ -129,11 +130,14 @@ def mixed_partials(f, df=None):
 def prerequisites(f, df=None, ddf=None):
     r'''
     Given a SymPy expression f or any string parsable as such, return
-    a tuple (E, Cov) where E and Cov are is the set of expectations and
-    covariances, respectively, necessary to compute an estimate of E[f]
-    and Var[f] using Taylor Series Methods.
+    a tuple (E, Cov) where E and Cov are is the set of free symbol
+    expectations and covariances, respectively, necessary to compute an
+    estimate of E[f] and Var[f] using Taylor Series Methods (TSM).
 
-    >>> prerequisites("a")
+    Applying TSM to the underlying model yields
+
+        E[f(x)] = f(d) + (1/2) \sum_{i,j} \sigma_{ij} f_{i,j}(d)
+
     '''
     if isinstance(f, basestring):
         f = parse_expr(f)
