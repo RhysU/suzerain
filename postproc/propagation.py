@@ -17,13 +17,13 @@ def parser(filenames):
     See doctests for an example of the accepted syntax.
 
     >>> import tempfile
-    >>> f = tempfile.NamedTemporaryFile()
-    >>> f.write("a=1       # Comments       \n")
-    >>> f.write(" b =  a+1 # Reuse earlier  \n")
-    >>> f.write("c  = d+e  # Purely symbolic\n")
-    >>> f.write("   f      # Nameless result\n")
-    >>> f.flush()
-    >>> parser(f.name)
+    >>> with tempfile.NamedTemporaryFile() as f:
+    ...     f.write("a=1       # Comments       \n")
+    ...     f.write(" b =  a+1 # Reuse earlier  \n")
+    ...     f.write("c  = d+e  # Purely symbolic\n")
+    ...     f.write("   f      # Nameless result\n")
+    ...     f.flush()
+    ...     parser(f.name)
     OrderedDict([('a', 1), ('b', 2), ('c', d + e), ('line4', f)])
     '''
     # Accumulate symbol definitions maintaining declaration order
