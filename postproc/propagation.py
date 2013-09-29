@@ -112,6 +112,14 @@ def mixed_partials(e):
 
     return r
 
+def prerequisites(e, E=None, Cov=None):
+    r'''
+    Given a SymPy expression e or any string parsable as such, produce
+    the set of expectations E and covariances Cov necessary to compute
+    an estimate of E[e] and Var[e] using Taylor Series Methods.
+    '''
+    pass # TODO
+
 # def main(args):
 #     symbol_table = parser([])
 #     return 0
