@@ -175,10 +175,6 @@ def prerequisites(f, df=None, ddf=None):
     if isinstance(f, basestring):
         f = parse_expr(f)
     f = f.simplify()
-    if df is None:
-        df = partials(f)
-    if ddf is None:
-        ddf = mixed_partials(f, df)
 
     # Implementation heavily relies on set addition semantics combined
     # with the fact that all derivatives have been precomputed prior
@@ -188,7 +184,26 @@ def prerequisites(f, df=None, ddf=None):
     # removing those which can be eliminated by smoothness or symmetry.
     m = set()
 
+    # Quantities necessary to compute first-order Var[f(x)]
+    if df is None:
+        df = partials(f)
+    ## Term:          \sum_{ i } \sigma_{ii} f_{,i}^2(d)
+    for i in df.keys():
+        if not df[i].is_zero:
+            for s in df[i].free_symbols:
+                m.add((s,))
+            m.add((i, i))                    # Canonical
+    ## Term: +    2   \sum_{i<j} \sigma_{ij} f_{,i}(d) f_{,j}(d)
+    for (i, j) in itertools.combinations(df.keys(), 2):
+        fifj = (df[i] * df[j]).simplify()
+        if not fifj.is_zero:
+            for s in fifj.free_symbols:
+                m.add((s,))
+            m.add(tuple(sorted([i, j])))     # Canonicalize
+
     # Quantities necessary to compute second-order E[f(x)]
+    if ddf is None:
+        ddf = mixed_partials(f, df)
     ## Term:    f(d)
     for s in f.free_symbols:
         m.add((s,))
@@ -202,21 +217,6 @@ def prerequisites(f, df=None, ddf=None):
     for (i, j) in itertools.combinations(ddf.keys(), 2):
         if not ddf[i][j].is_zero:
             for s in ddf[i][j].free_symbols:
-                m.add((s,))
-            m.add(tuple(sorted([i, j])))     # Canonicalize
-
-    # Quantities necessary to compute first-order Var[f(x)]
-    ## Term:          \sum_{ i } \sigma_{ii} f_{,i}^2(d)
-    for i in df.keys():
-        if not df[i].is_zero:
-            for s in df[i].free_symbols:
-                m.add((s,))
-            m.add((i, i))                    # Canonical
-    ## Term: +    2   \sum_{i<j} \sigma_{ij} f_{,i}(d) f_{,j}(d)
-    for (i, j) in itertools.combinations(df.keys(), 2):
-        fifj = (df[i] * df[j]).simplify()
-        if not fifj.is_zero:
-            for s in fifj.free_symbols:
                 m.add((s,))
             m.add(tuple(sorted([i, j])))     # Canonicalize
 
