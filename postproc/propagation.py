@@ -150,6 +150,16 @@ def prerequisites(f, df=None, ddf=None):
     component x_i and f_{,ij} denotes differentiation with respect to
     both components x_i and x_j.
 
+    The test cases are based on Table 1 of the article H. H. Ku. Notes
+    on the use of propagation of error formulas. Journal of Research
+    of the National Bureau of Standards. Section C: Engineering and
+    Instrumentation, 70C(4):263-273, October 1966.  ISSN 0022-4316.
+
+    >>> E, Cov = prerequisites('2*x + 3*y')
+    >>> E
+    set([x, y])
+    >>> Cov
+    set([(x, x), (x, y), (y, y)])
     '''
     if isinstance(f, basestring):
         f = parse_expr(f)
@@ -169,28 +179,28 @@ def prerequisites(f, df=None, ddf=None):
 
     # Quantities necessary to compute E[f(x)]
     ## Term:    f(d)
-    E.add(f.free_symbols)
+    E |= f.free_symbols
     ## Term: +  (1/2) \sum_{i,j} \sigma_{ij} f_{,ij}(d)
     for i in ddf.keys():
         for j in ddf[i].keys():
             f_ij = ddf[i][j]
             if not f_ij.is_zero:
-                E.add(f_ij.free_symbols)
-                Cov.add(tuple(sorted([i, j])))
+                E |= f_ij.free_symbols
+                Cov.add(tuple(sorted([i, j]))) # Canonicalize
 
     # Quantities additionally necessary to compute Var[f(x)]
     ## Term:          \sum_{ i } \sigma_{ii} f_{,i}^2(d)
     for i in df.keys():
         f_i = df[i]
         if not f_i.is_zero:
-            E.add(f_i.free_symbols)
-            Cov.add((i, i))
+            E |= f_i.free_symbols
+            Cov.add((i, i))                    # Canonical
     ## Term: +    2   \sum_{i<j} \sigma_{ij} f_{,i}(d) f_{,j}(d)
     for (i, j) in itertools.combinations(df.keys(), 2):
         fifj = (df[i] * df[j]).simplify()
         if not fifj.is_zero:
-            E.add(fifj.free_symbols)
-            Cov.add(tuple(sorted([i, j])))
+            E |= fifj.free_symbols
+            Cov.add(tuple(sorted([i, j])))     # Canonicalize
     ## These terms require no additional data relative to E[f(x)]:
     ## Term: -  f(d)  \sum_{i,j} \sigma_{ij} f_{,ij}(d)
     ## Term: - (1/4) (\sum_{i,j} \sigma_{ij} f_{,ij}(d))^2
