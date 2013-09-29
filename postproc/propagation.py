@@ -155,11 +155,11 @@ def prerequisites(f, df=None, ddf=None):
     >>> prerequisites('log(x)')
     [(x,), (x, x)]
 
-    >>> prerequisites('2*x + 3*y')
-    [(x,), (x, x), (x, y), (y,), (y, y)]
-
     >>> prerequisites('x*y')
     [(x,), (x, x), (x, y), (y,), (y, y)]
+
+    >>> prerequisites('a + x*y')
+    [(a,), (a, a), (a, x), (a, y), (x,), (x, x), (x, y), (y,), (y, y)]
     '''
     if isinstance(f, basestring):
         f = parse_expr(f)
