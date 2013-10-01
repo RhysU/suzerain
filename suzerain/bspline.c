@@ -37,6 +37,7 @@
 #include <gsl/gsl_machine.h>
 #include <gsl/gsl_math.h>
 #include <gsl/gsl_matrix.h>
+#include <gsl/gsl_roots.h>
 #include <gsl/gsl_vector.h>
 
 #include <suzerain/common.h>
@@ -126,21 +127,70 @@ suzerain_bspline_linear_combination_complex(
     return SUZERAIN_SUCCESS;
 }
 
+// Parameters necessary for linear_combination_function.
+typedef struct {
+    size_t                       nderiv;
+    const double                *coeffs;
+    gsl_matrix                  *dB;
+    gsl_bspline_workspace       *w;
+    gsl_bspline_deriv_workspace *dw;
+    double                       offset; // Additive constant
+} linear_combination_params;
+
+// A GSL-ready way to evaluate a B-spline function plus offset at some point x
+static
+double linear_combination_function(
+        double x, void * params)
+{
+    double retval = GSL_NAN;
+    linear_combination_params * p = (linear_combination_params *) params;
+    suzerain_bspline_linear_combination(
+            p->nderiv, p->coeffs, 1U, &x, &retval, 0U, p->dB, p->w, p->dw);
+    return retval + p->offset;
+}
+
 int
 suzerain_bspline_crossing(
     const size_t nderiv,
     const double * coeffs,
     const double value,
-    const double lower,
-    const double upper,
+    double * lower,
+    double * upper,
+    const size_t maxiter,
+    const double epsabs,
+    const double epsrel,
     double * location,
     gsl_matrix *dB,
     gsl_bspline_workspace *w,
     gsl_bspline_deriv_workspace *dw)
 {
-    // FIXME Implement
+    // Wrap the incoming parameters into an gsl_function for evaluation
+    linear_combination_params params = { nderiv, coeffs, dB, w, dw, -value };
+    gsl_function f                   = { linear_combination_function, &params};
+
+    // Initialize fsolver to use Brent-Dekker on [lower, upper]
+    // Bracketing, rather than fdfsolver, avoids exiting user-specified region
+    gsl_root_fsolver * const s = gsl_root_fsolver_alloc(gsl_root_fsolver_brent);
+    if (SUZERAIN_UNLIKELY(s == NULL)) {
+        SUZERAIN_ERROR("Could not obtain gsl_root_fsolver", SUZERAIN_ENOMEM);
+    }
+    gsl_root_fsolver_set(s, &f, *lower, *upper);
+
+    // Proceed until success, failure, or maximum iterations reached
+    // On success, overwrite *location as described in API documentation.
     *location = GSL_NAN;
-    SUZERAIN_ERROR("Unimplemented", SUZERAIN_EUNIMPL);
+    int status = GSL_CONTINUE;
+    for (size_t iter = 1; status == GSL_CONTINUE && iter < maxiter; ++iter) {
+        if (GSL_SUCCESS != (status = gsl_root_fsolver_iterate(s))) break;
+        *lower = gsl_root_fsolver_x_lower(s);
+        *upper = gsl_root_fsolver_x_upper(s);
+        status = gsl_root_test_interval(*lower, *upper, epsabs, epsrel);
+    }
+    if (status == GSL_SUCCESS) {
+        *location = gsl_root_fsolver_root(s);
+    }
+    gsl_root_fsolver_free(s);
+    return status;
 }
 
 int

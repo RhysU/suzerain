@@ -163,19 +163,28 @@ suzerain_bspline_linear_combination_complex(
     gsl_bspline_deriv_workspace *dw);
 
 /**
- * Using the function specified by B-spline coefficients \c coeffs for basis \c
- * w and \c dw, find the \c location at which the function's \c nderiv
- * derivative crosses \c value within the region <tt>[lower, upper]</tt>.  The
- * crossing must be known <i>a priori</i> to exist by the intermediate value
- * theorem.  If multiple crossings exist, it is undefined which is returned.
+ * Using the function specified by B-spline coefficients \c coeffs
+ * for basis \c w and \c dw, find the \c location at which the
+ * function's \c nderiv derivative crosses \c value within the region
+ * <tt>[lower, upper]</tt>.  The crossing must be known <i>a priori</i>
+ * to exist by the intermediate value theorem.  If multiple crossings
+ * exist, it is undefined which is returned.  Convergence is reached
+ * whenever <tt>[lower, upper]</tt> satisfy the criteria set forth in <a
+ * href="http://www.gnu.org/software/gsl/manual/html_node/Search-Stopping-Parameters.html">gsl_root_test_interval</a>
+ * using \c epsabs and \c epsrel.
  *
  * @param[in] nderiv Derivative of interest  This may be higher than the number
  *     of derivatives requested in suzerain_bspline_alloc().
  * @param[in] coeffs Real-valued expansion coefficients for the function with
  *     respect to B-spline basis.  Must be of length <code>w->n</code>.
  * @param[in] value  The function value at which a crossing is sought.
- * @param[in] lower  The lower edge of the range in which a crossing is sought.
- * @param[in] upper The upper edge of the range in which a crossing is sought.
+ * @param[in,out] lower On entry, the lower edge of the range in which
+ *     a crossing is sought.  On exit, the active lower bound in the search.
+ * @param[in,out] upper On entry, the upper edge of the range in which
+ *     a crossing is sought.  On exit, the active upper bound in the search.
+ * @param[in] maxiter Maximum number of iterations to attempt.
+ * @param[in] epsabs Absolute error bound used as a stopping criterion.
+ * @param[in] epsrel Relative error bound used as a stopping criterion.
  * @param[out] location Location at which a crossing is found.
  * @param[in] dB Temporary storage to use of size <tt>w->k</tt> by
  *            no less than <tt>nderiv + 1</tt>.
@@ -183,17 +192,22 @@ suzerain_bspline_linear_combination_complex(
  * @param[in] dw Workspace to use.
  *
  * @return ::SUZERAIN_SUCCESS on success and returns the answer in
- * <code>*location</code>.  On error calls suzerain_error(), sets
- * <code>*location</code> to be <tt>NaN</tt>, and returns one of
- * #suzerain_error_status.
+ * <code>*location</code>.  If convergence is slow, ::SUZERAIN_CONTINUE
+ * will be returned and the method may be re-invoked with the now updated
+ * \c lower and \c upper range details to proceed.  On error calls
+ * suzerain_error(), sets <code>*location</code> to be <tt>NaN</tt>,
+ * and returns one of #suzerain_error_status.
  */
 int
 suzerain_bspline_crossing(
     const size_t nderiv,
     const double * coeffs,
     const double value,
-    const double lower,
-    const double upper,
+    double * lower,
+    double * upper,
+    const size_t maxiter,
+    const double epsabs,
+    const double epsrel,
     double * location,
     gsl_matrix *dB,
     gsl_bspline_workspace *w,
