@@ -53,6 +53,9 @@ import sympy
 import sys
 import tempfile
 
+# TODO How to handle constants like Re, the Reynolds number?
+# TODO How to handle uncertainty in derivatives of measured quantities?
+
 def parser(filenames):
     r'''
     Parse the provided filenames (or stdin if empty) into a
