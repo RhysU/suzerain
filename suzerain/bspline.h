@@ -177,6 +177,8 @@ suzerain_bspline_linear_combination_complex(
  * @param[in] lower  The lower edge of the range in which a crossing is sought.
  * @param[in] upper The upper edge of the range in which a crossing is sought.
  * @param[out] location Location at which a crossing is found.
+ * @param[in] dB Temporary storage to use of size <tt>w->k</tt> by
+ *            no less than <tt>nderiv + 1</tt>.
  * @param[in] w Workspace to use.
  * @param[in] dw Workspace to use.
  *
@@ -193,6 +195,7 @@ suzerain_bspline_crossing(
     const double lower,
     const double upper,
     double * location,
+    gsl_matrix *dB,
     gsl_bspline_workspace *w,
     gsl_bspline_deriv_workspace *dw);
 

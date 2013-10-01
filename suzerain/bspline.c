@@ -127,6 +127,23 @@ suzerain_bspline_linear_combination_complex(
 }
 
 int
+suzerain_bspline_crossing(
+    const size_t nderiv,
+    const double * coeffs,
+    const double value,
+    const double lower,
+    const double upper,
+    double * location,
+    gsl_matrix *dB,
+    gsl_bspline_workspace *w,
+    gsl_bspline_deriv_workspace *dw)
+{
+    // FIXME Implement
+    *location = GSL_NAN;
+    SUZERAIN_ERROR("Unimplemented", SUZERAIN_EUNIMPL);
+}
+
+int
 suzerain_bspline_integration_coefficients(
     const size_t nderiv,
     double * coeffs,
