@@ -99,7 +99,7 @@ def parser(filenames):
             # augmenting any parsing errors with location information
             if expr:
                 try:
-                    symbol_table[symbol] = _prepare(expr, symbol_table)
+                    symbol_table[symbol] = parse(expr, symbol_table)
                 except SyntaxError as e:
                     e.filename = fileinput.filename()
                     e.lineno   = fileinput.lineno()
@@ -113,9 +113,9 @@ def parser(filenames):
 
 def partials(f):
     r'''
-    Given a SymPy expression f or any string parsable as such, produce
-    a defaultdict df where referencing df[x] produces the precomputed
-    result f.diff(x).simplify() for any x.
+    Given a SymPy expression f or any string parsable as such by parse(),
+    produce a defaultdict df where referencing df[x] produces the
+    precomputed result f.diff(x).simplify() for any x.
 
     >>> a, b, c = sympy.symbols('a, b, c')
     >>> df = partials(b**2 + a + 1)
@@ -126,7 +126,7 @@ def partials(f):
     >>> df.keys()
     []
     '''
-    f = _prepare(f)
+    f = parse(f)
     df = collections.defaultdict(lambda: sympy.Integer(0))
     for x in f.free_symbols:
         df[x] = f.diff(x).factor().simplify()
@@ -135,9 +135,10 @@ def partials(f):
 
 def mixed_partials(f, df=None):
     r'''
-    Given a SymPy expression f or any string parsable as such, produce a
-    defaultdict of defaultdicts ddf where referencing ddf[x][y] produces
-    the precomputed result f.diff(x,y).simplify() for any x and y.
+    Given a SymPy expression f or any string parsable as such by parse(),
+    produce a defaultdict of defaultdicts ddf where referencing ddf[x][y]
+    produces the precomputed result f.diff(x,y).simplify() for any x
+    and y.
 
     >>> a, b, c = sympy.symbols('a, b, c')
     >>> ddf = mixed_partials(a**2 + a*b + b**2 + 1)
@@ -158,9 +159,9 @@ def mixed_partials(f, df=None):
 
 def prerequisites(f, df=None, ddf=None):
     r'''
-    Given a SymPy expression f or any string parsable as such, return a
-    list wherein unique tuples represents moments necessary for computing
-    an estimate of E[f(x)] and Var[f(x)].
+    Given a SymPy expression f or any string parsable as such by parse(),
+    return a list wherein unique tuples represents moments necessary
+    for computing an estimate of E[f(x)] and Var[f(x)].
 
     >>> prerequisites('1')
     []
@@ -174,7 +175,7 @@ def prerequisites(f, df=None, ddf=None):
     >>> prerequisites('a + x*y')
     [(a,), (a, a), (a, x), (a, y), (x,), (x, x), (x, y), (y,), (y, y)]
     '''
-    f = _prepare(f)
+    f = parse(f)
 
     # Implementation heavily relies on set addition semantics combined
     # with the fact that all derivatives have been precomputed prior
@@ -239,7 +240,7 @@ def expectation(f, ddf=None):
     >>> len(E), E[1], E[(x, y)]
     (2, x*y, 1)
     '''
-    f = _prepare(f)
+    f = parse(f)
     if ddf is None:
         ddf = mixed_partials(f)
 
@@ -281,7 +282,7 @@ def variance(f, df=None):
     >>> len(Var), Var[(x, x)]
     (1, (x + 1)**(-4))
     '''
-    f = _prepare(f)
+    f = parse(f)
     if df is None:
         df = partials(f)
 
@@ -300,35 +301,38 @@ def variance(f, df=None):
 
     return Var
 
-r'''A symbol representing a constant Reynolds number'''
+"Symbolic constants known at parse time"
+constants = {}
+
+"A symbol representing a constant Reynolds number"
 class Re(sympy.NumberSymbol):
     __metaclass__ = sympy.singleton.Singleton
     is_positive, is_negative = True, False
     pass
-Re = sympy.singleton.S.Re
+constants['Re'] = Re = sympy.singleton.S.Re
 
-r'''A symbol representing a constant Prandtl number'''
+"A symbol representing a constant Prandtl number"
 class Pr(sympy.NumberSymbol):
     __metaclass__ = sympy.singleton.Singleton
     is_positive, is_negative = True, False
     pass
-Pr = sympy.singleton.S.Pr
+constants['Pr'] = Pr = sympy.singleton.S.Pr
 
-r'''A symbol representing a constant Mach number'''
+"A symbol representing a constant Mach number"
 class Ma(sympy.NumberSymbol):
     __metaclass__ = sympy.singleton.Singleton
     is_positive, is_negative = True, False
     pass
-Ma = sympy.singleton.S.Ma
+constants['Ma'] = Ma = sympy.singleton.S.Ma
 
-r'''A symbol representing a constant ratio of specific heats'''
+"A symbol representing a constant ratio of specific heats"
 class gamma(sympy.NumberSymbol):
     __metaclass__ = sympy.singleton.Singleton
     is_positive, is_negative = True, False
     pass
-gamma = sympy.singleton.S.gamma
+constants['gamma'] = gamma = sympy.singleton.S.gamma
 
-def _prepare(f, local_dict=None):
+def parse(f, local_dict=None):
     r'''
     Given a SymPy expression f or any string parsable as such, produce
     a SymPy expression prepared for further processing by methods
