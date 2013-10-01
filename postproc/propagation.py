@@ -135,7 +135,7 @@ def partials(f):
     r'''
     Given a SymPy expression f or any string parsable as such by parse(),
     produce a defaultdict df where referencing df[x] produces the
-    precomputed result f.diff(x).simplify() for any x.
+    precomputed result f.diff(x).simplify().factor() for any x.
 
     >>> a, b, c = sympy.symbols('a, b, c')
     >>> df = partials(b**2 + a + 1)
@@ -151,7 +151,7 @@ def partials(f):
     f = parse(f)
     df = collections.defaultdict(lambda: sympy.Integer(0))
     for x in f.free_symbols:
-        df[x] = f.diff(x).factor().simplify()
+        df[x] = f.diff(x).factor().simplify().factor()
     return df
 
 
@@ -159,8 +159,8 @@ def mixed_partials(f, df=None):
     r'''
     Given a SymPy expression f or any string parsable as such by parse(),
     produce a defaultdict of defaultdicts ddf where referencing ddf[x][y]
-    produces the precomputed result f.diff(x,y).simplify() for any x
-    and y.
+    produces the precomputed result f.diff(x,y).simplify().factor()
+    for any x and y.
 
     >>> a, b, c = sympy.symbols('a, b, c')
     >>> ddf = mixed_partials(a**2 + a*b + b**2 + 1)
