@@ -54,8 +54,30 @@ import sympy.physics.units
 import sys
 import tempfile
 
-# TODO How to handle constants like Re, the Reynolds number?
 # TODO How to handle uncertainty in derivatives of measured quantities?
+
+"Symbolic constants known at parse time to have zero derivatives"
+constants = {
+    'gamma': sympy.physics.units.Unit('Ratio of specific heats', 'gamma'),
+    'Ma':    sympy.physics.units.Unit('Mach number',             'Ma'),
+    'Pr':    sympy.physics.units.Unit('Prandtl number',          'Pr'),
+    'Re':    sympy.physics.units.Unit('Reynolds number',         'Re'),
+}
+
+def parse(f, symbol_table=None):
+    r'''
+    Given a SymPy expression f or any string parsable as such, produce
+    a SymPy expression prepared for further processing by methods
+    within this module.  This provides a common extension point for
+    injecting known constants (e.g. the Reynolds number Re) and other
+    module-specific handling into the parsing process.
+    '''
+    if isinstance(f, basestring):
+        d = constants.copy()
+        if symbol_table:
+            d.update(symbol_table)
+        f = sympy.parsing.sympy_parser.parse_expr(f, symbol_table)
+    return f
 
 def parser(filenames):
     r'''
@@ -300,29 +322,6 @@ def variance(f, df=None):
             Var[tuple(sorted([i, j]))] += twofifj  # Canonicalize
 
     return Var
-
-"Symbolic constants known at parse time to have zero derivatives"
-constants = {
-    'gamma': sympy.physics.units.Unit('Ratio of specific heats', 'gamma'),
-    'Ma':    sympy.physics.units.Unit('Mach number',             'Ma'),
-    'Pr':    sympy.physics.units.Unit('Prandtl number',          'Pr'),
-    'Re':    sympy.physics.units.Unit('Reynolds number',         'Re'),
-}
-
-def parse(f, symbol_table=None):
-    r'''
-    Given a SymPy expression f or any string parsable as such, produce
-    a SymPy expression prepared for further processing by methods
-    within this module.  This provides a common extension point for
-    injecting known constants (e.g. the Reynolds number Re) and other
-    module-specific handling into the parsing process.
-    '''
-    if isinstance(f, basestring):
-        d = constants.copy()
-        if symbol_table:
-            d.update(symbol_table)
-        f = sympy.parsing.sympy_parser.parse_expr(f, symbol_table)
-    return f
 
 # def main(args):
 #     symbol_table = parser([])
