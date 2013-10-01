@@ -49,8 +49,8 @@ import collections
 import fileinput
 import itertools
 import sympy
-import sympy.core.singleton
 import sympy.parsing.sympy_parser
+import sympy.physics.units
 import sys
 import tempfile
 
@@ -302,35 +302,12 @@ def variance(f, df=None):
     return Var
 
 "Symbolic constants known at parse time"
-constants = {}
-
-"A symbol representing a constant Reynolds number"
-class Re(sympy.NumberSymbol):
-    __metaclass__ = sympy.singleton.Singleton
-    is_positive, is_negative = True, False
-    pass
-constants['Re'] = Re = sympy.singleton.S.Re
-
-"A symbol representing a constant Prandtl number"
-class Pr(sympy.NumberSymbol):
-    __metaclass__ = sympy.singleton.Singleton
-    is_positive, is_negative = True, False
-    pass
-constants['Pr'] = Pr = sympy.singleton.S.Pr
-
-"A symbol representing a constant Mach number"
-class Ma(sympy.NumberSymbol):
-    __metaclass__ = sympy.singleton.Singleton
-    is_positive, is_negative = True, False
-    pass
-constants['Ma'] = Ma = sympy.singleton.S.Ma
-
-"A symbol representing a constant ratio of specific heats"
-class gamma(sympy.NumberSymbol):
-    __metaclass__ = sympy.singleton.Singleton
-    is_positive, is_negative = True, False
-    pass
-constants['gamma'] = gamma = sympy.singleton.S.gamma
+constants = {
+    'gamma': sympy.physics.units.Unit('Ratio of specific heats', 'gamma'),
+    'Ma':    sympy.physics.units.Unit('Mach number',             'Ma'),
+    'Pr':    sympy.physics.units.Unit('Prandtl number',          'Pr'),
+    'Re':    sympy.physics.units.Unit('Reynolds number',         'Re'),
+}
 
 def parse(f, local_dict=None):
     r'''
