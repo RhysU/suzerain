@@ -50,18 +50,21 @@ import fileinput
 import itertools
 import sympy
 import sympy.parsing.sympy_parser
-import sympy.physics.units
 import sys
 import tempfile
+from sympy.physics.units import Unit
 
 # TODO How to handle uncertainty in derivatives of measured quantities?
 
-"Symbolic constants known at parse time to have zero derivatives"
+"Symbolic constants known at parse time to have zero derivatives."
 constants = {
-    'gamma': sympy.physics.units.Unit('Ratio of specific heats', 'gamma'),
-    'Ma':    sympy.physics.units.Unit('Mach number',             'Ma'   ),
-    'Pr':    sympy.physics.units.Unit('Prandtl number',          'Pr'   ),
-    'Re':    sympy.physics.units.Unit('Reynolds number',         'Re'   ),
+    'alpha': Unit('Ratio of specific heats',        'alpha'),
+    'beta':  Unit('Temperature power law exponent', 'beta' ),
+    'gamma': Unit('Ratio of specific heats',        'gamma'),
+    'Kn':    Unit('Knudsen number',                 'Kn'   ),
+    'Ma':    Unit('Mach number',                    'Ma'   ),
+    'Pr':    Unit('Prandtl number',                 'Pr'   ),
+    'Re':    Unit('Reynolds number',                'Re'   ),
 }
 
 def parse(f, symbol_table=None):
@@ -73,8 +76,12 @@ def parse(f, symbol_table=None):
     module-specific handling into the parsing process.
     '''
     if isinstance(f, basestring):
-        f = sympy.parsing.sympy_parser.parse_expr(f, symbol_table)
-    f = f.subs(constants)
+        if symbol_table is None:
+          t = constants
+        else:
+          t = constants.copy()
+          t.update(symbol_table)
+        f = sympy.parsing.sympy_parser.parse_expr(f, t)
     return f
 
 def parser(filenames):
@@ -146,7 +153,10 @@ def partials(f):
     >>> df.keys()
     []
 
-    >>> partials("gamma + Ma + Pr + Re") # FIXME
+    Fluid-related symbolic constants are treated as genuinely constant:
+    >>> df = partials("x + alpha + beta + gamma + Kn + Ma + Pr + Re + y")
+    >>> df.keys()
+    [x, y]
     '''
     f = parse(f)
     df = collections.defaultdict(lambda: sympy.Integer(0))
