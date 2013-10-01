@@ -45,12 +45,12 @@ Instrumentation, 70C(4):263-273, October 1966.  ISSN 0022-4316.  That article
 discusses only the first-order approximation to E[f(x)].
 '''
 from __future__ import division, print_function
-from sympy.parsing.sympy_parser import parse_expr
 import collections
 import fileinput
 import itertools
 import sympy
-import sympy.core
+import sympy.core.singleton
+import sympy.parsing.sympy_parser
 import sys
 import tempfile
 
@@ -99,7 +99,8 @@ def parser(filenames):
             # augmenting any parsing errors with location information
             if expr:
                 try:
-                    symbol_table[symbol] = parse_expr(expr, symbol_table)
+                    # FIXME Line length
+                    symbol_table[symbol] = sympy.parsing.sympy_parser.parse_expr(expr, symbol_table)
                 except SyntaxError as e:
                     e.filename = fileinput.filename()
                     e.lineno   = fileinput.lineno()
@@ -128,7 +129,7 @@ def partials(f):
     []
     '''
     if isinstance(f, basestring):
-        f = parse_expr(f)
+        f = sympy.parsing.sympy_parser.parse_expr(f)
     df = collections.defaultdict(lambda: sympy.Integer(0))
     for x in f.free_symbols:
         df[x] = f.diff(x).factor().simplify()
@@ -177,7 +178,7 @@ def prerequisites(f, df=None, ddf=None):
     [(a,), (a, a), (a, x), (a, y), (x,), (x, x), (x, y), (y,), (y, y)]
     '''
     if isinstance(f, basestring):
-        f = parse_expr(f).simplify()
+        f = sympy.parsing.sympy_parser.parse_expr(f).simplify()
 
     # Implementation heavily relies on set addition semantics combined
     # with the fact that all derivatives have been precomputed prior
@@ -243,7 +244,7 @@ def expectation(f, ddf=None):
     (2, x*y, 1)
     '''
     if isinstance(f, basestring):
-        f = parse_expr(f).simplify()
+        f = sympy.parsing.sympy_parser.parse_expr(f).simplify()
     if ddf is None:
         ddf = mixed_partials(f)
 
@@ -286,7 +287,7 @@ def variance(f, df=None):
     (1, (x + 1)**(-4))
     '''
     if isinstance(f, basestring):
-        f = parse_expr(f).simplify()
+        f = sympy.parsing.sympy_parser.parse_expr(f).simplify()
     if df is None:
         df = partials(f)
 
@@ -307,19 +308,31 @@ def variance(f, df=None):
 
 r'''A symbol representing a constant Reynolds number'''
 class Re(sympy.NumberSymbol):
+    __metaclass__ = sympy.singleton.Singleton
+    is_positive, is_negative = True, False
     pass
+Re = sympy.singleton.S.Re
 
 r'''A symbol representing a constant Prandtl number'''
 class Pr(sympy.NumberSymbol):
+    __metaclass__ = sympy.singleton.Singleton
+    is_positive, is_negative = True, False
     pass
+Pr = sympy.singleton.S.Pr
 
 r'''A symbol representing a constant Mach number'''
 class Ma(sympy.NumberSymbol):
+    __metaclass__ = sympy.singleton.Singleton
+    is_positive, is_negative = True, False
     pass
+Ma = sympy.singleton.S.Ma
 
 r'''A symbol representing a constant ratio of specific heats'''
 class gamma(sympy.NumberSymbol):
+    __metaclass__ = sympy.singleton.Singleton
+    is_positive, is_negative = True, False
     pass
+gamma = sympy.singleton.S.gamma
 
 # def main(args):
 #     symbol_table = parser([])
