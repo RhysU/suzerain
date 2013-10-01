@@ -755,16 +755,16 @@ static void test_crossing()
                      "Test for 1st derivative 1-crossing of x**2 at x = 1/2");
     }
 
-    ///* Test ensuring failure will not bring down a binary */
-    //{
-    //    double lower = -0.5, upper = 2.5, location = 555;
-    //    const int status = suzerain_bspline_crossing(
-    //            0, coeffs, 9.0, &lower, &upper, 100,
-    //            GSL_DBL_EPSILON, GSL_DBL_EPSILON, &location, scratch, w, dw);
-    //    gsl_test(!status, "Failure expected at %s:%d", __FILE__, __LINE__);
-    //    gsl_test(!gsl_isnan(location), "Failure produces NaN at %s:%d",
-    //             __FILE__, __LINE__);
-    //}
+    /* Ensure looking for a nonexistent root will not bring down a binary */
+    {
+        double lower = -0.5, upper = 2.5, location = 555;
+        const int status = suzerain_bspline_crossing(
+                0, coeffs, 9.0, &lower, &upper, 100,
+                GSL_DBL_EPSILON, GSL_DBL_EPSILON, &location, scratch, w, dw);
+        gsl_test(!status, "Failure expected at %s:%d", __FILE__, __LINE__);
+        gsl_test(!gsl_isnan(location), "Failure produces NaN at %s:%d",
+                 __FILE__, __LINE__);
+    }
 
     free_workspaces(&w, &dw, &scratch);
 }

@@ -174,6 +174,7 @@ suzerain_bspline_crossing(
     if (SUZERAIN_UNLIKELY(s == NULL)) {
         SUZERAIN_ERROR("Could not obtain gsl_root_fsolver", SUZERAIN_ENOMEM);
     }
+    gsl_error_handler_t * h = gsl_set_error_handler_off();    // Push handler
     int status = gsl_root_fsolver_set(s, &f, *lower, *upper);
     status = (GSL_SUCCESS == status) ? GSL_CONTINUE : status;
 
@@ -189,6 +190,7 @@ suzerain_bspline_crossing(
     if (status == GSL_SUCCESS) {
         *location = gsl_root_fsolver_root(s);
     }
+    gsl_set_error_handler(h);                                 // Pop handler
     gsl_root_fsolver_free(s);
     return status;
 }

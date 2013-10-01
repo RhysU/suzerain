@@ -194,9 +194,10 @@ suzerain_bspline_linear_combination_complex(
  * @return ::SUZERAIN_SUCCESS on success and returns the answer in
  * <code>*location</code>.  If convergence is slow, ::SUZERAIN_CONTINUE
  * will be returned and the method may be re-invoked with the now updated
- * \c lower and \c upper range details to proceed.  On error calls
- * suzerain_error(), sets <code>*location</code> to be <tt>NaN</tt>,
- * and returns one of #suzerain_error_status.
+ * \c lower and \c upper range details to proceed.  On recoverable
+ * error sets <code>*location</code> to be <tt>NaN</tt> and returns
+ * one of #suzerain_error_status.  On unrecoverable error, additionally
+ * calls suzerain_error().
  */
 int
 suzerain_bspline_crossing(
