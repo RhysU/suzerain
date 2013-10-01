@@ -130,7 +130,7 @@ def partials(f):
         f = parse_expr(f)
     df = collections.defaultdict(lambda: sympy.Integer(0))
     for x in f.free_symbols:
-        df[x] = f.diff(x).simplify()
+        df[x] = f.diff(x).factor().simplify()
     return df
 
 
