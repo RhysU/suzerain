@@ -59,9 +59,9 @@ import tempfile
 "Symbolic constants known at parse time to have zero derivatives"
 constants = {
     'gamma': sympy.physics.units.Unit('Ratio of specific heats', 'gamma'),
-    'Ma':    sympy.physics.units.Unit('Mach number',             'Ma'),
-    'Pr':    sympy.physics.units.Unit('Prandtl number',          'Pr'),
-    'Re':    sympy.physics.units.Unit('Reynolds number',         'Re'),
+    'Ma':    sympy.physics.units.Unit('Mach number',             'Ma'   ),
+    'Pr':    sympy.physics.units.Unit('Prandtl number',          'Pr'   ),
+    'Re':    sympy.physics.units.Unit('Reynolds number',         'Re'   ),
 }
 
 def parse(f, symbol_table=None):
@@ -73,10 +73,8 @@ def parse(f, symbol_table=None):
     module-specific handling into the parsing process.
     '''
     if isinstance(f, basestring):
-        d = constants.copy()
-        if symbol_table:
-            d.update(symbol_table)
         f = sympy.parsing.sympy_parser.parse_expr(f, symbol_table)
+    f = f.subs(constants)
     return f
 
 def parser(filenames):
@@ -147,6 +145,8 @@ def partials(f):
     >>> df = partials("1 + 2 + 3")
     >>> df.keys()
     []
+
+    >>> partials("gamma + Ma + Pr + Re") # FIXME
     '''
     f = parse(f)
     df = collections.defaultdict(lambda: sympy.Integer(0))
