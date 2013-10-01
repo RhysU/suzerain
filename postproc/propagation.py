@@ -273,6 +273,11 @@ def variance(f, df=None):
     >>> Var = variance(2*x + 3*y)
     >>> len(Var), Var[(x, x)], Var[(y, y)], Var[(x, y)]
     (3, 4, 9, 12)
+
+    >>> x, y = sympy.symbols('x, y')
+    >>> Var = variance(x/y)
+    >>> len(Var), Var[(x, x)], Var[(y, y)], Var[(x, y)]
+    (3, y**(-2), x**2/y**4, -2*x/y**3)
     '''
     if isinstance(f, basestring):
         f = parse_expr(f).simplify()
