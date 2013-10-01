@@ -249,7 +249,7 @@ def expectation(f, ddf=None):
     r'''
     Prepare a map detailing how to compute a second-order approximation
     of E[f(x)].  Keys in the map are either 1 or tuples representing
-    covariances scaling factors pre-multiplying the maps' values.
+    covariance scaling factors pre-multiplying the maps' values.
     The maps' values should be evaluated using sample means.
 
     >>> x = sympy.symbols('x')
