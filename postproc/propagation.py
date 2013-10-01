@@ -176,8 +176,7 @@ def prerequisites(f, df=None, ddf=None):
     [(a,), (a, a), (a, x), (a, y), (x,), (x, x), (x, y), (y,), (y, y)]
     '''
     if isinstance(f, basestring):
-        f = parse_expr(f)
-    f = f.simplify()
+        f = parse_expr(f).simplify()
 
     # Implementation heavily relies on set addition semantics combined
     # with the fact that all derivatives have been precomputed prior
@@ -232,7 +231,31 @@ def expectation(f, ddf=None):
     covariances scaling factors pre-multiplying the maps' values.
     The maps' values should be evaluated using sample means.
     '''
-    pass # TODO
+    if isinstance(f, basestring):
+        f = parse_expr(f).simplify()
+    if ddf is None:
+        ddf = mixed_partials(f)
+
+    E = collections.defaultdict(lambda: sympy.Integer(0))
+
+    # Quantities necessary to compute second-order E[f(x)]
+    ## Term:    f(d)
+    #for s in f.free_symbols:
+    #    m.add((s,))
+    ## Term: + (1/2) \sum_{ i } \sigma_{ii} f_{,ii}(d)
+    #for i in ddf.keys():
+    #    if not ddf[i][i].is_zero:
+    #        for s in ddf[i][i].free_symbols:
+    #            m.add((s,))
+    #        m.add((i, i))                    # Canonical
+    ## Term: +       \sum_{i<j} \sigma_{ij} f_{,ij}(d)
+    #for (i, j) in itertools.combinations(ddf.keys(), 2):
+    #    if not ddf[i][j].is_zero:
+    #        for s in ddf[i][j].free_symbols:
+    #            m.add((s,))
+    #        m.add(tuple(sorted([i, j])))     # Canonicalize
+
+    return E
 
 def variance(f, ddf=None):
     r'''
@@ -241,7 +264,31 @@ def variance(f, ddf=None):
     covariances scaling factors pre-multiplying the maps' values.
     The maps' values should be evaluated using sample means.
     '''
-    pass # TODO
+    if isinstance(f, basestring):
+        f = parse_expr(f).simplify()
+    if df is None:
+        df = partials(f)
+
+    Var = collections.defaultdict(lambda: sympy.Integer(0))
+
+    # Quantities necessary to compute first-order Var[f(x)]
+    #if df is None:
+    #    df = partials(f)
+    ## Term:          \sum_{ i } \sigma_{ii} f_{,i}^2(d)
+    #for i in df.keys():
+    #    if not df[i].is_zero:
+    #        for s in df[i].free_symbols:
+    #            m.add((s,))
+    #        m.add((i, i))                    # Canonical
+    ## Term: +    2   \sum_{i<j} \sigma_{ij} f_{,i}(d) f_{,j}(d)
+    #for (i, j) in itertools.combinations(df.keys(), 2):
+    #    fifj = (df[i] * df[j]).simplify()
+    #    if not fifj.is_zero:
+    #        for s in fifj.free_symbols:
+    #            m.add((s,))
+    #        m.add(tuple(sorted([i, j])))     # Canonicalize
+
+    return Var
 
 # def main(args):
 #     symbol_table = parser([])
