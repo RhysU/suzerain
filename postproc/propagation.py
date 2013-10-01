@@ -57,6 +57,18 @@ import tempfile
 # TODO How to handle constants like Re, the Reynolds number?
 # TODO How to handle uncertainty in derivatives of measured quantities?
 
+def prepare(f, local_dict=None):
+    r'''
+    Given a SymPy expression f or any string parsable as such, produce
+    a SymPy expression prepared for further processing by methods
+    within this module.  This provides a common extension point for
+    injecting known constants (e.g. the Reynolds number Re) and other
+    module-specific handling into the parsing process.
+    '''
+    if isinstance(f, basestring):
+        f = sympy.parsing.sympy_parser.parse_expr(f, local_dict)
+    return f
+
 def parser(filenames):
     r'''
     Parse the provided filenames (or stdin if empty) into a
@@ -99,8 +111,7 @@ def parser(filenames):
             # augmenting any parsing errors with location information
             if expr:
                 try:
-                    # FIXME Line length
-                    symbol_table[symbol] = sympy.parsing.sympy_parser.parse_expr(expr, symbol_table)
+                    symbol_table[symbol] = prepare(expr, symbol_table)
                 except SyntaxError as e:
                     e.filename = fileinput.filename()
                     e.lineno   = fileinput.lineno()
@@ -111,7 +122,6 @@ def parser(filenames):
         fileinput.close()
 
     return symbol_table
-
 
 def partials(f):
     r'''
@@ -128,8 +138,7 @@ def partials(f):
     >>> df.keys()
     []
     '''
-    if isinstance(f, basestring):
-        f = sympy.parsing.sympy_parser.parse_expr(f)
+    f = prepare(f)
     df = collections.defaultdict(lambda: sympy.Integer(0))
     for x in f.free_symbols:
         df[x] = f.diff(x).factor().simplify()
@@ -177,8 +186,7 @@ def prerequisites(f, df=None, ddf=None):
     >>> prerequisites('a + x*y')
     [(a,), (a, a), (a, x), (a, y), (x,), (x, x), (x, y), (y,), (y, y)]
     '''
-    if isinstance(f, basestring):
-        f = sympy.parsing.sympy_parser.parse_expr(f).simplify()
+    f = prepare(f)
 
     # Implementation heavily relies on set addition semantics combined
     # with the fact that all derivatives have been precomputed prior
@@ -243,8 +251,7 @@ def expectation(f, ddf=None):
     >>> len(E), E[1], E[(x, y)]
     (2, x*y, 1)
     '''
-    if isinstance(f, basestring):
-        f = sympy.parsing.sympy_parser.parse_expr(f).simplify()
+    f = prepare(f)
     if ddf is None:
         ddf = mixed_partials(f)
 
@@ -286,8 +293,7 @@ def variance(f, df=None):
     >>> len(Var), Var[(x, x)]
     (1, (x + 1)**(-4))
     '''
-    if isinstance(f, basestring):
-        f = sympy.parsing.sympy_parser.parse_expr(f).simplify()
+    f = prepare(f)
     if df is None:
         df = partials(f)
 
