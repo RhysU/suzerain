@@ -174,13 +174,13 @@ suzerain_bspline_crossing(
     if (SUZERAIN_UNLIKELY(s == NULL)) {
         SUZERAIN_ERROR("Could not obtain gsl_root_fsolver", SUZERAIN_ENOMEM);
     }
-    gsl_root_fsolver_set(s, &f, *lower, *upper);
+    int status = gsl_root_fsolver_set(s, &f, *lower, *upper);
+    status = (GSL_SUCCESS == status) ? GSL_CONTINUE : status;
 
     // Proceed until success, failure, or maximum iterations reached
     // On success, overwrite *location as described in API documentation.
     *location = GSL_NAN;
-    int status = GSL_CONTINUE;
-    for (size_t iter = 1; status == GSL_CONTINUE && iter < maxiter; ++iter) {
+    for (size_t iter = 1; iter < maxiter && status == GSL_CONTINUE; ++iter) {
         if (GSL_SUCCESS != (status = gsl_root_fsolver_iterate(s))) break;
         *lower = gsl_root_fsolver_x_lower(s);
         *upper = gsl_root_fsolver_x_upper(s);
