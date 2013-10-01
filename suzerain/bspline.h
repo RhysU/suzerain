@@ -163,6 +163,40 @@ suzerain_bspline_linear_combination_complex(
     gsl_bspline_deriv_workspace *dw);
 
 /**
+ * Using the function specified by B-spline coefficients \c coeffs for basis \c
+ * w and \c dw, find the \c location at which the function's \c nderiv
+ * derivative crosses \c value within the region <tt>[lower, upper]</tt>.  The
+ * crossing must be known <i>a priori</i> to exist by the intermediate value
+ * theorem.  If multiple crossings exist, it is undefined which is returned.
+ *
+ * @param[in] nderiv Derivative of interest  This may be higher than the number
+ *     of derivatives requested in suzerain_bspline_alloc().
+ * @param[in] coeffs Real-valued expansion coefficients for the function with
+ *     respect to B-spline basis.  Must be of length <code>w->n</code>.
+ * @param[in] value  The function value at which a crossing is sought.
+ * @param[in] lower  The lower edge of the range in which a crossing is sought.
+ * @param[in] upper The upper edge of the range in which a crossing is sought.
+ * @param[out] location Location at which a crossing is found.
+ * @param[in] w Workspace to use.
+ * @param[in] dw Workspace to use.
+ *
+ * @return ::SUZERAIN_SUCCESS on success and returns the answer in
+ * <code>*location</code>.  On error calls suzerain_error(), sets
+ * <code>*location</code> to be <tt>NaN</tt>, and returns one of
+ * #suzerain_error_status.
+ */
+int
+suzerain_bspline_crossing(
+    const size_t nderiv,
+    const double * coeffs,
+    const double value,
+    const double lower,
+    const double upper,
+    double * location,
+    gsl_bspline_workspace *w,
+    gsl_bspline_deriv_workspace *dw);
+
+/**
  * Compute the coefficients \f$ \gamma_{i} \f$ for <code>0 <= i < w->n</code>
  * such that \f$ \vec{\gamma}\cdot\vec{\beta} = \int \sum_{i} \beta_{i}
  * B_{i}^{(\mbox{nderiv})}(x) \, dx\f$.
