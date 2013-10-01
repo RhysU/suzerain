@@ -301,7 +301,7 @@ def variance(f, df=None):
 
     return Var
 
-"Symbolic constants known at parse time"
+"Symbolic constants known at parse time to have zero derivatives"
 constants = {
     'gamma': sympy.physics.units.Unit('Ratio of specific heats', 'gamma'),
     'Ma':    sympy.physics.units.Unit('Mach number',             'Ma'),
@@ -309,7 +309,7 @@ constants = {
     'Re':    sympy.physics.units.Unit('Reynolds number',         'Re'),
 }
 
-def parse(f, local_dict=None):
+def parse(f, symbol_table=None):
     r'''
     Given a SymPy expression f or any string parsable as such, produce
     a SymPy expression prepared for further processing by methods
@@ -318,7 +318,10 @@ def parse(f, local_dict=None):
     module-specific handling into the parsing process.
     '''
     if isinstance(f, basestring):
-        f = sympy.parsing.sympy_parser.parse_expr(f, local_dict)
+        d = constants.copy()
+        if symbol_table:
+            d.update(symbol_table)
+        f = sympy.parsing.sympy_parser.parse_expr(f, symbol_table)
     return f
 
 # def main(args):
