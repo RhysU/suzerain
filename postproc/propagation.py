@@ -230,6 +230,16 @@ def expectation(f, ddf=None):
     of E[f(x)].  Keys in the map are either 1 or tuples representing
     covariances scaling factors pre-multiplying the maps' values.
     The maps' values should be evaluated using sample means.
+
+    >>> x = sympy.symbols('x')
+    >>> E = expectation(x**2)
+    >>> len(E), E[1], E[(x, x)]
+    (2, x**2, 1)
+
+    >>> x, y = sympy.symbols('x, y')
+    >>> E = expectation(x*y)
+    >>> len(E), E[1], E[(x, y)]
+    (2, x*y, 1)
     '''
     if isinstance(f, basestring):
         f = parse_expr(f).simplify()
