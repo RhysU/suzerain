@@ -262,12 +262,17 @@ def expectation(f, ddf=None):
 
     return E
 
-def variance(f, ddf=None):
+def variance(f, df=None):
     r'''
     Prepare a map detailing how to compute a first-order approximation
     of var[f(x)].  Keys in the map are either 1 or tuples representing
     covariances scaling factors pre-multiplying the maps' values.
     The maps' values should be evaluated using sample means.
+
+    >>> x, y = sympy.symbols('x, y')
+    >>> Var = variance(2*x + 3*y)
+    >>> len(Var), Var[(x, x)], Var[(y, y)], Var[(x, y)]
+    (3, 4, 9, 12)
     '''
     if isinstance(f, basestring):
         f = parse_expr(f).simplify()
