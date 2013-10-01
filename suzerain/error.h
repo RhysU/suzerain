@@ -52,6 +52,7 @@ extern "C" {
  */
 enum suzerain_error_status {
     SUZERAIN_FAILURE  = -1, /**< Failure */
+    SUZERAIN_CONTINUE = -2, /**< Iteration has not converged */
     SUZERAIN_SUCCESS  =  0, /**< Success */
     SUZERAIN_EDOM     =  1, /**< Input domain error */
     SUZERAIN_ERANGE   =  2, /**< Output range error */

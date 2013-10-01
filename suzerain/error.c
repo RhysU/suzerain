@@ -144,6 +144,8 @@ suzerain_strerror(const int suzerain_errno)
     switch (suzerain_errno) {
     case SUZERAIN_FAILURE:
         return "failure" ;
+    case SUZERAIN_CONTINUE:
+        return "iteration has not converged";
     case SUZERAIN_SUCCESS:
         return "success" ;
     case SUZERAIN_EDOM:
