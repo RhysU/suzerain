@@ -50,6 +50,7 @@ import collections
 import fileinput
 import itertools
 import sympy
+import sympy.core
 import sys
 import tempfile
 
@@ -303,6 +304,22 @@ def variance(f, df=None):
             Var[tuple(sorted([i, j]))] += twofifj  # Canonicalize
 
     return Var
+
+r'''A symbol representing a constant Reynolds number'''
+class Re(sympy.NumberSymbol):
+    pass
+
+r'''A symbol representing a constant Prandtl number'''
+class Pr(sympy.NumberSymbol):
+    pass
+
+r'''A symbol representing a constant Mach number'''
+class Ma(sympy.NumberSymbol):
+    pass
+
+r'''A symbol representing a constant ratio of specific heats'''
+class gamma(sympy.NumberSymbol):
+    pass
 
 # def main(args):
 #     symbol_table = parser([])
