@@ -722,31 +722,49 @@ static void test_crossing()
         }
     }
 
+    /* Successful test for 0th derivative checking range */
     {
         double lower = -0.5, upper = 2.5, location = GSL_NAN;
-        suzerain_bspline_crossing(0, coeffs, 1.0, &lower, &upper, 100,
-            GSL_DBL_EPSILON, GSL_DBL_EPSILON, &location, scratch, w, dw);
+        const int status = suzerain_bspline_crossing(
+                0, coeffs, 1.0, &lower, &upper, 100,
+                GSL_DBL_EPSILON, GSL_DBL_EPSILON, &location, scratch, w, dw);
+        gsl_test(status, "GSL_SUCCESS at %s:%d", __FILE__, __LINE__);
         gsl_test_rel(location, 1.0, GSL_SQRT_DBL_EPSILON,
                      "Test for 0th derivative 1-crossing of x**2 at x = 1");
     }
 
+    /* Successful test for 0th derivative checking range */
     {
         double lower = -2.0, upper = 0.5, location = GSL_NAN;
-        suzerain_bspline_crossing(0, coeffs, 1.0, &lower, &upper, 100,
-            GSL_DBL_EPSILON, GSL_DBL_EPSILON, &location, scratch, w, dw);
+        const int status = suzerain_bspline_crossing(
+                0, coeffs, 1.0, &lower, &upper, 100,
+                GSL_DBL_EPSILON, GSL_DBL_EPSILON, &location, scratch, w, dw);
+        gsl_test(status, "GSL_SUCCESS at %s:%d", __FILE__, __LINE__);
         gsl_test_rel(location, -1.0, GSL_SQRT_DBL_EPSILON,
                      "Test for 0th derivative 1-crossing of x**2 at x = -1");
     }
 
+    /* Successful test for 1st derivative across whole range */
     {
-        double lower = -0.5, upper = 2.5, location = GSL_NAN;
-        suzerain_bspline_crossing(1, coeffs, 1.0, &lower, &upper, 100,
-            GSL_DBL_EPSILON, GSL_DBL_EPSILON, &location, scratch, w, dw);
+        double lower = -2.0, upper = 2.5, location = GSL_NAN;
+        const int status = suzerain_bspline_crossing(
+                1, coeffs, 1.0, &lower, &upper, 100,
+                GSL_DBL_EPSILON, GSL_DBL_EPSILON, &location, scratch, w, dw);
+        gsl_test(status, "GSL_SUCCESS at %s:%d", __FILE__, __LINE__);
         gsl_test_rel(location, 0.5, GSL_SQRT_DBL_EPSILON,
                      "Test for 1st derivative 1-crossing of x**2 at x = 1/2");
     }
 
-    // TODO No crossing possible
+    ///* Test ensuring failure will not bring down a binary */
+    //{
+    //    double lower = -0.5, upper = 2.5, location = 555;
+    //    const int status = suzerain_bspline_crossing(
+    //            0, coeffs, 9.0, &lower, &upper, 100,
+    //            GSL_DBL_EPSILON, GSL_DBL_EPSILON, &location, scratch, w, dw);
+    //    gsl_test(!status, "Failure expected at %s:%d", __FILE__, __LINE__);
+    //    gsl_test(!gsl_isnan(location), "Failure produces NaN at %s:%d",
+    //             __FILE__, __LINE__);
+    //}
 
     free_workspaces(&w, &dw, &scratch);
 }
