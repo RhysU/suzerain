@@ -433,6 +433,10 @@ quantities sample_quantities(
 
                 sum_T[0](T);
 
+                sum_h0[0](e + p);
+
+                sum_H0[0]((e + p) / rho);
+
                 sum_mu[0](mu);
 
                 sum_nu[0](mu / rho);

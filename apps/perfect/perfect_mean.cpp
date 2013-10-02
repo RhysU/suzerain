@@ -87,6 +87,8 @@ namespace quantity {
     ((bar_rho_E,            "Reynolds-averaged total (intrinsic plus kinetic) energy"))                                   \
     ((bar_E,                "Reynolds-averaged total (intrinsic plus kinetic) energy per unit mass"))                     \
     ((bar_T,                "Reynolds-averaged temperature"))                                                             \
+    ((bar_h0,               "Reynolds-averaged stagnation enthalpy"))                                                     \
+    ((bar_H0,               "Reynolds-averaged stagnation enthalpy per unit mass"))                                       \
     ((bar_mu,               "Reynolds-averaged dynamic viscosity"))                                                       \
     ((bar_nu,               "Reynolds-averaged kinematic viscosity"))                                                     \
     ((bar_u,                "Reynolds-averaged streamwise velocity"))                                                     \
@@ -801,6 +803,8 @@ static quantity::storage_map_type process(
     ACCUMULATE(rho_E,            0, bar_rho_E             );
     ACCUMULATE(E,                0, bar_E                 );
     ACCUMULATE(T,                0, bar_T                 );
+    ACCUMULATE(h0,               0, bar_h0                );
+    ACCUMULATE(H0,               0, bar_H0                );
     ACCUMULATE(mu,               0, bar_mu                );
     ACCUMULATE(nu,               0, bar_nu                );
     ACCUMULATE(u,                0, bar_u                 );

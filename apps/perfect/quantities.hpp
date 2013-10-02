@@ -85,6 +85,8 @@ public:
 #define SUZERAIN_PERFECT_QUANTITIES_PHYSICAL         \
     ((E,                 1))  /* scalar           */ \
     ((T,                 1))  /* scalar           */ \
+    ((h0,                1))  /* scalar           */ \
+    ((H0,                1))  /* scalar           */ \
     ((mu,                1))  /* scalar           */ \
     ((nu,                1))  /* scalar           */ \
     ((u,                 3))  /* vector           */ \
