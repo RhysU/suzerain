@@ -43,6 +43,7 @@ suzerain-revision.h: $(srcdir)/*.h                            \
 nobase_pkginclude_HEADERS += allocator.hpp
 nobase_pkginclude_HEADERS += blas_et_al.h
 nobase_pkginclude_HEADERS += blas_et_al.hpp
+nobase_pkginclude_HEADERS += bl.hpp
 nobase_pkginclude_HEADERS += bsmbsm.h
 nobase_pkginclude_HEADERS += bsmbsm_solver.hpp
 nobase_pkginclude_HEADERS += bspline.h
@@ -261,7 +262,8 @@ libbase_la_CPPFLAGS      += $(EIGEN_CFLAGS)
 libbase_la_CPPFLAGS      += $(UNDERLING_CFLAGS)
 libbase_la_CPPFLAGS      += $(FFTW3_MPI_THREADS_CFLAGS)
 libbase_la_CPPFLAGS      += $(GRVY_CFLAGS)
-libbase_la_SOURCES        = bsmbsm_solver.cpp
+libbase_la_SOURCES        = bl.cpp
+libbase_la_SOURCES       += bsmbsm_solver.cpp
 libbase_la_SOURCES       += constraint.cpp
 libbase_la_SOURCES       += diffwave.c
 libbase_la_SOURCES       += fftw.cpp
