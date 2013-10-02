@@ -31,4 +31,15 @@
 
 #include <suzerain/bl.h>
 
-// TODO Implement
+#include <suzerain/error.h>
+
+int
+suzerain_bl_compute_qoi(
+        const suzerain_bl_local * const wall,
+        const suzerain_bl_local * const edge,
+        const suzerain_bl_thick * const thick,
+              suzerain_bl_qoi   * const qoi)
+{
+    // TODO Implement
+    return SUZERAIN_SUCCESS;
+}

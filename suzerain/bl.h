@@ -36,11 +36,66 @@
 extern "C" {
 #endif
 
-// TODO Implement
+// TODO Document
+typedef struct {
+    double a;
+    double gamma;
+    double h0;
+    double mu;
+    double p;
+    double Pr;
+    double p__x;
+    double rho;
+    double u;
+    double u__x;
+    double u__y;
+    double v;
+    double v__x;
+    double v__y;
+    double y;
+} suzerain_bl_local;
+
+// TODO Document
+typedef struct {
+    double delta;
+    double deltastar;
+    double theta;
+} suzerain_bl_thick;
+
+// TODO Document
+typedef struct {
+    double beta;
+    double Cf;
+    double delta_nu;
+    double gamma_e;
+    double K_e;
+    double K_s;
+    double K_w;
+    double Lambda;
+    double Lambda_n;
+    double Ma_edge;
+    double p_exi;
+    double Pr_w;
+    double Re_delta;
+    double Re_deltastar;
+    double Re_theta;
+    double shapefactor;
+    double tau_w;
+    double T_ratio;
+    double u_tau;
+    double v_wallplus;
+} suzerain_bl_qoi;
+
+// TODO Document
+int
+suzerain_bl_compute_qoi(
+        const suzerain_bl_local * wall,
+        const suzerain_bl_local * edge,
+        const suzerain_bl_thick * thick,
+              suzerain_bl_qoi   * qoi);
 
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
-
 
 #endif /* SUZERAIN_BL_H */
