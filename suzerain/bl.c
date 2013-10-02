@@ -47,10 +47,10 @@ suzerain_bl_compute_viscous(
         for (size_t i = 0; i < N; ++i) p[i] = INFINITY / INFINITY;
     }
 
-    // Compute dimensional quantities in "code units" each having [units]
-    viscous->tau_w    = wall->mu * wall->u__y;        // [\mu_0 u_0 / l_0]
-    viscous->u_tau    = sqrt(tau_w / wall->rho);      // [u_0]
-    viscous->delta_nu = wall->mu / wall->rho / u_tau; // [l_0]
+    // Compute dimensional quantities in "code units" each having [units    ]
+    viscous->tau_w    = wall->mu * wall->u__y;                 // [\mu u / l]
+    viscous->u_tau    = sqrt(viscous->tau_w / wall->rho);      // [u        ]
+    viscous->delta_nu = wall->mu / wall->rho / viscous->u_tau; // [l        ]
 
     return SUZERAIN_SUCCESS;
 }
@@ -98,7 +98,7 @@ suzerain_bl_compute_qoi(
                       * code_Re;
     qoi->Re_theta     = edge->rho * edge->u * thick->theta     / edge->mu
                       * code_Re;
-    qoi->ratio_nu     = edge->nu / wall->nu
+    qoi->ratio_nu     = (edge->mu / edge->rho) / (wall->mu / wall->rho)
                       * 1;
     qoi->ratio_rho    = edge->rho / wall->rho
                       * 1;
