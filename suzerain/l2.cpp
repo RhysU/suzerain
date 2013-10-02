@@ -383,4 +383,4 @@ compute_field_L2xz(
     return retval;
 }
 
-} // end namespace channel
+} // end namespace suzerain
