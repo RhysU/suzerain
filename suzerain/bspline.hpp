@@ -243,6 +243,25 @@ public:
     }
 
     /**
+     * @copybrief suzerain_bspline_crossing
+     * @see       suzerain_bspline_crossing
+     */
+    int crossing(const size_t nderiv,
+                 const double * coeffs,
+                 const double value,
+                 double * lower,
+                 double * upper,
+                 const size_t maxiter,
+                 const double epsabs,
+                 const double epsrel,
+                 double * location)
+    {
+        return suzerain_bspline_crossing(
+                nderiv, coeffs, value, lower, upper,
+                maxiter, epsabs, epsrel, location, db_, bw, dbw);
+    }
+
+    /**
      * @copybrief suzerain_bspline_integration_coefficients
      * @see       suzerain_bspline_integration_coefficients
      */
