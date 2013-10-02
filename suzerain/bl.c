@@ -49,6 +49,9 @@ suzerain_bl_compute_qoi(
         for (size_t i = 0; i < N; ++i) p[i] = INFINITY / INFINITY;
     }
 
+    // Compute any necessary information redundantly contained in wall or edge.
+    const double edge_nu = edge->mu / edge->rho;
+
     qoi->tau_w        = wall->mu * wall->u__y;
     qoi->u_tau        = sqrt(qoi->tau_w / wall->rho);
     qoi->beta         = thick->deltastar / qoi->tau_w * edge->p__x;
@@ -56,7 +59,7 @@ suzerain_bl_compute_qoi(
     qoi->delta_nu     = wall->mu / wall->rho / qoi->u_tau;
     qoi->gamma_e      = edge->gamma;
     qoi->K_e          = edge->mu * edge->u__x / edge->rho / square(edge->u);
-    qoi->K_s          = square(thick->delta) / (edge->mu / edge->rho) * edge->u__x;
+    qoi->K_s          = square(thick->delta) / edge_nu * edge->u__x;
     qoi->K_w          = wall->mu * edge->u__x / edge->rho / square(edge->u);
     qoi->Lambda_n     = - thick->delta / qoi->tau_w * edge->p__x;
     qoi->Ma_edge      = edge->u / edge->a;
