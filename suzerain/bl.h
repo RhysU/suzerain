@@ -35,54 +35,66 @@
 extern "C" {
 #endif
 
-// TODO Document
+/**
+ * Information characterizing local state in a boundary layer.
+ */
 typedef struct {
-    double a;
-    double gamma;
-    double mu;
-    double Pr;
-    double p__x;
-    double rho;
-    double T;
-    double u;
-    double u__x;
-    double u__y;
-    double v;
+    double a;      /**< Sound speed with units \f$a_0\f$.                    */
+    double gamma;  /**< Nondimensional Ratio of specific heats \f$\gamma\f$. */
+    double mu;     /**< Dynamic viscosity with units \f$\mu_0\f$.            */
+    double Pr;     /**< Nondimensional Prandtl number \f$C_p \mu / \kappa.   */
+    double p__x;   /**< Streamwise pressure gradient with units
+                        \f$p_0 / l_0 = \rho_0 a_0^2 / l_0\f$.                */
+    double rho;    /**< Density with units \f$\rho_0\f$.                     */
+    double T;      /**< Temperature with units \f$T_0\f$.                    */
+    double u;      /**< Streamwise velocity with units \f$u_0\f$.            */
+    double u__x;   /**< Streamwise derivative of streamwise velocity
+                        with units \f$u_0 / l_0\f$.                          */
+    double u__y;   /**< Wall-normal derivative of streamwise velocity
+                        with units \f$u_0 / l_0\f$.                          */
+    double v;      /**< Wall-normal velocity with units \f$u_0\f$.           */
 } suzerain_bl_local;
 
-// TODO Document
+/**
+ * Information characterizing boundary layer thickness in various ways.
+ * Each member has units of \f$l_0\f$.
+ */
 typedef struct {
-    double delta;
-    double deltastar;
-    double theta;
+    double delta;     /**< Boundary layer thickness.  */
+    double deltastar; /**< */
+    double theta;     /**< */
 } suzerain_bl_thick;
 
-// TODO Document
+/**
+ * Nondimensional boundary layer quantities of interest.
+ */
 typedef struct {
-    double beta;
-    double Cf;
-    double gamma_e;
-    double K_e;
-    double K_s;
-    double K_w;
-    double Lambda_n;
-    double Ma_e;
-    double p_exi;
-    double Pr_w;
-    double Re_delta;
-    double Re_deltastar;
-    double Re_theta;
-    double shapefactor;
-    double T_ratio;
-    double v_wallplus;
+    double  beta;         /**<  */
+    double  Cf;           /**<  */
+    double  gamma_e;      /**<  */
+    double  K_e;          /**<  */
+    double  K_s;          /**<  */
+    double  K_w;          /**<  */
+    double  Lambda_n;     /**<  */
+    double  Ma_e;         /**<  */
+    double  p_exi;        /**<  */
+    double  Pr_w;         /**<  */
+    double  Re_delta;     /**<  */
+    double  Re_deltastar; /**<  */
+    double  Re_theta;     /**<  */
+    double  shapefactor;  /**<  */
+    double  T_ratio;      /**<  */
+    double  v_wallplus;   /**<  */
 } suzerain_bl_qoi;
 
-// FIXME Account for any nondimensionalization
-// TODO Document
+/**
+ * FIXME Document
+ * \memberof suzerain_bsplineop_workspace
+ */
 int
 suzerain_bl_compute_qoi(
-//      double code_Ma,
-//      double code_Re,
+        double code_Ma,
+        double code_Re,
         const suzerain_bl_local * wall,
         const suzerain_bl_local * edge,
         const suzerain_bl_thick * thick,

@@ -38,8 +38,8 @@ static inline double square(double x) { return x*x; }
 
 int
 suzerain_bl_compute_qoi(
-//      const double code_Ma,
-//      const double code_Re,
+        const double code_Ma,
+        const double code_Re,
         const suzerain_bl_local * const wall,
         const suzerain_bl_local * const edge,
         const suzerain_bl_thick * const thick,
@@ -51,30 +51,46 @@ suzerain_bl_compute_qoi(
         for (size_t i = 0; i < N; ++i) p[i] = INFINITY / INFINITY;
     }
 
-    // Compute any necessary information redundantly contained in wall or edge.
-    const double edge_nu = edge->mu / edge->rho;
-
     // Compute dimensional quantities in "code units" each having [units]
     const double tau_w    = wall->mu * wall->u__y;        // [\mu_0 u_0 / l_0]
     const double u_tau    = sqrt(tau_w / wall->rho);      // [u_0]
     const double delta_nu = wall->mu / wall->rho / u_tau; // [l_0]
 
-    qoi->beta         = thick->deltastar / tau_w * edge->p__x;
-    qoi->Cf           = 2 * tau_w / edge->rho / square(edge->u);
-    qoi->gamma_e      = edge->gamma;
-    qoi->K_e          = edge->mu * edge->u__x / edge->rho / square(edge->u);
-    qoi->K_s          = square(thick->delta) / edge_nu * edge->u__x;
-    qoi->K_w          = wall->mu * edge->u__x / edge->rho / square(edge->u);
-    qoi->Lambda_n     = - thick->delta / tau_w * edge->p__x;
-    qoi->Ma_e         = edge->u / edge->a;
-    qoi->p_exi        = thick->delta / edge->rho / square(edge->u) * edge->p__x;
+    SUZERAIN_UNUSED(delta_nu); // FIXME Remove delta_nu?
+
+    // Nondimensional quantities are computed with the first line being the
+    // quantity and the second line being any needed "code unit" correction.
+    qoi->beta         = thick->deltastar / tau_w * edge->p__x
+                      * code_Re / square(code_Ma);
+    qoi->Cf           = 2 * tau_w / edge->rho / square(edge->u)
+                      / code_Re;
+    qoi->gamma_e      = edge->gamma
+                      * 1;
+    qoi->K_e          = edge->mu * edge->u__x / edge->rho / square(edge->u)
+                      / code_Re;
+    qoi->K_s          = square(thick->delta) * edge->rho / edge->mu * edge->u__x
+                      * code_Re;
+    qoi->K_w          = wall->mu * edge->u__x / edge->rho / square(edge->u)
+                      / code_Re;
+    qoi->Lambda_n     = - thick->delta / tau_w * edge->p__x
+                      * code_Re / square(code_Ma);
+    qoi->Ma_e         = edge->u / edge->a
+                      * code_Ma;
+    qoi->p_exi        = thick->delta / edge->rho / square(edge->u) * edge->p__x
+                      / square(code_Ma);
     qoi->Pr_w         = wall->Pr;
-    qoi->Re_delta     = edge->rho * edge->u * thick->delta     / edge->mu;
-    qoi->Re_deltastar = edge->rho * edge->u * thick->deltastar / edge->mu;
-    qoi->Re_theta     = edge->rho * edge->u * thick->theta     / edge->mu;
-    qoi->shapefactor  = thick->deltastar / thick->theta;
-    qoi->T_ratio      = edge->T / wall->T;
-    qoi->v_wallplus   = wall->v / u_tau;
+    qoi->Re_delta     = edge->rho * edge->u * thick->delta     / edge->mu
+                      * code_Re;
+    qoi->Re_deltastar = edge->rho * edge->u * thick->deltastar / edge->mu
+                      * code_Re;
+    qoi->Re_theta     = edge->rho * edge->u * thick->theta     / edge->mu
+                      * code_Re;
+    qoi->shapefactor  = thick->deltastar / thick->theta
+                      * 1;
+    qoi->T_ratio      = edge->T / wall->T
+                      * 1;
+    qoi->v_wallplus   = wall->v / u_tau
+                      * 1;
 
     return SUZERAIN_SUCCESS;
 }
