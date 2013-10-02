@@ -39,9 +39,7 @@ extern "C" {
 typedef struct {
     double a;
     double gamma;
-    double h0;
     double mu;
-    double p;
     double Pr;
     double p__x;
     double rho;
@@ -50,9 +48,6 @@ typedef struct {
     double u__x;
     double u__y;
     double v;
-    double v__x;
-    double v__y;
-    double y;
 } suzerain_bl_local;
 
 // TODO Document
@@ -85,6 +80,7 @@ typedef struct {
     double v_wallplus;
 } suzerain_bl_qoi;
 
+// FIXME Account for any nondimensionalization
 // TODO Document
 int
 suzerain_bl_compute_qoi(
