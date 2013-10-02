@@ -28,7 +28,6 @@
  * Compute boundary layer quantities of interest.
  */
 
-#include <suzerain/common.h>
 #include <suzerain/bspline.h>
 #include <suzerain/bsplineop.h>
 
@@ -46,6 +45,7 @@ typedef struct {
     double Pr;
     double p__x;
     double rho;
+    double T;
     double u;
     double u__x;
     double u__y;
@@ -64,6 +64,8 @@ typedef struct {
 
 // TODO Document
 typedef struct {
+    double tau_w;
+    double u_tau;
     double beta;
     double Cf;
     double delta_nu;
@@ -71,7 +73,6 @@ typedef struct {
     double K_e;
     double K_s;
     double K_w;
-    double Lambda;
     double Lambda_n;
     double Ma_edge;
     double p_exi;
@@ -80,9 +81,7 @@ typedef struct {
     double Re_deltastar;
     double Re_theta;
     double shapefactor;
-    double tau_w;
     double T_ratio;
-    double u_tau;
     double v_wallplus;
 } suzerain_bl_qoi;
 
