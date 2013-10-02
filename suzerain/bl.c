@@ -98,9 +98,13 @@ suzerain_bl_compute_qoi(
                       * code_Re;
     qoi->Re_theta     = edge->rho * edge->u * thick->theta     / edge->mu
                       * code_Re;
-    qoi->shapefactor  = thick->deltastar / thick->theta
+    qoi->ratio_nu     = edge->nu / wall->nu
                       * 1;
-    qoi->T_ratio      = edge->T / wall->T
+    qoi->ratio_rho    = edge->rho / wall->rho
+                      * 1;
+    qoi->ratio_T      = edge->T / wall->T
+                      * 1;
+    qoi->shapefactor  = thick->deltastar / thick->theta
                       * 1;
     qoi->v_wallplus   = wall->v / viscous->u_tau
                       * 1;

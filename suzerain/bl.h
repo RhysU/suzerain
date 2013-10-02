@@ -136,8 +136,10 @@ typedef struct {
                                thickness \f$\delta^\ast\f$ and \f$\nu_e\f$. */
     double  Re_theta;     /**< Reynolds number based on momentum
                                thickness \f$\theta\f$ and \f$\nu_e\f$. */
+    double  ratio_rho;    /**< The ratio of edge to wall density. */
+    double  ratio_nu;     /**< The ratio of edge to wall kinematic viscosity. */
+    double  ratio_T;      /**< The ratio of edge to wall temperature. */
     double  shapefactor;  /**< The shape factor \f$\delta^\ast / \theta. */
-    double  T_ratio;      /**< The ratio of edge to wall temperature. */
     double  v_wallplus;   /**< The wall transpiration rate in plus units.*/
 } suzerain_bl_qoi;
 
