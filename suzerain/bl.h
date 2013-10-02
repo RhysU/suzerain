@@ -21,22 +21,26 @@
 //
 //--------------------------------------------------------------------------
 
+#ifndef SUZERAIN_BL_H
+#define SUZERAIN_BL_H
+
 /** @file
- * @copydoc bl.hpp
+ * Compute boundary layer quantities of interest.
  */
 
-#ifdef HAVE_CONFIG_H
-#include <suzerain/config.h>
+#include <suzerain/common.h>
+#include <suzerain/bspline.h>
+#include <suzerain/bsplineop.h>
+
+#ifdef __cplusplus
+extern "C" {
 #endif
-
-#include <suzerain/bl.hpp>
-
-namespace suzerain {
-
-namespace bl {
 
 // TODO Implement
 
-} // end namespace bl
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
 
-} // end namespace suzerain
+
+#endif /* SUZERAIN_BL_H */
