@@ -37,13 +37,33 @@
 static inline double square(double x) { return x*x; }
 
 int
+suzerain_bl_compute_viscous(
+        const suzerain_bl_local   * wall,
+              suzerain_bl_viscous * viscous)
+{
+    {   // Defensively NaN output assuming suzerain_bl_viscous is all doubles
+        double * const p = (double *) viscous;
+        const size_t N = sizeof(*viscous)/sizeof(double);
+        for (size_t i = 0; i < N; ++i) p[i] = INFINITY / INFINITY;
+    }
+
+    // Compute dimensional quantities in "code units" each having [units]
+    viscous->tau_w    = wall->mu * wall->u__y;        // [\mu_0 u_0 / l_0]
+    viscous->u_tau    = sqrt(tau_w / wall->rho);      // [u_0]
+    viscous->delta_nu = wall->mu / wall->rho / u_tau; // [l_0]
+
+    return SUZERAIN_SUCCESS;
+}
+
+int
 suzerain_bl_compute_qoi(
         const double code_Ma,
         const double code_Re,
-        const suzerain_bl_local * const wall,
-        const suzerain_bl_local * const edge,
-        const suzerain_bl_thick * const thick,
-              suzerain_bl_qoi   * const qoi)
+        const suzerain_bl_local   * const wall,
+        const suzerain_bl_viscous * const viscous,
+        const suzerain_bl_local   * const edge,
+        const suzerain_bl_thick   * const thick,
+              suzerain_bl_qoi     * const qoi)
 {
     {   // Defensively NaN output assuming suzerain_bl_qoi is all doubles
         double * const p = (double *) qoi;
@@ -51,18 +71,11 @@ suzerain_bl_compute_qoi(
         for (size_t i = 0; i < N; ++i) p[i] = INFINITY / INFINITY;
     }
 
-    // Compute dimensional quantities in "code units" each having [units]
-    const double tau_w    = wall->mu * wall->u__y;        // [\mu_0 u_0 / l_0]
-    const double u_tau    = sqrt(tau_w / wall->rho);      // [u_0]
-    const double delta_nu = wall->mu / wall->rho / u_tau; // [l_0]
-
-    SUZERAIN_UNUSED(delta_nu); // FIXME Remove delta_nu?
-
     // Nondimensional quantities are computed with the first line being the
     // quantity and the second line being any needed "code unit" correction.
-    qoi->beta         = thick->deltastar / tau_w * edge->p__x
+    qoi->beta         = thick->deltastar / viscous->tau_w * edge->p__x
                       * code_Re / square(code_Ma);
-    qoi->Cf           = 2 * tau_w / edge->rho / square(edge->u)
+    qoi->Cf           = 2 * viscous->tau_w / edge->rho / square(edge->u)
                       / code_Re;
     qoi->gamma_e      = edge->gamma
                       * 1;
@@ -72,7 +85,7 @@ suzerain_bl_compute_qoi(
                       * code_Re;
     qoi->K_w          = wall->mu * edge->u__x / edge->rho / square(edge->u)
                       / code_Re;
-    qoi->Lambda_n     = - thick->delta / tau_w * edge->p__x
+    qoi->Lambda_n     = - thick->delta / viscous->tau_w * edge->p__x
                       * code_Re / square(code_Ma);
     qoi->Ma_e         = edge->u / edge->a
                       * code_Ma;
@@ -89,7 +102,7 @@ suzerain_bl_compute_qoi(
                       * 1;
     qoi->T_ratio      = edge->T / wall->T
                       * 1;
-    qoi->v_wallplus   = wall->v / u_tau
+    qoi->v_wallplus   = wall->v / viscous->u_tau
                       * 1;
 
     return SUZERAIN_SUCCESS;
