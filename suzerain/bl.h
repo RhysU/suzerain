@@ -74,7 +74,7 @@ typedef struct {
     double K_s;
     double K_w;
     double Lambda_n;
-    double Ma_edge;
+    double Ma_e;
     double p_exi;
     double Pr_w;
     double Re_delta;

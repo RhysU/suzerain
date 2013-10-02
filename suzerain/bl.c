@@ -62,7 +62,7 @@ suzerain_bl_compute_qoi(
     qoi->K_s          = square(thick->delta) / edge_nu * edge->u__x;
     qoi->K_w          = wall->mu * edge->u__x / edge->rho / square(edge->u);
     qoi->Lambda_n     = - thick->delta / qoi->tau_w * edge->p__x;
-    qoi->Ma_edge      = edge->u / edge->a;
+    qoi->Ma_e         = edge->u / edge->a;
     qoi->p_exi        = thick->delta / edge->rho / square(edge->u) * edge->p__x;
     qoi->Pr_w         = wall->Pr;
     qoi->Re_delta     = edge->rho * edge->u * thick->delta     / edge->mu;
