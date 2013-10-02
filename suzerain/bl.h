@@ -59,11 +59,8 @@ typedef struct {
 
 // TODO Document
 typedef struct {
-    double tau_w;
-    double u_tau;
     double beta;
     double Cf;
-    double delta_nu;
     double gamma_e;
     double K_e;
     double K_s;
@@ -84,6 +81,8 @@ typedef struct {
 // TODO Document
 int
 suzerain_bl_compute_qoi(
+//      double code_Ma,
+//      double code_Re,
         const suzerain_bl_local * wall,
         const suzerain_bl_local * edge,
         const suzerain_bl_thick * thick,
