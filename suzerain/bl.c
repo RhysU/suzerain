@@ -107,6 +107,27 @@ suzerain_bl_find_edge(
 }
 
 int
+suzerain_bl_compute_deltastar(
+    const double edge_location,
+    const double * coeffs_rho_u,
+    double * deltastar,
+    gsl_bspline_workspace *w)
+{
+    return SUZERAIN_EUNIMPL; // FIXME
+}
+
+int
+suzerain_bl_compute_theta(
+    const double edge_location,
+    const double * coeffs_rho_u,
+    const double * coeffs_u,
+    double * theta,
+    gsl_bspline_workspace *w)
+{
+    return SUZERAIN_EUNIMPL; // FIXME
+}
+
+int
 suzerain_bl_compute_qoi(
         const double code_Ma,
         const double code_Re,
