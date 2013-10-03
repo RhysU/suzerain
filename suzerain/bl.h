@@ -141,6 +141,7 @@ suzerain_bl_find_edge(
  * @param[in ] coeffs_rho_u  B-spline coefficients for \f$rho u\f$.
  * @param[out] deltastar     The computed displacement thickness.
  * @param[in ] w             Workspace to use.
+ * @param[in ] dw            Workspace to use.
  *
  * @return ::SUZERAIN_SUCCESS on success and returns the answer in
  * <code>*deltastar</code>.  On recoverable error sets <code>*deltastar</code>
@@ -153,7 +154,8 @@ suzerain_bl_compute_deltastar(
     const double edge_location,
     const double * coeffs_rho_u,
     double * deltastar,
-    gsl_bspline_workspace *w);
+    gsl_bspline_workspace *w,
+    gsl_bspline_deriv_workspace *dw);
 
 /**
  * Compute the momentum thickness \f$\theta\f$ given the edge location and a
@@ -172,10 +174,11 @@ suzerain_bl_compute_deltastar(
  *
  * @param[in ] edge_location Location of the boundary layer edge possibly
  *                           computed by suzerain_bl_find_edge().
- * @param[in ] coeffs_rho_u B-spline coefficients for \f$rho u\f$.
- * @param[in ] coeffs_u     B-spline coefficients for \f$u\f$.
- * @param[out] theta        The computed momentum thickness.
- * @param[in ] w            Workspace to use.
+ * @param[in ] coeffs_rho_u  B-spline coefficients for \f$rho u\f$.
+ * @param[in ] coeffs_u      B-spline coefficients for \f$u\f$.
+ * @param[out] theta         The computed momentum thickness.
+ * @param[in ] w             Workspace to use.
+ * @param[in ] dw            Workspace to use.
  *
  * @return ::SUZERAIN_SUCCESS on success and returns the answer in
  * <code>*theta</code>.  On recoverable error sets <code>*theta</code> to be
@@ -189,7 +192,8 @@ suzerain_bl_compute_theta(
     const double * coeffs_rho_u,
     const double * coeffs_u,
     double * theta,
-    gsl_bspline_workspace *w);
+    gsl_bspline_workspace *w,
+    gsl_bspline_deriv_workspace *dw);
 
 /**
  * Nondimensional boundary layer quantities of interest.

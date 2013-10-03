@@ -71,8 +71,7 @@ suzerain_bl_find_edge(
     /* Allocate working storage for function evaluation. */
     gsl_matrix *dB = gsl_matrix_alloc(w->k, nderiv + 1);
     if (SUZERAIN_UNLIKELY(dB == NULL)) {
-        SUZERAIN_ERROR_NULL("failed to allocate scratch space dB",
-                            SUZERAIN_ENOMEM);
+        SUZERAIN_ERROR("failed to allocate scratch space dB", SUZERAIN_ENOMEM);
     }
 
     /* Assume failure until proven otherwise. */
@@ -112,14 +111,33 @@ suzerain_bl_compute_deltastar(
     const double edge_location,
     const double * coeffs_rho_u,
     double * deltastar,
-    gsl_bspline_workspace *w)
+    gsl_bspline_workspace *w,
+    gsl_bspline_deriv_workspace *dw)
 {
     if (gsl_isnan(edge_location)) { // Propagate NaN
         *deltastar = GSL_NAN;
         return SUZERAIN_SUCCESS;
     }
 
-    return SUZERAIN_EUNIMPL; // FIXME
+    /* Allocate working storage for function evaluation. */
+    gsl_matrix *dB = gsl_matrix_alloc(w->k, 1);
+    if (SUZERAIN_UNLIKELY(dB == NULL)) {
+        SUZERAIN_ERROR("failed to allocate scratch space dB", SUZERAIN_ENOMEM);
+    }
+
+    double rho_u_edge = GSL_NAN;
+    int status = suzerain_bspline_linear_combination(
+            0, coeffs_rho_u, 1, &edge_location, &rho_u_edge, 0, dB, w, dw);
+    if (SUZERAIN_UNLIKELY(status != SUZERAIN_SUCCESS)) {
+        gsl_matrix_free(dB);
+        SUZERAIN_ERROR("failed to compute rho_u_edge", status);
+    }
+
+    status = SUZERAIN_EUNIMPL; // FIXME STARTHERE
+
+    /* Free working storage and return status */
+    gsl_matrix_free(dB);
+    return status;
 }
 
 int
@@ -128,7 +146,8 @@ suzerain_bl_compute_theta(
     const double * coeffs_rho_u,
     const double * coeffs_u,
     double * theta,
-    gsl_bspline_workspace *w)
+    gsl_bspline_workspace *w,
+    gsl_bspline_deriv_workspace *dw)
 {
     if (gsl_isnan(edge_location)) { // Propagate NaN
         *theta = GSL_NAN;
