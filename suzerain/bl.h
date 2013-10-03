@@ -132,28 +132,28 @@ suzerain_bl_find_edge(
 typedef struct {
     double beta;         /**< The Clauser parameter \f$\beta =
                               \frac{\delta^\ast}{\tau_w}
-                              \frac{\partial p}{\partial \xi}\f$. */
+                              \frac{\partial p}{\partial x}\f$. */
     double Cf;           /**< The skin friction coefficient \f$C_f =
                               \frac{2 \tau_w}{\rho_e u_e^2}\f$. */
     double gamma_e;      /**< The ratio of specific heats at the edge. */
     double K_e;          /**< Launder's acceleration parameter \f$K =
                               \frac{\mu}{\rho_e u_e^2} \,
-                              \frac{\partial{}u_e}{\partial\xi}\f$
+                              \frac{\partial{}u_e}{\partial x}\f$
                               computed taking \f$\mu = \mu_e\f$. */
     double K_s;          /**< The Pohlhausen parameter \f$K_s =
                               \frac{\delta^2}{\nu_e}
-                              \frac{\partial u_e}{\partial \xi}\f$. */
+                              \frac{\partial u_e}{\partial x}\f$. */
     double K_w;          /**< Launder's acceleration parameter \f$K =
                               \frac{\mu}{\rho_e u_e^2} \,
-                              \frac{\partial{}u_e}{\partial\xi}\f$
+                              \frac{\partial{}u_e}{\partial x}\f$
                               computed taking \f$\mu = \mu_w\f$. */
     double Lambda_n;     /**< Pressure parameter \f$\Lambda_n =
                               -\frac{\delta}{\tau_w}
-                              \frac{\partial p}{\partial \xi}\f$. */
+                              \frac{\partial p}{\partial x}\f$. */
     double Ma_e;         /**< The local Mach number at the edge. */
-    double p_exi;        /**< The inviscid-friendly pressure parameter
-                              \f$p_{e,\xi}^\ast = \frac{\delta}{\rho_e u_e^2}
-                              \frac{\partial p}{\partial \xi}\f$. */
+    double p_ex;         /**< The inviscid-friendly pressure parameter
+                              \f$p_{e,x}^\ast = \frac{\delta}{\rho_e u_e^2}
+                              \frac{\partial p}{\partial x}\f$. */
     double Pr_w;         /**< The Prandtl number at the wall. */
     double Re_delta;     /**< Reynolds number based on boundary layer
                               thickness \f$\delta\f$ and \f$\nu_e\f$. */

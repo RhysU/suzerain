@@ -140,7 +140,7 @@ suzerain_bl_compute_qoi(
                       * code_Re / square(code_Ma);
     qoi->Ma_e         = edge->u / edge->a
                       * code_Ma;
-    qoi->p_exi        = thick->delta / edge->rho / square(edge->u) * edge->p__x
+    qoi->p_ex         = thick->delta / edge->rho / square(edge->u) * edge->p__x
                       / square(code_Ma);
     qoi->Pr_w         = wall->Pr;
     qoi->Re_delta     = edge->rho * edge->u * thick->delta     / edge->mu
