@@ -99,6 +99,26 @@ suzerain_bl_find_edge(
     return status;
 }
 
+// Parameters necessary for deltastar_function.
+typedef struct {
+    const double                *coeffs_rho_u;
+    gsl_matrix                  *dB;
+    gsl_bspline_workspace       *w;
+    gsl_bspline_deriv_workspace *dw;
+    double                       rho_u_edge;
+} deltastar_params;
+
+// A GSL-ready way to evaluate the displacement thickness integrand
+static
+double deltastar_function(double x, void * params)
+{
+    deltastar_params * p = (deltastar_params *) params;
+    double rho_u = GSL_NAN;
+    suzerain_bspline_linear_combination(
+            0, p->coeffs_rho_u, 1U, &x, &rho_u, 0U, p->dB, p->w, p->dw);
+    return (1 - rho_u / p->rho_u_edge);
+}
+
 int
 suzerain_bl_compute_deltastar(
     const double edge_location,
@@ -126,6 +146,31 @@ suzerain_bl_compute_deltastar(
 
     /* Free working storage and return status */
     return status;
+}
+
+// Parameters necessary for theta_function.
+typedef struct {
+    const double                *coeffs_rho_u;
+    const double                *coeffs_u;
+    gsl_matrix                  *dB;
+    gsl_bspline_workspace       *w;
+    gsl_bspline_deriv_workspace *dw;
+    double                       rho_u_edge;
+    double                       u_edge;
+} theta_params;
+
+// A GSL-ready way to evaluate the momentum thickness integrand
+static
+double theta_function(double x, void * params)
+{
+    theta_params * p = (theta_params *) params;
+    double rho_u = GSL_NAN;
+    suzerain_bspline_linear_combination(
+            0, p->coeffs_rho_u, 1U, &x, &rho_u, 0U, p->dB, p->w, p->dw);
+    double u = GSL_NAN;
+    suzerain_bspline_linear_combination(
+            0, p->coeffs_u, 1U, &x, &u, 0U, p->dB, p->w, p->dw);
+    return (rho_u / p->rho_u_edge) * (1 - u / p->u_edge);
 }
 
 int
