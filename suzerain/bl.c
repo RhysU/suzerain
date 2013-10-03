@@ -64,19 +64,42 @@ suzerain_bl_find_edge(
     gsl_bspline_workspace *w,
     gsl_bspline_deriv_workspace *dw)
 {
+    /* Everything hinges on the second derivative of H0 crossing 0.0 */
+    enum { nderiv = 2, threshold = 0 };
+
     /* Allocate working storage for function evaluation. */
-    gsl_matrix *dB = gsl_matrix_alloc(w->k, 3); /* nderiv=2 + 1 */
+    gsl_matrix *dB = gsl_matrix_alloc(w->k, nderiv + 1);
     if (SUZERAIN_UNLIKELY(dB == NULL)) {
         SUZERAIN_ERROR_NULL("failed to allocate scratch space dB",
                             SUZERAIN_ENOMEM);
     }
 
-    /* Use somewhat high-level crossing first function to find edge */
-    double lower = gsl_bspline_breakpoint(0,             w);
-    double upper = gsl_bspline_breakpoint(w->nbreak - 1, w);
-    const int status = suzerain_bspline_crossing_first(
-            /* lower-towards-upper */ 1, 2, coeffs_H0, 0.0, &lower, &upper,
-            100, GSL_DBL_EPSILON, GSL_DBL_EPSILON, location, dB, w, dw);
+    /* Assume failure until proven otherwise. */
+    *location = GSL_NAN;
+    int status = SUZERAIN_EFAILED;
+
+    /* Start by evaluating function on 0th breakpoint... */
+    double flower, lower = gsl_bspline_breakpoint(0, w);
+    suzerain_bspline_linear_combination(
+            nderiv, coeffs_H0, 1, &lower, &flower, 0, dB, w, dw);
+
+    /* ...look breakpoint-by-breakpoint for upwards crossing of threshold... */
+    double fupper, upper;
+    for (size_t i = 1; i < w->nbreak; ++i, lower = upper, flower = fupper) {
+        upper = gsl_bspline_breakpoint(i, w);
+        suzerain_bspline_linear_combination(
+                nderiv, coeffs_H0, 1, &upper, &fupper, 0, dB, w, dw);
+
+        /* ...when found, polish the crossing bracket into a location... */
+        if (flower < threshold && fupper >= threshold) {
+            status = suzerain_bspline_crossing(
+                    nderiv, coeffs_H0, threshold, &lower, &upper, 100,
+                    GSL_DBL_EPSILON, GSL_DBL_EPSILON, location, dB, w, dw);
+            break;
+        }
+
+    }
+    /* ...if never found, location remains NAN and status reflects failure. */
 
     /* Free working storage and return status */
     gsl_matrix_free(dB);

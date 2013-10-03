@@ -227,36 +227,6 @@ suzerain_bspline_crossing(
 }
 
 int
-suzerain_bspline_crossing_first(
-    const int direction,
-    const size_t nderiv,
-    const double * coeffs,
-    const double value,
-    double * lower,
-    double * upper,
-    const size_t maxiter,
-    const double epsabs,
-    const double epsrel,
-    double * location,
-    gsl_matrix *dB,
-    gsl_bspline_workspace *w,
-    gsl_bspline_deriv_workspace *dw)
-{
-    // Initialize fsolver to use Brent-Dekker
-    // Bracketing, rather than fdfsolver, avoids exiting user-specified region
-    gsl_root_fsolver * const s = gsl_root_fsolver_alloc(gsl_root_fsolver_brent);
-    if (SUZERAIN_UNLIKELY(s == NULL)) {
-        SUZERAIN_ERROR("Could not obtain gsl_root_fsolver", SUZERAIN_ENOMEM);
-    }
-
-    const int status = SUZERAIN_EUNIMPL; // FIXME Implement
-
-    // Clean up and return
-    gsl_root_fsolver_free(s);
-    return status;
-}
-
-int
 suzerain_bspline_integration_coefficients(
     const size_t nderiv,
     double * coeffs,
