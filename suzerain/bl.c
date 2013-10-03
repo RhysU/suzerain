@@ -31,6 +31,8 @@
 
 #include <suzerain/bl.h>
 
+#include <gsl/gsl_matrix.h>
+
 #include <suzerain/common.h>
 #include <suzerain/error.h>
 
@@ -53,6 +55,32 @@ suzerain_bl_compute_viscous(
     viscous->delta_nu = wall->mu / wall->rho / viscous->u_tau; // [l        ]
 
     return SUZERAIN_SUCCESS;
+}
+
+int
+suzerain_bl_find_edge(
+    const double * coeffs_H0,
+    double * location,
+    gsl_bspline_workspace *w,
+    gsl_bspline_deriv_workspace *dw)
+{
+    /* Allocate working storage for function evaluation. */
+    gsl_matrix *dB = gsl_matrix_alloc(w->k, 3); /* nderiv=2 + 1 */
+    if (SUZERAIN_UNLIKELY(dB == NULL)) {
+        SUZERAIN_ERROR_NULL("failed to allocate scratch space dB",
+                            SUZERAIN_ENOMEM);
+    }
+
+    /* Use somewhat high-level crossing first function to find edge */
+    double lower = gsl_bspline_breakpoint(0,             w);
+    double upper = gsl_bspline_breakpoint(w->nbreak - 1, w);
+    const int status = suzerain_bspline_crossing_first(
+            /* lower-towards-upper */ 1, 2, coeffs_H0, 0.0, &lower, &upper,
+            100, GSL_DBL_EPSILON, GSL_DBL_EPSILON, location, dB, w, dw);
+
+    /* Free working storage and return status */
+    gsl_matrix_free(dB);
+    return status;
 }
 
 int
