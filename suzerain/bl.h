@@ -103,42 +103,42 @@ typedef struct {
  * eventual quasilaminarization."</a> in Physics of Fluids 20 (2008).
  */
 typedef struct {
-    double  beta;         /**< The Clauser parameter \f$\beta =
-                               \frac{\delta^\ast}{\tau_w}
-                               \frac{\partial p}{\partial \xi}\f$. */
-    double  Cf;           /**< The skin friction coefficient \f$C_f =
-                               \frac{2 \tau_w}{\rho_e u_e^2}\f$. */
-    double  gamma_e;      /**< The ratio of specific heats at the edge. */
-    double  K_e;          /**< Launder's acceleration parameter \f$K =
-                               \frac{\mu}{\rho_e u_e^2} \,
-                               \frac{\partial{}u_e}{\partial\xi}\f$
-                               computed taking \f$\mu = \mu_e\f$. */
-    double  K_s;          /**< The Pohlhausen parameter \f$K_s =
-                               \frac{\delta^2}{\nu_e}
-                               \frac{\partial u_e}{\partial \xi}\f$. */
-    double  K_w;          /**< Launder's acceleration parameter \f$K =
-                               \frac{\mu}{\rho_e u_e^2} \,
-                               \frac{\partial{}u_e}{\partial\xi}\f$
-                               computed taking \f$\mu = \mu_w\f$. */
-    double  Lambda_n;     /**< Pressure parameter \f$\Lambda_n =
-                               -\frac{\delta}{\tau_w}
-                               \frac{\partial p}{\partial \xi}\f$. */
-    double  Ma_e;         /**< The local Mach number at the edge. */
-    double  p_exi;        /**< The inviscid-friendly pressure parameter
-                               \f$p_{e,\xi}^\ast = \frac{\delta}{\rho_e u_e^2}
-                               \frac{\partial p}{\partial \xi}\f$. */
-    double  Pr_w;         /**< The Prandtl number at the wall. */
-    double  Re_delta;     /**< Reynolds number based on boundary layer
-                               thickness \f$\delta\f$ and \f$\nu_e\f$. */
-    double  Re_deltastar; /**< Reynolds number based on displacement
-                               thickness \f$\delta^\ast\f$ and \f$\nu_e\f$. */
-    double  Re_theta;     /**< Reynolds number based on momentum
-                               thickness \f$\theta\f$ and \f$\nu_e\f$. */
-    double  ratio_rho;    /**< The ratio of edge to wall density. */
-    double  ratio_nu;     /**< The ratio of edge to wall kinematic viscosity. */
-    double  ratio_T;      /**< The ratio of edge to wall temperature. */
-    double  shapefactor;  /**< The shape factor \f$\delta^\ast / \theta. */
-    double  v_wallplus;   /**< The wall transpiration rate in plus units.*/
+    double beta;         /**< The Clauser parameter \f$\beta =
+                              \frac{\delta^\ast}{\tau_w}
+                              \frac{\partial p}{\partial \xi}\f$. */
+    double Cf;           /**< The skin friction coefficient \f$C_f =
+                              \frac{2 \tau_w}{\rho_e u_e^2}\f$. */
+    double gamma_e;      /**< The ratio of specific heats at the edge. */
+    double K_e;          /**< Launder's acceleration parameter \f$K =
+                              \frac{\mu}{\rho_e u_e^2} \,
+                              \frac{\partial{}u_e}{\partial\xi}\f$
+                              computed taking \f$\mu = \mu_e\f$. */
+    double K_s;          /**< The Pohlhausen parameter \f$K_s =
+                              \frac{\delta^2}{\nu_e}
+                              \frac{\partial u_e}{\partial \xi}\f$. */
+    double K_w;          /**< Launder's acceleration parameter \f$K =
+                              \frac{\mu}{\rho_e u_e^2} \,
+                              \frac{\partial{}u_e}{\partial\xi}\f$
+                              computed taking \f$\mu = \mu_w\f$. */
+    double Lambda_n;     /**< Pressure parameter \f$\Lambda_n =
+                              -\frac{\delta}{\tau_w}
+                              \frac{\partial p}{\partial \xi}\f$. */
+    double Ma_e;         /**< The local Mach number at the edge. */
+    double p_exi;        /**< The inviscid-friendly pressure parameter
+                              \f$p_{e,\xi}^\ast = \frac{\delta}{\rho_e u_e^2}
+                              \frac{\partial p}{\partial \xi}\f$. */
+    double Pr_w;         /**< The Prandtl number at the wall. */
+    double Re_delta;     /**< Reynolds number based on boundary layer
+                              thickness \f$\delta\f$ and \f$\nu_e\f$. */
+    double Re_deltastar; /**< Reynolds number based on displacement
+                              thickness \f$\delta^\ast\f$ and \f$\nu_e\f$. */
+    double Re_theta;     /**< Reynolds number based on momentum
+                              thickness \f$\theta\f$ and \f$\nu_e\f$. */
+    double ratio_rho;    /**< The ratio of edge to wall density. */
+    double ratio_nu;     /**< The ratio of edge to wall kinematic viscosity. */
+    double ratio_T;      /**< The ratio of edge to wall temperature. */
+    double shapefactor;  /**< The shape factor \f$\delta^\ast / \theta. */
+    double v_wallplus;   /**< The wall transpiration rate in plus units.*/
 } suzerain_bl_qoi;
 
 /**
