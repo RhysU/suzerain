@@ -127,13 +127,17 @@ suzerain_bl_compute_deltastar(
     gsl_matrix *dB,
     gsl_bspline_workspace *w,
     gsl_bspline_deriv_workspace *dw,
-    gsl_integration_workspace *iw)
+    gsl_integration_workspace *iw,
+    const double epsabs,
+    const double epsrel,
+    double *abserr)
 {
-    if (gsl_isnan(edge_location)) { // Propagate NaN
-        *deltastar = GSL_NAN;
+    *deltastar = GSL_NAN;           // Be defensive
+    if (gsl_isnan(edge_location)) { // Propagate NaN but succeed
         return SUZERAIN_SUCCESS;
     }
 
+    // Compute edge momentum given edge_location and coeffs_rho_u
     double rho_u_edge = GSL_NAN;
     int status = suzerain_bspline_linear_combination(
             0, coeffs_rho_u, 1, &edge_location, &rho_u_edge, 0, dB, w, dw);
@@ -142,13 +146,16 @@ suzerain_bl_compute_deltastar(
                            SUZERAIN_EFAILED, status);
     }
 
-    // Wrap the incoming parameters into an gsl_function for evaluation
+
+    // Integrate to obtain displacement thickness
     deltastar_params params = { coeffs_rho_u, dB, w, dw, rho_u_edge };
     gsl_function f          = { deltastar_function, &params };
-
-    status = SUZERAIN_EUNIMPL; // FIXME STARTHERE
-
-    /* Free working storage and return status */
+    status = gsl_integration_qag(&f, gsl_bspline_breakpoint(0, w),
+            edge_location, epsabs, epsrel, iw->limit, GSL_INTEG_GAUSS61, iw,
+            deltastar, abserr);
+    if (SUZERAIN_UNLIKELY(status != GSL_SUCCESS)) {
+        SUZERAIN_ERROR("integration of deltastar failed", status);
+    }
     return status;
 }
 
@@ -186,13 +193,17 @@ suzerain_bl_compute_theta(
     gsl_matrix *dB,
     gsl_bspline_workspace *w,
     gsl_bspline_deriv_workspace *dw,
-    gsl_integration_workspace *iw)
+    gsl_integration_workspace *iw,
+    const double epsabs,
+    const double epsrel,
+    double *abserr)
 {
-    if (gsl_isnan(edge_location)) { // Propagate NaN
-        *theta = GSL_NAN;
+    *theta = GSL_NAN;               // Be defensive
+    if (gsl_isnan(edge_location)) { // Propagate NaN but succeed
         return SUZERAIN_SUCCESS;
     }
 
+    // Compute edge momentum given edge_location and coeffs_rho_u
     double rho_u_edge = GSL_NAN;
     int status = suzerain_bspline_linear_combination(
             0, coeffs_rho_u, 1, &edge_location, &rho_u_edge, 0, dB, w, dw);
@@ -201,6 +212,7 @@ suzerain_bl_compute_theta(
                            SUZERAIN_EFAILED, status);
     }
 
+    // Compute edge velocity given edge_location and coeffs_rho_u
     double u_edge = GSL_NAN;
     status = suzerain_bspline_linear_combination(
             0, coeffs_u, 1, &edge_location, &u_edge, 0, dB, w, dw);
@@ -209,12 +221,17 @@ suzerain_bl_compute_theta(
                            SUZERAIN_EFAILED, status);
     }
 
-    // Wrap the incoming parameters into an gsl_function for evaluation
+    // Integrate to obtain momentum thickness
     theta_params params = { coeffs_rho_u, coeffs_u,
                             dB, w, dw, rho_u_edge, u_edge };
     gsl_function f      = { theta_function, &params };
-
-    return SUZERAIN_EUNIMPL; // FIXME
+    status = gsl_integration_qag(&f, gsl_bspline_breakpoint(0, w),
+            edge_location, epsabs, epsrel, iw->limit, GSL_INTEG_GAUSS61, iw,
+            theta, abserr);
+    if (SUZERAIN_UNLIKELY(status != GSL_SUCCESS)) {
+        SUZERAIN_ERROR("integration of deltastar failed", status);
+    }
+    return status;
 }
 
 int

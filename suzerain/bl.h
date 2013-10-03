@@ -151,6 +151,9 @@ suzerain_bl_find_edge(
  * @param[in ] iw            Workspace to use.  Result precision may be limited
  *                           by the \c n parameter passed to
  *                           \c gsl_integration_workspace_alloc.
+ * @param[in ] epsabs        Absolute error limit for adaptive integration.
+ * @param[in ] epsrel        Relative error limit for adaptive integration.
+ * @param[out] abserr        Estimate of the absolute error in the result.
  *
  * @return ::SUZERAIN_SUCCESS on success and returns the answer in
  * <code>*deltastar</code>.  On recoverable error sets <code>*deltastar</code>
@@ -166,7 +169,10 @@ suzerain_bl_compute_deltastar(
     gsl_matrix *dB,
     gsl_bspline_workspace *w,
     gsl_bspline_deriv_workspace *dw,
-    gsl_integration_workspace *iw);
+    gsl_integration_workspace *iw,
+    const double epsabs,
+    const double epsrel,
+    double *abserr);
 
 /**
  * Compute the momentum thickness \f$\theta\f$ given the edge location and a
@@ -195,6 +201,9 @@ suzerain_bl_compute_deltastar(
  * @param[in ] iw            Workspace to use.  Result precision may be limited
  *                           by the \c n parameter passed to
  *                           \c gsl_integration_workspace_alloc.
+ * @param[in ] epsabs        Absolute error limit for adaptive integration.
+ * @param[in ] epsrel        Relative error limit for adaptive integration.
+ * @param[out] abserr        Estimate of the absolute error in the result.
  *
  * @return ::SUZERAIN_SUCCESS on success and returns the answer in
  * <code>*theta</code>.  On recoverable error sets <code>*theta</code> to be
@@ -211,7 +220,10 @@ suzerain_bl_compute_theta(
     gsl_matrix *dB,
     gsl_bspline_workspace *w,
     gsl_bspline_deriv_workspace *dw,
-    gsl_integration_workspace *iw);
+    gsl_integration_workspace *iw,
+    const double epsabs,
+    const double epsrel,
+    double *abserr);
 
 /**
  * Nondimensional boundary layer quantities of interest.
