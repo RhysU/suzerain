@@ -31,7 +31,7 @@ banner "Idempotence of restarting without time advance${OPER:+ ($OPER)}"
     cd $testdir
     WIZ="--plan_wisdom=wisdom.init" # Prepared by test_setup.sh
     $reacting mms0.h5 --restart_destination "a#.h5" --advance_nt=0 $WIZ $P
-    differ $exclude_datasets mms0.h5 a0.h5
+    differ $exclude_datasets a0.h5 mms0.h5
 )
 
 banner "Equivalence of a field advanced both with and without a restart${OPER:+ ($OPER)}"
