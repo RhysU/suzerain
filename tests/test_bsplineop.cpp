@@ -1468,13 +1468,13 @@ void real_polynomial_interpolation(const int k,
     const int ndof = b.n();
 
     // Initialize polynomial test function which we should recapture exactly
+    // Polynomial concocted to be reasonably behaved on domains of interest.
     suzerain::shared_ptr<poly_params> p(
         (poly_params *) malloc(sizeof(poly_params) + b.k()*sizeof(double)),
         free);
     p->n = b.k();
-    p->c[0] = 1.9;
-    for (int i = 1; i < b.k(); ++i) {
-        p->c[i] = p->c[i-1] + 0.9;
+    for (int i = 0; i < p->n; ++i) {
+        p->c[i] = pow(-1.0, (double) i) * (i + 10) / pow(4.0, (double) i + 1);
     }
     suzerain_function f = {poly_f, p.get()};
 
@@ -1565,7 +1565,7 @@ BOOST_AUTO_TEST_CASE( compute_derivatives_of_a_general_polynomial )
 
     BOOST_TEST_MESSAGE("Spectral-like single interval with high order");
     {
-        const double breakpts[] = { 2.0, 3.0 };
+        const double breakpts[] = { 3.0, 4.0 };
         const int maxnderiv = 2;
 
         for (int k = 11; k < 13; ++k) {
