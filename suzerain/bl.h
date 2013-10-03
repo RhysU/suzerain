@@ -78,8 +78,6 @@ typedef struct {
  *
  * \return ::SUZERAIN_SUCCESS on success.  On error calls suzerain_error() and
  *      returns one of #suzerain_error_status.
- *
- * \memberof suzerain_bl_viscous
  */
 int
 suzerain_bl_compute_viscous(
@@ -161,8 +159,6 @@ typedef struct {
  *
  * \return ::SUZERAIN_SUCCESS on success.  On error calls suzerain_error() and
  *      returns one of #suzerain_error_status.
- *
- * \memberof suzerain_bl_qoi
  */
 int
 suzerain_bl_compute_qoi(
