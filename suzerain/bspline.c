@@ -149,8 +149,11 @@ double linear_combination_function(
     return retval + p->offset;
 }
 
-int
-suzerain_bspline_crossing(
+// A workhorse method for suzerain_bspline_crossing avoiding allocation.
+// Exists to permit suzerain_bspline_crossing_first to be less expensive.
+// Argument s must be a valid gsl_root_fsolver instance on entry.
+static int
+suzerain_bspline_crossing_internal(
     const size_t nderiv,
     const double * coeffs,
     const double value,
@@ -162,18 +165,15 @@ suzerain_bspline_crossing(
     double * location,
     gsl_matrix *dB,
     gsl_bspline_workspace *w,
-    gsl_bspline_deriv_workspace *dw)
+    gsl_bspline_deriv_workspace *dw,
+    gsl_root_fsolver *s)
 {
     // Wrap the incoming parameters into an gsl_function for evaluation
     linear_combination_params params = { nderiv, coeffs, dB, w, dw, -value };
     gsl_function f                   = { linear_combination_function, &params};
 
-    // Initialize fsolver to use Brent-Dekker on [lower, upper]
+    // Initialize fsolver on [lower, upper]
     // Bracketing, rather than fdfsolver, avoids exiting user-specified region
-    gsl_root_fsolver * const s = gsl_root_fsolver_alloc(gsl_root_fsolver_brent);
-    if (SUZERAIN_UNLIKELY(s == NULL)) {
-        SUZERAIN_ERROR("Could not obtain gsl_root_fsolver", SUZERAIN_ENOMEM);
-    }
     gsl_error_handler_t * h = gsl_set_error_handler_off();    // Push handler
     int status = gsl_root_fsolver_set(s, &f, *lower, *upper);
     status = (GSL_SUCCESS == status) ? GSL_CONTINUE : status;
@@ -191,6 +191,37 @@ suzerain_bspline_crossing(
         *location = gsl_root_fsolver_root(s);
     }
     gsl_set_error_handler(h);                                 // Pop handler
+    return status;
+}
+
+int
+suzerain_bspline_crossing(
+    const size_t nderiv,
+    const double * coeffs,
+    const double value,
+    double * lower,
+    double * upper,
+    const size_t maxiter,
+    const double epsabs,
+    const double epsrel,
+    double * location,
+    gsl_matrix *dB,
+    gsl_bspline_workspace *w,
+    gsl_bspline_deriv_workspace *dw)
+{
+    // Initialize fsolver to use Brent-Dekker
+    // Bracketing, rather than fdfsolver, avoids exiting user-specified region
+    gsl_root_fsolver * const s = gsl_root_fsolver_alloc(gsl_root_fsolver_brent);
+    if (SUZERAIN_UNLIKELY(s == NULL)) {
+        SUZERAIN_ERROR("Could not obtain gsl_root_fsolver", SUZERAIN_ENOMEM);
+    }
+
+    // Invoke internal method relying on pre-existing workspace
+    const int status = suzerain_bspline_crossing_internal(
+            nderiv, coeffs, value, lower, upper, maxiter,
+            epsabs, epsrel, location, dB, w, dw, s);
+
+    // Clean up and return
     gsl_root_fsolver_free(s);
     return status;
 }
