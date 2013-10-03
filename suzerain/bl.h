@@ -122,6 +122,70 @@ suzerain_bl_find_edge(
     gsl_bspline_deriv_workspace *dw);
 
 /**
+ * Compute the displacement thickness \f$\delta^\ast\f$ given the edge
+ * location and a B-spline coefficient representation of streamwise
+ * momentum \f$\rho u\f$.  The method computes
+ * \f[
+ *  \delta^\ast = \int_0^\infty
+ *  \left(1 - \frac{\rho u}{\rho_e \u_e}\right)
+ *  \, \mathrm{d}y
+ *  .
+ * \f]
+ *
+ * @param[in ] edge_location Location of the boundary layer edge possibly
+ *                           computed by suzerain_bl_find_edge().
+ * @param[in ] coeffs_rho_u  B-spline coefficients for \f$rho u\f$.
+ * @param[out] deltastar     The computed displacement thickness.
+ * @param[in ] w             Workspace to use.
+ *
+ * @return ::SUZERAIN_SUCCESS on success and returns the answer in
+ * <code>*deltastar</code>.  On recoverable error (e.g. edge_deltastar is
+ * <tt>NaN</tt> on entry) sets <code>*deltastar</code> to be <tt>NaN</tt>
+ * <code>*deltastar</code> to be <tt>NaN</tt> and returns one of
+ * #suzerain_error_status.  On unrecoverable error, additionally calls
+ * suzerain_error().
+ */
+int
+suzerain_bl_compute_deltastar(
+    const double edge_location,
+    const double * coeffs_rho_u,
+    double * deltastar,
+    gsl_bspline_workspace *w);
+
+/**
+ * Compute the momentum thickness \f$\theta\f$ given the edge location and a
+ * B-spline coefficient representation of streamwise momentum \f$\rho u\f$ and
+ * velocity \f$u\f$.  The method computes
+ * \f[
+ *  \theta = \int_0^\infty
+ *  \frac{\rho u}{\rho_e u_e} \left(1 - \frac{u}{\u_e}\right)
+ *  \, \mathrm{d}y
+ *  .
+ * \f]
+ *
+ * @param[in ] edge_location Location of the boundary layer edge possibly
+ *                           computed by suzerain_bl_find_edge().
+ * @param[in ] coeffs_rho_u B-spline coefficients for \f$rho u\f$.
+ * @param[in ] coeffs_u     B-spline coefficients for \f$u\f$.
+ * @param[out] theta        The computed momentum thickness.
+ * @param[in ] w            Workspace to use.
+ *
+ * @return ::SUZERAIN_SUCCESS on success and returns the answer in
+ * <code>*theta</code>.  On recoverable error (e.g. edge_theta is
+ * <tt>NaN</tt> on entry) sets <code>*theta</code> to be <tt>NaN</tt>
+ * <code>*theta</code> to be <tt>NaN</tt> and returns one of
+ * #suzerain_error_status.  On unrecoverable error, additionally calls
+ * suzerain_error().
+ */
+int
+suzerain_bl_compute_theta(
+    const double edge_location,
+    const double * coeffs_rho_u,
+    const double * coeffs_u,
+    double * theta,
+    gsl_bspline_workspace *w);
+
+/**
  * Nondimensional boundary layer quantities of interest.
  *
  * Many of the pressure gradient parameters are defined within Cal and
