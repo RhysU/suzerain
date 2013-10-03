@@ -142,6 +142,10 @@ suzerain_bl_compute_deltastar(
                            SUZERAIN_EFAILED, status);
     }
 
+    // Wrap the incoming parameters into an gsl_function for evaluation
+    deltastar_params params = { coeffs_rho_u, dB, w, dw, rho_u_edge };
+    gsl_function f          = { deltastar_function, &params };
+
     status = SUZERAIN_EUNIMPL; // FIXME STARTHERE
 
     /* Free working storage and return status */
@@ -188,6 +192,27 @@ suzerain_bl_compute_theta(
         *theta = GSL_NAN;
         return SUZERAIN_SUCCESS;
     }
+
+    double rho_u_edge = GSL_NAN;
+    int status = suzerain_bspline_linear_combination(
+            0, coeffs_rho_u, 1, &edge_location, &rho_u_edge, 0, dB, w, dw);
+    if (SUZERAIN_UNLIKELY(status != SUZERAIN_SUCCESS)) {
+        SUZERAIN_ERROR_VAL("failed to compute rho_u_edge",
+                           SUZERAIN_EFAILED, status);
+    }
+
+    double u_edge = GSL_NAN;
+    status = suzerain_bspline_linear_combination(
+            0, coeffs_u, 1, &edge_location, &u_edge, 0, dB, w, dw);
+    if (SUZERAIN_UNLIKELY(status != SUZERAIN_SUCCESS)) {
+        SUZERAIN_ERROR_VAL("failed to compute u_edge",
+                           SUZERAIN_EFAILED, status);
+    }
+
+    // Wrap the incoming parameters into an gsl_function for evaluation
+    theta_params params = { coeffs_rho_u, coeffs_u,
+                            dB, w, dw, rho_u_edge, u_edge };
+    gsl_function f      = { theta_function, &params };
 
     return SUZERAIN_EUNIMPL; // FIXME
 }
