@@ -235,6 +235,18 @@ suzerain_bl_compute_theta(
 }
 
 int
+suzerain_bl_compute_thick(
+    const double * coeffs_H0,
+    const double * coeffs_rho_u,
+    const double * coeffs_u,
+    suzerain_bl_thick * thick,
+    gsl_bspline_workspace *w,
+    gsl_bspline_deriv_workspace *dw)
+{
+    return SUZERAIN_EUNIMPL; // FIXME Ticket #2963
+}
+
+int
 suzerain_bl_compute_qoi(
         const double code_Ma,
         const double code_Re,

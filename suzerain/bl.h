@@ -85,16 +85,6 @@ suzerain_bl_compute_viscous(
         const suzerain_bl_local   * wall,
               suzerain_bl_viscous * viscous);
 
-/**
- * Information characterizing boundary layer thickness in various ways.
- * Each member has units of \f$l_0\f$.
- */
-typedef struct {
-    double delta;     /**< Boundary layer thickness \f$\delta\f$. */
-    double deltastar; /**< Displacement thickness \f$\delta^\ast\f$. */
-    double theta;     /**< Momentum thickness \f$\theta\f$. */
-} suzerain_bl_thick;
-
 // TODO Find reference discussing NASA's technique mentioned below.
 /**
  * Find the boundary layer edge within <tt>[lower, upper]</tt> given a B-spline
@@ -103,15 +93,15 @@ typedef struct {
  * second derivative of \f$H_0 \approx{} 0\f$ based on discussions with T.
  * Oliver about what NASA has done in practice to get robust results.
  *
- * @param[in ] coeffs_H0 Coefficient representation of \f$H_0\f$
+ * \param[in ] coeffs_H0 Coefficient representation of \f$H_0\f$
  *                       using the basis provided in \c w and \c dw.
- * @param[out] location  Location at which edge is detected.
- * @param[in]  dB        Temporary storage to use of size <tt>w->k</tt> by
+ * \param[out] location  Location at which edge is detected.
+ * \param[in]  dB        Temporary storage to use of size <tt>w->k</tt> by
  *                       no less than <tt>3</tt>.
- * @param[in]  w         Workspace to use.
- * @param[in]  dw        Workspace to use.
+ * \param[in]  w         Workspace to use.
+ * \param[in]  dw        Workspace to use.
  *
- * @return ::SUZERAIN_SUCCESS on success and returns the answer in
+ * \return ::SUZERAIN_SUCCESS on success and returns the answer in
  * <code>*location</code>.  On recoverable error (e.g., no edge detected) sets
  * <code>*location</code> to be <tt>NaN</tt> and returns one of
  * #suzerain_error_status.  On unrecoverable error, additionally calls
@@ -140,22 +130,22 @@ suzerain_bl_find_edge(
  * \c deltastar result considering the computation to be successful
  * when this happens.
  *
- * @param[in ] edge_location Location of the boundary layer edge possibly
+ * \param[in ] edge_location Location of the boundary layer edge possibly
  *                           computed by suzerain_bl_find_edge().
- * @param[in ] coeffs_rho_u  B-spline coefficients for \f$rho u\f$.
- * @param[out] deltastar     The computed displacement thickness.
- * @param[in]  dB            Temporary storage to use of size <tt>w->k</tt> by
+ * \param[in ] coeffs_rho_u  B-spline coefficients for \f$rho u\f$.
+ * \param[out] deltastar     The computed displacement thickness.
+ * \param[in]  dB            Temporary storage to use of size <tt>w->k</tt> by
  *                           no less than <tt>1</tt>.
- * @param[in ] w             Workspace to use.
- * @param[in ] dw            Workspace to use.
- * @param[in ] iw            Workspace to use.  Result precision may be limited
+ * \param[in ] w             Workspace to use.
+ * \param[in ] dw            Workspace to use.
+ * \param[in ] iw            Workspace to use.  Result precision may be limited
  *                           by the \c n parameter passed to
  *                           \c gsl_integration_workspace_alloc.
- * @param[in ] epsabs        Absolute error limit for adaptive integration.
- * @param[in ] epsrel        Relative error limit for adaptive integration.
- * @param[out] abserr        Estimate of the absolute error in the result.
+ * \param[in ] epsabs        Absolute error limit for adaptive integration.
+ * \param[in ] epsrel        Relative error limit for adaptive integration.
+ * \param[out] abserr        Estimate of the absolute error in the result.
  *
- * @return ::SUZERAIN_SUCCESS on success and returns the answer in
+ * \return ::SUZERAIN_SUCCESS on success and returns the answer in
  * <code>*deltastar</code>.  On recoverable error sets <code>*deltastar</code>
  * to be <tt>NaN</tt> <code>*deltastar</code> to be <tt>NaN</tt> and returns
  * one of #suzerain_error_status.  On unrecoverable error, additionally calls
@@ -189,23 +179,23 @@ suzerain_bl_compute_deltastar(
  * \c theta result considering the computation to be successful
  * when this happens.
  *
- * @param[in ] edge_location Location of the boundary layer edge possibly
+ * \param[in ] edge_location Location of the boundary layer edge possibly
  *                           computed by suzerain_bl_find_edge().
- * @param[in ] coeffs_rho_u  B-spline coefficients for \f$rho u\f$.
- * @param[in ] coeffs_u      B-spline coefficients for \f$u\f$.
- * @param[out] theta         The computed momentum thickness.
- * @param[in]  dB            Temporary storage to use of size <tt>w->k</tt> by
+ * \param[in ] coeffs_rho_u  B-spline coefficients for \f$rho u\f$.
+ * \param[in ] coeffs_u      B-spline coefficients for \f$u\f$.
+ * \param[out] theta         The computed momentum thickness.
+ * \param[in]  dB            Temporary storage to use of size <tt>w->k</tt> by
  *                           no less than <tt>1</tt>.
- * @param[in ] w             Workspace to use.
- * @param[in ] dw            Workspace to use.
- * @param[in ] iw            Workspace to use.  Result precision may be limited
+ * \param[in ] w             Workspace to use.
+ * \param[in ] dw            Workspace to use.
+ * \param[in ] iw            Workspace to use.  Result precision may be limited
  *                           by the \c n parameter passed to
  *                           \c gsl_integration_workspace_alloc.
- * @param[in ] epsabs        Absolute error limit for adaptive integration.
- * @param[in ] epsrel        Relative error limit for adaptive integration.
- * @param[out] abserr        Estimate of the absolute error in the result.
+ * \param[in ] epsabs        Absolute error limit for adaptive integration.
+ * \param[in ] epsrel        Relative error limit for adaptive integration.
+ * \param[out] abserr        Estimate of the absolute error in the result.
  *
- * @return ::SUZERAIN_SUCCESS on success and returns the answer in
+ * \return ::SUZERAIN_SUCCESS on success and returns the answer in
  * <code>*theta</code>.  On recoverable error sets <code>*theta</code> to be
  * <tt>NaN</tt> <code>*theta</code> to be <tt>NaN</tt> and returns one of
  * #suzerain_error_status.  On unrecoverable error, additionally calls
@@ -224,6 +214,44 @@ suzerain_bl_compute_theta(
     const double epsabs,
     const double epsrel,
     double *abserr);
+
+/**
+ * Information characterizing boundary layer thickness in various ways.
+ * Each member has units of \f$l_0\f$.
+ */
+typedef struct {
+    double delta;     /**< Boundary layer thickness \f$\delta\f$. */
+    double deltastar; /**< Displacement thickness \f$\delta^\ast\f$. */
+    double theta;     /**< Momentum thickness \f$\theta\f$. */
+} suzerain_bl_thick;
+
+/**
+ * Compute boundary layer thickness parameters.  Requires a B-spline
+ * coefficient representation of specific total enthalpy \f$H_0 = \frac{\rho E
+ * + p}{\rho}\f$, streamwise momentum \f$\rho u\f$, and velocity \f$u\f$.  This
+ * is a convenience method around \ref suzerain_bl_find_edge \ref
+ * suzerain_bl_compute_deltastar and \ref suzerain_bl_compute_theta packing the
+ * results into a \ref suzerain_bl_thick structure.
+ *
+ * \param[in ] coeffs_H0    Coefficient representation of \f$H_0\f$.
+ * \param[in ] coeffs_rho_u Coefficient representation of \f$\rho u\f$.
+ * \param[in ] coeffs_u     Coefficient representation of \f$u\f$.
+ * \param[out] thick        Populated on success.
+ *                          See type documentation for contents.
+ * \param[in ] w            Workspace to use.
+ * \param[in ] dw           Workspace to use.
+ *
+ * \return ::SUZERAIN_SUCCESS on success.  On error calls suzerain_error() and
+ *      returns one of #suzerain_error_status.
+ */
+int
+suzerain_bl_compute_thick(
+    const double * coeffs_H0,
+    const double * coeffs_rho_u,
+    const double * coeffs_u,
+    suzerain_bl_thick * thick,
+    gsl_bspline_workspace *w,
+    gsl_bspline_deriv_workspace *dw);
 
 /**
  * Nondimensional boundary layer quantities of interest.
