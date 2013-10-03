@@ -94,6 +94,33 @@ typedef struct {
     double theta;     /**< Momentum thickness \f$\theta\f$. */
 } suzerain_bl_thick;
 
+// TODO Find reference discussing NASA's technique mentioned below.
+/**
+ * Find the boundary layer edge within <tt>[lower, upper]</tt> given a B-spline
+ * coefficient representation of the specific total enthalpy \f$H_0 =
+ * \frac{\rho E + p}{\rho}\f$ in \c coeffs_H0.  The procedure looks for the
+ * second derivative of \f$H_0 \approx{} 0\f$ based on discussions with T.
+ * Oliver about what NASA has done in practice to get robust results.
+ *
+ * @param[in ] coeffs_H0 Coefficient representation of \f$H_0\f$
+ *                       using the basis provided in \c w and \c dw.
+ * @param[out] location  Location at which edge is detected.
+ * @param[in]  w         Workspace to use.
+ * @param[in]  dw        Workspace to use.
+ *
+ * @return ::SUZERAIN_SUCCESS on success and returns the answer in
+ * <code>*location</code>.  On recoverable error (e.g., no edge detected) sets
+ * <code>*location</code> to be <tt>NaN</tt> and returns one of
+ * #suzerain_error_status.  On unrecoverable error, additionally calls
+ * suzerain_error().
+ */
+int
+suzerain_bl_find_edge(
+    const double * coeffs_H0,
+    double * location,
+    gsl_bspline_workspace *w,
+    gsl_bspline_deriv_workspace *dw);
+
 /**
  * Nondimensional boundary layer quantities of interest.
  *
