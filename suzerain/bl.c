@@ -32,6 +32,7 @@
 #include <suzerain/bl.h>
 
 #include <gsl/gsl_matrix.h>
+#include <gsl/gsl_sys.h>
 
 #include <suzerain/common.h>
 #include <suzerain/error.h>
@@ -113,6 +114,11 @@ suzerain_bl_compute_deltastar(
     double * deltastar,
     gsl_bspline_workspace *w)
 {
+    if (gsl_isnan(edge_location)) { // Propagate NaN
+        *deltastar = GSL_NAN;
+        return SUZERAIN_SUCCESS;
+    }
+
     return SUZERAIN_EUNIMPL; // FIXME
 }
 
@@ -124,6 +130,11 @@ suzerain_bl_compute_theta(
     double * theta,
     gsl_bspline_workspace *w)
 {
+    if (gsl_isnan(edge_location)) { // Propagate NaN
+        *theta = GSL_NAN;
+        return SUZERAIN_SUCCESS;
+    }
+
     return SUZERAIN_EUNIMPL; // FIXME
 }
 

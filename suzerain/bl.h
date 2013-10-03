@@ -132,6 +132,10 @@ suzerain_bl_find_edge(
  *  .
  * \f]
  *
+ * The method propagates a <tt>NaN</tt> \c edge_location into a <tt>NaN</tt>
+ * \c deltastar result considering the computation to be successful
+ * when this happens.
+ *
  * @param[in ] edge_location Location of the boundary layer edge possibly
  *                           computed by suzerain_bl_find_edge().
  * @param[in ] coeffs_rho_u  B-spline coefficients for \f$rho u\f$.
@@ -139,10 +143,9 @@ suzerain_bl_find_edge(
  * @param[in ] w             Workspace to use.
  *
  * @return ::SUZERAIN_SUCCESS on success and returns the answer in
- * <code>*deltastar</code>.  On recoverable error (e.g. edge_deltastar is
- * <tt>NaN</tt> on entry) sets <code>*deltastar</code> to be <tt>NaN</tt>
- * <code>*deltastar</code> to be <tt>NaN</tt> and returns one of
- * #suzerain_error_status.  On unrecoverable error, additionally calls
+ * <code>*deltastar</code>.  On recoverable error sets <code>*deltastar</code>
+ * to be <tt>NaN</tt> <code>*deltastar</code> to be <tt>NaN</tt> and returns
+ * one of #suzerain_error_status.  On unrecoverable error, additionally calls
  * suzerain_error().
  */
 int
@@ -163,6 +166,10 @@ suzerain_bl_compute_deltastar(
  *  .
  * \f]
  *
+ * The method propagates a <tt>NaN</tt> \c edge_location into a <tt>NaN</tt>
+ * \c theta result considering the computation to be successful
+ * when this happens.
+ *
  * @param[in ] edge_location Location of the boundary layer edge possibly
  *                           computed by suzerain_bl_find_edge().
  * @param[in ] coeffs_rho_u B-spline coefficients for \f$rho u\f$.
@@ -171,9 +178,8 @@ suzerain_bl_compute_deltastar(
  * @param[in ] w            Workspace to use.
  *
  * @return ::SUZERAIN_SUCCESS on success and returns the answer in
- * <code>*theta</code>.  On recoverable error (e.g. edge_theta is
- * <tt>NaN</tt> on entry) sets <code>*theta</code> to be <tt>NaN</tt>
- * <code>*theta</code> to be <tt>NaN</tt> and returns one of
+ * <code>*theta</code>.  On recoverable error sets <code>*theta</code> to be
+ * <tt>NaN</tt> <code>*theta</code> to be <tt>NaN</tt> and returns one of
  * #suzerain_error_status.  On unrecoverable error, additionally calls
  * suzerain_error().
  */
