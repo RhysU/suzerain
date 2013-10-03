@@ -215,6 +215,55 @@ suzerain_bspline_crossing(
     gsl_bspline_deriv_workspace *dw);
 
 /**
+ * Find the first crossing of \c value within <tt>[lower, upper]</tt>
+ * proceeding per the supplied \c direction.  That is, unlike
+ * suzerain_bspline_crossing(), the behavior is well-defined when
+ * multiple crossings exist in the supplied interval.
+ *
+ * @param[in] direction Search proceeds from \c lower to \c upper
+ *     when \c direction is nonnegative and from \c upper to \c lower when
+ *     \c direction is non-positive.
+ * @param[in] nderiv Derivative of interest  This may be higher than the number
+ *     of derivatives requested in suzerain_bspline_alloc().
+ * @param[in] coeffs Real-valued expansion coefficients for the function with
+ *     respect to B-spline basis.  Must be of length <code>w->n</code>.
+ * @param[in] value  The function value at which a crossing is sought.
+ * @param[in,out] lower On entry, the lower edge of the range in which
+ *     a crossing is sought.  On exit, the active lower bound in the search.
+ * @param[in,out] upper On entry, the upper edge of the range in which
+ *     a crossing is sought.  On exit, the active upper bound in the search.
+ * @param[in] maxiter Maximum number of iterations to attempt.
+ * @param[in] epsabs Absolute error bound used as a stopping criterion.
+ * @param[in] epsrel Relative error bound used as a stopping criterion.
+ * @param[out] location Location at which a crossing is found.
+ * @param[in] dB Temporary storage to use of size <tt>w->k</tt> by
+ *            no less than <tt>nderiv + 1</tt>.
+ * @param[in] w Workspace to use.
+ * @param[in] dw Workspace to use.
+ *
+ *
+ * @return ::SUZERAIN_SUCCESS on success and returns the answer in
+ * <code>*location</code>.  On recoverable error sets <code>*location</code> to
+ * be <tt>NaN</tt> and returns one of #suzerain_error_status.  On unrecoverable
+ * error, additionally calls suzerain_error().
+ */
+int
+suzerain_bspline_crossing_first(
+    const int direction,
+    const size_t nderiv,
+    const double * coeffs,
+    const double value,
+    double * lower,
+    double * upper,
+    const size_t maxiter,
+    const double epsabs,
+    const double epsrel,
+    double * location,
+    gsl_matrix *dB,
+    gsl_bspline_workspace *w,
+    gsl_bspline_deriv_workspace *dw);
+
+/**
  * Compute the coefficients \f$ \gamma_{i} \f$ for <code>0 <= i < w->n</code>
  * such that \f$ \vec{\gamma}\cdot\vec{\beta} = \int \sum_{i} \beta_{i}
  * B_{i}^{(\mbox{nderiv})}(x) \, dx\f$.
