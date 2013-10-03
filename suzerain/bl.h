@@ -28,8 +28,9 @@
  * Compute boundary layer quantities of interest.
  */
 
-#include <suzerain/bspline.h>
-#include <suzerain/bsplineop.h>
+#include <gsl/gsl_bspline.h>
+#include <gsl/gsl_integration.h>
+#include <gsl/gsl_matrix.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -147,6 +148,9 @@ suzerain_bl_find_edge(
  *                           no less than <tt>1</tt>.
  * @param[in ] w             Workspace to use.
  * @param[in ] dw            Workspace to use.
+ * @param[in ] iw            Workspace to use.  Result precision may be limited
+ *                           by the \c n parameter passed to
+ *                           \c gsl_integration_workspace_alloc.
  *
  * @return ::SUZERAIN_SUCCESS on success and returns the answer in
  * <code>*deltastar</code>.  On recoverable error sets <code>*deltastar</code>
@@ -161,7 +165,8 @@ suzerain_bl_compute_deltastar(
     double * deltastar,
     gsl_matrix *dB,
     gsl_bspline_workspace *w,
-    gsl_bspline_deriv_workspace *dw);
+    gsl_bspline_deriv_workspace *dw,
+    gsl_integration_workspace *iw);
 
 /**
  * Compute the momentum thickness \f$\theta\f$ given the edge location and a
@@ -187,6 +192,9 @@ suzerain_bl_compute_deltastar(
  *                           no less than <tt>1</tt>.
  * @param[in ] w             Workspace to use.
  * @param[in ] dw            Workspace to use.
+ * @param[in ] iw            Workspace to use.  Result precision may be limited
+ *                           by the \c n parameter passed to
+ *                           \c gsl_integration_workspace_alloc.
  *
  * @return ::SUZERAIN_SUCCESS on success and returns the answer in
  * <code>*theta</code>.  On recoverable error sets <code>*theta</code> to be
@@ -202,7 +210,8 @@ suzerain_bl_compute_theta(
     double * theta,
     gsl_matrix *dB,
     gsl_bspline_workspace *w,
-    gsl_bspline_deriv_workspace *dw);
+    gsl_bspline_deriv_workspace *dw,
+    gsl_integration_workspace *iw);
 
 /**
  * Nondimensional boundary layer quantities of interest.

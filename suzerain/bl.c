@@ -31,10 +31,10 @@
 
 #include <suzerain/bl.h>
 
-#include <gsl/gsl_matrix.h>
 #include <gsl/gsl_sys.h>
 
 #include <suzerain/common.h>
+#include <suzerain/bspline.h>
 #include <suzerain/error.h>
 
 static inline double square(double x) { return x*x; }
@@ -106,7 +106,8 @@ suzerain_bl_compute_deltastar(
     double * deltastar,
     gsl_matrix *dB,
     gsl_bspline_workspace *w,
-    gsl_bspline_deriv_workspace *dw)
+    gsl_bspline_deriv_workspace *dw,
+    gsl_integration_workspace *iw)
 {
     if (gsl_isnan(edge_location)) { // Propagate NaN
         *deltastar = GSL_NAN;
@@ -117,7 +118,8 @@ suzerain_bl_compute_deltastar(
     int status = suzerain_bspline_linear_combination(
             0, coeffs_rho_u, 1, &edge_location, &rho_u_edge, 0, dB, w, dw);
     if (SUZERAIN_UNLIKELY(status != SUZERAIN_SUCCESS)) {
-        SUZERAIN_ERROR("failed to compute rho_u_edge", status);
+        SUZERAIN_ERROR_VAL("failed to compute rho_u_edge",
+                           SUZERAIN_EFAILED, status);
     }
 
     status = SUZERAIN_EUNIMPL; // FIXME STARTHERE
@@ -134,7 +136,8 @@ suzerain_bl_compute_theta(
     double * theta,
     gsl_matrix *dB,
     gsl_bspline_workspace *w,
-    gsl_bspline_deriv_workspace *dw)
+    gsl_bspline_deriv_workspace *dw,
+    gsl_integration_workspace *iw)
 {
     if (gsl_isnan(edge_location)) { // Propagate NaN
         *theta = GSL_NAN;
