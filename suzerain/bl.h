@@ -105,6 +105,8 @@ typedef struct {
  * @param[in ] coeffs_H0 Coefficient representation of \f$H_0\f$
  *                       using the basis provided in \c w and \c dw.
  * @param[out] location  Location at which edge is detected.
+ * @param[in]  dB        Temporary storage to use of size <tt>w->k</tt> by
+ *                       no less than <tt>3</tt>.
  * @param[in]  w         Workspace to use.
  * @param[in]  dw        Workspace to use.
  *
@@ -118,6 +120,7 @@ int
 suzerain_bl_find_edge(
     const double * coeffs_H0,
     double * location,
+    gsl_matrix *dB,
     gsl_bspline_workspace *w,
     gsl_bspline_deriv_workspace *dw);
 
@@ -140,6 +143,8 @@ suzerain_bl_find_edge(
  *                           computed by suzerain_bl_find_edge().
  * @param[in ] coeffs_rho_u  B-spline coefficients for \f$rho u\f$.
  * @param[out] deltastar     The computed displacement thickness.
+ * @param[in]  dB            Temporary storage to use of size <tt>w->k</tt> by
+ *                           no less than <tt>1</tt>.
  * @param[in ] w             Workspace to use.
  * @param[in ] dw            Workspace to use.
  *
@@ -154,6 +159,7 @@ suzerain_bl_compute_deltastar(
     const double edge_location,
     const double * coeffs_rho_u,
     double * deltastar,
+    gsl_matrix *dB,
     gsl_bspline_workspace *w,
     gsl_bspline_deriv_workspace *dw);
 
@@ -177,6 +183,8 @@ suzerain_bl_compute_deltastar(
  * @param[in ] coeffs_rho_u  B-spline coefficients for \f$rho u\f$.
  * @param[in ] coeffs_u      B-spline coefficients for \f$u\f$.
  * @param[out] theta         The computed momentum thickness.
+ * @param[in]  dB            Temporary storage to use of size <tt>w->k</tt> by
+ *                           no less than <tt>1</tt>.
  * @param[in ] w             Workspace to use.
  * @param[in ] dw            Workspace to use.
  *
@@ -192,6 +200,7 @@ suzerain_bl_compute_theta(
     const double * coeffs_rho_u,
     const double * coeffs_u,
     double * theta,
+    gsl_matrix *dB,
     gsl_bspline_workspace *w,
     gsl_bspline_deriv_workspace *dw);
 

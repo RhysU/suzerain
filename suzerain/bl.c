@@ -62,17 +62,12 @@ int
 suzerain_bl_find_edge(
     const double * coeffs_H0,
     double * location,
+    gsl_matrix *dB,
     gsl_bspline_workspace *w,
     gsl_bspline_deriv_workspace *dw)
 {
     /* Everything hinges on the second derivative of H0 crossing 0.0 */
     enum { nderiv = 2, threshold = 0 };
-
-    /* Allocate working storage for function evaluation. */
-    gsl_matrix *dB = gsl_matrix_alloc(w->k, nderiv + 1);
-    if (SUZERAIN_UNLIKELY(dB == NULL)) {
-        SUZERAIN_ERROR("failed to allocate scratch space dB", SUZERAIN_ENOMEM);
-    }
 
     /* Assume failure until proven otherwise. */
     *location = GSL_NAN;
@@ -101,8 +96,6 @@ suzerain_bl_find_edge(
     }
     /* ...if never found, location remains NAN and status reflects failure. */
 
-    /* Free working storage and return status */
-    gsl_matrix_free(dB);
     return status;
 }
 
@@ -111,6 +104,7 @@ suzerain_bl_compute_deltastar(
     const double edge_location,
     const double * coeffs_rho_u,
     double * deltastar,
+    gsl_matrix *dB,
     gsl_bspline_workspace *w,
     gsl_bspline_deriv_workspace *dw)
 {
@@ -119,24 +113,16 @@ suzerain_bl_compute_deltastar(
         return SUZERAIN_SUCCESS;
     }
 
-    /* Allocate working storage for function evaluation. */
-    gsl_matrix *dB = gsl_matrix_alloc(w->k, 1);
-    if (SUZERAIN_UNLIKELY(dB == NULL)) {
-        SUZERAIN_ERROR("failed to allocate scratch space dB", SUZERAIN_ENOMEM);
-    }
-
     double rho_u_edge = GSL_NAN;
     int status = suzerain_bspline_linear_combination(
             0, coeffs_rho_u, 1, &edge_location, &rho_u_edge, 0, dB, w, dw);
     if (SUZERAIN_UNLIKELY(status != SUZERAIN_SUCCESS)) {
-        gsl_matrix_free(dB);
         SUZERAIN_ERROR("failed to compute rho_u_edge", status);
     }
 
     status = SUZERAIN_EUNIMPL; // FIXME STARTHERE
 
     /* Free working storage and return status */
-    gsl_matrix_free(dB);
     return status;
 }
 
@@ -146,6 +132,7 @@ suzerain_bl_compute_theta(
     const double * coeffs_rho_u,
     const double * coeffs_u,
     double * theta,
+    gsl_matrix *dB,
     gsl_bspline_workspace *w,
     gsl_bspline_deriv_workspace *dw)
 {
