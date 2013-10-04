@@ -39,6 +39,15 @@ module largo
                                          string_ptr          => c_ptr
 
 
+! ISO_C_BINDING support on pre-4.6 GFortran seems too primitive to workaround
+! Anyone needing to work on older compilers is welcome to try their hand
+! In the meantime, this provides clear messages to the user as to what's wrong.
+#if defined(__GFORTRAN__) && defined(__GNUC__) && defined(__GNUC_MINOR__)
+# if (__GNUC__ < 4) || (__GNUC__ == 4 && __GNUC_MINOR__ < 6)
+#  error "largo.f90 currently will not build on GFortran versions prior to 4.6"
+# endif
+#endif
+
 ! Use each largo module exporting all publicly visible symbols from each one
   use largo_workspace
   use largo_bl_spatial
