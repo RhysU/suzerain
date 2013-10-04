@@ -92,6 +92,8 @@ suzerain_bl_compute_viscous(
  * \frac{\rho E + p}{\rho}\f$ in \c coeffs_H0.  The procedure looks for the
  * second derivative of \f$H_0 \approx{} 0\f$ based on discussions with T.
  * Oliver about what NASA has done in practice to get robust results.
+ * In an incompressible context, other quantities might be substituted for
+ * \f$H_0\f$ in this computation.
  *
  * \param[in ] coeffs_H0 Coefficient representation of \f$H_0\f$
  *                       using the basis provided in \c w and \c dw.
