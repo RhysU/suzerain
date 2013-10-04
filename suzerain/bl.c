@@ -40,16 +40,18 @@
 
 static inline double square(double x) { return x*x; }
 
+// Defensively NaN assuming p points to a type containing only doubles
+#define FILL_WITH_NANS(p)                                    \
+    for (size_t i = 0; i < sizeof(*p)/sizeof(double); ++i) { \
+        ((double *) p)[i] = GSL_NAN;                         \
+    }
+
 int
 suzerain_bl_compute_viscous(
         const suzerain_bl_local   * wall,
               suzerain_bl_viscous * viscous)
 {
-    {   // Defensively NaN output assuming suzerain_bl_viscous is all doubles
-        double * const p = (double *) viscous;
-        const size_t N = sizeof(*viscous)/sizeof(double);
-        for (size_t i = 0; i < N; ++i) p[i] = GSL_NAN;
-    }
+    FILL_WITH_NANS(viscous);
 
     // Compute dimensional quantities in "code units" each having [units    ]
     viscous->tau_w    = wall->mu * wall->u__y;                 // [\mu u / l]
@@ -147,7 +149,6 @@ suzerain_bl_compute_deltastar(
                            SUZERAIN_EFAILED, status);
     }
 
-
     // Integrate to obtain displacement thickness
     deltastar_params params = { coeffs_rho_u, dB, w, dw, rho_u_edge };
     gsl_function f          = { deltastar_function, &params };
@@ -244,11 +245,7 @@ suzerain_bl_compute_thick(
     gsl_bspline_workspace *w,
     gsl_bspline_deriv_workspace *dw)
 {
-    {   // Defensively NaN output assuming suzerain_bl_thick is all doubles
-        double * const p = (double *) thick;
-        const size_t N = sizeof(*thick)/sizeof(double);
-        for (size_t i = 0; i < N; ++i) p[i] = GSL_NAN;
-    }
+    FILL_WITH_NANS(thick);
 
     return SUZERAIN_EUNIMPL; // FIXME Ticket #2963
 }
@@ -263,11 +260,7 @@ suzerain_bl_compute_qoi(
         const suzerain_bl_thick   * const thick,
               suzerain_bl_qoi     * const qoi)
 {
-    {   // Defensively NaN output assuming suzerain_bl_qoi is all doubles
-        double * const p = (double *) qoi;
-        const size_t N = sizeof(*qoi)/sizeof(double);
-        for (size_t i = 0; i < N; ++i) p[i] = GSL_NAN;
-    }
+    FILL_WITH_NANS(qoi);
 
     // Nondimensional quantities are computed with the first line being the
     // quantity and the second line being any needed "code unit" correction.
