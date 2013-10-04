@@ -231,9 +231,9 @@ typedef struct {
  * Compute boundary layer thickness parameters.  Requires a B-spline
  * coefficient representation of specific total enthalpy \f$H_0 = \frac{\rho E
  * + p}{\rho}\f$, streamwise momentum \f$\rho u\f$, and velocity \f$u\f$.  This
- * is a convenience method around \ref suzerain_bl_find_edge \ref
- * suzerain_bl_compute_deltastar and \ref suzerain_bl_compute_theta packing the
- * results into a \ref suzerain_bl_thick structure.
+ * is a convenience method around \ref suzerain_bl_find_edge, \ref
+ * suzerain_bl_compute_deltastar, and \ref suzerain_bl_compute_theta packing
+ * the results into a \ref suzerain_bl_thick structure.
  *
  * \param[in ] coeffs_H0    Coefficient representation of \f$H_0\f$.
  * \param[in ] coeffs_rho_u Coefficient representation of \f$\rho u\f$.
