@@ -245,9 +245,49 @@ suzerain_bl_compute_thick(
     gsl_bspline_workspace *w,
     gsl_bspline_deriv_workspace *dw)
 {
+
     FILL_WITH_NANS(thick);
 
-    return SUZERAIN_EUNIMPL; // FIXME Ticket #2963
+    int status                    = SUZERAIN_SUCCESS;
+    double abserr                 = GSL_NAN;
+    gsl_matrix *dB                = NULL;
+    gsl_integration_workspace *iw = NULL;
+
+    /* Allocate working storage */
+    if (NULL == (dB = gsl_matrix_alloc(w->k, 3))) {
+        SUZERAIN_ERROR_REPORT("failed to allocate dB",
+                              (status = SUZERAIN_ENOMEM));
+    }
+    if (SUZERAIN_UNLIKELY(status != SUZERAIN_SUCCESS)) goto done;
+
+    /* Allocate integration buffer */
+    if (NULL == (iw = gsl_integration_workspace_alloc(256))) {
+        SUZERAIN_ERROR_REPORT("failed to allocate iw",
+                              (status = SUZERAIN_ENOMEM));
+    }
+    if (SUZERAIN_UNLIKELY(status != SUZERAIN_SUCCESS)) goto done;
+
+    /* Compute edge location */
+    status = suzerain_bl_find_edge(coeffs_H0, &thick->delta, dB, w, dw);
+    if (SUZERAIN_UNLIKELY(status != SUZERAIN_SUCCESS)) goto done;
+
+    /* Compute displacement thickness */
+    status = suzerain_bl_compute_deltastar( thick->delta, coeffs_rho_u,
+            &thick->deltastar, dB, w, dw, iw, GSL_SQRT_DBL_EPSILON,
+            GSL_SQRT_DBL_EPSILON, &abserr);
+    if (SUZERAIN_UNLIKELY(status != SUZERAIN_SUCCESS)) goto done;
+
+    /* Compute momentum thickness */
+    status = suzerain_bl_compute_theta( thick->delta, coeffs_rho_u, coeffs_u,
+            &thick->theta, dB, w, dw, iw, GSL_SQRT_DBL_EPSILON,
+            GSL_SQRT_DBL_EPSILON, &abserr);
+    /* Done regardless of status */
+
+done:
+
+    gsl_integration_workspace_free(iw);
+    gsl_matrix_free(dB);
+    return SUZERAIN_EUNIMPL;
 }
 
 int
