@@ -31,6 +31,7 @@
 
 #include <suzerain/bl.h>
 
+#include <gsl/gsl_nan.h>
 #include <gsl/gsl_sys.h>
 
 #include <suzerain/common.h>
@@ -47,7 +48,7 @@ suzerain_bl_compute_viscous(
     {   // Defensively NaN output assuming suzerain_bl_viscous is all doubles
         double * const p = (double *) viscous;
         const size_t N = sizeof(*viscous)/sizeof(double);
-        for (size_t i = 0; i < N; ++i) p[i] = INFINITY / INFINITY;
+        for (size_t i = 0; i < N; ++i) p[i] = GSL_NAN;
     }
 
     // Compute dimensional quantities in "code units" each having [units    ]
@@ -243,6 +244,12 @@ suzerain_bl_compute_thick(
     gsl_bspline_workspace *w,
     gsl_bspline_deriv_workspace *dw)
 {
+    {   // Defensively NaN output assuming suzerain_bl_thick is all doubles
+        double * const p = (double *) thick;
+        const size_t N = sizeof(*thick)/sizeof(double);
+        for (size_t i = 0; i < N; ++i) p[i] = GSL_NAN;
+    }
+
     return SUZERAIN_EUNIMPL; // FIXME Ticket #2963
 }
 
@@ -259,7 +266,7 @@ suzerain_bl_compute_qoi(
     {   // Defensively NaN output assuming suzerain_bl_qoi is all doubles
         double * const p = (double *) qoi;
         const size_t N = sizeof(*qoi)/sizeof(double);
-        for (size_t i = 0; i < N; ++i) p[i] = INFINITY / INFINITY;
+        for (size_t i = 0; i < N; ++i) p[i] = GSL_NAN;
     }
 
     // Nondimensional quantities are computed with the first line being the
