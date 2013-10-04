@@ -26,17 +26,17 @@
 module largo
 
 ! Use ISO_C_BINDING to expose C-friendly API
-  use, intrinsic :: iso_c_binding, only: c_associated,      &
-                                         WP => c_double,    &
-                                         c_int,             &
-                                         c_char,            &
-                                         c_loc,             &
-                                         c_f_pointer,       &
-                                         c_null_char,       &
-                                         c_null_ptr,        &
-                                         largo_ptr =>c_ptr, &
-                                         largo_workspace_ptr =>c_ptr, &
-                                         string_ptr =>c_ptr
+  use, intrinsic :: iso_c_binding, only: c_associated,                 &
+                                         WP => c_double,               &
+                                         c_int,                        &
+                                         c_char,                       &
+                                         c_loc,                        &
+                                         c_f_pointer,                  &
+                                         c_null_char,                  &
+                                         c_null_ptr,                   &
+                                         largo_ptr           => c_ptr, &
+                                         largo_workspace_ptr => c_ptr, &
+                                         string_ptr          => c_ptr
 
 
 ! Use each largo module exporting all publicly visible symbols from each one
