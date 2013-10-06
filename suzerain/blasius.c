@@ -245,3 +245,8 @@ gsl_spline * suzerain_blasius_u_vs_eta()
     }
     return s;
 }
+
+double suzerain_blasius_eta(double y, double Re_x)
+{
+    return y * sqrt(Re_x);
+}

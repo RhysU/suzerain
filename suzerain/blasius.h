@@ -53,6 +53,18 @@ extern "C" {
  */
 gsl_spline * suzerain_blasius_u_vs_eta();
 
+/**
+ * Compute the Blasius coordinate \f$\eta\f$ given \f$y, \mbox{Re}_x\f$.
+ *
+ * @param y    Streamwise location \f$y\f$.
+ * @param Re_x Local Reynolds number \f$\mbox{Re}_x = \frac{u_\infty}{\nu x}\f$.
+ *             Generally, values greater than \f$10^6\f$ are physically
+ *             invalid as the flow should be turbulent in that regime.
+ *
+ * @return \f$\eta = y \sqrt{\mbox{Re}_x}\f$.
+ */
+double suzerain_blasius_eta(double y, double Re_x);
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
