@@ -29,6 +29,7 @@
 #include <boost/test/unit_test.hpp>
 
 #include <suzerain/common.hpp>
+#include <suzerain/blasius.h>
 #include <suzerain/bspline.hpp>
 
 #include "test_tools.hpp"
@@ -45,7 +46,22 @@ BOOST_AUTO_TEST_SUITE(bl_compute_viscous)
 // FIXME Implement
 BOOST_AUTO_TEST_SUITE_END()
 
-BOOST_AUTO_TEST_SUITE(bl_compute_thick)
+
+// A test fixture making test profile(s) available
+struct ProfileFixture {
+
+    gsl_spline * const blasius_u_vs_eta;
+
+    ProfileFixture()
+        : blasius_u_vs_eta(suzerain_blasius_u_vs_eta())
+    {}
+
+    ~ProfileFixture()
+    { gsl_spline_free(blasius_u_vs_eta); }
+
+};
+
+BOOST_FIXTURE_TEST_SUITE(bl_compute_thick, ProfileFixture)
 
 // FIXME Remove
 BOOST_AUTO_TEST_CASE( placeholder ) { BOOST_CHECK(true); }
