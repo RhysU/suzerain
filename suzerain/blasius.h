@@ -36,22 +36,22 @@ extern "C" {
 #endif
 
 /**
- * Obtain a Blasius profile spline fit producing \f$u / u_\infty\f$ given
- * \f$\eta = y \sqrt{\frac{u_\infty}{\nu x}}\f$.  The data is from Table 3b of
- * <a href="http://arxiv.org/format/1006.3888v1"> Highly Accurate Solutions of
- * the Blasius and {Falkner-Skan} Boundary Layer Equations via Convergence
- * Acceleration" </a> by B. D. Ganapol (2010).  The returned
- * <tt>gsl_spline*</tt> can be interrogated using <a
+ * Obtain a Blasius profile spline fit producing nondimensional \f$u /
+ * u_\infty\f$ given \f$\eta = y \sqrt{\frac{u_\infty}{\nu x}}\f$.  The data is
+ * from Table 3b of <a href="http://arxiv.org/format/1006.3888v1"> Highly
+ * Accurate Solutions of the Blasius and {Falkner-Skan} Boundary Layer
+ * Equations via Convergence Acceleration" </a> by B. D. Ganapol (2010).  The
+ * returned <tt>gsl_spline*</tt> can be interrogated using <a
  * href="http://www.gnu.org/software/gsl/manual/html_node/Higher_002dlevel-Interface.html"
  * the usual routines</a>.  The return value must be subsequently cleaned up
  * using <tt>gsl_spline_free()</tt>.
  *
  * @return On success, a <tt>gsl_spline *</tt> suitable for evaluation using,
  *         for example, <tt>gsl_spline_eval()</tt>.  The return value must be
- *         subsequently cleaned up using <tt>gsl_spline_free()</tt>.  On failure
- *         \c NULL is returned.
+ *         subsequently cleaned up using <tt>gsl_spline_free()</tt>.
+ *         On failure \c NULL is returned.
  */
-gsl_spline * suzerain_blasis_spline_fit();
+gsl_spline * suzerain_blasius_u_vs_eta();
 
 #ifdef __cplusplus
 } /* extern "C" */

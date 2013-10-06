@@ -230,7 +230,7 @@ static const double Table3b_fpp[] = {
     8.462841214E-07
 };
 
-gsl_spline * suzerain_blasius_spline_fit()
+gsl_spline * suzerain_blasius_u_vs_eta()
 {
     static const size_t N = sizeof(Table3b_eta)/sizeof(Table3b_eta[0]);
     assert(N == sizeof(Table3b_f  )/sizeof(Table3b_f  [0]));
