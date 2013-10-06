@@ -296,6 +296,14 @@ test_bsplineop_LDADD     = ../suzerain/libsuzerain.la
 test_bsplineop_LDADD    += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
 test_bsplineop_LDADD    += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
 
+TESTS            += test_bl
+EXTRA_PROGRAMS   += test_bl
+test_bl_SOURCES   = test_bl.cpp
+test_bl_CPPFLAGS  = $(AM_CPPFLAGS) -DBOOST_TEST_DYN_LINK -DBOOST_TEST_NO_LIB
+test_bl_LDADD     = ../suzerain/libsuzerain.la
+test_bl_LDADD    += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
+test_bl_LDADD    += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
+
 TESTS                  += test_filterop
 EXTRA_PROGRAMS         += test_filterop
 test_filterop_SOURCES   = test_filterop.cpp
