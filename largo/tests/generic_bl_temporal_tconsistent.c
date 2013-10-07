@@ -259,6 +259,9 @@ FCT_BGN()
             fct_chk_eq_dbl(srcfull[5+is]      , srcfull_good[5+is]);
           }
 
+          // Deallocate workspace
+          largo_deallocate (&generic_workspace);
+
         }
         FCT_TEST_END();
     }

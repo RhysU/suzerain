@@ -32,12 +32,12 @@
 extern "C" {
 #endif
 
-void  largo_allocate (void * generic_workspace,
+void  largo_allocate (void ** generic_workspace,
                       int    neq,
                       int    ns,
                       const char * model);
 
-void  largo_init ( void * generic_workspace,
+void  largo_init ( void ** generic_workspace,
                    double grDelta,
                    double * grDA,
                    double * grDArms);
