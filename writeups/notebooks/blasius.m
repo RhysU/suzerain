@@ -20,6 +20,11 @@
 %   blasius_fppp    : The third derivative computed from the governing equation.
 %                     Interpretable as u'/u_oo.
 %   blasius_ganapol : The exact source data as it appears in Ganapol's paper
+%
+% Further, the following univariate functions of Re_x are available:
+%   blasius_u       : The Reynolds-independent u/u_oo
+%   blasius_v       : The Reynolds-dependent v/v_oo
+%   blasius_kepp    : The Reynolds-dependent second derivative of kinetic energy
 
 1; % This is not a function file
 
@@ -80,3 +85,18 @@ blasius_fpp = blasius_ganapol(:, 4);
 
 % Compute third derivative from the governing equation
 blasius_fppp  = -blasius_f .* blasius_fpp / 2;
+
+% Prepare several anonymous functions for Re-dependent behavior
+% See notebooks/Blasius_Kinetic_Energy.nv for kepp derivation
+blasius_u    = @(Re) blasius_fp;
+blasius_v    = @(Re) (blasius_f + blasius_eta .* blasius_fp) / sqrt(2*Re);
+blasius_kepp = @(Re) (   4*blasius_fp.**2
+                       + blasius_f.*(   3*blasius_fpp
+                                      - (blasius_eta.*blasius_f.*blasius_fpp)/2
+                                    )
+                       + blasius_fpp.**2*(blasius_eta.**2 + 2*Re)
+                       + blasius_fp.*(  7*blasius_eta.*blasius_fpp
+                                       - (blasius_f.*blasius_fpp
+                                           .*(blasius_eta.**2 + 2*Re)
+                                         )/2)
+                     )/2;
