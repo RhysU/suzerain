@@ -114,7 +114,7 @@ BOOST_AUTO_TEST_CASE( blasius_deltastar )
     double abserr    = GSL_NAN;
     BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS, suzerain_bl_compute_deltastar(
         b.collocation_point(b.n()-1), rho_u.get(), &deltastar, dB.get(), b.bw,
-        b.dbw, iw.get(), GSL_SQRT_DBL_EPSILON, GSL_SQRT_DBL_EPSILON, &abserr));
+        b.dbw, iw.get(), GSL_SQRT_DBL_EPSILON, /*disable*/0, &abserr));
 
     // Check against good value
     // Good value taken from White, Fluid Mechanics, 4th Edition eqn (7.31).
@@ -151,8 +151,7 @@ BOOST_AUTO_TEST_CASE( blasius_theta )
     double abserr = GSL_NAN;
     BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS, suzerain_bl_compute_theta(
         b.collocation_point(b.n()-1), rho_u.get(), u.get(), &theta, dB.get(),
-        b.bw, b.dbw, iw.get(), GSL_SQRT_DBL_EPSILON, GSL_SQRT_DBL_EPSILON,
-        &abserr));
+        b.bw, b.dbw, iw.get(), GSL_SQRT_DBL_EPSILON, /*disable*/0, &abserr));
 
     // Check against good value
     // Good value taken from White, Fluid Mechanics, 4th Edition eqn (7.31).
