@@ -31,6 +31,13 @@
 
 #include <gsl/gsl_spline.h>
 
+// Obtain sqrt(3) in the right fashion depending on language
+#ifdef __cplusplus
+#include <cmath>
+#else
+#include <math.h>
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -45,7 +52,14 @@ extern "C" {
  *
  * @return \f$\eta = y \sqrt{\mbox{Re}_x}\f$.
  */
-double suzerain_blasius_eta(double y, double Re_x);
+static inline
+double suzerain_blasius_eta(double y, double Re_x)
+{
+#ifdef __cplusplus
+    using namespace std;
+#endif
+    return y * sqrt(Re_x);
+}
 
 /**
  * Tabulated \f$\eta\f$ data from Table 3b of <a

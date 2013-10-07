@@ -34,10 +34,9 @@
 
 #include <suzerain/common.h>
 
-double suzerain_blasius_eta(double y, double Re_x)
-{
-    return y * sqrt(Re_x);
-}
+// C99 extern declaration for inlined function in blasius.h
+extern
+double suzerain_blasius_eta(double y, double Re_x);
 
 // Variable $\eta$ from Table3b in http://arxiv.org/format/1006.3888v1
 const double suzerain_blasius_ganapol_eta[45] = {
