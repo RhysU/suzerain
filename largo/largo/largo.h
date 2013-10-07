@@ -37,7 +37,7 @@ void  largo_allocate (void ** generic_workspace,
                       int    ns,
                       const char * model);
 
-void  largo_init ( void ** generic_workspace,
+void  largo_init ( void * generic_workspace,
                    double grDelta,
                    double * grDA,
                    double * grDArms);
@@ -113,7 +113,7 @@ void  largo_species_seta        (void * generic_workspace, double A, double B, d
 void  largo_setamean            (void * generic_workspace, double A, double B, double * src);
 void  largo_seta                (void * generic_workspace, double A, double B, double * src);
 
-void  largo_deallocate          (void * generic_workspace);
+void  largo_deallocate          (void ** generic_workspace);
 
 #ifdef __cplusplus
 } /* extern "C" */

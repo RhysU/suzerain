@@ -13,6 +13,30 @@ module largo_BL_temporal
 
   private
 
+
+  ! interface for rans prestep function 
+  abstract interface
+    subroutine prestep_innery_rans(cp, y, mean, ddy_mean)
+      import
+      real(WP), intent(in)                  :: y
+      real(WP), dimension(*), intent(in)    :: mean
+      real(WP), dimension(*), intent(in)    :: ddy_mean
+      type(largo_workspace_ptr), intent(in) :: cp
+    end subroutine prestep_innery_rans
+  end interface
+
+
+  ! interface for rans source function 
+  abstract interface
+    subroutine sourcevec_rans(cp, A, B, srcvec)
+      import
+      type(largo_workspace_ptr), intent(in)  :: cp
+      real(WP), intent(in)                   :: A, B
+      real(WP), dimension(*), intent(inout)  :: srcvec
+    end subroutine sourcevec_rans
+  end interface
+
+
   ! largo workspace type declaration
   type :: largo_BL_temporal_workspace_type
 
@@ -98,6 +122,9 @@ module largo_BL_temporal
     real(WP), allocatable, dimension(:) :: gr_DA_rhos
     real(WP), allocatable, dimension(:) :: gr_DA_rms_rhos
 
+    procedure(prestep_innery_rans), pointer, nopass :: largo_bl_temporal_prestep_innery    => NULL()
+    procedure(sourcevec_rans),      pointer, nopass :: largo_bl_temporal_rans              => NULL()
+
   end type largo_BL_temporal_workspace_type
 
   ! Indices
@@ -112,6 +139,9 @@ module largo_BL_temporal
 
   ! Number of species
   integer(c_int) :: ns_  = 0
+
+  ! Number of tubulence variables
+  integer(c_int) :: ntvar_  = 0
 
   ! Tolerance to consider rms = 0
   real(WP), parameter :: eps = 1.0E-10_WP
@@ -261,6 +291,30 @@ contains
     end do
 
   end subroutine largo_BL_temporal_init
+
+
+  ! RANS initiallization
+  subroutine largo_BL_temporal_init_rans(cp, ransmodel)
+
+    ! largo workspace C pointer
+    type(largo_workspace_ptr), intent(in)       :: cp
+    character(len=255)                          :: ransmodel
+
+    ! Initialize number of turbulence variables
+    select case (trim(ransmodel))
+    case ("laminar")
+      ntvar_ = 0
+    case ("turbulent_viscosity")
+      ntvar_ = 1
+    case ("k_epsilon")
+      ntvar_ = 2
+    case ("k_omega")
+      ntvar_ = 2
+    case default
+    end select
+
+
+  end subroutine largo_BL_temporal_init_rans
 
 
   subroutine largo_BL_temporal_preStep_baseflow(cp,     base, ddy_base, &
