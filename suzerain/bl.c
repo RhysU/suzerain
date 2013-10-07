@@ -152,11 +152,14 @@ suzerain_bl_compute_deltastar(
     // Integrate to obtain displacement thickness
     deltastar_params params = { coeffs_rho_u, dB, w, dw, rho_u_edge };
     gsl_function f          = { deltastar_function, &params };
-    // Q. Why GSL_INTEG_GAUSS61?
-    // A. Using other Gauss--Kronrod rules causes roundoff issues on the
-    //    B-splined Blasius profiles in the tests under tests/test_bl.cpp.
+    // Q. Why is key set to (w->k - 1) instead of, e.g., GSL_INTEG_GAUSS61?
+    // A. In gsl_integration_qag implementation in GSL's integration/qag.c
+    //    the key is coerced to be one of {1, 2, 3, 4, 5, or 6}.  Higher
+    //    values indicate Gauss-Kronrod rules using more smoothness.
+    //    So (w->k - 1) attempts to map B-spline smoothness to an
+    //    appropriately smooth integration rule.
     status = gsl_integration_qag(&f, gsl_bspline_breakpoint(0, w),
-            edge_location, epsabs, epsrel, iw->limit, GSL_INTEG_GAUSS61, iw,
+            edge_location, epsabs, epsrel, iw->limit, (w->k - 1), iw,
             deltastar, abserr);
     if (SUZERAIN_UNLIKELY(status != GSL_SUCCESS)) {
         SUZERAIN_ERROR("integration of deltastar failed", status);
@@ -230,11 +233,14 @@ suzerain_bl_compute_theta(
     theta_params params = { coeffs_rho_u, coeffs_u,
                             dB, w, dw, rho_u_edge, u_edge };
     gsl_function f      = { theta_function, &params };
-    // Q. Why GSL_INTEG_GAUSS61?
-    // A. Using other Gauss--Kronrod rules causes roundoff issues on the
-    //    B-splined Blasius profiles in the tests under tests/test_bl.cpp.
+    // Q. Why is key set to (w->k - 1) instead of, e.g., GSL_INTEG_GAUSS61?
+    // A. In gsl_integration_qag implementation in GSL's integration/qag.c
+    //    the key is coerced to be one of {1, 2, 3, 4, 5, or 6}.  Higher
+    //    values indicate Gauss-Kronrod rules using more smoothness.
+    //    So (w->k - 1) attempts to map B-spline smoothness to an
+    //    appropriately smooth integration rule.
     status = gsl_integration_qag(&f, gsl_bspline_breakpoint(0, w),
-            edge_location, epsabs, epsrel, iw->limit, GSL_INTEG_GAUSS61, iw,
+            edge_location, epsabs, epsrel, iw->limit, (w->k - 1), iw,
             theta, abserr);
     if (SUZERAIN_UNLIKELY(status != GSL_SUCCESS)) {
         SUZERAIN_ERROR("integration of deltastar failed", status);

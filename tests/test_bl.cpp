@@ -98,7 +98,7 @@ BOOST_AUTO_TEST_CASE( blasius_deltastar )
     // This is not surprising as the Blasius profile is notoriously tricky
     double deltastar = GSL_NAN;
     double estimated_abserr = GSL_NAN;
-    const double requested_abserr = GSL_SQRT_DBL_EPSILON*100;
+    const double requested_abserr = 0.00001;
     BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS, suzerain_bl_compute_deltastar(
         b.collocation_point(b.n()-1), u.get(), &deltastar, dB.get(), b.bw,
         b.dbw, iw.get(), requested_abserr, 0, &estimated_abserr));
