@@ -31,12 +31,15 @@
 
 #include <suzerain/bl.h>
 
+#include <gsl/gsl_integration.h>
+#include <gsl/gsl_math.h>
 #include <gsl/gsl_nan.h>
 #include <gsl/gsl_sys.h>
 
 #include <suzerain/common.h>
 #include <suzerain/bspline.h>
 #include <suzerain/error.h>
+#include <suzerain/pre_gsl.h>
 
 static inline double square(double x) { return x*x; }
 
@@ -102,26 +105,6 @@ suzerain_bl_find_edge(
     return status;
 }
 
-// Parameters necessary for deltastar_function.
-typedef struct {
-    const double                *coeffs_rho_u;
-    gsl_matrix                  *dB;
-    gsl_bspline_workspace       *w;
-    gsl_bspline_deriv_workspace *dw;
-    double                       rho_u_edge;
-} deltastar_params;
-
-// A GSL-ready way to evaluate the displacement thickness integrand
-static
-double deltastar_function(double x, void * params)
-{
-    deltastar_params * p = (deltastar_params *) params;
-    double rho_u = GSL_NAN;
-    suzerain_bspline_linear_combination(
-            0, p->coeffs_rho_u, 1U, &x, &rho_u, 0U, p->dB, p->w, p->dw);
-    return (1 - rho_u / p->rho_u_edge);
-}
-
 int
 suzerain_bl_compute_deltastar(
     const double edge_location,
@@ -129,11 +112,7 @@ suzerain_bl_compute_deltastar(
     double * deltastar,
     gsl_matrix *dB,
     gsl_bspline_workspace *w,
-    gsl_bspline_deriv_workspace *dw,
-    gsl_integration_workspace *iw,
-    const double epsabs,
-    const double epsrel,
-    double *abserr)
+    gsl_bspline_deriv_workspace *dw)
 {
     *deltastar = GSL_NAN;           // Be defensive
     if (gsl_isnan(edge_location)) { // Propagate NaN but succeed
@@ -149,22 +128,55 @@ suzerain_bl_compute_deltastar(
                            SUZERAIN_EFAILED, status);
     }
 
-    // Integrate to obtain displacement thickness
-    deltastar_params params = { coeffs_rho_u, dB, w, dw, rho_u_edge };
-    gsl_function f          = { deltastar_function, &params };
-    // Q. Why is key set to (w->k - 1) instead of, e.g., GSL_INTEG_GAUSS61?
-    // A. In gsl_integration_qag implementation in GSL's integration/qag.c
-    //    the key is coerced to be one of {1, 2, 3, 4, 5, or 6}.  Higher
-    //    values indicate Gauss-Kronrod rules using more smoothness.
-    //    So (w->k - 1) attempts to map B-spline smoothness to an
-    //    appropriately smooth integration rule.
-    status = gsl_integration_qag(&f, gsl_bspline_breakpoint(0, w),
-            edge_location, epsabs, epsrel, iw->limit, (w->k - 1), iw,
-            deltastar, abserr);
-    if (SUZERAIN_UNLIKELY(status != GSL_SUCCESS)) {
-        SUZERAIN_ERROR("integration of deltastar failed", status);
+    /* Obtain an appropriate order Gauss-Legendre integration rule  */
+    /* Integrand (1 - \rho{}u/{\rho{}u}_oo) has same order as basis */
+    gsl_integration_glfixed_table * const tbl
+        = gsl_integration_glfixed_table_alloc((w->k + 1)/2);
+    if (SUZERAIN_UNLIKELY(tbl == NULL)) {
+        SUZERAIN_ERROR("failed to obtain Gauss-Legendre rule from GSL",
+                       SUZERAIN_ESANITY);
     }
-    return status;
+
+    /* Accumulate integral into *deltastar.               */
+    /* Notice any failure below should be catastrophic.   */
+    /* TODO Kahan-based accumulation might add precision. */
+    *deltastar = 0;
+
+    /* Accumulate the breakpoint-by-breakpoint contributions to result */
+    double xj = 0, wj = 0;
+    for (size_t i = 0; i < (w->nbreak - 1); ++i) {
+
+        /* Determine i-th breakpoint interval with edge being upper limit */
+        const double a = gsl_bspline_breakpoint(i,   w);
+        if (a > edge_location) break;
+        const double b = GSL_MIN_DBL(gsl_bspline_breakpoint(i+1, w),
+                                     edge_location);
+
+        for (size_t j = 0; j < tbl->n; ++j) {
+
+            /* Get j-th Gauss point xj and weight wj */
+            gsl_integration_glfixed_point(a, b, j, &xj, &wj, tbl);
+
+            /* Evaluate basis functions at point xj */
+            size_t kstart, kend;
+            gsl_bspline_deriv_eval_nonzero(xj, 0,
+                    dB, &kstart, &kend, w, dw);
+
+            /* Accumulate basis linear combinations to evaluate rho_u */
+            double rho_u = 0;
+            for (size_t k = kstart; k <= kend; ++k) {
+                rho_u += coeffs_rho_u[k] * gsl_matrix_get(dB, k - kstart, 0);
+            }
+
+            /* Then use integrand scaled by weight to accumulate result */
+            *deltastar += wj * (1 - rho_u / rho_u_edge);
+        }
+    }
+
+    /* Free integration rule resources */
+    gsl_integration_glfixed_table_free(tbl);
+
+    return SUZERAIN_SUCCESS;
 }
 
 // Parameters necessary for theta_function.
@@ -284,9 +296,8 @@ suzerain_bl_compute_thick(
     if (SUZERAIN_UNLIKELY(status != SUZERAIN_SUCCESS)) goto done;
 
     /* Compute displacement thickness */
-    status = suzerain_bl_compute_deltastar( thick->delta, coeffs_rho_u,
-            &thick->deltastar, dB, w, dw, iw, GSL_SQRT_DBL_EPSILON,
-            GSL_SQRT_DBL_EPSILON, &abserr);
+    status = suzerain_bl_compute_deltastar(
+            thick->delta, coeffs_rho_u, &thick->deltastar, dB, w, dw);
     if (SUZERAIN_UNLIKELY(status != SUZERAIN_SUCCESS)) goto done;
 
     /* Compute momentum thickness */

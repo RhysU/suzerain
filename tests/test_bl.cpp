@@ -94,20 +94,16 @@ BOOST_AUTO_TEST_CASE( blasius_deltastar )
     BOOST_REQUIRE(iw);
 
     // Integrate for deltastar
-    // Asking for more precision from GSL bombs because roundoff detected
-    // This is not surprising as the Blasius profile is notoriously tricky
     double deltastar = GSL_NAN;
-    double estimated_abserr = GSL_NAN;
-    const double requested_abserr = 0.00001;
     BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS, suzerain_bl_compute_deltastar(
-        b.collocation_point(b.n()-1), u.get(), &deltastar, dB.get(), b.bw,
-        b.dbw, iw.get(), requested_abserr, 0, &estimated_abserr));
+        b.collocation_point(b.n()-1), u.get(),
+        &deltastar, dB.get(), b.bw, b.dbw));
 
     // Check against good value found using Octave's trapz on Ganapol data
     // Adaptive result should be good to O(1) relative to request_abserr
     // Here, 10 is used as an upper bound on O(1)
-    BOOST_CHECK_SMALL((deltastar - 1.72189445179000), 10*requested_abserr);
-    BOOST_CHECK_LE(estimated_abserr, 10*requested_abserr);
+    const double tol = 0.00001;
+    BOOST_CHECK_SMALL((deltastar - 1.72189445179000), 10*tol);
 }
 
 BOOST_AUTO_TEST_CASE( blasius_theta )
@@ -214,17 +210,14 @@ BOOST_AUTO_TEST_CASE( blasius_deltastar )
 
     // Integrate for deltastar
     double deltastar = GSL_NAN;
-    double estimated_abserr = GSL_NAN;
-    const double requested_abserr = GSL_SQRT_DBL_EPSILON*100;
     BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS, suzerain_bl_compute_deltastar(
-        b.collocation_point(b.n()-1), rho_u.get(), &deltastar, dB.get(), b.bw,
-        b.dbw, iw.get(), requested_abserr, 0, &estimated_abserr));
+        b.collocation_point(b.n()-1), rho_u.get(),
+        &deltastar, dB.get(), b.bw, b.dbw));
 
     // Check against good value
     // Good value taken from White, Fluid Mechanics, 4th Edition eqn (7.31).
     // This tolerance is admittedly larger than I would like.
     BOOST_CHECK_CLOSE(1.721, deltastar, 0.013);
-    BOOST_CHECK_LE(estimated_abserr, requested_abserr);
 }
 
 BOOST_AUTO_TEST_CASE( blasius_theta )
