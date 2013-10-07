@@ -106,13 +106,13 @@ contains
     ! Initialize number of species
     lauxp%ns = ns
 
-    ! Initialize number of variables
-    lauxp%nvar = neq + 1
-
     ! Initialize according to model index
     ! FIXME: enumerate models
     select case (trim(fmodel))
     case ("bl_temporal")
+      ! Initialize number of variables
+      lauxp%nvar = neq
+
       call largo_BL_temporal_allocate (lauxp%cp, lauxp%neq, lauxp%ns)
       lauxp%largo_init            => largo_BL_temporal_init
       lauxp%largo_finalize        => largo_BL_temporal_deallocate
@@ -149,6 +149,9 @@ contains
       lauxp%largo_prestep_baseflow => largo_BL_temporal_preStep_baseflow
 
     case ("bl_temporal_tensor-consistent")
+      ! Initialize number of variables
+      lauxp%nvar = neq
+
       call largo_BL_temporal_tconsistent_allocate (lauxp%cp, lauxp%neq, lauxp%ns)
       lauxp%largo_init            => largo_BL_temporal_tconsistent_init
       lauxp%largo_finalize        => largo_BL_temporal_tconsistent_deallocate
@@ -176,6 +179,9 @@ contains
       lauxp%largo_prestep_baseflow => largo_BL_temporal_tconsistent_preStep_baseflow
 
     case ("bl_spatiotemporal")
+      ! Initialize number of variables
+      lauxp%nvar = neq + 1
+
       call largo_BL_spatiotemporal_allocate (lauxp%cp, lauxp%neq, lauxp%ns)
       lauxp%largo_init            => largo_BL_spatiotemporal_init
       lauxp%largo_finalize        => largo_BL_spatiotemporal_deallocate
