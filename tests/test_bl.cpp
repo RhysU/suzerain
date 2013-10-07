@@ -96,10 +96,7 @@ BOOST_AUTO_TEST_CASE( blasius_deltastar )
         &deltastar, dB.get(), b.bw, b.dbw));
 
     // Check against good value found using Octave's trapz on Ganapol data
-    // Adaptive result should be good to O(1) relative to request_abserr
-    // Here, 10 is used as an upper bound on O(1)
-    const double tol = 0.00001;
-    BOOST_CHECK_SMALL((deltastar - 1.72189445179000), 10*tol);
+    BOOST_CHECK_SMALL((deltastar - 1.72189445179000), 1e-5);
 }
 
 BOOST_AUTO_TEST_CASE( blasius_theta )
@@ -128,10 +125,7 @@ BOOST_AUTO_TEST_CASE( blasius_theta )
         b.bw, b.dbw));
 
     // Check against good value found using Octave's trapz on Ganapol data
-    // Adaptive result should be good to O(1) relative to request_abserr
-    // Here, 10 is used as an upper bound on O(1)
-    const double tol = 0.00025;
-    BOOST_CHECK_SMALL((theta - 0.663007750711612), 10*tol);
+    BOOST_CHECK_SMALL((theta - 0.663007750711612), 0.0025);
 }
 
 // FIXME Test suzerain_bl_compute_thick
