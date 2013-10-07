@@ -35,7 +35,7 @@
 #include <suzerain/common.h>
 
 // Variable $\eta$ from Table3b in http://arxiv.org/format/1006.3888v1
-static const double Table3b_eta[] = {
+static const double suzerain_blasius_ganapol_eta[45] = {
     0.0E+00,
     2.0E-01,
     4.0E-01,
@@ -84,7 +84,7 @@ static const double Table3b_eta[] = {
 };
 
 // Variable $f$ from Table3b in http://arxiv.org/format/1006.3888v1
-static const double Table3b_f[] = {
+static const double suzerain_blasius_ganapol_f[45] = {
     0.000000000E+00,
     6.640999715E-03,
     2.655988402E-02,
@@ -133,7 +133,7 @@ static const double Table3b_f[] = {
 };
 
 // Variable $f'$ from Table3b in http://arxiv.org/format/1006.3888v1
-static const double Table3b_fp[] = {
+static const double suzerain_blasius_ganapol_fp[45] = {
     0.000000000E+00,
     6.640779210E-02,
     1.327641608E-01,
@@ -182,7 +182,7 @@ static const double Table3b_fp[] = {
 };
 
 // Variable $f''$ from Table3b in http://arxiv.org/format/1006.3888v1
-static const double Table3b_fpp[] = {
+static const double suzerain_blasius_ganapol_fpp[45] = {
     3.320573362E-01,
     3.319838371E-01,
     3.314698442E-01,
@@ -230,15 +230,28 @@ static const double Table3b_fpp[] = {
     8.462841214E-07
 };
 
+// See "Compile Time Assertions" by Ralf Holly (http://drdobbs.com/184401873)
+// Sanity check that the data arrays are all of equal size.
+enum {
+    assert1 = 1 / (    sizeof(suzerain_blasius_ganapol_f  )
+                    == sizeof(suzerain_blasius_ganapol_eta)),
+    assert2 = 1 / (    sizeof(suzerain_blasius_ganapol_fp )
+                    == sizeof(suzerain_blasius_ganapol_eta)),
+    assert3 = 1 / (    sizeof(suzerain_blasius_ganapol_fpp)
+                    == sizeof(suzerain_blasius_ganapol_eta))
+};
+
 gsl_spline * suzerain_blasius_u_vs_eta()
 {
-    static const size_t N = sizeof(Table3b_eta)/sizeof(Table3b_eta[0]);
-    assert(N == sizeof(Table3b_f  )/sizeof(Table3b_f  [0]));
-    assert(N == sizeof(Table3b_fp )/sizeof(Table3b_fp [0]));
-    assert(N == sizeof(Table3b_fpp)/sizeof(Table3b_fpp[0]));
+    enum {
+        N = sizeof(suzerain_blasius_ganapol_eta)
+          / sizeof(suzerain_blasius_ganapol_eta[0])
+    };
     gsl_spline * s = gsl_spline_alloc(gsl_interp_cspline, N);
     if (s) {
-        if (gsl_spline_init(s, Table3b_eta, Table3b_fp, N)) {
+        if (gsl_spline_init(s,
+                            suzerain_blasius_ganapol_eta,
+                            suzerain_blasius_ganapol_fp, N)) {
             gsl_spline_free(s);
             s = NULL;
         }
