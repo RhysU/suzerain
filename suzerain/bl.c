@@ -152,6 +152,9 @@ suzerain_bl_compute_deltastar(
     // Integrate to obtain displacement thickness
     deltastar_params params = { coeffs_rho_u, dB, w, dw, rho_u_edge };
     gsl_function f          = { deltastar_function, &params };
+    // Q. Why GSL_INTEG_GAUSS61?
+    // A. Using other Gauss--Kronrod rules causes roundoff issues on the
+    //    B-splined Blasius profiles in the tests under tests/test_bl.cpp.
     status = gsl_integration_qag(&f, gsl_bspline_breakpoint(0, w),
             edge_location, epsabs, epsrel, iw->limit, GSL_INTEG_GAUSS61, iw,
             deltastar, abserr);
@@ -227,6 +230,9 @@ suzerain_bl_compute_theta(
     theta_params params = { coeffs_rho_u, coeffs_u,
                             dB, w, dw, rho_u_edge, u_edge };
     gsl_function f      = { theta_function, &params };
+    // Q. Why GSL_INTEG_GAUSS61?
+    // A. Using other Gauss--Kronrod rules causes roundoff issues on the
+    //    B-splined Blasius profiles in the tests under tests/test_bl.cpp.
     status = gsl_integration_qag(&f, gsl_bspline_breakpoint(0, w),
             edge_location, epsabs, epsrel, iw->limit, GSL_INTEG_GAUSS61, iw,
             theta, abserr);
