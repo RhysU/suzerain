@@ -34,8 +34,13 @@
 
 #include <suzerain/common.h>
 
+double suzerain_blasius_eta(double y, double Re_x)
+{
+    return y * sqrt(Re_x);
+}
+
 // Variable $\eta$ from Table3b in http://arxiv.org/format/1006.3888v1
-static const double suzerain_blasius_ganapol_eta[45] = {
+const double suzerain_blasius_ganapol_eta[45] = {
     0.0E+00,
     2.0E-01,
     4.0E-01,
@@ -84,7 +89,7 @@ static const double suzerain_blasius_ganapol_eta[45] = {
 };
 
 // Variable $f$ from Table3b in http://arxiv.org/format/1006.3888v1
-static const double suzerain_blasius_ganapol_f[45] = {
+const double suzerain_blasius_ganapol_f[45] = {
     0.000000000E+00,
     6.640999715E-03,
     2.655988402E-02,
@@ -133,7 +138,7 @@ static const double suzerain_blasius_ganapol_f[45] = {
 };
 
 // Variable $f'$ from Table3b in http://arxiv.org/format/1006.3888v1
-static const double suzerain_blasius_ganapol_fp[45] = {
+const double suzerain_blasius_ganapol_fp[45] = {
     0.000000000E+00,
     6.640779210E-02,
     1.327641608E-01,
@@ -182,7 +187,7 @@ static const double suzerain_blasius_ganapol_fp[45] = {
 };
 
 // Variable $f''$ from Table3b in http://arxiv.org/format/1006.3888v1
-static const double suzerain_blasius_ganapol_fpp[45] = {
+const double suzerain_blasius_ganapol_fpp[45] = {
     3.320573362E-01,
     3.319838371E-01,
     3.314698442E-01,
@@ -257,9 +262,4 @@ gsl_spline * suzerain_blasius_u_vs_eta()
         }
     }
     return s;
-}
-
-double suzerain_blasius_eta(double y, double Re_x)
-{
-    return y * sqrt(Re_x);
 }

@@ -36,24 +36,6 @@ extern "C" {
 #endif
 
 /**
- * Obtain a Blasius profile spline fit producing nondimensional \f$u /
- * u_\infty\f$ given \f$\eta = y \sqrt{\frac{u_\infty}{\nu x}}\f$.  The data is
- * from Table 3b of <a href="http://arxiv.org/format/1006.3888v1"> Highly
- * Accurate Solutions of the Blasius and {Falkner-Skan} Boundary Layer
- * Equations via Convergence Acceleration" </a> by B. D. Ganapol (2010).  The
- * returned <tt>gsl_spline*</tt> can be interrogated using <a
- * href="http://www.gnu.org/software/gsl/manual/html_node/Higher_002dlevel-Interface.html"
- * the usual routines</a>.  The return value must be subsequently cleaned up
- * using <tt>gsl_spline_free()</tt>.
- *
- * @return On success, a <tt>gsl_spline *</tt> suitable for evaluation using,
- *         for example, <tt>gsl_spline_eval()</tt>.  The return value must be
- *         subsequently cleaned up using <tt>gsl_spline_free()</tt>.
- *         On failure \c NULL is returned.
- */
-gsl_spline * suzerain_blasius_u_vs_eta();
-
-/**
  * Compute the Blasius coordinate \f$\eta\f$ given \f$y, \mbox{Re}_x\f$.
  *
  * @param y    Streamwise location \f$y\f$.
@@ -64,6 +46,60 @@ gsl_spline * suzerain_blasius_u_vs_eta();
  * @return \f$\eta = y \sqrt{\mbox{Re}_x}\f$.
  */
 double suzerain_blasius_eta(double y, double Re_x);
+
+/**
+ * Tabulated \f$\eta\f$ data from Table 3b of <a
+ * href="http://arxiv.org/format/1006.3888v1"> Highly Accurate Solutions of the
+ * Blasius and {Falkner-Skan} Boundary Layer Equations via Convergence
+ * Acceleration" </a> by B. D. Ganapol (2010).
+ */
+extern const double suzerain_blasius_ganapol_eta[45];
+
+/**
+ * Tabulated \f$f\left(\eta\right)\f$ data from Table 3b of <a
+ * href="http://arxiv.org/format/1006.3888v1"> Highly Accurate Solutions of the
+ * Blasius and {Falkner-Skan} Boundary Layer Equations via Convergence
+ * Acceleration" </a> by B. D. Ganapol (2010).
+ *
+ * @see \ref suzerain_blasius_ganapol_eta for the matching \f$\eta\f$ values.
+ */
+extern const double suzerain_blasius_ganapol_f[45];
+
+/**
+ * Tabulated \f$f^{\prime}\left(\eta\right)\f$ data from Table 3b of <a
+ * href="http://arxiv.org/format/1006.3888v1"> Highly Accurate Solutions of the
+ * Blasius and {Falkner-Skan} Boundary Layer Equations via Convergence
+ * Acceleration" </a> by B. D. Ganapol (2010).
+ *
+ * @see \ref suzerain_blasius_ganapol_eta for the matching \f$\eta\f$ values.
+ */
+extern const double suzerain_blasius_ganapol_fp[45];
+
+/**
+ * Tabulated \f$f^{\prime\prime}\left(\eta\right)\f$ data from Table 3b of <a
+ * href="http://arxiv.org/format/1006.3888v1"> Highly Accurate Solutions of the
+ * Blasius and {Falkner-Skan} Boundary Layer Equations via Convergence
+ * Acceleration" </a> by B. D. Ganapol (2010).
+ *
+ * @see \ref suzerain_blasius_ganapol_eta for the matching \f$\eta\f$ values.
+ */
+extern const double suzerain_blasius_ganapol_fpp[45];
+
+/**
+ * Obtain a Blasius profile spline fit producing nondimensional \f$u /
+ * u_\infty\f$ given \f$\eta = y \sqrt{\frac{u_\infty}{\nu x}}\f$.  The data is
+ * from \ref suzerain_blasius_ganapol_fp and \ref suzerain_blasius_ganapol_eta.
+ * The returned <tt>gsl_spline*</tt> can be interrogated using <a
+ * href="http://www.gnu.org/software/gsl/manual/html_node/Higher_002dlevel-Interface.html"
+ * the usual routines</a>.  The return value must be subsequently cleaned up
+ * using <tt>gsl_spline_free()</tt>.
+ *
+ * @return On success, a <tt>gsl_spline *</tt> suitable for evaluation using,
+ *         for example, <tt>gsl_spline_eval()</tt>.  The return value must be
+ *         subsequently cleaned up using <tt>gsl_spline_free()</tt>.
+ *         On failure \c NULL is returned.
+ */
+gsl_spline * suzerain_blasius_u_vs_eta();
 
 #ifdef __cplusplus
 } /* extern "C" */
