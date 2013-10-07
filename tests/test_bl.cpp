@@ -49,6 +49,109 @@ BOOST_AUTO_TEST_SUITE(bl_compute_viscous)
 // FIXME Implement
 BOOST_AUTO_TEST_SUITE_END()
 
+// A test fixture exposing Ganapol's Blasius profile as piecewise linear
+// so we may compare against independent trapezoidal results from that data
+struct LinearBlasiusFixture {
+
+    bspline      b;
+    bsplineop    op;
+    bsplineop_lu lu;
+
+    LinearBlasiusFixture()
+        : b(2, bspline::from_breakpoints(),
+            SUZERAIN_COUNTOF(suzerain_blasius_ganapol_eta),
+            suzerain_blasius_ganapol_eta)
+        , op(b, 0, SUZERAIN_BSPLINEOP_COLLOCATION_GREVILLE)
+        , lu(op)
+    {
+        lu.factor_mass(op);
+    }
+
+};
+
+BOOST_FIXTURE_TEST_SUITE(bl_compute_thick_linear, LinearBlasiusFixture)
+
+// FIXME Test suzerain_bl_find_edge
+
+BOOST_AUTO_TEST_CASE( blasius_deltastar )
+{
+    // Prepare the Blasius velocity profile as coefficients on basis
+    // For a linear B-spline basis, the collocation points are the breakpoints
+    shared_array<double> u(new double[b.n()]);
+    std::memcpy(u.get(),
+                suzerain_blasius_ganapol_fp,
+                sizeof(suzerain_blasius_ganapol_fp));
+    BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS, lu.solve(1, u.get(), 1, b.n()));
+
+    // Prepare integration working storage
+    shared_ptr<gsl_matrix> dB(
+            gsl_matrix_alloc(b.k(), 1),
+            gsl_matrix_free);
+    BOOST_REQUIRE(dB);
+    shared_ptr<gsl_integration_workspace> iw(
+            gsl_integration_workspace_alloc(256),
+            gsl_integration_workspace_free);
+    BOOST_REQUIRE(iw);
+
+    // Integrate for deltastar
+    // Asking for more precision from GSL bombs because roundoff detected
+    // This is not surprising as the Blasius profile is notoriously tricky
+    double deltastar = GSL_NAN;
+    double estimated_abserr = GSL_NAN;
+    const double requested_abserr = GSL_SQRT_DBL_EPSILON*100;
+    BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS, suzerain_bl_compute_deltastar(
+        b.collocation_point(b.n()-1), u.get(), &deltastar, dB.get(), b.bw,
+        b.dbw, iw.get(), requested_abserr, 0, &estimated_abserr));
+
+    // Check against good value found using Octave's trapz on Ganapol data
+    // Adaptive result should be good to O(1) relative to request_abserr
+    // Here, 10 is used as an upper bound on O(1)
+    BOOST_CHECK_SMALL((deltastar - 1.72189445179000), 10*requested_abserr);
+    BOOST_CHECK_LE(estimated_abserr, 10*requested_abserr);
+}
+
+BOOST_AUTO_TEST_CASE( blasius_theta )
+{
+    // Prepare the Blasius velocity profile as coefficients on basis
+    // For a linear B-spline basis, the collocation points are the breakpoints
+    shared_array<double> u(new double[b.n()]);
+    std::memcpy(u.get(),
+                suzerain_blasius_ganapol_fp,
+                sizeof(suzerain_blasius_ganapol_fp));
+    BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS, lu.solve(1, u.get(), 1, b.n()));
+
+    // Prepare integration working storage
+    shared_ptr<gsl_matrix> dB(
+            gsl_matrix_alloc(b.k(), 1),
+            gsl_matrix_free);
+    BOOST_REQUIRE(dB);
+    shared_ptr<gsl_integration_workspace> iw(
+            gsl_integration_workspace_alloc(256),
+            gsl_integration_workspace_free);
+    BOOST_REQUIRE(iw);
+
+    // Integrate for theta
+    // Pretend density is nondimensionally one so rho_u == u
+    // The absolute error behavior on this integral is unsatisfying
+    // though there's no reason adaptive results should match Octave's trapz.
+    double theta  = GSL_NAN;
+    double estimated_abserr = GSL_NAN;
+    const double requested_abserr = 0.00025;
+    BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS, suzerain_bl_compute_theta(
+        b.collocation_point(b.n()-1), u.get(), u.get(), &theta, dB.get(),
+        b.bw, b.dbw, iw.get(), requested_abserr, 0, &estimated_abserr));
+
+    // Check against good value found using Octave's trapz on Ganapol data
+    // Adaptive result should be good to O(1) relative to request_abserr
+    // Here, 10 is used as an upper bound on O(1)
+    BOOST_CHECK_SMALL((theta - 0.663007750711612), 10*requested_abserr);
+    BOOST_CHECK_LE(estimated_abserr, 10*requested_abserr);
+}
+
+// FIXME Test suzerain_bl_compute_thick
+
+BOOST_AUTO_TEST_SUITE_END()
+
 // A test fixture making test profile(s) and B-splines available
 struct SplinedBlasiusFixture {
 
@@ -85,7 +188,7 @@ const double SplinedBlasiusFixture::breakpts[10] = {
     0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 8.8
 };
 
-BOOST_FIXTURE_TEST_SUITE(bl_compute_thick, SplinedBlasiusFixture)
+BOOST_FIXTURE_TEST_SUITE(bl_compute_thick_splined, SplinedBlasiusFixture)
 
 // FIXME Test suzerain_bl_find_edge
 
