@@ -96,7 +96,7 @@ BOOST_AUTO_TEST_CASE( blasius_deltastar )
         &deltastar, dB.get(), b.bw, b.dbw));
 
     // Check against good value found using Octave's trapz on Ganapol data
-    BOOST_CHECK_SMALL((deltastar - 1.72189445179000), 1e-5);
+    BOOST_CHECK_SMALL((deltastar - 1.72189445179000), 5e-6);
 }
 
 BOOST_AUTO_TEST_CASE( blasius_theta )
@@ -125,7 +125,7 @@ BOOST_AUTO_TEST_CASE( blasius_theta )
         b.bw, b.dbw));
 
     // Check against good value found using Octave's trapz on Ganapol data
-    BOOST_CHECK_SMALL((theta - 0.663007750711612), 0.0025);
+    BOOST_CHECK_SMALL((theta - 0.663007750711612), 0.0020);
 }
 
 // FIXME Test suzerain_bl_compute_thick
@@ -197,7 +197,7 @@ BOOST_AUTO_TEST_CASE( blasius_deltastar )
     // Check against good value
     // Good value taken from White, Fluid Mechanics, 4th Edition eqn (7.31).
     // This tolerance is admittedly larger than I would like.
-    BOOST_CHECK_CLOSE(1.721, deltastar, 0.013);
+    BOOST_CHECK_CLOSE(1.721, deltastar, 0.015);
 }
 
 BOOST_AUTO_TEST_CASE( blasius_theta )
