@@ -43,8 +43,6 @@
 
 // Odd looking, unused, anonymous enumerations are globally-scoped versions
 // of "Compile Time Assertions" by Ralf Holly (http://drdobbs.com/184401873)
-#define assert_static(e) do{ enum { assert_static__## line = 1/(e) }; }while(0)
-
 enum { // Required for strict aliasing workarounds
     assert_floatp  = 1/(sizeof(float*)  == sizeof(complex_float*) ),
     assert_doublep = 1/(sizeof(double*) == sizeof(complex_double*))
