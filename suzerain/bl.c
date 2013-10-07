@@ -119,7 +119,7 @@ suzerain_bl_compute_deltastar(
         return SUZERAIN_SUCCESS;
     }
 
-    // Compute edge momentum given edge_location and coeffs_rho_u
+    /* Compute edge momentum given edge_location and coeffs_rho_u */
     double rho_u_edge = GSL_NAN;
     int status = suzerain_bspline_linear_combination(
             0, coeffs_rho_u, 1, &edge_location, &rho_u_edge, 0, dB, w, dw);
@@ -137,9 +137,8 @@ suzerain_bl_compute_deltastar(
                        SUZERAIN_ESANITY);
     }
 
-    /* Accumulate integral into *deltastar.               */
-    /* Notice any failure below should be catastrophic.   */
-    /* TODO Kahan-based accumulation might add precision. */
+    /* Notice any failure below will be catastrophic   */
+    /* so accumulate integral into *deltastar directly */
     *deltastar = 0;
 
     /* Accumulate the breakpoint-by-breakpoint contributions to result */
@@ -179,31 +178,6 @@ suzerain_bl_compute_deltastar(
     return SUZERAIN_SUCCESS;
 }
 
-// Parameters necessary for theta_function.
-typedef struct {
-    const double                *coeffs_rho_u;
-    const double                *coeffs_u;
-    gsl_matrix                  *dB;
-    gsl_bspline_workspace       *w;
-    gsl_bspline_deriv_workspace *dw;
-    double                       rho_u_edge;
-    double                       u_edge;
-} theta_params;
-
-// A GSL-ready way to evaluate the momentum thickness integrand
-static
-double theta_function(double x, void * params)
-{
-    theta_params * p = (theta_params *) params;
-    double rho_u = GSL_NAN;
-    suzerain_bspline_linear_combination(
-            0, p->coeffs_rho_u, 1U, &x, &rho_u, 0U, p->dB, p->w, p->dw);
-    double u = GSL_NAN;
-    suzerain_bspline_linear_combination(
-            0, p->coeffs_u, 1U, &x, &u, 0U, p->dB, p->w, p->dw);
-    return (rho_u / p->rho_u_edge) * (1 - u / p->u_edge);
-}
-
 int
 suzerain_bl_compute_theta(
     const double edge_location,
@@ -212,18 +186,14 @@ suzerain_bl_compute_theta(
     double * theta,
     gsl_matrix *dB,
     gsl_bspline_workspace *w,
-    gsl_bspline_deriv_workspace *dw,
-    gsl_integration_workspace *iw,
-    const double epsabs,
-    const double epsrel,
-    double *abserr)
+    gsl_bspline_deriv_workspace *dw)
 {
     *theta = GSL_NAN;               // Be defensive
     if (gsl_isnan(edge_location)) { // Propagate NaN but succeed
         return SUZERAIN_SUCCESS;
     }
 
-    // Compute edge momentum given edge_location and coeffs_rho_u
+    /* Compute edge momentum given edge_location and coeffs_rho_u */
     double rho_u_edge = GSL_NAN;
     int status = suzerain_bspline_linear_combination(
             0, coeffs_rho_u, 1, &edge_location, &rho_u_edge, 0, dB, w, dw);
@@ -232,7 +202,7 @@ suzerain_bl_compute_theta(
                            SUZERAIN_EFAILED, status);
     }
 
-    // Compute edge velocity given edge_location and coeffs_rho_u
+    /* Compute edge velocity given edge_location and coeffs_u */
     double u_edge = GSL_NAN;
     status = suzerain_bspline_linear_combination(
             0, coeffs_u, 1, &edge_location, &u_edge, 0, dB, w, dw);
@@ -241,23 +211,58 @@ suzerain_bl_compute_theta(
                            SUZERAIN_EFAILED, status);
     }
 
-    // Integrate to obtain momentum thickness
-    theta_params params = { coeffs_rho_u, coeffs_u,
-                            dB, w, dw, rho_u_edge, u_edge };
-    gsl_function f      = { theta_function, &params };
-    // Q. Why is key set to (w->k - 1) instead of, e.g., GSL_INTEG_GAUSS61?
-    // A. In gsl_integration_qag implementation in GSL's integration/qag.c
-    //    the key is coerced to be one of {1, 2, 3, 4, 5, or 6}.  Higher
-    //    values indicate Gauss-Kronrod rules using more smoothness.
-    //    So (w->k - 1) attempts to map B-spline smoothness to an
-    //    appropriately smooth integration rule.
-    status = gsl_integration_qag(&f, gsl_bspline_breakpoint(0, w),
-            edge_location, epsabs, epsrel, iw->limit, (w->k - 1), iw,
-            theta, abserr);
-    if (SUZERAIN_UNLIKELY(status != GSL_SUCCESS)) {
-        SUZERAIN_ERROR("integration of deltastar failed", status);
+    /* Obtain an appropriate order Gauss-Legendre integration rule     */
+    /* Product (u / u_oo)(1 - \rho{}u/{\rho{}u}_oo) must be integrated */
+    /* That is, solve 2*(k - 1) = 2*n - 1 for number of Gauss points n */
+    gsl_integration_glfixed_table * const tbl
+        = gsl_integration_glfixed_table_alloc(w->k);
+    if (SUZERAIN_UNLIKELY(tbl == NULL)) {
+        SUZERAIN_ERROR("failed to obtain Gauss-Legendre rule from GSL",
+                       SUZERAIN_ESANITY);
     }
-    return status;
+
+    /* Notice any failure below will be catastrophic */
+    /* so accumulate integral into *theta directly   */
+    *theta = 0;
+
+    /* Accumulate the breakpoint-by-breakpoint contributions to result */
+    double xj = 0, wj = 0;
+    for (size_t i = 0; i < (w->nbreak - 1); ++i) {
+
+        /* Determine i-th breakpoint interval with edge being upper limit */
+        const double a = gsl_bspline_breakpoint(i,   w);
+        if (a > edge_location) break;
+        const double b = GSL_MIN_DBL(gsl_bspline_breakpoint(i+1, w),
+                                     edge_location);
+
+        for (size_t j = 0; j < tbl->n; ++j) {
+
+            /* Get j-th Gauss point xj and weight wj */
+            gsl_integration_glfixed_point(a, b, j, &xj, &wj, tbl);
+
+            /* Evaluate basis functions at point xj */
+            size_t kstart, kend;
+            gsl_bspline_deriv_eval_nonzero(xj, 0,
+                    dB, &kstart, &kend, w, dw);
+
+            /* Accumulate basis linear combinations to evaluate rho_u */
+            double rho_u = 0;
+            double u     = 0;
+            for (size_t k = kstart; k <= kend; ++k) {
+                const double Bk = gsl_matrix_get(dB, k - kstart, 0);
+                rho_u += coeffs_rho_u[k] * Bk;
+                u     += coeffs_u[k]     * Bk;
+            }
+
+            /* Then use integrand scaled by weight to accumulate result */
+            *theta += wj * (u / u_edge) * (1 - rho_u / rho_u_edge);
+        }
+    }
+
+    /* Free integration rule resources */
+    gsl_integration_glfixed_table_free(tbl);
+
+    return SUZERAIN_SUCCESS;
 }
 
 int
@@ -284,13 +289,6 @@ suzerain_bl_compute_thick(
     }
     if (SUZERAIN_UNLIKELY(status != SUZERAIN_SUCCESS)) goto done;
 
-    /* Allocate integration buffer */
-    if (NULL == (iw = gsl_integration_workspace_alloc(256))) {
-        SUZERAIN_ERROR_REPORT("failed to allocate iw",
-                              (status = SUZERAIN_ENOMEM));
-    }
-    if (SUZERAIN_UNLIKELY(status != SUZERAIN_SUCCESS)) goto done;
-
     /* Compute edge location */
     status = suzerain_bl_find_edge(coeffs_H0, &thick->delta, dB, w, dw);
     if (SUZERAIN_UNLIKELY(status != SUZERAIN_SUCCESS)) goto done;
@@ -301,14 +299,12 @@ suzerain_bl_compute_thick(
     if (SUZERAIN_UNLIKELY(status != SUZERAIN_SUCCESS)) goto done;
 
     /* Compute momentum thickness */
-    status = suzerain_bl_compute_theta( thick->delta, coeffs_rho_u, coeffs_u,
-            &thick->theta, dB, w, dw, iw, GSL_SQRT_DBL_EPSILON,
-            GSL_SQRT_DBL_EPSILON, &abserr);
+    status = suzerain_bl_compute_theta(
+            thick->delta, coeffs_rho_u, coeffs_u, &thick->theta, dB, w, dw);
     /* Done regardless of status */
 
 done:
 
-    gsl_integration_workspace_free(iw);
     gsl_matrix_free(dB);
     return SUZERAIN_EUNIMPL;
 }

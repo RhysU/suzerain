@@ -180,13 +180,6 @@ suzerain_bl_compute_deltastar(
  *                           no less than <tt>1</tt>.
  * \param[in ] w             Workspace to use.
  * \param[in ] dw            Workspace to use.
- * \param[in ] iw            Workspace to use.  Result precision may be limited
- *                           by the \c n parameter passed to
- *                           \c gsl_integration_workspace_alloc.
- * \param[in ] epsabs        Absolute error limit for adaptive integration.
- * \param[in ] epsrel        Relative error limit for adaptive integration.
- *                           Setting to zero turns off the relative check.
- * \param[out] abserr        Estimate of the absolute error in the result.
  *
  * \return ::SUZERAIN_SUCCESS on success and returns the answer in
  * <code>*theta</code>.  On recoverable error sets <code>*theta</code> to be
@@ -202,11 +195,7 @@ suzerain_bl_compute_theta(
     double * theta,
     gsl_matrix *dB,
     gsl_bspline_workspace *w,
-    gsl_bspline_deriv_workspace *dw,
-    gsl_integration_workspace *iw,
-    const double epsabs,
-    const double epsrel,
-    double *abserr);
+    gsl_bspline_deriv_workspace *dw);
 
 /**
  * Information characterizing boundary layer thickness in various ways.

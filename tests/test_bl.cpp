@@ -88,10 +88,6 @@ BOOST_AUTO_TEST_CASE( blasius_deltastar )
             gsl_matrix_alloc(b.k(), 1),
             gsl_matrix_free);
     BOOST_REQUIRE(dB);
-    shared_ptr<gsl_integration_workspace> iw(
-            gsl_integration_workspace_alloc(256),
-            gsl_integration_workspace_free);
-    BOOST_REQUIRE(iw);
 
     // Integrate for deltastar
     double deltastar = GSL_NAN;
@@ -121,27 +117,21 @@ BOOST_AUTO_TEST_CASE( blasius_theta )
             gsl_matrix_alloc(b.k(), 1),
             gsl_matrix_free);
     BOOST_REQUIRE(dB);
-    shared_ptr<gsl_integration_workspace> iw(
-            gsl_integration_workspace_alloc(256),
-            gsl_integration_workspace_free);
-    BOOST_REQUIRE(iw);
 
     // Integrate for theta
     // Pretend density is nondimensionally one so rho_u == u
     // The absolute error behavior on this integral is unsatisfying
     // though there's no reason adaptive results should match Octave's trapz.
     double theta  = GSL_NAN;
-    double estimated_abserr = GSL_NAN;
-    const double requested_abserr = 0.00025;
     BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS, suzerain_bl_compute_theta(
         b.collocation_point(b.n()-1), u.get(), u.get(), &theta, dB.get(),
-        b.bw, b.dbw, iw.get(), requested_abserr, 0, &estimated_abserr));
+        b.bw, b.dbw));
 
     // Check against good value found using Octave's trapz on Ganapol data
     // Adaptive result should be good to O(1) relative to request_abserr
     // Here, 10 is used as an upper bound on O(1)
-    BOOST_CHECK_SMALL((theta - 0.663007750711612), 10*requested_abserr);
-    BOOST_CHECK_LE(estimated_abserr, 10*requested_abserr);
+    const double tol = 0.00025;
+    BOOST_CHECK_SMALL((theta - 0.663007750711612), 10*tol);
 }
 
 // FIXME Test suzerain_bl_compute_thick
@@ -203,10 +193,6 @@ BOOST_AUTO_TEST_CASE( blasius_deltastar )
             gsl_matrix_alloc(b.k(), 1),
             gsl_matrix_free);
     BOOST_REQUIRE(dB);
-    shared_ptr<gsl_integration_workspace> iw(
-            gsl_integration_workspace_alloc(256),
-            gsl_integration_workspace_free);
-    BOOST_REQUIRE(iw);
 
     // Integrate for deltastar
     double deltastar = GSL_NAN;
@@ -238,24 +224,17 @@ BOOST_AUTO_TEST_CASE( blasius_theta )
             gsl_matrix_alloc(b.k(), 1),
             gsl_matrix_free);
     BOOST_REQUIRE(dB);
-    shared_ptr<gsl_integration_workspace> iw(
-            gsl_integration_workspace_alloc(256),
-            gsl_integration_workspace_free);
-    BOOST_REQUIRE(iw);
 
     // Integrate for theta
     double theta  = GSL_NAN;
-    double estimated_abserr = GSL_NAN;
-    const double requested_abserr = GSL_SQRT_DBL_EPSILON*100;
     BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS, suzerain_bl_compute_theta(
         b.collocation_point(b.n()-1), rho_u.get(), u.get(), &theta, dB.get(),
-        b.bw, b.dbw, iw.get(), requested_abserr, 0, &estimated_abserr));
+        b.bw, b.dbw));
 
     // Check against good value
     // Good value taken from White, Fluid Mechanics, 4th Edition eqn (7.31).
     // This tolerance is admittedly larger than I would like.
     BOOST_CHECK_CLOSE(0.664, theta, 0.018);
-    BOOST_CHECK_LE(estimated_abserr, requested_abserr);
 }
 
 // FIXME Test suzerain_bl_compute_thick
