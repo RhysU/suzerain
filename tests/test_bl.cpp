@@ -118,11 +118,48 @@ BOOST_AUTO_TEST_CASE( blasius_deltastar )
 
     // Check against good value
     // Good value taken from White, Fluid Mechanics, 4th Edition eqn (7.31).
+    // This tolerance is admittedly larger than I would like.
     BOOST_CHECK_CLOSE(1.721, deltastar, 0.013);
     BOOST_CHECK_LE(abserr, GSL_SQRT_DBL_EPSILON);
 }
 
-// FIXME Test suzerain_bl_compute_theta
+BOOST_AUTO_TEST_CASE( blasius_theta )
+{
+    // Prepare the Blasius velocity profile as coefficients on basis
+    // Pretend that density is uniformly two throughout profile.  Yes, two.
+    shared_array<double> rho_u(new double[b.n()]);
+    shared_array<double> u    (new double[b.n()]);
+    for (int i = 0; i < b.n(); ++i) {
+        u[i] = gsl_spline_eval(blasius_u_vs_eta, b.collocation_point(i), accel);
+        rho_u[i] = 2*u[i];
+    }
+    BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS, lu.solve(1, rho_u.get(), 1, b.n()));
+    BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS, lu.solve(1,     u.get(), 1, b.n()));
+
+    // Prepare integration working storage
+    shared_ptr<gsl_matrix> dB(
+            gsl_matrix_alloc(b.k(), 1),
+            gsl_matrix_free);
+    BOOST_REQUIRE(dB);
+    shared_ptr<gsl_integration_workspace> iw(
+            gsl_integration_workspace_alloc(256),
+            gsl_integration_workspace_free);
+    BOOST_REQUIRE(iw);
+
+    // Integrate for theta
+    double theta  = GSL_NAN;
+    double abserr = GSL_NAN;
+    BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS, suzerain_bl_compute_theta(
+        b.collocation_point(b.n()-1), rho_u.get(), u.get(), &theta, dB.get(),
+        b.bw, b.dbw, iw.get(), GSL_SQRT_DBL_EPSILON, GSL_SQRT_DBL_EPSILON,
+        &abserr));
+
+    // Check against good value
+    // Good value taken from White, Fluid Mechanics, 4th Edition eqn (7.31).
+    // This tolerance is admittedly larger than I would like.
+    BOOST_CHECK_CLOSE(0.664, theta, 0.018);
+    BOOST_CHECK_LE(abserr, GSL_SQRT_DBL_EPSILON);
+}
 
 // FIXME Test suzerain_bl_compute_thick
 
