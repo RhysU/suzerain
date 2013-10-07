@@ -111,16 +111,17 @@ BOOST_AUTO_TEST_CASE( blasius_deltastar )
 
     // Integrate for deltastar
     double deltastar = GSL_NAN;
-    double abserr    = GSL_NAN;
+    double estimated_abserr = GSL_NAN;
+    const double requested_abserr = GSL_SQRT_DBL_EPSILON*100;
     BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS, suzerain_bl_compute_deltastar(
         b.collocation_point(b.n()-1), rho_u.get(), &deltastar, dB.get(), b.bw,
-        b.dbw, iw.get(), GSL_SQRT_DBL_EPSILON, /*disable*/0, &abserr));
+        b.dbw, iw.get(), requested_abserr, 0, &estimated_abserr));
 
     // Check against good value
     // Good value taken from White, Fluid Mechanics, 4th Edition eqn (7.31).
     // This tolerance is admittedly larger than I would like.
     BOOST_CHECK_CLOSE(1.721, deltastar, 0.013);
-    BOOST_CHECK_LE(abserr, GSL_SQRT_DBL_EPSILON);
+    BOOST_CHECK_LE(estimated_abserr, requested_abserr);
 }
 
 BOOST_AUTO_TEST_CASE( blasius_theta )
@@ -148,16 +149,17 @@ BOOST_AUTO_TEST_CASE( blasius_theta )
 
     // Integrate for theta
     double theta  = GSL_NAN;
-    double abserr = GSL_NAN;
+    double estimated_abserr = GSL_NAN;
+    const double requested_abserr = GSL_SQRT_DBL_EPSILON*100;
     BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS, suzerain_bl_compute_theta(
         b.collocation_point(b.n()-1), rho_u.get(), u.get(), &theta, dB.get(),
-        b.bw, b.dbw, iw.get(), GSL_SQRT_DBL_EPSILON, /*disable*/0, &abserr));
+        b.bw, b.dbw, iw.get(), requested_abserr, 0, &estimated_abserr));
 
     // Check against good value
     // Good value taken from White, Fluid Mechanics, 4th Edition eqn (7.31).
     // This tolerance is admittedly larger than I would like.
     BOOST_CHECK_CLOSE(0.664, theta, 0.018);
-    BOOST_CHECK_LE(abserr, GSL_SQRT_DBL_EPSILON);
+    BOOST_CHECK_LE(estimated_abserr, requested_abserr);
 }
 
 // FIXME Test suzerain_bl_compute_thick
