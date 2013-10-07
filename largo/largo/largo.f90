@@ -232,8 +232,8 @@ contains
   subroutine largo_deallocate(lcp) bind(C)
 
     ! largo C pointer
-    type(largo_ptr), intent(out) :: lcp
-    type(largo_type), pointer    :: lauxp
+    type(largo_ptr), intent(inout) :: lcp
+    type(largo_type), pointer      :: lauxp
 
     call c_f_pointer(lcp, lauxp)
 
