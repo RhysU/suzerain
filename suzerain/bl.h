@@ -145,6 +145,7 @@ suzerain_bl_find_edge(
  *                           \c gsl_integration_workspace_alloc.
  * \param[in ] epsabs        Absolute error limit for adaptive integration.
  * \param[in ] epsrel        Relative error limit for adaptive integration.
+ *                           Setting to zero turns off the relative check.
  * \param[out] abserr        Estimate of the absolute error in the result.
  *
  * \return ::SUZERAIN_SUCCESS on success and returns the answer in
@@ -195,6 +196,7 @@ suzerain_bl_compute_deltastar(
  *                           \c gsl_integration_workspace_alloc.
  * \param[in ] epsabs        Absolute error limit for adaptive integration.
  * \param[in ] epsrel        Relative error limit for adaptive integration.
+ *                           Setting to zero turns off the relative check.
  * \param[out] abserr        Estimate of the absolute error in the result.
  *
  * \return ::SUZERAIN_SUCCESS on success and returns the answer in
