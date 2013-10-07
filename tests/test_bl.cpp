@@ -50,7 +50,7 @@ BOOST_AUTO_TEST_SUITE(bl_compute_viscous)
 BOOST_AUTO_TEST_SUITE_END()
 
 // A test fixture making test profile(s) and B-splines available
-struct ProfileFixture {
+struct SplinedBlasiusFixture {
 
     static const double breakpts[10]; // Init just below
     gsl_spline * const blasius_u_vs_eta;
@@ -59,7 +59,7 @@ struct ProfileFixture {
     bsplineop    op;
     bsplineop_lu lu;
 
-    ProfileFixture()
+    SplinedBlasiusFixture()
         : blasius_u_vs_eta(suzerain_blasius_u_vs_eta())
         , accel(gsl_interp_accel_alloc())
         , b(8, bspline::from_breakpoints(),
@@ -70,7 +70,7 @@ struct ProfileFixture {
         lu.factor_mass(op);
     }
 
-    ~ProfileFixture()
+    ~SplinedBlasiusFixture()
     {
         gsl_spline_free(blasius_u_vs_eta);
         gsl_interp_accel_free(accel);
@@ -81,11 +81,11 @@ struct ProfileFixture {
 // As the data for Ganapol's Blasius profile runs up to 8.8 instead of 5.0, and
 // the routines compute edge quantities from the profiles, our basis runs up to
 // 8.8 as well.
-const double ProfileFixture::breakpts[10] = {
+const double SplinedBlasiusFixture::breakpts[10] = {
     0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 8.8
 };
 
-BOOST_FIXTURE_TEST_SUITE(bl_compute_thick, ProfileFixture)
+BOOST_FIXTURE_TEST_SUITE(bl_compute_thick, SplinedBlasiusFixture)
 
 // FIXME Test suzerain_bl_find_edge
 
