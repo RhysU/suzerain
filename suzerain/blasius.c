@@ -270,6 +270,9 @@ gsl_spline * prepare_fit(
     return s;
 }
 
+// TODO Use non-natural AKIMA conditions to set known derivatives
+// That is, suzerain_blasius_ganapol_fpp and f'''(eta) are
+// known and provide important information wrt skin friction.
 gsl_spline * suzerain_blasius_u()
 {
     return prepare_fit(Ndata,
