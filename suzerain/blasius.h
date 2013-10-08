@@ -113,7 +113,7 @@ extern const double suzerain_blasius_ganapol_fpp[45];
  *         subsequently cleaned up using <tt>gsl_spline_free()</tt>.
  *         On failure \c NULL is returned.
  */
-gsl_spline * suzerain_blasius_u_vs_eta();
+gsl_spline * suzerain_blasius_u();
 
 /**
  * Obtain a Blasius profile spline fit producing nondimensional \f$v /
@@ -134,16 +134,16 @@ gsl_spline * suzerain_blasius_u_vs_eta();
  *         subsequently cleaned up using <tt>gsl_spline_free()</tt>.
  *         On failure \c NULL is returned.
  */
-gsl_spline * suzerain_blasius_v_vs_eta(const double Re_x);
+gsl_spline * suzerain_blasius_v(const double Re_x);
 
 /**
  * Obtain a Blasius profile spline fit producing nondimensional kinetic energy
  * \f$\frac{u^2 + v^2}{2 u_\infty^2}\f$ given \f$\eta = y
  * \sqrt{\mbox{Re}_x}\f$.
  *
- * @copydetails suzerain_blasius_v_vs_eta
+ * @copydetails suzerain_blasius_v
  */
-gsl_spline * suzerain_blasius_ke_vs_eta(const double Re_x);
+gsl_spline * suzerain_blasius_ke(const double Re_x);
 
 #ifdef __cplusplus
 } /* extern "C" */

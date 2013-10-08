@@ -253,7 +253,7 @@ enum {
 };
 
 // Streamwise velocity u/u_oo is Re_x-independent.
-gsl_spline * suzerain_blasius_u_vs_eta()
+gsl_spline * suzerain_blasius_u()
 {
     gsl_spline * s = gsl_spline_alloc(gsl_interp_cspline, Ndata);
     if (s) {
@@ -268,7 +268,7 @@ gsl_spline * suzerain_blasius_u_vs_eta()
 }
 
 // Wall-normal velocity v/u_oo is Re_x-dependent.
-gsl_spline * suzerain_blasius_v_vs_eta(const double Re_x)
+gsl_spline * suzerain_blasius_v(const double Re_x)
 {
     gsl_spline * s = gsl_spline_alloc(gsl_interp_cspline, Ndata);
     if (s) {
@@ -296,8 +296,8 @@ gsl_spline * suzerain_blasius_v_vs_eta(const double Re_x)
 }
 
 // Kinetic energy is Re_x-dependent.
-// See suzerain_blasius_v_vs_eta comments re: temporary data management
-gsl_spline * suzerain_blasius_ke_vs_eta(const double Re_x)
+// See suzerain_blasius_v comments re: temporary data management
+gsl_spline * suzerain_blasius_ke(const double Re_x)
 {
     gsl_spline * s = gsl_spline_alloc(gsl_interp_cspline, Ndata);
     if (s) {

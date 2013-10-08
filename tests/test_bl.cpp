@@ -136,14 +136,14 @@ BOOST_AUTO_TEST_SUITE_END()
 struct SplinedBlasiusFixture {
 
     static const double breakpts[10]; // Init just below
-    gsl_spline * const blasius_u_vs_eta;
+    gsl_spline * const blasius_u;
     gsl_interp_accel * accel;
     bspline      b;
     bsplineop    op;
     bsplineop_lu lu;
 
     SplinedBlasiusFixture()
-        : blasius_u_vs_eta(suzerain_blasius_u_vs_eta())
+        : blasius_u(suzerain_blasius_u())
         , accel(gsl_interp_accel_alloc())
         , b(8, bspline::from_breakpoints(),
             SUZERAIN_COUNTOF(breakpts), breakpts)
@@ -155,7 +155,7 @@ struct SplinedBlasiusFixture {
 
     ~SplinedBlasiusFixture()
     {
-        gsl_spline_free(blasius_u_vs_eta);
+        gsl_spline_free(blasius_u);
         gsl_interp_accel_free(accel);
     }
 
@@ -177,7 +177,7 @@ BOOST_AUTO_TEST_CASE( blasius_deltastar )
     // Prepare the Blasius velocity profile as coefficients on basis
     shared_array<double> rho_u(new double[b.n()]);
     for (int i = 0; i < b.n(); ++i) {
-        rho_u[i] = gsl_spline_eval(blasius_u_vs_eta,
+        rho_u[i] = gsl_spline_eval(blasius_u,
                                    b.collocation_point(i), accel);
     }
     BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS, lu.solve(1, rho_u.get(), 1, b.n()));
@@ -207,7 +207,7 @@ BOOST_AUTO_TEST_CASE( blasius_theta )
     shared_array<double> rho_u(new double[b.n()]);
     shared_array<double> u    (new double[b.n()]);
     for (int i = 0; i < b.n(); ++i) {
-        u[i] = gsl_spline_eval(blasius_u_vs_eta, b.collocation_point(i), accel);
+        u[i] = gsl_spline_eval(blasius_u, b.collocation_point(i), accel);
         rho_u[i] = 2*u[i];
     }
     BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS, lu.solve(1, rho_u.get(), 1, b.n()));
