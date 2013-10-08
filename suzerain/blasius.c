@@ -41,7 +41,7 @@ extern
 double suzerain_blasius_eta(double y, double Re_x);
 
 // Variable $\eta$ from Table3b in http://arxiv.org/format/1006.3888v1
-const double suzerain_blasius_ganapol_eta[45] = {
+const double suzerain_blasius_ganapol_eta[] = {
     0.0E+00,
     2.0E-01,
     4.0E-01,
@@ -89,8 +89,13 @@ const double suzerain_blasius_ganapol_eta[45] = {
     8.8E+00
 };
 
+enum {
+    Ndata = sizeof(suzerain_blasius_ganapol_eta)
+          / sizeof(suzerain_blasius_ganapol_eta[0])
+};
+
 // Variable $f$ from Table3b in http://arxiv.org/format/1006.3888v1
-const double suzerain_blasius_ganapol_f[45] = {
+const double suzerain_blasius_ganapol_f[Ndata] = {
     0.000000000E+00,
     6.640999715E-03,
     2.655988402E-02,
@@ -139,7 +144,7 @@ const double suzerain_blasius_ganapol_f[45] = {
 };
 
 // Variable $f'$ from Table3b in http://arxiv.org/format/1006.3888v1
-const double suzerain_blasius_ganapol_fp[45] = {
+const double suzerain_blasius_ganapol_fp[Ndata] = {
     0.000000000E+00,
     6.640779210E-02,
     1.327641608E-01,
@@ -188,7 +193,7 @@ const double suzerain_blasius_ganapol_fp[45] = {
 };
 
 // Variable $f''$ from Table3b in http://arxiv.org/format/1006.3888v1
-const double suzerain_blasius_ganapol_fpp[45] = {
+const double suzerain_blasius_ganapol_fpp[Ndata] = {
     3.320573362E-01,
     3.319838371E-01,
     3.314698442E-01,
@@ -250,15 +255,11 @@ enum {
 // Streamwise velocity u/u_oo is Re_x-independent.
 gsl_spline * suzerain_blasius_u_vs_eta()
 {
-    enum {
-        N = sizeof(suzerain_blasius_ganapol_eta)
-          / sizeof(suzerain_blasius_ganapol_eta[0])
-    };
-    gsl_spline * s = gsl_spline_alloc(gsl_interp_cspline, N);
+    gsl_spline * s = gsl_spline_alloc(gsl_interp_cspline, Ndata);
     if (s) {
         if (gsl_spline_init(s,
                             suzerain_blasius_ganapol_eta,
-                            suzerain_blasius_ganapol_fp, N)) {
+                            suzerain_blasius_ganapol_fp, Ndata)) {
             gsl_spline_free(s);
             s = NULL;
         }
@@ -269,64 +270,52 @@ gsl_spline * suzerain_blasius_u_vs_eta()
 // Wall-normal velocity v/u_oo is Re_x-dependent.
 gsl_spline * suzerain_blasius_v_vs_eta(const double Re_x)
 {
-    enum {
-        N = sizeof(suzerain_blasius_ganapol_eta)
-          / sizeof(suzerain_blasius_ganapol_eta[0])
-    };
-    gsl_spline * s = gsl_spline_alloc(gsl_interp_cspline, N);
+    gsl_spline * s = gsl_spline_alloc(gsl_interp_cspline, Ndata);
     if (s) {
         // Reading through GSL's gsl_spline interface implementation suggests
         // that splines are self-contained from a data perspective, and so we
         // can form the necessary function in a temporary buffer.
         const double invSqrt2Re = sqrt(0.5 / Re_x);
-        double v[N];
-        for (size_t i = 0; i < N; ++i) {
+        double v[Ndata];
+        for (size_t i = 0; i < Ndata; ++i) {
             v[i] = invSqrt2Re * (  suzerain_blasius_ganapol_f  [i]
                                  + suzerain_blasius_ganapol_eta[i]
                                  * suzerain_blasius_ganapol_fp [i]);
         }
-        if (gsl_spline_init(s, suzerain_blasius_ganapol_eta, v, N)) {
+        if (gsl_spline_init(s, suzerain_blasius_ganapol_eta, v, Ndata)) {
             gsl_spline_free(s);
             s = NULL;
         }
 #ifndef NDEBUG
         // Defensively NaN the scratch buffer so folks notice if some day we
         // start oozing points to stack-allocated temporaries.
-        for (size_t i = 0; i < N; ++i) v[i] = GSL_NAN;
+        for (size_t i = 0; i < Ndata; ++i) v[i] = GSL_NAN;
 #endif
     }
     return s;
 }
 
 // Kinetic energy is Re_x-dependent.
+// See suzerain_blasius_v_vs_eta comments re: temporary data management
 gsl_spline * suzerain_blasius_ke_vs_eta(const double Re_x)
 {
-    enum {
-        N = sizeof(suzerain_blasius_ganapol_eta)
-          / sizeof(suzerain_blasius_ganapol_eta[0])
-    };
-    gsl_spline * s = gsl_spline_alloc(gsl_interp_cspline, N);
+    gsl_spline * s = gsl_spline_alloc(gsl_interp_cspline, Ndata);
     if (s) {
-        // Reading through GSL's gsl_spline interface implementation suggests
-        // that splines are self-contained from a data perspective, and so we
-        // can form the necessary function in a temporary buffer.
         const double invSqrt2Re = sqrt(0.5 / Re_x);
-        double ke[N];
-        for (size_t i = 0; i < N; ++i) {
+        double ke[Ndata];
+        for (size_t i = 0; i < Ndata; ++i) {
             const double u = suzerain_blasius_ganapol_fp[i];
             const double v = invSqrt2Re * (  suzerain_blasius_ganapol_f  [i]
                                            + suzerain_blasius_ganapol_eta[i]
                                            * suzerain_blasius_ganapol_fp [i]);
             ke[i] = (u*u + v*v) / 2;
         }
-        if (gsl_spline_init(s, suzerain_blasius_ganapol_eta, ke, N)) {
+        if (gsl_spline_init(s, suzerain_blasius_ganapol_eta, ke, Ndata)) {
             gsl_spline_free(s);
             s = NULL;
         }
 #ifndef NDEBUG
-        // Defensively NaN the scratch buffer so folks notice if some day we
-        // start oozing points to stack-allocated temporaries.
-        for (size_t i = 0; i < N; ++i) ke[i] = GSL_NAN;
+        for (size_t i = 0; i < Ndata; ++i) ke[i] = GSL_NAN;
 #endif
     }
     return s;
