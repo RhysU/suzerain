@@ -310,7 +310,7 @@ suzerain_bl_compute_thick(
 done:
 
     gsl_matrix_free(dB);
-    return SUZERAIN_EUNIMPL;
+    return status;
 }
 
 int
