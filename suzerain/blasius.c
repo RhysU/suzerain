@@ -32,6 +32,8 @@
 
 #include <suzerain/blasius.h>
 
+#include <gsl/gsl_nan.h>
+
 #include <suzerain/common.h>
 
 // C99 extern declaration for inlined function in blasius.h
@@ -245,6 +247,7 @@ enum {
                     == sizeof(suzerain_blasius_ganapol_eta))
 };
 
+// Streamwise velocity u/u_oo is Re_x-independent.
 gsl_spline * suzerain_blasius_u_vs_eta()
 {
     enum {
@@ -259,6 +262,39 @@ gsl_spline * suzerain_blasius_u_vs_eta()
             gsl_spline_free(s);
             s = NULL;
         }
+    }
+    return s;
+}
+
+// Wall-normal velocity v/u_oo is Re_x-dependent.
+gsl_spline * suzerain_blasius_v_vs_eta(const double Re_x)
+{
+    enum {
+        N = sizeof(suzerain_blasius_ganapol_eta)
+          / sizeof(suzerain_blasius_ganapol_eta[0])
+    };
+    gsl_spline * s = gsl_spline_alloc(gsl_interp_cspline, N);
+    if (s) {
+        // Reading through GSL's gsl_spline interface implementation suggests
+        // that splines are self-contained from a data perspective, and so we
+        // can form the necessary function in a temporary buffer.
+        const double invSqrt2Re = sqrt(0.5 / Re_x);
+        double v[N];
+        for (size_t i = 0; i < N; ++i) {
+            v[i] = invSqrt2Re * (  suzerain_blasius_ganapol_f  [i]
+                                 + suzerain_blasius_ganapol_eta[i]
+                                 * suzerain_blasius_ganapol_fp [i]);
+        }
+        if (gsl_spline_init(s, suzerain_blasius_ganapol_eta, v, N)) {
+            gsl_spline_free(s);
+            s = NULL;
+        }
+#ifndef NDEBUG
+        // Defensively NaN the scratch buffer so folks notice if some day we
+        // start oozing points to stack-allocated temporaries.
+        for (size_t i = 0; i < N; ++i) v[i] = GSL_NAN;
+#endif
+
     }
     return s;
 }

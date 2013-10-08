@@ -115,6 +115,27 @@ extern const double suzerain_blasius_ganapol_fpp[45];
  */
 gsl_spline * suzerain_blasius_u_vs_eta();
 
+/**
+ * Obtain a Blasius profile spline fit producing nondimensional \f$v /
+ * u_\infty\f$ given \f$\eta = y \sqrt{\mbox{Re}_x}\f$.  The data is computed
+ * from \ref suzerain_blasius_ganapol_f, \ref suzerain_blasius_ganapol_fp, and
+ * \ref suzerain_blasius_ganapol_eta.  The returned <tt>gsl_spline*</tt> can be
+ * interrogated using <a
+ * href="http://www.gnu.org/software/gsl/manual/html_node/Higher_002dlevel-Interface.html"
+ * the usual routines</a>.  The return value must be subsequently cleaned up
+ * using <tt>gsl_spline_free()</tt>.
+ *
+ * @param Re_x Local Reynolds number \f$\mbox{Re}_x = \frac{u_\infty}{\nu x}\f$.
+ *             Generally, values greater than \f$10^6\f$ are physically
+ *             invalid as the flow should be turbulent in that regime.
+ *
+ * @return On success, a <tt>gsl_spline *</tt> suitable for evaluation using,
+ *         for example, <tt>gsl_spline_eval()</tt>.  The return value must be
+ *         subsequently cleaned up using <tt>gsl_spline_free()</tt>.
+ *         On failure \c NULL is returned.
+ */
+gsl_spline * suzerain_blasius_v_vs_eta(const double Re_x);
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
