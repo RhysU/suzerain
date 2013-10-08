@@ -308,10 +308,11 @@ program bl_temporal_baseflow_f
     ! and include RANS sources
     ! Allocate workspace (same pointer as before)
     call largo_BL_temporal_allocate (workspace, neq, ns)
+    call largo_BL_temporal_allocate_rans (workspace, turbmodel)
 
     ! Init growth rates
     call largo_BL_temporal_init  (workspace, grDelta, grDA, grDArms)
-    call largo_BL_temporal_init_rans (workspace, turbmodel, grDATurb)
+    call largo_BL_temporal_init_rans (workspace, grDATurb)
 
     ! Compute prestep values
     call largo_BL_temporal_preStep_baseflow  (workspace,   base,  dybase,  &
