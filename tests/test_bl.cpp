@@ -211,14 +211,53 @@ BOOST_AUTO_TEST_CASE( blasius_find_edge )
     BOOST_REQUIRE_SMALL(ke__yy, 0.01);
 }
 
-// FIXME Test suzerain_bl_compute_thick
+BOOST_AUTO_TEST_CASE( blasius_compute_thick )
+{
+    const double Re_x = 1e5;
+
+    shared_ptr<gsl_interp_accel> a(gsl_interp_accel_alloc(),
+                                   gsl_interp_accel_free);
+
+    // Prepare B-spline coefficients for kinetic energy
+    shared_array<double> ke(new double[b.n()]);
+    {
+        shared_ptr<gsl_spline> fit(suzerain_blasius_ke(Re_x), gsl_spline_free);
+        gsl_interp_accel_reset(a.get());
+        for (int i = 0; i < b.n(); ++i)
+            ke[i] = gsl_spline_eval(fit.get(), b.collocation_point(i), a.get());
+    }
+    BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS, lu.solve(1, ke.get(), 1, b.n()));
+
+    // Prepare B-spline coefficients for streamwise velocity
+    shared_array<double> u(new double[b.n()]);
+    {
+        shared_ptr<gsl_spline> fit(suzerain_blasius_u(), gsl_spline_free);
+        gsl_interp_accel_reset(a.get());
+        for (int i = 0; i < b.n(); ++i)
+            u[i] = gsl_spline_eval(fit.get(), b.collocation_point(i), a.get());
+    }
+    BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS, lu.solve(1, u.get(), 1, b.n()));
+
+    // Assume uniform density of 0.5 and scale to get streamwise momentum
+    shared_array<double> rho_u(new double[b.n()]);
+    for (int i = 0; i < b.n(); ++i) {
+        rho_u[i] = u[i] / 2;
+    }
+
+    // Compute a bunch of thickness-related quantities
+    // Known good values computed by Octave using trapz from Ganapol data
+    suzerain_bl_thick thick;
+    BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS, suzerain_bl_compute_thick(
+        ke.get() /* \approx H_0 */, rho_u.get(), u.get(), &thick, b.bw, b.dbw));
+    BOOST_CHECK_CLOSE(thick.delta,     8.22,              0.25);
+    BOOST_CHECK_CLOSE(thick.deltastar, 1.72189445179000,  0.10);
+    BOOST_CHECK_CLOSE(thick.theta,     0.663007750711612, 0.25);
+}
 
 BOOST_AUTO_TEST_SUITE_END()
 
 
 BOOST_FIXTURE_TEST_SUITE(bl_compute_thick_splined, NonuniformGanapolFixture<8>)
-
-// FIXME Test suzerain_bl_find_edge
 
 BOOST_AUTO_TEST_CASE( blasius_deltastar )
 {
@@ -278,8 +317,6 @@ BOOST_AUTO_TEST_CASE( blasius_theta )
     // This tolerance is admittedly larger than I would like.
     BOOST_CHECK_CLOSE(0.664, theta, 0.018);
 }
-
-// FIXME Test suzerain_bl_compute_thick
 
 BOOST_AUTO_TEST_SUITE_END()
 
