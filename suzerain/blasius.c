@@ -320,3 +320,33 @@ gsl_spline * suzerain_blasius_ke(const double Re_x)
     }
     return s;
 }
+
+// Wall-normal derivatives of kinetic energy are Re_x-dependent.
+// Horrible algebra computed in writeups/notebooks/Blasius_Kinetic_Energy.nb.
+// See suzerain_blasius_v comments re: temporary data management
+gsl_spline * suzerain_blasius_ke__yy(const double Re) // Not Re_x, brevity
+{
+    gsl_spline * s = gsl_spline_alloc(gsl_interp_cspline, Ndata);
+    if (s) {
+        double ke__yy[Ndata];
+        for (size_t i = 0; i < Ndata; ++i) {
+            const double eta = suzerain_blasius_ganapol_eta[i];
+            const double f   = suzerain_blasius_ganapol_f  [i];
+            const double fp  = suzerain_blasius_ganapol_fp [i];
+            const double fpp = suzerain_blasius_ganapol_fpp[i];
+            const double e2R = eta*eta + 2*Re;
+            ke__yy[i]        = (   4*fp*fp
+                                 + f*(3*fpp - 0.5*eta*f*fpp)
+                                 + fpp*fpp*e2R
+                                 + fp*(7*eta*fpp - 0.5*f*fpp*e2R))/2;
+        }
+        if (gsl_spline_init(s, suzerain_blasius_ganapol_eta, ke__yy, Ndata)) {
+            gsl_spline_free(s);
+            s = NULL;
+        }
+#ifndef NDEBUG
+        for (size_t i = 0; i < Ndata; ++i) ke__yy[i] = GSL_NAN;
+#endif
+    }
+    return s;
+}
