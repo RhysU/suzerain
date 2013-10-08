@@ -42,20 +42,20 @@ extern "C" {
  * detailed for each member.
  */
 typedef struct {
-    double a;      /**< Sound speed with units \f$a_0\f$.                     */
-    double gamma;  /**< Nondimensional Ratio of specific heats \f$\gamma\f$.  */
-    double mu;     /**< Dynamic viscosity with units \f$\mu_0\f$.             */
-    double Pr;     /**< Nondimensional Prandtl number \f$C_p \mu / \kappa\f$. */
+    double a;      /**< Sound speed with units \f$a_0\f$.                   */
+    double gamma;  /**< Nondimensional Ratio of specific heats \f$\gamma\f$.*/
+    double mu;     /**< Dynamic viscosity with units \f$\mu_0\f$.           */
+    double Pr;     /**< Nondimensional Prandtl number \f$C_p \mu/\kappa\f$. */
     double p__x;   /**< Streamwise pressure gradient with units
-                        \f$p_0 / l_0 = \rho_0 a_0^2 / l_0\f$.                 */
-    double rho;    /**< Density with units \f$\rho_0\f$.                      */
-    double T;      /**< Temperature with units \f$T_0\f$.                     */
-    double u;      /**< Streamwise velocity with units \f$u_0\f$.             */
+                        \f$p_0 / l_0 = \rho_0 a_0^2 / l_0\f$.               */
+    double rho;    /**< Density with units \f$\rho_0\f$.                    */
+    double T;      /**< Temperature with units \f$T_0\f$.                   */
+    double u;      /**< Streamwise velocity with units \f$u_0\f$.           */
     double u__x;   /**< Streamwise derivative of streamwise velocity
-                        with units \f$u_0 / l_0\f$.                           */
+                        with units \f$u_0 / l_0\f$.                         */
     double u__y;   /**< Wall-normal derivative of streamwise velocity
-                        with units \f$u_0 / l_0\f$.                           */
-    double v;      /**< Wall-normal velocity with units \f$u_0\f$.            */
+                        with units \f$u_0 / l_0\f$.                         */
+    double v;      /**< Wall-normal velocity with units \f$u_0\f$.          */
 } suzerain_bl_local;
 
 /**
