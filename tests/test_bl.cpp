@@ -49,15 +49,15 @@ BOOST_AUTO_TEST_SUITE(bl_compute_viscous)
 // FIXME Implement
 BOOST_AUTO_TEST_SUITE_END()
 
-// A test fixture exposing Ganapol's Blasius profile using eta breakpoints
+// A fixture exposing Ganapol's Blasius profile using eta breakpoints
 template <int k>
-struct UniformBlasiusFixture {
+struct UniformGanapolFixture {
 
     bspline      b;
     bsplineop    op;
     bsplineop_lu lu;
 
-    UniformBlasiusFixture()
+    UniformGanapolFixture()
         : b(k, bspline::from_breakpoints(),
             SUZERAIN_COUNTOF(suzerain_blasius_ganapol_eta),
             suzerain_blasius_ganapol_eta)
@@ -69,9 +69,45 @@ struct UniformBlasiusFixture {
 
 };
 
-BOOST_FIXTURE_TEST_SUITE(bl_compute_thick_linear, UniformBlasiusFixture<2>)
+// A fixture exposing Ganapol's Blasius profile using non-uniform breakpoints
+template <int k>
+struct NonuniformGanapolFixture {
 
-// FIXME Test suzerain_bl_find_edge
+    static const double breakpts[10]; // Init just below
+    gsl_spline * const blasius_u;
+    gsl_interp_accel * accel;
+    bspline      b;
+    bsplineop    op;
+    bsplineop_lu lu;
+
+    NonuniformGanapolFixture()
+        : blasius_u(suzerain_blasius_u())
+        , accel(gsl_interp_accel_alloc())
+        , b(k, bspline::from_breakpoints(),
+            SUZERAIN_COUNTOF(breakpts), breakpts)
+        , op(b, 0, SUZERAIN_BSPLINEOP_COLLOCATION_GREVILLE)
+        , lu(op)
+    {
+        lu.factor_mass(op);
+    }
+
+    ~NonuniformGanapolFixture()
+    {
+        gsl_spline_free(blasius_u);
+        gsl_interp_accel_free(accel);
+    }
+
+};
+
+// As the data for Ganapol's Blasius profile runs up to 8.8 instead of 5.0, and
+// the routines compute edge quantities from the profiles, our basis runs up to
+// 8.8 as well.
+template <int k>
+const double NonuniformGanapolFixture<k>::breakpts[10] = {
+    0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 8.8
+};
+
+BOOST_FIXTURE_TEST_SUITE(bl_compute_thick_linear, UniformGanapolFixture<2>)
 
 BOOST_AUTO_TEST_CASE( blasius_deltastar )
 {
@@ -128,47 +164,47 @@ BOOST_AUTO_TEST_CASE( blasius_theta )
     BOOST_CHECK_SMALL((theta - 0.663007750711612), 0.0020);
 }
 
+BOOST_AUTO_TEST_SUITE_END()
+
+
+BOOST_FIXTURE_TEST_SUITE(bl_compute_thick_quadratic, UniformGanapolFixture<4>)
+
+BOOST_AUTO_TEST_CASE( blasius_find_edge )
+{
+    const double Re_x = 1e3;
+
+    // Prepare B-spline coefficients for Blasius profile kinetic energy
+    shared_array<double> ke(new double[b.n()]);
+    {
+        shared_ptr<gsl_spline> fit(suzerain_blasius_ke(Re_x),
+                                   gsl_spline_free);
+        shared_ptr<gsl_interp_accel> a(gsl_interp_accel_alloc(),
+                                       gsl_interp_accel_free);
+        for (int i = 0; i < b.n(); ++i) {
+            ke[i] = gsl_spline_eval(fit.get(), b.collocation_point(i), a.get());
+        }
+    }
+    BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS, lu.solve(1, ke.get(), 1, b.n()));
+
+    // Prepare working storage
+    shared_ptr<gsl_matrix> dB(gsl_matrix_alloc(b.k(), 3), gsl_matrix_free);
+    BOOST_REQUIRE(dB);
+
+    // Find edge using kinetic energy profile
+    double location = GSL_NAN;
+    BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS, suzerain_bl_find_edge(
+        ke.get(), &location, dB.get(), b.bw, b.dbw));
+
+    // FIXME Finish suzerain_bl_find_edge via appropriate tolerating
+    // BOOST_CHECK_EQUAL(location, 0.0);
+}
+
 // FIXME Test suzerain_bl_compute_thick
 
 BOOST_AUTO_TEST_SUITE_END()
 
-// A test fixture making test profile(s) and B-splines available
-struct SplinedBlasiusFixture {
 
-    static const double breakpts[10]; // Init just below
-    gsl_spline * const blasius_u;
-    gsl_interp_accel * accel;
-    bspline      b;
-    bsplineop    op;
-    bsplineop_lu lu;
-
-    SplinedBlasiusFixture()
-        : blasius_u(suzerain_blasius_u())
-        , accel(gsl_interp_accel_alloc())
-        , b(8, bspline::from_breakpoints(),
-            SUZERAIN_COUNTOF(breakpts), breakpts)
-        , op(b, 2, SUZERAIN_BSPLINEOP_COLLOCATION_GREVILLE)
-        , lu(op)
-    {
-        lu.factor_mass(op);
-    }
-
-    ~SplinedBlasiusFixture()
-    {
-        gsl_spline_free(blasius_u);
-        gsl_interp_accel_free(accel);
-    }
-
-};
-
-// As the data for Ganapol's Blasius profile runs up to 8.8 instead of 5.0, and
-// the routines compute edge quantities from the profiles, our basis runs up to
-// 8.8 as well.
-const double SplinedBlasiusFixture::breakpts[10] = {
-    0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 8.8
-};
-
-BOOST_FIXTURE_TEST_SUITE(bl_compute_thick_splined, SplinedBlasiusFixture)
+BOOST_FIXTURE_TEST_SUITE(bl_compute_thick_splined, NonuniformGanapolFixture<8>)
 
 // FIXME Test suzerain_bl_find_edge
 
@@ -234,6 +270,7 @@ BOOST_AUTO_TEST_CASE( blasius_theta )
 // FIXME Test suzerain_bl_compute_thick
 
 BOOST_AUTO_TEST_SUITE_END()
+
 
 BOOST_AUTO_TEST_SUITE(bl_compute_qoi)
 // FIXME Implement
