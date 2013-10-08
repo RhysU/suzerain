@@ -260,7 +260,7 @@ gsl_spline * prepare_fit(
         const double * const x,
         const double * const y)
 {
-    gsl_spline * s = gsl_spline_alloc(gsl_interp_cspline, N);
+    gsl_spline * s = gsl_spline_alloc(gsl_interp_akima, N);
     if (s) {
         if (gsl_spline_init(s, x, y, N)) {
             gsl_spline_free(s);
