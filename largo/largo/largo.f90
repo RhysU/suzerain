@@ -237,7 +237,7 @@ contains
 
 
   ! Generic interface allocate_rans, c
-  subroutine largo_init_allocate_c(lcp, cmodel) bind(C, name="largo_allocate_rans")
+  subroutine largo_init_allocate_rans_c(lcp, cmodel) bind(C, name="largo_allocate_rans")
 
     ! largo workspace C pointer
     type(largo_ptr), intent(out)         :: lcp
@@ -251,7 +251,7 @@ contains
     ! Invoke Fortran functionality using Fortran-ready model string
     call largo_allocate_rans(lcp, fmodel)
 
-  end subroutine largo_init_allocate_c
+  end subroutine largo_init_allocate_rans_c
 
 
   ! Generic interface allocate_rans, fortran
