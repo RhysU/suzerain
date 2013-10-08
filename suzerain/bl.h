@@ -198,8 +198,9 @@ suzerain_bl_compute_theta(
     gsl_bspline_deriv_workspace *dw);
 
 /**
- * Information characterizing boundary layer thickness in various ways.
- * Each member has units of \f$l_0\f$.
+ * Information characterizing boundary layer thickness in various ways.  Each
+ * member has units of \f$l_0\f$.  Using \ref suzerain_bl_compute_thick is the
+ * recommended way to populate this data.
  */
 typedef struct {
     double delta;     /**< Boundary layer thickness \f$\delta\f$. */
