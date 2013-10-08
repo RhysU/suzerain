@@ -195,8 +195,20 @@ BOOST_AUTO_TEST_CASE( blasius_find_edge )
     BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS, suzerain_bl_find_edge(
         ke.get(), &location, dB.get(), b.bw, b.dbw));
 
-    // FIXME Finish suzerain_bl_find_edge via appropriate tolerating
-    // BOOST_CHECK_EQUAL(location, 0.0);
+    // Tolerance from by eyeballing results computed in Octave:
+    //   source writeups/notebooks/blasius.m
+    //   Re=1000; plot(eta, blasius_kepp(Re), eta, zeros(size(eta)));
+    // There's no reason Octave plots should produce exactly this value.
+    BOOST_REQUIRE_SMALL((6.485 - location), 0.01);
+
+    // Finally, as a sanity check, be sure the second derivative of KE is small
+    // The tests both our zero-crossing logic as well as the ke__yy profile.
+    shared_ptr<gsl_spline> fit(suzerain_blasius_ke__yy(Re_x),
+                               gsl_spline_free);
+    shared_ptr<gsl_interp_accel> a(gsl_interp_accel_alloc(),
+                                   gsl_interp_accel_free);
+    const double ke__yy = gsl_spline_eval(fit.get(), location, a.get());
+    BOOST_REQUIRE_SMALL(ke__yy, 0.01);
 }
 
 // FIXME Test suzerain_bl_compute_thick
