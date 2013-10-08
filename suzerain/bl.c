@@ -277,10 +277,8 @@ suzerain_bl_compute_thick(
 
     FILL_WITH_NANS(thick);
 
-    int status                    = SUZERAIN_SUCCESS;
-    double abserr                 = GSL_NAN;
-    gsl_matrix *dB                = NULL;
-    gsl_integration_workspace *iw = NULL;
+    int status     = SUZERAIN_SUCCESS;
+    gsl_matrix *dB = NULL;
 
     /* Allocate working storage */
     if (NULL == (dB = gsl_matrix_alloc(w->k, 3))) {
