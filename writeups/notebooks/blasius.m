@@ -94,7 +94,7 @@ blasius_kepp = @(Re) (   4*blasius_fp.**2
                        + blasius_f.*(   3*blasius_fpp
                                       - (blasius_eta.*blasius_f.*blasius_fpp)/2
                                     )
-                       + blasius_fpp.**2*(blasius_eta.**2 + 2*Re)
+                       + blasius_fpp.**2.*(blasius_eta.**2 + 2*Re)
                        + blasius_fp.*(  7*blasius_eta.*blasius_fpp
                                        - (blasius_f.*blasius_fpp
                                            .*(blasius_eta.**2 + 2*Re)
