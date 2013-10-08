@@ -49,16 +49,16 @@ BOOST_AUTO_TEST_SUITE(bl_compute_viscous)
 // FIXME Implement
 BOOST_AUTO_TEST_SUITE_END()
 
-// A test fixture exposing Ganapol's Blasius profile as piecewise linear
-// so we may compare against independent trapezoidal results from that data
-struct LinearBlasiusFixture {
+// A test fixture exposing Ganapol's Blasius profile using eta breakpoints
+template <int k>
+struct UniformBlasiusFixture {
 
     bspline      b;
     bsplineop    op;
     bsplineop_lu lu;
 
-    LinearBlasiusFixture()
-        : b(2, bspline::from_breakpoints(),
+    UniformBlasiusFixture()
+        : b(k, bspline::from_breakpoints(),
             SUZERAIN_COUNTOF(suzerain_blasius_ganapol_eta),
             suzerain_blasius_ganapol_eta)
         , op(b, 0, SUZERAIN_BSPLINEOP_COLLOCATION_GREVILLE)
@@ -69,7 +69,7 @@ struct LinearBlasiusFixture {
 
 };
 
-BOOST_FIXTURE_TEST_SUITE(bl_compute_thick_linear, LinearBlasiusFixture)
+BOOST_FIXTURE_TEST_SUITE(bl_compute_thick_linear, UniformBlasiusFixture<2>)
 
 // FIXME Test suzerain_bl_find_edge
 
