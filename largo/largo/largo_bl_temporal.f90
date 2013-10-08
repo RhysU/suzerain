@@ -127,10 +127,10 @@ module largo_BL_temporal
     real(WP), allocatable, dimension(:) :: mean_tvar
     real(WP), allocatable, dimension(:) :: gr_DA_tvar
 
-    procedure(prestep_innery_rans), pointer, nopass :: largo_bl_temporal_prestep_innery_rans => NULL()
-    procedure(sourcevec_rans),      pointer, nopass :: largo_bl_temporal_sources_rans        => NULL()
-
   end type largo_BL_temporal_workspace_type
+
+  procedure(prestep_innery_rans), pointer :: largo_BL_temporal_prestep_sEta_innery_rans => NULL()
+  procedure(sourcevec_rans),      pointer :: largo_BL_temporal_sEta_rans                => NULL()
 
   ! Indices
   integer(c_int), parameter :: irho  = 1
@@ -186,6 +186,10 @@ module largo_BL_temporal
   public  :: largo_BL_temporal_sEta
 
   public  :: largo_BL_temporal_preStep_baseflow
+
+  public  :: largo_BL_temporal_init_rans
+  public  :: largo_BL_temporal_prestep_sEta_innery_rans
+  public  :: largo_BL_temporal_sEta_rans
 
 contains
 
@@ -257,6 +261,7 @@ contains
     ! Deallocate arrays for RANS turbulence variables
     if (allocated(auxp%dts_tvar      ))  deallocate(auxp%dts_tvar      )
     if (allocated(auxp%mean_tvar     ))  deallocate(auxp%mean_tvar     )
+    if (allocated(auxp%gr_DA_tvar    ))  deallocate(auxp%gr_DA_tvar    )
 
     ! Deallocate array of derived types
     deallocate(auxp)
@@ -310,6 +315,7 @@ contains
     character(len=255)                               :: ransmodel
     real(WP), dimension(*), intent(in)               :: gr_DA_tvar
     type(largo_BL_temporal_workspace_type), pointer  :: auxp
+    integer(c_int) :: it
 
     ! Get Fortran pointer from C pointer
     call c_f_pointer(cp, auxp)
@@ -337,8 +343,12 @@ contains
       auxp%gr_DA_tvar   = 0.0_WP
     end if
 
-    auxp%largo_bl_temporal_prestep_innery_rans => largo_bl_temporal_prestep_innery_rans_generic 
-    auxp%largo_bl_temporal_sources_rans        => largo_bl_temporal_sources_rans_generic 
+    do it=1, ntvar_
+      auxp%gr_DA_tvar (it) = gr_DA_tvar (it)
+    end do
+
+    largo_BL_temporal_prestep_sEta_innery_rans => largo_bl_temporal_prestep_sEta_innery_rans_generic 
+    largo_BL_temporal_sEta_rans                => largo_bl_temporal_sEta_rans_generic 
 
   end subroutine largo_BL_temporal_init_rans
 
@@ -539,7 +549,7 @@ contains
   end subroutine largo_BL_temporal_preStep_sEta
 
 
-  subroutine largo_BL_temporal_preStep_innery_rans_generic(cp, y, mean, ddy_mean)
+  subroutine largo_BL_temporal_preStep_sEta_innery_rans_generic(cp, y, mean, ddy_mean)
 
     real(WP), intent(in)                  :: y
     real(WP), dimension(*), intent(in)    :: mean
@@ -556,7 +566,7 @@ contains
       auxp%dts_tvar(it)  = - auxp%gr_DA_tvar(it)  * auxp%mean_tvar(it) + y * auxp%gr_delta * ddy_mean(it)
     end do
 
-  end subroutine largo_BL_temporal_preStep_innery_rans_generic
+  end subroutine largo_BL_temporal_preStep_sEta_innery_rans_generic
 
 
 #define DECLARE_SUBROUTINE(token)token (cp, A, B, src);\
@@ -665,7 +675,7 @@ contains
   end subroutine largo_BL_temporal_species_sEtaRms
 
 
-  subroutine largo_BL_temporal_sources_rans_generic (cp, A, B, srcvec)
+  subroutine largo_BL_temporal_sEta_rans_generic (cp, A, B, srcvec)
     type(largo_workspace_ptr), intent(in)     :: cp
     real(WP)       , intent(in)               :: A, B
     real(WP), dimension(*), intent(inout)     :: srcvec
@@ -677,7 +687,7 @@ contains
        srcvec(it) = A * srcvec(it) + B * auxp%dts_tvar(it)
     end do
 
-  end subroutine largo_BL_temporal_sources_rans_generic
+  end subroutine largo_BL_temporal_sEta_rans_generic
 
 
   subroutine DECLARE_SUBROUTINE(largo_BL_temporal_continuity_sEta)

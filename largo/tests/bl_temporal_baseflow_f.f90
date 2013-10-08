@@ -42,6 +42,9 @@ program bl_temporal_baseflow_f
     real(WP), parameter               :: y       = 1.0_WP/ 10.0_WP
     real(WP), parameter               :: grDelta = 5.0_WP/100.0_WP
 
+    character(len=255), parameter     :: turbmodel = "k_epsilon"
+    integer(c_int), parameter         :: ntvar  = 2
+
     real(WP), dimension(neq), parameter :: &
       field   = (/                  &
       &        11.0_WP/ 1000.0_WP,  &
@@ -159,9 +162,6 @@ program bl_temporal_baseflow_f
       &         2.0_WP/10000.0_WP   &
       /)
 
-    real(WP), dimension(neq)            :: &
-      dxbase  = (/ 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP /)
-
     real(WP), dimension(neq), parameter :: & 
       srcbase = (/                &
       &         1.0_WP/ 1000.0_WP,  &
@@ -173,9 +173,31 @@ program bl_temporal_baseflow_f
       &         1.0_WP/10000.0_WP   &
       /)
 
+    real(WP), dimension(neq)            :: &
+      dxbase  = (/ 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP /)
+
+    real(WP), dimension(ntvar), parameter :: &
+      meanTurb = (/               &
+      &        5.0_WP/ 100.0_WP,  &
+      &        3.0_WP/ 100.0_WP   &
+      /)
+
+    real(WP), dimension(ntvar), parameter :: &
+      dymeanTurb = (/             &
+      &        5.0_WP/  10.0_WP,  &
+      &        3.0_WP/  10.0_WP   &
+      /)
+
+    real(WP), dimension(ntvar), parameter :: &
+      grDATurb = (/               &
+      &        4.0_WP/ 100.0_WP,  &
+      &        2.0_WP/ 100.0_WP   &
+      /)
+
     real(WP), dimension(neq)            :: srcmean
     real(WP), dimension(neq)            :: srcrms
     real(WP), dimension(neq)            :: srcall
+    real(WP), dimension(ntvar)          :: srcturb
 
     real(WP), dimension(neq), parameter :: &
       srcmean_good = (/              &
@@ -202,9 +224,15 @@ program bl_temporal_baseflow_f
     real(WP), dimension(neq)            :: &
       srcall_good = srcmean_good + srcrms_good
 
+    real(WP), dimension(ntvar), parameter :: &
+      srcturb_good  = (/                &
+      &        1.0_WP/     2000.0_WP,   &
+      &        9.0_WP/    10000.0_WP    &
+      /)
+
     real(WP), parameter :: tolerance = 1.0E-14
 
-    integer(c_int) :: is
+    integer(c_int) :: is, it
 
     call testframework_setup(__FILE__)
 
@@ -212,6 +240,7 @@ program bl_temporal_baseflow_f
     srcmean = 0.0_WP
     srcrms  = 0.0_WP
     srcall  = 0.0_WP
+    srcturb = 0.0_WP
 
     ! Allocate workspace
     call largo_BL_temporal_allocate (workspace, neq, ns)
@@ -276,11 +305,13 @@ program bl_temporal_baseflow_f
 
 
     ! Recompute using wrapper routines
+    ! and include RANS sources
     ! Allocate workspace (same pointer as before)
     call largo_BL_temporal_allocate (workspace, neq, ns)
 
     ! Init growth rates
     call largo_BL_temporal_init  (workspace, grDelta, grDA, grDArms)
+    call largo_BL_temporal_init_rans (workspace, turbmodel, grDATurb)
 
     ! Compute prestep values
     call largo_BL_temporal_preStep_baseflow  (workspace,   base,  dybase,  &
@@ -288,9 +319,12 @@ program bl_temporal_baseflow_f
     call largo_BL_temporal_preStep_sEta (workspace, y, field,         &
                                                mean,  rms,  mean_rqq, &
                                               dmean, drms, dmean_rqq)
+    call largo_BL_temporal_preStep_sEta_innery_rans (workspace, y,         &
+                                                  meanTurb, dymeanTurb)
 
     ! Compute sources
     call largo_BL_temporal_sEta (workspace, 0.0_WP, 1.0_WP, srcall(1))
+    call largo_BL_temporal_sEta_rans (workspace, 0.0_WP, 1.0_WP, srcturb(1))
 
     ! Check all
     ASSERT(abs((srcall(1)/srcall_good(1))-1.0_WP) < tolerance )
@@ -300,6 +334,9 @@ program bl_temporal_baseflow_f
     ASSERT(abs((srcall(5)/srcall_good(5))-1.0_WP) < tolerance )
     do is=1, ns
       ASSERT(abs((srcall(5+is)/srcall_good(5+is))-1.0_WP) < tolerance )
+    end do
+    do it=1, ntvar
+      ASSERT(abs((srcturb(it)/srcturb_good(it))-1.0_WP) < tolerance )
     end do
 
     ! Deallocate workspace
