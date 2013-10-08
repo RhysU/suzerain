@@ -101,7 +101,7 @@ extern const double suzerain_blasius_ganapol_fpp[45];
 
 /**
  * Obtain a Blasius profile spline fit producing nondimensional \f$u /
- * u_\infty\f$ given \f$\eta = y \sqrt{\frac{u_\infty}{\nu x}}\f$.  The data is
+ * u_\infty\f$ given \f$\eta = y \sqrt{\mbox{Re}_x}\f$.  The data is
  * from \ref suzerain_blasius_ganapol_fp and \ref suzerain_blasius_ganapol_eta.
  * The returned <tt>gsl_spline*</tt> can be interrogated using <a
  * href="http://www.gnu.org/software/gsl/manual/html_node/Higher_002dlevel-Interface.html"
