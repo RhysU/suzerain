@@ -188,6 +188,7 @@ module largo_BL_temporal
   public  :: largo_BL_temporal_preStep_baseflow
 
   public  :: largo_BL_temporal_allocate_rans
+  public  :: largo_BL_temporal_get_ntvar_rans
   public  :: largo_BL_temporal_init_rans
   public  :: largo_BL_temporal_prestep_sEta_innery_rans
   public  :: largo_BL_temporal_sEta_rans
@@ -312,6 +313,21 @@ contains
     largo_BL_temporal_sEta_rans                => largo_bl_temporal_sEta_rans_generic 
 
   end subroutine largo_BL_temporal_allocate_rans
+
+
+  ! RANS initialization
+  subroutine largo_BL_temporal_get_ntvar_rans(cp, ntvar)
+
+    ! largo workspace C pointer
+    type(largo_workspace_ptr), intent(in)            :: cp
+    integer(c_int)           , intent(out)           :: ntvar
+
+!!$     ! Get Fortran pointer from C pointer
+!!$     call c_f_pointer(cp, auxp)
+
+    ntvar = ntvar_
+
+  end subroutine largo_BL_temporal_get_ntvar_rans
 
 
   subroutine largo_BL_temporal_init(cp, gr_delta, gr_DA, gr_DA_rms)

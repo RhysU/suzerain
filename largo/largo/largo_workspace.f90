@@ -9,6 +9,15 @@ module largo_workspace
 
   implicit none ! is in effect throughout entire module
 
+  
+  abstract interface
+    subroutine allocate_rans(cp, fmodel)
+      import
+      character(*), intent(in)              :: fmodel
+      type(largo_workspace_ptr), intent(in) :: cp
+    end subroutine allocate_rans
+  end interface
+
 
   abstract interface
     subroutine init(cp, grDelta, grDA, grDArms)
@@ -18,6 +27,24 @@ module largo_workspace
       real(WP), dimension(*), intent(in)    :: grDArms
       type(largo_workspace_ptr), intent(in) :: cp
     end subroutine init
+  end interface
+
+
+  abstract interface
+    subroutine get_ntvar_rans(cp, ntvar)
+      import
+      integer(c_int), intent(out)           :: ntvar
+      type(largo_workspace_ptr), intent(in) :: cp
+    end subroutine get_ntvar_rans
+  end interface
+
+
+  abstract interface
+    subroutine init_rans(cp, grDAturb)
+      import
+      real(WP), dimension(*), intent(in)    :: grDAturb
+      type(largo_workspace_ptr), intent(in) :: cp
+    end subroutine init_rans
   end interface
 
 
@@ -97,6 +124,17 @@ module largo_workspace
 
 
   abstract interface
+    subroutine prestep_innery_rans(cp, y, mean, ddy_mean)
+      import
+      real(WP), intent(in)                  :: y
+      real(WP), dimension(*), intent(in)    :: mean
+      real(WP), dimension(*), intent(in)    :: ddy_mean
+      type(largo_workspace_ptr), intent(in) :: cp
+    end subroutine prestep_innery_rans
+  end interface
+
+
+  abstract interface
     subroutine source(cp, A, B, src)
       import
       type(largo_workspace_ptr), intent(in)  :: cp
@@ -166,6 +204,13 @@ module largo_workspace
     procedure(prestep_baseflow), pointer, nopass :: largo_prestep_baseflow    => NULL()
     procedure(prestep_baseflow), pointer, nopass :: largo_init_wall_baseflow  => NULL()
 
+    ! RANS Turbulence variables
+    procedure(allocate_rans),       pointer, nopass :: largo_allocate_rans       => NULL()
+    procedure(get_ntvar_rans),      pointer, nopass :: largo_get_ntvar_rans      => NULL()
+    procedure(init_rans),           pointer, nopass :: largo_init_rans           => NULL()
+    procedure(prestep_innery_rans), pointer, nopass :: largo_prestep_innery_rans => NULL()
+    procedure(sourcevec),           pointer, nopass :: largo_sources_mean_rans   => NULL()
+
     ! Pointer to largo field-related data (workspace)
     type(largo_workspace_ptr) :: cp
 
@@ -177,6 +222,9 @@ module largo_workspace
 
     ! Number of variables (includes pressure if relevant)
     integer(c_int) :: nvar = 0
+
+    ! Number of turbulence variables
+    integer(c_int) :: ntvar = 0
 
   end type largo_type
 

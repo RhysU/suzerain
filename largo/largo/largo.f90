@@ -148,6 +148,14 @@ contains
 
       lauxp%largo_prestep_baseflow => largo_BL_temporal_preStep_baseflow
 
+      ! RANS methods
+      lauxp%largo_allocate_rans       => largo_BL_temporal_allocate_rans
+      lauxp%largo_get_ntvar_rans      => largo_BL_temporal_get_ntvar_rans
+      lauxp%largo_init_rans           => largo_BL_temporal_init_rans
+      lauxp%largo_prestep_innery_rans => largo_BL_temporal_prestep_sEta_innery_rans
+      lauxp%largo_sources_mean_rans   => largo_BL_temporal_sEta_rans
+
+
     case ("bl_temporal_tensor-consistent")
       ! Initialize number of variables
       lauxp%nvar = neq
@@ -228,7 +236,46 @@ contains
   end subroutine largo_allocate
 
 
-  ! Generic interface allocate
+  ! Generic interface allocate_rans, c
+  subroutine largo_init_allocate_c(lcp, cmodel) bind(C, name="largo_allocate_rans")
+
+    ! largo workspace C pointer
+    type(largo_ptr), intent(out)         :: lcp
+    type(string_ptr), intent(in), value  :: cmodel
+    character(len=255)                   :: fmodel
+    logical                              :: copy_success
+
+    ! Copy C-style, NULL terminated string to Fortran-compatible storage
+    copy_success = largo_c_f_stringcopy (cmodel, fmodel)
+
+    ! Invoke Fortran functionality using Fortran-ready model string
+    call largo_allocate_rans(lcp, fmodel)
+
+  end subroutine largo_init_allocate_c
+
+
+  ! Generic interface allocate_rans, fortran
+  subroutine largo_allocate_rans(lcp, fmodel)
+
+    ! largo workspace C pointer
+    type(largo_ptr), intent(out)         :: lcp
+    character(len=255)                   :: fmodel
+    type(largo_type), pointer            :: lauxp
+    integer(c_int)                       :: ntvar
+
+    call c_f_pointer(lcp, lauxp)
+
+    ! Invoke Fortran functionality using Fortran-ready model string
+    call lauxp%largo_allocate_rans(lcp, fmodel)
+
+    ! Get number of turbulence variables 
+    call lauxp%largo_get_ntvar_rans(lcp, ntvar)
+    lauxp%ntvar = ntvar
+
+  end subroutine largo_allocate_rans
+
+
+  ! Generic interface deallocate
   subroutine largo_deallocate(lcp) bind(C)
 
     ! largo C pointer
@@ -304,21 +351,20 @@ contains
   end subroutine largo_init
 
 
-  ! Generic interface prestep subroutine
-  subroutine largo_preStep_sEtaMean(lcp, y, mean, ddy_mean) bind(C)
+  ! Generic interface init_rans, fortran
+  subroutine largo_init_rans(lcp, grDAturb) bind(C)
 
-    real(WP), intent(in), value         :: y
-    real(WP), dimension(*), intent(in)  :: mean
-    real(WP), dimension(*), intent(in)  :: ddy_mean
-    type(largo_ptr), value              :: lcp
-    type(largo_type), pointer           :: lauxp
+    ! largo workspace C pointer
+    type(largo_ptr), intent(out)         :: lcp
+    real(WP), dimension(*), intent(in)   :: grDAturb
+    type(largo_type), pointer            :: lauxp
 
     call c_f_pointer(lcp, lauxp)
-    call lauxp%largo_prestep_mean(lauxp%cp, y, &
-                             mean         (1:lauxp%nvar),  &
-                             ddy_mean     (1:lauxp%nvar))
 
-  end subroutine largo_preStep_sEtaMean
+    ! Invoke Fortran functionality using Fortran-ready model string
+    call lauxp%largo_init_rans(lcp, grDAturb(1:lauxp%ntvar))
+
+  end subroutine largo_init_rans
 
 
   ! Generic interface prestep subroutine
@@ -418,6 +464,23 @@ contains
 
 
   ! Generic interface prestep subroutine
+  subroutine largo_preStep_sEta_innery_rans(lcp, y, mean, ddy_mean) bind(C)
+
+    real(WP), intent(in), value         :: y
+    real(WP), dimension(*), intent(in)  :: mean
+    real(WP), dimension(*), intent(in)  :: ddy_mean
+    type(largo_ptr), value              :: lcp
+    type(largo_type), pointer           :: lauxp
+
+    call c_f_pointer(lcp, lauxp)
+    call lauxp%largo_prestep_innery_rans(lauxp%cp, y, &
+                             mean         (1:lauxp%ntvar),  &
+                             ddy_mean     (1:lauxp%ntvar))
+
+  end subroutine largo_preStep_sEta_innery_rans
+
+
+  ! Generic interface prestep subroutine
   subroutine largo_init_wall_baseflow(lcp, wall_base, wall_ddy_base, &
                                            wall_ddt_base, wall_ddx_base, &
                                            wall_src_base) bind(C)
@@ -497,6 +560,17 @@ contains
     call c_f_pointer(lcp, lauxp)
     call lauxp%largo_species_mean(lauxp%cp, A, B, srcvec(1:lauxp%ns))
   end subroutine largo_species_sEtaMean
+
+  ! Generic interface sEta_rans subroutine
+  subroutine largo_sEta_rans (lcp, A, B, srcvec) bind(C)
+    type(largo_ptr), value                 :: lcp
+    real(WP), intent(in), value            :: A, B
+    real(WP), dimension(*), intent(inout)  :: srcvec
+    type(largo_type), pointer              :: lauxp
+
+    call c_f_pointer(lcp, lauxp)
+    call lauxp%largo_sources_mean_rans(lauxp%cp, A, B, srcvec(1:lauxp%ntvar))
+  end subroutine largo_sEta_rans
 
   ! Generic interface continuity_sEtaRms subroutine
   subroutine DECLARE_GENERIC_SUBROUTINE(largo_continuity_sEtaRms)
