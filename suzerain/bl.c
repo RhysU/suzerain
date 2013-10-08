@@ -75,6 +75,12 @@ suzerain_bl_find_edge(
     /* Everything hinges on the second derivative of H0 crossing 0.0 */
     enum { nderiv = 2, threshold = 0 };
 
+    /* Ensure the basis has at least non-constant derivatives of interest */
+    if (SUZERAIN_UNLIKELY(w->k < nderiv + 2)) {
+        SUZERAIN_ERROR("Basis must have non-constant second derivatives",
+                       SUZERAIN_EINVAL);
+    }
+
     /* Assume failure until proven otherwise. */
     *location  = GSL_NAN;
     int status = SUZERAIN_EFAILED;

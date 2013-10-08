@@ -100,7 +100,7 @@ suzerain_bl_compute_viscous(
  * \param[out] location  Location at which edge is detected.
  * \param[in]  dB        Temporary storage to use of size <tt>w->k</tt> by
  *                       no less than <tt>3</tt>.
- * \param[in]  w         Workspace to use.
+ * \param[in]  w         Workspace possessing non-constant second derivatives.
  * \param[in]  dw        Workspace to use.
  *
  * \return ::SUZERAIN_SUCCESS on success and returns the answer in
