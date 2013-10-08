@@ -252,19 +252,30 @@ enum {
                     == sizeof(suzerain_blasius_ganapol_eta))
 };
 
-// Streamwise velocity u/u_oo is Re_x-independent.
-gsl_spline * suzerain_blasius_u()
+// Handles the boilerplate aspects of preparing a spline fit
+// Also isolates spline-type selections in one place
+static
+gsl_spline * prepare_spline_fit(
+        const size_t N,
+        const double * const x,
+        const double * const y)
 {
-    gsl_spline * s = gsl_spline_alloc(gsl_interp_cspline, Ndata);
+    gsl_spline * s = gsl_spline_alloc(gsl_interp_cspline, N);
     if (s) {
-        if (gsl_spline_init(s,
-                            suzerain_blasius_ganapol_eta,
-                            suzerain_blasius_ganapol_fp, Ndata)) {
+        if (gsl_spline_init(s, x, y, N)) {
             gsl_spline_free(s);
             s = NULL;
         }
     }
     return s;
+}
+
+// Streamwise velocity u/u_oo is Re_x-independent
+gsl_spline * suzerain_blasius_u()
+{
+    return prepare_spline_fit(Ndata,
+                              suzerain_blasius_ganapol_eta,
+                              suzerain_blasius_ganapol_fp);
 }
 
 // Wall-normal velocity v/u_oo is Re_x-dependent.
