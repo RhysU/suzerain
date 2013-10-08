@@ -76,16 +76,16 @@ suzerain_bl_find_edge(
     enum { nderiv = 2, threshold = 0 };
 
     /* Assume failure until proven otherwise. */
-    *location = GSL_NAN;
+    *location  = GSL_NAN;
     int status = SUZERAIN_EFAILED;
 
     /* Start by evaluating function on 0th breakpoint... */
-    double flower, lower = gsl_bspline_breakpoint(0, w);
+    double flower = GSL_NAN, lower = gsl_bspline_breakpoint(0, w);
     suzerain_bspline_linear_combination(
             nderiv, coeffs_H0, 1, &lower, &flower, 0, dB, w, dw);
 
     /* ...look breakpoint-by-breakpoint for upwards crossing of threshold... */
-    double fupper, upper;
+    double fupper = GSL_NAN, upper = GSL_NAN;
     for (size_t i = 1; i < w->nbreak; ++i, lower = upper, flower = fupper) {
         upper = gsl_bspline_breakpoint(i, w);
         suzerain_bspline_linear_combination(
