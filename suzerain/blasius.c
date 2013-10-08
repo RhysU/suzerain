@@ -1,7 +1,7 @@
 /*--------------------------------------------------------------------------
  *
- * Copyright (C) 2011, 2012, 2013 Rhys Ulerich
- * Copyright (C) 2012, 2013 The PECOS Development Team
+ * Copyright (C) 2013 Rhys Ulerich
+ * Copyright (C) 2013 The PECOS Development Team
  * Please see http://pecos.ices.utexas.edu for more information on PECOS.
  *
  * This file is part of Suzerain.
@@ -255,7 +255,7 @@ enum {
 // Handles the boilerplate aspects of preparing a spline fit
 // Also isolates spline-type selections in one place
 static
-gsl_spline * prepare_spline_fit(
+gsl_spline * prepare_fit(
         const size_t N,
         const double * const x,
         const double * const y)
@@ -270,94 +270,67 @@ gsl_spline * prepare_spline_fit(
     return s;
 }
 
-// Streamwise velocity u/u_oo is Re_x-independent
 gsl_spline * suzerain_blasius_u()
 {
-    return prepare_spline_fit(Ndata,
-                              suzerain_blasius_ganapol_eta,
-                              suzerain_blasius_ganapol_fp);
+    return prepare_fit(Ndata,
+                       suzerain_blasius_ganapol_eta,
+                       suzerain_blasius_ganapol_fp);
 }
 
-// Wall-normal velocity v/u_oo is Re_x-dependent.
 gsl_spline * suzerain_blasius_v(const double Re_x)
 {
-    gsl_spline * s = gsl_spline_alloc(gsl_interp_cspline, Ndata);
-    if (s) {
-        // Reading through GSL's gsl_spline interface implementation suggests
-        // that splines are self-contained from a data perspective, and so we
-        // can form the necessary function in a temporary buffer.
-        const double invSqrt2Re = sqrt(0.5 / Re_x);
-        double v[Ndata];
-        for (size_t i = 0; i < Ndata; ++i) {
-            v[i] = invSqrt2Re * (  suzerain_blasius_ganapol_f  [i]
-                                 + suzerain_blasius_ganapol_eta[i]
-                                 * suzerain_blasius_ganapol_fp [i]);
-        }
-        if (gsl_spline_init(s, suzerain_blasius_ganapol_eta, v, Ndata)) {
-            gsl_spline_free(s);
-            s = NULL;
-        }
-#ifndef NDEBUG
-        // Defensively NaN the scratch buffer so folks notice if some day we
-        // start oozing points to stack-allocated temporaries.
-        for (size_t i = 0; i < Ndata; ++i) v[i] = GSL_NAN;
-#endif
+    const double invSqrt2Re = sqrt(0.5 / Re_x);
+    double v[Ndata];
+    for (size_t i = 0; i < Ndata; ++i) {
+        v[i] = invSqrt2Re * (  suzerain_blasius_ganapol_f  [i]
+                             + suzerain_blasius_ganapol_eta[i]
+                             * suzerain_blasius_ganapol_fp [i]);
     }
+    gsl_spline * s = prepare_fit(Ndata, suzerain_blasius_ganapol_eta, v);
+#ifndef NDEBUG
+    // Defensively NaN the scratch buffer so folks notice if some day we
+    // start oozing pointers to stack-allocated temporaries.
+    for (size_t i = 0; i < Ndata; ++i) v[i] = GSL_NAN;
+#endif
     return s;
 }
 
-// Kinetic energy is Re_x-dependent.
-// See suzerain_blasius_v comments re: temporary data management
 gsl_spline * suzerain_blasius_ke(const double Re_x)
 {
-    gsl_spline * s = gsl_spline_alloc(gsl_interp_cspline, Ndata);
-    if (s) {
-        const double invSqrt2Re = sqrt(0.5 / Re_x);
-        double ke[Ndata];
-        for (size_t i = 0; i < Ndata; ++i) {
-            const double u = suzerain_blasius_ganapol_fp[i];
-            const double v = invSqrt2Re * (  suzerain_blasius_ganapol_f  [i]
-                                           + suzerain_blasius_ganapol_eta[i]
-                                           * suzerain_blasius_ganapol_fp [i]);
-            ke[i] = (u*u + v*v) / 2;
-        }
-        if (gsl_spline_init(s, suzerain_blasius_ganapol_eta, ke, Ndata)) {
-            gsl_spline_free(s);
-            s = NULL;
-        }
-#ifndef NDEBUG
-        for (size_t i = 0; i < Ndata; ++i) ke[i] = GSL_NAN;
-#endif
+    const double invSqrt2Re = sqrt(0.5 / Re_x);
+    double ke[Ndata];
+    for (size_t i = 0; i < Ndata; ++i) {
+        const double u = suzerain_blasius_ganapol_fp[i];
+        const double v = invSqrt2Re * (  suzerain_blasius_ganapol_f  [i]
+                                       + suzerain_blasius_ganapol_eta[i]
+                                       * suzerain_blasius_ganapol_fp [i]);
+        ke[i] = (u*u + v*v) / 2;
     }
+    gsl_spline * s = prepare_fit(Ndata, suzerain_blasius_ganapol_eta, ke);
+#ifndef NDEBUG
+    for (size_t i = 0; i < Ndata; ++i) ke[i] = GSL_NAN;
+#endif
     return s;
 }
 
-// Wall-normal derivatives of kinetic energy are Re_x-dependent.
-// Horrible algebra computed in writeups/notebooks/Blasius_Kinetic_Energy.nb.
-// See suzerain_blasius_v comments re: temporary data management
-gsl_spline * suzerain_blasius_ke__yy(const double Re) // Not Re_x, brevity
+gsl_spline * suzerain_blasius_ke__yy(const double Re_x)
 {
-    gsl_spline * s = gsl_spline_alloc(gsl_interp_cspline, Ndata);
-    if (s) {
-        double ke__yy[Ndata];
-        for (size_t i = 0; i < Ndata; ++i) {
-            const double eta = suzerain_blasius_ganapol_eta[i];
-            const double f   = suzerain_blasius_ganapol_f  [i];
-            const double fp  = suzerain_blasius_ganapol_fp [i];
-            const double fpp = suzerain_blasius_ganapol_fpp[i];
-            const double e2R = eta*eta + 2*Re;
-            ke__yy[i]        = (   4*fp*fp
-                                 + f*(3*fpp - 0.5*eta*f*fpp)
-                                 + fpp*fpp*e2R
-                                 + fp*(7*eta*fpp - 0.5*f*fpp*e2R))/2;
-        }
-        if (gsl_spline_init(s, suzerain_blasius_ganapol_eta, ke__yy, Ndata)) {
-            gsl_spline_free(s);
-            s = NULL;
-        }
-#ifndef NDEBUG
-        for (size_t i = 0; i < Ndata; ++i) ke__yy[i] = GSL_NAN;
-#endif
+    // Horrible algebra in writeups/notebooks/Blasius_Kinetic_Energy.nb
+    double ke__yy[Ndata];
+    for (size_t i = 0; i < Ndata; ++i) {
+        const double eta = suzerain_blasius_ganapol_eta[i];
+        const double f   = suzerain_blasius_ganapol_f  [i];
+        const double fp  = suzerain_blasius_ganapol_fp [i];
+        const double fpp = suzerain_blasius_ganapol_fpp[i];
+        const double e2R = eta*eta + 2*Re_x;
+        ke__yy[i]        = (   4*fp*fp
+                             + f*(3*fpp - 0.5*eta*f*fpp)
+                             + fpp*fpp*e2R
+                             + fp*(7*eta*fpp - 0.5*f*fpp*e2R))/2;
     }
+    gsl_spline * s = prepare_fit(Ndata, suzerain_blasius_ganapol_eta, ke__yy);
+#ifndef NDEBUG
+    for (size_t i = 0; i < Ndata; ++i) ke__yy[i] = GSL_NAN;
+#endif
     return s;
 }
