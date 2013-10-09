@@ -144,7 +144,7 @@ suzerain_bl_find_edge(
  * suzerain_error().
  */
 int
-suzerain_bl_compute_delta1(
+suzerain_bl_displacement_thickness(
     const double edge_location,
     const double * coeffs_rho_u,
     double * delta1,
@@ -216,8 +216,8 @@ typedef struct {
  * coefficient representation of specific total enthalpy \f$H_0 = \frac{\rho E
  * + p}{\rho}\f$, streamwise momentum \f$\rho u\f$, and velocity \f$u\f$.  This
  * is a convenience method around \ref suzerain_bl_find_edge, \ref
- * suzerain_bl_compute_delta1, and \ref suzerain_bl_compute_delta2 packing
- * the results into a \ref suzerain_bl_thicknesses structure.
+ * suzerain_bl_displacement_thickness, and \ref suzerain_bl_compute_delta2
+ * packing the results into a \ref suzerain_bl_thicknesses structure.
  *
  * \param[in ] coeffs_H0    Coefficient representation of \f$H_0\f$.
  * \param[in ] coeffs_rho_u Coefficient representation of \f$\rho u\f$.

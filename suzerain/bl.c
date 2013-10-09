@@ -112,7 +112,7 @@ suzerain_bl_find_edge(
 }
 
 int
-suzerain_bl_compute_delta1(
+suzerain_bl_displacement_thickness(
     const double edge_location,
     const double * coeffs_rho_u,
     double * delta1,
@@ -298,7 +298,7 @@ suzerain_bl_compute_thicknesses(
     if (SUZERAIN_UNLIKELY(status != SUZERAIN_SUCCESS)) goto done;
 
     /* Compute displacement thickness */
-    status = suzerain_bl_compute_delta1(
+    status = suzerain_bl_displacement_thickness(
             thick->delta, coeffs_rho_u, &thick->delta1, dB, w, dw);
     if (SUZERAIN_UNLIKELY(status != SUZERAIN_SUCCESS)) goto done;
 

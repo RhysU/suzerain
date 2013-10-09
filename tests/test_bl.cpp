@@ -123,7 +123,7 @@ BOOST_AUTO_TEST_CASE( blasius_delta1 )
 
     // Integrate for delta1
     double delta1 = GSL_NAN;
-    BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS, suzerain_bl_compute_delta1(
+    BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS, suzerain_bl_displacement_thickness(
         b.collocation_point(b.n()-1), u.get(),
         &delta1, dB.get(), b.bw, b.dbw));
 
@@ -275,7 +275,7 @@ BOOST_AUTO_TEST_CASE( blasius_delta1 )
 
     // Integrate for delta1
     double delta1 = GSL_NAN;
-    BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS, suzerain_bl_compute_delta1(
+    BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS, suzerain_bl_displacement_thickness(
         b.collocation_point(b.n()-1), rho_u.get(),
         &delta1, dB.get(), b.bw, b.dbw));
 
