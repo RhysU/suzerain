@@ -112,15 +112,15 @@ suzerain_bl_find_edge(
 }
 
 int
-suzerain_bl_compute_deltastar(
+suzerain_bl_compute_delta1(
     const double edge_location,
     const double * coeffs_rho_u,
-    double * deltastar,
+    double * delta1,
     gsl_matrix *dB,
     gsl_bspline_workspace *w,
     gsl_bspline_deriv_workspace *dw)
 {
-    *deltastar = GSL_NAN;           // Be defensive
+    *delta1 = GSL_NAN;              // Be defensive
     if (gsl_isnan(edge_location)) { // Propagate NaN but succeed
         return SUZERAIN_SUCCESS;
     }
@@ -143,9 +143,9 @@ suzerain_bl_compute_deltastar(
                        SUZERAIN_ESANITY);
     }
 
-    /* Notice any failure below will be catastrophic   */
-    /* so accumulate integral into *deltastar directly */
-    *deltastar = 0;
+    /* Notice any failure below will be catastrophic */
+    /* so accumulate integral into *delta1 directly  */
+    *delta1 = 0;
 
     /* Accumulate the breakpoint-by-breakpoint contributions to result */
     double xj = 0, wj = 0;
@@ -174,7 +174,7 @@ suzerain_bl_compute_deltastar(
             }
 
             /* Then use integrand scaled by weight to accumulate result */
-            *deltastar += wj * (1 - rho_u / rho_u_edge);
+            *delta1 += wj * (1 - rho_u / rho_u_edge);
         }
     }
 
@@ -298,8 +298,8 @@ suzerain_bl_compute_thick(
     if (SUZERAIN_UNLIKELY(status != SUZERAIN_SUCCESS)) goto done;
 
     /* Compute displacement thickness */
-    status = suzerain_bl_compute_deltastar(
-            thick->delta, coeffs_rho_u, &thick->deltastar, dB, w, dw);
+    status = suzerain_bl_compute_delta1(
+            thick->delta, coeffs_rho_u, &thick->delta1, dB, w, dw);
     if (SUZERAIN_UNLIKELY(status != SUZERAIN_SUCCESS)) goto done;
 
     /* Compute momentum thickness */
@@ -327,29 +327,29 @@ suzerain_bl_compute_qoi(
 
     // Nondimensional quantities are computed with the first line being the
     // quantity and the second line being any needed "code unit" correction.
-    qoi->cf           = 2 * viscous->tau_w / edge->rho / square(edge->u)
-                      / code_Re;
-    qoi->gamma_e      = edge->gamma
-                      * 1;
-    qoi->Ma_e         = edge->u / edge->a
-                      * code_Ma;
-    qoi->Pr_w         = wall->Pr;
-    qoi->ratio_nu     = (edge->mu / edge->rho) / (wall->mu / wall->rho)
-                      * 1;
-    qoi->ratio_rho    = edge->rho / wall->rho
-                      * 1;
-    qoi->ratio_T      = edge->T / wall->T
-                      * 1;
-    qoi->Re_delta     = edge->rho * edge->u * thick->delta     / edge->mu
-                      * code_Re;
-    qoi->Re_deltastar = edge->rho * edge->u * thick->deltastar / edge->mu
-                      * code_Re;
-    qoi->Re_theta     = edge->rho * edge->u * thick->theta     / edge->mu
-                      * code_Re;
-    qoi->shapefactor  = thick->deltastar / thick->theta
-                      * 1;
-    qoi->v_wallplus   = wall->v / viscous->u_tau
-                      * 1;
+    qoi->cf          = 2 * viscous->tau_w / edge->rho / square(edge->u)
+                     / code_Re;
+    qoi->gamma_e     = edge->gamma
+                     * 1;
+    qoi->Ma_e        = edge->u / edge->a
+                     * code_Ma;
+    qoi->Pr_w        = wall->Pr;
+    qoi->ratio_nu    = (edge->mu / edge->rho) / (wall->mu / wall->rho)
+                     * 1;
+    qoi->ratio_rho   = edge->rho / wall->rho
+                     * 1;
+    qoi->ratio_T     = edge->T / wall->T
+                     * 1;
+    qoi->Re_delta    = edge->rho * edge->u * thick->delta     / edge->mu
+                     * code_Re;
+    qoi->Re_delta1   = edge->rho * edge->u * thick->delta1 / edge->mu
+                     * code_Re;
+    qoi->Re_theta    = edge->rho * edge->u * thick->theta     / edge->mu
+                     * code_Re;
+    qoi->shapefactor = thick->delta1 / thick->theta
+                     * 1;
+    qoi->v_wallplus  = wall->v / viscous->u_tau
+                     * 1;
 
     return SUZERAIN_SUCCESS;
 }
@@ -370,7 +370,7 @@ suzerain_bl_compute_pg(
 
     // Nondimensional quantities are computed with the first line being the
     // quantity and the second line being any needed "code unit" correction.
-    pg->Clauser      = thick->deltastar / viscous->tau_w * edge_p__x
+    pg->Clauser      = thick->delta1 / viscous->tau_w * edge_p__x
                      * code_Re / square(code_Ma);
     pg->Launder_e    = edge->mu * edge_u__x / edge->rho / square(edge->u)
                      / code_Re;
