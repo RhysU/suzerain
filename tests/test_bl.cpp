@@ -430,13 +430,13 @@ BOOST_AUTO_TEST_CASE( compute_qoi )
     BOOST_CHECK_CLOSE(qoi.p_ex,         -0.011892537649319856,  tol); ++cnt;
     BOOST_CHECK_CLOSE(qoi.Pohlhausen,   24.849095784497852,     meh); ++cnt;
     BOOST_CHECK_CLOSE(qoi.Pr_w,         0.65543907074081864,    tol); ++cnt;
-    BOOST_CHECK_CLOSE(qoi.Re_delta,     1494.1943713234461,     tol); ++cnt;
-    BOOST_CHECK_CLOSE(qoi.Re_deltastar, 141.95952214875473,     tol); ++cnt;
-    BOOST_CHECK_CLOSE(qoi.Re_theta,     189.49842591559681,     tol); ++cnt;
     BOOST_CHECK_CLOSE(qoi.ratio_rho,    edge.rho / wall.rho,    tol); ++cnt;
     BOOST_CHECK_CLOSE(qoi.ratio_nu,       (edge.mu / edge.rho)
                                         / (wall.mu / wall.rho), tol); ++cnt;
     BOOST_CHECK_CLOSE(qoi.ratio_T,      4.1960728537236802,     tol); ++cnt;
+    BOOST_CHECK_CLOSE(qoi.Re_delta,     1494.1943713234461,     tol); ++cnt;
+    BOOST_CHECK_CLOSE(qoi.Re_deltastar, 141.95952214875473,     tol); ++cnt;
+    BOOST_CHECK_CLOSE(qoi.Re_theta,     189.49842591559681,     tol); ++cnt;
     BOOST_CHECK_CLOSE(qoi.shapefactor,  0.7491329886401481,     tol); ++cnt;
     BOOST_CHECK_CLOSE(qoi.v_wallplus,   0.0094118607746200931,  tol); ++cnt;
     BOOST_CHECK_EQUAL(cnt, sizeof(qoi)/sizeof(qoi.cf));

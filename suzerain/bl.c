@@ -346,18 +346,18 @@ suzerain_bl_compute_qoi(
     qoi->p_ex         = thick->delta / edge->rho / square(edge->u) * edge->p__x
                       / square(code_Ma);
     qoi->Pr_w         = wall->Pr;
-    qoi->Re_delta     = edge->rho * edge->u * thick->delta     / edge->mu
-                      * code_Re;
-    qoi->Re_deltastar = edge->rho * edge->u * thick->deltastar / edge->mu
-                      * code_Re;
-    qoi->Re_theta     = edge->rho * edge->u * thick->theta     / edge->mu
-                      * code_Re;
     qoi->ratio_nu     = (edge->mu / edge->rho) / (wall->mu / wall->rho)
                       * 1;
     qoi->ratio_rho    = edge->rho / wall->rho
                       * 1;
     qoi->ratio_T      = edge->T / wall->T
                       * 1;
+    qoi->Re_delta     = edge->rho * edge->u * thick->delta     / edge->mu
+                      * code_Re;
+    qoi->Re_deltastar = edge->rho * edge->u * thick->deltastar / edge->mu
+                      * code_Re;
+    qoi->Re_theta     = edge->rho * edge->u * thick->theta     / edge->mu
+                      * code_Re;
     qoi->shapefactor  = thick->deltastar / thick->theta
                       * 1;
     qoi->v_wallplus   = wall->v / viscous->u_tau

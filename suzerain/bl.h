@@ -272,15 +272,15 @@ typedef struct {
                               \frac{\delta^2}{\nu_e}
                               \frac{\partial u_e}{\partial x}\f$. */
     double Pr_w;         /**< The Prandtl number at the wall. */
+    double ratio_rho;    /**< The ratio of edge to wall density. */
+    double ratio_nu;     /**< The ratio of edge to wall kinematic viscosity. */
+    double ratio_T;      /**< The ratio of edge to wall temperature. */
     double Re_delta;     /**< Reynolds number based on boundary layer
                               thickness \f$\delta\f$ and \f$\nu_e\f$. */
     double Re_deltastar; /**< Reynolds number based on displacement
                               thickness \f$\delta^\ast\f$ and \f$\nu_e\f$. */
     double Re_theta;     /**< Reynolds number based on momentum
                               thickness \f$\theta\f$ and \f$\nu_e\f$. */
-    double ratio_rho;    /**< The ratio of edge to wall density. */
-    double ratio_nu;     /**< The ratio of edge to wall kinematic viscosity. */
-    double ratio_T;      /**< The ratio of edge to wall temperature. */
     double shapefactor;  /**< The shape factor \f$\delta^\ast / \theta. */
     double v_wallplus;   /**< The wall transpiration rate in plus units.*/
 } suzerain_bl_qoi;
