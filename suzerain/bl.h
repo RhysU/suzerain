@@ -253,7 +253,9 @@ typedef struct {
     double gamma_e;      /**< The ratio of specific heats at the edge. */
     double Lambda_n;     /**< Pressure parameter \f$\Lambda_n =
                               -\frac{\delta}{\tau_w}
-                              \frac{\partial p}{\partial x}\f$. */
+                              \frac{\partial p}{\partial x}\f$
+                              which Cal and Castillo attribute to
+                              Narasimha and Sreenivasan. */
     double Launder_e;    /**< Launder's acceleration parameter \f$K =
                               \frac{\mu}{\rho_e u_e^2} \,
                               \frac{\partial{}u_e}{\partial x}\f$
