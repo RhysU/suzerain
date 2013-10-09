@@ -389,30 +389,29 @@ suzerain_bl_compute_thicknesses(
     int status     = SUZERAIN_SUCCESS;
     gsl_matrix *dB = NULL;
 
-    /* Allocate working storage */
     if (NULL == (dB = gsl_matrix_alloc(w->k, 3))) {
         SUZERAIN_ERROR_REPORT("failed to allocate dB",
                               (status = SUZERAIN_ENOMEM));
     }
     if (SUZERAIN_UNLIKELY(status != SUZERAIN_SUCCESS)) goto done;
 
-    /* Compute edge location */
     status = suzerain_bl_find_edge(coeffs_H0, &thick->delta, dB, w, dw);
     if (SUZERAIN_UNLIKELY(status != SUZERAIN_SUCCESS)) goto done;
 
-    /* Compute displacement thickness */
     status = suzerain_bl_displacement_thickness(
             thick->delta, coeffs_rho_u, &thick->delta1, dB, w, dw);
     if (SUZERAIN_UNLIKELY(status != SUZERAIN_SUCCESS)) goto done;
 
-    /* Compute momentum thickness */
     status = suzerain_bl_momentum_thickness(
             thick->delta, coeffs_rho_u, coeffs_u, &thick->delta2, dB, w, dw);
     if (SUZERAIN_UNLIKELY(status != SUZERAIN_SUCCESS)) goto done;
 
-    /* Compute energy thickness */
     status = suzerain_bl_energy_thickness(
             thick->delta, coeffs_rho_u, coeffs_u, &thick->delta3, dB, w, dw);
+    if (SUZERAIN_UNLIKELY(status != SUZERAIN_SUCCESS)) goto done;
+
+    status = suzerain_bl_enthalpy_thickness(
+            thick->delta, coeffs_rho_u, coeffs_H0, &thick->deltaH, dB, w, dw);
     /* Done regardless of status */
 
 done:

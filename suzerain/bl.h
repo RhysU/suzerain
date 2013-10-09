@@ -304,6 +304,7 @@ typedef struct {
     double delta2;    /**< Momentum thickness \f$\delta_2\f$
                            (sometimes written \f$\theta\f$).      */
     double delta3;    /**< Energy thickness \f$\delta_3\f$ .      */
+    double deltaH;    /**< Energy thickness \f$\delta_H\f$ .      */
 } suzerain_bl_thicknesses;
 
 /**
@@ -311,9 +312,9 @@ typedef struct {
  * coefficient representation of specific total enthalpy \f$H_0 = \frac{\rho E
  * + p}{\rho}\f$, streamwise momentum \f$\rho u\f$, and velocity \f$u\f$.  This
  * is a convenience method around \ref suzerain_bl_find_edge, \ref
- * suzerain_bl_displacement_thickness, \ref suzerain_bl_momentum_thickness, and
- * \ref suzerain_bl_energy_thickness packing the results into a \ref
- * suzerain_bl_thicknesses structure.
+ * suzerain_bl_displacement_thickness, \ref suzerain_bl_momentum_thickness,
+ * \ref suzerain_bl_energy_thickness, and \ref suzerain_bl_enthalpy_thickness,
+ * packing the results into a \ref suzerain_bl_thicknesses structure.
  *
  * \param[in ] coeffs_H0    Coefficient representation of \f$H_0\f$.
  * \param[in ] coeffs_rho_u Coefficient representation of \f$\rho u\f$.
