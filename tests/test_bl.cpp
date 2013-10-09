@@ -318,9 +318,8 @@ BOOST_AUTO_TEST_CASE( blasius_delta2 )
 
 BOOST_AUTO_TEST_SUITE_END()
 
+
 BOOST_AUTO_TEST_SUITE( qoi )
-
-
 
 // Test data taken from
 // https://svn.ices.utexas.edu/repos/pecos/turbulence/heatshield_bl/trunk/laminar/wall.dat
