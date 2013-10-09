@@ -335,7 +335,7 @@ suzerain_bl_compute_qoi(
                       * 1;
     qoi->K_e          = edge->mu * edge->u__x / edge->rho / square(edge->u)
                       / code_Re;
-    qoi->K_s          = square(thick->delta) * edge->rho / edge->mu * edge->u__x
+    qoi->Pohlhausen   = square(thick->delta) * edge->rho / edge->mu * edge->u__x
                       * code_Re;
     qoi->K_w          = wall->mu * edge->u__x / edge->rho / square(edge->u)
                       / code_Re;

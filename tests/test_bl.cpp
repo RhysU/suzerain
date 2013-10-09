@@ -424,11 +424,11 @@ BOOST_AUTO_TEST_CASE( compute_qoi )
     BOOST_CHECK_CLOSE(qoi.Clauser,      -0.50556278312573966,   tol); ++cnt;
     BOOST_CHECK_CLOSE(qoi.gamma_e,      1.4083595370046604,     tol); ++cnt;
     BOOST_CHECK_CLOSE(qoi.K_e,          1.1130040269123832e-05, tol); ++cnt;
-    BOOST_CHECK_CLOSE(qoi.K_s,          24.849095784497852,     meh); ++cnt;
     BOOST_CHECK_CLOSE(qoi.K_w,          3.3483624867674195e-06, tol); ++cnt;
     BOOST_CHECK_CLOSE(qoi.Lambda_n,     5.3212990115980237,     tol); ++cnt;
     BOOST_CHECK_CLOSE(qoi.Ma_e,         0.71394455827465408,    tol); ++cnt;
     BOOST_CHECK_CLOSE(qoi.p_ex,         -0.011892537649319856,  tol); ++cnt;
+    BOOST_CHECK_CLOSE(qoi.Pohlhausen,   24.849095784497852,     meh); ++cnt;
     BOOST_CHECK_CLOSE(qoi.Pr_w,         0.65543907074081864,    tol); ++cnt;
     BOOST_CHECK_CLOSE(qoi.Re_delta,     1494.1943713234461,     tol); ++cnt;
     BOOST_CHECK_CLOSE(qoi.Re_deltastar, 141.95952214875473,     tol); ++cnt;
