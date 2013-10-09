@@ -185,7 +185,7 @@ suzerain_bl_displacement_thickness(
 }
 
 int
-suzerain_bl_compute_delta2(
+suzerain_bl_momentum_thickness(
     const double edge_location,
     const double * coeffs_rho_u,
     const double * coeffs_u,
@@ -303,7 +303,7 @@ suzerain_bl_compute_thicknesses(
     if (SUZERAIN_UNLIKELY(status != SUZERAIN_SUCCESS)) goto done;
 
     /* Compute momentum thickness */
-    status = suzerain_bl_compute_delta2(
+    status = suzerain_bl_momentum_thickness(
             thick->delta, coeffs_rho_u, coeffs_u, &thick->delta2, dB, w, dw);
     /* Done regardless of status */
 

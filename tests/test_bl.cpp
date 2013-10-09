@@ -152,7 +152,7 @@ BOOST_AUTO_TEST_CASE( blasius_delta2 )
     // The absolute error behavior on this integral is unsatisfying
     // though there's no reason adaptive results should match Octave's trapz.
     double delta2  = GSL_NAN;
-    BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS, suzerain_bl_compute_delta2(
+    BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS, suzerain_bl_momentum_thickness(
         b.collocation_point(b.n()-1), u.get(), u.get(), &delta2, dB.get(),
         b.bw, b.dbw));
 
@@ -306,7 +306,7 @@ BOOST_AUTO_TEST_CASE( blasius_delta2 )
 
     // Integrate for delta2
     double delta2  = GSL_NAN;
-    BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS, suzerain_bl_compute_delta2(
+    BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS, suzerain_bl_momentum_thickness(
         b.collocation_point(b.n()-1), rho_u.get(), u.get(), &delta2, dB.get(),
         b.bw, b.dbw));
 

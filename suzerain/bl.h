@@ -189,7 +189,7 @@ suzerain_bl_displacement_thickness(
  * suzerain_error().
  */
 int
-suzerain_bl_compute_delta2(
+suzerain_bl_momentum_thickness(
     const double edge_location,
     const double * coeffs_rho_u,
     const double * coeffs_u,
@@ -200,8 +200,8 @@ suzerain_bl_compute_delta2(
 
 /**
  * Information characterizing boundary layer thickness in various ways.  Each
- * member has units of \f$l_0\f$.  Using \ref suzerain_bl_compute_thicknesses is the
- * recommended way to populate this data.
+ * member has units of \f$l_0\f$.  Using \ref suzerain_bl_compute_thicknesses
+ * is the recommended way to populate this data.
  */
 typedef struct {
     double delta;     /**< Boundary layer thickness \f$\delta\f$. */
@@ -216,7 +216,7 @@ typedef struct {
  * coefficient representation of specific total enthalpy \f$H_0 = \frac{\rho E
  * + p}{\rho}\f$, streamwise momentum \f$\rho u\f$, and velocity \f$u\f$.  This
  * is a convenience method around \ref suzerain_bl_find_edge, \ref
- * suzerain_bl_displacement_thickness, and \ref suzerain_bl_compute_delta2
+ * suzerain_bl_displacement_thickness, and \ref suzerain_bl_momentum_thickness
  * packing the results into a \ref suzerain_bl_thicknesses structure.
  *
  * \param[in ] coeffs_H0    Coefficient representation of \f$H_0\f$.
