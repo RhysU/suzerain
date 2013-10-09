@@ -419,11 +419,12 @@ BOOST_AUTO_TEST_CASE( compute_qoi )
 
     size_t cnt = 0; // Tracks if all quantities were tested
     const double tol = GSL_SQRT_DBL_EPSILON;
+    const double meh = sqrt(tol);
     BOOST_CHECK_CLOSE(qoi.beta,         -0.50556278312573966,   tol); ++cnt;
     BOOST_CHECK_CLOSE(qoi.Cf,           0.0044697874046917899,  tol); ++cnt;
     BOOST_CHECK_CLOSE(qoi.gamma_e,      1.4083595370046604,     tol); ++cnt;
     BOOST_CHECK_CLOSE(qoi.K_e,          1.1130040269123832e-05, tol); ++cnt;
-    BOOST_CHECK_CLOSE(qoi.K_s,          24.849095784497852,     tol*1e4); ++cnt; // FIXME Why?
+    BOOST_CHECK_CLOSE(qoi.K_s,          24.849095784497852,     meh); ++cnt;
     BOOST_CHECK_CLOSE(qoi.K_w,          3.3483624867674195e-06, tol); ++cnt;
     BOOST_CHECK_CLOSE(qoi.Lambda_n,     5.3212990115980237,     tol); ++cnt;
     BOOST_CHECK_CLOSE(qoi.Ma_e,         0.71394455827465408,    tol); ++cnt;
