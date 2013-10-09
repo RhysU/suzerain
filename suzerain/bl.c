@@ -327,10 +327,10 @@ suzerain_bl_compute_qoi(
 
     // Nondimensional quantities are computed with the first line being the
     // quantity and the second line being any needed "code unit" correction.
-    qoi->beta         = thick->deltastar / viscous->tau_w * edge->p__x
-                      * code_Re / square(code_Ma);
     qoi->Cf           = 2 * viscous->tau_w / edge->rho / square(edge->u)
                       / code_Re;
+    qoi->Clauser      = thick->deltastar / viscous->tau_w * edge->p__x
+                      * code_Re / square(code_Ma);
     qoi->gamma_e      = edge->gamma
                       * 1;
     qoi->K_e          = edge->mu * edge->u__x / edge->rho / square(edge->u)

@@ -245,11 +245,11 @@ suzerain_bl_compute_thick(
  * eventual quasilaminarization."</a> in Physics of Fluids 20 (2008).
  */
 typedef struct {
-    double beta;         /**< The Clauser parameter \f$\beta =
-                              \frac{\delta^\ast}{\tau_w}
-                              \frac{\partial p}{\partial x}\f$. */
     double Cf;           /**< The skin friction coefficient \f$C_f =
                               \frac{2 \tau_w}{\rho_e u_e^2}\f$. */
+    double Clauser;      /**< The Clauser parameter \f$\beta =
+                              \frac{\delta^\ast}{\tau_w}
+                              \frac{\partial p}{\partial x}\f$. */
     double gamma_e;      /**< The ratio of specific heats at the edge. */
     double K_e;          /**< Launder's acceleration parameter \f$K =
                               \frac{\mu}{\rho_e u_e^2} \,
