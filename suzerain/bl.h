@@ -118,7 +118,7 @@ suzerain_bl_find_edge(
  * \f$\delta^\ast\f$) given the edge location and a B-spline coefficient
  * representation of streamwise momentum \f$\rho u\f$.  The method computes
  * \f[
- *  \delta^\ast = \int_0^\infty
+ *  \delta_1 = \int_0^\infty
  *  \left(1 - \frac{\rho u}{\rho_e \u_e}\right)
  *  \, \mathrm{d}y
  *  .
@@ -153,42 +153,43 @@ suzerain_bl_compute_delta1(
     gsl_bspline_deriv_workspace *dw);
 
 /**
- * Compute the momentum thickness \f$\theta\f$ given the edge location and a
- * B-spline coefficient representation of streamwise momentum \f$\rho u\f$ and
- * velocity \f$u\f$.  The method computes
+ * Compute the momentum thickness \f$\delta_2\f$ (sometimes written
+ * \f$\theta\f$) given the edge location and a B-spline coefficient
+ * representation of streamwise momentum \f$\rho u\f$ and velocity \f$u\f$.
+ * The method computes
  * \f[
- *  \theta = \int_0^\infty
+ *  \delta_2 = \int_0^\infty
  *  \frac{\rho u}{\rho_e u_e} \left(1 - \frac{u}{\u_e}\right)
  *  \, \mathrm{d}y
  *  .
  * \f]
  *
- * The method propagates a <tt>NaN</tt> \c edge_location into a <tt>NaN</tt>
- * \c theta result considering the computation to be successful
- * when this happens.
+ * The method propagates a <tt>NaN</tt> \c edge_location into a <tt>NaN</tt> \c
+ * delta2 result considering the computation to be successful when this
+ * happens.
  *
  * \param[in ] edge_location Location of the boundary layer edge possibly
  *                           computed by suzerain_bl_find_edge().
  * \param[in ] coeffs_rho_u  B-spline coefficients for \f$rho u\f$.
  * \param[in ] coeffs_u      B-spline coefficients for \f$u\f$.
- * \param[out] theta         The computed momentum thickness.
+ * \param[out] delta2        The computed momentum thickness.
  * \param[in]  dB            Temporary storage to use of size <tt>w->k</tt> by
  *                           no less than <tt>1</tt>.
  * \param[in ] w             Workspace to use.
  * \param[in ] dw            Workspace to use.
  *
  * \return ::SUZERAIN_SUCCESS on success and returns the answer in
- * <code>*theta</code>.  On recoverable error sets <code>*theta</code> to be
- * <tt>NaN</tt> <code>*theta</code> to be <tt>NaN</tt> and returns one of
+ * <code>*delta2</code>.  On recoverable error sets <code>*delta2</code> to be
+ * <tt>NaN</tt> <code>*delta2</code> to be <tt>NaN</tt> and returns one of
  * #suzerain_error_status.  On unrecoverable error, additionally calls
  * suzerain_error().
  */
 int
-suzerain_bl_compute_theta(
+suzerain_bl_compute_delta2(
     const double edge_location,
     const double * coeffs_rho_u,
     const double * coeffs_u,
-    double * theta,
+    double * delta2,
     gsl_matrix *dB,
     gsl_bspline_workspace *w,
     gsl_bspline_deriv_workspace *dw);
@@ -202,7 +203,8 @@ typedef struct {
     double delta;     /**< Boundary layer thickness \f$\delta\f$. */
     double delta1;    /**< Displacement thickness \f$\delta_1\f$
                            (sometimes written \f$\delta^\ast\f$). */
-    double theta;     /**< Momentum thickness \f$\theta\f$. */
+    double delta2;    /**< Momentum thickness \f$\delta_2\f$
+                           (sometimes written \f$\theta\f$). */
 } suzerain_bl_thick;
 
 /**
@@ -210,7 +212,7 @@ typedef struct {
  * coefficient representation of specific total enthalpy \f$H_0 = \frac{\rho E
  * + p}{\rho}\f$, streamwise momentum \f$\rho u\f$, and velocity \f$u\f$.  This
  * is a convenience method around \ref suzerain_bl_find_edge, \ref
- * suzerain_bl_compute_delta1, and \ref suzerain_bl_compute_theta packing
+ * suzerain_bl_compute_delta1, and \ref suzerain_bl_compute_delta2 packing
  * the results into a \ref suzerain_bl_thick structure.
  *
  * \param[in ] coeffs_H0    Coefficient representation of \f$H_0\f$.
@@ -249,9 +251,9 @@ typedef struct {
                               thickness \f$\delta\f$ and \f$\nu_e\f$. */
     double Re_delta1;    /**< Reynolds number based on displacement
                               thickness \f$\delta_1\f$ and \f$\nu_e\f$. */
-    double Re_theta;     /**< Reynolds number based on momentum
-                              thickness \f$\theta\f$ and \f$\nu_e\f$. */
-    double shapefactor;  /**< The shape factor \f$\delta^\ast / \theta. */
+    double Re_delta2;    /**< Reynolds number based on momentum
+                              thickness \f$\delta_2\f$ and \f$\nu_e\f$. */
+    double shapefactor;  /**< The shape factor \f$\delta_1 / \delta_2. */
     double v_wallplus;   /**< The wall transpiration rate in plus units.*/
 } suzerain_bl_qoi;
 

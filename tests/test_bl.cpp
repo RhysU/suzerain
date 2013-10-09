@@ -131,7 +131,7 @@ BOOST_AUTO_TEST_CASE( blasius_delta1 )
     BOOST_CHECK_SMALL((delta1 - 1.72189445179000), 5e-6);
 }
 
-BOOST_AUTO_TEST_CASE( blasius_theta )
+BOOST_AUTO_TEST_CASE( blasius_delta2 )
 {
     // Prepare the Blasius velocity profile as coefficients on basis
     // For a linear B-spline basis, the collocation points are the breakpoints
@@ -147,17 +147,17 @@ BOOST_AUTO_TEST_CASE( blasius_theta )
             gsl_matrix_free);
     BOOST_REQUIRE(dB);
 
-    // Integrate for theta
+    // Integrate for delta2
     // Pretend density is nondimensionally one so rho_u == u
     // The absolute error behavior on this integral is unsatisfying
     // though there's no reason adaptive results should match Octave's trapz.
-    double theta  = GSL_NAN;
-    BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS, suzerain_bl_compute_theta(
-        b.collocation_point(b.n()-1), u.get(), u.get(), &theta, dB.get(),
+    double delta2  = GSL_NAN;
+    BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS, suzerain_bl_compute_delta2(
+        b.collocation_point(b.n()-1), u.get(), u.get(), &delta2, dB.get(),
         b.bw, b.dbw));
 
     // Check against good value found using Octave's trapz on Ganapol data
-    BOOST_CHECK_SMALL((theta - 0.663007750711612), 0.0020);
+    BOOST_CHECK_SMALL((delta2 - 0.663007750711612), 0.0020);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -246,9 +246,9 @@ BOOST_AUTO_TEST_CASE( blasius_compute_thick )
     suzerain_bl_thick thick;
     BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS, suzerain_bl_compute_thick(
         ke.get() /* \approx H_0 */, rho_u.get(), u.get(), &thick, b.bw, b.dbw));
-    BOOST_CHECK_CLOSE(thick.delta,     8.22,              0.25); ++cnt;
+    BOOST_CHECK_CLOSE(thick.delta,  8.22,              0.25); ++cnt;
     BOOST_CHECK_CLOSE(thick.delta1, 1.72189445179000,  0.10); ++cnt;
-    BOOST_CHECK_CLOSE(thick.theta,     0.663007750711612, 0.25); ++cnt;
+    BOOST_CHECK_CLOSE(thick.delta2, 0.663007750711612, 0.25); ++cnt;
     BOOST_CHECK_EQUAL(cnt, sizeof(thick)/sizeof(thick.delta));
 }
 
@@ -285,7 +285,7 @@ BOOST_AUTO_TEST_CASE( blasius_delta1 )
     BOOST_CHECK_CLOSE(1.721, delta1, 0.015);
 }
 
-BOOST_AUTO_TEST_CASE( blasius_theta )
+BOOST_AUTO_TEST_CASE( blasius_delta2 )
 {
     // Prepare the Blasius velocity profile as coefficients on basis
     // Pretend that density is uniformly two throughout profile.  Yes, two.
@@ -304,16 +304,16 @@ BOOST_AUTO_TEST_CASE( blasius_theta )
             gsl_matrix_free);
     BOOST_REQUIRE(dB);
 
-    // Integrate for theta
-    double theta  = GSL_NAN;
-    BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS, suzerain_bl_compute_theta(
-        b.collocation_point(b.n()-1), rho_u.get(), u.get(), &theta, dB.get(),
+    // Integrate for delta2
+    double delta2  = GSL_NAN;
+    BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS, suzerain_bl_compute_delta2(
+        b.collocation_point(b.n()-1), rho_u.get(), u.get(), &delta2, dB.get(),
         b.bw, b.dbw));
 
     // Check against good value
     // Good value taken from White, Fluid Mechanics, 4th Edition eqn (7.31).
     // This tolerance is admittedly larger than I would like.
-    BOOST_CHECK_CLOSE(0.664, theta, 0.018);
+    BOOST_CHECK_CLOSE(0.664, delta2, 0.018);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -405,7 +405,7 @@ BOOST_AUTO_TEST_CASE( compute_qoi_and_pg )
                 std::numeric_limits<double>::quiet_NaN());
     thick.delta  = 0.046525678647201738;
     thick.delta1 = 0.0044202837563584669;
-    thick.theta  = 0.0059005327804110153;
+    thick.delta2 = 0.0059005327804110153;
 
     const double code_Ma = 1;               // Data from a dimensional code
     const double code_Re = 1;               // Ditto
@@ -426,7 +426,7 @@ BOOST_AUTO_TEST_CASE( compute_qoi_and_pg )
     BOOST_CHECK_CLOSE(qoi.ratio_T,     4.1960728537236802,     tol); ++cnt;
     BOOST_CHECK_CLOSE(qoi.Re_delta,    1494.1943713234461,     tol); ++cnt;
     BOOST_CHECK_CLOSE(qoi.Re_delta1,   141.95952214875473,     tol); ++cnt;
-    BOOST_CHECK_CLOSE(qoi.Re_theta,    189.49842591559681,     tol); ++cnt;
+    BOOST_CHECK_CLOSE(qoi.Re_delta2,   189.49842591559681,     tol); ++cnt;
     BOOST_CHECK_CLOSE(qoi.shapefactor, 0.7491329886401481,     tol); ++cnt;
     BOOST_CHECK_CLOSE(qoi.v_wallplus,  0.0094118607746200931,  tol); ++cnt;
     BOOST_CHECK_EQUAL(cnt, sizeof(qoi)/sizeof(qoi.cf));

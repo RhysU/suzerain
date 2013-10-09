@@ -185,16 +185,16 @@ suzerain_bl_compute_delta1(
 }
 
 int
-suzerain_bl_compute_theta(
+suzerain_bl_compute_delta2(
     const double edge_location,
     const double * coeffs_rho_u,
     const double * coeffs_u,
-    double * theta,
+    double * delta2,
     gsl_matrix *dB,
     gsl_bspline_workspace *w,
     gsl_bspline_deriv_workspace *dw)
 {
-    *theta = GSL_NAN;               // Be defensive
+    *delta2 = GSL_NAN;              // Be defensive
     if (gsl_isnan(edge_location)) { // Propagate NaN but succeed
         return SUZERAIN_SUCCESS;
     }
@@ -228,8 +228,8 @@ suzerain_bl_compute_theta(
     }
 
     /* Notice any failure below will be catastrophic */
-    /* so accumulate integral into *theta directly   */
-    *theta = 0;
+    /* so accumulate integral into *delta2 directly   */
+    *delta2 = 0;
 
     /* Accumulate the breakpoint-by-breakpoint contributions to result */
     double xj = 0, wj = 0;
@@ -261,7 +261,7 @@ suzerain_bl_compute_theta(
             }
 
             /* Then use integrand scaled by weight to accumulate result */
-            *theta += wj * (u / u_edge) * (1 - rho_u / rho_u_edge);
+            *delta2 += wj * (u / u_edge) * (1 - rho_u / rho_u_edge);
         }
     }
 
@@ -303,8 +303,8 @@ suzerain_bl_compute_thick(
     if (SUZERAIN_UNLIKELY(status != SUZERAIN_SUCCESS)) goto done;
 
     /* Compute momentum thickness */
-    status = suzerain_bl_compute_theta(
-            thick->delta, coeffs_rho_u, coeffs_u, &thick->theta, dB, w, dw);
+    status = suzerain_bl_compute_delta2(
+            thick->delta, coeffs_rho_u, coeffs_u, &thick->delta2, dB, w, dw);
     /* Done regardless of status */
 
 done:
@@ -340,13 +340,13 @@ suzerain_bl_compute_qoi(
                      * 1;
     qoi->ratio_T     = edge->T / wall->T
                      * 1;
-    qoi->Re_delta    = edge->rho * edge->u * thick->delta     / edge->mu
+    qoi->Re_delta    = edge->rho * edge->u * thick->delta  / edge->mu
                      * code_Re;
     qoi->Re_delta1   = edge->rho * edge->u * thick->delta1 / edge->mu
                      * code_Re;
-    qoi->Re_theta    = edge->rho * edge->u * thick->theta     / edge->mu
+    qoi->Re_delta2   = edge->rho * edge->u * thick->delta2 / edge->mu
                      * code_Re;
-    qoi->shapefactor = thick->delta1 / thick->theta
+    qoi->shapefactor = thick->delta1 / thick->delta2
                      * 1;
     qoi->v_wallplus  = wall->v / viscous->u_tau
                      * 1;
