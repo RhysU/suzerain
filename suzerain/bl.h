@@ -245,7 +245,7 @@ suzerain_bl_compute_thick(
  * eventual quasilaminarization."</a> in Physics of Fluids 20 (2008).
  */
 typedef struct {
-    double Cf;           /**< The skin friction coefficient \f$C_f =
+    double cf;           /**< The skin friction coefficient \f$c_f =
                               \frac{2 \tau_w}{\rho_e u_e^2}\f$. */
     double Clauser;      /**< The Clauser parameter \f$\beta =
                               \frac{\delta^\ast}{\tau_w}
