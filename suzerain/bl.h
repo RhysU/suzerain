@@ -245,6 +245,54 @@ suzerain_bl_energy_thickness(
     gsl_bspline_deriv_workspace *dw);
 
 /**
+ * Compute the enthalpy thickness \f$\delta_H\f$ (sometimes written
+ * \f$delta_h\f$ and not to be confused with the
+ * energy thickness) given the edge location and a B-spline coefficient
+ * representation of streamwise momentum \f$\rho u\f$ and specific total
+ * enthalpy \f$H_0 = \frac{\rho E + p}{\rho}\f$.
+ * The method computes
+ * \f[
+ *  \delta_H = \int_0^\infty
+ *  \frac{\rho u}{\rho_e u_e} \left(1 - \frac{H_0}{H_{0,e}}\right)
+ *  \, \mathrm{d}y
+ *  .
+ * \f]
+ * This definition appears in equation (13.48) on page 324 of Leipmann and
+ * Roshko's <a
+ * href="http://www.worldcat.org/title/elements-of-gasdynamics/oclc/636935705">
+ * Elements of Gasdynamics</a> but is there called "energy thickness".
+ *
+ * The method propagates a <tt>NaN</tt> \c edge_location into a <tt>NaN</tt> \c
+ * deltaH result considering the computation to be successful when this
+ * happens.
+ *
+ * \param[in ] edge_location Location of the boundary layer edge possibly
+ *                           computed by suzerain_bl_find_edge().
+ * \param[in ] coeffs_rho_u  B-spline coefficients for \f$rho u\f$.
+ * \param[in ] coeffs_H0     B-spline coefficients for \f$H_0\f$.
+ * \param[out] deltaH        The computed enthalpy thickness.
+ * \param[in]  dB            Temporary storage to use of size <tt>w->k</tt> by
+ *                           no less than <tt>1</tt>.
+ * \param[in ] w             Workspace to use.
+ * \param[in ] dw            Workspace to use.
+ *
+ * \return ::SUZERAIN_SUCCESS on success and returns the answer in
+ * <code>*deltaH</code>.  On recoverable error sets <code>*deltaH</code> to be
+ * <tt>NaN</tt> <code>*deltaH</code> to be <tt>NaN</tt> and returns one of
+ * #suzerain_error_status.  On unrecoverable error, additionally calls
+ * suzerain_error().
+ */
+int
+suzerain_bl_enthalpy_thickness(
+    const double edge_location,
+    const double * coeffs_rho_u,
+    const double * coeffs_H0,
+    double * deltaH,
+    gsl_matrix *dB,
+    gsl_bspline_workspace *w,
+    gsl_bspline_deriv_workspace *dw);
+
+/**
  * Information characterizing boundary layer thickness in various ways.  Each
  * member has units of \f$l_0\f$.  Using \ref suzerain_bl_compute_thicknesses
  * is the recommended way to populate this data.

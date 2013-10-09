@@ -359,6 +359,22 @@ suzerain_bl_energy_thickness(
 }
 
 int
+suzerain_bl_enthalpy_thickness(
+    const double edge_location,
+    const double * coeffs_rho_u,
+    const double * coeffs_H0,
+    double * deltaH,
+    gsl_matrix *dB,
+    gsl_bspline_workspace *w,
+    gsl_bspline_deriv_workspace *dw)
+{
+    // The form of the enthalpy thickness equation is nothing but
+    // the displacement thickness with H_0 replacing u.
+    return suzerain_bl_momentum_thickness(
+            edge_location, coeffs_rho_u, coeffs_H0, deltaH, dB, w, dw);
+}
+
+int
 suzerain_bl_compute_thicknesses(
     const double * coeffs_H0,
     const double * coeffs_rho_u,
