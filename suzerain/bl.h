@@ -313,7 +313,7 @@ typedef struct {
  * + p}{\rho}\f$, streamwise momentum \f$\rho u\f$, and velocity \f$u\f$.  This
  * is a convenience method around \ref suzerain_bl_find_edge, \ref
  * suzerain_bl_displacement_thickness, \ref suzerain_bl_momentum_thickness,
- * \ref suzerain_bl_energy_thickness, and \ref suzerain_bl_enthalpy_thickness,
+ * \ref suzerain_bl_energy_thickness, and \ref suzerain_bl_enthalpy_thickness
  * packing the results into a \ref suzerain_bl_thicknesses structure.
  *
  * \param[in ] coeffs_H0    Coefficient representation of \f$H_0\f$.
