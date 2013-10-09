@@ -163,6 +163,10 @@ suzerain_bl_compute_delta1(
  *  \, \mathrm{d}y
  *  .
  * \f]
+ * Among many other places, this definition appears in equation (13.47) on page
+ * 324 of Leipmann and Roshko's <a
+ * href="http://www.worldcat.org/title/elements-of-gasdynamics/oclc/636935705">
+ * Elements of Gasdynamics</a>.
  *
  * The method propagates a <tt>NaN</tt> \c edge_location into a <tt>NaN</tt> \c
  * delta2 result considering the computation to be successful when this
