@@ -319,7 +319,7 @@ program bl_temporal_baseflow_f
     call largo_BL_temporal_preStep_sEta (workspace, y, field,         &
                                                mean,  rms,  mean_rqq, &
                                               dmean, drms, dmean_rqq)
-    call largo_BL_temporal_preStep_sEta_innery_rans (workspace, y,         &
+    call largo_BL_temporal_preStep_sEtaMean_rans (workspace, y,         &
                                                   meanTurb, dymeanTurb)
 
     ! Compute sources

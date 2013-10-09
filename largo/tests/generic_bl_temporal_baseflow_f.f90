@@ -318,7 +318,7 @@ program generic_bl_temporal_baseflow_f
     call largo_preStep_sEta (generic_workspace, y, field,         & 
                                            mean,  rms,  mean_rqq, &
                                           dmean, drms, dmean_rqq)
-    call largo_preStep_sEta_innery_rans (generic_workspace, y,         &
+    call largo_preStep_sEtaMean_rans (generic_workspace, y,         &
                                                   meanTurb, dymeanTurb)
 
     ! Compute sources

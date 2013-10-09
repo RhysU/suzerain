@@ -16,13 +16,13 @@ module largo_BL_temporal
 
   ! interface for rans prestep function 
   abstract interface
-    subroutine prestep_innery_rans(cp, y, mean, ddy_mean)
+    subroutine prestep_setamean_rans(cp, y, mean, ddy_mean)
       import
       real(WP), intent(in)                  :: y
       real(WP), dimension(*), intent(in)    :: mean
       real(WP), dimension(*), intent(in)    :: ddy_mean
       type(largo_workspace_ptr), intent(in) :: cp
-    end subroutine prestep_innery_rans
+    end subroutine prestep_setamean_rans
   end interface
 
 
@@ -129,8 +129,8 @@ module largo_BL_temporal
 
   end type largo_BL_temporal_workspace_type
 
-  procedure(prestep_innery_rans), pointer :: largo_BL_temporal_prestep_sEta_innery_rans => NULL()
-  procedure(sourcevec_rans),      pointer :: largo_BL_temporal_sEta_rans                => NULL()
+  procedure(prestep_setamean_rans), pointer :: largo_BL_temporal_prestep_sEtaMean_rans => NULL()
+  procedure(sourcevec_rans),        pointer :: largo_BL_temporal_sEta_rans             => NULL()
 
   ! Indices
   integer(c_int), parameter :: irho  = 1
@@ -189,7 +189,7 @@ module largo_BL_temporal
 
   public  :: largo_BL_temporal_get_ntvar_rans
   public  :: largo_BL_temporal_init_rans
-  public  :: largo_BL_temporal_prestep_sEta_innery_rans
+  public  :: largo_BL_temporal_prestep_sEtaMean_rans
   public  :: largo_BL_temporal_sEta_rans
 
 contains
@@ -261,7 +261,7 @@ contains
     end if
 
     ! Initialize turbulence variables function pointers 
-    largo_BL_temporal_prestep_sEta_innery_rans => largo_bl_temporal_prestep_sEta_innery_rans_generic 
+    largo_BL_temporal_prestep_sEtaMean_rans => largo_bl_temporal_prestep_sEtaMean_rans_generic 
     largo_BL_temporal_sEta_rans                => largo_bl_temporal_sEta_rans_generic 
 
     ! Get C pointer from Fortran pointer
@@ -570,7 +570,7 @@ contains
   end subroutine largo_BL_temporal_preStep_sEta
 
 
-  subroutine largo_BL_temporal_preStep_sEta_innery_rans_generic(cp, y, mean, ddy_mean)
+  subroutine largo_BL_temporal_preStep_sEtaMean_rans_generic(cp, y, mean, ddy_mean)
 
     real(WP), intent(in)                  :: y
     real(WP), dimension(*), intent(in)    :: mean
@@ -587,7 +587,7 @@ contains
       auxp%dts_tvar(it)  = - auxp%gr_DA_tvar(it)  * auxp%mean_tvar(it) + y * auxp%gr_delta * ddy_mean(it)
     end do
 
-  end subroutine largo_BL_temporal_preStep_sEta_innery_rans_generic
+  end subroutine largo_BL_temporal_preStep_sEtaMean_rans_generic
 
 
 #define DECLARE_SUBROUTINE(token)token (cp, A, B, src);\

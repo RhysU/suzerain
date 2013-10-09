@@ -160,10 +160,10 @@ contains
       lauxp%largo_prestep_baseflow => largo_BL_temporal_preStep_baseflow
 
       ! RANS methods
-      lauxp%largo_get_ntvar_rans      => largo_BL_temporal_get_ntvar_rans
-      lauxp%largo_init_rans           => largo_BL_temporal_init_rans
-      lauxp%largo_prestep_innery_rans => largo_BL_temporal_prestep_sEta_innery_rans
-      lauxp%largo_sources_mean_rans   => largo_BL_temporal_sEta_rans
+      lauxp%largo_get_ntvar_rans        => largo_BL_temporal_get_ntvar_rans
+      lauxp%largo_init_rans             => largo_BL_temporal_init_rans
+      lauxp%largo_prestep_setamean_rans => largo_BL_temporal_prestep_sEtaMean_rans
+      lauxp%largo_sources_mean_rans     => largo_BL_temporal_sEta_rans
 
 
     case ("bl_temporal_tensor-consistent")
@@ -452,7 +452,7 @@ contains
 
 
   ! Generic interface prestep subroutine
-  subroutine largo_preStep_sEta_innery_rans(lcp, y, mean, ddy_mean) bind(C)
+  subroutine largo_preStep_sEtaMean_rans(lcp, y, mean, ddy_mean) bind(C)
 
     real(WP), intent(in), value         :: y
     real(WP), dimension(*), intent(in)  :: mean
@@ -461,11 +461,11 @@ contains
     type(largo_type), pointer           :: lauxp
 
     call c_f_pointer(lcp, lauxp)
-    call lauxp%largo_prestep_innery_rans(lauxp%cp, y, &
+    call lauxp%largo_prestep_setamean_rans(lauxp%cp, y, &
                              mean         (1:lauxp%ntvar),  &
                              ddy_mean     (1:lauxp%ntvar))
 
-  end subroutine largo_preStep_sEta_innery_rans
+  end subroutine largo_preStep_sEtaMean_rans
 
 
   ! Generic interface prestep subroutine

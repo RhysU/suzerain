@@ -124,13 +124,13 @@ module largo_workspace
 
 
   abstract interface
-    subroutine prestep_innery_rans(cp, y, mean, ddy_mean)
+    subroutine prestep_setamean_rans(cp, y, mean, ddy_mean)
       import
       real(WP), intent(in)                  :: y
       real(WP), dimension(*), intent(in)    :: mean
       real(WP), dimension(*), intent(in)    :: ddy_mean
       type(largo_workspace_ptr), intent(in) :: cp
-    end subroutine prestep_innery_rans
+    end subroutine prestep_setamean_rans
   end interface
 
 
@@ -205,10 +205,10 @@ module largo_workspace
     procedure(prestep_baseflow), pointer, nopass :: largo_init_wall_baseflow  => NULL()
 
     ! RANS Turbulence variables
-    procedure(get_ntvar_rans),      pointer, nopass :: largo_get_ntvar_rans      => NULL()
-    procedure(init_rans),           pointer, nopass :: largo_init_rans           => NULL()
-    procedure(prestep_innery_rans), pointer, nopass :: largo_prestep_innery_rans => NULL()
-    procedure(sourcevec),           pointer, nopass :: largo_sources_mean_rans   => NULL()
+    procedure(get_ntvar_rans),        pointer, nopass :: largo_get_ntvar_rans        => NULL()
+    procedure(init_rans),             pointer, nopass :: largo_init_rans             => NULL()
+    procedure(prestep_setamean_rans), pointer, nopass :: largo_prestep_setamean_rans => NULL()
+    procedure(sourcevec),             pointer, nopass :: largo_sources_mean_rans     => NULL()
 
     ! Pointer to largo field-related data (workspace)
     type(largo_workspace_ptr) :: cp
