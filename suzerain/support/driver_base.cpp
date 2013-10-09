@@ -168,8 +168,9 @@ driver_base::log4cxx_config()
 {
     return super::log4cxx_config() + // Append to the default configuration
         "\n"
-        "## Collect \"bc\" messages into bc.dat mimicking LOG file behavior\n"
+        "## Collect \"bc\" messages into only bc.dat mimicking LOG file behavior\n"
         "log4j.logger.bc=INHERITED, BC\n"
+        "log4j.additivity.bc=false\n"
         "log4j.appender.BC=${log4j.appender.LOG}\n"
         "log4j.appender.BC.filename=bc.dat\n"
         "log4j.appender.BC.append=${log4j.appender.LOG.append}\n"
