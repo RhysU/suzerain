@@ -134,8 +134,8 @@ suzerain_bl_displacement_thickness(
                            SUZERAIN_EFAILED, status);
     }
 
-    /* Obtain an appropriate order Gauss-Legendre integration rule  */
-    /* Integrand (1 - \rho{}u/{\rho{}u}_oo) has same order as basis */
+    /* Obtain an appropriate order Gauss-Legendre integration rule */
+    /* when integrand has same order as basis                      */
     gsl_integration_glfixed_table * const tbl
         = gsl_integration_glfixed_table_alloc((w->k + 1)/2);
     if (SUZERAIN_UNLIKELY(tbl == NULL)) {
@@ -218,7 +218,7 @@ suzerain_bl_momentum_thickness(
     }
 
     /* Obtain an appropriate order Gauss-Legendre integration rule     */
-    /* Product (u / u_oo)(1 - \rho{}u/{\rho{}u}_oo) must be integrated */
+    /* when integrand has twice the order of the basis.                */
     /* That is, solve 2*(k - 1) = 2*n - 1 for number of Gauss points n */
     gsl_integration_glfixed_table * const tbl
         = gsl_integration_glfixed_table_alloc(w->k);
