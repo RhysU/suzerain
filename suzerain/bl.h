@@ -46,13 +46,9 @@ typedef struct {
     double gamma;  /**< Nondimensional Ratio of specific heats \f$\gamma\f$.*/
     double mu;     /**< Dynamic viscosity with units \f$\mu_0\f$.           */
     double Pr;     /**< Nondimensional Prandtl number \f$C_p \mu/\kappa\f$. */
-    double p__x;   /**< Streamwise pressure gradient with units
-                        \f$p_0 / l_0 = \rho_0 a_0^2 / l_0\f$.               */
     double rho;    /**< Density with units \f$\rho_0\f$.                    */
     double T;      /**< Temperature with units \f$T_0\f$.                   */
     double u;      /**< Streamwise velocity with units \f$u_0\f$.           */
-    double u__x;   /**< Streamwise derivative of streamwise velocity
-                        with units \f$u_0 / l_0\f$.                         */
     double u__y;   /**< Wall-normal derivative of streamwise velocity
                         with units \f$u_0 / l_0\f$.                         */
     double v;      /**< Wall-normal velocity with units \f$u_0\f$.          */
@@ -327,18 +323,23 @@ typedef struct {
 /**
  * Compute nondimensional boundary layer pressure gradient parameters.
  *
- * \param[in ] code_Ma Mach number \f$u_0/a_0\f$ used to scale
- *                     nondimensional quantities.  For dimensional
- *                     calculations, use <code>1</code.
- * \param[in ] code_Re Reynolds number \f$\rho_0 u_0 l_0/\mu_0\f$ used to scale
- *                     nondimensional quantities.  For dimensional
- *                     calculations, use <code>1</code.
- * \param[in ] wall    Local state information from the wall.
- * \param[in ] viscous Viscous-related wall scaling information
- * \param[in ] edge    Local state information from the boundary layer edge.
- * \param[in ] thick   Thickness information for the boundary layer.
- * \param[out] pg      Populated on success.
- *                     See type documentation for contents.
+ * \param[in ] code_Ma   Mach number \f$u_0/a_0\f$ used to scale
+ *                       nondimensional quantities.  For dimensional
+ *                       calculations, use <code>1</code.
+ * \param[in ] code_Re   Reynolds number \f$\rho_0 u_0 l_0/\mu_0\f$ used to
+ *                       scale nondimensional quantities.  For dimensional
+ *                       calculations, use <code>1</code.
+ * \param[in ] wall      Local state information from the wall.
+ * \param[in ] viscous   Viscous-related wall scaling information
+ * \param[in ] edge      Local state information from the boundary layer edge.
+ * \param[in ] edge_p__x Streamwise derivative of pressure
+ *                       at the boundary layer edge with units
+                         \f$p_0 / l_0 = \rho_0 a_0^2 / l_0\f$.
+ * \param[in ] edge_u__x Streamwise derivative of streamwise velocity at the
+ *                       boundary layer edge with units \f$u_0 / l_0\f$.
+ * \param[in ] thick     Thickness information for the boundary layer.
+ * \param[out] pg        Populated on success.
+ *                       See type documentation for contents.
  *
  * \return ::SUZERAIN_SUCCESS on success.  On error calls suzerain_error() and
  *      returns one of #suzerain_error_status.
@@ -350,6 +351,8 @@ suzerain_bl_compute_pg(
         const suzerain_bl_local   * wall,
         const suzerain_bl_viscous * viscous,
         const suzerain_bl_local   * edge,
+        const double                edge_p__x,
+        const double                edge_u__x,
         const suzerain_bl_thick   * thick,
               suzerain_bl_pg      * pg);
 

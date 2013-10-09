@@ -361,6 +361,8 @@ suzerain_bl_compute_pg(
         const suzerain_bl_local   * const wall,
         const suzerain_bl_viscous * const viscous,
         const suzerain_bl_local   * const edge,
+        const double                      edge_p__x,
+        const double                      edge_u__x,
         const suzerain_bl_thick   * const thick,
               suzerain_bl_pg      * const pg)
 {
@@ -368,17 +370,17 @@ suzerain_bl_compute_pg(
 
     // Nondimensional quantities are computed with the first line being the
     // quantity and the second line being any needed "code unit" correction.
-    pg->Clauser      = thick->deltastar / viscous->tau_w * edge->p__x
+    pg->Clauser      = thick->deltastar / viscous->tau_w * edge_p__x
                      * code_Re / square(code_Ma);
-    pg->Launder_e    = edge->mu * edge->u__x / edge->rho / square(edge->u)
+    pg->Launder_e    = edge->mu * edge_u__x / edge->rho / square(edge->u)
                      / code_Re;
-    pg->Launder_w    = wall->mu * edge->u__x / edge->rho / square(edge->u)
+    pg->Launder_w    = wall->mu * edge_u__x / edge->rho / square(edge->u)
                      / code_Re;
-    pg->Lambda_n     = - thick->delta / viscous->tau_w * edge->p__x
+    pg->Lambda_n     = - thick->delta / viscous->tau_w * edge_p__x
                      * code_Re / square(code_Ma);
-    pg->p_ex         = thick->delta / edge->rho / square(edge->u) * edge->p__x
+    pg->p_ex         = thick->delta / edge->rho / square(edge->u) * edge_p__x
                      / square(code_Ma);
-    pg->Pohlhausen   = square(thick->delta) * edge->rho / edge->mu * edge->u__x
+    pg->Pohlhausen   = square(thick->delta) * edge->rho / edge->mu * edge_u__x
                      * code_Re;
 
     return SUZERAIN_SUCCESS;

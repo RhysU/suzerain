@@ -336,11 +336,9 @@ struct wall_type : public suzerain_bl_local
         gamma  =  1.3527314891502726;
         mu     =  4.8813735289922836e-05;
         Pr     =  0.65543907074081864;
-        p__x   =  -1231.0557214607243;
         rho    =  0.018546113877544138;
         T      =  1391.8731000995472;
         u      =  0.0023004630235243829;
-        u__x   =  3117.168135000341;
         u__y   =  333239.70652878482;
         v      =  0.27873944160103337;
     }
@@ -361,11 +359,9 @@ struct edge_type : public suzerain_bl_local
         gamma  =  1.4083595370046604;
         mu     =  0.00016225807140364439;
         Pr     =  0.80552596752550176;
-        p__x   =  -1860.4745416352641;
         rho    =  0.0037307784953988427;
         T      =  5840.4009311559321;
         u      =  1396.7581826189837;
-        u__x   =  499.26639968207024;
         u__y   =  4634.7550551015656;
         v      =  -41.964917478845166;
     }
@@ -436,9 +432,12 @@ BOOST_AUTO_TEST_CASE( compute_qoi_and_pg )
     BOOST_CHECK_EQUAL(cnt, sizeof(qoi)/sizeof(qoi.cf));
 
     cnt = 0; // Tracks if all quantities were tested
+    const double edge_p__x   =  -1860.4745416352641;  // Corresponds to edge
+    const double edge_u__x   =  499.26639968207024;
     suzerain_bl_pg pg;
     BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS, suzerain_bl_compute_pg(
-            code_Ma, code_Re, &wall, &viscous, &edge, &thick, &pg));
+            code_Ma, code_Re, &wall, &viscous,
+            &edge, edge_p__x, edge_u__x, &thick, &pg));
     BOOST_CHECK_CLOSE(pg.Clauser,      -0.50556278312573966,   tol); ++cnt;
     BOOST_CHECK_CLOSE(pg.Lambda_n,     5.3212990115980237,     tol); ++cnt;
     BOOST_CHECK_CLOSE(pg.Launder_e,    1.1130040269123832e-05, tol); ++cnt;
