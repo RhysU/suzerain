@@ -207,7 +207,7 @@ BOOST_AUTO_TEST_CASE( blasius_find_edge )
     BOOST_REQUIRE_SMALL(ke__yy, 0.01);
 }
 
-BOOST_AUTO_TEST_CASE( blasius_compute_thick )
+BOOST_AUTO_TEST_CASE( blasius_compute_thicknesses )
 {
     const double Re_x = 1e5;
 
@@ -243,8 +243,8 @@ BOOST_AUTO_TEST_CASE( blasius_compute_thick )
     // Compute a bunch of thickness-related quantities
     // Known good values computed by Octave using trapz from Ganapol data
     size_t cnt = 0;
-    suzerain_bl_thick thick;
-    BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS, suzerain_bl_compute_thick(
+    suzerain_bl_thicknesses thick;
+    BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS, suzerain_bl_compute_thicknesses(
         ke.get() /* \approx H_0 */, rho_u.get(), u.get(), &thick, b.bw, b.dbw));
     BOOST_CHECK_CLOSE(thick.delta,  8.22,              0.25); ++cnt;
     BOOST_CHECK_CLOSE(thick.delta1, 1.72189445179000,  0.10); ++cnt;
@@ -399,7 +399,7 @@ BOOST_AUTO_TEST_CASE( compute_qoi_and_pg )
     viscous.u_tau    = 29.615763373028074;
     viscous.delta_nu = 8.8872252594154481e-05;
 
-    suzerain_bl_thick thick;                // Answers from scenario.dat
+    suzerain_bl_thicknesses thick;                // Answers from scenario.dat
     std::fill_n(reinterpret_cast<double *>(&thick),
                 sizeof(thick)/sizeof(double),
                 std::numeric_limits<double>::quiet_NaN());

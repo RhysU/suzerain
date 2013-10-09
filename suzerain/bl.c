@@ -272,13 +272,13 @@ suzerain_bl_compute_delta2(
 }
 
 int
-suzerain_bl_compute_thick(
+suzerain_bl_compute_thicknesses(
     const double * coeffs_H0,
     const double * coeffs_rho_u,
     const double * coeffs_u,
-    suzerain_bl_thick * thick,
-    gsl_bspline_workspace *w,
-    gsl_bspline_deriv_workspace *dw)
+    suzerain_bl_thicknesses * thick,
+    gsl_bspline_workspace * w,
+    gsl_bspline_deriv_workspace * dw)
 {
 
     FILL_WITH_NANS(thick);
@@ -317,11 +317,11 @@ int
 suzerain_bl_compute_qoi(
         const double code_Ma,
         const double code_Re,
-        const suzerain_bl_local   * const wall,
-        const suzerain_bl_viscous * const viscous,
-        const suzerain_bl_local   * const edge,
-        const suzerain_bl_thick   * const thick,
-              suzerain_bl_qoi     * const qoi)
+        const suzerain_bl_local       * const wall,
+        const suzerain_bl_viscous     * const viscous,
+        const suzerain_bl_local       * const edge,
+        const suzerain_bl_thicknesses * const thick,
+              suzerain_bl_qoi         * const qoi)
 {
     FILL_WITH_NANS(qoi);
 
@@ -358,13 +358,13 @@ int
 suzerain_bl_compute_pg(
         const double code_Ma,
         const double code_Re,
-        const suzerain_bl_local   * const wall,
-        const suzerain_bl_viscous * const viscous,
-        const suzerain_bl_local   * const edge,
-        const double                      edge_p__x,
-        const double                      edge_u__x,
-        const suzerain_bl_thick   * const thick,
-              suzerain_bl_pg      * const pg)
+        const suzerain_bl_local       * const wall,
+        const suzerain_bl_viscous     * const viscous,
+        const suzerain_bl_local       * const edge,
+        const double                          edge_p__x,
+        const double                          edge_u__x,
+        const suzerain_bl_thicknesses * const thick,
+              suzerain_bl_pg          * const pg)
 {
     FILL_WITH_NANS(pg);
 

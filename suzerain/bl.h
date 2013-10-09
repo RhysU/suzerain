@@ -200,7 +200,7 @@ suzerain_bl_compute_delta2(
 
 /**
  * Information characterizing boundary layer thickness in various ways.  Each
- * member has units of \f$l_0\f$.  Using \ref suzerain_bl_compute_thick is the
+ * member has units of \f$l_0\f$.  Using \ref suzerain_bl_compute_thicknesses is the
  * recommended way to populate this data.
  */
 typedef struct {
@@ -209,7 +209,7 @@ typedef struct {
                            (sometimes written \f$\delta^\ast\f$). */
     double delta2;    /**< Momentum thickness \f$\delta_2\f$
                            (sometimes written \f$\theta\f$). */
-} suzerain_bl_thick;
+} suzerain_bl_thicknesses;
 
 /**
  * Compute boundary layer thickness parameters.  Requires a B-spline
@@ -217,12 +217,12 @@ typedef struct {
  * + p}{\rho}\f$, streamwise momentum \f$\rho u\f$, and velocity \f$u\f$.  This
  * is a convenience method around \ref suzerain_bl_find_edge, \ref
  * suzerain_bl_compute_delta1, and \ref suzerain_bl_compute_delta2 packing
- * the results into a \ref suzerain_bl_thick structure.
+ * the results into a \ref suzerain_bl_thicknesses structure.
  *
  * \param[in ] coeffs_H0    Coefficient representation of \f$H_0\f$.
  * \param[in ] coeffs_rho_u Coefficient representation of \f$\rho u\f$.
  * \param[in ] coeffs_u     Coefficient representation of \f$u\f$.
- * \param[out] thick        Populated on success.
+ * \param[out] thicknesses  Populated on success.
  *                          See type documentation for contents.
  * \param[in ] w            Workspace to use.
  * \param[in ] dw           Workspace to use.
@@ -231,11 +231,11 @@ typedef struct {
  *      returns one of #suzerain_error_status.
  */
 int
-suzerain_bl_compute_thick(
+suzerain_bl_compute_thicknesses(
     const double * coeffs_H0,
     const double * coeffs_rho_u,
     const double * coeffs_u,
-    suzerain_bl_thick * thick,
+    suzerain_bl_thicknesses *thick,
     gsl_bspline_workspace *w,
     gsl_bspline_deriv_workspace *dw);
 
@@ -284,11 +284,11 @@ int
 suzerain_bl_compute_qoi(
         double code_Ma,
         double code_Re,
-        const suzerain_bl_local   * wall,
-        const suzerain_bl_viscous * viscous,
-        const suzerain_bl_local   * edge,
-        const suzerain_bl_thick   * thick,
-              suzerain_bl_qoi     * qoi);
+        const suzerain_bl_local       * wall,
+        const suzerain_bl_viscous     * viscous,
+        const suzerain_bl_local       * edge,
+        const suzerain_bl_thicknesses * thick,
+              suzerain_bl_qoi         * qoi);
 
 /**
  * Nondimensional boundary layer pressure gradient parameters.
@@ -355,13 +355,13 @@ int
 suzerain_bl_compute_pg(
         double code_Ma,
         double code_Re,
-        const suzerain_bl_local   * wall,
-        const suzerain_bl_viscous * viscous,
-        const suzerain_bl_local   * edge,
-        const double                edge_p__x,
-        const double                edge_u__x,
-        const suzerain_bl_thick   * thick,
-              suzerain_bl_pg      * pg);
+        const suzerain_bl_local       * wall,
+        const suzerain_bl_viscous     * viscous,
+        const suzerain_bl_local       * edge,
+        const double                    edge_p__x,
+        const double                    edge_u__x,
+        const suzerain_bl_thicknesses * thick,
+              suzerain_bl_pg          * pg);
 
 #ifdef __cplusplus
 } /* extern "C" */
