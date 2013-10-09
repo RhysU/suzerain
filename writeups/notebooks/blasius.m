@@ -22,9 +22,10 @@
 %   blasius_ganapol : The exact source data as it appears in Ganapol's paper
 %
 % Further, the following univariate functions of Re_x are available:
-%   blasius_u       : The Reynolds-independent u/u_oo
-%   blasius_v       : The Reynolds-dependent v/v_oo
-%   blasius_kepp    : The Reynolds-dependent second derivative of kinetic energy
+%   blasius_u       : The Reynolds-independent streamwise velocity u/u_oo
+%   blasius_v       : The wall-normal velocity v/v_oo
+%   blasius_ke      : The specific kinetic energy
+%   blasius_kepp    : The second derivative of specific kinetic energy
 
 1; % This is not a function file
 
@@ -90,6 +91,7 @@ blasius_fppp  = -blasius_f .* blasius_fpp / 2;
 % See notebooks/Blasius_Kinetic_Energy.nv for kepp derivation
 blasius_u    = @(Re) blasius_fp;
 blasius_v    = @(Re) (blasius_f + blasius_eta .* blasius_fp) / sqrt(2*Re);
+blasius_ke   = @(Re) (blasius_u(Re).**2 + blasius_v(Re).**2) / 2;
 blasius_kepp = @(Re) (   4*blasius_fp.**2
                        + blasius_f.*(   3*blasius_fpp
                                       - (blasius_eta.*blasius_f.*blasius_fpp)/2
