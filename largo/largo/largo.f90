@@ -68,21 +68,26 @@ contains
   ! Generic interface routines
 
   ! Generic interface allocate
-  subroutine largo_allocate_c(lcp, neq, ns, cmodel) bind(C, name="largo_allocate")
+  subroutine largo_allocate_c(lcp, cmodel, neq, ns, ntvar, cransmodel) bind(C, name="largo_allocate")
 
     ! largo workspace C pointer
     type(largo_ptr), intent(out)                :: lcp
     integer(c_int), intent(in), value           :: neq
     integer(c_int), intent(in), value           :: ns     ! number of species
+    integer(c_int), intent(in), value           :: ntvar  ! number turb vars
     type(string_ptr), intent(in), value         :: cmodel
+    type(string_ptr), intent(in), value         :: cransmodel
     character(len=255)                          :: fmodel
+    character(len=255)                          :: fransmodel
     logical                                     :: copy_success
+    logical                                     :: copy_rans_success
 
     ! Copy C-style, NULL terminated string to Fortran-compatible storage
-    copy_success = largo_c_f_stringcopy (cmodel, fmodel)
+    copy_success      = largo_c_f_stringcopy (cmodel, fmodel)
+    copy_rans_success = largo_c_f_stringcopy (cransmodel, fransmodel)
 
     ! Invoke Fortran functionality using Fortran-ready model string
-    call largo_allocate(lcp, fmodel, neq, ns, 0, "dns")
+    call largo_allocate(lcp, fmodel, neq, ns, ntvar, fransmodel)
 
   end subroutine largo_allocate_c
 

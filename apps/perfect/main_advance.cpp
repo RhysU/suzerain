@@ -204,7 +204,7 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
         const std::string& model_name = sg->formulation.name();
         INFO0("Allocating Largo model \"" << model_name
               << "\" for 5 state variables");
-        largo_allocate(&sg->workspace, 5, 0, model_name.c_str());
+        largo_allocate(&sg->workspace, model_name.c_str(), 5, 0, 0, "dns");
     }
 
     // Prepare any necessary, problem-specific constraints

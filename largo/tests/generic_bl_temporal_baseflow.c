@@ -74,6 +74,9 @@ FCT_BGN()
           double y       = 1.0/ 10.0;
           double grDelta = 5.0/100.0;
 
+          const char ransmodel[] = "k_epsilon";
+          const int ntvar  = 2;
+
           double field  [] = \
           {    11.0/ 1000.0,  \
               485.0/  100.0,  \
@@ -238,8 +241,7 @@ FCT_BGN()
 
           const char model[] = "bl_temporal";
 
-          largo_allocate (&generic_workspace, neq, ns, model);
-
+          largo_allocate (&generic_workspace, model, neq, ns, 0, "dns");
 
           // Init growth rates
           largo_init     (generic_workspace, grDelta, grDA, grDArms);
@@ -306,7 +308,7 @@ FCT_BGN()
 
           // Recompute sources using wrapper methods
           // Allocate generic workspace;
-          largo_allocate (&generic_workspace, neq, ns, model);
+          largo_allocate (&generic_workspace, model, neq, ns, 0, "dns");
 
           // Init growth rates
           largo_init     (generic_workspace, grDelta, grDA, grDArms);

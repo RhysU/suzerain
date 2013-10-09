@@ -280,8 +280,7 @@ FCT_BGN()
 
           const char model[] = "bl_spatiotemporal";
 
-          largo_allocate (&generic_workspace, neq, ns, model);
-
+          largo_allocate (&generic_workspace, model, neq, ns, 0, "dns");
 
           // Init growth rates
           largo_init     (generic_workspace, grxDelta, grxDA, grxDArms);
@@ -354,7 +353,7 @@ FCT_BGN()
 
           // Recompute sources using wrapper methods
           // Allocate generic workspace;
-          largo_allocate (&generic_workspace, neq, ns, model);
+          largo_allocate (&generic_workspace, model, neq, ns, 0, "dns");
 
           // Init wall baseflow
           largo_init_wall_baseflow(generic_workspace   \ 

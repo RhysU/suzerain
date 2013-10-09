@@ -170,8 +170,7 @@ FCT_BGN()
           const double tolerance = 1.0E-12;
 
           const char model[] = "bl_temporal";
-
-          largo_allocate (&generic_workspace, neq, ns, model);
+          largo_allocate (&generic_workspace, model, neq, ns, 0, "dns");
 
           // Compute prestep values;
           largo_prestep_seta_innery  (generic_workspace, y*grDelta,
@@ -233,7 +232,7 @@ FCT_BGN()
 
           // Recompute sources using wrapper methods
           // Allocate generic workspace;
-          largo_allocate (&generic_workspace, neq, ns, model);
+          largo_allocate (&generic_workspace, model, neq, ns, 0, "dns");
 
           // Compute prestep values;
           largo_prestep_seta (generic_workspace, y*grDelta, field,

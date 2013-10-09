@@ -404,7 +404,8 @@ suzerain::reacting::driver_advance::run(int argc, char **argv)
         INFO0("Allocating Largo model \"" << name
               << "\" for state count " << state_count
               << " with " << Ns << " species");
-        largo_allocate(&sgdef->workspace, state_count, Ns, name.c_str());
+        largo_allocate(&sgdef->workspace, name.c_str(), state_count, Ns, 
+                       0, "dns");
     }
 
     // Use --undriven as a testing- and debugging-related tool.

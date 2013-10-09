@@ -33,9 +33,11 @@ extern "C" {
 #endif
 
 void  largo_allocate (void ** generic_workspace,
+                      const char * model,
                       int    neq,
                       int    ns,
-                      const char * model);
+                      int    ntvar,
+                      const char * ransmodel);
 
 void  largo_init ( void * generic_workspace,
                    double grDelta,
