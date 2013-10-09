@@ -45,10 +45,6 @@ BOOST_GLOBAL_FIXTURE(BlasCleanupFixture);
 
 #pragma warning(disable:1572 2014 2015)
 
-BOOST_AUTO_TEST_SUITE(bl_compute_viscous)
-// FIXME Implement
-BOOST_AUTO_TEST_SUITE_END()
-
 // A fixture exposing Ganapol's Blasius profile using eta breakpoints
 template <int k>
 struct UniformGanapolFixture {
@@ -246,12 +242,14 @@ BOOST_AUTO_TEST_CASE( blasius_compute_thick )
 
     // Compute a bunch of thickness-related quantities
     // Known good values computed by Octave using trapz from Ganapol data
+    size_t cnt = 0;
     suzerain_bl_thick thick;
     BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS, suzerain_bl_compute_thick(
         ke.get() /* \approx H_0 */, rho_u.get(), u.get(), &thick, b.bw, b.dbw));
-    BOOST_CHECK_CLOSE(thick.delta,     8.22,              0.25);
-    BOOST_CHECK_CLOSE(thick.deltastar, 1.72189445179000,  0.10);
-    BOOST_CHECK_CLOSE(thick.theta,     0.663007750711612, 0.25);
+    BOOST_CHECK_CLOSE(thick.delta,     8.22,              0.25); ++cnt;
+    BOOST_CHECK_CLOSE(thick.deltastar, 1.72189445179000,  0.10); ++cnt;
+    BOOST_CHECK_CLOSE(thick.theta,     0.663007750711612, 0.25); ++cnt;
+    BOOST_CHECK_EQUAL(cnt, sizeof(thick)/sizeof(thick.delta));
 }
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -320,7 +318,127 @@ BOOST_AUTO_TEST_CASE( blasius_theta )
 
 BOOST_AUTO_TEST_SUITE_END()
 
+BOOST_AUTO_TEST_SUITE( qoi )
 
-BOOST_AUTO_TEST_SUITE(bl_compute_qoi)
-// FIXME Implement
+
+
+// Test data taken from
+// https://svn.ices.utexas.edu/repos/pecos/turbulence/heatshield_bl/trunk/laminar/wall.dat
+// for dstat ~ 2.5007933304570438.
+struct wall_type : public suzerain_bl_local
+{
+    wall_type()
+    {
+        std::fill_n(reinterpret_cast<double *>(this),
+                    sizeof(*this)/sizeof(double),
+                    std::numeric_limits<double>::quiet_NaN());
+        a      =  843.98854040857316;
+        gamma  =  1.3527314891502726;
+        mu     =  4.8813735289922836e-05;
+        Pr     =  0.65543907074081864;
+        p__x   =  -1231.0557214607243;
+        rho    =  0.018546113877544138;
+        T      =  1391.8731000995472;
+        u      =  0.0023004630235243829;
+        u__x   =  3117.168135000341;
+        u__y   =  333239.70652878482;
+        v      =  0.27873944160103337;
+    }
+};
+static const wall_type wall;
+
+// Test data taken from
+// https://svn.ices.utexas.edu/repos/pecos/turbulence/heatshield_bl/trunk/laminar/edge.dat
+// for dstat ~ 2.5007933304570438.
+struct edge_type : public suzerain_bl_local
+{
+    edge_type()
+    {
+        std::fill_n(reinterpret_cast<double *>(this),
+                    sizeof(*this)/sizeof(double),
+                    std::numeric_limits<double>::quiet_NaN());
+        a      =  1956.3958663603282;
+        gamma  =  1.4083595370046604;
+        mu     =  0.00016225807140364439;
+        Pr     =  0.80552596752550176;
+        p__x   =  -1860.4745416352641;
+        rho    =  0.0037307784953988427;
+        T      =  5840.4009311559321;
+        u      =  1396.7581826189837;
+        u__x   =  499.26639968207024;
+        u__y   =  4634.7550551015656;
+        v      =  -41.964917478845166;
+    }
+};
+static const edge_type edge;
+
+
+// Test data taken from
+// https://svn.ices.utexas.edu/repos/pecos/turbulence/heatshield_bl/trunk/laminar/scenario.dat
+// for dstat ~ 2.5007933304570438.
+BOOST_AUTO_TEST_CASE( compute_viscous )
+{
+    suzerain_bl_viscous viscous;
+    BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS,
+                        suzerain_bl_compute_viscous(&wall, &viscous));
+
+    size_t cnt = 0; // Tracks if all quantities were tested
+    const double tol = GSL_SQRT_DBL_EPSILON;
+    BOOST_CHECK_CLOSE(viscous.tau_w,    16.266674822587674,     tol); ++cnt;
+    BOOST_CHECK_CLOSE(viscous.u_tau,    29.615763373028074,     tol); ++cnt;
+    BOOST_CHECK_CLOSE(viscous.delta_nu, 8.8872252594154481e-05, tol); ++cnt;
+    BOOST_CHECK_EQUAL(cnt, sizeof(viscous)/sizeof(viscous.tau_w));
+}
+
+// Test data taken from
+// https://svn.ices.utexas.edu/repos/pecos/turbulence/heatshield_bl/trunk/laminar/scenario.dat
+// for dstat ~ 2.5007933304570438.
+BOOST_AUTO_TEST_CASE( compute_qoi )
+{
+    suzerain_bl_viscous viscous;            // Answers from just above
+    std::fill_n(reinterpret_cast<double *>(&viscous),
+                sizeof(viscous)/sizeof(double),
+                std::numeric_limits<double>::quiet_NaN());
+    viscous.tau_w    = 16.266674822587674;
+    viscous.u_tau    = 29.615763373028074;
+    viscous.delta_nu = 8.8872252594154481e-05;
+
+    suzerain_bl_thick thick;                // Answers from scenario.dat
+    std::fill_n(reinterpret_cast<double *>(&thick),
+                sizeof(thick)/sizeof(double),
+                std::numeric_limits<double>::quiet_NaN());
+    thick.delta     = 0.046525678647201738;
+    thick.deltastar = 0.0044202837563584669;
+    thick.theta     = 0.0059005327804110153;
+
+    const double code_Ma = 1;               // Data from a dimensional code
+    const double code_Re = 1;               // Ditto
+    suzerain_bl_qoi qoi;
+    BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS, suzerain_bl_compute_qoi(
+            code_Ma, code_Re, &wall, &viscous, &edge, &thick, &qoi));
+
+    size_t cnt = 0; // Tracks if all quantities were tested
+    const double tol = GSL_SQRT_DBL_EPSILON;
+    BOOST_CHECK_CLOSE(qoi.beta,         -0.50556278312573966,   tol); ++cnt;
+    BOOST_CHECK_CLOSE(qoi.Cf,           0.0044697874046917899,  tol); ++cnt;
+    BOOST_CHECK_CLOSE(qoi.gamma_e,      1.4083595370046604,     tol); ++cnt;
+    BOOST_CHECK_CLOSE(qoi.K_e,          1.1130040269123832e-05, tol); ++cnt;
+    BOOST_CHECK_CLOSE(qoi.K_s,          24.849095784497852,     tol*1e4); ++cnt; // FIXME Why?
+    BOOST_CHECK_CLOSE(qoi.K_w,          3.3483624867674195e-06, tol); ++cnt;
+    BOOST_CHECK_CLOSE(qoi.Lambda_n,     5.3212990115980237,     tol); ++cnt;
+    BOOST_CHECK_CLOSE(qoi.Ma_e,         0.71394455827465408,    tol); ++cnt;
+    BOOST_CHECK_CLOSE(qoi.p_ex,         -0.011892537649319856,  tol); ++cnt;
+    BOOST_CHECK_CLOSE(qoi.Pr_w,         0.65543907074081864,    tol); ++cnt;
+    BOOST_CHECK_CLOSE(qoi.Re_delta,     1494.1943713234461,     tol); ++cnt;
+    BOOST_CHECK_CLOSE(qoi.Re_deltastar, 141.95952214875473,     tol); ++cnt;
+    BOOST_CHECK_CLOSE(qoi.Re_theta,     189.49842591559681,     tol); ++cnt;
+    BOOST_CHECK_CLOSE(qoi.ratio_rho,    edge.rho / wall.rho,    tol); ++cnt;
+    BOOST_CHECK_CLOSE(qoi.ratio_nu,       (edge.mu / edge.rho)
+                                        / (wall.mu / wall.rho), tol); ++cnt;
+    BOOST_CHECK_CLOSE(qoi.ratio_T,      4.1960728537236802,     tol); ++cnt;
+    BOOST_CHECK_CLOSE(qoi.shapefactor,  0.7491329886401481,     tol); ++cnt;
+    BOOST_CHECK_CLOSE(qoi.v_wallplus,   0.0094118607746200931,  tol); ++cnt;
+    BOOST_CHECK_EQUAL(cnt, sizeof(qoi)/sizeof(qoi.beta));
+}
+
 BOOST_AUTO_TEST_SUITE_END()
