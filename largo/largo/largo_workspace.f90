@@ -205,7 +205,6 @@ module largo_workspace
     procedure(prestep_baseflow), pointer, nopass :: largo_init_wall_baseflow  => NULL()
 
     ! RANS Turbulence variables
-    procedure(allocate_rans),       pointer, nopass :: largo_allocate_rans       => NULL()
     procedure(get_ntvar_rans),      pointer, nopass :: largo_get_ntvar_rans      => NULL()
     procedure(init_rans),           pointer, nopass :: largo_init_rans           => NULL()
     procedure(prestep_innery_rans), pointer, nopass :: largo_prestep_innery_rans => NULL()

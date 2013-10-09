@@ -189,7 +189,7 @@ program bl_temporal_baseflow_f
       /)
 
     real(WP), dimension(ntvar), parameter :: &
-      grDATurb = (/               &
+      grDAturb = (/               &
       &        4.0_WP/ 100.0_WP,  &
       &        2.0_WP/ 100.0_WP   &
       /)
@@ -243,7 +243,7 @@ program bl_temporal_baseflow_f
     srcturb = 0.0_WP
 
     ! Allocate workspace
-    call largo_BL_temporal_allocate (workspace, neq, ns)
+    call largo_BL_temporal_allocate (workspace, neq, ns, 0, "dns")
 
     ! Init growth rates
     call largo_BL_temporal_init  (workspace, grDelta, grDA, grDArms)
@@ -307,12 +307,11 @@ program bl_temporal_baseflow_f
     ! Recompute using wrapper routines
     ! and include RANS sources
     ! Allocate workspace (same pointer as before)
-    call largo_BL_temporal_allocate (workspace, neq, ns)
-    call largo_BL_temporal_allocate_rans (workspace, turbmodel)
+    call largo_BL_temporal_allocate (workspace, neq, ns, ntvar, turbmodel)
 
     ! Init growth rates
     call largo_BL_temporal_init  (workspace, grDelta, grDA, grDArms)
-    call largo_BL_temporal_init_rans (workspace, grDATurb)
+    call largo_BL_temporal_init_rans (workspace, grDAturb)
 
     ! Compute prestep values
     call largo_BL_temporal_preStep_baseflow  (workspace,   base,  dybase,  &
@@ -324,7 +323,7 @@ program bl_temporal_baseflow_f
                                                   meanTurb, dymeanTurb)
 
     ! Compute sources
-    call largo_BL_temporal_sEta (workspace, 0.0_WP, 1.0_WP, srcall(1))
+    call largo_BL_temporal_sEta      (workspace, 0.0_WP, 1.0_WP, srcall (1))
     call largo_BL_temporal_sEta_rans (workspace, 0.0_WP, 1.0_WP, srcturb(1))
 
     ! Check all

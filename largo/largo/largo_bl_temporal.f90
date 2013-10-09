@@ -187,7 +187,6 @@ module largo_BL_temporal
 
   public  :: largo_BL_temporal_preStep_baseflow
 
-  public  :: largo_BL_temporal_allocate_rans
   public  :: largo_BL_temporal_get_ntvar_rans
   public  :: largo_BL_temporal_init_rans
   public  :: largo_BL_temporal_prestep_sEta_innery_rans
@@ -195,20 +194,23 @@ module largo_BL_temporal
 
 contains
 
-  subroutine largo_BL_temporal_allocate(cp, neq, ns)
+  subroutine largo_BL_temporal_allocate(cp, neq, ns, ntvar, ransmodel)
 
     type(largo_workspace_ptr), intent(out) :: cp
     ! neq=number of equations, might be needed later
     integer(c_int), intent(in)   :: neq
     integer(c_int), intent(in)   :: ns    ! number of species
+    integer(c_int), intent(in)   :: ntvar ! number of turbulence variables
+    character(len=*)                                :: ransmodel
     type(largo_BL_temporal_workspace_type), pointer :: auxp
 
     ! Allocate derived type variable
     allocate(auxp)
 
     ! Initialize values
-    neq_ = neq
-    ns_  = ns
+    neq_   = neq
+    ns_    = ns
+    ntvar_ = ntvar
 
     ! Allocate arrays for species
     if (ns_ > 0) then
@@ -232,6 +234,35 @@ contains
       auxp%gr_DA_rhos    = 0.0_WP
       auxp%gr_DA_rms_rhos= 0.0_WP
     end if
+
+    ! Check number of turbulence variables
+    select case (trim(ransmodel))
+    case ("laminar", "dns")
+      ! FIXME: if (ntvar_ /= 0) point to an error 
+    case ("turbulent_viscosity")
+      ! FIXME: if (ntvar_ /= 1) point to an error
+    case ("k_epsilon")
+      ! FIXME: if (ntvar_ /= 2) point to an error
+    case ("k_omega")
+      ! FIXME: if (ntvar_ /= 2) point to an error
+    case default
+      ! FIXME: RANS model not defined
+    end select
+
+    ! Allocate arrays for turbulent variables
+    if (ntvar_ > 0) then
+      allocate(auxp%dts_tvar   (1:ntvar_))
+      allocate(auxp%mean_tvar  (1:ntvar_))
+      allocate(auxp%gr_DA_tvar (1:ntvar_))
+
+      auxp%dts_tvar     = 0.0_WP
+      auxp%mean_tvar    = 0.0_WP
+      auxp%gr_DA_tvar   = 0.0_WP
+    end if
+
+    ! Initialize turbulence variables function pointers 
+    largo_BL_temporal_prestep_sEta_innery_rans => largo_bl_temporal_prestep_sEta_innery_rans_generic 
+    largo_BL_temporal_sEta_rans                => largo_bl_temporal_sEta_rans_generic 
 
     ! Get C pointer from Fortran pointer
     cp = c_loc(auxp)
@@ -274,48 +305,7 @@ contains
   end subroutine largo_BL_temporal_deallocate
 
 
-  ! RANS initialization
-  subroutine largo_BL_temporal_allocate_rans(cp, ransmodel)
-
-    ! largo workspace C pointer
-    type(largo_workspace_ptr), intent(in)            :: cp
-    character(len=255)                               :: ransmodel
-    type(largo_BL_temporal_workspace_type), pointer  :: auxp
-    integer(c_int) :: it
-
-    ! Get Fortran pointer from C pointer
-    call c_f_pointer(cp, auxp)
-
-    ! Initialize number of turbulence variables
-    select case (trim(ransmodel))
-    case ("laminar")
-      ntvar_ = 0
-    case ("turbulent_viscosity")
-      ntvar_ = 1
-    case ("k_epsilon")
-      ntvar_ = 2
-    case ("k_omega")
-      ntvar_ = 2
-    case default
-    end select
-
-    if (ntvar_ > 0) then
-      allocate(auxp%dts_tvar   (1:ntvar_))
-      allocate(auxp%mean_tvar  (1:ntvar_))
-      allocate(auxp%gr_DA_tvar (1:ntvar_))
-
-      auxp%dts_tvar     = 0.0_WP
-      auxp%mean_tvar    = 0.0_WP
-      auxp%gr_DA_tvar   = 0.0_WP
-    end if
-
-    largo_BL_temporal_prestep_sEta_innery_rans => largo_bl_temporal_prestep_sEta_innery_rans_generic 
-    largo_BL_temporal_sEta_rans                => largo_bl_temporal_sEta_rans_generic 
-
-  end subroutine largo_BL_temporal_allocate_rans
-
-
-  ! RANS initialization
+  ! get number of turbulence variables
   subroutine largo_BL_temporal_get_ntvar_rans(cp, ntvar)
 
     ! largo workspace C pointer

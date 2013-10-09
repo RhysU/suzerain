@@ -113,7 +113,9 @@ contains
       ! Initialize number of variables
       lauxp%nvar = neq
 
-      call largo_BL_temporal_allocate (lauxp%cp, lauxp%neq, lauxp%ns)
+      ! FIXME: Extension to RANS not yet available for generic interface;
+      !        values are hardcoded
+      call largo_BL_temporal_allocate (lauxp%cp, lauxp%neq, lauxp%ns, 0, "dns")
       lauxp%largo_init            => largo_BL_temporal_init
       lauxp%largo_finalize        => largo_BL_temporal_deallocate
       lauxp%largo_prestep_mean    => largo_BL_temporal_preStep_sEtaMean
@@ -149,7 +151,6 @@ contains
       lauxp%largo_prestep_baseflow => largo_BL_temporal_preStep_baseflow
 
       ! RANS methods
-      lauxp%largo_allocate_rans       => largo_BL_temporal_allocate_rans
       lauxp%largo_get_ntvar_rans      => largo_BL_temporal_get_ntvar_rans
       lauxp%largo_init_rans           => largo_BL_temporal_init_rans
       lauxp%largo_prestep_innery_rans => largo_BL_temporal_prestep_sEta_innery_rans
@@ -234,45 +235,6 @@ contains
     lcp = c_loc(lauxp)
 
   end subroutine largo_allocate
-
-
-  ! Generic interface allocate_rans, c
-  subroutine largo_init_allocate_rans_c(lcp, cmodel) bind(C, name="largo_allocate_rans")
-
-    ! largo workspace C pointer
-    type(largo_ptr), intent(out)         :: lcp
-    type(string_ptr), intent(in), value  :: cmodel
-    character(len=255)                   :: fmodel
-    logical                              :: copy_success
-
-    ! Copy C-style, NULL terminated string to Fortran-compatible storage
-    copy_success = largo_c_f_stringcopy (cmodel, fmodel)
-
-    ! Invoke Fortran functionality using Fortran-ready model string
-    call largo_allocate_rans(lcp, fmodel)
-
-  end subroutine largo_init_allocate_rans_c
-
-
-  ! Generic interface allocate_rans, fortran
-  subroutine largo_allocate_rans(lcp, fmodel)
-
-    ! largo workspace C pointer
-    type(largo_ptr), intent(out)         :: lcp
-    character(len=255)                   :: fmodel
-    type(largo_type), pointer            :: lauxp
-    integer(c_int)                       :: ntvar
-
-    call c_f_pointer(lcp, lauxp)
-
-    ! Invoke Fortran functionality using Fortran-ready model string
-    call lauxp%largo_allocate_rans(lcp, fmodel)
-
-    ! Get number of turbulence variables 
-    call lauxp%largo_get_ntvar_rans(lcp, ntvar)
-    lauxp%ntvar = ntvar
-
-  end subroutine largo_allocate_rans
 
 
   ! Generic interface deallocate

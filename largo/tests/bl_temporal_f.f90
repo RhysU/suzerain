@@ -145,7 +145,7 @@ program bl_temporal_f
     srcall  = 0.0_WP
 
     ! Allocate workspace
-    call largo_BL_temporal_allocate (workspace, neq, ns)
+    call largo_BL_temporal_allocate (workspace, neq, ns, 0, "dns")
 
     ! Init growth rates
     call largo_BL_temporal_init  (workspace, grDelta,                      &
@@ -208,7 +208,7 @@ program bl_temporal_f
 
     ! Recompute using wrapper routines
     ! Allocate workspace (same pointer as before)
-    call largo_BL_temporal_allocate (workspace, neq, ns)
+    call largo_BL_temporal_allocate (workspace, neq, ns, 0, "dns")
 
     ! Compute prestep values
     call largo_BL_temporal_preStep_sEta (workspace, y*grDelta, field, &
