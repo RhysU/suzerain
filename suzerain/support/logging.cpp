@@ -39,6 +39,16 @@
 #include <string>
 #include <vector>
 
+// GCC 4.6.3 dislikes some Log4cxx constructs.  Mute -fpermissive to workaround.
+// Warning-only idea taken from http://stackoverflow.com/questions/10932479
+// The right thing to do is to fix log4cxx, but it seems to be a failed state.
+//
+// If relevant, push "GCC diagnostic warning -fpermissive"
+#if ((__GNUC__ * 100) + __GNUC_MINOR__) >= 402
+#pragma GCC diagnostic push
+#pragma GCC diagnostic warning "-fpermissive"
+#endif
+
 #include <log4cxx/basicconfigurator.h>
 #include <log4cxx/file.h>
 #include <log4cxx/helpers/bytearrayinputstream.h>
@@ -58,6 +68,11 @@
 #define LOG4CXX 1
 #endif
 #include <log4cxx/helpers/aprinitializer.h>
+
+// Matching pop for "GCC diagnostic warning -fpermissive"
+#if ((__GNUC__ * 100) + __GNUC_MINOR__) >= 402
+#pragma GCC diagnostic pop
+#endif
 
 using namespace log4cxx;
 using namespace log4cxx::helpers;
