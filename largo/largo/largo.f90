@@ -339,6 +339,23 @@ contains
 
 
   ! Generic interface prestep subroutine
+  subroutine largo_preStep_sEtaMean(lcp, y, mean, ddy_mean) bind(C)
+
+    real(WP), intent(in), value         :: y
+    real(WP), dimension(*), intent(in)  :: mean
+    real(WP), dimension(*), intent(in)  :: ddy_mean
+    type(largo_ptr), value              :: lcp
+    type(largo_type), pointer           :: lauxp
+
+    call c_f_pointer(lcp, lauxp)
+    call lauxp%largo_prestep_mean(lauxp%cp, y, &
+                             mean         (1:lauxp%nvar),  &
+                             ddy_mean     (1:lauxp%nvar))
+
+  end subroutine largo_preStep_sEtaMean
+
+
+  ! Generic interface prestep subroutine
   subroutine largo_preStep_sEta_innery(lcp, y,                          &
                                            mean,     rms,     mean_rqq, &
                                        ddy_mean, ddy_rms, ddy_mean_rqq) bind(C)
