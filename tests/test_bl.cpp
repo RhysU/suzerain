@@ -278,7 +278,7 @@ BOOST_AUTO_TEST_CASE( blasius_compute_thicknesses )
     BOOST_CHECK_CLOSE(thick.delta,  8.22,              0.25); ++cnt;
     BOOST_CHECK_CLOSE(thick.delta1, 1.72189445179000,  0.10); ++cnt;
     BOOST_CHECK_CLOSE(thick.delta2, 0.663007750711612, 0.25); ++cnt;
-    BOOST_CHECK_CLOSE(thick.delta3, 1.04326800217938,  0.25); ++cnt;
+    BOOST_CHECK_CLOSE(thick.delta3, 1.04326800217938,  0.15); ++cnt;
     BOOST_CHECK_CLOSE(thick.deltaH, 1.04759635667752,  0.10); ++cnt;
     BOOST_CHECK_EQUAL(cnt, sizeof(thick)/sizeof(thick.delta));
 }
