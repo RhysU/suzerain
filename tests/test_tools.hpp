@@ -41,7 +41,6 @@
 #include <mkl.h>
 #endif
 
-
 #define CHECK_GBMATRIX_CLOSE(                                        \
             e_m, e_n, e_kl, e_ku, e, e_ld,                           \
             r_m, r_n, r_kl, r_ku, r, r_ld,                           \
@@ -899,7 +898,7 @@ public:
 #if INTEL_MKL_VERSION < 110002
         MKL_FreeBuffers();
 #else
-	mkl_free_buffers();
+        mkl_free_buffers();
 #endif
 #endif
     }
