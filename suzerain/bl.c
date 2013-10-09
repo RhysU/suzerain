@@ -333,11 +333,11 @@ suzerain_bl_compute_qoi(
                       * code_Re / square(code_Ma);
     qoi->gamma_e      = edge->gamma
                       * 1;
-    qoi->K_e          = edge->mu * edge->u__x / edge->rho / square(edge->u)
+    qoi->Launder_e    = edge->mu * edge->u__x / edge->rho / square(edge->u)
                       / code_Re;
     qoi->Pohlhausen   = square(thick->delta) * edge->rho / edge->mu * edge->u__x
                       * code_Re;
-    qoi->K_w          = wall->mu * edge->u__x / edge->rho / square(edge->u)
+    qoi->Launder_w    = wall->mu * edge->u__x / edge->rho / square(edge->u)
                       / code_Re;
     qoi->Lambda_n     = - thick->delta / viscous->tau_w * edge->p__x
                       * code_Re / square(code_Ma);

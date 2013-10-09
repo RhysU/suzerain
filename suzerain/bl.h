@@ -251,17 +251,17 @@ typedef struct {
                               \frac{\delta^\ast}{\tau_w}
                               \frac{\partial p}{\partial x}\f$. */
     double gamma_e;      /**< The ratio of specific heats at the edge. */
-    double K_e;          /**< Launder's acceleration parameter \f$K =
-                              \frac{\mu}{\rho_e u_e^2} \,
-                              \frac{\partial{}u_e}{\partial x}\f$
-                              computed taking \f$\mu = \mu_e\f$. */
-    double K_w;          /**< Launder's acceleration parameter \f$K =
-                              \frac{\mu}{\rho_e u_e^2} \,
-                              \frac{\partial{}u_e}{\partial x}\f$
-                              computed taking \f$\mu = \mu_w\f$. */
     double Lambda_n;     /**< Pressure parameter \f$\Lambda_n =
                               -\frac{\delta}{\tau_w}
                               \frac{\partial p}{\partial x}\f$. */
+    double Launder_e;    /**< Launder's acceleration parameter \f$K =
+                              \frac{\mu}{\rho_e u_e^2} \,
+                              \frac{\partial{}u_e}{\partial x}\f$
+                              computed taking \f$\mu = \mu_e\f$. */
+    double Launder_w;    /**< Launder's acceleration parameter \f$K =
+                              \frac{\mu}{\rho_e u_e^2} \,
+                              \frac{\partial{}u_e}{\partial x}\f$
+                              computed taking \f$\mu = \mu_w\f$. */
     double Ma_e;         /**< The local Mach number at the edge. */
     double p_ex;         /**< The inviscid-friendly pressure parameter
                               \f$p_{e,x}^\ast = \frac{\delta}{\rho_e u_e^2}
