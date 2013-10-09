@@ -82,20 +82,22 @@ contains
     copy_success = largo_c_f_stringcopy (cmodel, fmodel)
 
     ! Invoke Fortran functionality using Fortran-ready model string
-    call largo_allocate(lcp, neq, ns, fmodel)
+    call largo_allocate(lcp, fmodel, neq, ns, 0, "dns")
 
   end subroutine largo_allocate_c
 
 
   ! Generic interface allocate
-  subroutine largo_allocate(lcp, neq, ns, fmodel) !bind(C)
+  subroutine largo_allocate(lcp, fmodel, neq, ns, ntvar, fransmodel) 
 
     ! largo workspace C pointer
-    type(largo_ptr), intent(out)         :: lcp
-    integer(c_int), intent(in)           :: neq
-    integer(c_int), intent(in)           :: ns    ! number of species
-    character(*), intent(in)             :: fmodel
-    type(largo_type), pointer            :: lauxp
+    type(largo_ptr), intent(out)  :: lcp
+    integer(c_int), intent(in)    :: neq
+    integer(c_int), intent(in)    :: ns    ! number of species
+    integer(c_int), intent(in)    :: ntvar ! number of turbulence variables
+    character(*), intent(in)      :: fmodel
+    character(*), intent(in)      :: fransmodel
+    type(largo_type), pointer     :: lauxp
 
     ! Allocate derived type variable
     allocate (lauxp)
@@ -106,6 +108,9 @@ contains
     ! Initialize number of species
     lauxp%ns = ns
 
+    ! Initialize number of turbulence variables
+    lauxp%ntvar = ntvar
+
     ! Initialize according to model index
     ! FIXME: enumerate models
     select case (trim(fmodel))
@@ -113,9 +118,8 @@ contains
       ! Initialize number of variables
       lauxp%nvar = neq
 
-      ! FIXME: Extension to RANS not yet available for generic interface;
-      !        values are hardcoded
-      call largo_BL_temporal_allocate (lauxp%cp, lauxp%neq, lauxp%ns, 0, "dns")
+      call largo_BL_temporal_allocate (lauxp%cp, lauxp%neq, lauxp%ns, &
+        &     lauxp%ntvar, trim(fransmodel))
       lauxp%largo_init            => largo_BL_temporal_init
       lauxp%largo_finalize        => largo_BL_temporal_deallocate
       lauxp%largo_prestep_mean    => largo_BL_temporal_preStep_sEtaMean
@@ -324,7 +328,7 @@ contains
     call c_f_pointer(lcp, lauxp)
 
     ! Invoke Fortran functionality using Fortran-ready model string
-    call lauxp%largo_init_rans(lcp, grDAturb(1:lauxp%ntvar))
+    call lauxp%largo_init_rans(lauxp%cp, grDAturb(1:lauxp%ntvar))
 
   end subroutine largo_init_rans
 

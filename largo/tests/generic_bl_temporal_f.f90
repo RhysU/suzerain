@@ -144,7 +144,7 @@ program generic_bl_temporal_f
     srcall  = 0.0_WP
 
     ! Allocate workspace through generic interface
-    call largo_allocate (generic_workspace, neq, ns, "bl_temporal")
+    call largo_allocate (generic_workspace, "bl_temporal", neq, ns, 0, "dns")
 
     ! Init growth rates
     call largo_init     (generic_workspace, grDelta, & 
@@ -207,7 +207,7 @@ program generic_bl_temporal_f
 
     ! Recompute using wrapper routines
     ! Allocate workspace through generic interface
-    call largo_allocate (generic_workspace, neq, ns, "bl_temporal")
+    call largo_allocate (generic_workspace, "bl_temporal", neq, ns, 0, "dns")
 
     ! Compute prestep values
     call largo_preStep_sEta (generic_workspace, y*grDelta, field, & 

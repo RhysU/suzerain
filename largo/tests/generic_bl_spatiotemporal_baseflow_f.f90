@@ -237,7 +237,8 @@ program generic_bl_spatiotemporal_baseflow_f
     srcall  = 0.0_WP
 
     ! Allocate workspace through generic interface
-    call largo_allocate (generic_workspace, neq, ns, "bl_spatiotemporal")
+    call largo_allocate (generic_workspace, "bl_spatiotemporal", neq, ns, &
+      &  0, "dns")
 
     ! Init growth rates
     call largo_init     (generic_workspace, grxDelta, grxDA, grxDArms)
@@ -309,7 +310,8 @@ program generic_bl_spatiotemporal_baseflow_f
 
     ! Recompute using wrapper routines
     ! Allocate workspace through generic interface
-    call largo_allocate (generic_workspace, neq, ns, "bl_spatiotemporal")
+    call largo_allocate (generic_workspace, "bl_spatiotemporal", neq, ns, &
+      &  0, "dns")
 
     ! Init growth rates
     call largo_init     (generic_workspace, grxDelta, grxDA, grxDArms)

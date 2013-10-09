@@ -158,7 +158,8 @@ program generic_bl_temporal_tconsistent_f
     srcfull = 0.0_WP
 
     ! Allocate workspace
-    call largo_allocate (generic_workspace, neq, ns, "bl_temporal_tensor-consistent")
+    call largo_allocate (generic_workspace, "bl_temporal_tensor-consistent" , &
+      &  neq, ns, 0, "dns")
 
     ! Compute prestep values
     call largo_preStep_sEta_innery  (generic_workspace, y*grDelta, & 
@@ -212,7 +213,8 @@ program generic_bl_temporal_tconsistent_f
     srcfull = 0.0_WP
 
     ! Allocate workspace
-    call largo_allocate (generic_workspace, neq, ns, "bl_temporal_tensor-consistent")
+    call largo_allocate (generic_workspace, "bl_temporal_tensor-consistent" , &
+      &  neq, ns, 0, "dns")
 
     ! Compute prestep values
     call largo_preStep_sEta (generic_workspace, y*grDelta, field, mean, rms, meanrqq, dmean, drms, dmeanrqq)
