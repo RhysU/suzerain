@@ -199,6 +199,52 @@ suzerain_bl_momentum_thickness(
     gsl_bspline_deriv_workspace *dw);
 
 /**
+ * Compute the energy thickness \f$\delta_3\f$ (not to be confused with
+ * the enthalpy thickness) given the edge location and a B-spline coefficient
+ * representation of streamwise momentum \f$\rho u\f$ and velocity \f$u\f$.
+ * The method computes
+ * \f[
+ *  \delta_3 = \int_0^\infty
+ *  \frac{\rho u}{\rho_e u_e} \left(1 - \left(\frac{u}{\u_e}\right)^2\right)
+ *  \, \mathrm{d}y
+ *  .
+ * \f]
+ * Among many other places, this definition appears in equation (10.97) on page
+ * 258 of Schlichting and Gersten's <a
+ * href="http://www.worldcat.org/title/boundary-layer-theory-with-22-tables/oclc/615466700">
+ * Boundary Layer Theory</a>.
+ *
+ * The method propagates a <tt>NaN</tt> \c edge_location into a <tt>NaN</tt> \c
+ * delta3 result considering the computation to be successful when this
+ * happens.
+ *
+ * \param[in ] edge_location Location of the boundary layer edge possibly
+ *                           computed by suzerain_bl_find_edge().
+ * \param[in ] coeffs_rho_u  B-spline coefficients for \f$rho u\f$.
+ * \param[in ] coeffs_u      B-spline coefficients for \f$u\f$.
+ * \param[out] delta3        The computed momentum thickness.
+ * \param[in]  dB            Temporary storage to use of size <tt>w->k</tt> by
+ *                           no less than <tt>1</tt>.
+ * \param[in ] w             Workspace to use.
+ * \param[in ] dw            Workspace to use.
+ *
+ * \return ::SUZERAIN_SUCCESS on success and returns the answer in
+ * <code>*delta3</code>.  On recoverable error sets <code>*delta3</code> to be
+ * <tt>NaN</tt> <code>*delta3</code> to be <tt>NaN</tt> and returns one of
+ * #suzerain_error_status.  On unrecoverable error, additionally calls
+ * suzerain_error().
+ */
+int
+suzerain_bl_energy_thickness(
+    const double edge_location,
+    const double * coeffs_rho_u,
+    const double * coeffs_u,
+    double * delta3,
+    gsl_matrix *dB,
+    gsl_bspline_workspace *w,
+    gsl_bspline_deriv_workspace *dw);
+
+/**
  * Information characterizing boundary layer thickness in various ways.  Each
  * member has units of \f$l_0\f$.  Using \ref suzerain_bl_compute_thicknesses
  * is the recommended way to populate this data.

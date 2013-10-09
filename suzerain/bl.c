@@ -251,7 +251,7 @@ suzerain_bl_momentum_thickness(
             gsl_bspline_deriv_eval_nonzero(xj, 0,
                     dB, &kstart, &kend, w, dw);
 
-            /* Accumulate basis linear combinations to evaluate rho_u */
+            /* Accumulate basis linear combinations to evaluate rho_u, u */
             double rho_u = 0;
             double u     = 0;
             for (size_t k = kstart; k <= kend; ++k) {
@@ -262,6 +262,93 @@ suzerain_bl_momentum_thickness(
 
             /* Then use integrand scaled by weight to accumulate result */
             *delta2 += wj * (rho_u / rho_u_edge) * (1 - u / u_edge);
+        }
+    }
+
+    /* Free integration rule resources */
+    gsl_integration_glfixed_table_free(tbl);
+
+    return SUZERAIN_SUCCESS;
+}
+
+int
+suzerain_bl_energy_thickness(
+    const double edge_location,
+    const double * coeffs_rho_u,
+    const double * coeffs_u,
+    double * delta3,
+    gsl_matrix *dB,
+    gsl_bspline_workspace *w,
+    gsl_bspline_deriv_workspace *dw)
+{
+    *delta3 = GSL_NAN;              // Be defensive
+    if (gsl_isnan(edge_location)) { // Propagate NaN but succeed
+        return SUZERAIN_SUCCESS;
+    }
+
+    /* Compute edge momentum given edge_location and coeffs_rho_u */
+    double rho_u_edge = GSL_NAN;
+    int status = suzerain_bspline_linear_combination(
+            0, coeffs_rho_u, 1, &edge_location, &rho_u_edge, 0, dB, w, dw);
+    if (SUZERAIN_UNLIKELY(status != SUZERAIN_SUCCESS)) {
+        SUZERAIN_ERROR_VAL("failed to compute rho_u_edge",
+                           SUZERAIN_EFAILED, status);
+    }
+
+    /* Compute edge velocity given edge_location and coeffs_u */
+    double u_edge = GSL_NAN;
+    status = suzerain_bspline_linear_combination(
+            0, coeffs_u, 1, &edge_location, &u_edge, 0, dB, w, dw);
+    if (SUZERAIN_UNLIKELY(status != SUZERAIN_SUCCESS)) {
+        SUZERAIN_ERROR_VAL("failed to compute u_edge",
+                           SUZERAIN_EFAILED, status);
+    }
+
+    /* Obtain an appropriate order Gauss-Legendre integration rule     */
+    /* when integrand has three times the order of the basis.          */
+    /* That is, solve 3*(k - 1) = 2*n - 1 for number of Gauss points n */
+    gsl_integration_glfixed_table * const tbl
+        = gsl_integration_glfixed_table_alloc((3*w->k+1)/2 - 1);
+    if (SUZERAIN_UNLIKELY(tbl == NULL)) {
+        SUZERAIN_ERROR("failed to obtain Gauss-Legendre rule from GSL",
+                       SUZERAIN_ESANITY);
+    }
+
+    /* Notice any failure below will be catastrophic */
+    /* so accumulate integral into *delta3 directly   */
+    *delta3 = 0;
+
+    /* Accumulate the breakpoint-by-breakpoint contributions to result */
+    double xj = 0, wj = 0;
+    for (size_t i = 0; i < (w->nbreak - 1); ++i) {
+
+        /* Determine i-th breakpoint interval with edge being upper limit */
+        const double a = gsl_bspline_breakpoint(i,   w);
+        if (a > edge_location) break;
+        const double b = GSL_MIN_DBL(gsl_bspline_breakpoint(i+1, w),
+                                     edge_location);
+
+        for (size_t j = 0; j < tbl->n; ++j) {
+
+            /* Get j-th Gauss point xj and weight wj */
+            gsl_integration_glfixed_point(a, b, j, &xj, &wj, tbl);
+
+            /* Evaluate basis functions at point xj */
+            size_t kstart, kend;
+            gsl_bspline_deriv_eval_nonzero(xj, 0,
+                    dB, &kstart, &kend, w, dw);
+
+            /* Accumulate basis linear combinations to evaluate rho_u, u */
+            double rho_u = 0;
+            double u     = 0;
+            for (size_t k = kstart; k <= kend; ++k) {
+                const double Bk = gsl_matrix_get(dB, k - kstart, 0);
+                rho_u += coeffs_rho_u[k] * Bk;
+                u     += coeffs_u[k]     * Bk;
+            }
+
+            /* Then use integrand scaled by weight to accumulate result */
+            *delta3 += wj * (rho_u / rho_u_edge) * (1 - square(u / u_edge));
         }
     }
 

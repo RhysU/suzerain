@@ -160,6 +160,35 @@ BOOST_AUTO_TEST_CASE( blasius_delta2 )
     BOOST_CHECK_SMALL((delta2 - 0.663007750711612), 0.0020);
 }
 
+BOOST_AUTO_TEST_CASE( blasius_delta3 )
+{
+    // Prepare the Blasius velocity profile as coefficients on basis
+    // For a linear B-spline basis, the collocation points are the breakpoints
+    shared_array<double> u(new double[b.n()]);
+    std::memcpy(u.get(),
+                suzerain_blasius_ganapol_fp,
+                sizeof(suzerain_blasius_ganapol_fp));
+    BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS, lu.solve(1, u.get(), 1, b.n()));
+
+    // Prepare integration working storage
+    shared_ptr<gsl_matrix> dB(
+            gsl_matrix_alloc(b.k(), 1),
+            gsl_matrix_free);
+    BOOST_REQUIRE(dB);
+
+    // Integrate for delta3
+    // Pretend density is nondimensionally one so rho_u == u
+    // The absolute error behavior on this integral is unsatisfying
+    // though there's no reason adaptive results should match Octave's trapz.
+    double delta3  = GSL_NAN;
+    BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS, suzerain_bl_energy_thickness(
+        b.collocation_point(b.n()-1), u.get(), u.get(), &delta3, dB.get(),
+        b.bw, b.dbw));
+
+    // Check against good value found using Octave's trapz on Ganapol data
+    BOOST_CHECK_SMALL((delta3 - 1.04326800217938), 0.0025);
+}
+
 BOOST_AUTO_TEST_SUITE_END()
 
 
