@@ -237,40 +237,13 @@ suzerain_bl_compute_thick(
     gsl_bspline_deriv_workspace *dw);
 
 /**
- * Nondimensional boundary layer quantities of interest.
- *
- * Many of the pressure gradient parameters are defined within Cal and
- * Castillo's <a href="http://dx.doi.org/10.1063/1.2991433">"Similarity
- * analysis of favorable pressure gradient turbulent boundary layers with
- * eventual quasilaminarization."</a> in Physics of Fluids 20 (2008).
+ * Nondimensional boundary layer quantities of general interest.
  */
 typedef struct {
     double cf;           /**< The skin friction coefficient \f$c_f =
                               \frac{2 \tau_w}{\rho_e u_e^2}\f$. */
-    double Clauser;      /**< The Clauser parameter \f$\beta =
-                              \frac{\delta^\ast}{\tau_w}
-                              \frac{\partial p}{\partial x}\f$. */
     double gamma_e;      /**< The ratio of specific heats at the edge. */
-    double Lambda_n;     /**< Pressure parameter \f$\Lambda_n =
-                              -\frac{\delta}{\tau_w}
-                              \frac{\partial p}{\partial x}\f$
-                              which Cal and Castillo attribute to
-                              Narasimha and Sreenivasan. */
-    double Launder_e;    /**< Launder's acceleration parameter \f$K =
-                              \frac{\mu}{\rho_e u_e^2} \,
-                              \frac{\partial{}u_e}{\partial x}\f$
-                              computed taking \f$\mu = \mu_e\f$. */
-    double Launder_w;    /**< Launder's acceleration parameter \f$K =
-                              \frac{\mu}{\rho_e u_e^2} \,
-                              \frac{\partial{}u_e}{\partial x}\f$
-                              computed taking \f$\mu = \mu_w\f$. */
     double Ma_e;         /**< The local Mach number at the edge. */
-    double p_ex;         /**< The inviscid-friendly pressure parameter
-                              \f$p_{e,x}^\ast = \frac{\delta}{\rho_e u_e^2}
-                              \frac{\partial p}{\partial x}\f$. */
-    double Pohlhausen;   /**< The Pohlhausen parameter \f$K_s =
-                              \frac{\delta^2}{\nu_e}
-                              \frac{\partial u_e}{\partial x}\f$. */
     double Pr_w;         /**< The Prandtl number at the wall. */
     double ratio_rho;    /**< The ratio of edge to wall density. */
     double ratio_nu;     /**< The ratio of edge to wall kinematic viscosity. */
@@ -313,6 +286,72 @@ suzerain_bl_compute_qoi(
         const suzerain_bl_local   * edge,
         const suzerain_bl_thick   * thick,
               suzerain_bl_qoi     * qoi);
+
+/**
+ * Nondimensional boundary layer pressure gradient parameters.
+ *
+ * Most of these quantities are defined and discussed within Cal and Castillo's
+ * <a href="http://dx.doi.org/10.1063/1.2991433">"Similarity analysis of
+ * favorable pressure gradient turbulent boundary layers with eventual
+ * quasilaminarization."</a> in Physics of Fluids 20 (2008).
+ *
+ * One notable exception is \f$p_{e,x}^\ast\f$ which is motivated by the radial
+ * nozzle problem implemented in \ref radial_nozzle.h and discussed at length
+ * in <tt>writeups/baseflow.tex</tt>.
+ */
+typedef struct {
+    double Clauser;      /**< The Clauser parameter \f$\beta =
+                              \frac{\delta^\ast}{\tau_w}
+                              \frac{\partial p}{\partial x}\f$. */
+    double Lambda_n;     /**< Pressure parameter \f$\Lambda_n =
+                              -\frac{\delta}{\tau_w}
+                              \frac{\partial p}{\partial x}\f$
+                              which Cal and Castillo attribute to
+                              Narasimha and Sreenivasan. */
+    double Launder_e;    /**< Launder's acceleration parameter \f$K =
+                              \frac{\mu}{\rho_e u_e^2} \,
+                              \frac{\partial{}u_e}{\partial x}\f$
+                              computed taking \f$\mu = \mu_e\f$. */
+    double Launder_w;    /**< Launder's acceleration parameter \f$K =
+                              \frac{\mu}{\rho_e u_e^2} \,
+                              \frac{\partial{}u_e}{\partial x}\f$
+                              computed taking \f$\mu = \mu_w\f$. */
+    double p_ex;         /**< The inviscid-friendly pressure parameter
+                              \f$p_{e,x}^\ast = \frac{\delta}{\rho_e u_e^2}
+                              \frac{\partial p}{\partial x}\f$. */
+    double Pohlhausen;   /**< The Pohlhausen parameter \f$K_s =
+                              \frac{\delta^2}{\nu_e}
+                              \frac{\partial u_e}{\partial x}\f$. */
+} suzerain_bl_pg;
+
+/**
+ * Compute nondimensional boundary layer pressure gradient parameters.
+ *
+ * \param[in ] code_Ma Mach number \f$u_0/a_0\f$ used to scale
+ *                     nondimensional quantities.  For dimensional
+ *                     calculations, use <code>1</code.
+ * \param[in ] code_Re Reynolds number \f$\rho_0 u_0 l_0/\mu_0\f$ used to scale
+ *                     nondimensional quantities.  For dimensional
+ *                     calculations, use <code>1</code.
+ * \param[in ] wall    Local state information from the wall.
+ * \param[in ] viscous Viscous-related wall scaling information
+ * \param[in ] edge    Local state information from the boundary layer edge.
+ * \param[in ] thick   Thickness information for the boundary layer.
+ * \param[out] pg      Populated on success.
+ *                     See type documentation for contents.
+ *
+ * \return ::SUZERAIN_SUCCESS on success.  On error calls suzerain_error() and
+ *      returns one of #suzerain_error_status.
+ */
+int
+suzerain_bl_compute_pg(
+        double code_Ma,
+        double code_Re,
+        const suzerain_bl_local   * wall,
+        const suzerain_bl_viscous * viscous,
+        const suzerain_bl_local   * edge,
+        const suzerain_bl_thick   * thick,
+              suzerain_bl_pg      * pg);
 
 #ifdef __cplusplus
 } /* extern "C" */

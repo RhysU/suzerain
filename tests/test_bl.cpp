@@ -393,7 +393,7 @@ BOOST_AUTO_TEST_CASE( compute_viscous )
 // Test data taken from
 // https://svn.ices.utexas.edu/repos/pecos/turbulence/heatshield_bl/trunk/laminar/scenario.dat
 // for dstat ~ 2.5007933304570438.
-BOOST_AUTO_TEST_CASE( compute_qoi )
+BOOST_AUTO_TEST_CASE( compute_qoi_and_pg )
 {
     suzerain_bl_viscous viscous;            // Answers from just above
     std::fill_n(reinterpret_cast<double *>(&viscous),
@@ -421,14 +421,8 @@ BOOST_AUTO_TEST_CASE( compute_qoi )
     const double tol = GSL_SQRT_DBL_EPSILON;
     const double meh = sqrt(tol);
     BOOST_CHECK_CLOSE(qoi.cf,           0.0044697874046917899,  tol); ++cnt;
-    BOOST_CHECK_CLOSE(qoi.Clauser,      -0.50556278312573966,   tol); ++cnt;
     BOOST_CHECK_CLOSE(qoi.gamma_e,      1.4083595370046604,     tol); ++cnt;
-    BOOST_CHECK_CLOSE(qoi.Lambda_n,     5.3212990115980237,     tol); ++cnt;
-    BOOST_CHECK_CLOSE(qoi.Launder_e,    1.1130040269123832e-05, tol); ++cnt;
-    BOOST_CHECK_CLOSE(qoi.Launder_w,    3.3483624867674195e-06, tol); ++cnt;
     BOOST_CHECK_CLOSE(qoi.Ma_e,         0.71394455827465408,    tol); ++cnt;
-    BOOST_CHECK_CLOSE(qoi.p_ex,         -0.011892537649319856,  tol); ++cnt;
-    BOOST_CHECK_CLOSE(qoi.Pohlhausen,   24.849095784497852,     meh); ++cnt;
     BOOST_CHECK_CLOSE(qoi.Pr_w,         0.65543907074081864,    tol); ++cnt;
     BOOST_CHECK_CLOSE(qoi.ratio_rho,    edge.rho / wall.rho,    tol); ++cnt;
     BOOST_CHECK_CLOSE(qoi.ratio_nu,       (edge.mu / edge.rho)
@@ -440,6 +434,18 @@ BOOST_AUTO_TEST_CASE( compute_qoi )
     BOOST_CHECK_CLOSE(qoi.shapefactor,  0.7491329886401481,     tol); ++cnt;
     BOOST_CHECK_CLOSE(qoi.v_wallplus,   0.0094118607746200931,  tol); ++cnt;
     BOOST_CHECK_EQUAL(cnt, sizeof(qoi)/sizeof(qoi.cf));
+
+    cnt = 0; // Tracks if all quantities were tested
+    suzerain_bl_pg pg;
+    BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS, suzerain_bl_compute_pg(
+            code_Ma, code_Re, &wall, &viscous, &edge, &thick, &pg));
+    BOOST_CHECK_CLOSE(pg.Clauser,      -0.50556278312573966,   tol); ++cnt;
+    BOOST_CHECK_CLOSE(pg.Lambda_n,     5.3212990115980237,     tol); ++cnt;
+    BOOST_CHECK_CLOSE(pg.Launder_e,    1.1130040269123832e-05, tol); ++cnt;
+    BOOST_CHECK_CLOSE(pg.Launder_w,    3.3483624867674195e-06, tol); ++cnt;
+    BOOST_CHECK_CLOSE(pg.p_ex,         -0.011892537649319856,  tol); ++cnt;
+    BOOST_CHECK_CLOSE(pg.Pohlhausen,   24.849095784497852,     meh); ++cnt;
+    BOOST_CHECK_EQUAL(cnt, sizeof(pg)/sizeof(pg.Clauser));
 }
 
 BOOST_AUTO_TEST_SUITE_END()

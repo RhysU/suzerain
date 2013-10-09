@@ -329,22 +329,10 @@ suzerain_bl_compute_qoi(
     // quantity and the second line being any needed "code unit" correction.
     qoi->cf           = 2 * viscous->tau_w / edge->rho / square(edge->u)
                       / code_Re;
-    qoi->Clauser      = thick->deltastar / viscous->tau_w * edge->p__x
-                      * code_Re / square(code_Ma);
     qoi->gamma_e      = edge->gamma
                       * 1;
-    qoi->Launder_e    = edge->mu * edge->u__x / edge->rho / square(edge->u)
-                      / code_Re;
-    qoi->Pohlhausen   = square(thick->delta) * edge->rho / edge->mu * edge->u__x
-                      * code_Re;
-    qoi->Launder_w    = wall->mu * edge->u__x / edge->rho / square(edge->u)
-                      / code_Re;
-    qoi->Lambda_n     = - thick->delta / viscous->tau_w * edge->p__x
-                      * code_Re / square(code_Ma);
     qoi->Ma_e         = edge->u / edge->a
                       * code_Ma;
-    qoi->p_ex         = thick->delta / edge->rho / square(edge->u) * edge->p__x
-                      / square(code_Ma);
     qoi->Pr_w         = wall->Pr;
     qoi->ratio_nu     = (edge->mu / edge->rho) / (wall->mu / wall->rho)
                       * 1;
@@ -362,6 +350,36 @@ suzerain_bl_compute_qoi(
                       * 1;
     qoi->v_wallplus   = wall->v / viscous->u_tau
                       * 1;
+
+    return SUZERAIN_SUCCESS;
+}
+
+int
+suzerain_bl_compute_pg(
+        const double code_Ma,
+        const double code_Re,
+        const suzerain_bl_local   * const wall,
+        const suzerain_bl_viscous * const viscous,
+        const suzerain_bl_local   * const edge,
+        const suzerain_bl_thick   * const thick,
+              suzerain_bl_pg      * const pg)
+{
+    FILL_WITH_NANS(pg);
+
+    // Nondimensional quantities are computed with the first line being the
+    // quantity and the second line being any needed "code unit" correction.
+    pg->Clauser      = thick->deltastar / viscous->tau_w * edge->p__x
+                     * code_Re / square(code_Ma);
+    pg->Launder_e    = edge->mu * edge->u__x / edge->rho / square(edge->u)
+                     / code_Re;
+    pg->Launder_w    = wall->mu * edge->u__x / edge->rho / square(edge->u)
+                     / code_Re;
+    pg->Lambda_n     = - thick->delta / viscous->tau_w * edge->p__x
+                     * code_Re / square(code_Ma);
+    pg->p_ex         = thick->delta / edge->rho / square(edge->u) * edge->p__x
+                     / square(code_Ma);
+    pg->Pohlhausen   = square(thick->delta) * edge->rho / edge->mu * edge->u__x
+                     * code_Re;
 
     return SUZERAIN_SUCCESS;
 }
