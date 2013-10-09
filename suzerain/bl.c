@@ -261,7 +261,7 @@ suzerain_bl_momentum_thickness(
             }
 
             /* Then use integrand scaled by weight to accumulate result */
-            *delta2 += wj * (u / u_edge) * (1 - rho_u / rho_u_edge);
+            *delta2 += wj * (rho_u / rho_u_edge) * (1 - u / u_edge);
         }
     }
 
