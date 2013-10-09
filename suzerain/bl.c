@@ -392,6 +392,11 @@ suzerain_bl_compute_thicknesses(
     /* Compute momentum thickness */
     status = suzerain_bl_momentum_thickness(
             thick->delta, coeffs_rho_u, coeffs_u, &thick->delta2, dB, w, dw);
+    if (SUZERAIN_UNLIKELY(status != SUZERAIN_SUCCESS)) goto done;
+
+    /* Compute energy thickness */
+    status = suzerain_bl_energy_thickness(
+            thick->delta, coeffs_rho_u, coeffs_u, &thick->delta3, dB, w, dw);
     /* Done regardless of status */
 
 done:
