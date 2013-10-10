@@ -917,9 +917,16 @@ driver_base::log_status_boundary_state(
     }
 }
 
-void
-driver_base::log_boundary_layer_quantities(
-        const std::string& timeprefix)
+void driver_base::log_boundary_layer_quantities(
+        const std::string& timeprefix,
+        const suzerain_bl_viscous     * const viscous,
+        const suzerain_bl_thicknesses * const thick,
+        const suzerain_bl_qoi         * const qoi,
+        const suzerain_bl_pg          * const pg,
+        const char * const name_wall,
+        const char * const name_thick,
+        const char * const name_qoi,
+        const char * const name_pg)
 {
     // FIXME Move abstracted version into support::driver_base
     //       Idea is that abstracted version merely takes data
@@ -948,8 +955,8 @@ driver_base::log_boundary_layer_quantities(
     std::ostringstream   msg; // Buffer to be repeatedly reused below
 
     // bl.wall:  cf, delta_nu, tau_w, u_tau, v_wallplus
-    log = logging::get_logger("bl.wall");
-    if (INFO0_ENABLED(log)) {
+    log = logging::get_logger(name_wall);
+    if (log != NULL && INFO0_ENABLED(log)) {
         msg.str("");
         if (!log_boundary_layer_quantities_wall_header_shown) {
             msg << setw(timeprefix.size()) << build_timeprefix_description()
@@ -967,8 +974,8 @@ driver_base::log_boundary_layer_quantities(
         INFO0(log, msg.str());
     }
 
-    log = logging::get_logger("bl.thick");
-    if (INFO0_ENABLED(log)) {
+    log = logging::get_logger(name_thick);
+    if (log != NULL && INFO0_ENABLED(log)) {
         msg.str("");
         if (!log_boundary_layer_quantities_thick_header_shown) {
             msg << setw(timeprefix.size()) << build_timeprefix_description()
@@ -986,8 +993,8 @@ driver_base::log_boundary_layer_quantities(
         INFO0(log, msg.str());
     }
 
-    log = logging::get_logger("bl.qoi");
-    if (INFO0_ENABLED(log)) {
+    log = logging::get_logger(name_qoi);
+    if (log != NULL && INFO0_ENABLED(log)) {
         msg.str("");
         if (!log_boundary_layer_quantities_qoi_header_shown) {
             msg << setw(timeprefix.size()) << build_timeprefix_description()
@@ -1007,8 +1014,8 @@ driver_base::log_boundary_layer_quantities(
     }
 
     // TODO Proceed only when a non-trivial base flow exists
-    log = logging::get_logger("bl.pg");
-    if (INFO0_ENABLED(log)) {
+    log = logging::get_logger(name_pg);
+    if (log != NULL && INFO0_ENABLED(log)) {
         msg.str("");
         if (!log_boundary_layer_quantities_pg_header_shown) {
             msg << setw(timeprefix.size()) << build_timeprefix_description()

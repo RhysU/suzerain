@@ -356,6 +356,15 @@ inline logger_type get_logger(const S& name)
     return ::log4cxx::Logger::getLogger(name);
 }
 
+/**
+ * Retrieve a particular logger by name with
+ * possibility of returning default initialized logger_types.
+ */
+inline logger_type get_logger(const char * const name)
+{
+    return name ? ::log4cxx::Logger::getLogger(name) : logger_type();
+}
+
 /** Idempotent overload of get_logger() to aid macro definitions */
 inline logger_type& get_logger(logger_type& logger)
 {

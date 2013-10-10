@@ -29,6 +29,7 @@
  */
 
 #include <suzerain/common.hpp>
+#include <suzerain/bl.h>
 #include <suzerain/lowstorage.hpp>
 #include <suzerain/support/application_base.hpp>
 #include <suzerain/support/field.hpp>
@@ -305,14 +306,42 @@ public:
     virtual void log_status_boundary_state(
             const std::string& timeprefix);
 
-    // FIXME Convert to taking suzerain_bl_* inputs
     /**
-     * When <tt>grid->one_sided()</tt> is true, log messages containing a wide
-     * variety of quantities of interest for a boundary layer simulation.
-     * Destroys the contents of \c state_nonlinear during execution.
+     * Log messages containing a wide variety of quantities of interest for a
+     * boundary layer simulation.  Data to be logged must be provided in \c
+     * viscous, \c thick, \c qoi, and \c pg.
+     *
+     * This method produces well-formatted results given relevant computed
+     * quantities.  Subclasses will likely provide an overload that gathers
+     * these details in a simulation-dependent manner and then invoke this
+     * method within a \ref log_status_hook() or \ref log_statistics_hook()
+     * overload.
+     *
+     * @param viscous    Possibly computed by suzerain_bl_compute_viscous().
+     * @param thick      Possibly computed by suzerain_bl_compute_thicknesses().
+     * @param qoi        Possibly computed by suzerain_bl_compute_qoi().
+     * @param pg         Possibly computed by suzerain_bl_compute_pg().
+     *                   If \c NULL, no pressure gradient-related information
+     *                   will be logged.
+     * @param name_wall  Logging name for wall-related quantities.
+     *                   If \c NULL, this message will not be logged.
+     * @param name_thick Logging name for boundary layer thickness details.
+     *                   If \c NULL, this message will not be logged.
+     * @param name_qoi   Logging name for general quantities of interest.
+     *                   If \c NULL, this message will not be logged.
+     * @param name_pg    Logging name for pressure gradient-related information.
+     *                   If \c NULL, this message will not be logged.
      */
     virtual void log_boundary_layer_quantities(
-            const std::string& timeprefix);
+            const std::string& timeprefix,
+            const suzerain_bl_viscous     * const viscous,
+            const suzerain_bl_thicknesses * const thick,
+            const suzerain_bl_qoi         * const qoi,
+            const suzerain_bl_pg          * const pg,
+            const char * const name_wall  =  "bl.wall",
+            const char * const name_thick =  "bl.thick",
+            const char * const name_qoi   =  "bl.qoi",
+            const char * const name_pg    =  "bl.pg");
 
     /**
      * Save time-independent metadata that must appear in all restart and
