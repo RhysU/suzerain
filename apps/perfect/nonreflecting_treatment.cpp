@@ -126,11 +126,9 @@ nonreflecting_treatment::apply_operator(
 
     // Wavenumber traversal modeled after those found in suzerain/diffwave.c
     const int Ny   = dgrid.global_wave_extent.y();
-    const int Nx   = grid.N.x();
     const int dNx  = grid.dN.x();
     const int dkbx = dgrid.local_wave_start.x();
     const int dkex = dgrid.local_wave_end.x();
-    const int Nz   = grid.N.z();
     const int dNz  = grid.dN.z();
     const int dkbz = dgrid.local_wave_start.z();
     const int dkez = dgrid.local_wave_end.z();
@@ -227,7 +225,6 @@ nonreflecting_treatment::compute_giles_matrices(
     const real_t chi        = dgrid.chi();
     const real_t half       = static_cast<real_t>(1) / 2;
     const real_t gamma      = scenario.gamma;
-    const real_t inv_gamma  = 1 / gamma;
     const real_t gamma1     = gamma - 1;
     const real_t inv_gamma1 = 1 / gamma1;
     const real_t Ma         = scenario.Ma;
