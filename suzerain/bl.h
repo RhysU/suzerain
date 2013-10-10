@@ -55,7 +55,7 @@ extern "C" {
  * Quantities possess dimensional units or nondimensional scaling as
  * detailed for each member.
  */
-typedef struct {
+typedef struct suzerain_bl_local {
     double a;      /**< Sound speed with units \f$a_0\f$.                   */
     double gamma;  /**< Nondimensional Ratio of specific heats \f$\gamma\f$.*/
     double mu;     /**< Dynamic viscosity with units \f$\mu_0\f$.           */
@@ -73,7 +73,7 @@ typedef struct {
  * Quantities possess dimensional units or nondimensional scaling as
  * detailed for each member.
  */
-typedef struct {
+typedef struct suzerain_bl_viscous {
     double tau_w;    /**< Wall shear stress \f$\tau_w\f$
                           with units \f$\mu_0 u_0 / l_0\f$.                */
     double u_tau;    /**< Wall velocity \f$u_\tau\f$ with units \f$u_0\f$. */
@@ -311,7 +311,7 @@ suzerain_bl_enthalpy_thickness(
  * member has units of \f$l_0\f$.  Using \ref suzerain_bl_compute_thicknesses
  * is the recommended way to populate this data.
  */
-typedef struct {
+typedef struct suzerain_bl_thicknesses {
     double delta;     /**< Boundary layer thickness \f$\delta\f$. */
     double delta1;    /**< Displacement thickness \f$\delta_1\f$
                            (sometimes written \f$\delta^\ast\f$). */
@@ -353,7 +353,7 @@ suzerain_bl_compute_thicknesses(
 /**
  * Nondimensional boundary layer quantities of general interest.
  */
-typedef struct {
+typedef struct suzerain_bl_qoi {
     double cf;           /**< The skin friction coefficient \f$c_f =
                               \frac{2 \tau_w}{\rho_e u_e^2}\f$. */
     double gamma_e;      /**< The ratio of specific heats at the edge. */
@@ -413,7 +413,7 @@ suzerain_bl_compute_qoi(
  * nozzle problem implemented in \ref radial_nozzle.h and discussed at length
  * in <tt>writeups/baseflow.tex</tt>.
  */
-typedef struct {
+typedef struct suzerain_bl_pg {
     double Clauser;      /**< The Clauser parameter \f$\beta =
                               \frac{\delta^\ast}{\tau_w}
                               \frac{\partial p}{\partial x}\f$. */
