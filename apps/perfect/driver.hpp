@@ -131,6 +131,18 @@ public:
             const std::size_t nt);
 
     /**
+     * Log a variety of quantities of interest for a boundary layer simulation.
+     *
+     * The computation costs a significant fraction of a Runge--Kutta substep
+     * but \e is low-storage-friendly.  It destroys the contents of \ref
+     * state_nonlinear.
+     */
+    virtual void log_boundary_layer_quantities(
+            const std::string& timeprefix,
+            const real_t t,
+            const std::size_t nt);
+
+    /**
      * Collectively compute statistics from #state_linear saving them into
      * #mean and destroying #state_nonlinear in the process.
      *

@@ -190,6 +190,43 @@ driver::log_linearization_error(
     INFO0(lin_abserr, msg.str());
 }
 
+void driver::log_boundary_layer_quantities(
+        const std::string& timeprefix,
+        const real_t t,
+        const std::size_t nt)
+{
+    SUZERAIN_UNUSED(t);
+    SUZERAIN_UNUSED(nt);
+
+    // Only applicable for boundary layers
+    if (!grid || !grid->one_sided()) return;
+
+    SUZERAIN_TIMER_SCOPED("driver::log_boundary_layer_quantities");
+
+    // Can we re-use precomputed statistics?
+    // Or do we need to take state to physical space and pay for Allreduces?
+#pragma warning(push,disable:1572)
+    const bool use_cached = controller && (t == mean.t);
+#pragma warning(pop)
+
+    // TODO Define local storage to populate in cached or uncached case
+    //      This could be a nice, reusable chunk of logic depending on API
+    if (use_cached) {
+        // TODO Copy from statistics results into local storage
+    } else {
+        // TODO Copy state_linear into state_nonlinear
+        // TODO Take state_nonlinear to physical space
+        // TODO Accumulate pointwise results for data of interest
+        // TODO Allreduce and rescale to obtain collocation-point profiles
+        // TODO Convert from collocation points into B-spline coefficients
+    }
+
+    // TODO Implement sequence of suzerain_bl_* computations
+    // TODO Selectively do pressure gradient-related computations
+
+    // TODO Invoke superclass::log_boundary_layer_quantities
+}
+
 void
 driver::compute_statistics(
         driver::time_type t)
@@ -244,6 +281,7 @@ driver::log_status_hook(
 {
     const bool retval = super::log_status_hook(timeprefix, t, nt);
     log_manufactured_solution_absolute_error(timeprefix, t, nt);
+    log_boundary_layer_quantities(timeprefix, t, nt);
     return retval;
 }
 
