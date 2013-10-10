@@ -87,6 +87,7 @@ namespace quantity {
     ((bar_rho_E,            "Reynolds-averaged total (intrinsic plus kinetic) energy"))                                   \
     ((bar_E,                "Reynolds-averaged total (intrinsic plus kinetic) energy per unit mass"))                     \
     ((bar_T,                "Reynolds-averaged temperature"))                                                             \
+    ((bar_a,                "Reynolds-averaged speed of sound"))                                                          \
     ((bar_h0,               "Reynolds-averaged stagnation enthalpy"))                                                     \
     ((bar_H0,               "Reynolds-averaged stagnation enthalpy per unit mass"))                                       \
     ((bar_mu,               "Reynolds-averaged dynamic viscosity"))                                                       \
@@ -259,9 +260,8 @@ namespace quantity {
 
 /** A Boost.Preprocessor sequence of tuples of locally computed quantities */
 #define SEQ_LOCALS                                                                                                          \
-    ((local_a,    "Local speed of sound formed via sqrt(tilde_T)"))                                                         \
-    ((local_Ma,   "Local Mach number formed via Ma * bar_u / local_a"))                                                     \
-    ((local_Mat,  "Local turbulent Mach number formed via Ma * sqrt(2*tilde_k) / local_a"))                                 \
+    ((local_Ma,   "Local Mach number formed via Ma * bar_u / bar_a"))                                                       \
+    ((local_Mat,  "Local turbulent Mach number formed via Ma * sqrt(2*tilde_k) / bar_a"))                                   \
     ((local_Prt,  "Local turbulent Prandtl number formed via (tilde_upp_vpp * tilde_T__y) / (tilde_Tpp_vpp * tilde_u__y)")) \
     ((local_nut,  "Local eddy viscosity formed from - Re * tilde_upp_vpp / tilde_u__y"))                                    \
     ((local_Re,   "Local Reynolds number formed from Re * bar_rho_u L / bar_mu for L = 1"))
@@ -803,6 +803,7 @@ static quantity::storage_map_type process(
     ACCUMULATE(rho_E,            0, bar_rho_E             );
     ACCUMULATE(E,                0, bar_E                 );
     ACCUMULATE(T,                0, bar_T                 );
+    ACCUMULATE(a,                0, bar_a                 );
     ACCUMULATE(h0,               0, bar_h0                );
     ACCUMULATE(H0,               0, bar_H0                );
     ACCUMULATE(mu,               0, bar_mu                );
@@ -1090,9 +1091,8 @@ static quantity::storage_map_type process(
     // cause the nondimensional local_Re to be correctly formed from
     // dimensional quantities.  Ditto for Re in the eddy viscosity. Ditto for
     // Ma in local_Ma and local_Mat.
-    C(local_a)   = C(tilde_T).sqrt();
-    C(local_Ma)  = Ma * C(bar_u) / C(local_a);
-    C(local_Mat) = Ma * (std::sqrt(real_t(2))*C(tilde_k).abs().sqrt()) / C(local_a);
+    C(local_Ma)  = Ma * C(bar_u) / C(bar_a);
+    C(local_Mat) = Ma * (std::sqrt(real_t(2))*C(tilde_k).abs().sqrt()) / C(bar_a);
     C(local_Prt) = (C(tilde_upp_vpp) * C(tilde_T__y)) / (C(tilde_Tpp_vpp) * C(tilde_u__y));
     C(local_nut) = - Re * C(tilde_upp_vpp) / C(tilde_u__y);
     C(local_Re)  = Re * C(bar_rho_u) /* L = 1 */ / C(bar_mu);

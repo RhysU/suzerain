@@ -433,6 +433,8 @@ quantities sample_quantities(
 
                 sum_T[0](T);
 
+                sum_a[0](std::sqrt(T));
+
                 sum_h0[0](e + p);
 
                 sum_H0[0]((e + p) / rho);
