@@ -23,7 +23,7 @@
  */
 
 /** @file
- * @copydoc blasius.c
+ * @copydoc blasius.h
  */
 
 #ifdef HAVE_CONFIG_H
