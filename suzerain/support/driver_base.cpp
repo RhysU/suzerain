@@ -928,37 +928,20 @@ void driver_base::log_boundary_layer_quantities(
         const char * const name_qoi,
         const char * const name_pg)
 {
-    // FIXME Move abstracted version into support::driver_base
-    //       Idea is that abstracted version merely takes data
-    //       inputs regardless of data origin to permit reuse
-    //       by both nondimensional and reacting dimensional codes
-    // FIXME Add into mainline statistics and/or status calls
-
-    // Only applicable for boundary layers
-    if (!grid || !grid->one_sided()) return;
-
-    SUZERAIN_TIMER_SCOPED("driver_base::log_boundary_layer_quantities");
-
-    // TODO Gather raw information from simulation state
-    //
-    // Likely will use compute_statistics for now, but later
-    // a dedicated computation routine when statistics are not
-    // cached would be greatly useful.
-
-    // Always compute all quantities, but only output when enabled
-
     // Only rank zero pays to prepare the output, others short circuit.
     if (!dgrid->has_zero_zero_modes()) return;
+
+    SUZERAIN_TIMER_SCOPED("driver_base::log_boundary_layer_quantities");
 
     using std::setw;          // Brevity
     logging::logger_type log; // Logging pointer to be repeatedly set
     std::ostringstream   msg; // Buffer to be repeatedly reused below
 
-    // bl.wall:  cf, delta_nu, tau_w, u_tau, v_wallplus
     log = logging::get_logger(name_wall);
     if (log != NULL && INFO0_ENABLED(log)) {
-        msg.str("");
         if (!log_boundary_layer_quantities_wall_header_shown) {
+            log_boundary_layer_quantities_wall_header_shown = true;
+            msg.str("");
             msg << setw(timeprefix.size()) << build_timeprefix_description()
                 << ' ' << setw(fullprec<>::width) << "cf"
                 << ' ' << setw(fullprec<>::width) << "delta_nu"
@@ -966,18 +949,22 @@ void driver_base::log_boundary_layer_quantities(
                 << ' ' << setw(fullprec<>::width) << "u_tau"
                 << ' ' << setw(fullprec<>::width) << "v_wallplus";
             INFO0(log, msg.str());
-            log_boundary_layer_quantities_wall_header_shown = true;
-            msg.str("");
         }
-        msg << timeprefix;
-        // TODO prepare message
+        msg.str("");
+        msg << timeprefix
+            << ' ' << fullprec<>(qoi->cf)
+            << ' ' << fullprec<>(viscous->delta_nu)
+            << ' ' << fullprec<>(viscous->tau_w)
+            << ' ' << fullprec<>(viscous->u_tau)
+            << ' ' << fullprec<>(qoi->v_wallplus);
         INFO0(log, msg.str());
     }
 
     log = logging::get_logger(name_thick);
     if (log != NULL && INFO0_ENABLED(log)) {
-        msg.str("");
         if (!log_boundary_layer_quantities_thick_header_shown) {
+            log_boundary_layer_quantities_thick_header_shown = true;
+            msg.str("");
             msg << setw(timeprefix.size()) << build_timeprefix_description()
                 << ' ' << setw(fullprec<>::width) << "delta"
                 << ' ' << setw(fullprec<>::width) << "delta1"
@@ -985,38 +972,47 @@ void driver_base::log_boundary_layer_quantities(
                 << ' ' << setw(fullprec<>::width) << "delta3"
                 << ' ' << setw(fullprec<>::width) << "deltaH";
             INFO0(log, msg.str());
-            log_boundary_layer_quantities_thick_header_shown = true;
-            msg.str("");
         }
-        msg << timeprefix;
-        // TODO prepare message
+        msg.str("");
+        msg << timeprefix
+            << ' ' << fullprec<>(thick->delta)
+            << ' ' << fullprec<>(thick->delta1)
+            << ' ' << fullprec<>(thick->delta2)
+            << ' ' << fullprec<>(thick->delta3)
+            << ' ' << fullprec<>(thick->deltaH);
         INFO0(log, msg.str());
     }
 
     log = logging::get_logger(name_qoi);
     if (log != NULL && INFO0_ENABLED(log)) {
-        msg.str("");
         if (!log_boundary_layer_quantities_qoi_header_shown) {
-            msg << setw(timeprefix.size()) << build_timeprefix_description()
-                << ' ' << setw(fullprec<>::width) << "Ma_e"
-                << ' ' << setw(fullprec<>::width) << "rho_nu"
-                << ' ' << setw(fullprec<>::width) << "ratio_T"
-                << ' ' << setw(fullprec<>::width) << "Re_delta"
-                << ' ' << setw(fullprec<>::width) << "Re_delta1"
-                << ' ' << setw(fullprec<>::width) << "Re_delta2";
-            INFO0(log, msg.str());
             log_boundary_layer_quantities_qoi_header_shown = true;
             msg.str("");
+            msg << setw(timeprefix.size()) << build_timeprefix_description()
+                << ' ' << setw(fullprec<>::width) << "gamma_e"
+                << ' ' << setw(fullprec<>::width) << "Ma_e"
+                << ' ' << setw(fullprec<>::width) << "Pr_w"
+                << ' ' << setw(fullprec<>::width) << "ratio_nu"
+                << ' ' << setw(fullprec<>::width) << "ratio_T"
+                << ' ' << setw(fullprec<>::width) << "Re_delta1";
+            INFO0(log, msg.str());
         }
-        msg << timeprefix;
-        // TODO prepare message
+        msg.str("");
+        msg << timeprefix
+            << ' ' << fullprec<>(qoi->gamma_e)
+            << ' ' << fullprec<>(qoi->Ma_e)
+            << ' ' << fullprec<>(qoi->Pr_w)
+            << ' ' << fullprec<>(qoi->ratio_nu)
+            << ' ' << fullprec<>(qoi->ratio_T)
+            << ' ' << fullprec<>(qoi->Re_delta1);
         INFO0(log, msg.str());
     }
 
     log = logging::get_logger(name_pg);
     if (pg != NULL && log != NULL && INFO0_ENABLED(log)) {
-        msg.str("");
         if (!log_boundary_layer_quantities_pg_header_shown) {
+            log_boundary_layer_quantities_pg_header_shown = true;
+            msg.str("");
             msg << setw(timeprefix.size()) << build_timeprefix_description()
                 << ' ' << setw(fullprec<>::width) << "Clauser"
                 << ' ' << setw(fullprec<>::width) << "Lambda_n"
@@ -1025,11 +1021,15 @@ void driver_base::log_boundary_layer_quantities(
                 << ' ' << setw(fullprec<>::width) << "Pohlhausen"
                 << ' ' << setw(fullprec<>::width) << "p_ex";
             INFO0(log, msg.str());
-            log_boundary_layer_quantities_pg_header_shown = true;
-            msg.str("");
         }
-        msg << timeprefix;
-        // TODO prepare message
+        msg.str("");
+        msg << timeprefix
+            << ' ' << fullprec<>(pg->Clauser)
+            << ' ' << fullprec<>(pg->Lambda_n)
+            << ' ' << fullprec<>(pg->Launder_e)
+            << ' ' << fullprec<>(pg->Launder_w)
+            << ' ' << fullprec<>(pg->Pohlhausen)
+            << ' ' << fullprec<>(pg->p_ex);
         INFO0(log, msg.str());
     }
 }
