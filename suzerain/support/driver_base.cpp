@@ -931,8 +931,6 @@ void driver_base::log_boundary_layer_quantities(
     // Only rank zero pays to prepare the output, others short circuit.
     if (!dgrid->has_zero_zero_modes()) return;
 
-    SUZERAIN_TIMER_SCOPED("driver_base::log_boundary_layer_quantities");
-
     using std::setw;          // Brevity
     logging::logger_type log; // Logging pointer to be repeatedly set
     std::ostringstream   msg; // Buffer to be repeatedly reused below
