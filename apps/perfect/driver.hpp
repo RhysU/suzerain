@@ -131,6 +131,14 @@ public:
             const std::size_t nt);
 
     /**
+     * When <tt>grid->one_sided()</tt> is true, log messages containing a wide
+     * variety of quantities of interest for a boundary layer simulation.
+     * Destroys the contents of \c state_nonlinear during execution.
+     */
+    virtual void log_boundary_layer_quantities(
+            const std::string& timeprefix);
+
+    /**
      * Collectively compute statistics from #state_linear saving them into
      * #mean and destroying #state_nonlinear in the process.
      *
@@ -189,6 +197,34 @@ protected:
      * and #scenario.
      */
     virtual void default_restart_interval(time_type& t, step_type&);
+
+    /**
+     * Flag used to control whether \ref log_boundary_layer_quantities shows
+     * wall-related headers.  The default implementation disables headers after
+     * the first invocation.
+     */
+    bool log_boundary_layer_quantities_wall_header_shown;
+
+    /**
+     * Flag used to control whether \ref log_boundary_layer_quantities shows
+     * thickness-related headers.  The default implementation disables headers
+     * after the first invocation.
+     */
+    bool log_boundary_layer_quantities_thick_header_shown;
+
+    /**
+     * Flag used to control whether \ref log_boundary_layer_quantities shows
+     * general quantity of interest headers.  The default implementation
+     * disables headers after the first invocation.
+     */
+    bool log_boundary_layer_quantities_qoi_header_shown;
+
+    /**
+     * Flag used to control whether \ref log_boundary_layer_quantities shows
+     * pressure gradient-related headers.  The default implementation disables
+     * headers after the first invocation.
+     */
+    bool log_boundary_layer_quantities_pg_header_shown;
 
 private:
 
