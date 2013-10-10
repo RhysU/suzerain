@@ -1013,9 +1013,8 @@ void driver_base::log_boundary_layer_quantities(
         INFO0(log, msg.str());
     }
 
-    // TODO Proceed only when a non-trivial base flow exists
     log = logging::get_logger(name_pg);
-    if (log != NULL && INFO0_ENABLED(log)) {
+    if (pg != NULL && log != NULL && INFO0_ENABLED(log)) {
         msg.str("");
         if (!log_boundary_layer_quantities_pg_header_shown) {
             msg << setw(timeprefix.size()) << build_timeprefix_description()
