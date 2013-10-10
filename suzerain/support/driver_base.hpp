@@ -305,6 +305,15 @@ public:
     virtual void log_status_boundary_state(
             const std::string& timeprefix);
 
+    // FIXME Convert to taking suzerain_bl_* inputs
+    /**
+     * When <tt>grid->one_sided()</tt> is true, log messages containing a wide
+     * variety of quantities of interest for a boundary layer simulation.
+     * Destroys the contents of \c state_nonlinear during execution.
+     */
+    virtual void log_boundary_layer_quantities(
+            const std::string& timeprefix);
+
     /**
      * Save time-independent metadata that must appear in all restart and
      * statistics files.  Though this logic will be invoked automatically the
@@ -613,6 +622,34 @@ protected:
      * after the first invocation.
      */
     array<bool,2> log_status_boundary_state_header_shown;
+
+    /**
+     * Flag used to control whether \ref log_boundary_layer_quantities shows
+     * wall-related headers.  The default implementation disables headers after
+     * the first invocation.
+     */
+    bool log_boundary_layer_quantities_wall_header_shown;
+
+    /**
+     * Flag used to control whether \ref log_boundary_layer_quantities shows
+     * thickness-related headers.  The default implementation disables headers
+     * after the first invocation.
+     */
+    bool log_boundary_layer_quantities_thick_header_shown;
+
+    /**
+     * Flag used to control whether \ref log_boundary_layer_quantities shows
+     * general quantity of interest headers.  The default implementation
+     * disables headers after the first invocation.
+     */
+    bool log_boundary_layer_quantities_qoi_header_shown;
+
+    /**
+     * Flag used to control whether \ref log_boundary_layer_quantities shows
+     * pressure gradient-related headers.  The default implementation disables
+     * headers after the first invocation.
+     */
+    bool log_boundary_layer_quantities_pg_header_shown;
 
     /** Wall time elapsed during loading of state from the restart file */
     double wtime_load_restart;
