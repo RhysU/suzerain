@@ -26,6 +26,20 @@
 
 /** @file
  * Compute boundary layer quantities of interest.
+ *
+ * Beware that many of these computations neglect covariance-related
+ * correction terms that should be present when working with functions
+ * of expected values.  For example, when computed from mean velocity
+ * \f$\bar{u}\f$ and speed of sound \f$\bar{a}\f$,
+ * \f[
+ *     \operatorname{E}[\mbox{Ma}] \approx \operatorname{E}[u]/E[a]
+ *                  +       \operatorname{Var}(a)
+ *                          \operatorname{E}[u]
+ *                         /\operatorname{E}[a]^3
+ *                  -       \operatorname{Cov}[a,u]
+ *                          \operatorname{E}[a]^2
+ * \f]
+ * are the appropriate corrections to be second-order accurate.
  */
 
 #include <gsl/gsl_bspline.h>
