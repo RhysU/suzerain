@@ -34,6 +34,7 @@
 #include <esio/esio.h>
 #include <esio/error.h>
 
+#include <suzerain/bl.h>
 #include <suzerain/countof.h>
 #include <suzerain/error.h>
 #include <suzerain/format.hpp>

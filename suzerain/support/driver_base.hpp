@@ -29,7 +29,6 @@
  */
 
 #include <suzerain/common.hpp>
-#include <suzerain/bl.h>
 #include <suzerain/lowstorage.hpp>
 #include <suzerain/support/application_base.hpp>
 #include <suzerain/support/field.hpp>
@@ -38,6 +37,12 @@
 #include <suzerain/support/statistics_definition.hpp>
 #include <suzerain/support/time_definition.hpp>
 #include <suzerain/timecontroller.hpp>
+
+// Forward declarations
+struct suzerain_bl_viscous;
+struct suzerain_bl_thicknesses;
+struct suzerain_bl_qoi;
+struct suzerain_bl_pg;
 
 namespace suzerain {
 
