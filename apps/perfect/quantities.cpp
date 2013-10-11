@@ -215,6 +215,9 @@ quantities sample_quantities(
         contiguous_state<4,complex_t> &swave,
         const real_t t)
 {
+    // State enters method as coefficients in X, Y, and Z directions
+    SUZERAIN_TIMER_SCOPED("sample_quantities");
+
     // We are only prepared to handle a fixed number of fields in this routine
     enum { state_count = 5 };
 
@@ -222,8 +225,6 @@ quantities sample_quantities(
     const std::size_t Ny = swave.shape()[1];
     namespace acc = boost::accumulators;
     typedef contiguous_state<4,complex_t> state_type;
-
-    // State enters method as coefficients in X, Y, and Z directions
 
     // We need auxiliary scalar-field storage.  Prepare logical indices using a
     // struct for scoping (e.g. aux::rho_y).  Ordering will match usage below.
