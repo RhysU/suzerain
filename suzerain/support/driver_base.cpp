@@ -884,10 +884,10 @@ driver_base::log_status_boundary_state(
         values.resize(values.rows(), fields.size());
         SUZERAIN_ENSURE((unsigned) state_linear->strides()[1] == 1u);
         for (size_t k = 0; k < fields.size(); ++k) {
-            const real_t point = b->collocation_point(bc[l]);
             b->linear_combination(values.rows() - 1,
                                   (*state_linear)[k].origin(),
-                                  1u, &point, values.col(k).data(), 1u);
+                                  b->collocation_point(bc[l]),
+                                  values.col(k).data(), 1u);
         }
 
         // Show headers only on first invocation

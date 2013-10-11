@@ -231,11 +231,11 @@ add_noise(contiguous_state<4,complex_t> &state,
         complex_t momentum, density;
         const real_t centerline = grid.L.y() / 2;
         b.linear_combination(
-                0, &state[ndx::mx][0][0][0], 1, &centerline, &momentum);
+                0, &state[ndx::mx][0][0][0], centerline, &momentum);
         INFO0("Centerline mean streamwise momentum at y = "
               << centerline << " is " << momentum);
         b.linear_combination(
-                0, &state[ndx::rho][0][0][0], 1, &centerline, &density);
+                0, &state[ndx::rho][0][0][0], centerline, &density);
         INFO0("Centerline mean density at y = "
               << centerline << " is " << density);
         maxfluct = noise.percent / 100 * (abs(momentum) / abs(density));
