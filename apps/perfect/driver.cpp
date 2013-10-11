@@ -226,8 +226,9 @@ void driver::log_boundary_layer_quantities(
     summarize_boundary_layer_nature(lay, *scenario, sg, *b,
                                     wall, viscous, edge, thick, qoi, pg);
 
-
-    // TODO Invoke superclass::log_boundary_layer_quantities
+    // Log messages using application-agnostic superclass functionality
+    super::log_boundary_layer_quantities(timeprefix,
+                                         &viscous, &thick, &qoi, &pg);
 }
 
 void
@@ -342,6 +343,7 @@ driver::save_statistics_hook(
 
     // Save statistics and invoke superclass hook
     mean.save(esioh);
+    // FIXME Save boundary layer quantities of interest
     return super::save_statistics_hook(esioh, t);
 }
 
