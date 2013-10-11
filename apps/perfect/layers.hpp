@@ -32,11 +32,25 @@
 #include <suzerain/bspline.hpp>
 #include <suzerain/state_fwd.hpp>
 
+// Forward declarations
+struct suzerain_bl_local;
+struct suzerain_bl_viscous;
+struct suzerain_bl_thicknesses;
+struct suzerain_bl_qoi;
+struct suzerain_bl_pg;
+
 namespace suzerain {
 
 // Forward declarations
 class grid_specification;
 class pencil_grid;
+
+namespace support {
+
+// Forward declarations
+class largo_definition;
+
+}
 
 namespace perfect {
 
@@ -180,6 +194,36 @@ layers sample_layers(
         const pencil_grid &dgrid,
         const bsplineop &cop,
         contiguous_state<4,complex_t> &swave);
+
+
+/**
+ * Use the boundary layer information in \c lay and possibly base flow
+ * information in \c sg to compute many quantities of interest.  This is
+ * a purely local computation requiring no communication.
+ *
+ * @param[in]  lay      Profile information from \ref sample_layers().
+ * @param[in]  scenario Scenario of interest.
+ * @param[in]  sg       Slow growth definition optionally in use
+ *                      which provides base flow details for
+ *                      streamwise pressure and velocity gradients.
+ * @param[out] wall     Populated on return.
+ * @param[out] viscous  Populated on return.
+ * @param[out] edge     Populated on return.
+ * @param[out] thick    Populated on return.
+ * @param[out] qoi      Populated on return.
+ * @param[out] pg       Populated on return.
+ */
+void summarize_boundary_layer_nature(
+        const layers &lay,
+        const scenario_definition &scenario,
+        const shared_ptr<support::largo_definition> &sg,
+        bspline &b,
+        suzerain_bl_local       &wall,
+        suzerain_bl_viscous     &viscous,
+        suzerain_bl_local       &edge,
+        suzerain_bl_thicknesses &thick,
+        suzerain_bl_qoi         &qoi,
+        suzerain_bl_pg          &pg);
 
 } // end namespace perfect
 

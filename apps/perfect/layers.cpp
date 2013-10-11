@@ -28,6 +28,7 @@
 #include "layers.hpp"
 
 #include <suzerain/blas_et_al.hpp>
+#include <suzerain/bl.h>
 #include <suzerain/error.h>
 #include <suzerain/grid_specification.hpp>
 #include <suzerain/mpi_datatype.hpp>
@@ -37,6 +38,7 @@
 #include <suzerain/physical_view.hpp>
 #include <suzerain/rholut.hpp>
 #include <suzerain/state.hpp>
+#include <suzerain/support/largo_definition.hpp>
 
 #include "quantities.hpp"
 #include "scenario_definition.hpp"
