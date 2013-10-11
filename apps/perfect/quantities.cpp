@@ -31,8 +31,6 @@
 #include <esio/error.h>
 
 #include <suzerain/blas_et_al.hpp>
-#include <suzerain/coalescing_pool.hpp>
-#include <suzerain/countof.h>
 #include <suzerain/diffwave.hpp>
 #include <suzerain/error.h>
 #include <suzerain/grid_specification.hpp>

@@ -28,8 +28,6 @@
 #include "layers.hpp"
 
 #include <suzerain/blas_et_al.hpp>
-#include <suzerain/countof.h>
-#include <suzerain/diffwave.hpp>
 #include <suzerain/error.h>
 #include <suzerain/grid_specification.hpp>
 #include <suzerain/mpi_datatype.hpp>
