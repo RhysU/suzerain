@@ -48,10 +48,7 @@ namespace suzerain {
 
 namespace perfect {
 
-static const char default_who[] = "layers";
-
 layers::layers()
-    : who(default_who)
 {
     // NOP
 }
@@ -59,7 +56,6 @@ layers::layers()
 layers::layers(
         layers::storage_type::Index Ny)
     : storage(storage_type::Zero(Ny, storage_type::ColsAtCompileTime))
-    , who(default_who)
 {
     // NOP
 }

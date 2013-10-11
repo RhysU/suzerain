@@ -157,10 +157,6 @@ public:
      */
     layers& operator=(const quantities &q);
 
-private:
-
-    /** Helps to identify from whom logging messages are being emitted. */
-    std::string who;
 };
 
 /**
