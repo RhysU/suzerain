@@ -42,6 +42,7 @@ namespace perfect {
 
 // Forward declarations
 class scenario_definition;
+class quantities;
 
 /**
  * Encapsulates boundary layer profiles necessary for using \ref bl.h.
@@ -164,6 +165,12 @@ public:
     }
     BOOST_PP_SEQ_FOR_EACH(DECLARE,,SUZERAIN_PERFECT_LAYERS)
 #undef DECLARE
+
+    /**
+     * Copy information from a \ref quantities instance.
+     * May permit avoiding \ref sample_layers calls in some circumstances.
+     */
+    layers& operator=(const quantities &q);
 
 private:
 

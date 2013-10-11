@@ -41,6 +41,7 @@
 #include <suzerain/shared_range.hpp>
 #include <suzerain/state.hpp>
 
+#include "quantities.hpp"
 #include "scenario_definition.hpp"
 
 using boost::numeric_cast;
@@ -73,6 +74,28 @@ layers::layers(
     , who(default_who)
 {
     // NOP
+}
+
+layers& layers::operator=(const quantities &q)
+{
+    // Resize our storage and defensively NaN in case we miss something
+    this->storage.setConstant(q.storage.rows(),
+            storage_type::ColsAtCompileTime,
+            std::numeric_limits<storage_type::Scalar>::quiet_NaN());
+
+    // Copy time followed by boundary layer profiles of interest
+    t = q.t;
+    this->rho()          = q.rho();
+    this->rho_u().col(0) = q.rho_u().col(0);
+    this->rho_u().col(1) = q.rho_u().col(1);
+    this->a()            = q.a();
+    this->H0()           = q.H0();
+    this->T()            = q.T();
+    this->mu()           = q.mu();
+    this->u().col(0)     = q.u().col(0);
+    this->u().col(1)     = q.u().col(1);
+
+    return *this;
 }
 
 // This logic is a trimmed down version of quantities.cpp. See comments there.
