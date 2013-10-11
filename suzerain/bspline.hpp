@@ -219,6 +219,21 @@ public:
     }
 
     /**
+     * @copybrief suzerain_bspline_linear_combination
+     * @see       suzerain_bspline_linear_combination
+     */
+    int linear_combination(const std::size_t nderiv,
+                           const real_t * coeffs,
+                           const real_t   point,
+                           real_t * values,
+                           const std::size_t ldvalues = 0)
+    {
+        return suzerain_bspline_linear_combination(nderiv, coeffs,
+                1, &point, // Evaluate at one single point
+                values, ldvalues, db_, bw, dbw);
+    }
+
+    /**
      * @copybrief suzerain_bspline_linear_combination_complex
      * @see       suzerain_bspline_linear_combination_complex
      */
@@ -238,6 +253,29 @@ public:
                 nderiv,
                 reinterpret_cast<const complex_t *>(coeffs),
                 npoints, points,
+                reinterpret_cast<complex_t *>(values),
+                ldvalues, db_, bw, dbw);
+    }
+
+    /**
+     * @copybrief suzerain_bspline_linear_combination_complex
+     * @see       suzerain_bspline_linear_combination_complex
+     */
+    template< typename Complex1,
+              typename Complex2 >
+    typename boost::enable_if<boost::mpl::and_<
+        suzerain::complex::traits::is_complex_t<Complex1>,
+        suzerain::complex::traits::is_complex_t<Complex2>
+    >, int>::type linear_combination(const std::size_t nderiv,
+                                     const Complex1 *coeffs,
+                                     const real_t point,
+                                     Complex2 *values,
+                                     const std::size_t ldvalues = 0)
+    {
+        return suzerain_bspline_linear_combination_complex(
+                nderiv,
+                reinterpret_cast<const complex_t *>(coeffs),
+                1, &point, // Evaluate at one single point
                 reinterpret_cast<complex_t *>(values),
                 ldvalues, db_, bw, dbw);
     }
