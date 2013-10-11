@@ -53,24 +53,14 @@ namespace perfect {
 static const char default_who[] = "layers";
 
 layers::layers()
-    : t(std::numeric_limits<real_t>::quiet_NaN())
-    , who(default_who)
-{
-    // NOP
-}
-
-layers::layers(real_t )
-    : t(t)
-    , who(default_who)
+    : who(default_who)
 {
     // NOP
 }
 
 layers::layers(
-        real_t t,
         layers::storage_type::Index Ny)
-    : t(t),
-      storage(storage_type::Zero(Ny, storage_type::ColsAtCompileTime))
+    : storage(storage_type::Zero(Ny, storage_type::ColsAtCompileTime))
     , who(default_who)
 {
     // NOP
@@ -83,8 +73,7 @@ layers& layers::operator=(const quantities &q)
             storage_type::ColsAtCompileTime,
             std::numeric_limits<storage_type::Scalar>::quiet_NaN());
 
-    // Copy time followed by boundary layer profiles of interest
-    t = q.t;
+    // Copy boundary layer profiles of interest from q
     this->rho()          = q.rho();
     this->rho_u().col(0) = q.rho_u().col(0);
     this->rho_u().col(1) = q.rho_u().col(1);
@@ -104,8 +93,7 @@ layers sample_layers(
         const grid_specification &grid,
         const pencil_grid &dgrid,
         const bsplineop &cop,
-        contiguous_state<4,complex_t> &swave,
-        const real_t t)
+        contiguous_state<4,complex_t> &swave)
 {
     // State enters method as coefficients in X, Y, and Z directions
     SUZERAIN_TIMER_SCOPED("sample_layers");
@@ -129,7 +117,7 @@ layers sample_layers(
     SUZERAIN_ENSURE((unsigned) swave.strides()[3] == swave.shape()[1]*swave.shape()[2]);
 
     // Rank-specific details accumulated in ret to be MPI_Reduce-d later
-    layers ret(t, Ny);
+    layers ret(Ny);
 
     // Obtain samples available in wave-space from mean conserved state.
     // These coefficients are inherently averaged across the X-Z plane.

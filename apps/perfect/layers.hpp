@@ -100,32 +100,17 @@ public:
 #undef SUM
     }; };
 
-    /** Simulation time when layer profiles were obtained */
-    real_t t;
-
     /** Type of the contiguous storage used to house all scalars */
     typedef Array<real_t, Dynamic, nscalars::total> storage_type;
 
-    /** Contiguous storage used to house all means */
+    /** Contiguous storage used to house all mean layer profiles */
     storage_type storage;
 
-    /**
-     * Constructor setting <tt>this->t = NaN</tt>.
-     * Caller will need to resize <tt>this->storage</tt> prior to use.
-     */
+    /** Default constructor. Resize <tt>this->storage</tt> prior to use. */
     layers();
 
-    /**
-     * Constructor setting <tt>this->t = t</tt>.
-     * Caller will need to resize <tt>this->storage</tt> prior to use.
-     */
-    explicit layers(real_t t);
-
-    /**
-     * Constructor setting <tt>this->t = t</tt> and preparing a zero-filled \c
-     * storage containing \c Ny rows.
-     */
-    layers(real_t t, storage_type::Index Ny);
+    /** Constructor prepares zero-filled \c storage containing \c Ny rows. */
+    explicit layers(storage_type::Index Ny);
 
 #define OP(r, data, tuple)                                              \
     BOOST_PP_TUPLE_ELEM(2, 0, tuple) = BOOST_PP_TUPLE_ELEM(2, 1, tuple)
@@ -180,15 +165,16 @@ private:
 
 /**
  * Using the provided state, sample the mean boundary layer profiles declared
- * in \ref layers.  This is an expensive, collective method producing valid
- * results <em>only on rank zero</em>.
+ * in \ref layers.  This is a mildly expensive, collective method producing
+ * valid results <em>only on rank zero</em>.  If results are necessary on all
+ * ranks, the <code>layers.storage</code> may be subsequently broadcast from
+ * rank zero to all ranks.
  *
  * @param[in]     scenario Scenario parameters.
  * @param[in]     grid     Grid parameters.
  * @param[in]     dgrid    Pencil decomposition parameters.
  * @param[in]     cop      B-spline operator workspace.
  * @param[in,out] swave    Destroyed in the computation
- * @param[in]     t        Current simulation time
  *
  * @return Mean boundary layer layers as B-spline coefficients.
  */
@@ -197,8 +183,7 @@ layers sample_layers(
         const grid_specification &grid,
         const pencil_grid &dgrid,
         const bsplineop &cop,
-        contiguous_state<4,complex_t> &swave,
-        const real_t t);
+        contiguous_state<4,complex_t> &swave);
 
 } // end namespace perfect
 
