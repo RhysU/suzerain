@@ -56,7 +56,7 @@ from sympy.physics.units import Unit
 
 # TODO How to handle uncertainty in derivatives of measured quantities?
 # Likely verdict: Chain out derivatives
-#                 Deal with correlation between state and derivaties
+#                 Deal with correlation between state and derivatives
 
 "Symbolic constants known at parse time to have zero derivatives."
 constants = {
