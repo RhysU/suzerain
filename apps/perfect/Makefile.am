@@ -69,6 +69,14 @@ perfect_mean_LDADD    = ./libperfect.la ../../suzerain/libsuzerain.la
 perfect_mean_svnrev.h: $(perfect_mean_SOURCES) $(libperfect_la_SOURCES)
 	$(top_builddir)/build-aux/svnrev -n -o$@ "-f$(PACKAGE_VERSION).#" -i $?
 
+bin_PROGRAMS            += perfect_summary
+perfect_summary_SOURCES  = perfect_summary.cpp
+perfect_summary_SOURCES += perfect_summary_svnrev.c
+BUILT_SOURCES           += perfect_summary_svnrev.h
+perfect_summary_LDADD    = ./libperfect.la ../../suzerain/libsuzerain.la
+perfect_summary_svnrev.h: $(perfect_summary_SOURCES) $(libperfect_la_SOURCES)
+	$(top_builddir)/build-aux/svnrev -n -o$@ "-f$(PACKAGE_VERSION).#" -i $?
+
 ##
 ## Tests for perfect gas applications
 ##
