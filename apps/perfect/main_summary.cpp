@@ -22,7 +22,7 @@
 //--------------------------------------------------------------------------
 
 /** @file
- * Summarize mean statistics for one or more channel restart files.
+ * Application executing \ref suzerain::perfect::driver_summary::run.
  */
 
 // FIXME Support loading multiple sample collections per file
@@ -31,46 +31,70 @@
 #include <esio/esio.h>
 
 #include <suzerain/common.hpp>
+#include <suzerain/exprparse.hpp>
 #include <suzerain/math.hpp>
 #include <suzerain/mpi.hpp>
+#include <suzerain/ndx.hpp>
+#include <suzerain/physical_view.hpp>
 #include <suzerain/pre_gsl.h>
+#include <suzerain/rholut.hpp>
 #include <suzerain/support/grid_definition.hpp>
+#include <suzerain/support/isothermal_definition.hpp>
 #include <suzerain/support/logging.hpp>
 #include <suzerain/support/program_options.hpp>
 #include <suzerain/support/support.hpp>
 #include <suzerain/support/time_definition.hpp>
+#include <suzerain/validation.hpp>
 
+#include "driver.hpp"
 #include "perfect.hpp"
 #include "quantities.hpp"
 #include "scenario_definition.hpp"
 
-// Introduce shorthand for common names
-using boost::math::constants::pi;
-using boost::numeric_cast;
-using std::auto_ptr;
-using std::numeric_limits;
-using suzerain::bspline;
-using suzerain::bsplineop;
-using suzerain::bsplineop_lu;
-using suzerain::complex_t;
-using suzerain::perfect::scenario_definition;
-using suzerain::real_t;
-using suzerain::shared_ptr;
-using suzerain::support::grid_definition;
-using suzerain::support::time_definition;
-namespace logging = suzerain::support::logging;
-namespace perfect = suzerain::perfect;
-namespace support = suzerain::support;
+#pragma warning(disable:1419)
 
-// Provided by perfect_summary_svnrev.{c,h} to speed recompilation
-#pragma warning(push,disable:1419)
-extern "C" const char revstr[];
-#pragma warning(pop)
+namespace suzerain {
 
-#pragma warning(disable:383 1572)
+namespace perfect {
 
-/** Details on the sampled and computed quantities */
-namespace quantity {
+/** Summarize mean statistics for one or more channel restart files. */
+struct driver_summary : public driver
+{
+    driver_summary(const std::string& revstr)
+        : driver("Compressible, perfect gas simulation summarization",
+                 "RESTART-OR-SAMPLE-HDF5-FILE...",
+"Invocable in four distinct ways:\n"
+"\t1) perfect_summary                INFILE.h5 ...\n"
+"\t2) perfect_summary -s             INFILE.h5 ...\n"
+"\t3) perfect_summary -f OUTFILE.dat INFILE.h5 ...\n"
+"\t4) perfect_summary -o OUTFILE.h5  INFILE.h5 ...\n"
+"\n"
+"The first way processes each INFILE.h5 in turn outputting a corresponding\n"
+"INFILE.mean containing a comma-separated table of means from the first\n"
+"sample collection in the file.  The second way (-s) sends the data from all\n "
+"sample collections to standard output sorted according to the simulation\n "
+"time with a blank line separating adjacent times.  The third way (-f)\n"
+"is identical to the second except the output is automatically sent to the\n"
+"file named OUTFILE.dat.  The fourth way (-o) outputs a single HDF5 file\n"
+"called OUTFILE.h5 containing all sample collections. Options -s, -f,  and\n"
+"-o may be specified simultaneously.\n",
+                 revstr)
+        , who("summary")
+    {}
+
+    /** Implementation below in this file */
+    int run(int argc, char **argv);
+
+private:
+
+    /** Helps to identify from whom logging messages are being emitted. */
+    std::string who;
+};
+
+/**
+ * Details on the sampled and computed quantities
+ */
+namespace sample {
 
 /** A Boost.Preprocessor sequence of tuples of grid-related details */
 #define SEQ_GRID                                                                                      \
@@ -172,113 +196,6 @@ namespace quantity {
     ((bar_CrhoE,            "Reynolds-averaged total energy contributions due to various integral constraints"))          \
     ((bar_Crhou_dot_u,      "Reynolds-averaged energy contribution due to work by various integral constraints"))
 
-/** A Boost.Preprocessor sequence of tuples of indirectly sampled (i.e. derived) quantities.  */
-#define SEQ_DERIVED                                                                                                                                                 \
-    ((tilde_u,                "Favre-averaged streamwise velocity"))                                                                                                \
-    ((tilde_v,                "Favre-averaged wall-normal velocity"))                                                                                               \
-    ((tilde_w,                "Favre-averaged spanwise velocity"))                                                                                                  \
-    ((tilde_E,                "Favre-averaged total (intrinsic plus kinetic) energy"))                                                                              \
-    ((tilde_u_u,              "Favre-averaged (x,x)-component of the velocity times itself"))                                                                       \
-    ((tilde_u_v,              "Favre-averaged (x,y)-component of the velocity times itself"))                                                                       \
-    ((tilde_u_w,              "Favre-averaged (x,z)-component of the velocity times itself"))                                                                       \
-    ((tilde_v_v,              "Favre-averaged (y,y)-component of the velocity times itself"))                                                                       \
-    ((tilde_v_w,              "Favre-averaged (y,z)-component of the velocity times itself"))                                                                       \
-    ((tilde_w_w,              "Favre-averaged (z,z)-component of the velocity times itself"))                                                                       \
-    ((tilde_upp_upp,          "Favre-averaged (x,x)-component of the fluctuating velocity times itself"))                                                           \
-    ((tilde_upp_vpp,          "Favre-averaged (x,y)-component of the fluctuating velocity times itself"))                                                           \
-    ((tilde_upp_wpp,          "Favre-averaged (x,z)-component of the fluctuating velocity times itself"))                                                           \
-    ((tilde_vpp_vpp,          "Favre-averaged (y,y)-component of the fluctuating velocity times itself"))                                                           \
-    ((tilde_vpp_wpp,          "Favre-averaged (y,z)-component of the fluctuating velocity times itself"))                                                           \
-    ((tilde_wpp_wpp,          "Favre-averaged (z,z)-component of the fluctuating velocity times itself"))                                                           \
-    ((tilde_k,                "Turbulent kinetic energy density"))                                                                                                  \
-    ((tilde_T,                "Favre-averaged temperature"))                                                                                                        \
-    ((tilde_H,                "Favre-averaged total enthalpy"))                                                                                                     \
-    ((bar_p,                  "Reynolds-averaged pressure"))                                                                                                        \
-    ((bar_tau_colon_grad_upp, "Reynolds-averaged contraction of the viscous stress tensor against the fluctuating velocity gradient"))                              \
-    ((tilde_epsilon,          "Turbulent kinetic energy dissipation rate density"))                                                                                 \
-    ((bar_rhop_up,            "Reynolds-averaged Reynolds-fluctuating density times the Reynolds-fluctuating streamwise velocity"))                                 \
-    ((bar_rhop_vp,            "Reynolds-averaged Reynolds-fluctuating density times the Reynolds-fluctuating wall-normal velocity"))                                \
-    ((bar_rhop_wp,            "Reynolds-averaged Reynolds-fluctuating density times the Reynolds-fluctuating spanwise velocity"))                                   \
-    ((bar_upp,                "Reynolds-averaged Favre-fluctuating streamwise velocity"))                                                                           \
-    ((bar_vpp,                "Reynolds-averaged Favre-fluctuating wall-normal velocity"))                                                                          \
-    ((bar_wpp,                "Reynolds-averaged Favre-fluctuating spanwise velocity"))                                                                             \
-    ((bar_f_dot_upp,          "Reynolds-averaged momentum forcing dotted with fluctuating velocity"))                                                               \
-    ((bar_Srhou_dot_upp,      "Reynolds-averaged energy contribution due to slow growth forcing work dotted with fluctuating velocity"))                            \
-    ((bar_Crhou_dot_upp,      "Reynolds-averaged energy contribution due to work by various integral constraints dotted with fluctuating velocity"))                \
-    ((bar_tauuppx,            "Reynolds-averaged x-component of the viscous stress tensor times the Favre-fluctuating velocity"))                                   \
-    ((bar_tauuppy,            "Reynolds-averaged y-component of the viscous stress tensor times the Favre-fluctuating velocity"))                                   \
-    ((bar_tauuppz,            "Reynolds-averaged z-component of the viscous stress tensor times the Favre-fluctuating velocity"))                                   \
-    ((bar_pp_div_upp,         "Reynolds-averaged Reynolds-fluctuating pressure times the divergence of the Favre-fluctuating velocity"))                            \
-    ((tilde_u_u_u,            "Favre-averaged (x,x,x)-component of velocity times itself times itself"))                                                            \
-    ((tilde_u_u_v,            "Favre-averaged (x,x,y)-component of velocity times itself times itself"))                                                            \
-    ((tilde_u_u_w,            "Favre-averaged (x,x,z)-component of velocity times itself times itself"))                                                            \
-    ((tilde_u_v_v,            "Favre-averaged (x,y,y)-component of velocity times itself times itself"))                                                            \
-    ((tilde_u_v_w,            "Favre-averaged (x,y,z)-component of velocity times itself times itself"))                                                            \
-    ((tilde_u_w_w,            "Favre-averaged (x,z,z)-component of velocity times itself times itself"))                                                            \
-    ((tilde_v_v_v,            "Favre-averaged (y,y,y)-component of velocity times itself times itself"))                                                            \
-    ((tilde_v_v_w,            "Favre-averaged (y,y,z)-component of velocity times itself times itself"))                                                            \
-    ((tilde_v_w_w,            "Favre-averaged (y,z,z)-component of velocity times itself times itself"))                                                            \
-    ((tilde_w_w_w,            "Favre-averaged (z,z,z)-component of velocity times itself times itself"))                                                            \
-    ((tilde_u2u,              "Favre-averaged x-component of the square of the velocity times the streamwise velocity"))                                            \
-    ((tilde_u2v,              "Favre-averaged y-component of the square of the velocity times the wall-normal velocity"))                                           \
-    ((tilde_u2w,              "Favre-averaged z-component of the square of the velocity times the spanwise velocity"))                                              \
-    ((tilde_upp2upp,          "Favre-averaged x-component of the square of the fluctuating velocity times the velocity"))                                           \
-    ((tilde_upp2vpp,          "Favre-averaged y-component of the square of the fluctuating velocity times the velocity"))                                           \
-    ((tilde_upp2wpp,          "Favre-averaged z-component of the square of the fluctuating velocity times the velocity"))                                           \
-    ((tilde_T_u,              "Favre-averaged temperature times the streamwise velocity"))                                                                          \
-    ((tilde_T_v,              "Favre-averaged temperature times the wall-normal velocity"))                                                                         \
-    ((tilde_T_w,              "Favre-averaged temperature times the spanwise velocity"))                                                                            \
-    ((tilde_Tpp_upp,          "Favre-averaged fluctuating temperature times the fluctuating streamwise velocity"))                                                  \
-    ((tilde_Tpp_vpp,          "Favre-averaged fluctuating temperature times the fluctuating wall-normal velocity"))                                                 \
-    ((tilde_Tpp_wpp,          "Favre-averaged fluctuating temperature times the fluctuating spanwise velocity"))                                                    \
-    ((tilde_mu,               "Favre-averaged dynamic viscosity"))                                                                                                  \
-    ((bar_mupp,               "Reynolds-averaged Favre-fluctuating dynamic viscosity"))                                                                             \
-    ((tilde_nu,               "Favre-averaged kinematic viscosity"))                                                                                                \
-    ((bar_nupp,               "Reynolds-averaged Favre-fluctuating kinematic viscosity"))                                                                           \
-    ((tilde_symxx_grad_u,     "Symmetric part (x,x)-component of Favre-averaged velocity gradient"))                                                                \
-    ((tilde_symxy_grad_u,     "Symmetric part (x,y)-component of Favre-averaged velocity gradient"))                                                                \
-    ((tilde_symxz_grad_u,     "Symmetric part (x,z)-component of Favre-averaged velocity gradient"))                                                                \
-    ((tilde_symyy_grad_u,     "Symmetric part (y,y)-component of Favre-averaged velocity gradient"))                                                                \
-    ((tilde_symyz_grad_u,     "Symmetric part (y,z)-component of Favre-averaged velocity gradient"))                                                                \
-    ((tilde_symzz_grad_u,     "Symmetric part (z,z)-component of Favre-averaged velocity gradient"))                                                                \
-    ((tilde_Sxx,              "Favre-averaged (x,x)-component of the deviatoric portion of the strain rate"))                                                       \
-    ((tilde_Sxy,              "Favre-averaged (x,y)-component of the deviatoric portion of the strain rate"))                                                       \
-    ((tilde_Sxz,              "Favre-averaged (x,z)-component of the deviatoric portion of the strain rate"))                                                       \
-    ((tilde_Syy,              "Favre-averaged (y,y)-component of the deviatoric portion of the strain rate"))                                                       \
-    ((tilde_Syz,              "Favre-averaged (y,z)-component of the deviatoric portion of the strain rate"))                                                       \
-    ((tilde_Szz,              "Favre-averaged (z,z)-component of the deviatoric portion of the strain rate"))                                                       \
-    ((tilde_nupp_Sppxx,       "Favre-averaged (x,x)-component of the fluctuating kinematic viscosity times the deviatoric portion of the fluctuating strain rate")) \
-    ((tilde_nupp_Sppxy,       "Favre-averaged (x,y)-component of the fluctuating kinematic viscosity times the deviatoric portion of the fluctuating strain rate")) \
-    ((tilde_nupp_Sppxz,       "Favre-averaged (x,z)-component of the fluctuating kinematic viscosity times the deviatoric portion of the fluctuating strain rate")) \
-    ((tilde_nupp_Sppyy,       "Favre-averaged (y,y)-component of the fluctuating kinematic viscosity times the deviatoric portion of the fluctuating strain rate")) \
-    ((tilde_nupp_Sppyz,       "Favre-averaged (y,z)-component of the fluctuating kinematic viscosity times the deviatoric portion of the fluctuating strain rate")) \
-    ((tilde_nupp_Sppzz,       "Favre-averaged (z,z)-component of the fluctuating kinematic viscosity times the deviatoric portion of the fluctuating strain rate")) \
-    ((tilde_nupp_div_upp,     "Favre-averaged fluctuating kinematic viscosity times the divergence of the fluctuating velocity"))                                   \
-    ((tilde_nupp_gradxTpp,    "Favre-averaged x-component of the kinematic viscosity times the fluctuating temperature gradient"))                                  \
-    ((tilde_nupp_gradyTpp,    "Favre-averaged y-component of the kinematic viscosity times the fluctuating temperature gradient"))                                  \
-    ((tilde_nupp_gradzTpp,    "Favre-averaged z-component of the kinematic viscosity times the fluctuating temperature gradient"))
-
-/** A Boost.Preprocessor sequence of tuples of locally computed quantities */
-#define SEQ_LOCALS                                                                                                          \
-    ((local_Ma,   "Local Mach number formed via Ma * bar_u / bar_a"))                                                       \
-    ((local_Mat,  "Local turbulent Mach number formed via Ma * sqrt(2*tilde_k) / bar_a"))                                   \
-    ((local_Prt,  "Local turbulent Prandtl number formed via (tilde_upp_vpp * tilde_T__y) / (tilde_Tpp_vpp * tilde_u__y)")) \
-    ((local_nut,  "Local eddy viscosity formed from - Re * tilde_upp_vpp / tilde_u__y"))                                    \
-    ((local_Re,   "Local Reynolds number formed from Re * bar_rho_u L / bar_mu for L = 1"))
-
-/**
- * A Boost.Preprocessor sequence of tuples of stationary, time-invariant
- * equation residuals.  In the unsteady case, these are nothing but the time
- * derivative of the state variables.
- */
-#define SEQ_RESIDUAL                                                                                         \
-    ((bar_rho__t,   "Residual of stationary Favre-averaged density equation"))                               \
-    ((bar_rho_u__t, "Residual of stationary Favre-averaged streamwise momentum equation"))                   \
-    ((bar_rho_v__t, "Residual of stationary Favre-averaged wall-normal momentum equation"))                  \
-    ((bar_rho_w__t, "Residual of stationary Favre-averaged spanwise momentum equation"))                     \
-    ((bar_rho_E__t, "Residual of stationary Favre-averaged total (intrinsic plus kinetic) energy equation")) \
-    ((bar_rho_k__t, "Residual of stationary Favre-averaged turbulent kinetic energy equation"))
-
 // Helpers for working with sequences of tuples
 #define NAME(tuple)  BOOST_PP_TUPLE_ELEM(2,0,tuple)
 #define SNAME(tuple) BOOST_PP_STRINGIZE(BOOST_PP_TUPLE_ELEM(2,0,tuple))
@@ -288,13 +205,11 @@ namespace quantity {
 #define TRANSFORM_Y(r, data, tuple)                                                 \
     (BOOST_PP_CAT(NAME(tuple),__y),  "Wall-normal first derivative of "DESC(tuple))
 #define SEQ_SAMPLED_Y BOOST_PP_SEQ_TRANSFORM(TRANSFORM_Y,,SEQ_SAMPLED)
-#define SEQ_DERIVED_Y BOOST_PP_SEQ_TRANSFORM(TRANSFORM_Y,,SEQ_DERIVED)
 
 // Prepare sequences of second wall-normal derivatives
 #define TRANSFORM_YY(r, data, tuple)                                                 \
     (BOOST_PP_CAT(NAME(tuple),__yy), "Wall-normal second derivative of "DESC(tuple))
 #define SEQ_SAMPLED_YY BOOST_PP_SEQ_TRANSFORM(TRANSFORM_YY,,SEQ_SAMPLED)
-#define SEQ_DERIVED_YY BOOST_PP_SEQ_TRANSFORM(TRANSFORM_YY,,SEQ_DERIVED)
 
 // Building a Boost.Preprocessor sequence of all data of interest
 //   #define SEQ_ALL
@@ -307,26 +222,17 @@ namespace quantity {
     /** Number of scalar quantities processed as a wall-normal function */
     static const std::size_t count = BOOST_PP_SEQ_SIZE(SEQ_GRID)
                                    + BOOST_PP_SEQ_SIZE(SEQ_SAMPLED)
-                                   + BOOST_PP_SEQ_SIZE(SEQ_DERIVED)
-                                   + BOOST_PP_SEQ_SIZE(SEQ_LOCALS)
-                                   + BOOST_PP_SEQ_SIZE(SEQ_RESIDUAL)
                                    + BOOST_PP_SEQ_SIZE(SEQ_SAMPLED_Y)
-                                   + BOOST_PP_SEQ_SIZE(SEQ_DERIVED_Y)
-                                   + BOOST_PP_SEQ_SIZE(SEQ_SAMPLED_YY)
-                                   + BOOST_PP_SEQ_SIZE(SEQ_DERIVED_YY);
+                                   + BOOST_PP_SEQ_SIZE(SEQ_SAMPLED_YY);
 
 #define OP(s, data, tuple) NAME(tuple)
     /** Provides named index constants for each quantity */
     enum index {
         BOOST_PP_SEQ_ENUM(BOOST_PP_SEQ_TRANSFORM(OP, , SEQ_GRID))      ,
         BOOST_PP_SEQ_ENUM(BOOST_PP_SEQ_TRANSFORM(OP, , SEQ_SAMPLED))   ,
-        BOOST_PP_SEQ_ENUM(BOOST_PP_SEQ_TRANSFORM(OP, , SEQ_DERIVED))   ,
-        BOOST_PP_SEQ_ENUM(BOOST_PP_SEQ_TRANSFORM(OP, , SEQ_LOCALS))    ,
         BOOST_PP_SEQ_ENUM(BOOST_PP_SEQ_TRANSFORM(OP, , SEQ_RESIDUAL))  ,
         BOOST_PP_SEQ_ENUM(BOOST_PP_SEQ_TRANSFORM(OP, , SEQ_SAMPLED_Y)) ,
-        BOOST_PP_SEQ_ENUM(BOOST_PP_SEQ_TRANSFORM(OP, , SEQ_DERIVED_Y)) ,
         BOOST_PP_SEQ_ENUM(BOOST_PP_SEQ_TRANSFORM(OP, , SEQ_SAMPLED_YY)),
-        BOOST_PP_SEQ_ENUM(BOOST_PP_SEQ_TRANSFORM(OP, , SEQ_DERIVED_YY))
     };
 #undef OP
 
@@ -335,13 +241,8 @@ namespace quantity {
     static const char * name[count] = {
         BOOST_PP_SEQ_ENUM(BOOST_PP_SEQ_TRANSFORM(OP, , SEQ_GRID))      ,
         BOOST_PP_SEQ_ENUM(BOOST_PP_SEQ_TRANSFORM(OP, , SEQ_SAMPLED))   ,
-        BOOST_PP_SEQ_ENUM(BOOST_PP_SEQ_TRANSFORM(OP, , SEQ_DERIVED))   ,
-        BOOST_PP_SEQ_ENUM(BOOST_PP_SEQ_TRANSFORM(OP, , SEQ_LOCALS))    ,
-        BOOST_PP_SEQ_ENUM(BOOST_PP_SEQ_TRANSFORM(OP, , SEQ_RESIDUAL))  ,
         BOOST_PP_SEQ_ENUM(BOOST_PP_SEQ_TRANSFORM(OP, , SEQ_SAMPLED_Y)) ,
-        BOOST_PP_SEQ_ENUM(BOOST_PP_SEQ_TRANSFORM(OP, , SEQ_DERIVED_Y)) ,
-        BOOST_PP_SEQ_ENUM(BOOST_PP_SEQ_TRANSFORM(OP, , SEQ_SAMPLED_YY)),
-        BOOST_PP_SEQ_ENUM(BOOST_PP_SEQ_TRANSFORM(OP, , SEQ_DERIVED_YY))
+        BOOST_PP_SEQ_ENUM(BOOST_PP_SEQ_TRANSFORM(OP, , SEQ_SAMPLED_YY))
     };
 #undef OP
 
@@ -350,13 +251,8 @@ namespace quantity {
     static const char * desc[count] = {
         BOOST_PP_SEQ_ENUM(BOOST_PP_SEQ_TRANSFORM(OP, , SEQ_GRID))      ,
         BOOST_PP_SEQ_ENUM(BOOST_PP_SEQ_TRANSFORM(OP, , SEQ_SAMPLED))   ,
-        BOOST_PP_SEQ_ENUM(BOOST_PP_SEQ_TRANSFORM(OP, , SEQ_DERIVED))   ,
-        BOOST_PP_SEQ_ENUM(BOOST_PP_SEQ_TRANSFORM(OP, , SEQ_LOCALS))    ,
-        BOOST_PP_SEQ_ENUM(BOOST_PP_SEQ_TRANSFORM(OP, , SEQ_RESIDUAL))  ,
         BOOST_PP_SEQ_ENUM(BOOST_PP_SEQ_TRANSFORM(OP, , SEQ_SAMPLED_Y)) ,
-        BOOST_PP_SEQ_ENUM(BOOST_PP_SEQ_TRANSFORM(OP, , SEQ_DERIVED_Y)) ,
-        BOOST_PP_SEQ_ENUM(BOOST_PP_SEQ_TRANSFORM(OP, , SEQ_SAMPLED_YY)),
-        BOOST_PP_SEQ_ENUM(BOOST_PP_SEQ_TRANSFORM(OP, , SEQ_DERIVED_YY))
+        BOOST_PP_SEQ_ENUM(BOOST_PP_SEQ_TRANSFORM(OP, , SEQ_SAMPLED_YY))
     };
 #undef OP
 
@@ -371,40 +267,47 @@ namespace quantity {
     /** Output names in a manner suitable for columns output by \ref iofmt */
     static void write_names(std::ostream &out)
     {
-        for (size_t i = 0; i < quantity::count; ++i) {  // Headings
-            out << std::setw(numeric_limits<real_t>::digits10 + 11)
-                << quantity::name[i];
-            if (i < quantity::count - 1) out << " ";
+        for (size_t i = 0; i < sample::count; ++i) {  // Headings
+            out << std::setw(std::numeric_limits<real_t>::digits10 + 11)
+                << sample::name[i];
+            if (i < sample::count - 1) out << " ";
         }
         out << std::endl;
     }
 
-    /** Used for formatting output data to match \ref quantity::write_names. */
+    /** Used for formatting output data to match \ref sample::write_names. */
     static const Eigen::IOFormat iofmt(
             Eigen::FullPrecision, 0, "     ", "\n", "    ");
 
-} // namespace quantity
+} // namespace sample
+
+// Provided by main_summary_svnrev.{c,h} to speed recompilation
+#pragma warning(push,disable:1419)
+extern "C" const char revstr[];
+#pragma warning(pop)
+
+#pragma warning(disable:383 1572)
 
 /**
  * Compute the integration weights necessary to compute a bulk quantity from
  * the quantity's value at collocation points using a dot product.
  */
-static suzerain::VectorXr compute_bulk_weights(
+static VectorXr compute_bulk_weights(
         real_t Ly,
-        suzerain::bspline& b,
-        suzerain::bsplineop_lu& boplu)
+        bspline& b,
+        bsplineop_lu& boplu)
 {
     // Obtain coefficient -> bulk quantity weights
-    suzerain::VectorXr bulkcoeff(b.n());
+    VectorXr bulkcoeff(b.n());
     b.integration_coefficients(0, bulkcoeff.data());
     bulkcoeff /= Ly;
 
     // Form M^-1 to map from collocation point values to coefficients
-    suzerain::MatrixXXr mat = suzerain::MatrixXXr::Identity(b.n(),b.n());
+    MatrixXXr mat = MatrixXXr::Identity(b.n(),b.n());
     boplu.solve(b.n(), mat.data(), 1, b.n());
 
     // Dot the coefficients with each column of M^-1
-    suzerain::VectorXr retval(b.n());
+    VectorXr retval(b.n());
     for (int i = 0; i < b.n(); ++i) {
         retval[i] = bulkcoeff.dot(mat.col(i));
     }
@@ -412,8 +315,12 @@ static suzerain::VectorXr compute_bulk_weights(
     return retval;
 }
 
+} // namespace perfect
+
+} // namespace suzerain
+
 /**
- * Compute all quantities from namespace \ref quantity using the sample
+ * Compute all quantities from namespace \ref sample using the sample
  * collections present in \c filename using the wall-normal discretization from
  * \c filename.
  *
@@ -431,7 +338,7 @@ static suzerain::VectorXr compute_bulk_weights(
  *
  * @return A map of quantities keyed on the nondimensional simulation time.
  */
-static quantity::storage_map_type process(
+static sample::storage_map_type process(
         const std::string& filename,
         shared_ptr<scenario_definition>& i_scenario,
         shared_ptr<grid_definition    >& i_grid,
@@ -484,7 +391,7 @@ int main(int argc, char **argv)
                            "Write results to a textual output file")
             ("hdffile,o",   boost::program_options::value(&hdffile),
                            "Write results to an HDF5 output file")
-            ("describe,d", "Dump all quantity details to standard output")
+            ("describe,d", "Dump all sample details to standard output")
             ;
         restart_files = options.process(argc, argv);
         switch (options.verbose()) {
@@ -514,20 +421,20 @@ int main(int argc, char **argv)
         boost::io::ios_all_saver ias(std::cout);
 
         const std::size_t ndxwidth = 1 + static_cast<std::size_t>(
-                std::floor(std::log10(static_cast<real_t>(quantity::count))));
+                std::floor(std::log10(static_cast<real_t>(sample::count))));
 
         std::size_t namewidth = 0;
-        for (std::size_t i = 0; i < quantity::count; ++i) {
-            namewidth = std::max(namewidth, strlen(quantity::name[i]));
+        for (std::size_t i = 0; i < sample::count; ++i) {
+            namewidth = std::max(namewidth, strlen(sample::name[i]));
         }
 
-        for (size_t i = 0; i < quantity::count; ++i) {
+        for (size_t i = 0; i < sample::count; ++i) {
             std::cout << "# "
                       << std::setw(ndxwidth) << std::right << i
                       << "  "
-                      << std::setw(namewidth) << std::left << quantity::name[i]
+                      << std::setw(namewidth) << std::left << sample::name[i]
                       << "  "
-                      << std::left << quantity::desc[i]
+                      << std::left << sample::desc[i]
                       << '\n';
         }
         std::cout << std::flush;
@@ -548,7 +455,7 @@ int main(int argc, char **argv)
         BOOST_FOREACH(const std::string& filename, restart_files) {
 
             // Load data from filename
-            quantity::storage_map_type data = process(
+            sample::storage_map_type data = process(
                     filename, scenario, grid, timedef, b, cop, boplu);
 
             // Save quantities to `basename filename .h5`.mean
@@ -565,9 +472,9 @@ int main(int argc, char **argv)
 
             // Write header followed by data values separated by blanks
             std::ofstream ofs(outname.c_str());
-            quantity::write_names(ofs);
-            BOOST_FOREACH(quantity::storage_map_type::value_type i, data) {
-                ofs << i->second->format(quantity::iofmt) << std::endl
+            sample::write_names(ofs);
+            BOOST_FOREACH(sample::storage_map_type::value_type i, data) {
+                ofs << i->second->format(sample::iofmt) << std::endl
                     << std::endl;
             }
             ofs.close();
@@ -586,7 +493,7 @@ int main(int argc, char **argv)
         // A single map of data is stored across all files.  Because the map
         // key is the simulation time, we automatically get a well-ordered,
         // unique set of data across all files.
-        quantity::storage_map_type pool;
+        sample::storage_map_type pool;
 
         // Scenario and grid details preserved across multiple files!
         // The last file on the command line determines the projection target
@@ -599,11 +506,11 @@ int main(int argc, char **argv)
             if (!timedef)  DEBUG0("Output file has timedef per "  << filename);
 
             // Load data from filename
-            quantity::storage_map_type data = process(
+            sample::storage_map_type data = process(
                     filename, scenario, grid, timedef, b, cop, boplu);
 
             // Output status to the user so they don't thing we're hung.
-            BOOST_FOREACH(quantity::storage_map_type::value_type i, data) {
+            BOOST_FOREACH(sample::storage_map_type::value_type i, data) {
                 INFO0("Read sample for t = " << i->first
                        << " from " << filename);
             }
@@ -612,7 +519,7 @@ int main(int argc, char **argv)
             pool.transfer(data);
 
             // Warn on any duplicate values which were not transfered
-            BOOST_FOREACH(quantity::storage_map_type::value_type i, data) {
+            BOOST_FOREACH(sample::storage_map_type::value_type i, data) {
                 WARN0("Duplicate sample time "
                       << i->first << " from " << filename << " ignored");
             }
@@ -621,9 +528,9 @@ int main(int argc, char **argv)
 
         if (use_stdout) {
             // Write header followed by data values separated by blanks
-            quantity::write_names(std::cout);
-            BOOST_FOREACH(quantity::storage_map_type::value_type i, pool) {
-                std::cout << i->second->format(quantity::iofmt) << std::endl
+            sample::write_names(std::cout);
+            BOOST_FOREACH(sample::storage_map_type::value_type i, pool) {
+                std::cout << i->second->format(sample::iofmt) << std::endl
                           << std::endl;
             }
         }
@@ -631,9 +538,9 @@ int main(int argc, char **argv)
         if (use_dat) {
             INFO0("Writing file " << datfile);
             std::ofstream outf(datfile.c_str());
-            quantity::write_names(outf);
-            BOOST_FOREACH(quantity::storage_map_type::value_type i, pool) {
-                outf << i->second->format(quantity::iofmt) << std::endl
+            sample::write_names(outf);
+            BOOST_FOREACH(sample::storage_map_type::value_type i, pool) {
+                outf << i->second->format(sample::iofmt) << std::endl
                      << std::endl;
             }
         }
@@ -665,20 +572,20 @@ int main(int argc, char **argv)
             t.reserve(Nt);
 
             // Loop over each entry in pool...
-            BOOST_FOREACH(quantity::storage_map_type::value_type i, pool) {
+            BOOST_FOREACH(sample::storage_map_type::value_type i, pool) {
 
                 // ...writing every wall-normal pencil of data to file...
                 esio_plane_establish(h.get(), Nt, t.size(), 1, Ny, 0, Ny);
-                for (std::size_t j = 0; j < quantity::count; ++j) {
+                for (std::size_t j = 0; j < sample::count; ++j) {
                     // ...skipping those which do not vary in time...
-                    if (    j == quantity::t
-                         || j == quantity::y
-                         || j == quantity::bulk_weights) {
+                    if (    j == sample::t
+                         || j == sample::y
+                         || j == sample::bulk_weights) {
                         continue;
                     }
-                    esio_plane_write(h.get(), quantity::name[j],
+                    esio_plane_write(h.get(), sample::name[j],
                                      i->second->col(j).data(), 0, 0,
-                                     quantity::desc[j]);
+                                     sample::desc[j]);
                 }
 
                 // ...and adding the time value to the running vector of times.
@@ -692,33 +599,33 @@ int main(int argc, char **argv)
 
             // Set "/t" to be the one-dimensional vector containing all times.
             esio_line_establish(h.get(), Nt, 0, t.size());
-            esio_line_write(h.get(), quantity::name[quantity::t],
+            esio_line_write(h.get(), sample::name[sample::t],
                             t.size() ? &t.front() : NULL,
-                            0, quantity::desc[quantity::t]);
+                            0, sample::desc[sample::t]);
 
             // Set "/y" to be the one-dimensional vector of collocation points.
             // Strictly speaking unnecessary, but useful shorthand for scripts.
             t.resize(Ny);
             esio_line_establish(h.get(), t.size(), 0, t.size());
             for (int i = 0; i < Ny; ++i) t[i] = b->collocation_point(i);
-            esio_line_write(h.get(), quantity::name[quantity::y], &t.front(),
-                            0, quantity::desc[quantity::y]);
+            esio_line_write(h.get(), sample::name[sample::y], &t.front(),
+                            0, sample::desc[sample::y]);
 
             // (Re-) compute the bulk weights and then output those as well.
             const suzerain::VectorXr bulk_weights
                     = compute_bulk_weights(grid->L.y(), *b, *boplu);
             esio_line_establish(h.get(), bulk_weights.size(),
                                 0, bulk_weights.size());
-            esio_line_write(h.get(), quantity::name[quantity::bulk_weights],
+            esio_line_write(h.get(), sample::name[sample::bulk_weights],
                             bulk_weights.data(), 0,
-                            quantity::desc[quantity::bulk_weights]);
+                            sample::desc[sample::bulk_weights]);
         }
     }
 
     return EXIT_SUCCESS;
 }
 
-static quantity::storage_map_type process(
+static sample::storage_map_type process(
         const std::string& filename,
         shared_ptr<scenario_definition>& i_scenario,
         shared_ptr<grid_definition    >& i_grid,
@@ -727,10 +634,10 @@ static quantity::storage_map_type process(
         shared_ptr<bsplineop          >& i_bop,
         shared_ptr<bsplineop_lu       >& i_boplu)
 {
-    using quantity::storage_type;
-    using quantity::storage_map_type;
+    using sample::storage_type;
+    using sample::storage_map_type;
 
-    quantity::storage_map_type retval;
+    sample::storage_map_type retval;
 
     // Create a file-specific ESIO handle using RAII
     shared_ptr<boost::remove_pointer<esio_handle>::type> h(
@@ -779,7 +686,7 @@ static quantity::storage_map_type process(
     }
 
     // Load samples as coefficients
-    auto_ptr<perfect::quantities> q(new perfect::quantities(time, b->n()));
+    std::auto_ptr<perfect::quantities> q(new perfect::quantities(time, b->n()));
     q->load(h.get());
     if (q->t >= 0) {
         DEBUG0("Successfully loaded sample collection from " << filename);
@@ -789,13 +696,13 @@ static quantity::storage_map_type process(
     }
 
     // Convert samples into collocation point values in s
-    auto_ptr<storage_type> s(new storage_type(b->n(),
+    std::auto_ptr<storage_type> s(new storage_type(b->n(),
                 (storage_type::Index) storage_type::ColsAtCompileTime));
-    s->fill(numeric_limits<real_t>::quiet_NaN());  // ++paranoia
+    s->fill(std::numeric_limits<real_t>::quiet_NaN());  // ++paranoia
 
 #define ACCUMULATE(coeff_name, coeff_col, point_name)                 \
     cop->accumulate(0, 1.0, q->coeff_name().col(coeff_col).data(), 1, \
-                    0.0, s->col(quantity::point_name).data(),   1)
+                    0.0, s->col(sample::point_name).data(),   1)
     ACCUMULATE(rho,              0, bar_rho               );
     ACCUMULATE(rho_u,            0, bar_rho_u             );
     ACCUMULATE(rho_u,            1, bar_rho_v             );
@@ -892,9 +799,9 @@ static quantity::storage_map_type process(
     // Store time and collocation points into s.
     // Not strictly necessary, but very useful for textual output
     // and as a sanity check of any later grid projection.
-    s->col(quantity::t).fill(q->t);
+    s->col(sample::t).fill(q->t);
     for (int i = 0; i < b->n(); ++i)
-        s->col(quantity::y)[i] = b->collocation_point(i);
+        s->col(sample::y)[i] = b->collocation_point(i);
 
     // Free coefficient-related resources
     q.reset();
@@ -906,7 +813,7 @@ static quantity::storage_map_type process(
     const real_t gamma = scenario.gamma;
 
     // Shorthand for referring to a particular column
-#define C(name) s->col(quantity::name)
+#define C(name) s->col(sample::name)
 
     // Shorthand for computing derivatives within a particular __y, __yy
 #define D(name)                                      \
@@ -1046,34 +953,34 @@ static quantity::storage_map_type process(
 
     // Differentiate SAMPLED
     // Uses that bar_rho{,__y,__yy} is the first entry in SAMPLED{,_Y,_YY}
-    s->middleCols<BOOST_PP_SEQ_SIZE(SEQ_SAMPLED_Y)>(quantity::bar_rho__y)
-        = s->middleCols<BOOST_PP_SEQ_SIZE(SEQ_SAMPLED)>(quantity::bar_rho);
+    s->middleCols<BOOST_PP_SEQ_SIZE(SEQ_SAMPLED_Y)>(sample::bar_rho__y)
+        = s->middleCols<BOOST_PP_SEQ_SIZE(SEQ_SAMPLED)>(sample::bar_rho);
     boplu->solve(BOOST_PP_SEQ_SIZE(SEQ_SAMPLED_Y),
-            s->middleCols<BOOST_PP_SEQ_SIZE(SEQ_SAMPLED_Y)>(quantity::bar_rho__y).data(),
+            s->middleCols<BOOST_PP_SEQ_SIZE(SEQ_SAMPLED_Y)>(sample::bar_rho__y).data(),
             1, b->n());
-    s->middleCols<BOOST_PP_SEQ_SIZE(SEQ_SAMPLED_YY)>(quantity::bar_rho__yy)
-        = s->middleCols<BOOST_PP_SEQ_SIZE(SEQ_SAMPLED_Y)>(quantity::bar_rho__y);
+    s->middleCols<BOOST_PP_SEQ_SIZE(SEQ_SAMPLED_YY)>(sample::bar_rho__yy)
+        = s->middleCols<BOOST_PP_SEQ_SIZE(SEQ_SAMPLED_Y)>(sample::bar_rho__y);
     cop->apply(1, BOOST_PP_SEQ_SIZE(SEQ_SAMPLED_Y), 1.0,
-            s->middleCols<BOOST_PP_SEQ_SIZE(SEQ_SAMPLED_Y)>(quantity::bar_rho__y).data(),
+            s->middleCols<BOOST_PP_SEQ_SIZE(SEQ_SAMPLED_Y)>(sample::bar_rho__y).data(),
             1, b->n());
     cop->apply(2, BOOST_PP_SEQ_SIZE(SEQ_SAMPLED_Y), 1.0,
-            s->middleCols<BOOST_PP_SEQ_SIZE(SEQ_SAMPLED_YY)>(quantity::bar_rho__yy).data(),
+            s->middleCols<BOOST_PP_SEQ_SIZE(SEQ_SAMPLED_YY)>(sample::bar_rho__yy).data(),
             1, b->n());
 
     // Differentiate DERIVED
     // Uses that tilde_u{,__y,__yy} is the first entry in DERIVED{,_Y,_YY}
-    s->middleCols<BOOST_PP_SEQ_SIZE(SEQ_DERIVED_Y)>(quantity::tilde_u__y)
-        = s->middleCols<BOOST_PP_SEQ_SIZE(SEQ_DERIVED)>(quantity::tilde_u);
+    s->middleCols<BOOST_PP_SEQ_SIZE(SEQ_DERIVED_Y)>(sample::tilde_u__y)
+        = s->middleCols<BOOST_PP_SEQ_SIZE(SEQ_DERIVED)>(sample::tilde_u);
     boplu->solve(BOOST_PP_SEQ_SIZE(SEQ_DERIVED_Y),
-            s->middleCols<BOOST_PP_SEQ_SIZE(SEQ_DERIVED_Y)>(quantity::tilde_u__y).data(),
+            s->middleCols<BOOST_PP_SEQ_SIZE(SEQ_DERIVED_Y)>(sample::tilde_u__y).data(),
             1, b->n());
-    s->middleCols<BOOST_PP_SEQ_SIZE(SEQ_DERIVED_YY)>(quantity::tilde_u__yy)
-        = s->middleCols<BOOST_PP_SEQ_SIZE(SEQ_DERIVED_Y)>(quantity::tilde_u__y);
+    s->middleCols<BOOST_PP_SEQ_SIZE(SEQ_DERIVED_YY)>(sample::tilde_u__yy)
+        = s->middleCols<BOOST_PP_SEQ_SIZE(SEQ_DERIVED_Y)>(sample::tilde_u__y);
     cop->apply(1, BOOST_PP_SEQ_SIZE(SEQ_DERIVED_Y), 1.0,
-            s->middleCols<BOOST_PP_SEQ_SIZE(SEQ_DERIVED_Y)>(quantity::tilde_u__y).data(),
+            s->middleCols<BOOST_PP_SEQ_SIZE(SEQ_DERIVED_Y)>(sample::tilde_u__y).data(),
             1, b->n());
     cop->apply(2, BOOST_PP_SEQ_SIZE(SEQ_DERIVED_Y), 1.0,
-            s->middleCols<BOOST_PP_SEQ_SIZE(SEQ_DERIVED_YY)>(quantity::tilde_u__yy).data(),
+            s->middleCols<BOOST_PP_SEQ_SIZE(SEQ_DERIVED_YY)>(sample::tilde_u__yy).data(),
             1, b->n());
 
     // Computations of local quantities (see descriptions for definitions).
@@ -1243,7 +1150,7 @@ static quantity::storage_map_type process(
     if (bsplines_dist <= suzerain_bspline_distance_distinct) {
 
         // Compute bulk integration weights
-        s->col(quantity::bulk_weights)
+        s->col(sample::bulk_weights)
                 = compute_bulk_weights(grid.L.y(), *b, *boplu);
 
         // Results match target numerics to within acceptable tolerance.
@@ -1255,26 +1162,26 @@ static quantity::storage_map_type process(
         // Must project onto target collocation points.
 
         // Convert all results in s to coefficients
-        boplu->solve(quantity::count, s->data(), 1, b->n());
+        boplu->solve(sample::count, s->data(), 1, b->n());
 
         // Obtain target collocation points
         suzerain::ArrayXr buf(i_b->n());
         for (int i = 0; i < i_b->n(); ++i) buf[i] = i_b->collocation_point(i);
 
         // Evaluate coefficients onto the target collocation points
-        auto_ptr<storage_type> r(new storage_type(i_b->n(),
+        std::auto_ptr<storage_type> r(new storage_type(i_b->n(),
                     (storage_type::Index) storage_type::ColsAtCompileTime));
-        for (std::size_t i = 0; i < quantity::count; ++i) {
+        for (std::size_t i = 0; i < sample::count; ++i) {
             b->linear_combination(0, s->col(i).data(),
                                   buf.size(), buf.data(), r->col(i).data());
         }
 
-        // Notice that quantity::t, being a constant, and quantity::y, being a
+        // Notice that sample::t, being a constant, and sample::y, being a
         // linear, should have been converted to the target collocation points
         // without more than epsilon-like floating point loss.
 
         // Compute bulk integration weights (which will not translate directly)
-        r->col(quantity::bulk_weights)
+        r->col(sample::bulk_weights)
                 = compute_bulk_weights(grid.L.y(), *b, *boplu);
 
         retval.insert(time, r);
