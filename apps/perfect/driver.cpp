@@ -30,6 +30,7 @@
 #include <suzerain/diffwave.hpp>
 #include <suzerain/format.hpp>
 #include <suzerain/l2.hpp>
+#include <suzerain/ndx.hpp>
 #include <suzerain/support/logging.hpp>
 #include <suzerain/support/support.hpp>
 
@@ -203,16 +204,29 @@ void driver::log_boundary_layer_quantities(
 
     SUZERAIN_TIMER_SCOPED("driver::log_boundary_layer_quantities");
 
-    // Can we re-use precomputed statistics?
-    // Or do we need to take state to physical space and pay for Allreduces?
+    // TODO Storage for profiles necessary for boundary layer quantity computations
+    //      const size_t Ny = state_linear->shape()[1];
+    //      struct p { enum { H0, rho_u, a, mu, rho, T, u, v, /*Sentry*/count }; };
+    //      typedef Array<real_t, Dynamic, p::count, ColMajor> profile_type;
+    //      profile_type profile(Ny, p::count);
+
+    // Can we re-use precomputed information appearing in this->means?
 #pragma warning(push,disable:1572)
     const bool use_cached = controller && (t == mean.t);
 #pragma warning(pop)
 
-    // TODO Define local storage to populate in cached or uncached case
-    //      This could be a nice, reusable chunk of logic depending on API
     if (use_cached) {
+
         // TODO Copy from statistics results into local storage
+        //      profile.col(p::H0)    = mean.H0();
+        //      profile.col(p::rho_u) = mean.rho_u().col(0);
+        //      profile.col(p::a)     = mean.a();
+        //      profile.col(p::mu)    = mean.mu();
+        //      profile.col(p::rho)   = mean.rho();
+        //      profile.col(p::T)     = mean.T();
+        //      profile.col(p::u)     = mean.u();
+        //      profile.col(p::v)     = mean.v();
+
     } else {
         // TODO Copy state_linear into state_nonlinear
         // TODO Take state_nonlinear to physical space
