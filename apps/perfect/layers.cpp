@@ -36,7 +36,6 @@
 #include <suzerain/pencil_grid.hpp>
 #include <suzerain/physical_view.hpp>
 #include <suzerain/rholut.hpp>
-#include <suzerain/shared_range.hpp>
 #include <suzerain/state.hpp>
 
 #include "quantities.hpp"
