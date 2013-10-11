@@ -34,6 +34,7 @@
 #include <suzerain/support/logging.hpp>
 #include <suzerain/support/support.hpp>
 
+#include "layers.hpp"
 #include "perfect.hpp"
 
 namespace suzerain {
@@ -204,35 +205,14 @@ void driver::log_boundary_layer_quantities(
 
     SUZERAIN_TIMER_SCOPED("driver::log_boundary_layer_quantities");
 
-    // TODO Storage for profiles necessary for boundary layer quantity computations
-    //      const size_t Ny = state_linear->shape()[1];
-    //      struct p { enum { H0, rho_u, a, mu, rho, T, u, v, /*Sentry*/count }; };
-    //      typedef Array<real_t, Dynamic, p::count, ColMajor> profile_type;
-    //      profile_type profile(Ny, p::count);
-
-    // Can we re-use precomputed information appearing in this->means?
-#pragma warning(push,disable:1572)
-    const bool use_cached = controller && (t == mean.t);
-#pragma warning(pop)
-
-    if (use_cached) {
-
-        // TODO Copy from statistics results into local storage
-        //      profile.col(p::H0)    = mean.H0();
-        //      profile.col(p::rho_u) = mean.rho_u().col(0);
-        //      profile.col(p::a)     = mean.a();
-        //      profile.col(p::mu)    = mean.mu();
-        //      profile.col(p::rho)   = mean.rho();
-        //      profile.col(p::T)     = mean.T();
-        //      profile.col(p::u)     = mean.u();
-        //      profile.col(p::v)     = mean.v();
-
+    // If possible, use existing information from mean quantities
+    // Otherwise compute from instantaneous fields stored in state_linear
+    layers l;
+    if (controller && t == mean.t) {
+        l = mean;
     } else {
-        // TODO Copy state_linear into state_nonlinear
-        // TODO Take state_nonlinear to physical space
-        // TODO Accumulate pointwise results for data of interest
-        // TODO Allreduce and rescale to obtain collocation-point profiles
-        // TODO Convert from collocation points into B-spline coefficients
+        state_nonlinear->assign_from(*state_linear);
+        l = sample_layers(*scenario, *grid, *dgrid, *cop, *state_nonlinear);
     }
 
     // TODO Implement sequence of suzerain_bl_* computations
@@ -249,7 +229,7 @@ driver::compute_statistics(
 
     // Obtain mean samples from instantaneous fields stored in state_linear
     state_nonlinear->assign_from(*state_linear);
-    mean = perfect::sample_quantities(
+    mean = sample_quantities(
             *scenario, *grid, *dgrid, *cop, *state_nonlinear, t);
 
     // Obtain mean quantities computed via implicit forcing (when possible)
