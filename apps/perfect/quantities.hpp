@@ -49,8 +49,8 @@ class scenario_definition;
  * of <tt>writeups/perfectgas.tex</tt>.
  *
  * Samples of each quantity are made available through two-dimensional,
- * column-major arrays.  The row index iterates over wall-normal collocation
- * point locations and the column index iterates over tensor indices.  Scalars
+ * column-major arrays.  The row index iterates over wall-normal B-spline
+ * coefficients and the column index iterates over tensor indices.  Scalars
  * have only a single tensor index.  Vector quantities have three indices
  * corresponding to the streamwise x, wall-normal y, and spanwise z directions.
  * Symmetric tensors (for example, \f$\overline{\mu{}S}\f$}) have six entries
