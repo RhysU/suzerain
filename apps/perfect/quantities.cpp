@@ -344,8 +344,7 @@ quantities sample_quantities(
     }
 
     // Physical space is traversed linearly using a single offset 'offset'.
-    // The three loop structure is present to provide the global absolute
-    // positions x(i), y(j), and z(k) where necessary.
+    // The two loop structure is used as positions x(i), and z(k) unnecessary.
     for (int offset = 0, j = dgrid.local_physical_start.y();
          j < dgrid.local_physical_end.y();
          ++j) {
@@ -370,172 +369,166 @@ quantities sample_quantities(
                 SUZERAIN_PERFECT_QUANTITIES_PHYSICAL)
 #undef DECLARE
 
-        for (int k = dgrid.local_physical_start.z();
-            k < dgrid.local_physical_end.z();
-            ++k) {
+        // Iterate across the j-th ZX plane
+        const int last_zxoffset = offset
+                                + dgrid.local_physical_extent.z()
+                                * dgrid.local_physical_extent.x();
+        for (; offset < last_zxoffset; ++offset) {
 
-            for (int i = dgrid.local_physical_start.x();
-                i < dgrid.local_physical_end.x();
-                ++i, /* NB */ ++offset) {
+            // Unpack total energy-related quantities
+            const real_t e(sphys(ndx::e, offset));
+            const Vector3r grad_e(auxp(aux::e_x, offset),
+                                  auxp(aux::e_y, offset),
+                                  auxp(aux::e_z, offset));
 
-                // Unpack total energy-related quantities
-                const real_t e(sphys(ndx::e, offset));
-                const Vector3r grad_e(auxp(aux::e_x, offset),
-                                      auxp(aux::e_y, offset),
-                                      auxp(aux::e_z, offset));
+            // Unpack momentum-related quantities
+            const Vector3r m(sphys(ndx::mx, offset),
+                             sphys(ndx::my, offset),
+                             sphys(ndx::mz, offset));
+            const real_t div_m = auxp(aux::mx_x, offset)
+                               + auxp(aux::my_y, offset)
+                               + auxp(aux::mz_z, offset);
+            const Matrix3r grad_m;
+            const_cast<Matrix3r&>(grad_m) <<
+                                 auxp(aux::mx_x,  offset),
+                                 auxp(aux::mx_y,  offset),
+                                 auxp(aux::mx_z,  offset),
+                                 auxp(aux::my_x,  offset),
+                                 auxp(aux::my_y,  offset),
+                                 auxp(aux::my_z,  offset),
+                                 auxp(aux::mz_x,  offset),
+                                 auxp(aux::mz_y,  offset),
+                                 auxp(aux::mz_z,  offset);
 
-                // Unpack momentum-related quantities
-                const Vector3r m(sphys(ndx::mx, offset),
-                                 sphys(ndx::my, offset),
-                                 sphys(ndx::mz, offset));
-                const real_t div_m = auxp(aux::mx_x, offset)
-                                   + auxp(aux::my_y, offset)
-                                   + auxp(aux::mz_z, offset);
-                const Matrix3r grad_m;
-                const_cast<Matrix3r&>(grad_m) <<
-                                     auxp(aux::mx_x,  offset),
-                                     auxp(aux::mx_y,  offset),
-                                     auxp(aux::mx_z,  offset),
-                                     auxp(aux::my_x,  offset),
-                                     auxp(aux::my_y,  offset),
-                                     auxp(aux::my_z,  offset),
-                                     auxp(aux::mz_x,  offset),
-                                     auxp(aux::mz_y,  offset),
-                                     auxp(aux::mz_z,  offset);
+            // Unpack density-related quantities
+            const real_t rho(sphys(ndx::rho, offset));
+            const Vector3r grad_rho(auxp(aux::rho_x, offset),
+                                    auxp(aux::rho_y, offset),
+                                    auxp(aux::rho_z, offset));
 
-                // Unpack density-related quantities
-                const real_t rho(sphys(ndx::rho, offset));
-                const Vector3r grad_rho(auxp(aux::rho_x, offset),
-                                        auxp(aux::rho_y, offset),
-                                        auxp(aux::rho_z, offset));
+            // Compute local quantities based upon state.
+            const Vector3r u   = rholut::u(
+                                    rho, m);
+            const real_t div_u = rholut::div_u(
+                                    rho, grad_rho, m, div_m);
+            const Matrix3r grad_u = rholut::grad_u(
+                                    rho, grad_rho, m, grad_m);
 
-                // Compute local quantities based upon state.
-                const Vector3r u   = rholut::u(
-                                        rho, m);
-                const real_t div_u = rholut::div_u(
-                                        rho, grad_rho, m, div_m);
-                const Matrix3r grad_u = rholut::grad_u(
-                                        rho, grad_rho, m, grad_m);
+            real_t p, T, mu, lambda;
+            Vector3r grad_p, grad_T, grad_mu, grad_lambda;
+            rholut::p_T_mu_lambda(
+                scenario.alpha, scenario.beta, scenario.gamma, scenario.Ma,
+                rho, grad_rho, m, grad_m, e, grad_e,
+                p, grad_p, T, grad_T, mu, grad_mu, lambda, grad_lambda);
 
-                real_t p, T, mu, lambda;
-                Vector3r grad_p, grad_T, grad_mu, grad_lambda;
-                rholut::p_T_mu_lambda(
-                    scenario.alpha, scenario.beta, scenario.gamma, scenario.Ma,
-                    rho, grad_rho, m, grad_m, e, grad_e,
-                    p, grad_p, T, grad_T, mu, grad_mu, lambda, grad_lambda);
+            const Matrix3r tau = rholut::tau(
+                                    mu, lambda, div_u, grad_u);
+            const Vector3r tau_u = tau * u;
 
-                const Matrix3r tau = rholut::tau(
-                                        mu, lambda, div_u, grad_u);
-                const Vector3r tau_u = tau * u;
+            // Accumulate quantities into sum_XXX using function syntax.
+            sum_E[0](e / rho);
 
-                // Accumulate quantities into sum_XXX using function syntax.
-                sum_E[0](e / rho);
+            sum_T[0](T);
 
-                sum_T[0](T);
+            sum_a[0](std::sqrt(T));
 
-                sum_a[0](std::sqrt(T));
+            sum_h0[0](e + p);
 
-                sum_h0[0](e + p);
+            sum_H0[0]((e + p) / rho);
 
-                sum_H0[0]((e + p) / rho);
+            sum_mu[0](mu);
 
-                sum_mu[0](mu);
+            sum_nu[0](mu / rho);
 
-                sum_nu[0](mu / rho);
+            sum_u[0](u.x());
+            sum_u[1](u.y());
+            sum_u[2](u.z());
 
-                sum_u[0](u.x());
-                sum_u[1](u.y());
-                sum_u[2](u.z());
+            sum_sym_grad_u[0]( grad_u(0,0)                   );
+            sum_sym_grad_u[1]((grad_u(0,1) + grad_u(1,0)) / 2);
+            sum_sym_grad_u[2]((grad_u(0,2) + grad_u(2,0)) / 2);
+            sum_sym_grad_u[3]( grad_u(1,1)                   );
+            sum_sym_grad_u[4]((grad_u(1,2) + grad_u(2,1)) / 2);
+            sum_sym_grad_u[5]( grad_u(2,2)                   );
 
-                sum_sym_grad_u[0]( grad_u(0,0)                   );
-                sum_sym_grad_u[1]((grad_u(0,1) + grad_u(1,0)) / 2);
-                sum_sym_grad_u[2]((grad_u(0,2) + grad_u(2,0)) / 2);
-                sum_sym_grad_u[3]( grad_u(1,1)                   );
-                sum_sym_grad_u[4]((grad_u(1,2) + grad_u(2,1)) / 2);
-                sum_sym_grad_u[5]( grad_u(2,2)                   );
+            sum_sym_rho_grad_u[0](rho *  grad_u(0,0)                   );
+            sum_sym_rho_grad_u[1](rho * (grad_u(0,1) + grad_u(1,0)) / 2);
+            sum_sym_rho_grad_u[2](rho * (grad_u(0,2) + grad_u(2,0)) / 2);
+            sum_sym_rho_grad_u[3](rho *  grad_u(1,1)                   );
+            sum_sym_rho_grad_u[4](rho * (grad_u(1,2) + grad_u(2,1)) / 2);
+            sum_sym_rho_grad_u[5](rho *  grad_u(2,2)                   );
 
-                sum_sym_rho_grad_u[0](rho *  grad_u(0,0)                   );
-                sum_sym_rho_grad_u[1](rho * (grad_u(0,1) + grad_u(1,0)) / 2);
-                sum_sym_rho_grad_u[2](rho * (grad_u(0,2) + grad_u(2,0)) / 2);
-                sum_sym_rho_grad_u[3](rho *  grad_u(1,1)                   );
-                sum_sym_rho_grad_u[4](rho * (grad_u(1,2) + grad_u(2,1)) / 2);
-                sum_sym_rho_grad_u[5](rho *  grad_u(2,2)                   );
+            sum_grad_T[0](grad_T.x());
+            sum_grad_T[1](grad_T.y());
+            sum_grad_T[2](grad_T.z());
 
-                sum_grad_T[0](grad_T.x());
-                sum_grad_T[1](grad_T.y());
-                sum_grad_T[2](grad_T.z());
+            sum_rho_grad_T[0](rho * grad_T.x());
+            sum_rho_grad_T[1](rho * grad_T.y());
+            sum_rho_grad_T[2](rho * grad_T.z());
 
-                sum_rho_grad_T[0](rho * grad_T.x());
-                sum_rho_grad_T[1](rho * grad_T.y());
-                sum_rho_grad_T[2](rho * grad_T.z());
+            sum_tau_colon_grad_u[0]((tau.transpose()*grad_u).trace());
 
-                sum_tau_colon_grad_u[0]((tau.transpose()*grad_u).trace());
+            sum_tau[0](tau(0,0));
+            sum_tau[1](tau(0,1));
+            sum_tau[2](tau(0,2));
+            sum_tau[3](tau(1,1));
+            sum_tau[4](tau(1,2));
+            sum_tau[5](tau(2,2));
 
-                sum_tau[0](tau(0,0));
-                sum_tau[1](tau(0,1));
-                sum_tau[2](tau(0,2));
-                sum_tau[3](tau(1,1));
-                sum_tau[4](tau(1,2));
-                sum_tau[5](tau(2,2));
+            sum_tau_u[0](tau_u.x());
+            sum_tau_u[1](tau_u.y());
+            sum_tau_u[2](tau_u.z());
 
-                sum_tau_u[0](tau_u.x());
-                sum_tau_u[1](tau_u.y());
-                sum_tau_u[2](tau_u.z());
+            sum_p_div_u[0](p*div_u);
 
-                sum_p_div_u[0](p*div_u);
+            sum_rho_u_u[0](rho * u.x() * u.x());
+            sum_rho_u_u[1](rho * u.x() * u.y());
+            sum_rho_u_u[2](rho * u.x() * u.z());
+            sum_rho_u_u[3](rho * u.y() * u.y());
+            sum_rho_u_u[4](rho * u.y() * u.z());
+            sum_rho_u_u[5](rho * u.z() * u.z());
 
-                sum_rho_u_u[0](rho * u.x() * u.x());
-                sum_rho_u_u[1](rho * u.x() * u.y());
-                sum_rho_u_u[2](rho * u.x() * u.z());
-                sum_rho_u_u[3](rho * u.y() * u.y());
-                sum_rho_u_u[4](rho * u.y() * u.z());
-                sum_rho_u_u[5](rho * u.z() * u.z());
+            sum_rho_u_u_u[0](rho * u.x() * u.x() * u.x());
+            sum_rho_u_u_u[1](rho * u.x() * u.x() * u.y());
+            sum_rho_u_u_u[2](rho * u.x() * u.x() * u.z());
+            sum_rho_u_u_u[3](rho * u.x() * u.y() * u.y());
+            sum_rho_u_u_u[4](rho * u.x() * u.y() * u.z());
+            sum_rho_u_u_u[5](rho * u.x() * u.z() * u.z());
+            sum_rho_u_u_u[6](rho * u.y() * u.y() * u.y());
+            sum_rho_u_u_u[7](rho * u.y() * u.y() * u.z());
+            sum_rho_u_u_u[8](rho * u.y() * u.z() * u.z());
+            sum_rho_u_u_u[9](rho * u.z() * u.z() * u.z());
 
-                sum_rho_u_u_u[0](rho * u.x() * u.x() * u.x());
-                sum_rho_u_u_u[1](rho * u.x() * u.x() * u.y());
-                sum_rho_u_u_u[2](rho * u.x() * u.x() * u.z());
-                sum_rho_u_u_u[3](rho * u.x() * u.y() * u.y());
-                sum_rho_u_u_u[4](rho * u.x() * u.y() * u.z());
-                sum_rho_u_u_u[5](rho * u.x() * u.z() * u.z());
-                sum_rho_u_u_u[6](rho * u.y() * u.y() * u.y());
-                sum_rho_u_u_u[7](rho * u.y() * u.y() * u.z());
-                sum_rho_u_u_u[8](rho * u.y() * u.z() * u.z());
-                sum_rho_u_u_u[9](rho * u.z() * u.z() * u.z());
+            sum_rho_T_u[0](rho * T * u.x());
+            sum_rho_T_u[1](rho * T * u.y());
+            sum_rho_T_u[2](rho * T * u.z());
 
-                sum_rho_T_u[0](rho * T * u.x());
-                sum_rho_T_u[1](rho * T * u.y());
-                sum_rho_T_u[2](rho * T * u.z());
+            sum_rho_mu[0](rho * mu);
 
-                sum_rho_mu[0](rho * mu);
+            sum_mu_S[0](mu * ( grad_u(0,0)                    - div_u / 3));
+            sum_mu_S[1](mu * ((grad_u(0,1) + grad_u(1,0)) / 2            ));
+            sum_mu_S[2](mu * ((grad_u(0,2) + grad_u(2,0)) / 2            ));
+            sum_mu_S[3](mu * ( grad_u(1,1)                    - div_u / 3));
+            sum_mu_S[4](mu * ((grad_u(1,2) + grad_u(2,1)) / 2            ));
+            sum_mu_S[5](mu * ( grad_u(2,2)                    - div_u / 3));
 
-                sum_mu_S[0](mu * ( grad_u(0,0)                    - div_u / 3));
-                sum_mu_S[1](mu * ((grad_u(0,1) + grad_u(1,0)) / 2            ));
-                sum_mu_S[2](mu * ((grad_u(0,2) + grad_u(2,0)) / 2            ));
-                sum_mu_S[3](mu * ( grad_u(1,1)                    - div_u / 3));
-                sum_mu_S[4](mu * ((grad_u(1,2) + grad_u(2,1)) / 2            ));
-                sum_mu_S[5](mu * ( grad_u(2,2)                    - div_u / 3));
+            sum_mu_div_u[0](mu * div_u);
 
-                sum_mu_div_u[0](mu * div_u);
+            sum_mu_grad_T[0](mu * grad_T.x());
+            sum_mu_grad_T[1](mu * grad_T.y());
+            sum_mu_grad_T[2](mu * grad_T.z());
 
-                sum_mu_grad_T[0](mu * grad_T.x());
-                sum_mu_grad_T[1](mu * grad_T.y());
-                sum_mu_grad_T[2](mu * grad_T.z());
+            sum_SrhoE[0](0);
 
-                // TODO Sum mean slow growth forcing contributions (Redmine #2496)
+            sum_Srhou[0](0);
+            sum_Srhou[1](0);
+            sum_Srhou[2](0);
 
-                sum_SrhoE[0](0);
+            sum_Srho[0](0);
 
-                sum_Srhou[0](0);
-                sum_Srhou[1](0);
-                sum_Srhou[2](0);
+            sum_Srhou_dot_u[0](0);
 
-                sum_Srho[0](0);
-
-                sum_Srhou_dot_u[0](0);
-
-            } // end X
-
-        } // end Z
+        } // end X // end Z
 
         // Move y-specific sums into MPI-reduction-ready storage for y(j) using
         // Eigen comma initialization syntax.  Yes, this is not stride 1.
