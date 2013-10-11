@@ -215,7 +215,6 @@ public:
     /** Type returned by the non-const implicit quantity accessors. */
     typedef implicits_type::ColXpr implicit_type;
 
-    // TODO SrhoE, ..., Srhou_dot_u do not belong here as they are explicit!
     implicit_type       SrhoE()             { return implicits.col( 0); }
     implicit_type       Srhou()             { return implicits.col( 1); }
     implicit_type       Srhov()             { return implicits.col( 2); }

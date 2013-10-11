@@ -254,6 +254,12 @@ driver::compute_statistics(
 
     // Obtain mean quantities computed via implicit forcing (when possible)
     if (common_block.implicits.rows() == mean.storage.rows()) {
+        mean.SrhoE()        = common_block.SrhoE();
+        mean.Srhou().col(0) = common_block.Srhou();
+        mean.Srhou().col(1) = common_block.Srhov();
+        mean.Srhou().col(2) = common_block.Srhow();
+        mean.Srho()         = common_block.Srho();
+        mean.Srhou_dot_u()  = common_block.Srhou_dot_u();
         mean.f().col(0)     = common_block.fx();
         mean.f().col(1)     = common_block.fy();
         mean.f().col(2)     = common_block.fz();
@@ -267,14 +273,8 @@ driver::compute_statistics(
         mean.Crhou_dot_u()  = common_block.Crhou_dot_u();
     } else {
         WARN0(who, "Could not obtain mean quantities set by implicit forcing");
-        using std::numeric_limits;
-        mean.f          ().setConstant(numeric_limits<real_t>::quiet_NaN());
-        mean.f_dot_u    ().setConstant(numeric_limits<real_t>::quiet_NaN());
-        mean.qb         ().setConstant(numeric_limits<real_t>::quiet_NaN());
-        mean.CrhoE      ().setConstant(numeric_limits<real_t>::quiet_NaN());
-        mean.Crhou      ().setConstant(numeric_limits<real_t>::quiet_NaN());
-        mean.Crho       ().setConstant(numeric_limits<real_t>::quiet_NaN());
-        mean.Crhou_dot_u().setConstant(numeric_limits<real_t>::quiet_NaN());
+        common_block.implicits.setConstant(
+                std::numeric_limits<real_t>::quiet_NaN());
     }
 
     // Convert implicit values at collocation points to expansion coefficients
