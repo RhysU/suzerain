@@ -429,11 +429,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
     typedef boost::accumulators::accumulator_set<
                 real_t,
                 boost::accumulators::stats<
-#if BOOST_VERSION >= 104700
                     boost::accumulators::tag::sum_kahan
-#else
-                    boost::accumulators::tag::sum
-#endif
 #ifndef NDEBUG
                     , boost::accumulators::tag::count
 #endif

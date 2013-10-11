@@ -352,12 +352,7 @@ quantities sample_quantities(
 
         // Type used to accumulate mean quantities versus wall-normal position
         typedef acc::accumulator_set<
-                real_t,
-#if BOOST_VERSION >= 104700
-                acc::stats<acc::tag::sum_kahan>
-#else
-                acc::stats<acc::tag::sum>
-#endif
+                real_t, acc::stats<acc::tag::sum_kahan>
             > accumulator_type;
 
         // Accumulators for each mean quantity computed in physical space.
