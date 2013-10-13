@@ -105,17 +105,17 @@ public:
     ((rho_mu,            1))  /* scalar           */ \
     ((mu_S,              6))  /* symmetric tensor */ \
     ((mu_div_u,          1))  /* scalar           */ \
-    ((mu_grad_T,         3))  /* vector           */ \
-    ((SrhoE,             1))  /* scalar           */ \
-    ((Srhou,             3))  /* vector           */ \
-    ((Srho,              1))  /* scalar           */ \
-    ((Srhou_dot_u,       1))  /* scalar           */
+    ((mu_grad_T,         3))  /* vector           */
 
 /**
  * A Boost.Preprocessor sequence of tuples of quantities computed
  * through implicit forcing.
  */
 #define SUZERAIN_PERFECT_QUANTITIES_IMPLICIT         \
+    ((SrhoE,             1))  /* scalar           */ \
+    ((Srhou,             3))  /* vector           */ \
+    ((Srho,              1))  /* scalar           */ \
+    ((Srhou_dot_u,       1))  /* scalar           */ \
     ((f,                 3))  /* vector           */ \
     ((f_dot_u,           1))  /* scalar           */ \
     ((qb,                1))  /* scalar           */ \
