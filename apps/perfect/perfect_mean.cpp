@@ -469,7 +469,7 @@ int main(int argc, char **argv)
 "\t4) perfect_mean -o OUTFILE.h5  INFILE.h5 ...\n"
 "\n"
 "The first way processes each INFILE.h5 in turn outputting a corresponding\n"
-"INFILE.mean containing a comma-separated table of means from the first\n"
+"INFILE.mean containing a whitespace-separated table of means from the first\n"
 "sample collection in the file.  The second way (-s) sends the data from all\n "
 "sample collections to standard output sorted according to the simulation\n "
 "time with a blank line separating adjacent times.  The third way (-f)\n"
