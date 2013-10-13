@@ -319,6 +319,36 @@ bool all(InputIterator first, InputIterator last)
                            std::logical_and<value_type>());
 }
 
+
+/**
+ * Check if all accumulators with an \ref array of boost::accumulators
+ * saw an identical number of samples.  Often useful when it is known
+ * <em>a priori</em> that this should be true permitting asserting
+ * that was <em>a posteriori</em> the case as a way of looking for
+ * logic errors.
+ *
+ * @tparam FPT   Floating point type for the accumulators.
+ * @tparam Stats The Accumulators framework details for the accumulators
+ *               which \e must specify <tt>boost::accumulators::tag::count</tt>
+ *               for this method to compile.
+ * @tparam N     The number of accumulators in the array.
+ * @param acc    The array of accumulators to check.
+ *
+ * @return True if all accumulators saw the same number of invocations.
+ *         False otherwise.
+ */
+template <typename FPT, typename Stats, std::size_t N>
+bool consistent_accumulation_counts(
+    const array<boost::accumulators::accumulator_set<FPT, Stats>, N> acc)
+{
+    // TODO Rewrite using short-circuiting logic
+    using boost::accumulators::count;
+    bool retval = true;
+    for (std::size_t i = 1; i < N; ++i)
+        retval |= count(acc.front()) == count(acc[i]);
+    return retval;
+}
+
 } // namespace suzerain
 
 #endif // SUZERAIN_UTILITY_HPP

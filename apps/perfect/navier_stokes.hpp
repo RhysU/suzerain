@@ -33,8 +33,8 @@
 #include <largo/largo.h>
 
 #include <suzerain/error.h>
-#include <suzerain/lowstorage.hpp>
 #include <suzerain/l2.hpp>
+#include <suzerain/lowstorage.hpp>
 #include <suzerain/math.hpp>
 #include <suzerain/mpi_datatype.hpp>
 #include <suzerain/mpi.hpp>
@@ -47,6 +47,7 @@
 #include <suzerain/support/largo_definition.hpp>
 #include <suzerain/support/support.hpp>
 #include <suzerain/timers.h>
+#include <suzerain/utility.hpp>
 
 #include "common_block.hpp"
 #include "largo_state.hpp"
@@ -58,23 +59,6 @@
 namespace suzerain {
 
 namespace perfect {
-
-namespace { // anonymous
-
-// Utility to check that collections of accumulators see the same number
-// of samples.  Otherwise, logic errors are certainly present.
-template <typename FPT, typename Stats, std::size_t N>
-bool consistent_observation_counts(
-    const array<boost::accumulators::accumulator_set<FPT, Stats>, N> acc)
-{
-    using boost::accumulators::count;
-    bool retval = true;
-    for (std::size_t i = 1; i < N; ++i)
-        retval |= count(acc.front()) == count(acc[i]);
-    return retval;
-}
-
-}
 
 /**
  * A complete Navier&ndash;Stokes \c apply_operator implementation.  The
@@ -560,7 +544,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             } // end X // end Z
 
             // All accumulators should have seen a consistent number of samples
-            assert(consistent_observation_counts(acc));
+            assert(consistent_accumulation_counts(acc));
 
             // Store sums into common block in preparation for MPI Allreduce
             using boost::accumulators::sum;
@@ -691,7 +675,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             } // end X // end Z
 
             // All accumulators should have seen a consistent number of samples
-            assert(consistent_observation_counts(acc));
+            assert(consistent_accumulation_counts(acc));
 
             // Store sum into common block in preparation for MPI Allreduce
             using boost::accumulators::sum;
@@ -1467,7 +1451,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
         } // end X // end Z
 
         // All accumulators should have seen a consistent number of samples
-        assert(consistent_observation_counts(barf_acc));
+        assert(consistent_accumulation_counts(barf_acc));
 
         // Pack y-specific sums into barf storage for subsequent Allreduce
         if (SlowTreatment != slowgrowth::none) {
