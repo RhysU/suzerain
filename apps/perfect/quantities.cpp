@@ -569,7 +569,7 @@ quantities sample_quantities(
     scaled_mass.factor();
     scaled_mass.solve(quantities::nscalars::physical,
             ret.storage.middleCols<quantities::nscalars::physical>(
-                quantities::nscalars::wave).data(),
+                quantities::start::physical).data(),
             ret.storage.innerStride(), ret.storage.outerStride());
 
     // Fill with NaNs those samples which were not computed by this method

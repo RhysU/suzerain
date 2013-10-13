@@ -241,7 +241,7 @@ layers sample_layers(
     scaled_mass.factor();
     scaled_mass.solve(layers::nscalars::physical,
             ret.storage.middleCols<layers::nscalars::physical>(
-                layers::nscalars::wave).data(),
+                layers::start::physical).data(),
             ret.storage.innerStride(), ret.storage.outerStride());
 
     return ret;

@@ -273,7 +273,7 @@ driver::compute_statistics(
     mass.factor();
     mass.solve(quantities::nscalars::implicit,
                mean.storage.middleCols<quantities::nscalars::implicit>(
-                   quantities::nscalars::physical).data(),
+                   quantities::start::implicit).data(),
                mean.storage.innerStride(), mean.storage.outerStride());
 }
 

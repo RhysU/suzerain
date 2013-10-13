@@ -131,6 +131,8 @@ public:
 
     /** Compile-time offsets for each quantity within \c storage */
     struct start { enum {
+        wave     = 0,                      // Start of wave block
+        physical = wave + nscalars::wave,  // Start of physical block
         BOOST_PP_SEQ_ENUM(BOOST_PP_SEQ_TRANSFORM(
                 OP,,SUZERAIN_SHIFTED_SUM(SUZERAIN_PERFECT_LAYERS)))
     }; };
