@@ -205,8 +205,6 @@
 #include <unistd.h>
 
 /* Boost.Preprocessor is useful in either C or C++ mode */
-#ifdef SUZERAIN_HAVE_BOOST
 #include <boost/preprocessor.hpp>
-#endif /* SUZERAIN_HAVE_BOOST */
 
 #endif // SUZERAIN_COMMON_H
