@@ -86,7 +86,7 @@ def parse(f, symbol_table=None):
         f = sympy.parsing.sympy_parser.parse_expr(f, t)
     return f
 
-def parse_expressions(filenames):
+def parser(filenames):
     r'''
     Parse the provided filenames (or stdin if empty) into a
     collections.OrderedDict of symbol -> SymPy expression entries.
@@ -98,7 +98,7 @@ def parse_expressions(filenames):
     ...     f.write("c  = d+e  # Purely symbolic\n")
     ...     f.write("   f      # Nameless result\n")
     ...     f.flush()
-    ...     parse_expressions(f.name)
+    ...     parser(f.name)
     OrderedDict([('a', 1), ('b', 2), ('c', d + e), ('line4', f)])
     '''
     # Accumulate symbol definitions maintaining declaration order
@@ -139,6 +139,36 @@ def parse_expressions(filenames):
         fileinput.close()
 
     return symbol_table
+
+def preprocessor(filenames):
+    r'''
+    Accumulate semicolon-separated statements with C++-style comments.
+    TODO Output is a temporary file suitable for input to parser.
+    '''
+    stmts  = [ [] ]
+    # Process input line-by-line...
+    try:
+        for line in fileinput.input(filenames):
+
+            # ...remove comments defined as the first '//' observed
+            head, sep, tail = line.partition('//')
+            line = head if head else tail
+
+            # ...and add any statements separated by semis into stmts
+            # being careful to permit continuation from prior lines.
+            for (i, s) in enumerate(line.split(';')):
+                if not i:
+                    stmts[-1].append(s.strip())
+                else:
+                    stmts.append([s.strip()])
+
+    # ...being sure to clean up after our use of fileinput
+    finally:
+        fileinput.close()
+
+    # Join stmts into list
+    return filter(len, [' '.join(s).strip() for s in stmts])
+
 
 def partials(f):
     r'''
@@ -336,7 +366,7 @@ def variance(f, df=None):
     return Var
 
 # def main(args):
-#     symbol_table = parse_expressions([])
+#     symbol_table = parser([])
 #     return 0
 #
 # if __name__=='__main__':
