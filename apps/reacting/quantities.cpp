@@ -857,7 +857,7 @@ quantities sample_quantities(
     // flow quantities
     scaled_mass.solve(quantities::nscalars::physical,
             ret.storage.middleCols<quantities::nscalars::physical>(
-                quantities::nscalars::wave).data(),
+                quantities::start::physical).data(),
             ret.storage.innerStride(), ret.storage.outerStride());
 
     // species quantities

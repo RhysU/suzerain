@@ -70,16 +70,16 @@ public:
  * A Boost.Preprocessor sequence of tuples of quantities computed in wave
  * space.
  */
-#define SUZERAIN_REACTING_FLOW_QUANTITIES_WAVE                   \
-    ((rho,                      1)) /* scalar           */ \
-    ((rho_u,                    3)) /* vector           */ \
-    ((rho_E,                    1)) /* scalar           */
+#define SUZERAIN_REACTING_FLOW_QUANTITIES_WAVE       \
+    ((rho,                      1)) /* scalar     */ \
+    ((rho_u,                    3)) /* vector     */ \
+    ((rho_E,                    1)) /* scalar     */
 
 /**
  * A Boost.Preprocessor sequence of tuples of quantities computed in physical
  * space.
  */
-#define SUZERAIN_REACTING_FLOW_QUANTITIES_PHYSICAL         \
+#define SUZERAIN_REACTING_FLOW_QUANTITIES_PHYSICAL   \
     ((E,                 1))  /* scalar           */ \
     ((T,                 1))  /* scalar           */ \
     ((p,                 1))  /* scalar           */ \
@@ -113,7 +113,7 @@ public:
  * A Boost.Preprocessor sequence of tuples of quantities computed
  * through implicit forcing.
  */
-#define SUZERAIN_REACTING_FLOW_QUANTITIES_IMPLICIT         \
+#define SUZERAIN_REACTING_FLOW_QUANTITIES_IMPLICIT   \
     ((f,                 3))  /* vector           */ \
     ((f_dot_u,           1))  /* scalar           */ \
     ((qb,                1))  /* scalar           */ \
@@ -196,6 +196,9 @@ public:
 
     /** Compile-time offsets for each quantity within \c storage */
     struct start { enum {
+        wave     = 0,                              // Start of wave block
+        physical = wave     + nscalars::wave,      // Start of physical block
+        implicit = physical + nscalars::physical,  // Start of implicit block
         BOOST_PP_SEQ_ENUM(BOOST_PP_SEQ_TRANSFORM(
                 OP,,SUZERAIN_SHIFTED_SUM(SUZERAIN_REACTING_FLOW_QUANTITIES)))
     }; };

@@ -136,14 +136,9 @@ driver::compute_statistics(
         mean.Crhou_dot_u()  = common_block.Crhou_dot_u();
     } else {
         WARN0(who, "Could not obtain mean quantities set by implicit forcing");
-        using std::numeric_limits;
-        mean.f          ().setConstant(numeric_limits<real_t>::quiet_NaN());
-        mean.f_dot_u    ().setConstant(numeric_limits<real_t>::quiet_NaN());
-        mean.qb         ().setConstant(numeric_limits<real_t>::quiet_NaN());
-        mean.CrhoE      ().setConstant(numeric_limits<real_t>::quiet_NaN());
-        mean.Crhou      ().setConstant(numeric_limits<real_t>::quiet_NaN());
-        mean.Crho       ().setConstant(numeric_limits<real_t>::quiet_NaN());
-        mean.Crhou_dot_u().setConstant(numeric_limits<real_t>::quiet_NaN());
+        mean.storage.middleCols<quantities::nscalars::implicit>(
+                quantities::start::implicit).setConstant(
+                    std::numeric_limits<real_t>::quiet_NaN());
     }
 
     // Convert implicit values at collocation points to expansion coefficients
@@ -152,7 +147,7 @@ driver::compute_statistics(
     mass.factor();
     mass.solve(quantities::nscalars::implicit,
                mean.storage.middleCols<quantities::nscalars::implicit>(
-                   quantities::nscalars::physical).data(),
+                   quantities::start::implicit).data(),
                mean.storage.innerStride(), mean.storage.outerStride());
 }
 
