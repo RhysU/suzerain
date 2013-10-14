@@ -2,6 +2,7 @@
 
 preprocdir       = $(pkgdatadir)/preproc
 preproc_SCRIPTS  = comp2suz_single.py gen_synth.py
+preproc_SCRIPTS += propagation.py
 noinst_SCRIPTS   =
 preproc_DATA     =
 noinst_DATA      =
