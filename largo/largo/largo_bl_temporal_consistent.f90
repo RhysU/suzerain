@@ -115,6 +115,36 @@ module largo_BL_temporal_consistent
     real(WP), allocatable, dimension(:) ::  gr_DA_cs
     real(WP), allocatable, dimension(:) :: gr_DA_rms_cs
 
+    ! baseflow variables
+    real(WP) :: base_rho   = 0.0_WP
+    real(WP) :: base_U     = 0.0_WP
+    real(WP) :: base_V     = 0.0_WP
+    real(WP) :: base_W     = 0.0_WP
+    real(WP) :: base_E     = 0.0_WP
+
+    real(WP) :: ddy_base_rho = 0.0_WP
+    real(WP) :: ddy_base_U   = 0.0_WP
+    real(WP) :: ddy_base_V   = 0.0_WP
+    real(WP) :: ddy_base_W   = 0.0_WP
+    real(WP) :: ddy_base_E   = 0.0_WP
+
+    real(WP) :: ddt_base_rho = 0.0_WP
+    real(WP) :: ddt_base_U   = 0.0_WP
+    real(WP) :: ddt_base_V   = 0.0_WP
+    real(WP) :: ddt_base_W   = 0.0_WP
+    real(WP) :: ddt_base_E   = 0.0_WP
+
+    real(WP) :: src_base_rho = 0.0_WP
+    real(WP) :: src_base_U   = 0.0_WP
+    real(WP) :: src_base_V   = 0.0_WP
+    real(WP) :: src_base_W   = 0.0_WP
+    real(WP) :: src_base_E   = 0.0_WP
+
+    real(WP), allocatable, dimension(:) :: base_cs
+    real(WP), allocatable, dimension(:) :: ddy_base_cs
+    real(WP), allocatable, dimension(:) :: ddt_base_cs
+    real(WP), allocatable, dimension(:) :: src_base_cs
+
   end type largo_BL_temporal_consistent_workspace_type
 
   integer(c_int), parameter :: irho  = 1
@@ -188,6 +218,11 @@ contains
       allocate(auxp%ygArms_cs    (1:ns_))
       allocate(auxp%gr_DA_cs     (1:ns_))
       allocate(auxp%gr_DA_rms_cs (1:ns_))
+
+      allocate(auxp%base_cs      (1:ns_))
+      allocate(auxp%ddy_base_cs  (1:ns_))
+      allocate(auxp%ddt_base_cs  (1:ns_))
+      allocate(auxp%src_base_cs  (1:ns_))
     end if
 
     ! Get C pointer from Fortran pointer
@@ -214,6 +249,11 @@ contains
     if (allocated(auxp%ygArms_cs))    deallocate(auxp%ygArms_cs   )
     if (allocated(auxp%gr_DA_cs))     deallocate(auxp%gr_DA_cs    )
     if (allocated(auxp%gr_DA_rms_cs)) deallocate(auxp%gr_DA_rms_cs)
+
+    if (allocated(auxp%base_cs    ))  deallocate(auxp%base_cs     )
+    if (allocated(auxp%ddy_base_cs )) deallocate(auxp%ddy_base_cs )
+    if (allocated(auxp%ddt_base_cs )) deallocate(auxp%ddt_base_cs )
+    if (allocated(auxp%src_base_cs )) deallocate(auxp%src_base_cs )
 
     ! Deallocate array of derived types
     deallocate(auxp)
@@ -276,42 +316,40 @@ contains
     type(largo_workspace_ptr), intent(in) :: cp
     type(largo_BL_temporal_consistent_workspace_type), pointer   :: auxp
 
-    ! FIXME: add support for baseflow
+    ! Get Fortran pointer from C pointer
+    call c_f_pointer(cp, auxp)
 
-!!$     ! Get Fortran pointer from C pointer
-!!$     call c_f_pointer(cp, auxp)
+    ! Store baseflow information
+    auxp%base_rho = base(irho )
+    auxp%base_U   = base(irhoU)
+    auxp%base_V   = base(irhoV)
+    auxp%base_W   = base(irhoW)
+    auxp%base_E   = base(irhoE)
+
+    auxp%ddy_base_rho = ddy_base(irho )
+    auxp%ddy_base_U   = ddy_base(irhoU)
+    auxp%ddy_base_V   = ddy_base(irhoV)
+    auxp%ddy_base_W   = ddy_base(irhoW)
+    auxp%ddy_base_E   = ddy_base(irhoE)
+
+    auxp%ddt_base_rho = ddt_base(irho )
+    auxp%ddt_base_U   = ddt_base(irhoU)
+    auxp%ddt_base_V   = ddt_base(irhoV)
+    auxp%ddt_base_W   = ddt_base(irhoW)
+    auxp%ddt_base_E   = ddt_base(irhoE)
+
+!!$     auxp%src_base_rho = src_base(irho )
+!!$     auxp%src_base_U   = src_base(irhoU)
+!!$     auxp%src_base_V   = src_base(irhoV)
+!!$     auxp%src_base_W   = src_base(irhoW)
+!!$     auxp%src_base_E   = src_base(irhoE)
 !!$
-!!$     ! Store baseflow information
-!!$     auxp%base_rho  = base(irho )
-!!$     auxp%base_rhoU = base(irhoU)
-!!$     auxp%base_rhoV = base(irhoV)
-!!$     auxp%base_rhoW = base(irhoW)
-!!$     auxp%base_rhoE = base(irhoE)
-!!$
-!!$     auxp%ddy_base_rho  = ddy_base(irho )
-!!$     auxp%ddy_base_rhoU = ddy_base(irhoU)
-!!$     auxp%ddy_base_rhoV = ddy_base(irhoV)
-!!$     auxp%ddy_base_rhoW = ddy_base(irhoW)
-!!$     auxp%ddy_base_rhoE = ddy_base(irhoE)
-!!$
-!!$     auxp%ddt_base_rho  = ddt_base(irho )
-!!$     auxp%ddt_base_rhoU = ddt_base(irhoU)
-!!$     auxp%ddt_base_rhoV = ddt_base(irhoV)
-!!$     auxp%ddt_base_rhoW = ddt_base(irhoW)
-!!$     auxp%ddt_base_rhoE = ddt_base(irhoE)
-!!$
-!!$     auxp%src_base_rho  = src_base(irho )
-!!$     auxp%src_base_rhoU = src_base(irhoU)
-!!$     auxp%src_base_rhoV = src_base(irhoV)
-!!$     auxp%src_base_rhoW = src_base(irhoW)
-!!$     auxp%src_base_rhoE = src_base(irhoE)
-!!$
-!!$     do is=1, ns_
-!!$       auxp%base_rhos    (is) =     base(5+is)
-!!$       auxp%ddy_base_rhos(is) = ddy_base(5+is)
-!!$       auxp%ddt_base_rhos(is) = ddt_base(5+is)
-!!$       auxp%src_base_rhos(is) = src_base(5+is)
-!!$     end do
+    do is=1, ns_
+      auxp%base_cs    (is) =     base(5+is)
+      auxp%ddy_base_cs(is) = ddy_base(5+is)
+      auxp%ddt_base_cs(is) = ddt_base(5+is)
+!!$       auxp%src_base_cs(is) = src_base(5+is)
+    end do
 
   end subroutine largo_BL_temporal_consistent_preStep_baseflow
 
@@ -354,16 +392,15 @@ contains
       &             - auxp%fav_cs(is)/mean(irho) * ddy_mean(irho)
     end do
 
-    ! FIXME: add baseflow terms
     ! These ones depend on y only
-    auxp%Ts_rho = - auxp%gr_DA_rho * (auxp%mean_rho ) + y * auxp%gr_delta * ddy_mean(irho )
-    auxp%Ts_U   = - auxp%gr_DA_U   * (auxp%fav_U    ) + y * auxp%gr_delta * auxp%dfav_U
-    auxp%Ts_V   = - auxp%gr_DA_V   * (auxp%fav_V    ) + y * auxp%gr_delta * auxp%dfav_V
-    auxp%Ts_W   = - auxp%gr_DA_W   * (auxp%fav_W    ) + y * auxp%gr_delta * auxp%dfav_W
-    auxp%Ts_E   = - auxp%gr_DA_E   * (auxp%fav_E    ) + y * auxp%gr_delta * auxp%dfav_E
+    auxp%Ts_rho =  - auxp%ddt_base_rho - auxp%gr_DA_rho * (auxp%mean_rho-auxp%base_rho) + y * auxp%gr_delta * (ddy_mean(irho )-auxp%ddy_base_rho)
+    auxp%Ts_U   =  - auxp%ddt_base_U   - auxp%gr_DA_U   * (auxp%fav_U   -auxp%base_U  ) + y * auxp%gr_delta * (auxp%dfav_U    -auxp%ddy_base_U  )
+    auxp%Ts_V   =  - auxp%ddt_base_V   - auxp%gr_DA_V   * (auxp%fav_V   -auxp%base_V  ) + y * auxp%gr_delta * (auxp%dfav_V    -auxp%ddy_base_V  )
+    auxp%Ts_W   =  - auxp%ddt_base_W   - auxp%gr_DA_W   * (auxp%fav_W   -auxp%base_W  ) + y * auxp%gr_delta * (auxp%dfav_W    -auxp%ddy_base_W  )
+    auxp%Ts_E   =  - auxp%ddt_base_E   - auxp%gr_DA_E   * (auxp%fav_E   -auxp%base_E  ) + y * auxp%gr_delta * (auxp%dfav_E    -auxp%ddy_base_E  )
 
     do is=1, ns_
-      auxp%Ts_cs(is)  = - auxp%gr_DA_cs(is) * (auxp%fav_cs(is) ) + y * auxp%gr_delta * auxp%dfav_cs(is)
+      auxp%Ts_cs(is)  = - auxp%ddt_base_cs(is) - auxp%gr_DA_cs(is) * (auxp%fav_cs(is)-auxp%base_cs(is)) + y * auxp%gr_delta * (auxp%dfav_cs(is)-auxp%ddy_base_cs(is)) 
     end do
 
   end subroutine largo_BL_temporal_consistent_preStep_sEtaMean
