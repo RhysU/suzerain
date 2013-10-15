@@ -260,7 +260,7 @@ suzerain_bl_energy_thickness(
 
 /**
  * Compute the enthalpy thickness \f$\delta_H\f$ (sometimes written
- * \f$delta_h\f$ and not to be confused with the
+ * \f$\delta_h\f$ and not to be confused with the
  * energy thickness) given the edge location and a B-spline coefficient
  * representation of streamwise momentum \f$\rho u\f$ and specific total
  * enthalpy \f$H_0 = \frac{\rho E + p}{\rho}\f$.
