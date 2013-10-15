@@ -139,7 +139,7 @@ extern const double suzerain_blasius_extended_fpp[195];
  * u_\infty\f$ given \f$\eta = y \sqrt{\mbox{Re}_x}\f$.  The data is from \ref
  * suzerain_blasius_extended_fp and \ref suzerain_blasius_extended_eta.  The
  * returned <tt>gsl_spline*</tt> can be interrogated using <a
- * href="http://www.gnu.org/software/gsl/manual/html_node/Higher_002dlevel-Interface.html"
+ * href="http://www.gnu.org/software/gsl/manual/html_node/Higher_002dlevel-Interface.html">
  * the usual routines</a>.  The return value must be subsequently cleaned up
  * using <tt>gsl_spline_free()</tt>.
  *
@@ -156,7 +156,7 @@ gsl_spline * suzerain_blasius_u();
  * from \ref suzerain_blasius_extended_f, \ref suzerain_blasius_extended_fp,
  * and \ref suzerain_blasius_extended_eta.  The returned <tt>gsl_spline*</tt>
  * can be interrogated using <a
- * href="http://www.gnu.org/software/gsl/manual/html_node/Higher_002dlevel-Interface.html"
+ * href="http://www.gnu.org/software/gsl/manual/html_node/Higher_002dlevel-Interface.html">
  * the usual routines</a>.  The return value must be subsequently cleaned up
  * using <tt>gsl_spline_free()</tt>.
  *
