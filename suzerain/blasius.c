@@ -1078,29 +1078,29 @@ gsl_spline * prepare_fit(
 }
 
 // TODO Use non-natural AKIMA conditions to set known derivatives
-// That is, suzerain_blasius_ganapol_fpp and f'''(eta) are
+// That is, suzerain_blasius_extended_fpp and f'''(eta) are
 // known and provide important information wrt skin friction.
 gsl_spline * suzerain_blasius_u()
 {
-    return prepare_fit(Nganapol,
-                       suzerain_blasius_ganapol_eta,
-                       suzerain_blasius_ganapol_fp);
+    return prepare_fit(Nextended,
+                       suzerain_blasius_extended_eta,
+                       suzerain_blasius_extended_fp);
 }
 
 gsl_spline * suzerain_blasius_v(const double Re_x)
 {
     const double invSqrt2Re = sqrt(0.5 / Re_x);
-    double v[Nganapol];
-    for (size_t i = 0; i < Nganapol; ++i) {
-        v[i] = invSqrt2Re * (  suzerain_blasius_ganapol_f  [i]
-                             + suzerain_blasius_ganapol_eta[i]
-                             * suzerain_blasius_ganapol_fp [i]);
+    double v[Nextended];
+    for (size_t i = 0; i < Nextended; ++i) {
+        v[i] = invSqrt2Re * (  suzerain_blasius_extended_f  [i]
+                             + suzerain_blasius_extended_eta[i]
+                             * suzerain_blasius_extended_fp [i]);
     }
-    gsl_spline * s = prepare_fit(Nganapol, suzerain_blasius_ganapol_eta, v);
+    gsl_spline * s = prepare_fit(Nextended, suzerain_blasius_extended_eta, v);
 #ifndef NDEBUG
     // Defensively NaN the scratch buffer so folks notice if some day we
     // start oozing pointers to stack-allocated temporaries.
-    for (size_t i = 0; i < Nganapol; ++i) v[i] = GSL_NAN;
+    for (size_t i = 0; i < Nextended; ++i) v[i] = GSL_NAN;
 #endif
     return s;
 }
@@ -1108,17 +1108,17 @@ gsl_spline * suzerain_blasius_v(const double Re_x)
 gsl_spline * suzerain_blasius_ke(const double Re_x)
 {
     const double invSqrt2Re = sqrt(0.5 / Re_x);
-    double ke[Nganapol];
-    for (size_t i = 0; i < Nganapol; ++i) {
-        const double u = suzerain_blasius_ganapol_fp[i];
-        const double v = invSqrt2Re * (  suzerain_blasius_ganapol_f  [i]
-                                       + suzerain_blasius_ganapol_eta[i]
-                                       * suzerain_blasius_ganapol_fp [i]);
+    double ke[Nextended];
+    for (size_t i = 0; i < Nextended; ++i) {
+        const double u = suzerain_blasius_extended_fp[i];
+        const double v = invSqrt2Re * (  suzerain_blasius_extended_f  [i]
+                                       + suzerain_blasius_extended_eta[i]
+                                       * suzerain_blasius_extended_fp [i]);
         ke[i] = (u*u + v*v) / 2;
     }
-    gsl_spline * s = prepare_fit(Nganapol, suzerain_blasius_ganapol_eta, ke);
+    gsl_spline * s = prepare_fit(Nextended, suzerain_blasius_extended_eta, ke);
 #ifndef NDEBUG
-    for (size_t i = 0; i < Nganapol; ++i) ke[i] = GSL_NAN;
+    for (size_t i = 0; i < Nextended; ++i) ke[i] = GSL_NAN;
 #endif
     return s;
 }
@@ -1126,12 +1126,12 @@ gsl_spline * suzerain_blasius_ke(const double Re_x)
 gsl_spline * suzerain_blasius_ke__yy(const double Re_x)
 {
     // Horrible algebra in writeups/notebooks/Blasius_Kinetic_Energy.nb
-    double ke__yy[Nganapol];
-    for (size_t i = 0; i < Nganapol; ++i) {
-        const double eta = suzerain_blasius_ganapol_eta[i];
-        const double f   = suzerain_blasius_ganapol_f  [i];
-        const double fp  = suzerain_blasius_ganapol_fp [i];
-        const double fpp = suzerain_blasius_ganapol_fpp[i];
+    double ke__yy[Nextended];
+    for (size_t i = 0; i < Nextended; ++i) {
+        const double eta = suzerain_blasius_extended_eta[i];
+        const double f   = suzerain_blasius_extended_f  [i];
+        const double fp  = suzerain_blasius_extended_fp [i];
+        const double fpp = suzerain_blasius_extended_fpp[i];
         const double e2R = eta*eta + 2*Re_x;
         ke__yy[i]        = (   4*fp*fp
                              + f*(3*fpp - 0.5*eta*f*fpp)
@@ -1139,9 +1139,9 @@ gsl_spline * suzerain_blasius_ke__yy(const double Re_x)
                              + fp*(7*eta*fpp - 0.5*f*fpp*e2R))/2;
     }
     gsl_spline * s = prepare_fit(
-            Nganapol, suzerain_blasius_ganapol_eta, ke__yy);
+            Nextended, suzerain_blasius_extended_eta, ke__yy);
 #ifndef NDEBUG
-    for (size_t i = 0; i < Nganapol; ++i) ke__yy[i] = GSL_NAN;
+    for (size_t i = 0; i < Nextended; ++i) ke__yy[i] = GSL_NAN;
 #endif
     return s;
 }

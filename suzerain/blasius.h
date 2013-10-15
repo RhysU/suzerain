@@ -136,9 +136,9 @@ extern const double suzerain_blasius_extended_fpp[194];
 
 /**
  * Obtain a Blasius profile spline fit producing nondimensional \f$u /
- * u_\infty\f$ given \f$\eta = y \sqrt{\mbox{Re}_x}\f$.  The data is
- * from \ref suzerain_blasius_ganapol_fp and \ref suzerain_blasius_ganapol_eta.
- * The returned <tt>gsl_spline*</tt> can be interrogated using <a
+ * u_\infty\f$ given \f$\eta = y \sqrt{\mbox{Re}_x}\f$.  The data is from \ref
+ * suzerain_blasius_extended_fp and \ref suzerain_blasius_extended_eta.  The
+ * returned <tt>gsl_spline*</tt> can be interrogated using <a
  * href="http://www.gnu.org/software/gsl/manual/html_node/Higher_002dlevel-Interface.html"
  * the usual routines</a>.  The return value must be subsequently cleaned up
  * using <tt>gsl_spline_free()</tt>.
@@ -153,9 +153,9 @@ gsl_spline * suzerain_blasius_u();
 /**
  * Obtain a Blasius profile spline fit producing nondimensional \f$v /
  * u_\infty\f$ given \f$\eta = y \sqrt{\mbox{Re}_x}\f$.  The data is computed
- * from \ref suzerain_blasius_ganapol_f, \ref suzerain_blasius_ganapol_fp, and
- * \ref suzerain_blasius_ganapol_eta.  The returned <tt>gsl_spline*</tt> can be
- * interrogated using <a
+ * from \ref suzerain_blasius_extended_f, \ref suzerain_blasius_extended_fp,
+ * and \ref suzerain_blasius_extended_eta.  The returned <tt>gsl_spline*</tt>
+ * can be interrogated using <a
  * href="http://www.gnu.org/software/gsl/manual/html_node/Higher_002dlevel-Interface.html"
  * the usual routines</a>.  The return value must be subsequently cleaned up
  * using <tt>gsl_spline_free()</tt>.
