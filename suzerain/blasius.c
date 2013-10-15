@@ -1102,13 +1102,7 @@ gsl_spline * suzerain_blasius_v(const double Re_x)
                              + suzerain_blasius_extended_eta[i]
                              * suzerain_blasius_extended_fp [i]);
     }
-    gsl_spline * s = prepare_fit(Nextended, suzerain_blasius_extended_eta, v);
-#ifndef NDEBUG
-    // Defensively NaN the scratch buffer so folks notice if some day we
-    // start oozing pointers to stack-allocated temporaries.
-    for (size_t i = 0; i < Nextended; ++i) v[i] = GSL_NAN;
-#endif
-    return s;
+    return prepare_fit(Nextended, suzerain_blasius_extended_eta, v);
 }
 
 gsl_spline * suzerain_blasius_ke(const double Re_x)
@@ -1122,11 +1116,7 @@ gsl_spline * suzerain_blasius_ke(const double Re_x)
                                        * suzerain_blasius_extended_fp [i]);
         ke[i] = (u*u + v*v) / 2;
     }
-    gsl_spline * s = prepare_fit(Nextended, suzerain_blasius_extended_eta, ke);
-#ifndef NDEBUG
-    for (size_t i = 0; i < Nextended; ++i) ke[i] = GSL_NAN;
-#endif
-    return s;
+    return prepare_fit(Nextended, suzerain_blasius_extended_eta, ke);
 }
 
 gsl_spline * suzerain_blasius_ke__yy(const double Re_x)
@@ -1144,10 +1134,5 @@ gsl_spline * suzerain_blasius_ke__yy(const double Re_x)
                              + fpp*fpp*e2R
                              + fp*(7*eta*fpp - 0.5*f*fpp*e2R))/2;
     }
-    gsl_spline * s = prepare_fit(
-            Nextended, suzerain_blasius_extended_eta, ke__yy);
-#ifndef NDEBUG
-    for (size_t i = 0; i < Nextended; ++i) ke__yy[i] = GSL_NAN;
-#endif
-    return s;
+    return prepare_fit(Nextended, suzerain_blasius_extended_eta, ke__yy);
 }

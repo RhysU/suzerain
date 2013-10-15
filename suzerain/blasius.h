@@ -27,39 +27,20 @@
 
 /** @file
  * Presents a Blasius laminar flow profile curve fit.
+ *
+ * Throughout these routines \f$x\f$ is the streamwise location downstream from
+ * a flat plate edge and \f$y\f$ is the wall-normal distance from the plate.
+ * The local Reynolds number \f$\mbox{Re}_x = \frac{u_\infty}{\nu x}\f$ scales
+ * the similarity coordinate \f$\eta = y \sqrt{\mbox{Re}_x}\f$.  Generally,
+ * values greater than \f$10^6\f$ are physically invalid as the flow should be
+ * turbulent in that regime.
  */
 
 #include <gsl/gsl_spline.h>
 
-// Obtain sqrt(3) in the right fashion depending on language
-#ifdef __cplusplus
-#include <cmath>
-#else
-#include <math.h>
-#endif
-
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-/**
- * Compute the Blasius coordinate \f$\eta\f$ given \f$y, \mbox{Re}_x\f$.
- *
- * @param y    Streamwise location \f$y\f$.
- * @param Re_x Local Reynolds number \f$\mbox{Re}_x = \frac{u_\infty}{\nu x}\f$.
- *             Generally, values greater than \f$10^6\f$ are physically
- *             invalid as the flow should be turbulent in that regime.
- *
- * @return \f$\eta = y \sqrt{\mbox{Re}_x}\f$.
- */
-static inline
-double suzerain_blasius_eta(double y, double Re_x)
-{
-#ifdef __cplusplus
-    using namespace std;
-#endif
-    return y * sqrt(Re_x);
-}
 
 /**
  * Tabulated \f$\eta\f$ data from Table 3b of <a
