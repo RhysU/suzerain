@@ -178,14 +178,16 @@ contains
 
     ! Allocate arrays for species
     if (ns_ > 0) then
-      allocate(auxp%Ts_cs     (1:ns_))
-      allocate(auxp%ffluc_cs  (1:ns_))
-      allocate(auxp%fav_cs    (1:ns_))
-      allocate(auxp%field_cs  (1:ns_))
-      allocate(auxp%TsArms_cs (1:ns_))
-      allocate(auxp%Arms_cs   (1:ns_))
-      allocate(auxp%dArms_cs  (1:ns_))
-      allocate(auxp%ygArms_cs (1:ns_))
+      allocate(auxp%Ts_cs        (1:ns_))
+      allocate(auxp%ffluc_cs     (1:ns_))
+      allocate(auxp%fav_cs       (1:ns_))
+      allocate(auxp%field_cs     (1:ns_))
+      allocate(auxp%TsArms_cs    (1:ns_))
+      allocate(auxp%Arms_cs      (1:ns_))
+      allocate(auxp%dArms_cs     (1:ns_))
+      allocate(auxp%ygArms_cs    (1:ns_))
+      allocate(auxp%gr_DA_cs     (1:ns_))
+      allocate(auxp%gr_DA_rms_cs (1:ns_))
     end if
 
     ! Get C pointer from Fortran pointer
@@ -202,14 +204,16 @@ contains
     call c_f_pointer(cp, auxp)
 
     ! Deallocate arrays for species
-    if (allocated(auxp%Ts_cs))      deallocate(auxp%Ts_cs     )
-    if (allocated(auxp%ffluc_cs))   deallocate(auxp%ffluc_cs  )
-    if (allocated(auxp%fav_cs))     deallocate(auxp%fav_cs    )
-    if (allocated(auxp%field_cs))   deallocate(auxp%field_cs  )
-    if (allocated(auxp%TsArms_cs))  deallocate(auxp%TsArms_cs )
-    if (allocated(auxp%Arms_cs))    deallocate(auxp%Arms_cs   )
-    if (allocated(auxp%dArms_cs))   deallocate(auxp%dArms_cs  )
-    if (allocated(auxp%ygArms_cs))  deallocate(auxp%ygArms_cs )
+    if (allocated(auxp%Ts_cs))        deallocate(auxp%Ts_cs       )
+    if (allocated(auxp%ffluc_cs))     deallocate(auxp%ffluc_cs    )
+    if (allocated(auxp%fav_cs))       deallocate(auxp%fav_cs      )
+    if (allocated(auxp%field_cs))     deallocate(auxp%field_cs    )
+    if (allocated(auxp%TsArms_cs))    deallocate(auxp%TsArms_cs   )
+    if (allocated(auxp%Arms_cs))      deallocate(auxp%Arms_cs     )
+    if (allocated(auxp%dArms_cs))     deallocate(auxp%dArms_cs    )
+    if (allocated(auxp%ygArms_cs))    deallocate(auxp%ygArms_cs   )
+    if (allocated(auxp%gr_DA_cs))     deallocate(auxp%gr_DA_cs    )
+    if (allocated(auxp%gr_DA_rms_cs)) deallocate(auxp%gr_DA_rms_cs)
 
     ! Deallocate array of derived types
     deallocate(auxp)
@@ -235,18 +239,27 @@ contains
     ! set growth rates
     auxp%gr_delta   = gr_delta
 
+    ! Mean defect amplitude growth rates
     auxp%gr_DA_rho  = gr_DA(irho )
     auxp%gr_DA_U    = gr_DA(irhoU)
     auxp%gr_DA_V    = gr_DA(irhoV)
     auxp%gr_DA_W    = gr_DA(irhoW)
     auxp%gr_DA_E    = gr_DA(irhoE)
 
-    ! FIXME: add array for species amplitude growth rates
     do is=1, ns_
       auxp%gr_DA_cs(is) = gr_DA(5+is)
     end do
 
-    ! FIXME: add growth rates of rms
+    ! rms amplitude growth rates
+    auxp%gr_DA_rms_rho  = gr_DA_rms(irho )
+    auxp%gr_DA_rms_U    = gr_DA_rms(irhoU)
+    auxp%gr_DA_rms_V    = gr_DA_rms(irhoV)
+    auxp%gr_DA_rms_W    = gr_DA_rms(irhoW)
+    auxp%gr_DA_rms_E    = gr_DA_rms(irhoE)
+
+    do is=1, ns_
+      auxp%gr_DA_rms_cs(is) = gr_DA_rms(5+is)
+    end do
 
   end subroutine largo_BL_temporal_consistent_init
 
@@ -341,16 +354,16 @@ contains
       &             - auxp%fav_cs(is)/mean(irho) * ddy_mean(irho)
     end do
 
-    ! FIXME: add baseglow terms
+    ! FIXME: add baseflow terms
     ! These ones depend on y only
-    auxp%Ts_rho = y * auxp%gr_delta * ddy_mean(irho )
-    auxp%Ts_U   = y * auxp%gr_delta * auxp%dfav_U
-    auxp%Ts_V   = y * auxp%gr_delta * auxp%dfav_V
-    auxp%Ts_W   = y * auxp%gr_delta * auxp%dfav_W
-    auxp%Ts_E   = y * auxp%gr_delta * auxp%dfav_E
+    auxp%Ts_rho = - auxp%gr_DA_rho * (auxp%mean_rho ) + y * auxp%gr_delta * ddy_mean(irho )
+    auxp%Ts_U   = - auxp%gr_DA_U   * (auxp%fav_U    ) + y * auxp%gr_delta * auxp%dfav_U
+    auxp%Ts_V   = - auxp%gr_DA_V   * (auxp%fav_V    ) + y * auxp%gr_delta * auxp%dfav_V
+    auxp%Ts_W   = - auxp%gr_DA_W   * (auxp%fav_W    ) + y * auxp%gr_delta * auxp%dfav_W
+    auxp%Ts_E   = - auxp%gr_DA_E   * (auxp%fav_E    ) + y * auxp%gr_delta * auxp%dfav_E
 
     do is=1, ns_
-      auxp%Ts_cs(is)  = y * auxp%gr_delta * auxp%dfav_cs(is)
+      auxp%Ts_cs(is)  = - auxp%gr_DA_cs(is) * (auxp%fav_cs(is) ) + y * auxp%gr_delta * auxp%dfav_cs(is)
     end do
 
   end subroutine largo_BL_temporal_consistent_preStep_sEtaMean
@@ -482,17 +495,16 @@ contains
     auxp%ffluc_W  = auxp%field_W   - auxp%fav_W
     auxp%ffluc_E  = auxp%field_E   - auxp%fav_E
 
-    ! FIXME: Include rms growth rates
-    auxp%TsArms_rho = auxp%fluc_rho * auxp%ygArms_rho
-    auxp%TsArms_U   = auxp%ffluc_U  * auxp%ygArms_U
-    auxp%TsArms_V   = auxp%ffluc_V  * auxp%ygArms_V
-    auxp%TsArms_W   = auxp%ffluc_W  * auxp%ygArms_W
-    auxp%TsArms_E   = auxp%ffluc_E  * auxp%ygArms_E
+    auxp%TsArms_rho = auxp%fluc_rho * (- auxp%gr_DA_rms_rho + auxp%ygArms_rho )
+    auxp%TsArms_U   = auxp%ffluc_U  * (- auxp%gr_DA_rms_U   + auxp%ygArms_U   )
+    auxp%TsArms_V   = auxp%ffluc_V  * (- auxp%gr_DA_rms_V   + auxp%ygArms_V   )
+    auxp%TsArms_W   = auxp%ffluc_W  * (- auxp%gr_DA_rms_W   + auxp%ygArms_W   )
+    auxp%TsArms_E   = auxp%ffluc_E  * (- auxp%gr_DA_rms_E   + auxp%ygArms_E   )
 
     do is=1, ns_
       auxp%field_cs (is)  = qflow(5+is)/qflow(irho)
       auxp%ffluc_cs (is)  = auxp%field_cs(is) - auxp%fav_cs   (is)
-      auxp%TsArms_cs(is)  = auxp%ffluc_cs(is) * auxp%ygArms_cs(is)
+      auxp%TsArms_cs(is)  = auxp%ffluc_cs(is) * (- auxp%gr_DA_rms_cs(is) + auxp%ygArms_cs(is))
     end do
 
     ! Compute mean plus fluctuations slow time derivative
