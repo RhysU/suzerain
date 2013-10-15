@@ -50,7 +50,9 @@ struct driver_init : public driver
     driver_init(const std::string& revstr)
         : driver("Compressible, perfect gas simulation initialization",
                  "RESTART-FILE",
-                 "",
+"Initializes channel flow profile per --npower option unless --Re_x is\n"
+"supplied.  In that case, a Blasius-like boundary layer profile is prepared.\n"
+"When in doubt, please read through the source code.\n",
                  revstr)
         , who("init")
     {}
@@ -137,6 +139,7 @@ suzerain::perfect::driver_init::run(int argc, char **argv)
     // Establish binary-specific options
     real_t mms    = numeric_limits<real_t>::quiet_NaN();
     real_t npower = numeric_limits<real_t>::quiet_NaN();
+    real_t Re_x   = numeric_limits<real_t>::quiet_NaN();
     options.add_options()
         ("clobber",
          boost::program_options::bool_switch(),
@@ -145,9 +148,14 @@ suzerain::perfect::driver_init::run(int argc, char **argv)
          boost::program_options::value<string>()
          ->default_value("1")
          ->notifier(boost::bind(&parse_nonnegative, _1, &npower, "npower")),
-         "Power n in [0, 1] used to control the flatness of the"
+         "Power n in [0, 1] used to control the flatness of the channel"
          " \"parabolic\" streamwise velocity profile (y*(L-y))^n."
          " Using zero disables adding an initial streamwise profile.")
+        ("Re_x",
+         boost::program_options::value<string>()
+         ->notifier(boost::bind(&parse_nonnegative, _1, &Re_x, "Re_x")),
+         "Local Reynolds number Re_x = u_\\infty / \\nu / x controlling"
+         " the Blasius profile used to initialize the boundary layer.")
         ("mms",
          boost::program_options::value<string>()
          ->notifier(boost::bind(&parse_nonnegative, _1, &mms, "mms")),
@@ -220,6 +228,10 @@ suzerain::perfect::driver_init::run(int argc, char **argv)
     }
     const std::string restart_file = positional[0];
     const bool clobber = options.variables()["clobber"].as<bool>();
+    const bool blasius = options.variables().count("Re_x");
+    if (grid->two_sided() && blasius) {
+        WARN0("Conflicting two-sided grid and Blasius profile requested?");
+    }
     if (npower < 0 || npower > 1) {
         FATAL0("npower in [0,1] required");
         return EXIT_FAILURE;
@@ -285,36 +297,49 @@ suzerain::perfect::driver_init::run(int argc, char **argv)
         INFO("Base field uses T from " << T(0) << " to " << T(Ny - 1));
         INFO("Base field uses p from " << p(0) << " to " << p(Ny - 1));
 
-        INFO("Parabolic profile will be added with npower = " << npower);
-        INFO("Finding normalization so u = (y*(L-y))^npower integrates to 1");
-        real_t normalization = numeric_limits<real_t>::quiet_NaN();
-        if (npower == 1) {
-            // Mathematica: (Integrate[(x (L-x)),{x,0,L}]/L)^(-1)
-            normalization = 6 / pow(grid->L.y(), 2);
-        } else if (npower > 0) {
-            // Mathematica: (Integrate[(x (L - x))^n, {x, 0, L}]/L)^(-1)
-            //      -  (Gamma[-n] Gamma[3/2+n])
-            //       / (2^(-1-2 n) L^(1+2 n) \[Pi]^(3/2) Csc[n \[Pi]])
-            const real_t num1   = sin(npower * pi<real_t>());
-            const real_t num2   = tgamma(-npower);
-            const real_t num3   = tgamma(real_t(3)/2 + npower);
-            const real_t denom1 = pow(2, -1-2*npower);
-            const real_t denom2 = pow(Ly,  1+2*npower);
-            const real_t denom3 = pow(pi<real_t>(),  real_t(3)/2);
-            normalization = - (num1 * num2 * num3 * Ly)
-                          /   (denom1 * denom2 * denom3);
-        } else {
-            // Degenerate npower == 0 case to avoid tgamma(...) domain issues
-            normalization = 0;
-        }
+        if (!blasius) {
 
-        INFO("Adding the requested parabolic streamwise velocity profile");
-        for (int j = 0; j < Ny; ++j) {
-            const real_t y_j = b->collocation_point(j);
-            u(j) += (   scenario->bulk_rho_u
-                      - (isothermal->lower_u + isothermal->upper_u)/2)
-                  * normalization
-                  * pow(y_j * (Ly - y_j), npower);
+            INFO("Parabolic profile will be added with npower = " << npower);
+            INFO("Finding normalization so u = (y*(L-y))^npower integrates to 1");
+            real_t normalization = numeric_limits<real_t>::quiet_NaN();
+            if (npower == 1) {
+                // Mathematica: (Integrate[(x (L-x)),{x,0,L}]/L)^(-1)
+                normalization = 6 / pow(grid->L.y(), 2);
+            } else if (npower > 0) {
+                // Mathematica: (Integrate[(x (L - x))^n, {x, 0, L}]/L)^(-1)
+                //      -  (Gamma[-n] Gamma[3/2+n])
+                //       / (2^(-1-2 n) L^(1+2 n) \[Pi]^(3/2) Csc[n \[Pi]])
+                const real_t num1   = sin(npower * pi<real_t>());
+                const real_t num2   = tgamma(-npower);
+                const real_t num3   = tgamma(real_t(3)/2 + npower);
+                const real_t denom1 = pow(2, -1-2*npower);
+                const real_t denom2 = pow(Ly,  1+2*npower);
+                const real_t denom3 = pow(pi<real_t>(),  real_t(3)/2);
+                normalization = - (num1 * num2 * num3 * Ly)
+                              /   (denom1 * denom2 * denom3);
+            } else {
+                // Degenerate npower == 0 case avoids tgamma(...) domain issues
+                normalization = 0;
+            }
+
+            INFO("Adding the requested parabolic streamwise velocity profile");
+            for (int j = 0; j < Ny; ++j) {
+                const real_t y_j = b->collocation_point(j);
+                u(j) += (   scenario->bulk_rho_u
+                          - (isothermal->lower_u + isothermal->upper_u)/2)
+                      * normalization
+                      * pow(y_j * (Ly - y_j), npower);
+            }
+
+        } else {
+
+            INFO("Blasius profile will be added with Re_x = " << Re_x);
+            // TODO u profile
+            // TODO v profile
+
+            INFO("Initial temperature profile matches streamwise velocity");
+            // TODO T profile
+
         }
 
         if (options.variables().count("acoustic_strength")) {
