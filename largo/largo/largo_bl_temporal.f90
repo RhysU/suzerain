@@ -42,11 +42,11 @@ module largo_BL_temporal
 
     real(WP) :: gr_delta   = 1.0_WP
 
-    real(WP) :: dts_rho    = 0.0_WP
-    real(WP) :: dts_rhoU   = 0.0_WP
-    real(WP) :: dts_rhoV   = 0.0_WP
-    real(WP) :: dts_rhoW   = 0.0_WP
-    real(WP) :: dts_rhoE   = 0.0_WP
+    real(WP) :: Ts_rho    = 0.0_WP
+    real(WP) :: Ts_rhoU   = 0.0_WP
+    real(WP) :: Ts_rhoV   = 0.0_WP
+    real(WP) :: Ts_rhoW   = 0.0_WP
+    real(WP) :: Ts_rhoE   = 0.0_WP
 
     real(WP) :: ygrms_rho   = 0.0_WP
     real(WP) :: ygrms_rhoU  = 0.0_WP
@@ -66,17 +66,17 @@ module largo_BL_temporal
     real(WP) :: fluc_rhoW  = 0.0_WP
     real(WP) :: fluc_rhoE  = 0.0_WP
 
-    real(WP) :: dtsRms_rho   = 0.0_WP
-    real(WP) :: dtsRms_rhoU  = 0.0_WP
-    real(WP) :: dtsRms_rhoV  = 0.0_WP
-    real(WP) :: dtsRms_rhoW  = 0.0_WP
-    real(WP) :: dtsRms_rhoE  = 0.0_WP
+    real(WP) :: TsRms_rho   = 0.0_WP
+    real(WP) :: TsRms_rhoU  = 0.0_WP
+    real(WP) :: TsRms_rhoV  = 0.0_WP
+    real(WP) :: TsRms_rhoW  = 0.0_WP
+    real(WP) :: TsRms_rhoE  = 0.0_WP
 
-    real(WP), allocatable, dimension(:) :: dts_rhos
+    real(WP), allocatable, dimension(:) :: Ts_rhos
     real(WP), allocatable, dimension(:) :: ygrms_rhos
     real(WP), allocatable, dimension(:) :: mean_rhos
     real(WP), allocatable, dimension(:) :: fluc_rhos
-    real(WP), allocatable, dimension(:) :: dtsRms_rhos
+    real(WP), allocatable, dimension(:) :: TsRms_rhos
 
     ! baseflow variables
     real(WP) :: base_rho      = 0.0_WP
@@ -123,7 +123,7 @@ module largo_BL_temporal
     real(WP), allocatable, dimension(:) :: gr_DA_rms_rhos
 
     ! RANS variables
-    real(WP), allocatable, dimension(:) :: dts_tvar
+    real(WP), allocatable, dimension(:) :: Ts_tvar
     real(WP), allocatable, dimension(:) :: mean_tvar
     real(WP), allocatable, dimension(:) :: gr_DA_tvar
 
@@ -214,11 +214,11 @@ contains
 
     ! Allocate arrays for species
     if (ns_ > 0) then
-      allocate(auxp%dts_rhos   (1:ns_))
+      allocate(auxp%Ts_rhos   (1:ns_))
       allocate(auxp%ygrms_rhos (1:ns_))
       allocate(auxp%mean_rhos  (1:ns_))
       allocate(auxp%fluc_rhos  (1:ns_))
-      allocate(auxp%dtsRms_rhos(1:ns_))
+      allocate(auxp%TsRms_rhos(1:ns_))
 
       allocate(auxp%base_rhos     (1:ns_))
       allocate(auxp%ddy_base_rhos (1:ns_))
@@ -251,11 +251,11 @@ contains
 
     ! Allocate arrays for turbulent variables
     if (ntvar_ > 0) then
-      allocate(auxp%dts_tvar   (1:ntvar_))
+      allocate(auxp%Ts_tvar   (1:ntvar_))
       allocate(auxp%mean_tvar  (1:ntvar_))
       allocate(auxp%gr_DA_tvar (1:ntvar_))
 
-      auxp%dts_tvar     = 0.0_WP
+      auxp%Ts_tvar     = 0.0_WP
       auxp%mean_tvar    = 0.0_WP
       auxp%gr_DA_tvar   = 0.0_WP
     end if
@@ -278,11 +278,11 @@ contains
     call c_f_pointer(cp, auxp)
 
     ! Deallocate arrays for species
-    if (allocated(auxp%dts_rhos      ))  deallocate(auxp%dts_rhos      )
+    if (allocated(auxp%Ts_rhos      ))  deallocate(auxp%Ts_rhos      )
     if (allocated(auxp%ygrms_rhos    ))  deallocate(auxp%ygrms_rhos    )
     if (allocated(auxp%mean_rhos     ))  deallocate(auxp%mean_rhos     )
     if (allocated(auxp%fluc_rhos     ))  deallocate(auxp%fluc_rhos     )
-    if (allocated(auxp%dtsRms_rhos   ))  deallocate(auxp%dtsRms_rhos   )
+    if (allocated(auxp%TsRms_rhos   ))  deallocate(auxp%TsRms_rhos   )
 
     if (allocated(auxp%base_rhos     ))  deallocate(auxp%base_rhos     )
     if (allocated(auxp%ddy_base_rhos ))  deallocate(auxp%ddy_base_rhos )
@@ -292,7 +292,7 @@ contains
     if (allocated(auxp%gr_DA_rms_rhos))  deallocate(auxp%gr_DA_rms_rhos)
 
     ! Deallocate arrays for RANS turbulence variables
-    if (allocated(auxp%dts_tvar      ))  deallocate(auxp%dts_tvar      )
+    if (allocated(auxp%Ts_tvar      ))  deallocate(auxp%Ts_tvar      )
     if (allocated(auxp%mean_tvar     ))  deallocate(auxp%mean_tvar     )
     if (allocated(auxp%gr_DA_tvar    ))  deallocate(auxp%gr_DA_tvar    )
 
@@ -443,15 +443,15 @@ contains
     auxp%mean_rhoW = mean(irhoW)
     auxp%mean_rhoE = mean(irhoE)
 
-    auxp%dts_rho  = - auxp%ddt_base_rho  - auxp%gr_DA_rho  * (mean(irho )-auxp%base_rho ) + y * auxp%gr_delta * (ddy_mean(irho ) - auxp%ddy_base_rho ) + auxp%src_base_rho
-    auxp%dts_rhoU = - auxp%ddt_base_rhoU - auxp%gr_DA_rhoU * (mean(irhoU)-auxp%base_rhoU) + y * auxp%gr_delta * (ddy_mean(irhoU) - auxp%ddy_base_rhoU) + auxp%src_base_rhoU
-    auxp%dts_rhoV = - auxp%ddt_base_rhoV - auxp%gr_DA_rhoV * (mean(irhoV)-auxp%base_rhoV) + y * auxp%gr_delta * (ddy_mean(irhoV) - auxp%ddy_base_rhoV) + auxp%src_base_rhoV
-    auxp%dts_rhoW = - auxp%ddt_base_rhoW - auxp%gr_DA_rhoW * (mean(irhoW)-auxp%base_rhoW) + y * auxp%gr_delta * (ddy_mean(irhoW) - auxp%ddy_base_rhoW) + auxp%src_base_rhoW
-    auxp%dts_rhoE = - auxp%ddt_base_rhoE - auxp%gr_DA_rhoE * (mean(irhoE)-auxp%base_rhoE) + y * auxp%gr_delta * (ddy_mean(irhoE) - auxp%ddy_base_rhoE) + auxp%src_base_rhoE
+    auxp%Ts_rho  = - auxp%ddt_base_rho  - auxp%gr_DA_rho  * (mean(irho )-auxp%base_rho ) + y * auxp%gr_delta * (ddy_mean(irho ) - auxp%ddy_base_rho ) + auxp%src_base_rho
+    auxp%Ts_rhoU = - auxp%ddt_base_rhoU - auxp%gr_DA_rhoU * (mean(irhoU)-auxp%base_rhoU) + y * auxp%gr_delta * (ddy_mean(irhoU) - auxp%ddy_base_rhoU) + auxp%src_base_rhoU
+    auxp%Ts_rhoV = - auxp%ddt_base_rhoV - auxp%gr_DA_rhoV * (mean(irhoV)-auxp%base_rhoV) + y * auxp%gr_delta * (ddy_mean(irhoV) - auxp%ddy_base_rhoV) + auxp%src_base_rhoV
+    auxp%Ts_rhoW = - auxp%ddt_base_rhoW - auxp%gr_DA_rhoW * (mean(irhoW)-auxp%base_rhoW) + y * auxp%gr_delta * (ddy_mean(irhoW) - auxp%ddy_base_rhoW) + auxp%src_base_rhoW
+    auxp%Ts_rhoE = - auxp%ddt_base_rhoE - auxp%gr_DA_rhoE * (mean(irhoE)-auxp%base_rhoE) + y * auxp%gr_delta * (ddy_mean(irhoE) - auxp%ddy_base_rhoE) + auxp%src_base_rhoE
 
     do is=1, ns_
       auxp%mean_rhos(is) = mean(5+is)
-      auxp%dts_rhos(is)  = - auxp%ddt_base_rhos(is)  - auxp%gr_DA_rhos(is)  * (mean(5+is)-auxp%base_rhos(is)) + y * auxp%gr_delta * (ddy_mean(5+is) - auxp%ddy_base_rhos(is)) + auxp%src_base_rhos(is)
+      auxp%Ts_rhos(is)  = - auxp%ddt_base_rhos(is)  - auxp%gr_DA_rhos(is)  * (mean(5+is)-auxp%base_rhos(is)) + y * auxp%gr_delta * (ddy_mean(5+is) - auxp%ddy_base_rhos(is)) + auxp%src_base_rhos(is)
     end do
 
   end subroutine largo_BL_temporal_preStep_sEtaMean
@@ -515,15 +515,15 @@ contains
     auxp%fluc_rhoW = qflow(irhoW) - auxp%mean_rhoW
     auxp%fluc_rhoE = qflow(irhoE) - auxp%mean_rhoE
 
-    auxp%dtsRms_rho  = auxp%fluc_rho  * (- auxp%gr_DA_rms_rho  + auxp%ygrms_rho ) 
-    auxp%dtsRms_rhoU = auxp%fluc_rhoU * (- auxp%gr_DA_rms_rhoU + auxp%ygrms_rhoU)
-    auxp%dtsRms_rhoV = auxp%fluc_rhoV * (- auxp%gr_DA_rms_rhoV + auxp%ygrms_rhoV)
-    auxp%dtsRms_rhoW = auxp%fluc_rhoW * (- auxp%gr_DA_rms_rhoW + auxp%ygrms_rhoW)
-    auxp%dtsRms_rhoE = auxp%fluc_rhoE * (- auxp%gr_DA_rms_rhoE + auxp%ygrms_rhoE)
+    auxp%TsRms_rho  = auxp%fluc_rho  * (- auxp%gr_DA_rms_rho  + auxp%ygrms_rho ) 
+    auxp%TsRms_rhoU = auxp%fluc_rhoU * (- auxp%gr_DA_rms_rhoU + auxp%ygrms_rhoU)
+    auxp%TsRms_rhoV = auxp%fluc_rhoV * (- auxp%gr_DA_rms_rhoV + auxp%ygrms_rhoV)
+    auxp%TsRms_rhoW = auxp%fluc_rhoW * (- auxp%gr_DA_rms_rhoW + auxp%ygrms_rhoW)
+    auxp%TsRms_rhoE = auxp%fluc_rhoE * (- auxp%gr_DA_rms_rhoE + auxp%ygrms_rhoE)
 
     do is=1, ns_
       auxp%fluc_rhos(is)  = qflow(5+is) - auxp%mean_rhos(is)
-      auxp%dtsRms_rhos(is) = auxp%fluc_rhos(is) * (- auxp%gr_DA_rms_rhos(is) + auxp%ygrms_rhos(is))
+      auxp%TsRms_rhos(is) = auxp%fluc_rhos(is) * (- auxp%gr_DA_rms_rhos(is) + auxp%ygrms_rhos(is))
     end do
 
   end subroutine largo_BL_temporal_preStep_sEta_innerxz
@@ -584,7 +584,7 @@ contains
 
     do it=1, ntvar_
       auxp%mean_tvar(it) = mean(it)
-      auxp%dts_tvar(it)  = - auxp%gr_DA_tvar(it)  * auxp%mean_tvar(it) + y * auxp%gr_delta * ddy_mean(it)
+      auxp%Ts_tvar(it)  = - auxp%gr_DA_tvar(it)  * auxp%mean_tvar(it) + y * auxp%gr_delta * ddy_mean(it)
     end do
 
   end subroutine largo_BL_temporal_preStep_sEtaMean_rans_generic
@@ -599,27 +599,27 @@ contains
 
 
   subroutine DECLARE_SUBROUTINE(largo_BL_temporal_continuity_sEtaMean)
-    src = A * src + B * auxp%dts_rho
+    src = A * src + B * auxp%Ts_rho
   end subroutine largo_BL_temporal_continuity_sEtaMean
 
 
   subroutine DECLARE_SUBROUTINE(largo_BL_temporal_xMomentum_sEtaMean)
-    src = A * src + B * auxp%dts_rhoU
+    src = A * src + B * auxp%Ts_rhoU
   end subroutine largo_BL_temporal_xMomentum_sEtaMean
 
 
   subroutine DECLARE_SUBROUTINE(largo_BL_temporal_yMomentum_sEtaMean)
-    src = A * src + B * auxp%dts_rhoV
+    src = A * src + B * auxp%Ts_rhoV
   end subroutine largo_BL_temporal_yMomentum_sEtaMean
 
 
   subroutine DECLARE_SUBROUTINE(largo_BL_temporal_zMomentum_sEtaMean)
-    src = A * src + B * auxp%dts_rhoW
+    src = A * src + B * auxp%Ts_rhoW
   end subroutine largo_BL_temporal_zMomentum_sEtaMean
 
 
   subroutine DECLARE_SUBROUTINE(largo_BL_temporal_energy_sEtaMean)
-    src = A * src + B * auxp%dts_rhoE
+    src = A * src + B * auxp%Ts_rhoE
   end subroutine largo_BL_temporal_energy_sEtaMean
 
 
@@ -631,7 +631,7 @@ contains
     integer(c_int), intent(in)              :: is
 
     call c_f_pointer(cp, auxp)
-    src = A * src + B * auxp%dts_rhos(is)
+    src = A * src + B * auxp%Ts_rhos(is)
   end subroutine largo_BL_temporal_ispecies_sEtaMean
 
 
@@ -648,27 +648,27 @@ contains
 
 
   subroutine DECLARE_SUBROUTINE(largo_BL_temporal_continuity_sEtaRms)
-    src = A * src + B * auxp%dtsRms_rho
+    src = A * src + B * auxp%TsRms_rho
   end subroutine largo_BL_temporal_continuity_sEtaRms
 
 
   subroutine DECLARE_SUBROUTINE(largo_BL_temporal_xMomentum_sEtaRms)
-    src = A * src + B * auxp%dtsRms_rhoU
+    src = A * src + B * auxp%TsRms_rhoU
   end subroutine largo_BL_temporal_xMomentum_sEtaRms
 
 
   subroutine DECLARE_SUBROUTINE(largo_BL_temporal_yMomentum_sEtaRms)
-    src = A * src + B * auxp%dtsRms_rhoV
+    src = A * src + B * auxp%TsRms_rhoV
   end subroutine largo_BL_temporal_yMomentum_sEtaRms
 
 
   subroutine DECLARE_SUBROUTINE(largo_BL_temporal_zMomentum_sEtaRms)
-    src = A * src + B * auxp%dtsRms_rhoW
+    src = A * src + B * auxp%TsRms_rhoW
   end subroutine largo_BL_temporal_zMomentum_sEtaRms
 
 
   subroutine DECLARE_SUBROUTINE(largo_BL_temporal_energy_sEtaRms)
-    src = A * src + B * auxp%dtsRms_rhoE
+    src = A * src + B * auxp%TsRms_rhoE
   end subroutine largo_BL_temporal_energy_sEtaRms
 
 
@@ -680,7 +680,7 @@ contains
     integer(c_int), intent(in)                :: is
 
     call c_f_pointer(cp, auxp)
-    src = A * src + B * auxp%dtsRms_rhos(is)
+    src = A * src + B * auxp%TsRms_rhos(is)
   end subroutine largo_BL_temporal_ispecies_sEtaRms
 
 
@@ -705,7 +705,7 @@ contains
 
     call c_f_pointer(cp, auxp)
     do it = 1, ntvar_
-       srcvec(it) = A * srcvec(it) + B * auxp%dts_tvar(it)
+       srcvec(it) = A * srcvec(it) + B * auxp%Ts_tvar(it)
     end do
 
   end subroutine largo_BL_temporal_sEta_rans_generic
