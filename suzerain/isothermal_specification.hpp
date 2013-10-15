@@ -274,6 +274,28 @@ public:
 
     /**@}*/
 
+    /**
+     * Shorthand for computing the increment from \f$y=0\f$ to \f$y=L_y\f$.
+     * @{
+     */
+    real_t delta_T  () const { return upper_T   - lower_T  ; }
+    real_t delta_u  () const { return upper_u   - lower_u  ; }
+    real_t delta_v  () const { return upper_v   - lower_v  ; }
+    real_t delta_w  () const { return upper_w   - lower_w  ; }
+    real_t delta_rho() const { return upper_rho - lower_rho; }
+    /**@}*/
+
+    /**
+     * Shorthand for computing the ratio of \f$y=L_y\f$ to \f$y=0\f$.
+     * @{
+     */
+    real_t ratio_T  () const { return upper_T   / lower_T  ; }
+    real_t ratio_u  () const { return upper_u   / lower_u  ; }
+    real_t ratio_v  () const { return upper_v   / lower_v  ; }
+    real_t ratio_w  () const { return upper_w   / lower_w  ; }
+    real_t ratio_rho() const { return upper_rho / lower_rho; }
+    /**@}*/
+
 };
 
 } // namespace suzerain
