@@ -1,4 +1,4 @@
-module largo_BL_temporal_tconsistent
+module largo_BL_temporal_consistent
 
   ! Use ISO_C_BINDING to expose C-friendly API through generic interface
   use, intrinsic :: iso_c_binding, only: c_associated,   &
@@ -13,49 +13,32 @@ module largo_BL_temporal_tconsistent
 
   private
 
-  type :: largo_BL_temporal_tconsistent_workspace_type
+  type :: largo_BL_temporal_consistent_workspace_type
 
     real(WP) :: gr_delta   = 1.0_WP
 
-    real(WP) :: dts_rho = 0.0_WP
-    real(WP) :: dts_U   = 0.0_WP
-    real(WP) :: dts_V   = 0.0_WP
-    real(WP) :: dts_W   = 0.0_WP
-    real(WP) :: dts_E   = 0.0_WP
+    real(WP) :: Ts_rho = 0.0_WP
+    real(WP) :: Ts_U   = 0.0_WP
+    real(WP) :: Ts_V   = 0.0_WP
+    real(WP) :: Ts_W   = 0.0_WP
+    real(WP) :: Ts_E   = 0.0_WP
 
-    real(WP) :: dts_rhoU = 0.0_WP
-    real(WP) :: dts_rhoV = 0.0_WP
-    real(WP) :: dts_rhoW = 0.0_WP
-    real(WP) :: dts_rhoE = 0.0_WP
+    real(WP) :: TsArms_rho = 0.0_WP
+    real(WP) :: TsArms_U   = 0.0_WP
+    real(WP) :: TsArms_V   = 0.0_WP
+    real(WP) :: TsArms_W   = 0.0_WP
+    real(WP) :: TsArms_E   = 0.0_WP
 
-!!$     real(WP) :: ygrms_rho   = 0.0_WP
-!!$     real(WP) :: ygrms_rhoU  = 0.0_WP
-!!$     real(WP) :: ygrms_rhoV  = 0.0_WP
-!!$     real(WP) :: ygrms_rhoW  = 0.0_WP
-!!$     real(WP) :: ygrms_rhoE  = 0.0_WP
-!!$
-!!$     real(WP) :: fluc_rho   = 0.0_WP
-!!$     real(WP) :: fluc_rhoU  = 0.0_WP
-!!$     real(WP) :: fluc_rhoV  = 0.0_WP
-!!$     real(WP) :: fluc_rhoW  = 0.0_WP
-!!$     real(WP) :: fluc_rhoE  = 0.0_WP
+    real(WP) :: TsFull_rho = 0.0_WP
+    real(WP) :: TsFull_U   = 0.0_WP
+    real(WP) :: TsFull_V   = 0.0_WP
+    real(WP) :: TsFull_W   = 0.0_WP
+    real(WP) :: TsFull_E   = 0.0_WP
 
-    real(WP) :: dtsArms_rho = 0.0_WP
-    real(WP) :: dtsArms_U   = 0.0_WP
-    real(WP) :: dtsArms_V   = 0.0_WP
-    real(WP) :: dtsArms_W   = 0.0_WP
-    real(WP) :: dtsArms_E   = 0.0_WP
-
-    real(WP) :: dtsFull_rho = 0.0_WP
-    real(WP) :: dtsFull_U   = 0.0_WP
-    real(WP) :: dtsFull_V   = 0.0_WP
-    real(WP) :: dtsFull_W   = 0.0_WP
-    real(WP) :: dtsFull_E   = 0.0_WP
-
-    real(WP), allocatable, dimension(:) :: dts_rhos
-    real(WP), allocatable, dimension(:) :: ygrms_rhos
-    real(WP), allocatable, dimension(:) :: fluc_rhos
-    real(WP), allocatable, dimension(:) :: dtsArms_rhos
+    real(WP), allocatable, dimension(:) :: Ts_cs
+    real(WP), allocatable, dimension(:) :: fluc_cs
+    real(WP), allocatable, dimension(:) :: TsArms_cs
+    real(WP), allocatable, dimension(:) :: TsFull_cs
 
 
     ! TC:
@@ -105,19 +88,34 @@ module largo_BL_temporal_tconsistent
     real(WP) :: dArms_W   = 0.0_WP
     real(WP) :: dArms_E   = 0.0_WP
 
+    real(WP) :: gr_DA_rho = 0.0_WP
+    real(WP) :: gr_DA_U   = 0.0_WP
+    real(WP) :: gr_DA_V   = 0.0_WP
+    real(WP) :: gr_DA_W   = 0.0_WP
+    real(WP) :: gr_DA_E   = 0.0_WP
+
+    real(WP) :: gr_DA_rms_rho = 0.0_WP
+    real(WP) :: gr_DA_rms_U   = 0.0_WP
+    real(WP) :: gr_DA_rms_V   = 0.0_WP
+    real(WP) :: gr_DA_rms_W   = 0.0_WP
+    real(WP) :: gr_DA_rms_E   = 0.0_WP
+
     real(WP) :: ygArms_rho = 0.0_WP
     real(WP) :: ygArms_U   = 0.0_WP
     real(WP) :: ygArms_V   = 0.0_WP
     real(WP) :: ygArms_W   = 0.0_WP
     real(WP) :: ygArms_E   = 0.0_WP
 
-    real(WP), allocatable, dimension(:) ::  field_rhos
-    real(WP), allocatable, dimension(:) ::   mean_rhos
-    real(WP), allocatable, dimension(:) ::   Arms_rhos
-    real(WP), allocatable, dimension(:) ::  dArms_rhos
-    real(WP), allocatable, dimension(:) :: ygArms_rhos
+    real(WP), allocatable, dimension(:) ::  field_cs
+    real(WP), allocatable, dimension(:) ::    fav_cs
+    real(WP), allocatable, dimension(:) ::   dfav_cs
+    real(WP), allocatable, dimension(:) ::   Arms_cs
+    real(WP), allocatable, dimension(:) ::  dArms_cs
+    real(WP), allocatable, dimension(:) :: ygArms_cs
+    real(WP), allocatable, dimension(:) ::  gr_DA_cs
+    real(WP), allocatable, dimension(:) :: gr_DA_rms_cs
 
-  end type largo_BL_temporal_tconsistent_workspace_type
+  end type largo_BL_temporal_consistent_workspace_type
 
   integer(c_int), parameter :: irho  = 1
   integer(c_int), parameter :: irhoU = 2
@@ -134,42 +132,42 @@ module largo_BL_temporal_tconsistent
   integer(c_int) :: ns_  = 0
 
 
-  public  :: largo_BL_temporal_tconsistent_allocate
-  public  :: largo_BL_temporal_tconsistent_deallocate
-  public  :: largo_BL_temporal_tconsistent_init
-  public  :: largo_BL_temporal_tconsistent_preStep_sEta
-  public  :: largo_BL_temporal_tconsistent_preStep_sEta_innery
-  public  :: largo_BL_temporal_tconsistent_preStep_sEta_innerxz
-  public  :: largo_BL_temporal_tconsistent_preStep_sEtaMean
-  public  :: largo_BL_temporal_tconsistent_continuity_sEtaMean
-  public  :: largo_BL_temporal_tconsistent_xMomentum_sEtaMean
-  public  :: largo_BL_temporal_tconsistent_yMomentum_sEtaMean
-  public  :: largo_BL_temporal_tconsistent_zMomentum_sEtaMean
-  public  :: largo_BL_temporal_tconsistent_energy_sEtaMean
-  public  :: largo_BL_temporal_tconsistent_ispecies_sEtaMean
-  public  :: largo_BL_temporal_tconsistent_species_sEtaMean
-  public  :: largo_BL_temporal_tconsistent_continuity_sEta_
-  public  :: largo_BL_temporal_tconsistent_xMomentum_sEta_
-  public  :: largo_BL_temporal_tconsistent_yMomentum_sEta_
-  public  :: largo_BL_temporal_tconsistent_zMomentum_sEta_
-  public  :: largo_BL_temporal_tconsistent_energy_sEta_
-  public  :: largo_BL_temporal_tconsistent_ispecies_sEta_
-  public  :: largo_BL_temporal_tconsistent_species_sEta_
-  public  :: largo_BL_temporal_tconsistent_sEta
+  public  :: largo_BL_temporal_consistent_allocate
+  public  :: largo_BL_temporal_consistent_deallocate
+  public  :: largo_BL_temporal_consistent_init
+  public  :: largo_BL_temporal_consistent_preStep_sEta
+  public  :: largo_BL_temporal_consistent_preStep_sEta_innery
+  public  :: largo_BL_temporal_consistent_preStep_sEta_innerxz
+  public  :: largo_BL_temporal_consistent_preStep_sEtaMean
+  public  :: largo_BL_temporal_consistent_continuity_sEtaMean
+  public  :: largo_BL_temporal_consistent_xMomentum_sEtaMean
+  public  :: largo_BL_temporal_consistent_yMomentum_sEtaMean
+  public  :: largo_BL_temporal_consistent_zMomentum_sEtaMean
+  public  :: largo_BL_temporal_consistent_energy_sEtaMean
+  public  :: largo_BL_temporal_consistent_ispecies_sEtaMean
+  public  :: largo_BL_temporal_consistent_species_sEtaMean
+  public  :: largo_BL_temporal_consistent_continuity_sEta_
+  public  :: largo_BL_temporal_consistent_xMomentum_sEta_
+  public  :: largo_BL_temporal_consistent_yMomentum_sEta_
+  public  :: largo_BL_temporal_consistent_zMomentum_sEta_
+  public  :: largo_BL_temporal_consistent_energy_sEta_
+  public  :: largo_BL_temporal_consistent_ispecies_sEta_
+  public  :: largo_BL_temporal_consistent_species_sEta_
+  public  :: largo_BL_temporal_consistent_sEta
 
-  private :: largo_BL_temporal_tconsistent_preStep_sEta_
+  private :: largo_BL_temporal_consistent_preStep_sEta_
 
-  public  :: largo_BL_temporal_tconsistent_preStep_baseflow
+  public  :: largo_BL_temporal_consistent_preStep_baseflow
 
 contains
 
-  subroutine largo_BL_temporal_tconsistent_allocate(cp, neq, ns)
+  subroutine largo_BL_temporal_consistent_allocate(cp, neq, ns)
 
     type(largo_workspace_ptr), intent(out) :: cp
     ! neq=number of equations, might be needed later
     integer(c_int), intent(in)   :: neq
     integer(c_int), intent(in)   :: ns    ! number of species
-    type(largo_BL_temporal_tconsistent_workspace_type), pointer :: auxp
+    type(largo_BL_temporal_consistent_workspace_type), pointer :: auxp
 
     ! Allocate derived type variable
     allocate(auxp)
@@ -180,40 +178,38 @@ contains
 
     ! Allocate arrays for species
     if (ns_ > 0) then
-      allocate(auxp%dts_rhos    (1:ns_))
-      allocate(auxp%ygrms_rhos  (1:ns_))
-      allocate(auxp%fluc_rhos   (1:ns_))
-      allocate(auxp%mean_rhos   (1:ns_))
-      allocate(auxp%field_rhos  (1:ns_))
-      allocate(auxp%dtsArms_rhos(1:ns_))
-      allocate(auxp%Arms_rhos   (1:ns_))
-      allocate(auxp%dArms_rhos  (1:ns_))
-      allocate(auxp%ygArms_rhos (1:ns_))
+      allocate(auxp%Ts_cs     (1:ns_))
+      allocate(auxp%fluc_cs   (1:ns_))
+      allocate(auxp%fav_cs    (1:ns_))
+      allocate(auxp%field_cs  (1:ns_))
+      allocate(auxp%TsArms_cs (1:ns_))
+      allocate(auxp%Arms_cs   (1:ns_))
+      allocate(auxp%dArms_cs  (1:ns_))
+      allocate(auxp%ygArms_cs (1:ns_))
     end if
 
     ! Get C pointer from Fortran pointer
     cp = c_loc(auxp)
 
-  end subroutine largo_BL_temporal_tconsistent_allocate
+  end subroutine largo_BL_temporal_consistent_allocate
 
 
-  subroutine largo_BL_temporal_tconsistent_deallocate(cp)
+  subroutine largo_BL_temporal_consistent_deallocate(cp)
 
     type(largo_workspace_ptr), intent(out)  :: cp
-    type(largo_BL_temporal_tconsistent_workspace_type), pointer :: auxp
+    type(largo_BL_temporal_consistent_workspace_type), pointer :: auxp
 
     call c_f_pointer(cp, auxp)
 
     ! Deallocate arrays for species
-    if (allocated(auxp%dts_rhos))     deallocate(auxp%dts_rhos    )
-    if (allocated(auxp%ygrms_rhos))   deallocate(auxp%ygrms_rhos  )
-    if (allocated(auxp%fluc_rhos))    deallocate(auxp%fluc_rhos   )
-    if (allocated(auxp%mean_rhos))    deallocate(auxp%mean_rhos   )
-    if (allocated(auxp%field_rhos))   deallocate(auxp%field_rhos  )
-    if (allocated(auxp%dtsArms_rhos)) deallocate(auxp%dtsArms_rhos)
-    if (allocated(auxp%Arms_rhos))    deallocate(auxp%Arms_rhos   )
-    if (allocated(auxp%dArms_rhos))   deallocate(auxp%dArms_rhos  )
-    if (allocated(auxp%ygArms_rhos))  deallocate(auxp%ygArms_rhos )
+    if (allocated(auxp%Ts_cs))      deallocate(auxp%Ts_cs     )
+    if (allocated(auxp%fluc_cs))    deallocate(auxp%fluc_cs   )
+    if (allocated(auxp%fav_cs))     deallocate(auxp%fav_cs   )
+    if (allocated(auxp%field_cs))   deallocate(auxp%field_cs  )
+    if (allocated(auxp%TsArms_cs))  deallocate(auxp%TsArms_cs )
+    if (allocated(auxp%Arms_cs))    deallocate(auxp%Arms_cs   )
+    if (allocated(auxp%dArms_cs))   deallocate(auxp%dArms_cs  )
+    if (allocated(auxp%ygArms_cs))  deallocate(auxp%ygArms_cs )
 
     ! Deallocate array of derived types
     deallocate(auxp)
@@ -221,17 +217,17 @@ contains
     ! Nullify C pointer
     cp = c_null_ptr
 
-  end subroutine largo_BL_temporal_tconsistent_deallocate
+  end subroutine largo_BL_temporal_consistent_deallocate
 
 
-  subroutine largo_BL_temporal_tconsistent_init(cp, gr_delta, gr_DA, gr_DA_rms)
+  subroutine largo_BL_temporal_consistent_init(cp, gr_delta, gr_DA, gr_DA_rms)
 
     real(WP), intent(in)                  :: gr_delta
     real(WP), dimension(*), intent(in)    :: gr_DA
     real(WP), dimension(*), intent(in)    :: gr_DA_rms
     integer(c_int) :: is
     type(largo_workspace_ptr), intent(in) :: cp
-    type(largo_BL_temporal_tconsistent_workspace_type), pointer   :: auxp
+    type(largo_BL_temporal_consistent_workspace_type), pointer   :: auxp
 
     ! get Fortran pointer from C pointer
     call c_f_pointer(cp, auxp)
@@ -239,20 +235,23 @@ contains
     ! set growth rates
     auxp%gr_delta   = gr_delta
 
-!!$     auxp%gr_DA_rho  = gr_DA(irho )
-!!$     auxp%gr_DA_rhoU = gr_DA(irhoU)
-!!$     auxp%gr_DA_rhoV = gr_DA(irhoV)
-!!$     auxp%gr_DA_rhoW = gr_DA(irhoW)
-!!$     auxp%gr_DA_rhoE = gr_DA(irhoE)
-!!$
-!!$     do is=1, ns_
-!!$       auxp%gr_DA_rhos(is) = gr_DA(5+is)
-!!$     end do
+    auxp%gr_DA_rho  = gr_DA(irho )
+    auxp%gr_DA_U    = gr_DA(irhoU)
+    auxp%gr_DA_V    = gr_DA(irhoV)
+    auxp%gr_DA_W    = gr_DA(irhoW)
+    auxp%gr_DA_E    = gr_DA(irhoE)
 
-  end subroutine largo_BL_temporal_tconsistent_init
+    ! FIXME: add array for species amplitude growth rates
+    do is=1, ns_
+      auxp%gr_DA_cs(is) = gr_DA(5+is)
+    end do
+
+    ! FIXME: add growth rates of rms
+
+  end subroutine largo_BL_temporal_consistent_init
 
 
-  subroutine largo_BL_temporal_tconsistent_preStep_baseflow(cp, base, &
+  subroutine largo_BL_temporal_consistent_preStep_baseflow(cp, base, &
                               ddy_base, ddt_base, ddx_base, src_base)
 
     real(WP), dimension(*), intent(in)    :: base
@@ -262,7 +261,9 @@ contains
     real(WP), dimension(*), intent(in)    :: src_base
     integer(c_int) :: is
     type(largo_workspace_ptr), intent(in) :: cp
-    type(largo_BL_temporal_tconsistent_workspace_type), pointer   :: auxp
+    type(largo_BL_temporal_consistent_workspace_type), pointer   :: auxp
+
+    ! FIXME: add support for baseflow
 
 !!$     ! Get Fortran pointer from C pointer
 !!$     call c_f_pointer(cp, auxp)
@@ -299,17 +300,17 @@ contains
 !!$       auxp%src_base_rhos(is) = src_base(5+is)
 !!$     end do
 
-  end subroutine largo_BL_temporal_tconsistent_preStep_baseflow
+  end subroutine largo_BL_temporal_consistent_preStep_baseflow
 
 
-  subroutine largo_BL_temporal_tconsistent_preStep_sEtaMean(cp, y, mean, ddy_mean)
+  subroutine largo_BL_temporal_consistent_preStep_sEtaMean(cp, y, mean, ddy_mean)
 
     real(WP), intent(in)               :: y
     real(WP), dimension(*), intent(in) :: mean
     real(WP), dimension(*), intent(in) :: ddy_mean
     integer(c_int) :: is
     type(largo_workspace_ptr), intent(in) :: cp
-    type(largo_BL_temporal_tconsistent_workspace_type), pointer :: auxp
+    type(largo_BL_temporal_consistent_workspace_type), pointer :: auxp
 
     ! Get Fortran pointer from C pointer
     call c_f_pointer(cp, auxp)
@@ -321,41 +322,41 @@ contains
     auxp%fav_W    = mean(irhoW)/mean(irho)
     auxp%fav_E    = mean(irhoE)/mean(irho)
     do is=1, ns_
-      auxp%mean_rhos(is) = mean(5+is)
+      auxp%fav_cs(is) = mean(5+is)/mean(irho)
     end do
 
     ! Compute/get y-derivative of Favre averages
     auxp%dmean_rho = ddy_mean(irho)
     auxp%dfav_U    = ddy_mean(irhoU)/mean(irho) &
-      &             - mean(irhoU)/mean(irho)**2 * ddy_mean(irho)
+      &             - auxp%fav_U/mean(irho) * ddy_mean(irho)
     auxp%dfav_V    = ddy_mean(irhoV)/mean(irho) &
-      &             - mean(irhoV)/mean(irho)**2 * ddy_mean(irho)
+      &             - auxp%fav_V/mean(irho) * ddy_mean(irho)
     auxp%dfav_W    = ddy_mean(irhoW)/mean(irho) &
-      &             - mean(irhoW)/mean(irho)**2 * ddy_mean(irho)
+      &             - auxp%fav_W/mean(irho) * ddy_mean(irho)
     auxp%dfav_E    = ddy_mean(irhoE)/mean(irho) &
-      &             - mean(irhoE)/mean(irho)**2 * ddy_mean(irho)
-
-    ! These ones depend on y only
-    auxp%dts_rho = y * auxp%gr_delta * ddy_mean(irho )
-    auxp%dts_U   = y * auxp%gr_delta * auxp%dfav_U
-    auxp%dts_V   = y * auxp%gr_delta * auxp%dfav_V
-    auxp%dts_W   = y * auxp%gr_delta * auxp%dfav_W
-    auxp%dts_E   = y * auxp%gr_delta * auxp%dfav_E
-
-    ! These ones depend on y only
-    auxp%dts_rhoU = y * auxp%gr_delta * ddy_mean(irhoU)
-    auxp%dts_rhoV = y * auxp%gr_delta * ddy_mean(irhoV)
-    auxp%dts_rhoW = y * auxp%gr_delta * ddy_mean(irhoW)
-    auxp%dts_rhoE = y * auxp%gr_delta * ddy_mean(irhoE)
+      &             - auxp%fav_E/mean(irho) * ddy_mean(irho)
 
     do is=1, ns_
-      auxp%dts_rhos(is)  = y * auxp%gr_delta * ddy_mean(5+is)
+      auxp%dfav_cs(is)  =  ddy_mean(5+is)/mean(irho) &
+      &             - auxp%fav_cs(is)/mean(irho) * ddy_mean(irho)
     end do
 
-  end subroutine largo_BL_temporal_tconsistent_preStep_sEtaMean
+    ! FIXME: add baseglow terms
+    ! These ones depend on y only
+    auxp%Ts_rho = y * auxp%gr_delta * ddy_mean(irho )
+    auxp%Ts_U   = y * auxp%gr_delta * auxp%dfav_U
+    auxp%Ts_V   = y * auxp%gr_delta * auxp%dfav_V
+    auxp%Ts_W   = y * auxp%gr_delta * auxp%dfav_W
+    auxp%Ts_E   = y * auxp%gr_delta * auxp%dfav_E
+
+    do is=1, ns_
+      auxp%Ts_cs(is)  = y * auxp%gr_delta * auxp%dfav_cs(is)
+    end do
+
+  end subroutine largo_BL_temporal_consistent_preStep_sEtaMean
 
 
-  subroutine largo_BL_temporal_tconsistent_preStep_sEta_(cp, y, rms, mean_rqq, ddy_rms, dmean_rqq)
+  subroutine largo_BL_temporal_consistent_preStep_sEta_(cp, y, rms, mean_rqq, ddy_rms, dmean_rqq)
 
     real(WP), intent(in)               :: y
     real(WP), dimension(*), intent(in) :: rms
@@ -364,7 +365,7 @@ contains
     real(WP), dimension(*), intent(in) :: dmean_rqq
     integer(c_int) :: is
     type(largo_workspace_ptr), intent(in)          :: cp
-    type(largo_BL_temporal_tconsistent_workspace_type), pointer :: auxp
+    type(largo_BL_temporal_consistent_workspace_type), pointer :: auxp
 
     ! Get Fortran pointer from C pointer
     call c_f_pointer(cp, auxp)
@@ -399,6 +400,8 @@ contains
       &          - auxp%dmean_rho * auxp%fav_E**2 &
       &          - auxp%mean_rho  * 2.0_WP*auxp%fav_E*auxp%dfav_E
 
+    ! FIXME: Arms are defined differently, fix below
+
     ! Assign Arms_rho
     auxp%Arms_rho = auxp%mean_rho
 
@@ -427,8 +430,8 @@ contains
     if (auxp%Arms_E > eps) auxp%dArms_E  = 0.5_WP / auxp%Arms_E * auxp%drhoEpEp
 
     do is=1, ns_
-      auxp%Arms_rhos(is)  = auxp%mean_rho
-      auxp%dArms_rhos(is) = auxp%dmean_rho
+      auxp%Arms_cs(is)  = auxp%mean_rho
+      auxp%dArms_cs(is) = auxp%dmean_rho
     end do
 
     ! These ones depend on y only
@@ -448,19 +451,19 @@ contains
     if (auxp%Arms_E   > eps) auxp%ygArms_E   = y * auxp%gr_delta * auxp%dArms_E/auxp%Arms_E
 
     do is=1, ns_
-      auxp%ygArms_rhos(is) = 0.0_WP
-      if (auxp%Arms_rhos(is) > eps)  auxp%ygArms_rhos(is) = y * auxp%gr_delta * auxp%dArms_rhos(is)/auxp%Arms_rhos(is)
+      auxp%ygArms_cs(is) = 0.0_WP
+      if (auxp%Arms_cs(is) > eps)  auxp%ygArms_cs(is) = y * auxp%gr_delta * auxp%dArms_cs(is)/auxp%Arms_cs(is)
     end do
 
-  end subroutine largo_BL_temporal_tconsistent_preStep_sEta_
+  end subroutine largo_BL_temporal_consistent_preStep_sEta_
 
 
-  subroutine largo_BL_temporal_tconsistent_preStep_sEta_innerxz(cp, qflow)
+  subroutine largo_BL_temporal_consistent_preStep_sEta_innerxz(cp, qflow)
 
     real(WP), dimension(*), intent(in) :: qflow
     integer(c_int) :: is
     type(largo_workspace_ptr), intent(in) :: cp
-    type(largo_BL_temporal_tconsistent_workspace_type), pointer :: auxp
+    type(largo_BL_temporal_consistent_workspace_type), pointer :: auxp
 
     ! Get Fortran pointer from C pointer
     call c_f_pointer(cp, auxp)
@@ -477,24 +480,24 @@ contains
     auxp%ffluc_W  = auxp%field_W   - auxp%fav_W
     auxp%ffluc_E  = auxp%field_E   - auxp%fav_E
 
-    auxp%dtsArms_rho = auxp%fluc_rho * auxp%ygArms_rho
-    auxp%dtsArms_U   = auxp%ffluc_U  * auxp%ygArms_U
-    auxp%dtsArms_V   = auxp%ffluc_V  * auxp%ygArms_V
-    auxp%dtsArms_W   = auxp%ffluc_W  * auxp%ygArms_W
-    auxp%dtsArms_E   = auxp%ffluc_E  * auxp%ygArms_E
+    auxp%TsArms_rho = auxp%fluc_rho * auxp%ygArms_rho
+    auxp%TsArms_U   = auxp%ffluc_U  * auxp%ygArms_U
+    auxp%TsArms_V   = auxp%ffluc_V  * auxp%ygArms_V
+    auxp%TsArms_W   = auxp%ffluc_W  * auxp%ygArms_W
+    auxp%TsArms_E   = auxp%ffluc_E  * auxp%ygArms_E
 
     do is=1, ns_
-      auxp%field_rhos(is)   = qflow(5+is)
-      auxp%fluc_rhos(is)    = auxp%field_rhos(is) - auxp%mean_rhos(is)
-      auxp%dtsArms_rhos(is) = auxp%fluc_rhos(is) * auxp%ygArms_rhos(is)
+      auxp%field_cs (is)  = qflow(5+is)/qflow(irho)
+      auxp%fluc_cs  (is)  = auxp%field_cs(is) - auxp%fav_cs   (is)
+      auxp%TsArms_cs(is)  = auxp%fluc_cs (is) * auxp%ygArms_cs(is)
     end do
 
     ! Compute mean plus fluctuations slow time derivative
-    auxp%dtsFull_rho = auxp%dts_rho + auxp%dtsArms_rho
-    auxp%dtsFull_U   = auxp%dts_U   + auxp%dtsArms_U
-    auxp%dtsFull_V   = auxp%dts_V   + auxp%dtsArms_V
-    auxp%dtsFull_W   = auxp%dts_W   + auxp%dtsArms_W
-    auxp%dtsFull_E   = auxp%dts_E   + auxp%dtsArms_E
+    auxp%TsFull_rho = auxp%Ts_rho + auxp%TsArms_rho
+    auxp%TsFull_U   = auxp%Ts_U   + auxp%TsArms_U
+    auxp%TsFull_V   = auxp%Ts_V   + auxp%TsArms_V
+    auxp%TsFull_W   = auxp%Ts_W   + auxp%TsArms_W
+    auxp%TsFull_E   = auxp%Ts_E   + auxp%TsArms_E
 
 
 !!$     auxp%fluc_rho  = qflow(irho ) - mean(irho )
@@ -503,21 +506,21 @@ contains
 !!$     auxp%fluc_rhoW = qflow(irhoW) - mean(irhoW)
 !!$     auxp%fluc_rhoE = qflow(irhoE) - mean(irhoE)
 !!$
-!!$     auxp%dtsRms_rho  = auxp%fluc_rho  * auxp%ygrms_rho
-!!$     auxp%dtsRms_rhoU = auxp%fluc_rhoU * auxp%ygrms_rhoU
-!!$     auxp%dtsRms_rhoV = auxp%fluc_rhoV * auxp%ygrms_rhoV
-!!$     auxp%dtsRms_rhoW = auxp%fluc_rhoW * auxp%ygrms_rhoW
-!!$     auxp%dtsRms_rhoE = auxp%fluc_rhoE * auxp%ygrms_rhoE
+!!$     auxp%TsRms_rho  = auxp%fluc_rho  * auxp%ygrms_rho
+!!$     auxp%TsRms_rhoU = auxp%fluc_rhoU * auxp%ygrms_rhoU
+!!$     auxp%TsRms_rhoV = auxp%fluc_rhoV * auxp%ygrms_rhoV
+!!$     auxp%TsRms_rhoW = auxp%fluc_rhoW * auxp%ygrms_rhoW
+!!$     auxp%TsRms_rhoE = auxp%fluc_rhoE * auxp%ygrms_rhoE
 !!$
 !!$     do is=1, ns_
 !!$       auxp%fluc_rhos(is)  = qflow(5+is) - mean(5+is)
-!!$       auxp%dtsRms_rhos(is) = auxp%fluc_rhos(is) * auxp%ygrms_rhos(is)
+!!$       auxp%TsRms_rhos(is) = auxp%fluc_rhos(is) * auxp%ygrms_rhos(is)
 !!$     end do
 
-  end subroutine largo_BL_temporal_tconsistent_preStep_sEta_innerxz
+  end subroutine largo_BL_temporal_consistent_preStep_sEta_innerxz
 
 
-  subroutine largo_BL_temporal_tconsistent_preStep_sEta_innery(cp, y, mean, rms, mean_rqq, ddy_mean, ddy_rms, dmean_rqq)
+  subroutine largo_BL_temporal_consistent_preStep_sEta_innery(cp, y, mean, rms, mean_rqq, ddy_mean, ddy_rms, dmean_rqq)
 
     real(WP), intent(in)               :: y
     real(WP), dimension(*), intent(in) :: mean
@@ -528,13 +531,13 @@ contains
     real(WP), dimension(*), intent(in) :: dmean_rqq
     type(largo_workspace_ptr), intent(in)        :: cp
 
-    call largo_BL_temporal_tconsistent_preStep_sEtaMean(cp, y, mean, ddy_mean)
-    call largo_BL_temporal_tconsistent_preStep_sEta_(cp, y, rms, mean_rqq, ddy_rms, dmean_rqq)
+    call largo_BL_temporal_consistent_preStep_sEtaMean(cp, y, mean, ddy_mean)
+    call largo_BL_temporal_consistent_preStep_sEta_(cp, y, rms, mean_rqq, ddy_rms, dmean_rqq)
 
-  end subroutine largo_BL_temporal_tconsistent_preStep_sEta_innery
+  end subroutine largo_BL_temporal_consistent_preStep_sEta_innery
 
 
-  subroutine largo_BL_temporal_tconsistent_preStep_sEta(cp, y, qflow, mean, rms, mean_rqq, ddy_mean, ddy_rms, dmean_rqq)
+  subroutine largo_BL_temporal_consistent_preStep_sEta(cp, y, qflow, mean, rms, mean_rqq, ddy_mean, ddy_rms, dmean_rqq)
 
     real(WP), intent(in)                  :: y
     real(WP), dimension(*), intent(in) :: qflow
@@ -547,112 +550,113 @@ contains
     type(largo_workspace_ptr), intent(in)        :: cp
 
 
-    call largo_BL_temporal_tconsistent_preStep_sEtaMean(cp, y, mean, ddy_mean)
-    call largo_BL_temporal_tconsistent_preStep_sEta_(cp, y, rms, mean_rqq, ddy_rms, dmean_rqq)
-    call largo_BL_temporal_tconsistent_preStep_sEta_innerxz(cp, qflow)
+    call largo_BL_temporal_consistent_preStep_sEtaMean(cp, y, mean, ddy_mean)
+    call largo_BL_temporal_consistent_preStep_sEta_(cp, y, rms, mean_rqq, ddy_rms, dmean_rqq)
+    call largo_BL_temporal_consistent_preStep_sEta_innerxz(cp, qflow)
 
-  end subroutine largo_BL_temporal_tconsistent_preStep_sEta
+  end subroutine largo_BL_temporal_consistent_preStep_sEta
 
 
+  ! FIXME: Fix mean sources
 #define DECLARE_SUBROUTINE(token)token (cp, A, B, src);\
   type(largo_workspace_ptr), intent(in)   :: cp;\
   real(WP)       , intent(in)             :: A, B;\
   real(WP)       , intent(inout)          :: src;\
-  type(largo_BL_temporal_tconsistent_workspace_type), pointer :: auxp;\
+  type(largo_BL_temporal_consistent_workspace_type), pointer :: auxp;\
   call c_f_pointer(cp, auxp)\
 
-  subroutine DECLARE_SUBROUTINE(largo_BL_temporal_tconsistent_continuity_sEtaMean)
-    src = A * src + B * auxp%dts_rho
-  end subroutine largo_BL_temporal_tconsistent_continuity_sEtaMean
+  subroutine DECLARE_SUBROUTINE(largo_BL_temporal_consistent_continuity_sEtaMean)
+    src = A * src + B * auxp%Ts_rho
+  end subroutine largo_BL_temporal_consistent_continuity_sEtaMean
 
 
-  subroutine DECLARE_SUBROUTINE(largo_BL_temporal_tconsistent_xMomentum_sEtaMean)
-    src = A * src + B * auxp%dts_rhoU
-  end subroutine largo_BL_temporal_tconsistent_xMomentum_sEtaMean
+  subroutine DECLARE_SUBROUTINE(largo_BL_temporal_consistent_xMomentum_sEtaMean)
+!!$     src = A * src + B * auxp%Ts_rhoU
+  end subroutine largo_BL_temporal_consistent_xMomentum_sEtaMean
 
 
-  subroutine DECLARE_SUBROUTINE(largo_BL_temporal_tconsistent_yMomentum_sEtaMean)
-    src = A * src + B * auxp%dts_rhoV
-  end subroutine largo_BL_temporal_tconsistent_yMomentum_sEtaMean
+  subroutine DECLARE_SUBROUTINE(largo_BL_temporal_consistent_yMomentum_sEtaMean)
+!!$     src = A * src + B * auxp%Ts_rhoV
+  end subroutine largo_BL_temporal_consistent_yMomentum_sEtaMean
 
 
-  subroutine DECLARE_SUBROUTINE(largo_BL_temporal_tconsistent_zMomentum_sEtaMean)
-    src = A * src + B * auxp%dts_rhoW
-  end subroutine largo_BL_temporal_tconsistent_zMomentum_sEtaMean
+  subroutine DECLARE_SUBROUTINE(largo_BL_temporal_consistent_zMomentum_sEtaMean)
+!!$     src = A * src + B * auxp%Ts_rhoW
+  end subroutine largo_BL_temporal_consistent_zMomentum_sEtaMean
 
 
-  subroutine DECLARE_SUBROUTINE(largo_BL_temporal_tconsistent_energy_sEtaMean)
-    src = A * src + B * auxp%dts_rhoE
-  end subroutine largo_BL_temporal_tconsistent_energy_sEtaMean
+  subroutine DECLARE_SUBROUTINE(largo_BL_temporal_consistent_energy_sEtaMean)
+!!$     src = A * src + B * auxp%Ts_rhoE
+  end subroutine largo_BL_temporal_consistent_energy_sEtaMean
 
 
-  subroutine largo_BL_temporal_tconsistent_ispecies_sEtaMean (cp, A, B, src, is)
+  subroutine largo_BL_temporal_consistent_ispecies_sEtaMean (cp, A, B, src, is)
     type(largo_workspace_ptr), intent(in)    :: cp
     real(WP)       , intent(in)              :: A, B
     real(WP)       , intent(inout)           :: src
-    type(largo_BL_temporal_tconsistent_workspace_type), pointer :: auxp
+    type(largo_BL_temporal_consistent_workspace_type), pointer :: auxp
     integer(c_int), intent(in)               :: is
 
     call c_f_pointer(cp, auxp)
-    src = A * src + B * auxp%dts_rhos(is)
-  end subroutine largo_BL_temporal_tconsistent_ispecies_sEtaMean
+!!$     src = A * src + B * auxp%Ts_rhos(is)
+  end subroutine largo_BL_temporal_consistent_ispecies_sEtaMean
 
 
-  subroutine largo_BL_temporal_tconsistent_species_sEtaMean (cp, A, B, srcvec)
+  subroutine largo_BL_temporal_consistent_species_sEtaMean (cp, A, B, srcvec)
     type(largo_workspace_ptr), intent(in)     :: cp
     real(WP)       , intent(in)               :: A, B
     real(WP), dimension(*), intent(inout)     :: srcvec ! "*" = ns_
     integer(c_int)                            :: is
 
     do is = 1, ns_
-      call largo_BL_temporal_tconsistent_ispecies_sEtaMean (cp, A, B, srcvec(is), is)
+      call largo_BL_temporal_consistent_ispecies_sEtaMean (cp, A, B, srcvec(is), is)
     end do
-  end subroutine largo_BL_temporal_tconsistent_species_sEtaMean
+  end subroutine largo_BL_temporal_consistent_species_sEtaMean
 
 
-  subroutine DECLARE_SUBROUTINE(largo_BL_temporal_tconsistent_continuity_sEta_)
-    src = A * src + B * auxp%dtsFull_rho
-  end subroutine largo_BL_temporal_tconsistent_continuity_sEta_
+  subroutine DECLARE_SUBROUTINE(largo_BL_temporal_consistent_continuity_sEta_)
+    src = A * src + B * auxp%TsFull_rho
+  end subroutine largo_BL_temporal_consistent_continuity_sEta_
 
 
-  subroutine DECLARE_SUBROUTINE(largo_BL_temporal_tconsistent_xMomentum_sEta_)
-    src = A * src + B * (  auxp%field_rho * auxp%dtsFull_U &
-      &                  + auxp%field_U   * auxp%dtsFull_rho  )
-  end subroutine largo_BL_temporal_tconsistent_xMomentum_sEta_
+  subroutine DECLARE_SUBROUTINE(largo_BL_temporal_consistent_xMomentum_sEta_)
+    src = A * src + B * (  auxp%field_rho * auxp%TsFull_U &
+      &                  + auxp%field_U   * auxp%TsFull_rho  )
+  end subroutine largo_BL_temporal_consistent_xMomentum_sEta_
 
 
-  subroutine DECLARE_SUBROUTINE(largo_BL_temporal_tconsistent_yMomentum_sEta_)
-    src = A * src + B * (  auxp%field_rho * auxp%dtsFull_V &
-      &                  + auxp%field_V   * auxp%dtsFull_rho  )
-  end subroutine largo_BL_temporal_tconsistent_yMomentum_sEta_
+  subroutine DECLARE_SUBROUTINE(largo_BL_temporal_consistent_yMomentum_sEta_)
+    src = A * src + B * (  auxp%field_rho * auxp%TsFull_V &
+      &                  + auxp%field_V   * auxp%TsFull_rho  )
+  end subroutine largo_BL_temporal_consistent_yMomentum_sEta_
 
 
-  subroutine DECLARE_SUBROUTINE(largo_BL_temporal_tconsistent_zMomentum_sEta_)
-    src = A * src + B * (  auxp%field_rho * auxp%dtsFull_W &
-      &                  + auxp%field_W   * auxp%dtsFull_rho  )
-  end subroutine largo_BL_temporal_tconsistent_zMomentum_sEta_
+  subroutine DECLARE_SUBROUTINE(largo_BL_temporal_consistent_zMomentum_sEta_)
+    src = A * src + B * (  auxp%field_rho * auxp%TsFull_W &
+      &                  + auxp%field_W   * auxp%TsFull_rho  )
+  end subroutine largo_BL_temporal_consistent_zMomentum_sEta_
 
 
-  subroutine DECLARE_SUBROUTINE(largo_BL_temporal_tconsistent_energy_sEta_)
-    src = A * src + B * (  auxp%field_rho * auxp%dtsFull_E &
-      &                  + auxp%field_E   * auxp%dtsFull_rho  )
-  end subroutine largo_BL_temporal_tconsistent_energy_sEta_
+  subroutine DECLARE_SUBROUTINE(largo_BL_temporal_consistent_energy_sEta_)
+    src = A * src + B * (  auxp%field_rho * auxp%TsFull_E &
+      &                  + auxp%field_E   * auxp%TsFull_rho  )
+  end subroutine largo_BL_temporal_consistent_energy_sEta_
 
 
-  subroutine largo_BL_temporal_tconsistent_ispecies_sEta_ (cp, A, B, src, is)
+  subroutine largo_BL_temporal_consistent_ispecies_sEta_ (cp, A, B, src, is)
     type(largo_workspace_ptr), intent(in)    :: cp
     real(WP)       , intent(in)              :: A, B
     real(WP)       , intent(inout)           :: src
-    type(largo_BL_temporal_tconsistent_workspace_type), pointer :: auxp
+    type(largo_BL_temporal_consistent_workspace_type), pointer :: auxp
     integer(c_int), intent(in)               :: is
 
     ! FIXME: method not implemented
     call c_f_pointer(cp, auxp)
-    src = A * src + B * ( auxp%dts_rhos(is) + auxp%dtsArms_rhos(is) )
-  end subroutine largo_BL_temporal_tconsistent_ispecies_sEta_
+!!$     src = A * src + B * ( auxp%Ts_rhos(is) + auxp%TsArms_rhos(is) )
+  end subroutine largo_BL_temporal_consistent_ispecies_sEta_
 
 
-  subroutine largo_BL_temporal_tconsistent_species_sEta_ (cp, A, B, srcvec)
+  subroutine largo_BL_temporal_consistent_species_sEta_ (cp, A, B, srcvec)
     type(largo_workspace_ptr), intent(in)   :: cp
     real(WP)       , intent(in)             :: A, B
     real(WP), dimension(*), intent(inout)   :: srcvec ! "*" = ns_
@@ -660,27 +664,27 @@ contains
 
     ! FIXME: method not implemented
     do is = 1, ns_
-      call largo_BL_temporal_tconsistent_ispecies_sEta_ (cp, A, B, srcvec(is), is)
+      call largo_BL_temporal_consistent_ispecies_sEta_ (cp, A, B, srcvec(is), is)
     end do
-  end subroutine largo_BL_temporal_tconsistent_species_sEta_
+  end subroutine largo_BL_temporal_consistent_species_sEta_
 
 
-  subroutine largo_BL_temporal_tconsistent_sEta (cp, A, B, srcvec)
+  subroutine largo_BL_temporal_consistent_sEta (cp, A, B, srcvec)
     type(largo_workspace_ptr), intent(in)     :: cp
     real(WP)       , intent(in)               :: A, B
     real(WP), dimension(*), intent(inout)     :: srcvec ! "*" = 5+ns_
     integer(c_int)                            :: is
 
-    call largo_BL_temporal_tconsistent_continuity_sEta_ (cp, A, B, srcvec(irho ))
-    call largo_BL_temporal_tconsistent_xMomentum_sEta_  (cp, A, B, srcvec(irhou))
-    call largo_BL_temporal_tconsistent_yMomentum_sEta_  (cp, A, B, srcvec(irhov))
-    call largo_BL_temporal_tconsistent_zMomentum_sEta_  (cp, A, B, srcvec(irhow))
-    call largo_BL_temporal_tconsistent_energy_sEta_     (cp, A, B, srcvec(irhoE))
+    call largo_BL_temporal_consistent_continuity_sEta_ (cp, A, B, srcvec(irho ))
+    call largo_BL_temporal_consistent_xMomentum_sEta_  (cp, A, B, srcvec(irhou))
+    call largo_BL_temporal_consistent_yMomentum_sEta_  (cp, A, B, srcvec(irhov))
+    call largo_BL_temporal_consistent_zMomentum_sEta_  (cp, A, B, srcvec(irhow))
+    call largo_BL_temporal_consistent_energy_sEta_     (cp, A, B, srcvec(irhoE))
 
     do is = 1, ns_
-      call largo_BL_temporal_tconsistent_ispecies_sEta_ (cp, A, B, srcvec(5+is), is)
+      call largo_BL_temporal_consistent_ispecies_sEta_ (cp, A, B, srcvec(5+is), is)
     end do
 
-  end subroutine largo_BL_temporal_tconsistent_sEta
+  end subroutine largo_BL_temporal_consistent_sEta
 
-end module largo_BL_temporal_tconsistent
+end module largo_BL_temporal_consistent

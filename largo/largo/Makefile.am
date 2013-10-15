@@ -26,6 +26,7 @@ liblargof_la_SOURCES      += largo_bl_spatial_mixed.f90
 liblargof_la_SOURCES      += largo_bl_spatiotemporal.f90
 liblargof_la_SOURCES      += largo_bl_temporal_chemistry.f90
 liblargof_la_SOURCES      += largo_bl_temporal.f90
+liblargof_la_SOURCES      += largo_bl_temporal_consistent.f90
 liblargof_la_SOURCES      += largo_bl_temporal_tconsistent.f90
 liblargof_la_SOURCES      += largo.f90
 module_DATA                = largo_workspace.mod
@@ -34,6 +35,7 @@ module_DATA               += largo_bl_spatial_first_order.mod
 module_DATA               += largo_bl_spatial_mixed.mod
 module_DATA               += largo_bl_spatiotemporal.mod
 module_DATA               += largo_bl_temporal_chemistry.mod
+module_DATA               += largo_bl_temporal_consistent.mod
 module_DATA               += largo_bl_temporal_tconsistent.mod
 module_DATA               += largo_bl_temporal.mod
 module_DATA               += largo.mod
@@ -46,8 +48,8 @@ liblargo_la_SOURCES += largo.h  # Generic, unfinished
 #liblargo_la_SOURCES += largo_bl_spatial_first_order.h
 #liblargo_la_SOURCES += largo_bl_spatial_mixed.h
 #liblargo_la_SOURCES += largo_bl_temporal_chemistry.h
-liblargo_la_SOURCES += largo_bl_temporal_tconsistent.h
-liblargo_la_SOURCES += largo_bl_temporal.h
+#liblargo_la_SOURCES += largo_bl_temporal_tconsistent.h
+#liblargo_la_SOURCES += largo_bl_temporal.h
 liblargo_la_LDFLAGS  = -release $(PACKAGE_VERSION)
 liblargo_la_LIBADD   = liblargof.la
 
@@ -57,8 +59,8 @@ pkginclude_HEADERS  = largo.h version.h
 #pkginclude_HEADERS += largo_bl_spatial_first_order.h
 #pkginclude_HEADERS += largo_bl_spatial_mixed.h
 #pkginclude_HEADERS += largo_bl_temporal_chemistry.h
-pkginclude_HEADERS += largo_bl_temporal_tconsistent.h
-pkginclude_HEADERS += largo_bl_temporal.h
+#pkginclude_HEADERS += largo_bl_temporal_tconsistent.h
+#pkginclude_HEADERS += largo_bl_temporal.h
 
 # Extra things to clean up
 CLEANFILES += *.mod *.gcno *.gcna
