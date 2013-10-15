@@ -36,7 +36,7 @@ module largo_BL_temporal_consistent
     real(WP) :: TsFull_E   = 0.0_WP
 
     real(WP), allocatable, dimension(:) :: Ts_cs
-    real(WP), allocatable, dimension(:) :: fluc_cs
+    real(WP), allocatable, dimension(:) :: ffluc_cs
     real(WP), allocatable, dimension(:) :: TsArms_cs
     real(WP), allocatable, dimension(:) :: TsFull_cs
 
@@ -179,7 +179,7 @@ contains
     ! Allocate arrays for species
     if (ns_ > 0) then
       allocate(auxp%Ts_cs     (1:ns_))
-      allocate(auxp%fluc_cs   (1:ns_))
+      allocate(auxp%ffluc_cs  (1:ns_))
       allocate(auxp%fav_cs    (1:ns_))
       allocate(auxp%field_cs  (1:ns_))
       allocate(auxp%TsArms_cs (1:ns_))
@@ -203,8 +203,8 @@ contains
 
     ! Deallocate arrays for species
     if (allocated(auxp%Ts_cs))      deallocate(auxp%Ts_cs     )
-    if (allocated(auxp%fluc_cs))    deallocate(auxp%fluc_cs   )
-    if (allocated(auxp%fav_cs))     deallocate(auxp%fav_cs   )
+    if (allocated(auxp%ffluc_cs))   deallocate(auxp%ffluc_cs  )
+    if (allocated(auxp%fav_cs))     deallocate(auxp%fav_cs    )
     if (allocated(auxp%field_cs))   deallocate(auxp%field_cs  )
     if (allocated(auxp%TsArms_cs))  deallocate(auxp%TsArms_cs )
     if (allocated(auxp%Arms_cs))    deallocate(auxp%Arms_cs   )
@@ -400,16 +400,15 @@ contains
       &          - auxp%dmean_rho * auxp%fav_E**2 &
       &          - auxp%mean_rho  * 2.0_WP*auxp%fav_E*auxp%dfav_E
 
-    ! FIXME: Arms are defined differently, fix below
-
     ! Assign Arms_rho
     auxp%Arms_rho = auxp%mean_rho
 
-    ! Compute Arms_U=sqrt{2*tke}
-    auxp%Arms_U   = sqrt(auxp%rhoupup + auxp%rhovpvp + auxp%rhowpwp)
+    ! Compute Arms_U=sqrt{2*k}
+    auxp%Arms_U   = sqrt((auxp%rhoupup + auxp%rhovpvp + auxp%rhowpwp) / &
+     &                     auxp%mean_rho)
     auxp%Arms_V   = auxp%Arms_U
     auxp%Arms_W   = auxp%Arms_U
-    auxp%Arms_E   = sqrt(auxp%rhoEpEp)
+    auxp%Arms_E   = sqrt(auxp%rhoEpEp/ auxp%mean_rho)
 
     ! Assign dArms_rho
     auxp%dArms_rho = auxp%dmean_rho
@@ -420,14 +419,17 @@ contains
     auxp%dArms_W  = 0.0_WP
 
     if (auxp%Arms_U > eps) then
-      auxp%dArms_U  = 0.5_WP / auxp%Arms_U &
-        &          * (auxp%drhoupup + auxp%drhovpvp + auxp%drhowpwp)
+      auxp%dArms_U  = 0.5_WP / auxp%Arms_U * ( &
+        &   (auxp%drhoupup + auxp%drhovpvp + auxp%drhowpwp) / auxp%mean_rho &
+        & - (auxp%rhoupup + auxp%rhovpvp + auxp%rhowpwp) / auxp%mean_rho**2 * auxp%dmean_rho )
       auxp%dArms_V  = auxp%dArms_U
       auxp%dArms_W  = auxp%dArms_U
     end if
 
     auxp%dArms_E  = 0.0_WP
-    if (auxp%Arms_E > eps) auxp%dArms_E  = 0.5_WP / auxp%Arms_E * auxp%drhoEpEp
+    if (auxp%Arms_E > eps) &
+      & auxp%dArms_E  = 0.5_WP / auxp%Arms_E * ( &
+          & auxp%drhoEpEp / auxp%mean_rho - auxp%rhoEpEp / auxp%mean_rho**2 * auxp%dmean_rho )
 
     do is=1, ns_
       auxp%Arms_cs(is)  = auxp%mean_rho
@@ -480,6 +482,7 @@ contains
     auxp%ffluc_W  = auxp%field_W   - auxp%fav_W
     auxp%ffluc_E  = auxp%field_E   - auxp%fav_E
 
+    ! FIXME: Include rms growth rates
     auxp%TsArms_rho = auxp%fluc_rho * auxp%ygArms_rho
     auxp%TsArms_U   = auxp%ffluc_U  * auxp%ygArms_U
     auxp%TsArms_V   = auxp%ffluc_V  * auxp%ygArms_V
@@ -488,8 +491,8 @@ contains
 
     do is=1, ns_
       auxp%field_cs (is)  = qflow(5+is)/qflow(irho)
-      auxp%fluc_cs  (is)  = auxp%field_cs(is) - auxp%fav_cs   (is)
-      auxp%TsArms_cs(is)  = auxp%fluc_cs (is) * auxp%ygArms_cs(is)
+      auxp%ffluc_cs (is)  = auxp%field_cs(is) - auxp%fav_cs   (is)
+      auxp%TsArms_cs(is)  = auxp%ffluc_cs(is) * auxp%ygArms_cs(is)
     end do
 
     ! Compute mean plus fluctuations slow time derivative
