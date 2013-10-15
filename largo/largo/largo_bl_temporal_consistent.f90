@@ -586,22 +586,26 @@ contains
 
 
   subroutine DECLARE_SUBROUTINE(largo_BL_temporal_consistent_xMomentum_sEtaMean)
-!!$     src = A * src + B * auxp%Ts_rhoU
+    src = A * src + B * (  auxp%mean_rho * auxp%Ts_U &
+      &                  + auxp%fav_U    * auxp%Ts_rho  )
   end subroutine largo_BL_temporal_consistent_xMomentum_sEtaMean
 
 
   subroutine DECLARE_SUBROUTINE(largo_BL_temporal_consistent_yMomentum_sEtaMean)
-!!$     src = A * src + B * auxp%Ts_rhoV
+    src = A * src + B * (  auxp%mean_rho * auxp%Ts_V &
+      &                  + auxp%fav_V    * auxp%Ts_rho  )
   end subroutine largo_BL_temporal_consistent_yMomentum_sEtaMean
 
 
   subroutine DECLARE_SUBROUTINE(largo_BL_temporal_consistent_zMomentum_sEtaMean)
-!!$     src = A * src + B * auxp%Ts_rhoW
+    src = A * src + B * (  auxp%mean_rho * auxp%Ts_W &
+      &                  + auxp%fav_W    * auxp%Ts_rho  )
   end subroutine largo_BL_temporal_consistent_zMomentum_sEtaMean
 
 
   subroutine DECLARE_SUBROUTINE(largo_BL_temporal_consistent_energy_sEtaMean)
-!!$     src = A * src + B * auxp%Ts_rhoE
+    src = A * src + B * (  auxp%mean_rho * auxp%Ts_E &
+      &                  + auxp%fav_E   * auxp%Ts_rho  )
   end subroutine largo_BL_temporal_consistent_energy_sEtaMean
 
 
@@ -613,7 +617,8 @@ contains
     integer(c_int), intent(in)               :: is
 
     call c_f_pointer(cp, auxp)
-!!$     src = A * src + B * auxp%Ts_rhos(is)
+    src = A * src + B * (  auxp%mean_rho   * auxp%Ts_cs(is) &
+      &                  + auxp%fav_cs(is) * auxp%Ts_rho  )
   end subroutine largo_BL_temporal_consistent_ispecies_sEtaMean
 
 
