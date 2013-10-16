@@ -40,15 +40,15 @@ extern "C" {
 /**
  * Obtain a lookup table of air's viscosity in Pascal-seconds versus
  * temperature in degrees Kelvin according to Svehla 1962 table IV on page 117.
+ *
  * The returned <tt>gsl_spline*</tt> can be interrogated using <a
  * href="http://www.gnu.org/software/gsl/manual/html_node/Higher_002dlevel-Interface.html"
  * the usual routines</a>.  The return value must be subsequently cleaned up
  * using <tt>gsl_spline_free()</tt>.
  *
  * @return On success, a <tt>gsl_spline *</tt> suitable for evaluation using,
- *         for example, <tt>gsl_spline_eval()</tt>.  The return value must be 
- *         subsequently cleaned up using <tt>gsl_spline_free()</tt>.  On failure
- *         \c NULL is returned.
+ *         for example, <tt>gsl_spline_eval()</tt>.  On failure \c NULL is
+ *         returned.
  */
 gsl_spline * suzerain_svehla_air_mu_vs_T();
 
