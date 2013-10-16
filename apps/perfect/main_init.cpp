@@ -98,6 +98,7 @@ suzerain::perfect::driver_init::run(int argc, char **argv)
     using std::numeric_limits;
     using std::pow;
     using std::sin;
+    using std::sqrt;
     using std::string;
 
     // Establish default grid and domain extents
@@ -230,7 +231,6 @@ suzerain::perfect::driver_init::run(int argc, char **argv)
     }
     const std::string restart_file = positional[0];
     const bool clobber = options.variables()["clobber"].as<bool>();
-    const bool blasius = options.variables().count("Re_x");
     if (npower < 0 || npower > 1) {
         FATAL0("npower in [0,1] required");
         return EXIT_FAILURE;
@@ -241,7 +241,7 @@ suzerain::perfect::driver_init::run(int argc, char **argv)
     }
     options.conflicting_options("acoustic_strength", "mms");
     options.conflicting_options("entropy_strength",  "mms");
-    if (grid->two_sided() && blasius) {
+    if (grid->two_sided() && options.variables().count("Re_x")) {
         WARN0("Conflicting two-sided grid and Blasius profile requested?");
     }
     options.conflicting_options("Re_x", "upper_u"); // Blasius sets freestream
@@ -280,15 +280,19 @@ suzerain::perfect::driver_init::run(int argc, char **argv)
 
     } else {
 
-        INFO("Computing mean base field for use in zero-zero modes");
         msoln.reset(); // No manufactured solution in use
 
+        // Primitive state to be initialized depending on scenario
+        // Pressure and temperature convenient for later adding pulses
         ArrayXr u = ArrayXr::Constant(Ny, numeric_limits<real_t>::quiet_NaN());
         ArrayXr v = ArrayXr::Constant(Ny, numeric_limits<real_t>::quiet_NaN());
         ArrayXr w = ArrayXr::Constant(Ny, numeric_limits<real_t>::quiet_NaN());
         ArrayXr T = ArrayXr::Constant(Ny, numeric_limits<real_t>::quiet_NaN());
+        ArrayXr p = ArrayXr::Constant(Ny, numeric_limits<real_t>::quiet_NaN());
 
-        if (blasius) {
+        if (options.variables().count("Re_x")) {
+
+            INFO0(who, "Computing mean freestream behavior per plate scenario");
 
             INFO("Blasius base profile for u, v, and T uses Re_x = "
                  << Re_x << ", Pr = " << scenario->Pr);
@@ -303,27 +307,32 @@ suzerain::perfect::driver_init::run(int argc, char **argv)
             shared_ptr<gsl_interp_accel> accel(gsl_interp_accel_alloc(),
                                                gsl_interp_accel_free);
 
+            // See plate_treatment.tex for origin of T-dependent scaling
             // Blasius profile fixes upper_{u,v} for the freestream...
-            isothermal->upper_u = gsl_spline_eval(fit_u.get(),
-                                                  grid->L.y(), accel.get());
-            isothermal->upper_v = gsl_spline_eval(fit_v.get(),
-                                                  grid->L.y(), accel.get());
-            // ...and an awful hack pretending lower_{u,v} enter additively
-            isothermal->upper_u += isothermal->lower_u;
-            isothermal->upper_v += isothermal->lower_v;
+            isothermal->upper_u   = sqrt(isothermal->upper_T); // Eqn (6)
+            isothermal->upper_v   = gsl_spline_eval(fit_v.get(),
+                                                    grid->L.y(), accel.get())
+                                  * isothermal->upper_u;
+            isothermal->upper_rho = pow(isothermal->upper_T,
+                                        scenario->beta - 0.5); // Eqn (8)
+            // ...where we've blissfully ignored lower_{u,v} (tra la la)
 
             // Denormalize calls honor lower, upper values for u, w, T.
-            // Wall-normal v does not use one as fit_v doesn't take on 1.
+            // Wall-normal v does not use one as fit_v does not achieve 1
             for (int j = 0; j < Ny; ++j) {
                 const double y_j = b->collocation_point(j);
                 u[j] = isothermal->denormalize_u(
                         gsl_spline_eval(fit_u.get(), y_j, accel.get()));
                 v[j] = gsl_spline_eval(fit_v.get(), y_j, accel.get())
-                     + isothermal->lower_v;  // And again with that hack
+                     * isothermal->upper_u;
                 w[j] = isothermal->denormalize_w(y_j / grid->L.y());
                 T[j] = isothermal->denormalize_T(
                         gsl_spline_eval(fit_T.get(), y_j, accel.get()));
             }
+
+            // Find pressure using constant density taken from freestream
+            p = isothermal->upper_rho * T / scenario->gamma;
+            INFO("Base field uses p from " << p(0) << " to " << p(Ny - 1));
 
         } else {
 
@@ -372,13 +381,11 @@ suzerain::perfect::driver_init::run(int argc, char **argv)
                       * pow(y_j * (Ly - y_j), npower);
             }
 
-        }
+            // Find pressure from temperature and constant density assumption
+            p = scenario->bulk_rho * T / scenario->gamma;
+            INFO("Base field uses p from " << p(0) << " to " << p(Ny - 1));
 
-        // Temperature set above, assume constant density, then find pressure
-        // Using pressure and temperature will be convenient for adding pulses
-        // Computation of pressure per suzerain::rholut::p(...)
-        ArrayXr p = scenario->bulk_rho * T / scenario->gamma;
-        INFO("Base field uses p from " << p(0) << " to " << p(Ny - 1));
+        }
 
         if (options.variables().count("acoustic_strength")) {
             const real_t left  = (Ly / 2) * (1 - acoustic_support);
