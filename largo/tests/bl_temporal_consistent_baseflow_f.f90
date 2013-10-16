@@ -200,28 +200,6 @@ program bl_temporal_consistent_baseflow_f
       &    -407.0_WP/ 2000000.0_WP   &
       /)
 
-!!$     real(WP), dimension(neq), parameter :: &
-!!$       srcmean_good = (/            &
-!!$       &       1.0_WP/ 1000.0_WP,   &
-!!$       &       9.0_WP/   40.0_WP,   &
-!!$       &       1.0_WP/20000.0_WP,   &
-!!$       &       1.0_WP/  400.0_WP,   &
-!!$       &    2060.0_WP           ,   &
-!!$       &       1.0_WP/10000.0_WP,   &
-!!$       &       1.0_WP/20000.0_WP    &
-!!$       /)
-!!$ 
-!!$     real(WP), dimension(neq), parameter :: &
-!!$       srcfull_good = (/                &
-!!$       &       11.0_WP/     10000.0_WP, &
-!!$       &       19.0_WP/        80.0_WP, &
-!!$       &     3989.0_WP/    200000.0_WP, &
-!!$       &      109.0_WP/      4000.0_WP, &
-!!$       &     1884.0_WP                , &
-!!$       &       11.0_WP/    100000.0_WP, &
-!!$       &       11.0_WP/    200000.0_WP  &
-!!$       /)
-
     real(WP), parameter :: tolerance = 1.0E-14
 
     integer(c_int) :: is
