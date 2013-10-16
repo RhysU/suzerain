@@ -133,7 +133,7 @@ suzerain_bl_find_edge(
  * representation of streamwise momentum \f$\rho u\f$.  The method computes
  * \f[
  *  \delta_1 = \int_0^\infty
- *  \left(1 - \frac{\rho u}{\rho_e \u_e}\right)
+ *  \left(1 - \frac{\rho u}{\rho_e u_e}\right)
  *  \, \mathrm{d}y
  *  .
  * \f]
@@ -173,7 +173,7 @@ suzerain_bl_displacement_thickness(
  * The method computes
  * \f[
  *  \delta_2 = \int_0^\infty
- *  \frac{\rho u}{\rho_e u_e} \left(1 - \frac{u}{\u_e}\right)
+ *  \frac{\rho u}{\rho_e u_e} \left(1 - \frac{u}{u_e}\right)
  *  \, \mathrm{d}y
  *  .
  * \f]
@@ -219,7 +219,7 @@ suzerain_bl_momentum_thickness(
  * The method computes
  * \f[
  *  \delta_3 = \int_0^\infty
- *  \frac{\rho u}{\rho_e u_e} \left(1 - \left(\frac{u}{\u_e}\right)^2\right)
+ *  \frac{\rho u}{\rho_e u_e} \left(1 - \left(\frac{u}{u_e}\right)^2\right)
  *  \, \mathrm{d}y
  *  .
  * \f]
