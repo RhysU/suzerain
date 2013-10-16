@@ -46,9 +46,8 @@ extern "C" {
  * the usual routines</a>.  The return value must be subsequently cleaned up
  * using <tt>gsl_spline_free()</tt>.
  *
- * @return On success, a <tt>gsl_spline *</tt> suitable for evaluation using,
- *         for example, <tt>gsl_spline_eval()</tt>.  On failure \c NULL is
- *         returned.
+ * @return On success, a <tt>gsl_spline *</tt> for use with
+ *         <tt>gsl_spline_eval()</tt>.  On failure \c NULL is returned.
  */
 gsl_spline * suzerain_svehla_air_mu_vs_T();
 
