@@ -86,7 +86,7 @@ extern const double suzerain_blasius_ganapol_fpp[45];
  * \f$\delta_{99}\f$ boundary layer thickness which matches \ref
  * suzerain_blasius_ganapol_eta to eight digits.
  */
-extern const double suzerain_blasius_extended_eta[195];
+extern const double suzerain_blasius_extended_eta[194];
 
 /**
  * Generated \f$f\left(\eta\right)\f$ data suitable for use outside well beyond
@@ -95,7 +95,7 @@ extern const double suzerain_blasius_extended_eta[195];
  *
  * @see \ref suzerain_blasius_extended_eta for the matching \f$\eta\f$ values.
  */
-extern const double suzerain_blasius_extended_f[195];
+extern const double suzerain_blasius_extended_f[194];
 
 /**
  * Generated \f$f^{\prime}\left(\eta\right)\f$ data suitable for use outside
@@ -104,7 +104,7 @@ extern const double suzerain_blasius_extended_f[195];
  *
  * @see \ref suzerain_blasius_extended_eta for the matching \f$\eta\f$ values.
  */
-extern const double suzerain_blasius_extended_fp[195];
+extern const double suzerain_blasius_extended_fp[194];
 
 /**
  * Generated \f$f^{\prime\prime}\left(\eta\right)\f$ data suitable for use
@@ -113,7 +113,7 @@ extern const double suzerain_blasius_extended_fp[195];
  *
  * @see \ref suzerain_blasius_extended_eta for the matching \f$\eta\f$ values.
  */
-extern const double suzerain_blasius_extended_fpp[195];
+extern const double suzerain_blasius_extended_fpp[194];
 
 /**
  * Obtain a Blasius profile spline fit producing nondimensional \f$u /
