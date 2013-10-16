@@ -312,6 +312,10 @@ suzerain::perfect::driver_init::run(int argc, char **argv)
                         gsl_spline_eval(fit_T.get(), y_j, accel.get()));
             }
 
+            // FIXME #2492 make isothermal->upper_v reflect Blasius outflow
+            // FIXME #2492 make isothermal->upper_w reflect Blasius outflow
+            // FIXME #2492 make isothermal->upper_T reflect Blasius outflow
+
         } else {
 
             INFO("Base field starts from linear ramps for u, v, w, and T");
