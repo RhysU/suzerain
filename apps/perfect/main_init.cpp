@@ -28,6 +28,7 @@
 #include <esio/esio.h>
 
 #include <suzerain/common.hpp>
+#include <suzerain/blasius.h>
 #include <suzerain/exprparse.hpp>
 #include <suzerain/math.hpp>
 #include <suzerain/ndx.hpp>
@@ -276,31 +277,66 @@ suzerain::perfect::driver_init::run(int argc, char **argv)
 
     } else {
 
+        INFO("Computing mean base field for use in zero-zero modes");
         msoln.reset(); // No manufactured solution in use
 
-        INFO("Computing mean base field for use in zero-zero modes");
-        // Working in pressure and temperature is convenient for pulses
-        // Computation of pressure per suzerain::rholut::p(...)
-        ArrayXr u = ArrayXr::LinSpaced(Ny, isothermal->lower_u,
-                                           isothermal->upper_u);
-        ArrayXr v = ArrayXr::LinSpaced(Ny, isothermal->lower_v,
-                                           isothermal->upper_v);
-        ArrayXr w = ArrayXr::LinSpaced(Ny, isothermal->lower_w,
-                                           isothermal->upper_w);
-        ArrayXr T = ArrayXr::LinSpaced(Ny, isothermal->lower_T,
-                                           isothermal->upper_T);
-        ArrayXr p = scenario->bulk_rho * T / scenario->gamma;
-        INFO("Base field uses constant rho = " << scenario->bulk_rho);
-        INFO("Base field uses u from " << u(0) << " to " << u(Ny - 1));
-        INFO("Base field uses v from " << v(0) << " to " << v(Ny - 1));
-        INFO("Base field uses w from " << w(0) << " to " << w(Ny - 1));
-        INFO("Base field uses T from " << T(0) << " to " << T(Ny - 1));
-        INFO("Base field uses p from " << p(0) << " to " << p(Ny - 1));
+        ArrayXr u = ArrayXr::Constant(Ny, numeric_limits<real_t>::quiet_NaN());
+        ArrayXr v = ArrayXr::Constant(Ny, numeric_limits<real_t>::quiet_NaN());
+        ArrayXr w = ArrayXr::Constant(Ny, numeric_limits<real_t>::quiet_NaN());
+        ArrayXr T = ArrayXr::Constant(Ny, numeric_limits<real_t>::quiet_NaN());
 
-        if (!blasius) {
+        if (blasius) {
+
+            INFO("Blasius base profile for u, v, and T uses Re_x = "
+                 << Re_x << ", Pr = " << scenario->Pr);
+            INFO("Linear ramp uses for w from "
+                 << isothermal->lower_w << " to " << isothermal->upper_w);
+            shared_ptr<gsl_spline> fit_u(suzerain_blasius_u(Re_x),
+                                         gsl_spline_free);
+            shared_ptr<gsl_spline> fit_v(suzerain_blasius_v(Re_x),
+                                         gsl_spline_free);
+            shared_ptr<gsl_spline> fit_T(suzerain_blasius_T(Re_x, scenario->Pr),
+                                         gsl_spline_free);
+            shared_ptr<gsl_interp_accel> accel(gsl_interp_accel_alloc(),
+                                               gsl_interp_accel_free);
+
+            // Notice the denormalize calls honor lower, upper values
+            for (int j = 0; j < Ny; ++j) {
+                const double y_j = b->collocation_point(j);
+                u[j] = isothermal->denormalize_u(
+                        gsl_spline_eval(fit_u.get(), y_j, accel.get()));
+                v[j] = isothermal->denormalize_v(
+                        gsl_spline_eval(fit_v.get(), y_j, accel.get()));
+                w[j] = isothermal->denormalize_w(y_j / grid->L.y());
+                T[j] = isothermal->denormalize_T(
+                        gsl_spline_eval(fit_T.get(), y_j, accel.get()));
+            }
+
+        } else {
+
+            INFO("Base field starts from linear ramps for u, v, w, and T");
+            //// FIXME: Notice the following setLinSpaced calls are wrong!
+            //// and should be replaced by something like the following.
+            //// This friendly message brought to you to reduce the size
+            //// of the commit perturbing the results of perfect_init.
+            // for (int j = 0; j < Ny; ++j) {
+            //     const double norm_y_j = b->collocation_point(j) / grid->L.y();
+            //     u[j] = isothermal->denormalize_u(norm_y_j);
+            //     v[j] = isothermal->denormalize_v(norm_y_j);
+            //     w[j] = isothermal->denormalize_w(norm_y_j);
+            //     T[j] = isothermal->denormalize_T(norm_y_j);
+            // }
+            u.setLinSpaced(isothermal->lower_u, isothermal->upper_u); // FIXME!
+            v.setLinSpaced(isothermal->lower_v, isothermal->upper_v); // FIXME!
+            w.setLinSpaced(isothermal->lower_w, isothermal->upper_w); // FIXME!
+            T.setLinSpaced(isothermal->lower_T, isothermal->upper_T); // FIXME!
+            INFO("Base field uses u from " << u(0) << " to " << u(Ny - 1));
+            INFO("Base field uses v from " << v(0) << " to " << v(Ny - 1));
+            INFO("Base field uses w from " << w(0) << " to " << w(Ny - 1));
+            INFO("Base field uses T from " << T(0) << " to " << T(Ny - 1));
 
             INFO("Parabolic profile will be added with npower = " << npower);
-            INFO("Finding normalization so u = (y*(L-y))^npower integrates to 1");
+            INFO("Finding normalization so u = (y*(L-y))^npower integral is 1");
             real_t normalization = numeric_limits<real_t>::quiet_NaN();
             if (npower == 1) {
                 // Mathematica: (Integrate[(x (L-x)),{x,0,L}]/L)^(-1)
@@ -331,16 +367,13 @@ suzerain::perfect::driver_init::run(int argc, char **argv)
                       * pow(y_j * (Ly - y_j), npower);
             }
 
-        } else {
-
-            INFO("Blasius profile will be added with Re_x = " << Re_x);
-            // TODO u profile
-            // TODO v profile
-
-            INFO("Initial temperature profile matches streamwise velocity");
-            // TODO T profile
-
         }
+
+        // Temperature set above, assume constant density, then find pressure
+        // Using pressure and temperature will be convenient for adding pulses
+        // Computation of pressure per suzerain::rholut::p(...)
+        ArrayXr p = scenario->bulk_rho * T / scenario->gamma;
+        INFO("Base field uses p from " << p(0) << " to " << p(Ny - 1));
 
         if (options.variables().count("acoustic_strength")) {
             const real_t left  = (Ly / 2) * (1 - acoustic_support);
@@ -373,7 +406,7 @@ suzerain::perfect::driver_init::run(int argc, char **argv)
             }
         }
 
-        INFO("Computing density from pressure and temperature");
+        INFO("Computing density from pressure and temperature profiles");
         ArrayXr rho = scenario->gamma * p / T;
         T.resize(0); // Mark irrelevant for further use
 
