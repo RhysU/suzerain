@@ -53,7 +53,6 @@ struct BlasiusFixture {
     gsl_spline * const blasius_u;
     gsl_spline * const blasius_v;
     gsl_spline * const blasius_ke;
-    gsl_spline * const blasius_ke__yy;
     gsl_interp_accel * const accel;
     bspline      b;
     bsplineop    op;
@@ -63,7 +62,6 @@ struct BlasiusFixture {
         : blasius_u     (suzerain_blasius_u     (Re_x))
         , blasius_v     (suzerain_blasius_v     (Re_x))
         , blasius_ke    (suzerain_blasius_ke    (Re_x))
-        , blasius_ke__yy(suzerain_blasius_ke__yy(Re_x))
         , accel(gsl_interp_accel_alloc())
         , b(k, bspline::from_breakpoints(), blasius_u->size, blasius_u->x)
         , op(b, 0, SUZERAIN_BSPLINEOP_COLLOCATION_GREVILLE)
@@ -75,7 +73,6 @@ struct BlasiusFixture {
     ~BlasiusFixture()
     {
         gsl_interp_accel_free(accel);
-        gsl_spline_free(blasius_ke__yy);
         gsl_spline_free(blasius_ke);
         gsl_spline_free(blasius_v);
         gsl_spline_free(blasius_u);
@@ -185,11 +182,6 @@ BOOST_AUTO_TEST_CASE( blasius_find_edge )
     //                 blasius_eta/sqrt(Re), zeros(size(blasius_eta)))
     // There's no reason Octave plots should produce exactly this value.
     BOOST_REQUIRE_SMALL((0.205 - location), 0.01);
-
-    // Finally, as a sanity check, be sure the second derivative of KE is small
-    // The tests both our zero-crossing logic as well as the ke__yy profile.
-    const double ke__yy = gsl_spline_eval(blasius_ke__yy, location, accel);
-    BOOST_REQUIRE_SMALL(ke__yy, 0.01);
 }
 
 typedef BlasiusFixture<4,10000> fixture_four_ten_thousand;
