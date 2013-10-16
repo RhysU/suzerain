@@ -134,11 +134,13 @@ module largo_BL_temporal_consistent
     real(WP) :: ddt_base_W   = 0.0_WP
     real(WP) :: ddt_base_E   = 0.0_WP
 
-    real(WP) :: src_base_rho = 0.0_WP
-    real(WP) :: src_base_U   = 0.0_WP
-    real(WP) :: src_base_V   = 0.0_WP
-    real(WP) :: src_base_W   = 0.0_WP
-    real(WP) :: src_base_E   = 0.0_WP
+    ! FIXME: Flow volumetric sources should be added by
+    !        the user, they are not being added here.
+    !real(WP) :: src_base_rho = 0.0_WP
+    !real(WP) :: src_base_U   = 0.0_WP
+    !real(WP) :: src_base_V   = 0.0_WP
+    !real(WP) :: src_base_W   = 0.0_WP
+    !real(WP) :: src_base_E   = 0.0_WP
 
     real(WP), allocatable, dimension(:) :: base_cs
     real(WP), allocatable, dimension(:) :: ddy_base_cs
@@ -211,11 +213,13 @@ contains
       allocate(auxp%Ts_cs        (1:ns_))
       allocate(auxp%ffluc_cs     (1:ns_))
       allocate(auxp%fav_cs       (1:ns_))
+      allocate(auxp%dfav_cs      (1:ns_))
       allocate(auxp%field_cs     (1:ns_))
       allocate(auxp%TsArms_cs    (1:ns_))
       allocate(auxp%Arms_cs      (1:ns_))
       allocate(auxp%dArms_cs     (1:ns_))
       allocate(auxp%ygArms_cs    (1:ns_))
+      allocate(auxp%TsFull_cs    (1:ns_))
       allocate(auxp%gr_DA_cs     (1:ns_))
       allocate(auxp%gr_DA_rms_cs (1:ns_))
 
@@ -223,6 +227,15 @@ contains
       allocate(auxp%ddy_base_cs  (1:ns_))
       allocate(auxp%ddt_base_cs  (1:ns_))
       allocate(auxp%src_base_cs  (1:ns_))
+
+      auxp%Arms_cs      = 0.0_WP
+      auxp%dArms_cs     = 0.0_WP
+      auxp%gr_DA_cs     = 0.0_WP
+      auxp%gr_DA_rms_cs = 0.0_WP
+      auxp%base_cs      = 0.0_WP
+      auxp%ddy_base_cs  = 0.0_WP
+      auxp%ddt_base_cs  = 0.0_WP
+      auxp%src_base_cs  = 0.0_WP
     end if
 
     ! Get C pointer from Fortran pointer
@@ -242,11 +255,13 @@ contains
     if (allocated(auxp%Ts_cs))        deallocate(auxp%Ts_cs       )
     if (allocated(auxp%ffluc_cs))     deallocate(auxp%ffluc_cs    )
     if (allocated(auxp%fav_cs))       deallocate(auxp%fav_cs      )
+    if (allocated(auxp%dfav_cs))      deallocate(auxp%dfav_cs     )
     if (allocated(auxp%field_cs))     deallocate(auxp%field_cs    )
     if (allocated(auxp%TsArms_cs))    deallocate(auxp%TsArms_cs   )
     if (allocated(auxp%Arms_cs))      deallocate(auxp%Arms_cs     )
     if (allocated(auxp%dArms_cs))     deallocate(auxp%dArms_cs    )
     if (allocated(auxp%ygArms_cs))    deallocate(auxp%ygArms_cs   )
+    if (allocated(auxp%TsFull_cs))    deallocate(auxp%TsFull_cs   )
     if (allocated(auxp%gr_DA_cs))     deallocate(auxp%gr_DA_cs    )
     if (allocated(auxp%gr_DA_rms_cs)) deallocate(auxp%gr_DA_rms_cs)
 
@@ -321,22 +336,22 @@ contains
 
     ! Store baseflow information
     auxp%base_rho = base(irho )
-    auxp%base_U   = base(irhoU)
-    auxp%base_V   = base(irhoV)
-    auxp%base_W   = base(irhoW)
-    auxp%base_E   = base(irhoE)
+    auxp%base_U   = base(irhoU)/base(irho )
+    auxp%base_V   = base(irhoV)/base(irho )
+    auxp%base_W   = base(irhoW)/base(irho )
+    auxp%base_E   = base(irhoE)/base(irho )
 
     auxp%ddy_base_rho = ddy_base(irho )
-    auxp%ddy_base_U   = ddy_base(irhoU)
-    auxp%ddy_base_V   = ddy_base(irhoV)
-    auxp%ddy_base_W   = ddy_base(irhoW)
-    auxp%ddy_base_E   = ddy_base(irhoE)
+    auxp%ddy_base_U   = ddy_base(irhoU)/base(irho ) - auxp%base_U/base(irho ) * ddy_base(irho )
+    auxp%ddy_base_V   = ddy_base(irhoV)/base(irho ) - auxp%base_V/base(irho ) * ddy_base(irho )
+    auxp%ddy_base_W   = ddy_base(irhoW)/base(irho ) - auxp%base_W/base(irho ) * ddy_base(irho )
+    auxp%ddy_base_E   = ddy_base(irhoE)/base(irho ) - auxp%base_E/base(irho ) * ddy_base(irho )
 
     auxp%ddt_base_rho = ddt_base(irho )
-    auxp%ddt_base_U   = ddt_base(irhoU)
-    auxp%ddt_base_V   = ddt_base(irhoV)
-    auxp%ddt_base_W   = ddt_base(irhoW)
-    auxp%ddt_base_E   = ddt_base(irhoE)
+    auxp%ddt_base_U   = ddt_base(irhoU)/base(irho ) - auxp%base_U/base(irho ) * ddt_base(irho )
+    auxp%ddt_base_V   = ddt_base(irhoV)/base(irho ) - auxp%base_V/base(irho ) * ddt_base(irho )
+    auxp%ddt_base_W   = ddt_base(irhoW)/base(irho ) - auxp%base_W/base(irho ) * ddt_base(irho )
+    auxp%ddt_base_E   = ddt_base(irhoE)/base(irho ) - auxp%base_E/base(irho ) * ddt_base(irho )
 
 !!$     auxp%src_base_rho = src_base(irho )
 !!$     auxp%src_base_U   = src_base(irhoU)
@@ -345,9 +360,9 @@ contains
 !!$     auxp%src_base_E   = src_base(irhoE)
 !!$
     do is=1, ns_
-      auxp%base_cs    (is) =     base(5+is)
-      auxp%ddy_base_cs(is) = ddy_base(5+is)
-      auxp%ddt_base_cs(is) = ddt_base(5+is)
+      auxp%base_cs    (is) =     base(5+is)/base(irho )
+      auxp%ddy_base_cs(is) = ddy_base(5+is)/base(irho ) - base(5+is)/base(irho )**2 * ddy_base(irho )
+      auxp%ddt_base_cs(is) = ddt_base(5+is)/base(irho ) - base(5+is)/base(irho )**2 * ddt_base(irho )
 !!$       auxp%src_base_cs(is) = src_base(5+is)
     end do
 
@@ -451,7 +466,9 @@ contains
       &          - auxp%mean_rho  * 2.0_WP*auxp%fav_E*auxp%dfav_E
 
     ! Assign Arms_rho
-    auxp%Arms_rho = auxp%mean_rho
+    !NOTE: Arms terms for density are based on that for the mean
+    !      no need to compute them
+    !auxp%Arms_rho = auxp%mean_rho
 
     ! Compute Arms_U=sqrt{2*k}
     auxp%Arms_U   = sqrt((auxp%rhoupup + auxp%rhovpvp + auxp%rhowpwp) / &
@@ -461,7 +478,9 @@ contains
     auxp%Arms_E   = sqrt(auxp%rhoEpEp/ auxp%mean_rho)
 
     ! Assign dArms_rho
-    auxp%dArms_rho = auxp%dmean_rho
+    !NOTE: Arms terms for density are based on that for the mean
+    !      no need to compute them
+    !auxp%dArms_rho = auxp%dmean_rho
 
     ! Compute d(Armsu)/dy=d(sqrt{2*tke})/dy
     auxp%dArms_U  = 0.0_WP
@@ -487,8 +506,10 @@ contains
     end do
 
     ! These ones depend on y only
-    auxp%ygArms_rho  = 0.0_WP
-    if (auxp%Arms_rho > eps) auxp%ygArms_rho = y * auxp%gr_delta * auxp%dArms_rho/auxp%Arms_rho
+    !NOTE: Arms terms for density are based on that for the mean
+    !      no need to compute them
+    !auxp%ygArms_rho  = 0.0_WP
+    !if (auxp%Arms_rho > eps) auxp%ygArms_rho = y * auxp%gr_delta * auxp%dArms_rho/auxp%Arms_rho
 
     auxp%ygArms_U = 0.0_WP
     if (auxp%Arms_U   > eps) auxp%ygArms_U   = y * auxp%gr_delta * auxp%dArms_U/auxp%Arms_U
@@ -526,13 +547,13 @@ contains
     auxp%field_W   = qflow(irhoW)/qflow(irho)
     auxp%field_E   = qflow(irhoE)/qflow(irho)
 
-    auxp%fluc_rho = auxp%field_rho - auxp%mean_rho
-    auxp%ffluc_U  = auxp%field_U   - auxp%fav_U
-    auxp%ffluc_V  = auxp%field_V   - auxp%fav_V
-    auxp%ffluc_W  = auxp%field_W   - auxp%fav_W
-    auxp%ffluc_E  = auxp%field_E   - auxp%fav_E
+    auxp%fluc_rho  = auxp%field_rho - auxp%mean_rho
+    auxp%ffluc_U   = auxp%field_U   - auxp%fav_U
+    auxp%ffluc_V   = auxp%field_V   - auxp%fav_V
+    auxp%ffluc_W   = auxp%field_W   - auxp%fav_W
+    auxp%ffluc_E   = auxp%field_E   - auxp%fav_E
 
-    auxp%TsArms_rho = auxp%fluc_rho * (- auxp%gr_DA_rms_rho + auxp%ygArms_rho )
+    auxp%TsArms_rho = auxp%fluc_rho / auxp%mean_rho * auxp%Ts_rho
     auxp%TsArms_U   = auxp%ffluc_U  * (- auxp%gr_DA_rms_U   + auxp%ygArms_U   )
     auxp%TsArms_V   = auxp%ffluc_V  * (- auxp%gr_DA_rms_V   + auxp%ygArms_V   )
     auxp%TsArms_W   = auxp%ffluc_W  * (- auxp%gr_DA_rms_W   + auxp%ygArms_W   )
@@ -551,23 +572,9 @@ contains
     auxp%TsFull_W   = auxp%Ts_W   + auxp%TsArms_W
     auxp%TsFull_E   = auxp%Ts_E   + auxp%TsArms_E
 
-
-!!$     auxp%fluc_rho  = qflow(irho ) - mean(irho )
-!!$     auxp%fluc_rhoU = qflow(irhoU) - mean(irhoU)
-!!$     auxp%fluc_rhoV = qflow(irhoV) - mean(irhoV)
-!!$     auxp%fluc_rhoW = qflow(irhoW) - mean(irhoW)
-!!$     auxp%fluc_rhoE = qflow(irhoE) - mean(irhoE)
-!!$
-!!$     auxp%TsRms_rho  = auxp%fluc_rho  * auxp%ygrms_rho
-!!$     auxp%TsRms_rhoU = auxp%fluc_rhoU * auxp%ygrms_rhoU
-!!$     auxp%TsRms_rhoV = auxp%fluc_rhoV * auxp%ygrms_rhoV
-!!$     auxp%TsRms_rhoW = auxp%fluc_rhoW * auxp%ygrms_rhoW
-!!$     auxp%TsRms_rhoE = auxp%fluc_rhoE * auxp%ygrms_rhoE
-!!$
-!!$     do is=1, ns_
-!!$       auxp%fluc_rhos(is)  = qflow(5+is) - mean(5+is)
-!!$       auxp%TsRms_rhos(is) = auxp%fluc_rhos(is) * auxp%ygrms_rhos(is)
-!!$     end do
+    do is=1, ns_
+      auxp%TsFull_cs(is) = auxp%Ts_cs(is) + auxp%TsArms_cs(is) 
+    end do
 
   end subroutine largo_BL_temporal_consistent_preStep_sEta_innerxz
 
@@ -609,7 +616,6 @@ contains
   end subroutine largo_BL_temporal_consistent_preStep_sEta
 
 
-  ! FIXME: Fix mean sources
 #define DECLARE_SUBROUTINE(token)token (cp, A, B, src);\
   type(largo_workspace_ptr), intent(in)   :: cp;\
   real(WP)       , intent(in)             :: A, B;\
@@ -642,7 +648,7 @@ contains
 
   subroutine DECLARE_SUBROUTINE(largo_BL_temporal_consistent_energy_sEtaMean)
     src = A * src + B * (  auxp%mean_rho * auxp%Ts_E &
-      &                  + auxp%fav_E   * auxp%Ts_rho  )
+      &                  + auxp%fav_E    * auxp%Ts_rho  )
   end subroutine largo_BL_temporal_consistent_energy_sEtaMean
 
 
@@ -707,9 +713,9 @@ contains
     type(largo_BL_temporal_consistent_workspace_type), pointer :: auxp
     integer(c_int), intent(in)               :: is
 
-    ! FIXME: method not implemented
     call c_f_pointer(cp, auxp)
-!!$     src = A * src + B * ( auxp%Ts_rhos(is) + auxp%TsArms_rhos(is) )
+    src = A * src + B * (  auxp%field_rho    * auxp%TsFull_cs(is) &
+      &                  + auxp%field_cs(is) * auxp%TsFull_rho  )
   end subroutine largo_BL_temporal_consistent_ispecies_sEta_
 
 
@@ -719,7 +725,6 @@ contains
     real(WP), dimension(*), intent(inout)   :: srcvec ! "*" = ns_
     integer(c_int)                          :: is
 
-    ! FIXME: method not implemented
     do is = 1, ns_
       call largo_BL_temporal_consistent_ispecies_sEta_ (cp, A, B, srcvec(is), is)
     end do

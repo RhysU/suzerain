@@ -21,11 +21,11 @@
 !! Boston, MA  02110-1301  USA
 !!
 !!-----------------------------------------------------------------------el-
-!! $Id: bl_temporal_tconsistent_f.f90 38396 2013-03-29 16:41:25Z topalian $
+!! $Id: bl_temporal_consistent_f.f90 38396 2013-03-29 16:41:25Z topalian $
 
 #include "testframework_assert.h"
 
-program bl_temporal_tconsistent_f
+program bl_temporal_consistent_baseflow_f
 
     use largo
     use testframework
@@ -67,7 +67,7 @@ program bl_temporal_tconsistent_f
 
     real(WP), dimension(neq), parameter :: &
       dmean   = (/                &
-      &         1.0_WP/ 10.0_WP,  &
+      &         1.0_WP/  5.0_WP,  &
       &        45.0_WP         ,  &
       &         1.0_WP/100.0_WP,  &
       &         5.0_WP/ 10.0_WP,  &
@@ -89,62 +89,138 @@ program bl_temporal_tconsistent_f
 
     real(WP), dimension(neq), parameter :: &
       dmeanrqq = (/               &
-      &            11.0_WP/   100.0_WP, &
-      &         22275.0_WP            , &
-      &            11.0_WP/ 10000.0_WP, &
-      &            11.0_WP/     4.0_WP, &
-      & 1867184000000.0_WP            , &
-      &             1.0_WP/ 50000.0_WP, &
-      &             1.0_WP/200000.0_WP  &
+      &            11.0_WP/    50.0_WP, &
+      &          2025.0_WP            , &
+      &             1.0_WP/ 10000.0_WP, &
+      &             1.0_WP/     4.0_WP, &
+      &  169744000000.0_WP            , &
+      &             1.0_WP/  2500.0_WP, &
+      &             1.0_WP/ 10000.0_WP  &
       /)
 
 
-    real(WP), dimension(neq), parameter :: & 
-      rms     = (/                &
-      &      4.0_WP/ 10000.0_WP,  &
-      &     25.0_WP/   100.0_WP,  &
-      &     15.0_WP/   100.0_WP,  &
-      &      1.0_WP/    10.0_WP,  &
-      &    300.0_WP            ,  &
-      &      0.0_WP/100000.0_WP,  &
-      &      0.0_WP/100000.0_WP   &
+    real(WP), dimension(neq), parameter :: &
+    rms  = (/ 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP  /)
+
+    real(WP), dimension(neq)            :: &
+    drms = (/ 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP  /)
+
+    real(WP), dimension(neq), parameter :: &
+      grDA    = (/                 &
+      &       2.0_WP/  100.0_WP,   & 
+      &       1.0_WP/   10.0_WP,   &
+      &       1.0_WP/  100.0_WP,   &
+      &       3.0_WP/  100.0_WP,   &
+      &       4.0_WP/  100.0_WP,   &
+      &       1.0_WP/ 1000.0_WP,   & 
+      &       2.0_WP/ 1000.0_WP    & 
       /)
 
     real(WP), dimension(neq), parameter :: &
-      drms    = (/                 &
-      &      42.0_WP/ 1000.0_WP,   & 
-      &      24.0_WP/   10.0_WP,   &
-      &     153.0_WP/  100.0_WP,   &
-      &      12.0_WP/   10.0_WP,   &
-      &    3200.0_WP           ,   &
-      &       0.0_WP/10000.0_WP,   & 
-      &       0.0_WP/10000.0_WP    & 
+      grDArms = (/                  &
+      &       1.0_WP/  1000.0_WP,   & 
+      &       5.0_WP/  1000.0_WP,   &
+      &       5.0_WP/ 10000.0_WP,   &
+      &       2.0_WP/  1000.0_WP,   &
+      &       1.0_WP/  1000.0_WP,   &
+      &       1.0_WP/100000.0_WP,   & 
+      &       2.0_WP/100000.0_WP    & 
       /)
+
+    real(WP), dimension(neq), parameter :: &
+      base    = (/                  &
+      &         5.0_WP/ 1000.0_WP,  &
+      &        25.0_WP/   10.0_WP,  &
+      &         5.0_WP/10000.0_WP,  &
+      &         2.0_WP/  100.0_WP,  &
+      &     20000.0_WP           ,  &
+      &         1.0_WP/ 1000.0_WP,  &
+      &         5.0_WP/10000.0_WP   &
+      /)
+
+    real(WP), dimension(neq), parameter :: &
+      dybase  = (/                &
+      &         5.0_WP/ 100.0_WP,  &
+      &        25.0_WP          ,  &
+      &         5.0_WP/1000.0_WP,  &
+      &         2.0_WP/  10.0_WP,  &
+      &    200000.0_WP          ,  &
+      &         1.0_WP/ 100.0_WP,  &
+      &         5.0_WP/1000.0_WP   &
+      /)
+
+    real(WP), dimension(neq), parameter :: &
+      dtbase  = (/                &
+      &         2.0_WP/ 1000.0_WP,  &
+      &        15.0_WP/   10.0_WP,  &
+      &         2.0_WP/10000.0_WP,  &
+      &         1.0_WP/  100.0_WP,  &
+      &     10000.0_WP           ,  &
+      &         5.0_WP/10000.0_WP,  &
+      &         2.0_WP/10000.0_WP   &
+      /)
+
+    real(WP), dimension(neq), parameter :: & 
+      srcbase = (/                &
+      &         1.0_WP/ 1000.0_WP,  &
+      &         5.0_WP/   10.0_WP,  &
+      &         1.0_WP/10000.0_WP,  &
+      &         5.0_WP/ 1000.0_WP,  &
+      &      5000.0_WP           ,  &
+      &         2.0_WP/10000.0_WP,  &
+      &         1.0_WP/10000.0_WP   &
+      /)
+
+    real(WP), dimension(neq)            :: &
+      dxbase  = (/ 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP /)
+
 
     real(WP), dimension(neq)            :: srcmean
     real(WP), dimension(neq)            :: srcfull
 
     real(WP), dimension(neq), parameter :: &
-      srcmean_good = (/            &
-      &       1.0_WP/ 2000.0_WP,   &
-      &       9.0_WP/   40.0_WP,   &
-      &       1.0_WP/20000.0_WP,   &
-      &       1.0_WP/  400.0_WP,   &
-      &    2060.0_WP           ,   &
-      &       1.0_WP/10000.0_WP,   &
-      &       1.0_WP/20000.0_WP    &
+      srcmean_good = (/             &
+      &     -27.0_WP/ 20000.0_WP,   &
+      &    -713.0_WP/   400.0_WP,   &
+      &     -37.0_WP/200000.0_WP,   &
+      &    -271.0_WP/ 20000.0_WP,   &
+      &  -11670.0_WP            ,   &
+      &     -57.0_WP/100000.0_WP,   &
+      &     -37.0_WP/200000.0_WP    &
       /)
 
     real(WP), dimension(neq), parameter :: &
-      srcfull_good = (/                &
-      &       11.0_WP/     20000.0_WP, &
-      &       19.0_WP/        80.0_WP, &
-      &     3989.0_WP/    200000.0_WP, &
-      &      109.0_WP/      4000.0_WP, &
-      &     1884.0_WP                , &
-      &       11.0_WP/    100000.0_WP, &
-      &       11.0_WP/    200000.0_WP  &
+      srcfull_good = (/             &
+      &    -297.0_WP/  200000.0_WP,  &
+      &   -7787.0_WP/    4000.0_WP,  &
+      & -543089.0_WP/20000000.0_WP,  &
+      &   -4847.0_WP/  100000.0_WP,  &
+      & -307937.0_WP/      25.0_WP,  &
+      &    -627.0_WP/ 1000000.0_WP,  &
+      &    -407.0_WP/ 2000000.0_WP   &
       /)
+
+!!$     real(WP), dimension(neq), parameter :: &
+!!$       srcmean_good = (/            &
+!!$       &       1.0_WP/ 1000.0_WP,   &
+!!$       &       9.0_WP/   40.0_WP,   &
+!!$       &       1.0_WP/20000.0_WP,   &
+!!$       &       1.0_WP/  400.0_WP,   &
+!!$       &    2060.0_WP           ,   &
+!!$       &       1.0_WP/10000.0_WP,   &
+!!$       &       1.0_WP/20000.0_WP    &
+!!$       /)
+!!$ 
+!!$     real(WP), dimension(neq), parameter :: &
+!!$       srcfull_good = (/                &
+!!$       &       11.0_WP/     10000.0_WP, &
+!!$       &       19.0_WP/        80.0_WP, &
+!!$       &     3989.0_WP/    200000.0_WP, &
+!!$       &      109.0_WP/      4000.0_WP, &
+!!$       &     1884.0_WP                , &
+!!$       &       11.0_WP/    100000.0_WP, &
+!!$       &       11.0_WP/    200000.0_WP  &
+!!$       /)
 
     real(WP), parameter :: tolerance = 1.0E-14
 
@@ -157,27 +233,35 @@ program bl_temporal_tconsistent_f
     srcfull = 0.0_WP
 
     ! Allocate workspace
-    call largo_BL_temporal_tconsistent_allocate (workspace, neq, ns)
+    call largo_BL_temporal_consistent_allocate (workspace, neq, ns)
+
+    ! Init growth rates
+    call largo_BL_temporal_consistent_init  (workspace, grDelta, grDA, grDArms)
 
     ! Compute prestep values
-    call largo_BL_temporal_tconsistent_preStep_sEta ( workspace, y*grDelta, field, mean, rms, meanrqq, dmean, drms, dmeanrqq)
+    call largo_BL_temporal_consistent_preStep_baseflow  (workspace,   base,  dybase,  &
+                                                 dtbase, dxbase, srcbase)
+    call largo_BL_temporal_consistent_preStep_sEta_innery  (workspace, y,          &
+                                                  mean,  rms,  meanrqq, &
+                                                 dmean, drms, dmeanrqq)
+    call largo_BL_temporal_consistent_preStep_sEta_innerxz (workspace, field)
 
     ! Compute mean sources
-    call largo_BL_temporal_tconsistent_continuity_sEtaMean (workspace, 0.0_WP, 1.0_WP, srcmean(1))
-    call largo_BL_temporal_tconsistent_xMomentum_sEtaMean  (workspace, 0.0_WP, 1.0_WP, srcmean(2))
-    call largo_BL_temporal_tconsistent_yMomentum_sEtaMean  (workspace, 0.0_WP, 1.0_WP, srcmean(3))
-    call largo_BL_temporal_tconsistent_zMomentum_sEtaMean  (workspace, 0.0_WP, 1.0_WP, srcmean(4))
-    call largo_BL_temporal_tconsistent_energy_sEtaMean     (workspace, 0.0_WP, 1.0_WP, srcmean(5))
-    call largo_BL_temporal_tconsistent_species_sEtaMean    (workspace, 0.0_WP, 1.0_WP, srcmean(6))
+    call largo_BL_temporal_consistent_continuity_sEtaMean (workspace, 0.0_WP, 1.0_WP, srcmean(1))
+    call largo_BL_temporal_consistent_xMomentum_sEtaMean  (workspace, 0.0_WP, 1.0_WP, srcmean(2))
+    call largo_BL_temporal_consistent_yMomentum_sEtaMean  (workspace, 0.0_WP, 1.0_WP, srcmean(3))
+    call largo_BL_temporal_consistent_zMomentum_sEtaMean  (workspace, 0.0_WP, 1.0_WP, srcmean(4))
+    call largo_BL_temporal_consistent_energy_sEtaMean     (workspace, 0.0_WP, 1.0_WP, srcmean(5))
+    call largo_BL_temporal_consistent_species_sEtaMean    (workspace, 0.0_WP, 1.0_WP, srcmean(6))
 
 
     ! Compute full sources
-    call largo_BL_temporal_tconsistent_continuity_sEta_  (workspace, 0.0_WP, 1.0_WP, srcfull (1))
-    call largo_BL_temporal_tconsistent_xMomentum_sEta_   (workspace, 0.0_WP, 1.0_WP, srcfull (2))
-    call largo_BL_temporal_tconsistent_yMomentum_sEta_   (workspace, 0.0_WP, 1.0_WP, srcfull (3))
-    call largo_BL_temporal_tconsistent_zMomentum_sEta_   (workspace, 0.0_WP, 1.0_WP, srcfull (4))
-    call largo_BL_temporal_tconsistent_energy_sEta_      (workspace, 0.0_WP, 1.0_WP, srcfull (5))
-    call largo_BL_temporal_tconsistent_species_sEta_     (workspace, 0.0_WP, 1.0_WP, srcfull (6))
+    call largo_BL_temporal_consistent_continuity_sEta_  (workspace, 0.0_WP, 1.0_WP, srcfull (1))
+    call largo_BL_temporal_consistent_xMomentum_sEta_   (workspace, 0.0_WP, 1.0_WP, srcfull (2))
+    call largo_BL_temporal_consistent_yMomentum_sEta_   (workspace, 0.0_WP, 1.0_WP, srcfull (3))
+    call largo_BL_temporal_consistent_zMomentum_sEta_   (workspace, 0.0_WP, 1.0_WP, srcfull (4))
+    call largo_BL_temporal_consistent_energy_sEta_      (workspace, 0.0_WP, 1.0_WP, srcfull (5))
+    call largo_BL_temporal_consistent_species_sEta_     (workspace, 0.0_WP, 1.0_WP, srcfull (6))
 
 
     ! Check mean part
@@ -202,20 +286,25 @@ program bl_temporal_tconsistent_f
 
 
     ! Deallocate workspace
-    call largo_BL_temporal_tconsistent_deallocate (workspace)
+    call largo_BL_temporal_consistent_deallocate (workspace)
 
 
     ! Recompute using wrapper routines
     srcfull = 0.0_WP
 
     ! Allocate workspace
-    call largo_BL_temporal_tconsistent_allocate (workspace, neq, ns)
+    call largo_BL_temporal_consistent_allocate (workspace, neq, ns)
+
+    ! Init growth rates
+    call largo_BL_temporal_consistent_init  (workspace, grDelta, grDA, grDArms)
 
     ! Compute prestep values
-    call largo_BL_temporal_tconsistent_preStep_sEta (workspace, y*grDelta, field, mean, rms, meanrqq, dmean, drms, dmeanrqq)
+    call largo_BL_temporal_consistent_preStep_baseflow  (workspace,   base,  dybase,  &
+                                                 dtbase, dxbase, srcbase)
+    call largo_BL_temporal_consistent_preStep_sEta (workspace, y, field, mean, rms, meanrqq, dmean, drms, dmeanrqq)
 
     ! Compute sources
-    call largo_BL_temporal_tconsistent_sEta (workspace, 0.0_WP, 1.0_WP, srcfull(1))
+    call largo_BL_temporal_consistent_sEta (workspace, 0.0_WP, 1.0_WP, srcfull(1))
 
     ! Check full part
     ASSERT(abs((srcfull(1) /srcfull_good(1))-1.0_WP)  < tolerance * 100.0_WP)
@@ -228,8 +317,8 @@ program bl_temporal_tconsistent_f
     end do
 
     ! Deallocate workspace
-    call largo_BL_temporal_tconsistent_deallocate (workspace)
+    call largo_BL_temporal_consistent_deallocate (workspace)
 
     call testframework_teardown()
 
-end program bl_temporal_tconsistent_f
+end program bl_temporal_consistent_baseflow_f

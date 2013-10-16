@@ -56,6 +56,7 @@ module largo
   use largo_bl_spatiotemporal
   use largo_bl_temporal_chemistry
   use largo_bl_temporal
+  use largo_bl_temporal_consistent
   use largo_bl_temporal_tconsistent
 
   implicit none ! is in effect throughout entire module

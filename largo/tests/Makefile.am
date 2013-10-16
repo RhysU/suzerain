@@ -47,6 +47,12 @@ check_PROGRAMS                    += bl_temporal_tconsistent_f
 bl_temporal_tconsistent_f_SOURCES  = bl_temporal_tconsistent_f.f90 testframework.f90
 bl_temporal_tconsistent_f_LDADD    = ../largo/liblargof.la
 
+## Temporal new consistent boundary layer, baseflow, fortran
+TESTS                                     += bl_temporal_consistent_baseflow_f
+check_PROGRAMS                            += bl_temporal_consistent_baseflow_f
+bl_temporal_consistent_baseflow_f_SOURCES  = bl_temporal_consistent_baseflow_f.f90 testframework.f90
+bl_temporal_consistent_baseflow_f_LDADD    = ../largo/liblargof.la
+
 ## Spatiotemporal boundary layer, baseflow, fortran
 TESTS                                += bl_spatiotemporal_baseflow_f
 check_PROGRAMS                       += bl_spatiotemporal_baseflow_f
