@@ -152,15 +152,6 @@ gsl_spline * suzerain_blasius_v(const double Re_x);
  */
 gsl_spline * suzerain_blasius_ke(const double Re_x);
 
-/**
- * Obtain a Blasius profile spline fit producing the second wall-normal
- * derivative of nondimensional kinetic energy \f$\frac{d^2}{dy^2} \frac{u^2 +
- * v^2}{2 u_\infty^2}\f$ given \f$\eta = y \sqrt{\mbox{Re}_x}\f$.
- *
- * @copydetails suzerain_blasius_v
- */
-gsl_spline * suzerain_blasius_ke__yy(const double Re_x);
-
 #ifdef __cplusplus
 } /* extern "C" */
 #endif

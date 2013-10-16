@@ -1118,23 +1118,3 @@ gsl_spline * suzerain_blasius_ke(const double Re_x)
 
     return prepare_fit(Nextended, y, ke);
 }
-
-gsl_spline * suzerain_blasius_ke__yy(const double Re_x)
-{
-    double y[Nextended], ke__yy[Nextended];
-    const double invSqrtRe = sqrt(1 / Re_x);
-    for (size_t i = 0; i < Nextended; ++i) {
-        y[i] = invSqrtRe * suzerain_blasius_extended_eta[i];
-        // Horrible algebra in writeups/notebooks/Blasius_Kinetic_Energy.nb
-        const double eta = suzerain_blasius_extended_eta[i];
-        const double f   = suzerain_blasius_extended_f  [i];
-        const double fp  = suzerain_blasius_extended_fp [i];
-        const double fpp = suzerain_blasius_extended_fpp[i];
-        const double e2R = eta*eta + 2*Re_x;
-        ke__yy[i]        = (   4*fp*fp
-                             + f*(3*fpp - eta*f*fpp/2)
-                             + fpp*fpp*e2R
-                             + fp*(7*eta*fpp - f*fpp*e2R/2))/2;
-    }
-    return prepare_fit(Nextended, y, ke__yy);
-}
