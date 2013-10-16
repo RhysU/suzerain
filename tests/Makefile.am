@@ -296,6 +296,11 @@ test_bsplineop_LDADD     = ../suzerain/libsuzerain.la
 test_bsplineop_LDADD    += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
 test_bsplineop_LDADD    += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
 
+TESTS                += test_blasius
+EXTRA_PROGRAMS       += test_blasius
+test_blasius_SOURCES  = test_blasius.c
+test_blasius_LDADD    = ../suzerain/libsuzerain.la
+
 TESTS            += test_bl
 EXTRA_PROGRAMS   += test_bl
 test_bl_SOURCES   = test_bl.cpp
