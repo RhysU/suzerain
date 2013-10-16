@@ -230,11 +230,11 @@ BOOST_FIXTURE_TEST_CASE( blasius_compute_thicknesses, fixture_four_ten_thousand)
     suzerain_bl_thicknesses thick;
     BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS, suzerain_bl_compute_thicknesses(
         ke.get() /* \approx H_0 */, rho_u.get(), u.get(), &thick, b.bw, b.dbw));
-    BOOST_CHECK_CLOSE(thick.delta,  0.0741853,           3.5000); ++cnt;
-    BOOST_CHECK_CLOSE(thick.delta1, 0.0172085683613221,  0.0100); ++cnt;
+    BOOST_CHECK_CLOSE(thick.delta,  0.0741853,           0.1   ); ++cnt;
+    BOOST_CHECK_CLOSE(thick.delta1, 0.0172085683613221,  0.01  ); ++cnt;
     BOOST_CHECK_CLOSE(thick.delta2, 0.00664045493818580, 0.0105); ++cnt;
-    BOOST_CHECK_CLOSE(thick.delta3, 0.0104430629471855,  0.0100); ++cnt;
-    BOOST_CHECK_CLOSE(thick.deltaH, 0.0616451854169208,  0.0100); ++cnt;
+    BOOST_CHECK_CLOSE(thick.delta3, 0.0104430629471855,  0.01  ); ++cnt;
+    BOOST_CHECK_CLOSE(thick.deltaH, 0.0616451854169208,  0.7   ); ++cnt;
     BOOST_CHECK_EQUAL(cnt, sizeof(thick)/sizeof(thick.delta));
 }
 
