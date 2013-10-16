@@ -296,6 +296,32 @@ public:
     real_t ratio_rho() const { return upper_rho / lower_rho; }
     /**@}*/
 
+    /**
+     * Normalize, for example, \f$T\in\left[T_{\mbox{lower}}, T_{\mbox{upper}}]
+     * \to T\in\left[0, 1\right]\f$ using mapping \f$\frac{T -
+     * T_{\mbox{lower}}}{T_{\mbox{upper}} - T_{\mbox{lower}}}\f$.
+     * @{
+     */
+    real_t normalize_T  (real_t T)   const {return (T  -lower_T  )/delta_T  ();}
+    real_t normalize_u  (real_t u)   const {return (u  -lower_u  )/delta_u  ();}
+    real_t normalize_v  (real_t v)   const {return (v  -lower_v  )/delta_v  ();}
+    real_t normalize_w  (real_t w)   const {return (w  -lower_w  )/delta_w  ();}
+    real_t normalize_rho(real_t rho) const {return (rho-lower_rho)/delta_rho();}
+    /**@}*/
+
+    /**
+     * Denormalize, for example, \f$ T\in\left[0, 1\right] \to
+     * T\in\left[T_{\mbox{lower}}, T_{\mbox{upper}}] \f$ using mapping
+     * \f$\frac{T - T_{\mbox{lower}}}{T_{\mbox{upper}} - T_{\mbox{lower}}}\f$.
+     * @{
+     */
+    real_t denormalize_T  (real_t T)   const {return T  *delta_T  ()+lower_T  ;}
+    real_t denormalize_u  (real_t u)   const {return u  *delta_u  ()+lower_u  ;}
+    real_t denormalize_v  (real_t v)   const {return v  *delta_v  ()+lower_v  ;}
+    real_t denormalize_w  (real_t w)   const {return w  *delta_w  ()+lower_w  ;}
+    real_t denormalize_rho(real_t rho) const {return rho*delta_rho()+lower_rho;}
+    /**@}*/
+
 };
 
 } // namespace suzerain
