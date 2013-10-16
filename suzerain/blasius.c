@@ -1086,53 +1086,61 @@ gsl_spline * prepare_fit(
 // TODO Use non-natural AKIMA conditions to set known derivatives
 // That is, suzerain_blasius_extended_fpp and f'''(eta) are
 // known and provide important information wrt skin friction.
-gsl_spline * suzerain_blasius_u()
+gsl_spline * suzerain_blasius_u(const double Re_x)
 {
-    return prepare_fit(Nextended,
-                       suzerain_blasius_extended_eta,
-                       suzerain_blasius_extended_fp);
+    double y[Nextended];
+    const double invSqrtRe = sqrt(1 / Re_x);
+    for (size_t i = 0; i < Nextended; ++i) {
+        y[i] = invSqrtRe * suzerain_blasius_extended_eta[i];
+    }
+    return prepare_fit(Nextended, y, suzerain_blasius_extended_fp);
 }
 
 gsl_spline * suzerain_blasius_v(const double Re_x)
 {
-    const double invSqrt2Re = sqrt(0.5 / Re_x);
-    double v[Nextended];
+    double y[Nextended], v[Nextended];
+    const double invSqrtRe = sqrt(1 / Re_x);
     for (size_t i = 0; i < Nextended; ++i) {
-        v[i] = invSqrt2Re * (  suzerain_blasius_extended_f  [i]
-                             + suzerain_blasius_extended_eta[i]
-                             * suzerain_blasius_extended_fp [i]);
+        y[i] = invSqrtRe * suzerain_blasius_extended_eta[i];
+        v[i] = invSqrtRe/2 * (  suzerain_blasius_extended_f  [i]
+                              + suzerain_blasius_extended_eta[i]
+                              * suzerain_blasius_extended_fp [i]);
     }
-    return prepare_fit(Nextended, suzerain_blasius_extended_eta, v);
+    return prepare_fit(Nextended, y, v);
 }
 
 gsl_spline * suzerain_blasius_ke(const double Re_x)
 {
-    const double invSqrt2Re = sqrt(0.5 / Re_x);
-    double ke[Nextended];
+    double y[Nextended], ke[Nextended];
+    const double invSqrtRe = sqrt(1 / Re_x);
     for (size_t i = 0; i < Nextended; ++i) {
+        y[i] = invSqrtRe * suzerain_blasius_extended_eta[i];
         const double u = suzerain_blasius_extended_fp[i];
-        const double v = invSqrt2Re * (  suzerain_blasius_extended_f  [i]
-                                       + suzerain_blasius_extended_eta[i]
-                                       * suzerain_blasius_extended_fp [i]);
+        const double v = invSqrtRe/2 * (  suzerain_blasius_extended_f  [i]
+                                        + suzerain_blasius_extended_eta[i]
+                                        * suzerain_blasius_extended_fp [i]);
         ke[i] = (u*u + v*v) / 2;
     }
-    return prepare_fit(Nextended, suzerain_blasius_extended_eta, ke);
+
+    return prepare_fit(Nextended, y, ke);
 }
 
 gsl_spline * suzerain_blasius_ke__yy(const double Re_x)
 {
-    // Horrible algebra in writeups/notebooks/Blasius_Kinetic_Energy.nb
-    double ke__yy[Nextended];
+    double y[Nextended], ke__yy[Nextended];
+    const double invSqrtRe = sqrt(1 / Re_x);
     for (size_t i = 0; i < Nextended; ++i) {
+        y[i] = invSqrtRe * suzerain_blasius_extended_eta[i];
+        // Horrible algebra in writeups/notebooks/Blasius_Kinetic_Energy.nb
         const double eta = suzerain_blasius_extended_eta[i];
         const double f   = suzerain_blasius_extended_f  [i];
         const double fp  = suzerain_blasius_extended_fp [i];
         const double fpp = suzerain_blasius_extended_fpp[i];
         const double e2R = eta*eta + 2*Re_x;
         ke__yy[i]        = (   4*fp*fp
-                             + f*(3*fpp - 0.5*eta*f*fpp)
+                             + f*(3*fpp - eta*f*fpp/2)
                              + fpp*fpp*e2R
-                             + fp*(7*eta*fpp - 0.5*f*fpp*e2R))/2;
+                             + fp*(7*eta*fpp - f*fpp*e2R/2))/2;
     }
-    return prepare_fit(Nextended, suzerain_blasius_extended_eta, ke__yy);
+    return prepare_fit(Nextended, y, ke__yy);
 }

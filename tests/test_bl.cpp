@@ -45,80 +45,57 @@ BOOST_GLOBAL_FIXTURE(BlasCleanupFixture);
 
 #pragma warning(disable:1572 2014 2015)
 
-// A fixture exposing Ganapol's Blasius profile using eta breakpoints
-template <int k>
-struct UniformGanapolFixture {
+// A fixture exposing Blasius profile information at local Re_x
+// B-spline workspaces are prepared using Blasius-related breakpoints
+template <int k, int Re_x>
+struct BlasiusFixture {
 
-    bspline      b;
-    bsplineop    op;
-    bsplineop_lu lu;
-
-    UniformGanapolFixture()
-        : b(k, bspline::from_breakpoints(),
-            SUZERAIN_COUNTOF(suzerain_blasius_ganapol_eta),
-            suzerain_blasius_ganapol_eta)
-        , op(b, 0, SUZERAIN_BSPLINEOP_COLLOCATION_GREVILLE)
-        , lu(op)
-    {
-        lu.factor_mass(op);
-    }
-
-};
-
-// A fixture exposing Ganapol's Blasius profile using non-uniform breakpoints
-template <int k>
-struct NonuniformGanapolFixture {
-
-    static const double breakpts[10]; // Init just below
     gsl_spline * const blasius_u;
-    gsl_interp_accel * accel;
+    gsl_spline * const blasius_v;
+    gsl_spline * const blasius_ke;
+    gsl_spline * const blasius_ke__yy;
+    gsl_interp_accel * const accel;
     bspline      b;
     bsplineop    op;
     bsplineop_lu lu;
 
-    NonuniformGanapolFixture()
-        : blasius_u(suzerain_blasius_u())
+    BlasiusFixture()
+        : blasius_u     (suzerain_blasius_u     (Re_x))
+        , blasius_v     (suzerain_blasius_v     (Re_x))
+        , blasius_ke    (suzerain_blasius_ke    (Re_x))
+        , blasius_ke__yy(suzerain_blasius_ke__yy(Re_x))
         , accel(gsl_interp_accel_alloc())
-        , b(k, bspline::from_breakpoints(),
-            SUZERAIN_COUNTOF(breakpts), breakpts)
+        , b(k, bspline::from_breakpoints(), blasius_u->size, blasius_u->x)
         , op(b, 0, SUZERAIN_BSPLINEOP_COLLOCATION_GREVILLE)
         , lu(op)
     {
         lu.factor_mass(op);
     }
 
-    ~NonuniformGanapolFixture()
+    ~BlasiusFixture()
     {
-        gsl_spline_free(blasius_u);
         gsl_interp_accel_free(accel);
+        gsl_spline_free(blasius_ke__yy);
+        gsl_spline_free(blasius_ke);
+        gsl_spline_free(blasius_v);
+        gsl_spline_free(blasius_u);
     }
 
 };
 
-// As the data for Ganapol's Blasius profile runs up to 8.8 instead of 5.0, and
-// the routines compute edge quantities from the profiles, our basis runs up to
-// 8.8 as well.
-template <int k>
-const double NonuniformGanapolFixture<k>::breakpts[10] = {
-    0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 8.8
-};
-
-BOOST_FIXTURE_TEST_SUITE(bl_compute_thick_linear, UniformGanapolFixture<2>)
+typedef BlasiusFixture<2,1> linear_fixture;
+BOOST_FIXTURE_TEST_SUITE(bl_compute_thick_linear, linear_fixture)
 
 BOOST_AUTO_TEST_CASE( blasius_delta1 )
 {
     // Prepare the Blasius velocity profile as coefficients on basis
     // For a linear B-spline basis, the collocation points are the breakpoints
     shared_array<double> u(new double[b.n()]);
-    std::memcpy(u.get(),
-                suzerain_blasius_ganapol_fp,
-                sizeof(suzerain_blasius_ganapol_fp));
+    std::memcpy(u.get(), blasius_u->y, b.n()*sizeof(double));
     BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS, lu.solve(1, u.get(), 1, b.n()));
 
     // Prepare integration working storage
-    shared_ptr<gsl_matrix> dB(
-            gsl_matrix_alloc(b.k(), 1),
-            gsl_matrix_free);
+    shared_ptr<gsl_matrix> dB(gsl_matrix_alloc(b.k(), 1), gsl_matrix_free);
     BOOST_REQUIRE(dB);
 
     // Integrate for delta1
@@ -127,8 +104,8 @@ BOOST_AUTO_TEST_CASE( blasius_delta1 )
         b.collocation_point(b.n()-1), u.get(),
         &delta1, dB.get(), b.bw, b.dbw));
 
-    // Check against good value found using Octave's trapz on Ganapol data
-    BOOST_CHECK_SMALL((delta1 - 1.72189445179000), 5e-6);
+    // Good value found using Octave's trapz on extended data up to eta = 13.6
+    BOOST_CHECK_SMALL((delta1 - 1.72189451530768), GSL_SQRT_DBL_EPSILON);
 }
 
 BOOST_AUTO_TEST_CASE( blasius_delta2 )
@@ -136,28 +113,23 @@ BOOST_AUTO_TEST_CASE( blasius_delta2 )
     // Prepare the Blasius velocity profile as coefficients on basis
     // For a linear B-spline basis, the collocation points are the breakpoints
     shared_array<double> u(new double[b.n()]);
-    std::memcpy(u.get(),
-                suzerain_blasius_ganapol_fp,
-                sizeof(suzerain_blasius_ganapol_fp));
+    std::memcpy(u.get(), blasius_u->y, b.n()*sizeof(double));
     BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS, lu.solve(1, u.get(), 1, b.n()));
 
     // Prepare integration working storage
-    shared_ptr<gsl_matrix> dB(
-            gsl_matrix_alloc(b.k(), 1),
-            gsl_matrix_free);
+    shared_ptr<gsl_matrix> dB(gsl_matrix_alloc(b.k(), 1), gsl_matrix_free);
     BOOST_REQUIRE(dB);
 
     // Integrate for delta2
     // Pretend density is nondimensionally one so rho_u == u
-    // The absolute error behavior on this integral is unsatisfying
-    // though there's no reason adaptive results should match Octave's trapz.
     double delta2  = GSL_NAN;
     BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS, suzerain_bl_momentum_thickness(
         b.collocation_point(b.n()-1), u.get(), u.get(), &delta2, dB.get(),
         b.bw, b.dbw));
 
-    // Check against good value found using Octave's trapz on Ganapol data
-    BOOST_CHECK_SMALL((delta2 - 0.663007750711612), 0.0020);
+    // Good value found using Octave's trapz on extended data generated by
+    // running 'blasius 38.5 0.025' against https://github.com/RhysU/blasius
+    BOOST_CHECK_SMALL((delta2 - 0.664097377777457), 0.00075); // Crap tolerance
 }
 
 BOOST_AUTO_TEST_CASE( blasius_delta3 )
@@ -165,49 +137,36 @@ BOOST_AUTO_TEST_CASE( blasius_delta3 )
     // Prepare the Blasius velocity profile as coefficients on basis
     // For a linear B-spline basis, the collocation points are the breakpoints
     shared_array<double> u(new double[b.n()]);
-    std::memcpy(u.get(),
-                suzerain_blasius_ganapol_fp,
-                sizeof(suzerain_blasius_ganapol_fp));
+    std::memcpy(u.get(), blasius_u->y, b.n()*sizeof(double));
     BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS, lu.solve(1, u.get(), 1, b.n()));
 
     // Prepare integration working storage
-    shared_ptr<gsl_matrix> dB(
-            gsl_matrix_alloc(b.k(), 1),
-            gsl_matrix_free);
+    shared_ptr<gsl_matrix> dB(gsl_matrix_alloc(b.k(), 1), gsl_matrix_free);
     BOOST_REQUIRE(dB);
 
     // Integrate for delta3
     // Pretend density is nondimensionally one so rho_u == u
-    // The absolute error behavior on this integral is unsatisfying
-    // though there's no reason adaptive results should match Octave's trapz.
     double delta3  = GSL_NAN;
     BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS, suzerain_bl_energy_thickness(
         b.collocation_point(b.n()-1), u.get(), u.get(), &delta3, dB.get(),
         b.bw, b.dbw));
 
-    // Check against good value found using Octave's trapz on Ganapol data
-    BOOST_CHECK_SMALL((delta3 - 1.04326800217938), 0.0025);
+    // Good value found using Octave's trapz on extended data generated by
+    // running 'blasius 38.5 0.025' against https://github.com/RhysU/blasius
+    BOOST_CHECK_SMALL((delta3 - 1.04435818046510), 0.011); // Crap tolerance
 }
 
 BOOST_AUTO_TEST_SUITE_END()
 
-
-BOOST_FIXTURE_TEST_SUITE(bl_compute_thick_quadratic, UniformGanapolFixture<4>)
+typedef BlasiusFixture<4,1000> fixture_four_thousand;
+BOOST_FIXTURE_TEST_SUITE(bl_compute_thick_quadratic, fixture_four_thousand)
 
 BOOST_AUTO_TEST_CASE( blasius_find_edge )
 {
-    const double Re_x = 1e3;
-
     // Prepare B-spline coefficients for Blasius profile kinetic energy
     shared_array<double> ke(new double[b.n()]);
-    {
-        shared_ptr<gsl_spline> fit(suzerain_blasius_ke(Re_x),
-                                   gsl_spline_free);
-        shared_ptr<gsl_interp_accel> a(gsl_interp_accel_alloc(),
-                                       gsl_interp_accel_free);
-        for (int i = 0; i < b.n(); ++i) {
-            ke[i] = gsl_spline_eval(fit.get(), b.collocation_point(i), a.get());
-        }
+    for (int i = 0; i < b.n(); ++i) {
+        ke[i] = gsl_spline_eval(blasius_ke, b.collocation_point(i), accel);
     }
     BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS, lu.solve(1, ke.get(), 1, b.n()));
 
@@ -220,46 +179,33 @@ BOOST_AUTO_TEST_CASE( blasius_find_edge )
     BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS, suzerain_bl_find_edge(
         ke.get(), &location, dB.get(), b.bw, b.dbw));
 
-    // Tolerance from by eyeballing results computed in Octave:
+    // Thickness from eyeballing results computed in Octave:
     //   source writeups/notebooks/blasius.m
-    //   Re=1000; plot(eta, blasius_kepp(Re), eta, zeros(size(eta)));
+    //   Re=1000; plot(blasius_eta/sqrt(Re), blasius_kepp(Re),
+    //                 blasius_eta/sqrt(Re), zeros(size(blasius_eta)))
     // There's no reason Octave plots should produce exactly this value.
-    BOOST_REQUIRE_SMALL((6.485 - location), 0.01);
+    BOOST_REQUIRE_SMALL((0.205 - location), 0.01);
 
     // Finally, as a sanity check, be sure the second derivative of KE is small
     // The tests both our zero-crossing logic as well as the ke__yy profile.
-    shared_ptr<gsl_spline> fit(suzerain_blasius_ke__yy(Re_x),
-                               gsl_spline_free);
-    shared_ptr<gsl_interp_accel> a(gsl_interp_accel_alloc(),
-                                   gsl_interp_accel_free);
-    const double ke__yy = gsl_spline_eval(fit.get(), location, a.get());
+    const double ke__yy = gsl_spline_eval(blasius_ke__yy, location, accel);
     BOOST_REQUIRE_SMALL(ke__yy, 0.01);
 }
 
-BOOST_AUTO_TEST_CASE( blasius_compute_thicknesses )
+typedef BlasiusFixture<4,10000> fixture_four_ten_thousand;
+BOOST_FIXTURE_TEST_CASE( blasius_compute_thicknesses, fixture_four_ten_thousand)
 {
-    const double Re_x = 1e5;
-
-    shared_ptr<gsl_interp_accel> a(gsl_interp_accel_alloc(),
-                                   gsl_interp_accel_free);
-
     // Prepare B-spline coefficients for kinetic energy
     shared_array<double> ke(new double[b.n()]);
-    {
-        shared_ptr<gsl_spline> fit(suzerain_blasius_ke(Re_x), gsl_spline_free);
-        gsl_interp_accel_reset(a.get());
-        for (int i = 0; i < b.n(); ++i)
-            ke[i] = gsl_spline_eval(fit.get(), b.collocation_point(i), a.get());
+    for (int i = 0; i < b.n(); ++i) {
+        ke[i] = gsl_spline_eval(blasius_ke, b.collocation_point(i), accel);
     }
     BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS, lu.solve(1, ke.get(), 1, b.n()));
 
     // Prepare B-spline coefficients for streamwise velocity
     shared_array<double> u(new double[b.n()]);
-    {
-        shared_ptr<gsl_spline> fit(suzerain_blasius_u(), gsl_spline_free);
-        gsl_interp_accel_reset(a.get());
-        for (int i = 0; i < b.n(); ++i)
-            u[i] = gsl_spline_eval(fit.get(), b.collocation_point(i), a.get());
+    for (int i = 0; i < b.n(); ++i) {
+        u[i] = gsl_spline_eval(blasius_u, b.collocation_point(i), accel);
     }
     BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS, lu.solve(1, u.get(), 1, b.n()));
 
@@ -270,81 +216,22 @@ BOOST_AUTO_TEST_CASE( blasius_compute_thicknesses )
     }
 
     // Compute a bunch of thickness-related quantities
-    // Known good values computed by Octave using trapz from Ganapol data
+    // Thickness from eyeballing results computed in Octave:
+    //   source writeups/notebooks/blasius.m
+    //   Re=10000; plot(blasius_eta/sqrt(Re), blasius_kepp(Re),
+    //                  blasius_eta/sqrt(Re), zeros(size(blasius_eta)))
+    // Integrals found using Octave's trapz on Ganapol data up to eta = 8.8
     size_t cnt = 0;
     suzerain_bl_thicknesses thick;
     BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS, suzerain_bl_compute_thicknesses(
         ke.get() /* \approx H_0 */, rho_u.get(), u.get(), &thick, b.bw, b.dbw));
-    BOOST_CHECK_CLOSE(thick.delta,  8.22,              0.25); ++cnt;
-    BOOST_CHECK_CLOSE(thick.delta1, 1.72189445179000,  0.10); ++cnt;
-    BOOST_CHECK_CLOSE(thick.delta2, 0.663007750711612, 0.25); ++cnt;
-    BOOST_CHECK_CLOSE(thick.delta3, 1.04326800217938,  0.15); ++cnt;
-    BOOST_CHECK_CLOSE(thick.deltaH, 1.04759635667752,  0.10); ++cnt;
+    BOOST_CHECK_CLOSE(thick.delta,  0.0742,            0.01); ++cnt;
+
+    BOOST_CHECK_CLOSE(thick.delta1, 0.00544510319879568, 0.01); ++cnt;
+    BOOST_CHECK_CLOSE(thick.delta2, 0.00209661040586457, 0.01); ++cnt;
+    BOOST_CHECK_CLOSE(thick.delta3, 0.00329909505965218, 0.01); ++cnt;
+    BOOST_CHECK_CLOSE(thick.deltaH, 0.00331279131919351, 0.01); ++cnt;
     BOOST_CHECK_EQUAL(cnt, sizeof(thick)/sizeof(thick.delta));
-}
-
-BOOST_AUTO_TEST_SUITE_END()
-
-
-BOOST_FIXTURE_TEST_SUITE(bl_compute_thick_splined, NonuniformGanapolFixture<8>)
-
-BOOST_AUTO_TEST_CASE( blasius_delta1 )
-{
-    // Prepare the Blasius velocity profile as coefficients on basis
-    shared_array<double> rho_u(new double[b.n()]);
-    for (int i = 0; i < b.n(); ++i) {
-        rho_u[i] = gsl_spline_eval(blasius_u,
-                                   b.collocation_point(i), accel);
-    }
-    BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS, lu.solve(1, rho_u.get(), 1, b.n()));
-
-    // Prepare integration working storage
-    shared_ptr<gsl_matrix> dB(
-            gsl_matrix_alloc(b.k(), 1),
-            gsl_matrix_free);
-    BOOST_REQUIRE(dB);
-
-    // Integrate for delta1
-    double delta1 = GSL_NAN;
-    BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS, suzerain_bl_displacement_thickness(
-        b.collocation_point(b.n()-1), rho_u.get(),
-        &delta1, dB.get(), b.bw, b.dbw));
-
-    // Check against good value
-    // Good value taken from White, Fluid Mechanics, 4th Edition eqn (7.31).
-    // This tolerance is admittedly larger than I would like.
-    BOOST_CHECK_CLOSE(1.721, delta1, 0.015);
-}
-
-BOOST_AUTO_TEST_CASE( blasius_delta2 )
-{
-    // Prepare the Blasius velocity profile as coefficients on basis
-    // Pretend that density is uniformly two throughout profile.  Yes, two.
-    shared_array<double> rho_u(new double[b.n()]);
-    shared_array<double> u    (new double[b.n()]);
-    for (int i = 0; i < b.n(); ++i) {
-        u[i] = gsl_spline_eval(blasius_u, b.collocation_point(i), accel);
-        rho_u[i] = 2*u[i];
-    }
-    BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS, lu.solve(1, rho_u.get(), 1, b.n()));
-    BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS, lu.solve(1,     u.get(), 1, b.n()));
-
-    // Prepare integration working storage
-    shared_ptr<gsl_matrix> dB(
-            gsl_matrix_alloc(b.k(), 1),
-            gsl_matrix_free);
-    BOOST_REQUIRE(dB);
-
-    // Integrate for delta2
-    double delta2  = GSL_NAN;
-    BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS, suzerain_bl_momentum_thickness(
-        b.collocation_point(b.n()-1), rho_u.get(), u.get(), &delta2, dB.get(),
-        b.bw, b.dbw));
-
-    // Check against good value
-    // Good value taken from White, Fluid Mechanics, 4th Edition eqn (7.31).
-    // This tolerance is admittedly larger than I would like.
-    BOOST_CHECK_CLOSE(0.664, delta2, 0.018);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
