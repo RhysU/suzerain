@@ -144,7 +144,7 @@ suzerain_bl_find_edge(
  *
  * \param[in ] edge_location Location of the boundary layer edge possibly
  *                           computed by suzerain_bl_find_edge().
- * \param[in ] coeffs_rho_u  B-spline coefficients for \f$rho u\f$.
+ * \param[in ] coeffs_rho_u  B-spline coefficients for \f$\rho u\f$.
  * \param[out] delta1        The computed displacement thickness.
  * \param[in]  dB            Temporary storage to use of size <tt>w->k</tt> by
  *                           no less than <tt>1</tt>.
@@ -188,7 +188,7 @@ suzerain_bl_displacement_thickness(
  *
  * \param[in ] edge_location Location of the boundary layer edge possibly
  *                           computed by suzerain_bl_find_edge().
- * \param[in ] coeffs_rho_u  B-spline coefficients for \f$rho u\f$.
+ * \param[in ] coeffs_rho_u  B-spline coefficients for \f$\rho u\f$.
  * \param[in ] coeffs_u      B-spline coefficients for \f$u\f$.
  * \param[out] delta2        The computed momentum thickness.
  * \param[in]  dB            Temporary storage to use of size <tt>w->k</tt> by
@@ -234,7 +234,7 @@ suzerain_bl_momentum_thickness(
  *
  * \param[in ] edge_location Location of the boundary layer edge possibly
  *                           computed by suzerain_bl_find_edge().
- * \param[in ] coeffs_rho_u  B-spline coefficients for \f$rho u\f$.
+ * \param[in ] coeffs_rho_u  B-spline coefficients for \f$\rho u\f$.
  * \param[in ] coeffs_u      B-spline coefficients for \f$u\f$.
  * \param[out] delta3        The computed momentum thickness.
  * \param[in]  dB            Temporary storage to use of size <tt>w->k</tt> by
@@ -282,7 +282,7 @@ suzerain_bl_energy_thickness(
  *
  * \param[in ] edge_location Location of the boundary layer edge possibly
  *                           computed by suzerain_bl_find_edge().
- * \param[in ] coeffs_rho_u  B-spline coefficients for \f$rho u\f$.
+ * \param[in ] coeffs_rho_u  B-spline coefficients for \f$\rho u\f$.
  * \param[in ] coeffs_H0     B-spline coefficients for \f$H_0\f$.
  * \param[out] deltaH        The computed enthalpy thickness.
  * \param[in]  dB            Temporary storage to use of size <tt>w->k</tt> by
