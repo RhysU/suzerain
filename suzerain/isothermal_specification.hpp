@@ -299,14 +299,24 @@ public:
     /**
      * Normalize, for example, \f$T\in\left[T_{\mbox{lower}}, T_{\mbox{upper}}]
      * \to T\in\left[0, 1\right]\f$ using mapping \f$\frac{T -
-     * T_{\mbox{lower}}}{T_{\mbox{upper}} - T_{\mbox{lower}}}\f$.
+     * T_{\mbox{lower}}}{T_{\mbox{upper}} - T_{\mbox{lower}}}\f$.  When the two
+     * extents are identical, one is returned.
      * @{
      */
-    real_t normalize_T  (real_t T)   const {return (T  -lower_T  )/delta_T  ();}
-    real_t normalize_u  (real_t u)   const {return (u  -lower_u  )/delta_u  ();}
-    real_t normalize_v  (real_t v)   const {return (v  -lower_v  )/delta_v  ();}
-    real_t normalize_w  (real_t w)   const {return (w  -lower_w  )/delta_w  ();}
-    real_t normalize_rho(real_t rho) const {return (rho-lower_rho)/delta_rho();}
+    real_t normalize_T  (real_t T)   const
+    {return SUZERAIN_UNLIKELY(delta_T  ()) ? (T  -lower_T  )/delta_T  () : 1;}
+
+    real_t normalize_u  (real_t u)   const
+    {return SUZERAIN_UNLIKELY(delta_u  ()) ? (u  -lower_u  )/delta_u  () : 1;}
+
+    real_t normalize_v  (real_t v)   const
+    {return SUZERAIN_UNLIKELY(delta_v  ()) ? (v  -lower_v  )/delta_v  () : 1;}
+
+    real_t normalize_w  (real_t w)   const
+    {return SUZERAIN_UNLIKELY(delta_w  ()) ? (w  -lower_w  )/delta_w  () : 1;}
+
+    real_t normalize_rho(real_t rho) const
+    {return SUZERAIN_UNLIKELY(delta_rho()) ? (rho-lower_rho)/delta_rho() : 1;}
     /**@}*/
 
     /**
