@@ -77,6 +77,12 @@ check_PROGRAMS                          += generic_bl_temporal_tconsistent
 generic_bl_temporal_tconsistent_SOURCES  = generic_bl_temporal_tconsistent.c
 generic_bl_temporal_tconsistent_LDADD    = ../largo/liblargo.la
 
+## Generic interface, temporal consistent boundary layer, baseflow, c
+TESTS                                           += generic_bl_temporal_consistent_baseflow
+check_PROGRAMS                                  += generic_bl_temporal_consistent_baseflow
+generic_bl_temporal_consistent_baseflow_SOURCES  = generic_bl_temporal_consistent_baseflow.c
+generic_bl_temporal_consistent_baseflow_LDADD    = ../largo/liblargo.la
+
 ## Generic interface, spatiotemporal boundary layer, baseflow, c
 TESTS                                        += generic_bl_spatiotemporal_baseflow
 check_PROGRAMS                               += generic_bl_spatiotemporal_baseflow
