@@ -116,32 +116,49 @@ extern const double suzerain_blasius_extended_fp[194];
 extern const double suzerain_blasius_extended_fpp[194];
 
 /**
- * Obtain a Blasius profile spline fit producing nondimensional \f$u /
- * u_\infty\f$ given \f$y = \eta / \sqrt{\mbox{Re}_x}\f$.  The data is from \ref
- * suzerain_blasius_extended_fp and \ref suzerain_blasius_extended_eta.  The
- * returned <tt>gsl_spline*</tt> can be interrogated using <a
+ * Obtain a Blasius profile fit producing nondimensional \f$u / u_\infty\f$
+ * given \f$y = \eta / \sqrt{\mbox{Re}_x}\f$.  The data is from \ref
+ * suzerain_blasius_extended_fp and \ref suzerain_blasius_extended_eta.
+ *
+ * The returned <tt>gsl_spline*</tt> can be interrogated using <a
  * href="http://www.gnu.org/software/gsl/manual/html_node/Higher_002dlevel-Interface.html">
  * the usual routines</a>.  The return value must be subsequently cleaned up
  * using <tt>gsl_spline_free()</tt>.
  *
- * @param Re_x Local Reynolds number \f$\mbox{Re}_x = \frac{u_\infty}{\nu x}\f$.
- *             Generally, values greater than \f$10^6\f$ are physically
- *             invalid as the flow should be turbulent in that regime.
+ * @param Re_x Local Reynolds number \f$\mbox{Re}_x\f$.
  *
- * @return On success, a <tt>gsl_spline *</tt> suitable for evaluation using,
- *         for example, <tt>gsl_spline_eval()</tt>.  The return value must be
- *         subsequently cleaned up using <tt>gsl_spline_free()</tt>.
- *         On failure \c NULL is returned.
+ * @return On success, a <tt>gsl_spline *</tt> for use with
+ *         <tt>gsl_spline_eval()</tt>.  On failure \c NULL is returned.
  */
 gsl_spline * suzerain_blasius_u(const double Re_x);
 
 /**
- * Obtain a Blasius profile spline fit producing nondimensional \f$v /
+ * Obtain a Blasius profile fit producing nondimensional \f$v /
  * u_\infty\f$ given \f$y = \eta / \sqrt{\mbox{Re}_x}\f$.
  *
  * @copydetails suzerain_blasius_v
  */
 gsl_spline * suzerain_blasius_v(const double Re_x);
+
+/**
+ * Obtain a Blasius profile fit producing nondimensional \f$\frac{T -
+ * T_w}{T_\infty - T_w}\f$ given \f$y = \eta / \sqrt{\mbox{Re}_x \mbox{Pr}
+ * }\f$.  The data used is identical to \ref suzerain_blasius_u except that it
+ * is rescaled to produce a thermal boundary layer given similarity assumptions
+ * employing a constant Prandtl number.
+ *
+ * The returned <tt>gsl_spline*</tt> can be interrogated using <a
+ * href="http://www.gnu.org/software/gsl/manual/html_node/Higher_002dlevel-Interface.html">
+ * the usual routines</a>.  The return value must be subsequently cleaned up
+ * using <tt>gsl_spline_free()</tt>.
+ *
+ * @param Re_x Local Reynolds number \f$\mbox{Re}_x\f$.
+ * @param Pr   Constant Prandtl number \f$\mbox{Pr}\f$.
+ *
+ * @return On success, a <tt>gsl_spline *</tt> for use with
+ *         <tt>gsl_spline_eval()</tt>.  On failure \c NULL is returned.
+ */
+gsl_spline * suzerain_blasius_T(const double Re_x, const double Pr);
 
 #ifdef __cplusplus
 } /* extern "C" */

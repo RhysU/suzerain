@@ -1102,3 +1102,8 @@ gsl_spline * suzerain_blasius_v(const double Re_x)
     }
     return prepare_fit(Nextended, y, v);
 }
+
+gsl_spline * suzerain_blasius_T(const double Re_x, const double Pr)
+{
+    return suzerain_blasius_u(Re_x * Pr);
+}
