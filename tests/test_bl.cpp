@@ -171,7 +171,7 @@ BOOST_AUTO_TEST_CASE( blasius_find_edge )
     // Find edge using kinetic energy profile
     double location = GSL_NAN;
     BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS, suzerain_bl_find_edge(
-        ke.get(), &location, dB.get(), b.bw, b.dbw));
+        ke.get() /* \approx H_0 */, &location, dB.get(), b.bw, b.dbw));
 
     // Thickness from eyeballing results computed in Octave:
     //   source writeups/notebooks/blasius.m
