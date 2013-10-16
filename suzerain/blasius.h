@@ -85,35 +85,43 @@ extern const double suzerain_blasius_ganapol_fpp[45];
  * data suitable for use outside well beyond the classical
  * \f$\delta_{99}\f$ boundary layer thickness which matches \ref
  * suzerain_blasius_ganapol_eta to eight digits.
+ *
+ * \warning The last point \e coarsely approximates the behavior in the limit.
  */
-extern const double suzerain_blasius_extended_eta[194];
+extern const double suzerain_blasius_extended_eta[195];
 
 /**
  * Generated \f$f\left(\eta\right)\f$ data suitable for use outside well beyond
  * the classical \f$\delta_{99}\f$ boundary layer thickness which matches \ref
  * suzerain_blasius_ganapol_f to eight digits.
  *
+ * \warning The last point \e coarsely approximates the behavior in the limit.
+ *
  * @see \ref suzerain_blasius_extended_eta for the matching \f$\eta\f$ values.
  */
-extern const double suzerain_blasius_extended_f[194];
+extern const double suzerain_blasius_extended_f[195];
 
 /**
  * Generated \f$f^{\prime}\left(\eta\right)\f$ data suitable for use outside
  * well beyond the classical \f$\delta_{99}\f$ boundary layer thickness which
  * matches \ref suzerain_blasius_ganapol_fp to eight digits.
  *
+ * \warning The last point \e coarsely approximates the behavior in the limit.
+ *
  * @see \ref suzerain_blasius_extended_eta for the matching \f$\eta\f$ values.
  */
-extern const double suzerain_blasius_extended_fp[194];
+extern const double suzerain_blasius_extended_fp[195];
 
 /**
  * Generated \f$f^{\prime\prime}\left(\eta\right)\f$ data suitable for use
  * outside well beyond the classical \f$\delta_{99}\f$ boundary layer thickness
  * which matches \ref suzerain_blasius_ganapol_fpp to eight digits.
  *
+ * \warning The last point \e coarsely approximates the behavior in the limit.
+ *
  * @see \ref suzerain_blasius_extended_eta for the matching \f$\eta\f$ values.
  */
-extern const double suzerain_blasius_extended_fpp[194];
+extern const double suzerain_blasius_extended_fpp[195];
 
 /**
  * Obtain a Blasius profile fit producing nondimensional \f$u / u_\infty\f$

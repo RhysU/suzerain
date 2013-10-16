@@ -61,7 +61,10 @@ struct BlasiusFixture {
         : blasius_u(suzerain_blasius_u(Re_x))
         , blasius_v(suzerain_blasius_v(Re_x))
         , accel(gsl_interp_accel_alloc())
-        , b(k, bspline::from_breakpoints(), blasius_u->size, blasius_u->x)
+          // "size - 1" occurs because suzerain_blasius_extended_*
+          // contains extrapolations at "infinity" which perturb
+          // the computation of thick.deltaH far below.
+        , b(k, bspline::from_breakpoints(), blasius_u->size - 1, blasius_u->x)
         , op(b, 0, SUZERAIN_BSPLINEOP_COLLOCATION_GREVILLE)
         , lu(op)
     {

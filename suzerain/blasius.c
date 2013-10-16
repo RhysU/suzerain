@@ -254,6 +254,8 @@ enum {
 
 // See http://agentzlerich.blogspot.com/2013/10/generating-blasius-boundary-layer.html
 // and https://github.com/RhysU/blasius for background on this data.
+// Beyond the tabulated values, one final point "at infinity" has been added to
+// permit evaluating these profiles effectively anywhere.
 const double suzerain_blasius_extended_eta[] = {
     0.0000000000000000e+00,
     2.0000000000000001e-01,
@@ -448,7 +450,8 @@ const double suzerain_blasius_extended_eta[] = {
     3.8000000000000000e+01,
     3.8200000000000003e+01,
     3.8400000000000006e+01,
-    3.8600000000000001e+01
+    3.8600000000000001e+01, // End of generated data
+    1.0000000000000000e+04  // Point at "infinity"
 };
 
 enum {
@@ -651,7 +654,8 @@ const double suzerain_blasius_extended_f[Nextended] = {
     3.6279212342479482e+01,
     3.6479212342479485e+01,
     3.6679212342479488e+01,
-    3.6879212342479484e+01
+    3.6879212342479484e+01,                    // End of generated data
+    1.0000000000000000e+04  + 1.72078765752052 // Point at "infinity"
 };
 
 const double suzerain_blasius_extended_fp[Nextended] = {
@@ -848,7 +852,8 @@ const double suzerain_blasius_extended_fp[Nextended] = {
     9.9999999999999978e-01,
     9.9999999999999978e-01,
     9.9999999999999978e-01,
-    9.9999999999999978e-01
+    9.9999999999999978e-01,  // End of generated data
+    1.0000000000000000e+00   // Point at "infinity"
 };
 
 const double suzerain_blasius_extended_fpp[Nextended] = {
@@ -1045,7 +1050,8 @@ const double suzerain_blasius_extended_fpp[Nextended] = {
     7.2098563079040367e-150,
     3.2299875759095029e-152,
     8.4957414420568161e-155,
-    6.0946204192285745e-158
+    6.0946204192285745e-158,  // End of generated data
+    0.0000000000000000e+000   // Point at "infinity"
 };
 
 // See "Compile Time Assertions" by Ralf Holly (http://drdobbs.com/184401873)
