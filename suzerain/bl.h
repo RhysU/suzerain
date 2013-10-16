@@ -133,33 +133,26 @@ suzerain_bl_find_edge(
  * representation of streamwise momentum \f$\rho u\f$.  The method computes
  * \f[
  *  \delta_1 = \int_0^\infty
- *  \left(1 - \frac{\rho u}{\rho_e u_e}\right)
+ *  \left(1 - \frac{\rho u}{\rho_\infty u_\infty}\right)
  *  \, \mathrm{d}y
- *  .
  * \f]
+ * where the value from the final B-spline collocation point is taken to
+ * be "at infinity".
  *
- * The method propagates a <tt>NaN</tt> \c edge_location into a <tt>NaN</tt>
- * \c delta1 result considering the computation to be successful
- * when this happens.
- *
- * \param[in ] edge_location Location of the boundary layer edge possibly
- *                           computed by suzerain_bl_find_edge().
- * \param[in ] coeffs_rho_u  B-spline coefficients for \f$\rho u\f$.
- * \param[out] delta1        The computed displacement thickness.
- * \param[in]  dB            Temporary storage to use of size <tt>w->k</tt> by
- *                           no less than <tt>1</tt>.
- * \param[in ] w             Workspace to use.
- * \param[in ] dw            Workspace to use.
+ * \param[in ] coeffs_rho_u B-spline coefficients for \f$\rho u\f$.
+ * \param[out] delta1       The computed displacement thickness.
+ * \param[in]  dB           Temporary storage to use of size <tt>w->k</tt> by
+ *                          no less than <tt>1</tt>.
+ * \param[in ] w            Workspace to use.
+ * \param[in ] dw           Workspace to use.
  *
  * \return ::SUZERAIN_SUCCESS on success and returns the answer in
- * <code>*delta1</code>.  On recoverable error sets <code>*delta1</code>
- * to be <tt>NaN</tt> <code>*delta1</code> to be <tt>NaN</tt> and returns
- * one of #suzerain_error_status.  On unrecoverable error, additionally calls
- * suzerain_error().
+ * <code>*delta1</code>.  On recoverable error sets <code>*delta1</code> to be
+ * <tt>NaN</tt> and returns one of #suzerain_error_status.  On unrecoverable
+ * error, additionally calls suzerain_error().
  */
 int
 suzerain_bl_displacement_thickness(
-    const double edge_location,
     const double * coeffs_rho_u,
     double * delta1,
     gsl_matrix *dB,
@@ -173,38 +166,30 @@ suzerain_bl_displacement_thickness(
  * The method computes
  * \f[
  *  \delta_2 = \int_0^\infty
- *  \frac{\rho u}{\rho_e u_e} \left(1 - \frac{u}{u_e}\right)
+ *  \frac{\rho u}{\rho_\infty u_\infty} \left(1 - \frac{u}{u_\infty}\right)
  *  \, \mathrm{d}y
- *  .
  * \f]
- * Among many other places, this definition appears in equation (13.47) on page
- * 324 of Leipmann and Roshko's <a
+ * where the value from the final B-spline collocation point is taken to be "at
+ * infinity".  Among many other places, this definition appears in equation
+ * (13.47) on page 324 of Leipmann and Roshko's <a
  * href="http://www.worldcat.org/title/elements-of-gasdynamics/oclc/636935705">
  * Elements of Gasdynamics</a>.
  *
- * The method propagates a <tt>NaN</tt> \c edge_location into a <tt>NaN</tt> \c
- * delta2 result considering the computation to be successful when this
- * happens.
- *
- * \param[in ] edge_location Location of the boundary layer edge possibly
- *                           computed by suzerain_bl_find_edge().
- * \param[in ] coeffs_rho_u  B-spline coefficients for \f$\rho u\f$.
- * \param[in ] coeffs_u      B-spline coefficients for \f$u\f$.
- * \param[out] delta2        The computed momentum thickness.
- * \param[in]  dB            Temporary storage to use of size <tt>w->k</tt> by
- *                           no less than <tt>1</tt>.
- * \param[in ] w             Workspace to use.
- * \param[in ] dw            Workspace to use.
+ * \param[in ] coeffs_rho_u B-spline coefficients for \f$\rho u\f$.
+ * \param[in ] coeffs_u     B-spline coefficients for \f$u\f$.
+ * \param[out] delta2       The computed momentum thickness.
+ * \param[in]  dB           Temporary storage to use of size <tt>w->k</tt> by
+ *                          no less than <tt>1</tt>.
+ * \param[in ] w            Workspace to use.
+ * \param[in ] dw           Workspace to use.
  *
  * \return ::SUZERAIN_SUCCESS on success and returns the answer in
  * <code>*delta2</code>.  On recoverable error sets <code>*delta2</code> to be
- * <tt>NaN</tt> <code>*delta2</code> to be <tt>NaN</tt> and returns one of
- * #suzerain_error_status.  On unrecoverable error, additionally calls
- * suzerain_error().
+ * <tt>NaN</tt> and returns one of #suzerain_error_status.  On unrecoverable
+ * error, additionally calls suzerain_error().
  */
 int
 suzerain_bl_momentum_thickness(
-    const double edge_location,
     const double * coeffs_rho_u,
     const double * coeffs_u,
     double * delta2,
@@ -219,38 +204,31 @@ suzerain_bl_momentum_thickness(
  * The method computes
  * \f[
  *  \delta_3 = \int_0^\infty
- *  \frac{\rho u}{\rho_e u_e} \left(1 - \left(\frac{u}{u_e}\right)^2\right)
+ *  \frac{\rho u}{\rho_\infty u_\infty}
+ *  \left(1 - \left(\frac{u}{u_\infty}\right)^2\right)
  *  \, \mathrm{d}y
- *  .
  * \f]
- * Among many other places, this definition appears in equation (10.97) on page
- * 258 of Schlichting and Gersten's <a
+ * where the value from the final B-spline collocation point is taken to be "at
+ * infinity".  Among many other places, this definition appears in equation
+ * (10.97) on page 258 of Schlichting and Gersten's <a
  * href="http://www.worldcat.org/title/boundary-layer-theory-with-22-tables/oclc/615466700">
  * Boundary Layer Theory</a>.
  *
- * The method propagates a <tt>NaN</tt> \c edge_location into a <tt>NaN</tt> \c
- * delta3 result considering the computation to be successful when this
- * happens.
- *
- * \param[in ] edge_location Location of the boundary layer edge possibly
- *                           computed by suzerain_bl_find_edge().
- * \param[in ] coeffs_rho_u  B-spline coefficients for \f$\rho u\f$.
- * \param[in ] coeffs_u      B-spline coefficients for \f$u\f$.
- * \param[out] delta3        The computed momentum thickness.
- * \param[in]  dB            Temporary storage to use of size <tt>w->k</tt> by
- *                           no less than <tt>1</tt>.
- * \param[in ] w             Workspace to use.
- * \param[in ] dw            Workspace to use.
+ * \param[in ] coeffs_rho_u B-spline coefficients for \f$\rho u\f$.
+ * \param[in ] coeffs_u     B-spline coefficients for \f$u\f$.
+ * \param[out] delta3       The computed momentum thickness.
+ * \param[in]  dB           Temporary storage to use of size <tt>w->k</tt> by
+ *                          no less than <tt>1</tt>.
+ * \param[in ] w            Workspace to use.
+ * \param[in ] dw           Workspace to use.
  *
  * \return ::SUZERAIN_SUCCESS on success and returns the answer in
  * <code>*delta3</code>.  On recoverable error sets <code>*delta3</code> to be
- * <tt>NaN</tt> <code>*delta3</code> to be <tt>NaN</tt> and returns one of
- * #suzerain_error_status.  On unrecoverable error, additionally calls
- * suzerain_error().
+ * <tt>NaN</tt> and returns one of #suzerain_error_status.  On unrecoverable
+ * error, additionally calls suzerain_error().
  */
 int
 suzerain_bl_energy_thickness(
-    const double edge_location,
     const double * coeffs_rho_u,
     const double * coeffs_u,
     double * delta3,
@@ -267,38 +245,32 @@ suzerain_bl_energy_thickness(
  * The method computes
  * \f[
  *  \delta_H = \int_0^\infty
- *  \frac{\rho u}{\rho_e u_e} \left(1 - \frac{H_0}{H_{0,e}}\right)
+ *  \frac{\rho u}{\rho_\infty u_\infty}
+ *  \left(1 - \frac{H_0}{H_{0,\\infty}}\right)
  *  \, \mathrm{d}y
- *  .
  * \f]
+ * where the value from the final B-spline collocation point is taken to be "at
+ * infinity".  Among many other places, this definition appears in equation
  * This definition appears in equation (13.48) on page 324 of Leipmann and
  * Roshko's <a
  * href="http://www.worldcat.org/title/elements-of-gasdynamics/oclc/636935705">
  * Elements of Gasdynamics</a> but is there called "energy thickness".
  *
- * The method propagates a <tt>NaN</tt> \c edge_location into a <tt>NaN</tt> \c
- * deltaH result considering the computation to be successful when this
- * happens.
- *
- * \param[in ] edge_location Location of the boundary layer edge possibly
- *                           computed by suzerain_bl_find_edge().
- * \param[in ] coeffs_rho_u  B-spline coefficients for \f$\rho u\f$.
- * \param[in ] coeffs_H0     B-spline coefficients for \f$H_0\f$.
- * \param[out] deltaH        The computed enthalpy thickness.
- * \param[in]  dB            Temporary storage to use of size <tt>w->k</tt> by
- *                           no less than <tt>1</tt>.
- * \param[in ] w             Workspace to use.
- * \param[in ] dw            Workspace to use.
+ * \param[in ] coeffs_rho_u B-spline coefficients for \f$\rho u\f$.
+ * \param[in ] coeffs_H0    B-spline coefficients for \f$H_0\f$.
+ * \param[out] deltaH       The computed enthalpy thickness.
+ * \param[in]  dB           Temporary storage to use of size <tt>w->k</tt> by
+ *                          no less than <tt>1</tt>.
+ * \param[in ] w            Workspace to use.
+ * \param[in ] dw           Workspace to use.
  *
  * \return ::SUZERAIN_SUCCESS on success and returns the answer in
  * <code>*deltaH</code>.  On recoverable error sets <code>*deltaH</code> to be
- * <tt>NaN</tt> <code>*deltaH</code> to be <tt>NaN</tt> and returns one of
- * #suzerain_error_status.  On unrecoverable error, additionally calls
- * suzerain_error().
+ * <tt>NaN</tt> and returns one of #suzerain_error_status.  On unrecoverable
+ * error, additionally calls suzerain_error().
  */
 int
 suzerain_bl_enthalpy_thickness(
-    const double edge_location,
     const double * coeffs_rho_u,
     const double * coeffs_H0,
     double * deltaH,
