@@ -53,6 +53,7 @@ struct driver_init : public driver
                  "RESTART-FILE",
 "Initializes channel flow profile per --npower option unless --Re_x is\n"
 "supplied.  In that case, a Blasius-like boundary layer profile is prepared.\n"
+"The Blasius solution will unique fix both --upper_u and --upper_v.\n"
 "When in doubt, please read through the source code.\n",
                  revstr)
         , who("init")
@@ -230,9 +231,6 @@ suzerain::perfect::driver_init::run(int argc, char **argv)
     const std::string restart_file = positional[0];
     const bool clobber = options.variables()["clobber"].as<bool>();
     const bool blasius = options.variables().count("Re_x");
-    if (grid->two_sided() && blasius) {
-        WARN0("Conflicting two-sided grid and Blasius profile requested?");
-    }
     if (npower < 0 || npower > 1) {
         FATAL0("npower in [0,1] required");
         return EXIT_FAILURE;
@@ -243,6 +241,11 @@ suzerain::perfect::driver_init::run(int argc, char **argv)
     }
     options.conflicting_options("acoustic_strength", "mms");
     options.conflicting_options("entropy_strength",  "mms");
+    if (grid->two_sided() && blasius) {
+        WARN0("Conflicting two-sided grid and Blasius profile requested?");
+    }
+    options.conflicting_options("Re_x", "upper_u"); // Blasius sets freestream
+    options.conflicting_options("Re_x", "upper_v"); // Blasius sets freestream
 
     DEBUG0(who, "Establishing runtime parallel infrastructure and resources");
     establish_ieee_mode();
@@ -300,21 +303,27 @@ suzerain::perfect::driver_init::run(int argc, char **argv)
             shared_ptr<gsl_interp_accel> accel(gsl_interp_accel_alloc(),
                                                gsl_interp_accel_free);
 
-            // Notice the denormalize calls honor lower, upper values
+            // Blasius profile fixes upper_{u,v} for the freestream...
+            isothermal->upper_u = gsl_spline_eval(fit_u.get(),
+                                                  grid->L.y(), accel.get());
+            isothermal->upper_v = gsl_spline_eval(fit_v.get(),
+                                                  grid->L.y(), accel.get());
+            // ...and an awful hack pretending lower_{u,v} enter additively
+            isothermal->upper_u += isothermal->lower_u;
+            isothermal->upper_v += isothermal->lower_v;
+
+            // Denormalize calls honor lower, upper values for u, w, T.
+            // Wall-normal v does not use one as fit_v doesn't take on 1.
             for (int j = 0; j < Ny; ++j) {
                 const double y_j = b->collocation_point(j);
                 u[j] = isothermal->denormalize_u(
                         gsl_spline_eval(fit_u.get(), y_j, accel.get()));
-                v[j] = isothermal->denormalize_v(
-                        gsl_spline_eval(fit_v.get(), y_j, accel.get()));
+                v[j] = gsl_spline_eval(fit_v.get(), y_j, accel.get())
+                     + isothermal->lower_v;  // And again with that hack
                 w[j] = isothermal->denormalize_w(y_j / grid->L.y());
                 T[j] = isothermal->denormalize_T(
                         gsl_spline_eval(fit_T.get(), y_j, accel.get()));
             }
-
-            // FIXME #2492 make isothermal->upper_v reflect Blasius outflow
-            // FIXME #2492 make isothermal->upper_w reflect Blasius outflow
-            // FIXME #2492 make isothermal->upper_T reflect Blasius outflow
 
         } else {
 
