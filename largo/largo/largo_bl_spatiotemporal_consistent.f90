@@ -1,4 +1,4 @@
-module largo_BL_temporal_consistent
+module largo_BL_spatiotemporal_consistent
 
   ! Use ISO_C_BINDING to expose C-friendly API through generic interface
   use, intrinsic :: iso_c_binding, only: c_associated,   &
@@ -13,32 +13,34 @@ module largo_BL_temporal_consistent
 
   private
 
-  type :: largo_BL_temporal_consistent_workspace_type
+  type :: largo_BL_spatiotemporal_consistent_workspace_type
 
     real(WP) :: gr_delta   = 1.0_WP
+    real(WP) :: grt_delta   = 1.0_WP
+    real(WP) :: grx_delta   = 1.0_WP
 
-    real(WP) :: Ts_rho = 0.0_WP
-    real(WP) :: Ts_U   = 0.0_WP
-    real(WP) :: Ts_V   = 0.0_WP
-    real(WP) :: Ts_W   = 0.0_WP
-    real(WP) :: Ts_E   = 0.0_WP
+    real(WP) :: Xs_rho = 0.0_WP
+    real(WP) :: Xs_U   = 0.0_WP
+    real(WP) :: Xs_V   = 0.0_WP
+    real(WP) :: Xs_W   = 0.0_WP
+    real(WP) :: Xs_E   = 0.0_WP
 
-    real(WP) :: TsArms_rho = 0.0_WP
-    real(WP) :: TsArms_U   = 0.0_WP
-    real(WP) :: TsArms_V   = 0.0_WP
-    real(WP) :: TsArms_W   = 0.0_WP
-    real(WP) :: TsArms_E   = 0.0_WP
+    real(WP) :: XsArms_rho = 0.0_WP
+    real(WP) :: XsArms_U   = 0.0_WP
+    real(WP) :: XsArms_V   = 0.0_WP
+    real(WP) :: XsArms_W   = 0.0_WP
+    real(WP) :: XsArms_E   = 0.0_WP
 
-    real(WP) :: TsFull_rho = 0.0_WP
-    real(WP) :: TsFull_U   = 0.0_WP
-    real(WP) :: TsFull_V   = 0.0_WP
-    real(WP) :: TsFull_W   = 0.0_WP
-    real(WP) :: TsFull_E   = 0.0_WP
+    real(WP) :: XsFull_rho = 0.0_WP
+    real(WP) :: XsFull_U   = 0.0_WP
+    real(WP) :: XsFull_V   = 0.0_WP
+    real(WP) :: XsFull_W   = 0.0_WP
+    real(WP) :: XsFull_E   = 0.0_WP
 
-    real(WP), allocatable, dimension(:) :: Ts_cs
+    real(WP), allocatable, dimension(:) :: Xs_cs
     real(WP), allocatable, dimension(:) :: ffluc_cs
-    real(WP), allocatable, dimension(:) :: TsArms_cs
-    real(WP), allocatable, dimension(:) :: TsFull_cs
+    real(WP), allocatable, dimension(:) :: XsArms_cs
+    real(WP), allocatable, dimension(:) :: XsFull_cs
 
 
     ! TC:
@@ -142,12 +144,14 @@ module largo_BL_temporal_consistent
     !real(WP) :: src_base_W   = 0.0_WP
     !real(WP) :: src_base_E   = 0.0_WP
 
+    real(WP) :: wall_base_u   = 0.0_WP
+
     real(WP), allocatable, dimension(:) :: base_cs
     real(WP), allocatable, dimension(:) :: ddy_base_cs
     real(WP), allocatable, dimension(:) :: ddt_base_cs
     real(WP), allocatable, dimension(:) :: src_base_cs
 
-  end type largo_BL_temporal_consistent_workspace_type
+  end type largo_BL_spatiotemporal_consistent_workspace_type
 
   integer(c_int), parameter :: irho  = 1
   integer(c_int), parameter :: irhoU = 2
@@ -164,42 +168,43 @@ module largo_BL_temporal_consistent
   integer(c_int) :: ns_  = 0
 
 
-  public  :: largo_BL_temporal_consistent_allocate
-  public  :: largo_BL_temporal_consistent_deallocate
-  public  :: largo_BL_temporal_consistent_init
-  public  :: largo_BL_temporal_consistent_preStep_sEta
-  public  :: largo_BL_temporal_consistent_preStep_sEta_innery
-  public  :: largo_BL_temporal_consistent_preStep_sEta_innerxz
-  public  :: largo_BL_temporal_consistent_preStep_sEtaMean
-  public  :: largo_BL_temporal_consistent_continuity_sEtaMean
-  public  :: largo_BL_temporal_consistent_xMomentum_sEtaMean
-  public  :: largo_BL_temporal_consistent_yMomentum_sEtaMean
-  public  :: largo_BL_temporal_consistent_zMomentum_sEtaMean
-  public  :: largo_BL_temporal_consistent_energy_sEtaMean
-  public  :: largo_BL_temporal_consistent_ispecies_sEtaMean
-  public  :: largo_BL_temporal_consistent_species_sEtaMean
-  public  :: largo_BL_temporal_consistent_continuity_sEta_
-  public  :: largo_BL_temporal_consistent_xMomentum_sEta_
-  public  :: largo_BL_temporal_consistent_yMomentum_sEta_
-  public  :: largo_BL_temporal_consistent_zMomentum_sEta_
-  public  :: largo_BL_temporal_consistent_energy_sEta_
-  public  :: largo_BL_temporal_consistent_ispecies_sEta_
-  public  :: largo_BL_temporal_consistent_species_sEta_
-  public  :: largo_BL_temporal_consistent_sEta
+  public  :: largo_BL_spatiotemporal_consistent_allocate
+  public  :: largo_BL_spatiotemporal_consistent_deallocate
+  public  :: largo_BL_spatiotemporal_consistent_init
+  public  :: largo_BL_spatiotemporal_consistent_preStep_sEta
+  public  :: largo_BL_spatiotemporal_consistent_preStep_sEta_innery
+  public  :: largo_BL_spatiotemporal_consistent_preStep_sEta_innerxz
+  public  :: largo_BL_spatiotemporal_consistent_preStep_sEtaMean
+  public  :: largo_BL_spatiotemporal_consistent_continuity_sEtaMean
+  public  :: largo_BL_spatiotemporal_consistent_xMomentum_sEtaMean
+  public  :: largo_BL_spatiotemporal_consistent_yMomentum_sEtaMean
+  public  :: largo_BL_spatiotemporal_consistent_zMomentum_sEtaMean
+  public  :: largo_BL_spatiotemporal_consistent_energy_sEtaMean
+  public  :: largo_BL_spatiotemporal_consistent_ispecies_sEtaMean
+  public  :: largo_BL_spatiotemporal_consistent_species_sEtaMean
+  public  :: largo_BL_spatiotemporal_consistent_continuity_sEta_
+  public  :: largo_BL_spatiotemporal_consistent_xMomentum_sEta_
+  public  :: largo_BL_spatiotemporal_consistent_yMomentum_sEta_
+  public  :: largo_BL_spatiotemporal_consistent_zMomentum_sEta_
+  public  :: largo_BL_spatiotemporal_consistent_energy_sEta_
+  public  :: largo_BL_spatiotemporal_consistent_ispecies_sEta_
+  public  :: largo_BL_spatiotemporal_consistent_species_sEta_
+  public  :: largo_BL_spatiotemporal_consistent_sEta
 
-  private :: largo_BL_temporal_consistent_preStep_sEta_
+  private :: largo_BL_spatiotemporal_consistent_preStep_sEta_
 
-  public  :: largo_BL_temporal_consistent_preStep_baseflow
+  public  :: largo_BL_spatiotemporal_consistent_init_wall_baseflow
+  public  :: largo_BL_spatiotemporal_consistent_preStep_baseflow
 
 contains
 
-  subroutine largo_BL_temporal_consistent_allocate(cp, neq, ns)
+  subroutine largo_BL_spatiotemporal_consistent_allocate(cp, neq, ns)
 
     type(largo_workspace_ptr), intent(out) :: cp
     ! neq=number of equations, might be needed later
     integer(c_int), intent(in)   :: neq
     integer(c_int), intent(in)   :: ns    ! number of species
-    type(largo_BL_temporal_consistent_workspace_type), pointer :: auxp
+    type(largo_BL_spatiotemporal_consistent_workspace_type), pointer :: auxp
 
     ! Allocate derived type variable
     allocate(auxp)
@@ -210,16 +215,16 @@ contains
 
     ! Allocate arrays for species
     if (ns_ > 0) then
-      allocate(auxp%Ts_cs        (1:ns_))
+      allocate(auxp%Xs_cs        (1:ns_))
       allocate(auxp%ffluc_cs     (1:ns_))
       allocate(auxp%fav_cs       (1:ns_))
       allocate(auxp%dfav_cs      (1:ns_))
       allocate(auxp%field_cs     (1:ns_))
-      allocate(auxp%TsArms_cs    (1:ns_))
+      allocate(auxp%XsArms_cs    (1:ns_))
       allocate(auxp%Arms_cs      (1:ns_))
       allocate(auxp%dArms_cs     (1:ns_))
       allocate(auxp%ygArms_cs    (1:ns_))
-      allocate(auxp%TsFull_cs    (1:ns_))
+      allocate(auxp%XsFull_cs    (1:ns_))
       allocate(auxp%gr_DA_cs     (1:ns_))
       allocate(auxp%gr_DA_rms_cs (1:ns_))
 
@@ -241,27 +246,27 @@ contains
     ! Get C pointer from Fortran pointer
     cp = c_loc(auxp)
 
-  end subroutine largo_BL_temporal_consistent_allocate
+  end subroutine largo_BL_spatiotemporal_consistent_allocate
 
 
-  subroutine largo_BL_temporal_consistent_deallocate(cp)
+  subroutine largo_BL_spatiotemporal_consistent_deallocate(cp)
 
     type(largo_workspace_ptr), intent(out)  :: cp
-    type(largo_BL_temporal_consistent_workspace_type), pointer :: auxp
+    type(largo_BL_spatiotemporal_consistent_workspace_type), pointer :: auxp
 
     call c_f_pointer(cp, auxp)
 
     ! Deallocate arrays for species
-    if (allocated(auxp%Ts_cs))        deallocate(auxp%Ts_cs       )
+    if (allocated(auxp%Xs_cs))        deallocate(auxp%Xs_cs       )
     if (allocated(auxp%ffluc_cs))     deallocate(auxp%ffluc_cs    )
     if (allocated(auxp%fav_cs))       deallocate(auxp%fav_cs      )
     if (allocated(auxp%dfav_cs))      deallocate(auxp%dfav_cs     )
     if (allocated(auxp%field_cs))     deallocate(auxp%field_cs    )
-    if (allocated(auxp%TsArms_cs))    deallocate(auxp%TsArms_cs   )
+    if (allocated(auxp%XsArms_cs))    deallocate(auxp%XsArms_cs   )
     if (allocated(auxp%Arms_cs))      deallocate(auxp%Arms_cs     )
     if (allocated(auxp%dArms_cs))     deallocate(auxp%dArms_cs    )
     if (allocated(auxp%ygArms_cs))    deallocate(auxp%ygArms_cs   )
-    if (allocated(auxp%TsFull_cs))    deallocate(auxp%TsFull_cs   )
+    if (allocated(auxp%XsFull_cs))    deallocate(auxp%XsFull_cs   )
     if (allocated(auxp%gr_DA_cs))     deallocate(auxp%gr_DA_cs    )
     if (allocated(auxp%gr_DA_rms_cs)) deallocate(auxp%gr_DA_rms_cs)
 
@@ -276,17 +281,17 @@ contains
     ! Nullify C pointer
     cp = c_null_ptr
 
-  end subroutine largo_BL_temporal_consistent_deallocate
+  end subroutine largo_BL_spatiotemporal_consistent_deallocate
 
 
-  subroutine largo_BL_temporal_consistent_init(cp, gr_delta, gr_DA, gr_DA_rms)
+  subroutine largo_BL_spatiotemporal_consistent_init(cp, gr_delta, gr_DA, gr_DA_rms)
 
     real(WP), intent(in)                  :: gr_delta
     real(WP), dimension(*), intent(in)    :: gr_DA
     real(WP), dimension(*), intent(in)    :: gr_DA_rms
     integer(c_int) :: is
     type(largo_workspace_ptr), intent(in) :: cp
-    type(largo_BL_temporal_consistent_workspace_type), pointer   :: auxp
+    type(largo_BL_spatiotemporal_consistent_workspace_type), pointer   :: auxp
 
     ! get Fortran pointer from C pointer
     call c_f_pointer(cp, auxp)
@@ -316,10 +321,46 @@ contains
       auxp%gr_DA_rms_cs(is) = gr_DA_rms(5+is)
     end do
 
-  end subroutine largo_BL_temporal_consistent_init
+  end subroutine largo_BL_spatiotemporal_consistent_init
 
 
-  subroutine largo_BL_temporal_consistent_preStep_baseflow(cp, base, &
+  subroutine largo_BL_spatiotemporal_consistent_init_wall_baseflow(cp,  &   
+               wall_base, wall_ddy_base, wall_ddt_base,      &
+                          wall_ddx_base, wall_src_base)
+
+    real(WP), dimension(*), intent(in)   :: wall_base
+    real(WP), dimension(*), intent(in)   :: wall_ddy_base
+    real(WP), dimension(*), intent(in)   :: wall_ddt_base
+    real(WP), dimension(*), intent(in)   :: wall_ddx_base
+    real(WP), dimension(*), intent(in)   :: wall_src_base
+    integer(c_int) :: is
+    type(largo_workspace_ptr), intent(in) :: cp
+    type(largo_BL_spatiotemporal_consistent_workspace_type), pointer   :: auxp
+
+    ! Get Fortran pointer from C pointer
+    call c_f_pointer(cp, auxp)
+
+    ! Store relevant wall baseflow information
+    auxp%wall_base_u  = wall_base(irhoU) / wall_base(irho)
+
+    ! FIXME: Enable/adapt this as apropriate
+!!$     ! Compute grx_* using as velocity scale the 
+!!$     ! inviscid streamwise velocity at the wall 
+!!$     auxp%grt_delta       = auxp%grx_delta       * auxp%wall_base_u 
+!!$     auxp%grt_DA_rms_rho  = auxp%grx_DA_rms_rho  * auxp%wall_base_u  
+!!$     auxp%grt_DA_rms_rhoU = auxp%grx_DA_rms_rhoU * auxp%wall_base_u
+!!$     auxp%grt_DA_rms_rhoV = auxp%grx_DA_rms_rhoV * auxp%wall_base_u
+!!$     auxp%grt_DA_rms_rhoW = auxp%grx_DA_rms_rhoW * auxp%wall_base_u
+!!$     auxp%grt_DA_rms_rhoE = auxp%grx_DA_rms_rhoE * auxp%wall_base_u
+!!$     auxp%grt_DA_rms_p    = auxp%grx_DA_rms_p    * auxp%wall_base_u
+!!$     do is=1, ns_
+!!$       auxp%grt_DA_rms_rhos(is) = auxp%grx_DA_rms_rhos(is) * auxp%wall_base_u
+!!$     end do
+
+  end subroutine largo_BL_spatiotemporal_consistent_init_wall_baseflow
+
+
+  subroutine largo_BL_spatiotemporal_consistent_preStep_baseflow(cp, base, &
                               ddy_base, ddt_base, ddx_base, src_base)
 
     real(WP), dimension(*), intent(in)    :: base
@@ -329,7 +370,7 @@ contains
     real(WP), dimension(*), intent(in)    :: src_base
     integer(c_int) :: is
     type(largo_workspace_ptr), intent(in) :: cp
-    type(largo_BL_temporal_consistent_workspace_type), pointer   :: auxp
+    type(largo_BL_spatiotemporal_consistent_workspace_type), pointer   :: auxp
 
     ! Get Fortran pointer from C pointer
     call c_f_pointer(cp, auxp)
@@ -366,17 +407,17 @@ contains
 !!$       auxp%src_base_cs(is) = src_base(5+is)
     end do
 
-  end subroutine largo_BL_temporal_consistent_preStep_baseflow
+  end subroutine largo_BL_spatiotemporal_consistent_preStep_baseflow
 
 
-  subroutine largo_BL_temporal_consistent_preStep_sEtaMean(cp, y, mean, ddy_mean)
+  subroutine largo_BL_spatiotemporal_consistent_preStep_sEtaMean(cp, y, mean, ddy_mean)
 
     real(WP), intent(in)               :: y
     real(WP), dimension(*), intent(in) :: mean
     real(WP), dimension(*), intent(in) :: ddy_mean
     integer(c_int) :: is
     type(largo_workspace_ptr), intent(in) :: cp
-    type(largo_BL_temporal_consistent_workspace_type), pointer :: auxp
+    type(largo_BL_spatiotemporal_consistent_workspace_type), pointer :: auxp
 
     ! Get Fortran pointer from C pointer
     call c_f_pointer(cp, auxp)
@@ -408,20 +449,20 @@ contains
     end do
 
     ! These ones depend on y only
-    auxp%Ts_rho =  - auxp%ddt_base_rho - auxp%gr_DA_rho * (auxp%mean_rho-auxp%base_rho) + y * auxp%gr_delta * (ddy_mean(irho )-auxp%ddy_base_rho)
-    auxp%Ts_U   =  - auxp%ddt_base_U   - auxp%gr_DA_U   * (auxp%fav_U   -auxp%base_U  ) + y * auxp%gr_delta * (auxp%dfav_U    -auxp%ddy_base_U  )
-    auxp%Ts_V   =  - auxp%ddt_base_V   - auxp%gr_DA_V   * (auxp%fav_V   -auxp%base_V  ) + y * auxp%gr_delta * (auxp%dfav_V    -auxp%ddy_base_V  )
-    auxp%Ts_W   =  - auxp%ddt_base_W   - auxp%gr_DA_W   * (auxp%fav_W   -auxp%base_W  ) + y * auxp%gr_delta * (auxp%dfav_W    -auxp%ddy_base_W  )
-    auxp%Ts_E   =  - auxp%ddt_base_E   - auxp%gr_DA_E   * (auxp%fav_E   -auxp%base_E  ) + y * auxp%gr_delta * (auxp%dfav_E    -auxp%ddy_base_E  )
+    auxp%Xs_rho =  - auxp%ddt_base_rho - auxp%gr_DA_rho * (auxp%mean_rho-auxp%base_rho) + y * auxp%gr_delta * (ddy_mean(irho )-auxp%ddy_base_rho)
+    auxp%Xs_U   =  - auxp%ddt_base_U   - auxp%gr_DA_U   * (auxp%fav_U   -auxp%base_U  ) + y * auxp%gr_delta * (auxp%dfav_U    -auxp%ddy_base_U  )
+    auxp%Xs_V   =  - auxp%ddt_base_V   - auxp%gr_DA_V   * (auxp%fav_V   -auxp%base_V  ) + y * auxp%gr_delta * (auxp%dfav_V    -auxp%ddy_base_V  )
+    auxp%Xs_W   =  - auxp%ddt_base_W   - auxp%gr_DA_W   * (auxp%fav_W   -auxp%base_W  ) + y * auxp%gr_delta * (auxp%dfav_W    -auxp%ddy_base_W  )
+    auxp%Xs_E   =  - auxp%ddt_base_E   - auxp%gr_DA_E   * (auxp%fav_E   -auxp%base_E  ) + y * auxp%gr_delta * (auxp%dfav_E    -auxp%ddy_base_E  )
 
     do is=1, ns_
-      auxp%Ts_cs(is)  = - auxp%ddt_base_cs(is) - auxp%gr_DA_cs(is) * (auxp%fav_cs(is)-auxp%base_cs(is)) + y * auxp%gr_delta * (auxp%dfav_cs(is)-auxp%ddy_base_cs(is)) 
+      auxp%Xs_cs(is)  = - auxp%ddt_base_cs(is) - auxp%gr_DA_cs(is) * (auxp%fav_cs(is)-auxp%base_cs(is)) + y * auxp%gr_delta * (auxp%dfav_cs(is)-auxp%ddy_base_cs(is)) 
     end do
 
-  end subroutine largo_BL_temporal_consistent_preStep_sEtaMean
+  end subroutine largo_BL_spatiotemporal_consistent_preStep_sEtaMean
 
 
-  subroutine largo_BL_temporal_consistent_preStep_sEta_(cp, y, rms, mean_rqq, ddy_rms, dmean_rqq)
+  subroutine largo_BL_spatiotemporal_consistent_preStep_sEta_(cp, y, rms, mean_rqq, ddy_rms, dmean_rqq)
 
     real(WP), intent(in)               :: y
     real(WP), dimension(*), intent(in) :: rms
@@ -430,7 +471,7 @@ contains
     real(WP), dimension(*), intent(in) :: dmean_rqq
     integer(c_int) :: is
     type(largo_workspace_ptr), intent(in)          :: cp
-    type(largo_BL_temporal_consistent_workspace_type), pointer :: auxp
+    type(largo_BL_spatiotemporal_consistent_workspace_type), pointer :: auxp
 
     ! Get Fortran pointer from C pointer
     call c_f_pointer(cp, auxp)
@@ -511,6 +552,7 @@ contains
     !auxp%ygArms_rho  = 0.0_WP
     !if (auxp%Arms_rho > eps) auxp%ygArms_rho = y * auxp%gr_delta * auxp%dArms_rho/auxp%Arms_rho
 
+    ! FIXME: Fix growth rates
     auxp%ygArms_U = 0.0_WP
     if (auxp%Arms_U   > eps) auxp%ygArms_U   = y * auxp%gr_delta * auxp%dArms_U/auxp%Arms_U
 
@@ -528,15 +570,15 @@ contains
       if (auxp%Arms_cs(is) > eps)  auxp%ygArms_cs(is) = y * auxp%gr_delta * auxp%dArms_cs(is)/auxp%Arms_cs(is)
     end do
 
-  end subroutine largo_BL_temporal_consistent_preStep_sEta_
+  end subroutine largo_BL_spatiotemporal_consistent_preStep_sEta_
 
 
-  subroutine largo_BL_temporal_consistent_preStep_sEta_innerxz(cp, qflow)
+  subroutine largo_BL_spatiotemporal_consistent_preStep_sEta_innerxz(cp, qflow)
 
     real(WP), dimension(*), intent(in) :: qflow
     integer(c_int) :: is
     type(largo_workspace_ptr), intent(in) :: cp
-    type(largo_BL_temporal_consistent_workspace_type), pointer :: auxp
+    type(largo_BL_spatiotemporal_consistent_workspace_type), pointer :: auxp
 
     ! Get Fortran pointer from C pointer
     call c_f_pointer(cp, auxp)
@@ -553,33 +595,33 @@ contains
     auxp%ffluc_W   = auxp%field_W   - auxp%fav_W
     auxp%ffluc_E   = auxp%field_E   - auxp%fav_E
 
-    auxp%TsArms_rho = auxp%fluc_rho / auxp%mean_rho * auxp%Ts_rho
-    auxp%TsArms_U   = auxp%ffluc_U  * (- auxp%gr_DA_rms_U   + auxp%ygArms_U   )
-    auxp%TsArms_V   = auxp%ffluc_V  * (- auxp%gr_DA_rms_V   + auxp%ygArms_V   )
-    auxp%TsArms_W   = auxp%ffluc_W  * (- auxp%gr_DA_rms_W   + auxp%ygArms_W   )
-    auxp%TsArms_E   = auxp%ffluc_E  * (- auxp%gr_DA_rms_E   + auxp%ygArms_E   )
+    auxp%XsArms_rho = auxp%fluc_rho / auxp%mean_rho * auxp%Xs_rho
+    auxp%XsArms_U   = auxp%ffluc_U  * (- auxp%gr_DA_rms_U   + auxp%ygArms_U   )
+    auxp%XsArms_V   = auxp%ffluc_V  * (- auxp%gr_DA_rms_V   + auxp%ygArms_V   )
+    auxp%XsArms_W   = auxp%ffluc_W  * (- auxp%gr_DA_rms_W   + auxp%ygArms_W   )
+    auxp%XsArms_E   = auxp%ffluc_E  * (- auxp%gr_DA_rms_E   + auxp%ygArms_E   )
 
     do is=1, ns_
       auxp%field_cs (is)  = qflow(5+is)/qflow(irho)
       auxp%ffluc_cs (is)  = auxp%field_cs(is) - auxp%fav_cs   (is)
-      auxp%TsArms_cs(is)  = auxp%ffluc_cs(is) * (- auxp%gr_DA_rms_cs(is) + auxp%ygArms_cs(is))
+      auxp%XsArms_cs(is)  = auxp%ffluc_cs(is) * (- auxp%gr_DA_rms_cs(is) + auxp%ygArms_cs(is))
     end do
 
     ! Compute mean plus fluctuations slow time derivative
-    auxp%TsFull_rho = auxp%Ts_rho + auxp%TsArms_rho
-    auxp%TsFull_U   = auxp%Ts_U   + auxp%TsArms_U
-    auxp%TsFull_V   = auxp%Ts_V   + auxp%TsArms_V
-    auxp%TsFull_W   = auxp%Ts_W   + auxp%TsArms_W
-    auxp%TsFull_E   = auxp%Ts_E   + auxp%TsArms_E
+    auxp%XsFull_rho = auxp%Xs_rho + auxp%XsArms_rho
+    auxp%XsFull_U   = auxp%Xs_U   + auxp%XsArms_U
+    auxp%XsFull_V   = auxp%Xs_V   + auxp%XsArms_V
+    auxp%XsFull_W   = auxp%Xs_W   + auxp%XsArms_W
+    auxp%XsFull_E   = auxp%Xs_E   + auxp%XsArms_E
 
     do is=1, ns_
-      auxp%TsFull_cs(is) = auxp%Ts_cs(is) + auxp%TsArms_cs(is) 
+      auxp%XsFull_cs(is) = auxp%Xs_cs(is) + auxp%XsArms_cs(is) 
     end do
 
-  end subroutine largo_BL_temporal_consistent_preStep_sEta_innerxz
+  end subroutine largo_BL_spatiotemporal_consistent_preStep_sEta_innerxz
 
 
-  subroutine largo_BL_temporal_consistent_preStep_sEta_innery(cp, y, mean, rms, mean_rqq, ddy_mean, ddy_rms, dmean_rqq)
+  subroutine largo_BL_spatiotemporal_consistent_preStep_sEta_innery(cp, y, mean, rms, mean_rqq, ddy_mean, ddy_rms, dmean_rqq)
 
     real(WP), intent(in)               :: y
     real(WP), dimension(*), intent(in) :: mean
@@ -590,13 +632,13 @@ contains
     real(WP), dimension(*), intent(in) :: dmean_rqq
     type(largo_workspace_ptr), intent(in)        :: cp
 
-    call largo_BL_temporal_consistent_preStep_sEtaMean(cp, y, mean, ddy_mean)
-    call largo_BL_temporal_consistent_preStep_sEta_(cp, y, rms, mean_rqq, ddy_rms, dmean_rqq)
+    call largo_BL_spatiotemporal_consistent_preStep_sEtaMean(cp, y, mean, ddy_mean)
+    call largo_BL_spatiotemporal_consistent_preStep_sEta_(cp, y, rms, mean_rqq, ddy_rms, dmean_rqq)
 
-  end subroutine largo_BL_temporal_consistent_preStep_sEta_innery
+  end subroutine largo_BL_spatiotemporal_consistent_preStep_sEta_innery
 
 
-  subroutine largo_BL_temporal_consistent_preStep_sEta(cp, y, qflow, mean, rms, mean_rqq, ddy_mean, ddy_rms, dmean_rqq)
+  subroutine largo_BL_spatiotemporal_consistent_preStep_sEta(cp, y, qflow, mean, rms, mean_rqq, ddy_mean, ddy_rms, dmean_rqq)
 
     real(WP), intent(in)                  :: y
     real(WP), dimension(*), intent(in) :: qflow
@@ -609,144 +651,145 @@ contains
     type(largo_workspace_ptr), intent(in)        :: cp
 
 
-    call largo_BL_temporal_consistent_preStep_sEtaMean(cp, y, mean, ddy_mean)
-    call largo_BL_temporal_consistent_preStep_sEta_(cp, y, rms, mean_rqq, ddy_rms, dmean_rqq)
-    call largo_BL_temporal_consistent_preStep_sEta_innerxz(cp, qflow)
+    call largo_BL_spatiotemporal_consistent_preStep_sEtaMean(cp, y, mean, ddy_mean)
+    call largo_BL_spatiotemporal_consistent_preStep_sEta_(cp, y, rms, mean_rqq, ddy_rms, dmean_rqq)
+    call largo_BL_spatiotemporal_consistent_preStep_sEta_innerxz(cp, qflow)
 
-  end subroutine largo_BL_temporal_consistent_preStep_sEta
+  end subroutine largo_BL_spatiotemporal_consistent_preStep_sEta
 
 
+! FIXME: Fix sources as per spatiotemporal
 #define DECLARE_SUBROUTINE(token)token (cp, A, B, src);\
   type(largo_workspace_ptr), intent(in)   :: cp;\
   real(WP)       , intent(in)             :: A, B;\
   real(WP)       , intent(inout)          :: src;\
-  type(largo_BL_temporal_consistent_workspace_type), pointer :: auxp;\
+  type(largo_BL_spatiotemporal_consistent_workspace_type), pointer :: auxp;\
   call c_f_pointer(cp, auxp)\
 
-  subroutine DECLARE_SUBROUTINE(largo_BL_temporal_consistent_continuity_sEtaMean)
-    src = A * src + B * auxp%Ts_rho
-  end subroutine largo_BL_temporal_consistent_continuity_sEtaMean
+  subroutine DECLARE_SUBROUTINE(largo_BL_spatiotemporal_consistent_continuity_sEtaMean)
+    src = A * src + B * auxp%Xs_rho
+  end subroutine largo_BL_spatiotemporal_consistent_continuity_sEtaMean
 
 
-  subroutine DECLARE_SUBROUTINE(largo_BL_temporal_consistent_xMomentum_sEtaMean)
-    src = A * src + B * (  auxp%mean_rho * auxp%Ts_U &
-      &                  + auxp%fav_U    * auxp%Ts_rho  )
-  end subroutine largo_BL_temporal_consistent_xMomentum_sEtaMean
+  subroutine DECLARE_SUBROUTINE(largo_BL_spatiotemporal_consistent_xMomentum_sEtaMean)
+    src = A * src + B * (  auxp%mean_rho * auxp%Xs_U &
+      &                  + auxp%fav_U    * auxp%Xs_rho  )
+  end subroutine largo_BL_spatiotemporal_consistent_xMomentum_sEtaMean
 
 
-  subroutine DECLARE_SUBROUTINE(largo_BL_temporal_consistent_yMomentum_sEtaMean)
-    src = A * src + B * (  auxp%mean_rho * auxp%Ts_V &
-      &                  + auxp%fav_V    * auxp%Ts_rho  )
-  end subroutine largo_BL_temporal_consistent_yMomentum_sEtaMean
+  subroutine DECLARE_SUBROUTINE(largo_BL_spatiotemporal_consistent_yMomentum_sEtaMean)
+    src = A * src + B * (  auxp%mean_rho * auxp%Xs_V &
+      &                  + auxp%fav_V    * auxp%Xs_rho  )
+  end subroutine largo_BL_spatiotemporal_consistent_yMomentum_sEtaMean
 
 
-  subroutine DECLARE_SUBROUTINE(largo_BL_temporal_consistent_zMomentum_sEtaMean)
-    src = A * src + B * (  auxp%mean_rho * auxp%Ts_W &
-      &                  + auxp%fav_W    * auxp%Ts_rho  )
-  end subroutine largo_BL_temporal_consistent_zMomentum_sEtaMean
+  subroutine DECLARE_SUBROUTINE(largo_BL_spatiotemporal_consistent_zMomentum_sEtaMean)
+    src = A * src + B * (  auxp%mean_rho * auxp%Xs_W &
+      &                  + auxp%fav_W    * auxp%Xs_rho  )
+  end subroutine largo_BL_spatiotemporal_consistent_zMomentum_sEtaMean
 
 
-  subroutine DECLARE_SUBROUTINE(largo_BL_temporal_consistent_energy_sEtaMean)
-    src = A * src + B * (  auxp%mean_rho * auxp%Ts_E &
-      &                  + auxp%fav_E    * auxp%Ts_rho  )
-  end subroutine largo_BL_temporal_consistent_energy_sEtaMean
+  subroutine DECLARE_SUBROUTINE(largo_BL_spatiotemporal_consistent_energy_sEtaMean)
+    src = A * src + B * (  auxp%mean_rho * auxp%Xs_E &
+      &                  + auxp%fav_E    * auxp%Xs_rho  )
+  end subroutine largo_BL_spatiotemporal_consistent_energy_sEtaMean
 
 
-  subroutine largo_BL_temporal_consistent_ispecies_sEtaMean (cp, A, B, src, is)
+  subroutine largo_BL_spatiotemporal_consistent_ispecies_sEtaMean (cp, A, B, src, is)
     type(largo_workspace_ptr), intent(in)    :: cp
     real(WP)       , intent(in)              :: A, B
     real(WP)       , intent(inout)           :: src
-    type(largo_BL_temporal_consistent_workspace_type), pointer :: auxp
+    type(largo_BL_spatiotemporal_consistent_workspace_type), pointer :: auxp
     integer(c_int), intent(in)               :: is
 
     call c_f_pointer(cp, auxp)
-    src = A * src + B * (  auxp%mean_rho   * auxp%Ts_cs(is) &
-      &                  + auxp%fav_cs(is) * auxp%Ts_rho  )
-  end subroutine largo_BL_temporal_consistent_ispecies_sEtaMean
+    src = A * src + B * (  auxp%mean_rho   * auxp%Xs_cs(is) &
+      &                  + auxp%fav_cs(is) * auxp%Xs_rho  )
+  end subroutine largo_BL_spatiotemporal_consistent_ispecies_sEtaMean
 
 
-  subroutine largo_BL_temporal_consistent_species_sEtaMean (cp, A, B, srcvec)
+  subroutine largo_BL_spatiotemporal_consistent_species_sEtaMean (cp, A, B, srcvec)
     type(largo_workspace_ptr), intent(in)     :: cp
     real(WP)       , intent(in)               :: A, B
     real(WP), dimension(*), intent(inout)     :: srcvec ! "*" = ns_
     integer(c_int)                            :: is
 
     do is = 1, ns_
-      call largo_BL_temporal_consistent_ispecies_sEtaMean (cp, A, B, srcvec(is), is)
+      call largo_BL_spatiotemporal_consistent_ispecies_sEtaMean (cp, A, B, srcvec(is), is)
     end do
-  end subroutine largo_BL_temporal_consistent_species_sEtaMean
+  end subroutine largo_BL_spatiotemporal_consistent_species_sEtaMean
 
 
-  subroutine DECLARE_SUBROUTINE(largo_BL_temporal_consistent_continuity_sEta_)
-    src = A * src + B * auxp%TsFull_rho
-  end subroutine largo_BL_temporal_consistent_continuity_sEta_
+  subroutine DECLARE_SUBROUTINE(largo_BL_spatiotemporal_consistent_continuity_sEta_)
+    src = A * src + B * auxp%XsFull_rho
+  end subroutine largo_BL_spatiotemporal_consistent_continuity_sEta_
 
 
-  subroutine DECLARE_SUBROUTINE(largo_BL_temporal_consistent_xMomentum_sEta_)
-    src = A * src + B * (  auxp%field_rho * auxp%TsFull_U &
-      &                  + auxp%field_U   * auxp%TsFull_rho  )
-  end subroutine largo_BL_temporal_consistent_xMomentum_sEta_
+  subroutine DECLARE_SUBROUTINE(largo_BL_spatiotemporal_consistent_xMomentum_sEta_)
+    src = A * src + B * (  auxp%field_rho * auxp%XsFull_U &
+      &                  + auxp%field_U   * auxp%XsFull_rho  )
+  end subroutine largo_BL_spatiotemporal_consistent_xMomentum_sEta_
 
 
-  subroutine DECLARE_SUBROUTINE(largo_BL_temporal_consistent_yMomentum_sEta_)
-    src = A * src + B * (  auxp%field_rho * auxp%TsFull_V &
-      &                  + auxp%field_V   * auxp%TsFull_rho  )
-  end subroutine largo_BL_temporal_consistent_yMomentum_sEta_
+  subroutine DECLARE_SUBROUTINE(largo_BL_spatiotemporal_consistent_yMomentum_sEta_)
+    src = A * src + B * (  auxp%field_rho * auxp%XsFull_V &
+      &                  + auxp%field_V   * auxp%XsFull_rho  )
+  end subroutine largo_BL_spatiotemporal_consistent_yMomentum_sEta_
 
 
-  subroutine DECLARE_SUBROUTINE(largo_BL_temporal_consistent_zMomentum_sEta_)
-    src = A * src + B * (  auxp%field_rho * auxp%TsFull_W &
-      &                  + auxp%field_W   * auxp%TsFull_rho  )
-  end subroutine largo_BL_temporal_consistent_zMomentum_sEta_
+  subroutine DECLARE_SUBROUTINE(largo_BL_spatiotemporal_consistent_zMomentum_sEta_)
+    src = A * src + B * (  auxp%field_rho * auxp%XsFull_W &
+      &                  + auxp%field_W   * auxp%XsFull_rho  )
+  end subroutine largo_BL_spatiotemporal_consistent_zMomentum_sEta_
 
 
-  subroutine DECLARE_SUBROUTINE(largo_BL_temporal_consistent_energy_sEta_)
-    src = A * src + B * (  auxp%field_rho * auxp%TsFull_E &
-      &                  + auxp%field_E   * auxp%TsFull_rho  )
-  end subroutine largo_BL_temporal_consistent_energy_sEta_
+  subroutine DECLARE_SUBROUTINE(largo_BL_spatiotemporal_consistent_energy_sEta_)
+    src = A * src + B * (  auxp%field_rho * auxp%XsFull_E &
+      &                  + auxp%field_E   * auxp%XsFull_rho  )
+  end subroutine largo_BL_spatiotemporal_consistent_energy_sEta_
 
 
-  subroutine largo_BL_temporal_consistent_ispecies_sEta_ (cp, A, B, src, is)
+  subroutine largo_BL_spatiotemporal_consistent_ispecies_sEta_ (cp, A, B, src, is)
     type(largo_workspace_ptr), intent(in)    :: cp
     real(WP)       , intent(in)              :: A, B
     real(WP)       , intent(inout)           :: src
-    type(largo_BL_temporal_consistent_workspace_type), pointer :: auxp
+    type(largo_BL_spatiotemporal_consistent_workspace_type), pointer :: auxp
     integer(c_int), intent(in)               :: is
 
     call c_f_pointer(cp, auxp)
-    src = A * src + B * (  auxp%field_rho    * auxp%TsFull_cs(is) &
-      &                  + auxp%field_cs(is) * auxp%TsFull_rho  )
-  end subroutine largo_BL_temporal_consistent_ispecies_sEta_
+    src = A * src + B * (  auxp%field_rho    * auxp%XsFull_cs(is) &
+      &                  + auxp%field_cs(is) * auxp%XsFull_rho  )
+  end subroutine largo_BL_spatiotemporal_consistent_ispecies_sEta_
 
 
-  subroutine largo_BL_temporal_consistent_species_sEta_ (cp, A, B, srcvec)
+  subroutine largo_BL_spatiotemporal_consistent_species_sEta_ (cp, A, B, srcvec)
     type(largo_workspace_ptr), intent(in)   :: cp
     real(WP)       , intent(in)             :: A, B
     real(WP), dimension(*), intent(inout)   :: srcvec ! "*" = ns_
     integer(c_int)                          :: is
 
     do is = 1, ns_
-      call largo_BL_temporal_consistent_ispecies_sEta_ (cp, A, B, srcvec(is), is)
+      call largo_BL_spatiotemporal_consistent_ispecies_sEta_ (cp, A, B, srcvec(is), is)
     end do
-  end subroutine largo_BL_temporal_consistent_species_sEta_
+  end subroutine largo_BL_spatiotemporal_consistent_species_sEta_
 
 
-  subroutine largo_BL_temporal_consistent_sEta (cp, A, B, srcvec)
+  subroutine largo_BL_spatiotemporal_consistent_sEta (cp, A, B, srcvec)
     type(largo_workspace_ptr), intent(in)     :: cp
     real(WP)       , intent(in)               :: A, B
     real(WP), dimension(*), intent(inout)     :: srcvec ! "*" = 5+ns_
     integer(c_int)                            :: is
 
-    call largo_BL_temporal_consistent_continuity_sEta_ (cp, A, B, srcvec(irho ))
-    call largo_BL_temporal_consistent_xMomentum_sEta_  (cp, A, B, srcvec(irhou))
-    call largo_BL_temporal_consistent_yMomentum_sEta_  (cp, A, B, srcvec(irhov))
-    call largo_BL_temporal_consistent_zMomentum_sEta_  (cp, A, B, srcvec(irhow))
-    call largo_BL_temporal_consistent_energy_sEta_     (cp, A, B, srcvec(irhoE))
+    call largo_BL_spatiotemporal_consistent_continuity_sEta_ (cp, A, B, srcvec(irho ))
+    call largo_BL_spatiotemporal_consistent_xMomentum_sEta_  (cp, A, B, srcvec(irhou))
+    call largo_BL_spatiotemporal_consistent_yMomentum_sEta_  (cp, A, B, srcvec(irhov))
+    call largo_BL_spatiotemporal_consistent_zMomentum_sEta_  (cp, A, B, srcvec(irhow))
+    call largo_BL_spatiotemporal_consistent_energy_sEta_     (cp, A, B, srcvec(irhoE))
 
     do is = 1, ns_
-      call largo_BL_temporal_consistent_ispecies_sEta_ (cp, A, B, srcvec(5+is), is)
+      call largo_BL_spatiotemporal_consistent_ispecies_sEta_ (cp, A, B, srcvec(5+is), is)
     end do
 
-  end subroutine largo_BL_temporal_consistent_sEta
+  end subroutine largo_BL_spatiotemporal_consistent_sEta
 
-end module largo_BL_temporal_consistent
+end module largo_BL_spatiotemporal_consistent
