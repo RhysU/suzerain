@@ -196,30 +196,29 @@ BOOST_AUTO_TEST_CASE( blasius_find_edge )
 typedef BlasiusFixture<4,10000> fixture_four_ten_thousand;
 BOOST_FIXTURE_TEST_CASE( blasius_compute_thicknesses, fixture_four_ten_thousand)
 {
-    // Prepare B-spline coefficients for kinetic energy
-    // Kinetic energy should be evaluated consistently with velocity fits
-    shared_array<double> ke(new double[b.n()]);
-    for (int i = 0; i < b.n(); ++i) {
-        const double u = gsl_spline_eval(
-                blasius_u, b.collocation_point(i), accel);
-        const double v = gsl_spline_eval(
-                blasius_v, b.collocation_point(i), accel);
-        ke[i] = (u*u + v*v) / 2;
-    }
-    BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS, lu.solve(1, ke.get(), 1, b.n()));
-
-    // Prepare B-spline coefficients for streamwise velocity
-    shared_array<double> u(new double[b.n()]);
-    for (int i = 0; i < b.n(); ++i) {
-        u[i] = gsl_spline_eval(blasius_u, b.collocation_point(i), accel);
-    }
-    BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS, lu.solve(1, u.get(), 1, b.n()));
-
-    // Assume uniform density of 0.5 and scale to get streamwise momentum
+    // Prepare Blasius profile information on the collocation points
+    shared_array<double> u    (new double[b.n()]);
+    shared_array<double> v    (new double[b.n()]);
+    shared_array<double> ke   (new double[b.n()]);
     shared_array<double> rho_u(new double[b.n()]);
     for (int i = 0; i < b.n(); ++i) {
-        rho_u[i] = u[i] / 2;
+        u[i]     = gsl_spline_eval(blasius_u, b.collocation_point(i), accel);
+        v[i]     = gsl_spline_eval(blasius_v, b.collocation_point(i), accel);
+        ke[i]    = (u[i]*u[i] + v[i]*v[i]) / 2;
+        rho_u[i] = u[i] / 2;                     // Density uniformly 0.5
+
+        // std::cerr << b.collocation_point(i) << '\t'  // If you need it...
+        //           << u[i]                   << '\t'
+        //           << v[i]                   << '\t'
+        //           << ke[i]                  << '\t'
+        //           << rho_u[i]               << '\n';
     }
+
+    // Convert to B-spline coefficients
+    BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS, lu.solve(1, u    .get(), 1, b.n()));
+    BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS, lu.solve(1, v    .get(), 1, b.n()));
+    BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS, lu.solve(1, ke   .get(), 1, b.n()));
+    BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS, lu.solve(1, rho_u.get(), 1, b.n()));
 
     // Compute a bunch of thickness-related quantities
     // Thickness from eyeballing results computed in Octave:
