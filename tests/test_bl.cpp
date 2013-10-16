@@ -58,8 +58,8 @@ struct BlasiusFixture {
     bsplineop_lu lu;
 
     BlasiusFixture()
-        : blasius_u     (suzerain_blasius_u     (Re_x))
-        , blasius_v     (suzerain_blasius_v     (Re_x))
+        : blasius_u(suzerain_blasius_u(Re_x))
+        , blasius_v(suzerain_blasius_v(Re_x))
         , accel(gsl_interp_accel_alloc())
         , b(k, bspline::from_breakpoints(), blasius_u->size, blasius_u->x)
         , op(b, 0, SUZERAIN_BSPLINEOP_COLLOCATION_GREVILLE)
