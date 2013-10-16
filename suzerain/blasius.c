@@ -1102,19 +1102,3 @@ gsl_spline * suzerain_blasius_v(const double Re_x)
     }
     return prepare_fit(Nextended, y, v);
 }
-
-gsl_spline * suzerain_blasius_ke(const double Re_x)
-{
-    double y[Nextended], ke[Nextended];
-    const double invSqrtRe = sqrt(1 / Re_x);
-    for (size_t i = 0; i < Nextended; ++i) {
-        y[i] = invSqrtRe * suzerain_blasius_extended_eta[i];
-        const double u = suzerain_blasius_extended_fp[i];
-        const double v = invSqrtRe/2 * (  suzerain_blasius_extended_f  [i]
-                                        + suzerain_blasius_extended_eta[i]
-                                        * suzerain_blasius_extended_fp [i]);
-        ke[i] = (u*u + v*v) / 2;
-    }
-
-    return prepare_fit(Nextended, y, ke);
-}

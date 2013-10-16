@@ -143,15 +143,6 @@ gsl_spline * suzerain_blasius_u(const double Re_x);
  */
 gsl_spline * suzerain_blasius_v(const double Re_x);
 
-/**
- * Obtain a Blasius profile spline fit producing nondimensional kinetic energy
- * \f$\frac{u^2 + v^2}{2 u_\infty^2}\f$ given \f$\eta = y
- * \sqrt{\mbox{Re}_x}\f$.
- *
- * @copydetails suzerain_blasius_v
- */
-gsl_spline * suzerain_blasius_ke(const double Re_x);
-
 #ifdef __cplusplus
 } /* extern "C" */
 #endif

@@ -52,7 +52,6 @@ struct BlasiusFixture {
 
     gsl_spline * const blasius_u;
     gsl_spline * const blasius_v;
-    gsl_spline * const blasius_ke;
     gsl_interp_accel * const accel;
     bspline      b;
     bsplineop    op;
@@ -61,7 +60,6 @@ struct BlasiusFixture {
     BlasiusFixture()
         : blasius_u     (suzerain_blasius_u     (Re_x))
         , blasius_v     (suzerain_blasius_v     (Re_x))
-        , blasius_ke    (suzerain_blasius_ke    (Re_x))
         , accel(gsl_interp_accel_alloc())
         , b(k, bspline::from_breakpoints(), blasius_u->size, blasius_u->x)
         , op(b, 0, SUZERAIN_BSPLINEOP_COLLOCATION_GREVILLE)
@@ -73,7 +71,6 @@ struct BlasiusFixture {
     ~BlasiusFixture()
     {
         gsl_interp_accel_free(accel);
-        gsl_spline_free(blasius_ke);
         gsl_spline_free(blasius_v);
         gsl_spline_free(blasius_u);
     }
@@ -168,9 +165,14 @@ BOOST_FIXTURE_TEST_SUITE(bl_compute_thick_quadratic, fixture_four_thousand)
 BOOST_AUTO_TEST_CASE( blasius_find_edge )
 {
     // Prepare B-spline coefficients for Blasius profile kinetic energy
+    // Kinetic energy should be evaluated consistently with velocity fits
     shared_array<double> ke(new double[b.n()]);
     for (int i = 0; i < b.n(); ++i) {
-        ke[i] = gsl_spline_eval(blasius_ke, b.collocation_point(i), accel);
+        const double u = gsl_spline_eval(
+                blasius_u, b.collocation_point(i), accel);
+        const double v = gsl_spline_eval(
+                blasius_v, b.collocation_point(i), accel);
+        ke[i] = (u*u + v*v) / 2;
     }
     BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS, lu.solve(1, ke.get(), 1, b.n()));
 
@@ -195,9 +197,14 @@ typedef BlasiusFixture<4,10000> fixture_four_ten_thousand;
 BOOST_FIXTURE_TEST_CASE( blasius_compute_thicknesses, fixture_four_ten_thousand)
 {
     // Prepare B-spline coefficients for kinetic energy
+    // Kinetic energy should be evaluated consistently with velocity fits
     shared_array<double> ke(new double[b.n()]);
     for (int i = 0; i < b.n(); ++i) {
-        ke[i] = gsl_spline_eval(blasius_ke, b.collocation_point(i), accel);
+        const double u = gsl_spline_eval(
+                blasius_u, b.collocation_point(i), accel);
+        const double v = gsl_spline_eval(
+                blasius_v, b.collocation_point(i), accel);
+        ke[i] = (u*u + v*v) / 2;
     }
     BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS, lu.solve(1, ke.get(), 1, b.n()));
 
