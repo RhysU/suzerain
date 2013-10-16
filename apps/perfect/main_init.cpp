@@ -315,21 +315,13 @@ suzerain::perfect::driver_init::run(int argc, char **argv)
         } else {
 
             INFO("Base field starts from linear ramps for u, v, w, and T");
-            //// FIXME: Notice the following setLinSpaced calls are wrong!
-            //// and should be replaced by something like the following.
-            //// This friendly message brought to you to reduce the size
-            //// of the commit perturbing the results of perfect_init.
-            // for (int j = 0; j < Ny; ++j) {
-            //     const double norm_y_j = b->collocation_point(j) / grid->L.y();
-            //     u[j] = isothermal->denormalize_u(norm_y_j);
-            //     v[j] = isothermal->denormalize_v(norm_y_j);
-            //     w[j] = isothermal->denormalize_w(norm_y_j);
-            //     T[j] = isothermal->denormalize_T(norm_y_j);
-            // }
-            u.setLinSpaced(isothermal->lower_u, isothermal->upper_u); // FIXME!
-            v.setLinSpaced(isothermal->lower_v, isothermal->upper_v); // FIXME!
-            w.setLinSpaced(isothermal->lower_w, isothermal->upper_w); // FIXME!
-            T.setLinSpaced(isothermal->lower_T, isothermal->upper_T); // FIXME!
+            for (int j = 0; j < Ny; ++j) {
+                const double norm_y_j = b->collocation_point(j) / grid->L.y();
+                u[j] = isothermal->denormalize_u(norm_y_j);
+                v[j] = isothermal->denormalize_v(norm_y_j);
+                w[j] = isothermal->denormalize_w(norm_y_j);
+                T[j] = isothermal->denormalize_T(norm_y_j);
+            }
             INFO("Base field uses u from " << u(0) << " to " << u(Ny - 1));
             INFO("Base field uses v from " << v(0) << " to " << v(Ny - 1));
             INFO("Base field uses w from " << w(0) << " to " << w(Ny - 1));
