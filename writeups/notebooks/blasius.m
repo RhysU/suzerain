@@ -19,6 +19,7 @@
 %                     Interpretable as u'/u_oo.
 %
 % Further, the following univariate functions of Re_x are available:
+%   blasius_y       : The wall-normal coordinate y = eta/sqrt(Re_x)
 %   blasius_u       : The Reynolds-independent streamwise velocity u/u_oo
 %   blasius_v       : The wall-normal velocity v/v_oo
 %   blasius_ke      : The specific kinetic energy
@@ -819,20 +820,18 @@ blasius_fpp = blasius_extended(:, 4);
 blasius_fppp  = -blasius_f .* blasius_fpp / 2;
 
 % Prepare several anonymous functions for Re-dependent behavior
-% See notebooks/Blasius_Kinetic_Energy.nv for kepp derivation
+% See Kundu, Cohen, and Dowling 2012 p371 for expression for v
+% See notebooks/Blasius_Kinetic_Energy.nb for kepp derivation
+blasius_y    = @(Re) blasius_eta/sqrt(Re);
 blasius_u    = @(Re) blasius_fp;
-blasius_v    = @(Re) (blasius_f + blasius_eta .* blasius_fp) / sqrt(2*Re);
+blasius_v    = @(Re) (-blasius_f + blasius_eta.*blasius_fp) / (2 * sqrt(Re));
 blasius_ke   = @(Re) (blasius_u(Re).**2 + blasius_v(Re).**2) / 2;
-blasius_kepp = @(Re) (   4*blasius_fp.**2
-                       + blasius_f.*(   3*blasius_fpp
-                                      - (blasius_eta.*blasius_f.*blasius_fpp)/2
-                                    )
-                       + blasius_fpp.**2.*(blasius_eta.**2 + 2*Re)
-                       + blasius_fp.*(  7*blasius_eta.*blasius_fpp
-                                       - (blasius_f.*blasius_fpp
-                                           .*(blasius_eta.**2 + 2*Re)
-                                         )/2)
-                     )/2;
+blasius_kepp = @(Re) (-(blasius_f.*(blasius_fpp -                 ...
+                     (blasius_eta.*blasius_f.*blasius_fpp)./2))   ...
+                     + blasius_fpp.**2.*(blasius_eta.**2 + 4.*Re) ...
+                     + blasius_fp.*(blasius_eta.*blasius_fpp -    ...
+                     (blasius_f.*blasius_fpp.*(blasius_eta.**2 +  ...
+                     4.*Re))./2))./4;
 
 % Blasius profile values tabulated by Ganapol in Table 3b
 blasius_ganapol = [

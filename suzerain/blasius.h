@@ -26,7 +26,10 @@
 #define SUZERAIN_BLASIUS_H
 
 /** @file
- * Presents a Blasius laminar flow profile curve fit.
+ * Presents a Blasius laminar flow profile curve fit.  A nice discussion of the
+ * solution and its properties appears in section 9.3 of <a
+ * href="http://www.worldcat.org/oclc/844779335">Fluid Mechanics</a> by Kundu,
+ * Cohen, and Dowling (ISBN 9780123821003).
  *
  * Throughout these routines \f$x\f$ is the streamwise location downstream from
  * a flat plate edge and \f$y\f$ is the wall-normal distance from the plate.

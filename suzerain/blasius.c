@@ -1096,15 +1096,17 @@ gsl_spline * suzerain_blasius_u(const double Re_x)
     return prepare_fit(Nextended, y, suzerain_blasius_extended_fp);
 }
 
+// One may confirm the form of v/u_oo from the bottom of
+// page 371 within Kundu, Cohen, and Dowling 2012.
 gsl_spline * suzerain_blasius_v(const double Re_x)
 {
     double y[Nextended], v[Nextended];
     const double invSqrtRe = sqrt(1 / Re_x);
     for (size_t i = 0; i < Nextended; ++i) {
         y[i] = invSqrtRe * suzerain_blasius_extended_eta[i];
-        v[i] = invSqrtRe/M_SQRT2 * (  suzerain_blasius_extended_f  [i]
-                                    + suzerain_blasius_extended_eta[i]
-                                    * suzerain_blasius_extended_fp [i]);
+        v[i] = invSqrtRe/2 * (- suzerain_blasius_extended_f  [i]
+                              + suzerain_blasius_extended_eta[i]
+                              * suzerain_blasius_extended_fp [i]);
     }
     return prepare_fit(Nextended, y, v);
 }

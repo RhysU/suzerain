@@ -162,10 +162,9 @@ BOOST_AUTO_TEST_CASE( blasius_delta3 )
 
 BOOST_AUTO_TEST_SUITE_END()
 
-typedef BlasiusFixture<4,1000> fixture_four_thousand;
-BOOST_FIXTURE_TEST_SUITE(bl_compute_thick_quadratic, fixture_four_thousand)
 
-BOOST_AUTO_TEST_CASE( blasius_find_edge )
+typedef BlasiusFixture<4,1000> fixture_four_thousand;
+BOOST_FIXTURE_TEST_CASE( blasius_find_edge, fixture_four_thousand )
 {
     // Prepare B-spline coefficients for Blasius profile kinetic energy
     // Kinetic energy should be evaluated consistently with velocity fits
@@ -188,12 +187,16 @@ BOOST_AUTO_TEST_CASE( blasius_find_edge )
     BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS, suzerain_bl_find_edge(
         ke.get() /* \approx H_0 */, &location, dB.get(), b.bw, b.dbw));
 
-    // Thickness from eyeballing results computed in Octave:
+    // Thickness from eyeballing results computed in Octave
     //   source writeups/notebooks/blasius.m
-    //   Re=1000; plot(blasius_eta/sqrt(Re), blasius_kepp(Re),
-    //                 blasius_eta/sqrt(Re), zeros(size(blasius_eta)))
-    // There's no reason Octave plots should produce exactly this value.
-    BOOST_REQUIRE_SMALL((0.205 - location), 0.01);
+    //   Re=1000; plot(blasius_y(Re), blasius_kepp(Re),
+    //                 blasius_y(Re), zeros(size(blasius_eta)))
+    //   ylim([-eps eps])
+    // where machine epsilon arises from knowing the internals of
+    // suzerain_bl_find_edge's invocation of suzerain_bspline_crossing.
+    // This admittedly is a lousy test highly dependent on input data.
+    BOOST_REQUIRE_GT(location, 0.40);
+    BOOST_REQUIRE_LT(location, 0.80);
 }
 
 typedef BlasiusFixture<4,10000> fixture_four_ten_thousand;
@@ -226,22 +229,22 @@ BOOST_FIXTURE_TEST_CASE( blasius_compute_thicknesses, fixture_four_ten_thousand)
     // Compute a bunch of thickness-related quantities
     // Thickness from eyeballing results computed in Octave:
     //   source writeups/notebooks/blasius.m
-    //   Re=10000; plot(blasius_eta/sqrt(Re), blasius_kepp(Re),
-    //                  blasius_eta/sqrt(Re), zeros(size(blasius_eta)))
-    // Integrals found using Octave's trapz against this data
+    //   Re=10000; plot(blasius_y(Re), blasius_kepp(Re),
+    //                  blasius_y(Re), zeros(size(blasius_eta)))
+    // Integrals found using Octave's trapz against this data.
+    // Again, this is a very poor test for thick.delta.
+    // Notice on this dataset that delta3 and deltaH are the same thing!
     size_t cnt = 0;
     suzerain_bl_thicknesses thick;
     BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS, suzerain_bl_compute_thicknesses(
         ke.get() /* \approx H_0 */, rho_u.get(), u.get(), &thick, b.bw, b.dbw));
-    BOOST_CHECK_CLOSE(thick.delta,  0.0741853,           0.1   ); ++cnt;
+    BOOST_CHECK_GT   (thick.delta,  0.12);                        ++cnt;
     BOOST_CHECK_CLOSE(thick.delta1, 0.0172085683613221,  0.01  ); ++cnt;
     BOOST_CHECK_CLOSE(thick.delta2, 0.00664045493818580, 0.0105); ++cnt;
     BOOST_CHECK_CLOSE(thick.delta3, 0.0104430629471855,  0.01  ); ++cnt;
-    BOOST_CHECK_CLOSE(thick.deltaH, 0.0616451854169208,  0.7   ); ++cnt;
+    BOOST_CHECK_CLOSE(thick.deltaH, 0.0104435139441593,  0.01  ); ++cnt;
     BOOST_CHECK_EQUAL(cnt, sizeof(thick)/sizeof(thick.delta));
 }
-
-BOOST_AUTO_TEST_SUITE_END()
 
 
 BOOST_AUTO_TEST_SUITE( qoi )

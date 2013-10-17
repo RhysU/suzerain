@@ -101,7 +101,7 @@ suzerain_bl_find_edge(
         if (flower < threshold && fupper >= threshold) {
             status = suzerain_bspline_crossing(
                     nderiv, coeffs_H0, threshold, &lower, &upper, 100,
-                    GSL_DBL_EPSILON, GSL_DBL_EPSILON, location, dB, w, dw);
+                    GSL_DBL_EPSILON, /*not relative*/ 0, location, dB, w, dw);
             break;
         }
 
