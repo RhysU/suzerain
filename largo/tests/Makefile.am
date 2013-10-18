@@ -59,6 +59,12 @@ check_PROGRAMS                       += bl_spatiotemporal_baseflow_f
 bl_spatiotemporal_baseflow_f_SOURCES  = bl_spatiotemporal_baseflow_f.f90 testframework.f90
 bl_spatiotemporal_baseflow_f_LDADD    = ../largo/liblargof.la
 
+## Spatiotemporal consistent boundary layer, baseflow, fortran
+TESTS                                           += bl_spatiotemporal_consistent_baseflow_f
+check_PROGRAMS                                  += bl_spatiotemporal_consistent_baseflow_f
+bl_spatiotemporal_consistent_baseflow_f_SOURCES  = bl_spatiotemporal_consistent_baseflow_f.f90 testframework.f90
+bl_spatiotemporal_consistent_baseflow_f_LDADD    = ../largo/liblargof.la
+
 ## Generic interface, temporal boundary layer, c
 TESTS                         += generic_bl_temporal
 check_PROGRAMS                += generic_bl_temporal

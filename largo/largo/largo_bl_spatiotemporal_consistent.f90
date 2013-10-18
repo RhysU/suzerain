@@ -261,7 +261,6 @@ contains
       allocate(auxp%Arms_cs       (1:ns_))
       allocate(auxp%dArms_cs      (1:ns_))
       allocate(auxp%ygArms_cs     (1:ns_))
-!!$       allocate(auxp%XsFull_cs     (1:ns_))
 
       allocate(auxp%S_cs          (1:ns_))
       allocate(auxp%SArms_cs      (1:ns_))
@@ -325,7 +324,6 @@ contains
     if (allocated(auxp%Arms_cs      )) deallocate(auxp%Arms_cs      )
     if (allocated(auxp%dArms_cs     )) deallocate(auxp%dArms_cs     )
     if (allocated(auxp%ygArms_cs    )) deallocate(auxp%ygArms_cs    )
-!!$     if (allocated(auxp%XsFull_cs    )) deallocate(auxp%XsFull_cs    )
     if (allocated(auxp%S_cs         )) deallocate(auxp%S_cs         )
     if (allocated(auxp%SFull_cs     )) deallocate(auxp%SFull_cs     )
 
@@ -458,18 +456,21 @@ contains
     auxp%base_V   = base(irhoV)/base(irho )
     auxp%base_W   = base(irhoW)/base(irho )
     auxp%base_E   = base(irhoE)/base(irho )
+    auxp%base_p   = base(auxp%ip)
 
     auxp%ddy_base_rho = ddy_base(irho )
-    auxp%ddy_base_U   = ddy_base(irhoU)/base(irho ) - auxp%fav_U/base(irho ) * ddy_base(irho )
-    auxp%ddy_base_V   = ddy_base(irhoV)/base(irho ) - auxp%fav_V/base(irho ) * ddy_base(irho )
-    auxp%ddy_base_W   = ddy_base(irhoW)/base(irho ) - auxp%fav_W/base(irho ) * ddy_base(irho )
-    auxp%ddy_base_E   = ddy_base(irhoE)/base(irho ) - auxp%fav_E/base(irho ) * ddy_base(irho )
+    auxp%ddy_base_U   = ddy_base(irhoU)/base(irho ) - auxp%base_U/base(irho ) * ddy_base(irho )
+    auxp%ddy_base_V   = ddy_base(irhoV)/base(irho ) - auxp%base_V/base(irho ) * ddy_base(irho )
+    auxp%ddy_base_W   = ddy_base(irhoW)/base(irho ) - auxp%base_W/base(irho ) * ddy_base(irho )
+    auxp%ddy_base_E   = ddy_base(irhoE)/base(irho ) - auxp%base_E/base(irho ) * ddy_base(irho )
+    auxp%ddy_base_p   = ddy_base(auxp%ip)
 
     auxp%ddx_base_rho = ddx_base(irho )
-    auxp%ddx_base_U   = ddx_base(irhoU)/base(irho ) - auxp%fav_U/base(irho ) * ddx_base(irho )
-    auxp%ddx_base_V   = ddx_base(irhoV)/base(irho ) - auxp%fav_V/base(irho ) * ddx_base(irho )
-    auxp%ddx_base_W   = ddx_base(irhoW)/base(irho ) - auxp%fav_W/base(irho ) * ddx_base(irho )
-    auxp%ddx_base_E   = ddx_base(irhoE)/base(irho ) - auxp%fav_E/base(irho ) * ddx_base(irho )
+    auxp%ddx_base_U   = ddx_base(irhoU)/base(irho ) - auxp%base_U/base(irho ) * ddx_base(irho )
+    auxp%ddx_base_V   = ddx_base(irhoV)/base(irho ) - auxp%base_V/base(irho ) * ddx_base(irho )
+    auxp%ddx_base_W   = ddx_base(irhoW)/base(irho ) - auxp%base_W/base(irho ) * ddx_base(irho )
+    auxp%ddx_base_E   = ddx_base(irhoE)/base(irho ) - auxp%base_E/base(irho ) * ddx_base(irho )
+    auxp%ddx_base_p   = ddx_base(auxp%ip)
 
 !!$     auxp%src_base_rho = src_base(irho )
 !!$     auxp%src_base_U   = src_base(irhoU)
@@ -479,8 +480,8 @@ contains
 !!$
     do is=1, ns_
       auxp%base_cs    (is) =     base(5+is)/base(irho )
-      auxp%ddy_base_cs(is) = ddy_base(5+is)/base(irho ) - auxp%fav_cs(is)/base(irho ) * ddy_base(irho )
-      auxp%ddx_base_cs(is) = ddx_base(5+is)/base(irho ) - auxp%fav_cs(is)/base(irho ) * ddx_base(irho )
+      auxp%ddy_base_cs(is) = ddy_base(5+is)/base(irho ) - auxp%base_cs(is)/base(irho ) * ddy_base(irho )
+      auxp%ddx_base_cs(is) = ddx_base(5+is)/base(irho ) - auxp%base_cs(is)/base(irho ) * ddx_base(irho )
 !!$       auxp%src_base_cs(is) = src_base(5+is)
     end do
 
@@ -508,6 +509,7 @@ contains
     do is=1, ns_
       auxp%fav_cs(is) = mean(5+is)/mean(irho)
     end do
+    auxp%mean_p    = mean(auxp%ip)
 
     ! Compute/get y-derivative of Favre averages
     auxp%dmean_rho = ddy_mean(irho)
@@ -546,7 +548,7 @@ contains
     auxp%S_E   =  auxp%fav_U * auxp%Xs_E   + auxp%mean_p/auxp%mean_rho * auxp%Xs_U + auxp%fav_u/auxp%mean_rho * auxp%Xs_P
 
     do is=1, ns_
-      auxp%S_cs(is)  = auxp%fav_U * auxp%fav_cs(is)
+      auxp%S_cs(is)  = auxp%fav_U * auxp%Xs_cs(is)
     end do
 
   end subroutine largo_BL_spatiotemporal_consistent_preStep_sEtaMean
@@ -657,7 +659,7 @@ contains
 
     do is=1, ns_
       auxp%ygArms_cs(is) = 0.0_WP
-      if (auxp%Arms_cs(is) > eps)  auxp%ygArms_cs(is) = y * auxp%gr_delta * auxp%dArms_cs(is)/auxp%Arms_cs(is)
+      if (auxp%Arms_cs(is) > eps)  auxp%ygArms_cs(is) = y * auxp%grt_delta * auxp%dArms_cs(is)/auxp%Arms_cs(is)
     end do
 
   end subroutine largo_BL_spatiotemporal_consistent_preStep_sEta_
@@ -685,13 +687,13 @@ contains
     auxp%ffluc_W   = auxp%field_W   - auxp%fav_W
     auxp%ffluc_E   = auxp%field_E   - auxp%fav_E
 
-    auxp%XsArms_rho = auxp%fluc_rho / auxp%mean_rho * auxp%Xs_rho
+    auxp%XsArms_rho = auxp%fluc_rho / auxp%mean_rho * auxp%Xs_rho 
     auxp%XsArms_U   = auxp%ffluc_U  * (- auxp%grt_DA_rms_U   + auxp%ygArms_U   )
     auxp%XsArms_V   = auxp%ffluc_V  * (- auxp%grt_DA_rms_V   + auxp%ygArms_V   )
     auxp%XsArms_W   = auxp%ffluc_W  * (- auxp%grt_DA_rms_W   + auxp%ygArms_W   )
     auxp%XsArms_E   = auxp%ffluc_E  * (- auxp%grt_DA_rms_E   + auxp%ygArms_E   )
 
-    auxp%SArms_rho  = auxp%XsArms_rho 
+    auxp%SArms_rho  = auxp%fav_U * auxp%XsArms_rho + auxp%fluc_rho * auxp%Xs_U
     auxp%SArms_U    = auxp%XsArms_U   
     auxp%SArms_V    = auxp%XsArms_V   
     auxp%SArms_W    = auxp%XsArms_W   
@@ -701,7 +703,7 @@ contains
       auxp%field_cs (is)  = qflow(5+is)/qflow(irho)
       auxp%ffluc_cs (is)  = auxp%field_cs(is) - auxp%fav_cs   (is)
       auxp%XsArms_cs(is)  = auxp%ffluc_cs(is) * (- auxp%grt_DA_rms_cs(is) + auxp%ygArms_cs(is))
-      auxp%SArms_E    = auxp%XsArms_E 
+      auxp%SArms_cs (is)  = auxp%XsArms_cs(is)
     end do
 
     ! Compute mean plus fluctuations primitive sources
