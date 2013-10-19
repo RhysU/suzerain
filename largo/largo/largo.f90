@@ -268,6 +268,37 @@ contains
 
       lauxp%largo_prestep_baseflow => largo_BL_temporal_consistent_preStep_baseflow
 
+    case ("bl_spatiotemporal_consistent")
+      ! Initialize number of variables
+      lauxp%nvar = neq + 1
+
+      call largo_BL_spatiotemporal_consistent_allocate (lauxp%cp, lauxp%neq, lauxp%ns)
+      lauxp%largo_init               => largo_BL_spatiotemporal_consistent_init
+      lauxp%largo_finalize           => largo_BL_spatiotemporal_consistent_deallocate
+      lauxp%largo_prestep_mean       => largo_BL_spatiotemporal_consistent_preStep_sEtaMean
+      lauxp%largo_prestep_innerxz    => largo_BL_spatiotemporal_consistent_preStep_sEta_innerxz
+      lauxp%largo_prestep_innery     => largo_BL_spatiotemporal_consistent_preStep_sEta_innery
+      lauxp%largo_prestep            => largo_BL_spatiotemporal_consistent_preStep_sEta
+
+      lauxp%largo_continuity_mean    => largo_BL_spatiotemporal_consistent_continuity_sEtaMean
+      lauxp%largo_xmomentum_mean     => largo_BL_spatiotemporal_consistent_xMomentum_sEtaMean
+      lauxp%largo_ymomentum_mean     => largo_BL_spatiotemporal_consistent_yMomentum_sEtaMean
+      lauxp%largo_zmomentum_mean     => largo_BL_spatiotemporal_consistent_zMomentum_sEtaMean
+      lauxp%largo_energy_mean        => largo_BL_spatiotemporal_consistent_energy_sEtaMean
+      lauxp%largo_species_mean       => largo_BL_spatiotemporal_consistent_species_sEtaMean
+
+      lauxp%largo_continuity         => largo_BL_spatiotemporal_consistent_continuity_sEta_
+      lauxp%largo_xmomentum          => largo_BL_spatiotemporal_consistent_xMomentum_sEta_
+      lauxp%largo_ymomentum          => largo_BL_spatiotemporal_consistent_yMomentum_sEta_
+      lauxp%largo_zmomentum          => largo_BL_spatiotemporal_consistent_zMomentum_sEta_
+      lauxp%largo_energy             => largo_BL_spatiotemporal_consistent_energy_sEta_
+      lauxp%largo_species            => largo_BL_spatiotemporal_consistent_species_sEta_
+
+      lauxp%largo_all_sources        => largo_BL_spatiotemporal_consistent_sEta
+
+      lauxp%largo_init_wall_baseflow => largo_BL_spatiotemporal_consistent_init_wall_baseflow
+      lauxp%largo_prestep_baseflow   => largo_BL_spatiotemporal_consistent_preStep_baseflow
+
 
     case default
       ! FIXME: throw an error, model not declared
