@@ -32,6 +32,7 @@
 #include <suzerain/countof.h>
 
 static void test_extended();
+static void test_wall_derivative();
 
 int
 main(int argc, char **argv)
@@ -42,6 +43,7 @@ main(int argc, char **argv)
     gsl_ieee_env_setup();
 
     test_extended();
+    test_wall_derivative();
 
     exit(gsl_test_summary());
 }
@@ -74,4 +76,20 @@ static void test_extended()
                      i, suzerain_blasius_ganapol_eta[i]);
 
     }
+}
+
+/* Check the derivative of u at the wall */
+static void test_wall_derivative()
+{
+    gsl_spline * const blasius_u = suzerain_blasius_u(/*Re_x = */1);
+    gsl_interp_accel * const accel = gsl_interp_accel_alloc();
+
+    const double u  = gsl_spline_eval      (blasius_u, 0, accel);
+    const double du = gsl_spline_eval_deriv(blasius_u, 0, accel);
+
+    gsl_test_abs(u,  0.0,                 GSL_DBL_EPSILON,      "u[0.0]");
+    gsl_test_abs(du, 0.33205733621519630, GSL_SQRT_DBL_EPSILON, "du[0.0]");
+
+    gsl_interp_accel_free(accel);
+    gsl_spline_free(blasius_u);
 }
