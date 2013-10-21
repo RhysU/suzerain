@@ -35,8 +35,8 @@ do
 -h&--help&Show this help message.
   &--k&Specify the wall-normal B-spline order
   &--htdelta&Set grid stretching factor
-  &--alpha&Ratio of bulk to dynamic viscosity within manufactured solution (Default 1)
-  &--beta&Temperature power law exponent within manufactured solution
+  &--alpha&Ratio of bulk to dynamic viscosity (Default 1)
+  &--beta&Temperature power law exponent
   &--Cp&Specific heat at constant pressure
   &--Cv&Specific heat at constant volume
   &--Pr&Prandtl number

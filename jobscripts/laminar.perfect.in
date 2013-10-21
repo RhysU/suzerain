@@ -33,12 +33,12 @@ do
 -h&--help&Show this help message.
   &--k&Specify the wall-normal B-spline order
   &--htdelta&Set grid stretching factor
-  &--alpha&Ratio of bulk to dynamic viscosity within manufactured solution (Default 1)
-  &--beta&Temperature power law exponent within manufactured solution
-  &--gamma&Ratio of specific heats within manufactured solution
-  &--Re&Reynolds number within manufactured solution
-  &--Ma&Mach number within manufactured solution
-  &--Pr&Prandtl number within manufactured solution
+  &--alpha&Ratio of bulk to dynamic viscosity (Default 1)
+  &--beta&Temperature power law exponent
+  &--gamma&Ratio of specific heats
+  &--Re&Reynolds number
+  &--Ma&Mach number
+  &--Pr&Prandtl number
 EOF
                     echo
                     echo "GNU parallel is great for managing multiple cases.  For example,"
