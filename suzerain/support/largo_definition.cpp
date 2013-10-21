@@ -69,7 +69,7 @@ largo_definition::largo_definition()
 
 // Strings used in options_description and populate/override/save/load.
 static const char name_formulation[] = "formulation";
-static const char name_grdelta[]            = "grdelta";
+static const char name_grdelta[]     = "grdelta";
 
 // Descriptions used in options_description and populate/override/save/load.
 static const char desc_formulation[] = "Name of the slow growth formulation";
@@ -209,6 +209,10 @@ largo_definition::save(
         esio_attribute_write(h, location, name_grdelta, &grdelta);
     } else if (formulation == largo_formulation::spatiotemporal) {
         esio_attribute_write(h, location, name_grdelta, &grdelta);
+    } else if (formulation == largo_formulation::temporal_consistent) {
+        esio_attribute_write(h, location, name_grdelta, &grdelta);
+    } else if (formulation == largo_formulation::spatiotemporal_consistent) {
+        esio_attribute_write(h, location, name_grdelta, &grdelta);
     } else {
         SUZERAIN_ERROR_VOID_UNIMPLEMENTED();
     }
@@ -277,6 +281,10 @@ largo_definition::load(
     } else if (t.formulation == largo_formulation::temporal_tensor_consistent) {
         esio_attribute_read(h, location, name_grdelta, &t.grdelta);
     } else if (t.formulation == largo_formulation::spatiotemporal) {
+        esio_attribute_read(h, location, name_grdelta, &t.grdelta);
+    } else if (t.formulation == largo_formulation::temporal_consistent) {
+        esio_attribute_read(h, location, name_grdelta, &t.grdelta);
+    } else if (t.formulation == largo_formulation::spatiotemporal_consistent) {
         esio_attribute_read(h, location, name_grdelta, &t.grdelta);
     } else {
         SUZERAIN_ERROR_VOID_UNIMPLEMENTED();

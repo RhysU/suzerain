@@ -70,6 +70,21 @@ const largo_formulation largo_formulation::spatiotemporal(
         "Spatiotemporal formulation by Topalian et al.",
         boost::assign::list_of("spatiotemporal")
             .convert_to_container<std::vector<std::string> >());
+
+const largo_formulation largo_formulation::temporal_consistent(
+        5, "bl_temporal_consistent", true,
+        "Temporal consistent formulation with baseflow support "
+        "by Topalian et al.",
+        boost::assign::list_of("temporal_consistent")
+            .convert_to_container<std::vector<std::string> >());
+
+const largo_formulation largo_formulation::spatiotemporal_consistent(
+        6, "bl_spatiotemporal_consistent", false,
+        "Spatiotemporal consistent formulation with baseflow support "
+        "by Topalian et al.",
+        boost::assign::list_of("spatiotemporal_consistent")
+            .convert_to_container<std::vector<std::string> >());
+
 // END Add known Largo formulations here
 
 largo_formulation::largo_formulation(
