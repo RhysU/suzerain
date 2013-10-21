@@ -767,6 +767,9 @@ driver_base::log_status_L2(
     logging::logger_type log_rms = logging::get_logger(name_rms);
     if (!INFO0_ENABLED(log_L2) && !INFO0_ENABLED(log_rms)) return;
 
+    // RMS fluctuations only make sense to log when either X or Z is nontrivial
+    const bool nontrivial_rms_possible = grid->N.x() * grid->N.z() > 1;
+
     // Show headers only on first invocation
     std::ostringstream msg;
     if (!log_status_L2_header_shown) {
@@ -774,7 +777,7 @@ driver_base::log_status_L2(
         for (size_t k = 0; k < fields.size(); ++k)
             msg << ' ' << std::setw(fullprec<>::width) << fields[k].identifier;
         INFO0(log_L2, msg.str());
-        INFO0(log_rms, msg.str());
+        if (nontrivial_rms_possible) INFO0(log_rms, msg.str());
         msg.str("");
         log_status_L2_header_shown = true;
     }
@@ -793,13 +796,15 @@ driver_base::log_status_L2(
 
     // Build and log root-mean-squared-fluctuations of conserved state
     // RMS fluctuations are a scaling factor away from L2 fluctuations
-    const real_t rms_coeff = 1/std::sqrt(grid->L.x()*grid->L.y()*grid->L.z());
-    msg.str("");
-    msg << timeprefix;
-    for (size_t k = 0; k < result.size(); ++k) {
-        msg << ' ' << fullprec<>(rms_coeff*result[k].fluctuating);
+    if (nontrivial_rms_possible) {
+        real_t rms_coeff = 1/std::sqrt(grid->L.x()*grid->L.y()*grid->L.z());
+        msg.str("");
+        msg << timeprefix;
+        for (size_t k = 0; k < result.size(); ++k) {
+            msg << ' ' << fullprec<>(rms_coeff*result[k].fluctuating);
+        }
+        INFO0(log_rms, msg.str());
     }
-    INFO0(log_rms, msg.str());
 }
 
 void

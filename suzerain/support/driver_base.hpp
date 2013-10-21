@@ -294,7 +294,11 @@ public:
             const time_type t,
             const step_type nt);
 
-    /** Log messages containing mean L2 and RMS fluctuation information. */
+    /**
+     * Log messages containing mean L2 and RMS fluctuation information.
+     *
+     * RMS fluctuations are only logged when the grid can support them.
+     */
     virtual void log_status_L2(
             const std::string& timeprefix,
             const char * const name_L2  = "L2.mean",
