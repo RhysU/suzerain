@@ -56,19 +56,37 @@ struct BlasiusFixture {
     bspline      b;
     bsplineop    op;
     bsplineop_lu lu;
+    shared_array<double> u;
+    shared_array<double> v;
+    shared_array<double> ke;
 
     BlasiusFixture()
         : blasius_u(suzerain_blasius_u(Re_x))
         , blasius_v(suzerain_blasius_v(Re_x))
         , accel(gsl_interp_accel_alloc())
-          // "size - 1" occurs because suzerain_blasius_extended_*
-          // contains extrapolations at "infinity" which perturb
-          // the computation of thick.deltaH far below.
-        , b(k, bspline::from_breakpoints(), blasius_u->size - 1, blasius_u->x)
+        , b(k,
+            bspline::from_breakpoints(),
+            suzerain_blasius_extended_size,
+            blasius_u->x + 0) // FIXME
         , op(b, 0, SUZERAIN_BSPLINEOP_COLLOCATION_GREVILLE)
         , lu(op)
+        , u (new double[b.n()])
+        , v (new double[b.n()])
+        , ke(new double[b.n()])
     {
         lu.factor_mass(op);
+
+        // Prepare Blasius profile information as coefficients
+        for (int i = 0; i < b.n(); ++i) {
+            u[i]  = gsl_spline_eval(blasius_u, b.collocation_point(i), accel);
+            v[i]  = gsl_spline_eval(blasius_v, b.collocation_point(i), accel);
+            ke[i] = (u[i]*u[i] + v[i]*v[i]) / 2;
+        }
+
+        BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS, lu.solve(1, u .get(), 1, b.n()));
+        BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS, lu.solve(1, v .get(), 1, b.n()));
+        BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS, lu.solve(1, ke.get(), 1, b.n()));
+
     }
 
     ~BlasiusFixture()
@@ -85,12 +103,6 @@ BOOST_FIXTURE_TEST_SUITE(bl_compute_thick_linear, linear_fixture)
 
 BOOST_AUTO_TEST_CASE( blasius_delta1 )
 {
-    // Prepare the Blasius velocity profile as coefficients on basis
-    // For a linear B-spline basis, the collocation points are the breakpoints
-    shared_array<double> u(new double[b.n()]);
-    std::memcpy(u.get(), blasius_u->y, b.n()*sizeof(double));
-    BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS, lu.solve(1, u.get(), 1, b.n()));
-
     // Prepare integration working storage
     shared_ptr<gsl_matrix> dB(gsl_matrix_alloc(b.k(), 1), gsl_matrix_free);
     BOOST_REQUIRE(dB);
@@ -106,12 +118,6 @@ BOOST_AUTO_TEST_CASE( blasius_delta1 )
 
 BOOST_AUTO_TEST_CASE( blasius_delta2 )
 {
-    // Prepare the Blasius velocity profile as coefficients on basis
-    // For a linear B-spline basis, the collocation points are the breakpoints
-    shared_array<double> u(new double[b.n()]);
-    std::memcpy(u.get(), blasius_u->y, b.n()*sizeof(double));
-    BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS, lu.solve(1, u.get(), 1, b.n()));
-
     // Prepare integration working storage
     shared_ptr<gsl_matrix> dB(gsl_matrix_alloc(b.k(), 1), gsl_matrix_free);
     BOOST_REQUIRE(dB);
@@ -139,12 +145,6 @@ BOOST_AUTO_TEST_CASE( blasius_delta2 )
 
 BOOST_AUTO_TEST_CASE( blasius_delta3 )
 {
-    // Prepare the Blasius velocity profile as coefficients on basis
-    // For a linear B-spline basis, the collocation points are the breakpoints
-    shared_array<double> u(new double[b.n()]);
-    std::memcpy(u.get(), blasius_u->y, b.n()*sizeof(double));
-    BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS, lu.solve(1, u.get(), 1, b.n()));
-
     // Prepare integration working storage
     shared_ptr<gsl_matrix> dB(gsl_matrix_alloc(b.k(), 1), gsl_matrix_free);
     BOOST_REQUIRE(dB);
@@ -166,18 +166,6 @@ BOOST_AUTO_TEST_SUITE_END()
 typedef BlasiusFixture<4,1000> fixture_four_thousand;
 BOOST_FIXTURE_TEST_CASE( blasius_find_edge, fixture_four_thousand )
 {
-    // Prepare B-spline coefficients for Blasius profile kinetic energy
-    // Kinetic energy should be evaluated consistently with velocity fits
-    shared_array<double> ke(new double[b.n()]);
-    for (int i = 0; i < b.n(); ++i) {
-        const double u = gsl_spline_eval(
-                blasius_u, b.collocation_point(i), accel);
-        const double v = gsl_spline_eval(
-                blasius_v, b.collocation_point(i), accel);
-        ke[i] = (u*u + v*v) / 2;
-    }
-    BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS, lu.solve(1, ke.get(), 1, b.n()));
-
     // Prepare working storage
     shared_ptr<gsl_matrix> dB(gsl_matrix_alloc(b.k(), 3), gsl_matrix_free);
     BOOST_REQUIRE(dB);
@@ -202,29 +190,11 @@ BOOST_FIXTURE_TEST_CASE( blasius_find_edge, fixture_four_thousand )
 typedef BlasiusFixture<4,10000> fixture_four_ten_thousand;
 BOOST_FIXTURE_TEST_CASE( blasius_compute_thicknesses, fixture_four_ten_thousand)
 {
-    // Prepare Blasius profile information on the collocation points
-    shared_array<double> u    (new double[b.n()]);
-    shared_array<double> v    (new double[b.n()]);
-    shared_array<double> ke   (new double[b.n()]);
+    // Prepare, beyond the fixture, uniform density of 0.5 by scaling u coeffs
     shared_array<double> rho_u(new double[b.n()]);
     for (int i = 0; i < b.n(); ++i) {
-        u[i]     = gsl_spline_eval(blasius_u, b.collocation_point(i), accel);
-        v[i]     = gsl_spline_eval(blasius_v, b.collocation_point(i), accel);
-        ke[i]    = (u[i]*u[i] + v[i]*v[i]) / 2;
-        rho_u[i] = u[i] / 2;                     // Density uniformly 0.5
-
-        // std::cerr << b.collocation_point(i) << '\t'  // If you need it...
-        //           << u[i]                   << '\t'
-        //           << v[i]                   << '\t'
-        //           << ke[i]                  << '\t'
-        //           << rho_u[i]               << '\n';
+        rho_u[i] = u[i] / 2;
     }
-
-    // Convert to B-spline coefficients
-    BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS, lu.solve(1, u    .get(), 1, b.n()));
-    BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS, lu.solve(1, v    .get(), 1, b.n()));
-    BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS, lu.solve(1, ke   .get(), 1, b.n()));
-    BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS, lu.solve(1, rho_u.get(), 1, b.n()));
 
     // Compute a bunch of thickness-related quantities
     // Thickness from eyeballing results computed in Octave:

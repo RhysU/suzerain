@@ -39,6 +39,12 @@
  * turbulent in that regime.
  */
 
+#ifdef __cplusplus
+#include <cstddef>
+#else
+#include <stddef.h>
+#endif
+
 #include <gsl/gsl_spline.h>
 
 #ifdef __cplusplus
@@ -84,47 +90,54 @@ extern const double suzerain_blasius_ganapol_fp[45];
 extern const double suzerain_blasius_ganapol_fpp[45];
 
 /**
- * Generated \f$\eta\f$
- * data suitable for use outside well beyond the classical
+ * The number of contiguous data points accessible via \ref
+ * suzerain_blasius_extended_eta, \ref suzerain_blasius_extended_f, \ref
+ * suzerain_blasius_extended_fp, and \ref suzerain_blasius_extended_fpp.
+ */
+#ifdef __cplusplus
+extern const std::size_t suzerain_blasius_extended_size;
+#else
+extern const      size_t suzerain_blasius_extended_size;
+#endif
+
+/**
+ * Generated \f$\eta\f$ data suitable for use outside well beyond the classical
  * \f$\delta_{99}\f$ boundary layer thickness which matches \ref
  * suzerain_blasius_ganapol_eta to eight digits.
  *
- * \warning The last point \e coarsely approximates the behavior in the limit.
+ * @see \ref suzerain_blasius_extended_size for the number of available points.
  */
-extern const double suzerain_blasius_extended_eta[195];
+extern const double * const suzerain_blasius_extended_eta;
 
 /**
  * Generated \f$f\left(\eta\right)\f$ data suitable for use outside well beyond
  * the classical \f$\delta_{99}\f$ boundary layer thickness which matches \ref
  * suzerain_blasius_ganapol_f to eight digits.
  *
- * \warning The last point \e coarsely approximates the behavior in the limit.
- *
+ * @see \ref suzerain_blasius_extended_size for the number of available points.
  * @see \ref suzerain_blasius_extended_eta for the matching \f$\eta\f$ values.
  */
-extern const double suzerain_blasius_extended_f[195];
+extern const double * const suzerain_blasius_extended_f;
 
 /**
  * Generated \f$f^{\prime}\left(\eta\right)\f$ data suitable for use outside
  * well beyond the classical \f$\delta_{99}\f$ boundary layer thickness which
  * matches \ref suzerain_blasius_ganapol_fp to eight digits.
  *
- * \warning The last point \e coarsely approximates the behavior in the limit.
- *
+ * @see \ref suzerain_blasius_extended_size for the number of available points.
  * @see \ref suzerain_blasius_extended_eta for the matching \f$\eta\f$ values.
  */
-extern const double suzerain_blasius_extended_fp[195];
+extern const double * const suzerain_blasius_extended_fp;
 
 /**
  * Generated \f$f^{\prime\prime}\left(\eta\right)\f$ data suitable for use
  * outside well beyond the classical \f$\delta_{99}\f$ boundary layer thickness
  * which matches \ref suzerain_blasius_ganapol_fpp to eight digits.
  *
- * \warning The last point \e coarsely approximates the behavior in the limit.
- *
+ * @see \ref suzerain_blasius_extended_size for the number of available points.
  * @see \ref suzerain_blasius_extended_eta for the matching \f$\eta\f$ values.
  */
-extern const double suzerain_blasius_extended_fpp[195];
+extern const double * const suzerain_blasius_extended_fpp;
 
 /**
  * Obtain a Blasius profile fit producing nondimensional \f$u / u_\infty\f$
