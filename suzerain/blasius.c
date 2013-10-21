@@ -26,6 +26,8 @@
  * @copydoc blasius.h
  */
 
+// FIXME Improve fit quality by using non-AKIMA approaches per Redmine #2977
+
 #ifdef HAVE_CONFIG_H
 #include <suzerain/config.h>
 #endif
