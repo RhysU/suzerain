@@ -21,6 +21,11 @@ gamma=
 Re=3000
 Ma=1.5
 Pr=0.7
+# Defaults related to boundary layer initialization
+Re_x=
+# Defaults related to slow growth initialization
+largo_formulation=
+largo_grdelta=
 while true;
 do
     case "$1" in
@@ -31,14 +36,17 @@ do
                     echo "Options:"
                     cat <<EOF | column -t -s "\&" | sed -e 's/^/    /' | sort
 -h&--help&Show this help message.
-  &--k&Specify the wall-normal B-spline order
-  &--htdelta&Set grid stretching factor
-  &--alpha&Ratio of bulk to dynamic viscosity (Default 1)
-  &--beta&Temperature power law exponent
-  &--gamma&Ratio of specific heats
-  &--Re&Reynolds number
-  &--Ma&Mach number
-  &--Pr&Prandtl number
+  &--k&Specify the wall-normal B-spline order&${k:+(Default $k)}
+  &--htdelta&Set grid stretching factor&${htdelta:+(Default $htdelta)}
+  &--alpha&Ratio of bulk to dynamic viscosity&${alpha:+(Default $alpha)}
+  &--beta&Temperature power law exponent&${beta:+(Default $beta)}
+  &--gamma&Ratio of specific heats&${gamma:+(Default $gamma)}
+  &--Re&Reynolds number&${Re:+(Default $Re)}
+  &--Ma&Mach number&${Ma:+(Default $Ma)}
+  &--Pr&Prandtl number&${Pr:+(Default $Pr)}
+  &--Re_x&Used for any laminar boundary layer initialization&${Re_x:+(Default $Re_x)}
+  &--largo_formulation&Largo slow growth formulation to activate&${largo_formulation:+(Default $largo_formulation)}
+  &--largo_grdelta&Growth rate to use with any active Largo formulation&${largo_grdelta:+(Default $largo_grdelta)}
 EOF
                     echo
                     echo "GNU parallel is great for managing multiple cases.  For example,"
@@ -47,14 +55,17 @@ EOF
                     echo "--evmagfactor to the solver to modify time step aggressiveness."
                     echo "Output is stored in a k-specific directory name like laminar_k08."
                     exit;;
-        --k)        k="$2";        shift 2;;
-        --htdelta)  htdelta="$2";  shift 2;;
-        --alpha)    alpha="$2";    shift 2;;
-        --beta)     beta="$2";     shift 2;;
-        --gamma)    gamma="$2";    shift 2;;
-        --Re)       Re="$2";       shift 2;;
-        --Ma)       Ma="$2";       shift 2;;
-        --Pr)       Pr="$2";       shift 2;;
+        --k)                  k="$2";                  shift 2;;
+        --htdelta)            htdelta="$2";            shift 2;;
+        --alpha)              alpha="$2";              shift 2;;
+        --beta)               beta="$2";               shift 2;;
+        --gamma)              gamma="$2";              shift 2;;
+        --Re)                 Re="$2";                 shift 2;;
+        --Ma)                 Ma="$2";                 shift 2;;
+        --Pr)                 Pr="$2";                 shift 2;;
+        --Re_x)               Pr="$2";                 shift 2;;
+        --largo_formulation)  largo_formulation="$2";  shift 2;;
+        --largo_grdelta)      largo_grdelta="$2";      shift 2;;
     esac
 done
 
@@ -72,7 +83,10 @@ dt=(15000 15000)
 "$LAMINAR_INITIAL" t0.h5                                                    \
     --k=$k --Nx=1 --Ny=${Ny[0]} --Nz=1 --htdelta=$htdelta                   \
     ${alpha:+--alpha=$alpha} ${beta:+--beta=$beta} ${gamma:+--gamma=$gamma} \
-    ${Re:+--Re=$Re} ${Ma:+--Ma=$Ma} ${Pr:+--Pr=$Pr}
+    ${Re:+--Re=$Re} ${Ma:+--Ma=$Ma} ${Pr:+--Pr=$Pr}                         \
+    ${Re_x:+--Re_x=$Re_x}                                                   \
+    ${largo_formulation:+--largo_formulation=$largo_formulation}            \
+    ${largo_grdelta:+--largo_grdelta=$largo_grdelta}
 cp t0.h5 restart0.h5
 
 # Advance through each situation in the incremental table
