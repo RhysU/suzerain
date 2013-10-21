@@ -1054,7 +1054,6 @@ const double suzerain_blasius_extended_fpp[Nextended] = {
     0.0000000000000000e+000   // Point at "infinity"
 };
 
-// See "Compile Time Assertions" by Ralf Holly (http://drdobbs.com/184401873)
 // Sanity check that the data arrays are all of equal size.
 enum {
     assert4 = 1 / (    sizeof(suzerain_blasius_extended_f  )
@@ -1063,6 +1062,75 @@ enum {
                     == sizeof(suzerain_blasius_extended_eta)),
     assert6 = 1 / (    sizeof(suzerain_blasius_extended_fpp)
                     == sizeof(suzerain_blasius_extended_eta))
+};
+
+// GSL Spline-based interpolation uses natural end conditions.  These are
+// certifiably awful at eta = 0 for Blasius-related purposes.  Rather than
+// doing something clean like using a different interpolation type, instead we
+// augment the interpolation source data to include several values for which
+// eta < 0.
+static const double negative_eta[] = {
+    -2.0000000000000000e+00,
+    -1.8000000000000000e+00,
+    -1.6000000000000001e+00,
+    -1.4000000000000001e+00,
+    -1.2000000000000002e+00,
+    -1.0000000000000000e+00,
+    -8.0000000000000004e-01,
+    -6.0000000000000009e-01,
+    -4.0000000000000002e-01,
+    -2.0000000000000001e-01
+};
+
+enum {
+    Nnegative = sizeof(negative_eta) / sizeof(negative_eta[0])
+};
+
+// See comments at negative_eta
+static const double negative_f[Nnegative] = {
+    +6.7948618660698179e-01,
+    +5.4689871596362172e-01,
+    +4.2996063852913613e-01,
+    +3.2792452958357998e-01,
+    +2.4023532384548149e-01,
+    +1.6649060496535889e-01,
+    +1.0640931226336448e-01,
+    +5.9806087425930105e-02,
+    +2.6569293049552654e-02,
+    +6.6412937467964037e-03,
+};
+
+static const double negative_fp[Nnegative] = {
+    -7.0359642349249463e-01,
+    -6.2309910764477028e-01,
+    -5.4690024486513733e-01,
+    -4.7392013610014788e-01,
+    -4.0330469274774755e-01,
+    -3.3437459846521678e-01,
+    -2.6659097852125829e-01,
+    -1.9953266952391915e-01,
+    -1.3288177367346077e-01,
+    -6.6415142901251986e-02
+};
+
+static const double negative_fpp[Nnegative] = {
+    +4.1538385253864474e-01,
+    +3.9073044280893693e-01,
+    +3.7215183078017550e-01,
+    +3.5835684718599248e-01,
+    +3.4836087889056794e-01,
+    +3.4138727030057792e-01,
+    +3.3679872208884570e-01,
+    +3.3404859391115288e-01,
+    +3.3264597381986855e-01,
+    +3.3213085321561536e-01
+};
+
+// Sanity check that the data arrays are all of equal size.
+enum {
+    assert7 = 1 / (sizeof(negative_f  ) == sizeof(negative_eta)),
+    assert8 = 1 / (sizeof(negative_fp ) == sizeof(negative_eta)),
+    assert9 = 1 / (sizeof(negative_fpp) == sizeof(negative_eta))
 };
 
 // Handles the boilerplate aspects of preparing a spline fit
