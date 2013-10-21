@@ -67,7 +67,7 @@ struct BlasiusFixture {
         , b(k,
             bspline::from_breakpoints(),
             suzerain_blasius_extended_size,
-            blasius_u->x + 0) // FIXME
+            blasius_u->x + /*UGLY HACK uses Nnegative from blasius.c */10)
         , op(b, 0, SUZERAIN_BSPLINEOP_COLLOCATION_GREVILLE)
         , lu(op)
         , u (new double[b.n()])
