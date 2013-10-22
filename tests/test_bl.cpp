@@ -262,6 +262,9 @@ BOOST_FIXTURE_TEST_CASE( find_edge, ChallengingFixture )
     double location = GSL_NAN;
     BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS, suzerain_bl_find_edge(
         coeffs_H0, &location, dB.get(), b.bw, b.dbw));
+
+    // Ensure we found an actual edge in this profile
+    BOOST_CHECK(!(boost::math::isnan)(location));
 }
 
 BOOST_AUTO_TEST_SUITE_END();
