@@ -99,9 +99,10 @@ suzerain_bl_find_edge(
 
         /* ...when found, polish the crossing bracket into a location... */
         if (flower < threshold && fupper >= threshold) {
+            const double epsabs = 10*GSL_DBL_EPSILON;
             status = suzerain_bspline_crossing(
                     nderiv, coeffs_H0, threshold, &lower, &upper, 100,
-                    GSL_DBL_EPSILON, /*not relative*/ 0, location, dB, w, dw);
+                    epsabs, /*not relative*/ 0, location, dB, w, dw);
             break;
         }
 
