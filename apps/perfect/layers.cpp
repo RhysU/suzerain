@@ -259,6 +259,10 @@ void summarize_boundary_layer_nature(
         suzerain_bl_qoi         &qoi,
         suzerain_bl_pg          &pg)
 {
+    // Care taken to avoid any B-spline evaluation using NaN thicknesses
+    // per Redmine #2940 as this can bring down a simulation from GSL_ERROR.
+    using boost::math::isnan;
+
     // Compute boundary layer thicknesses, including delta
     suzerain_bl_compute_thicknesses(lay.H0().data(),
                                     lay.rho_u().col(0).data(),
@@ -284,19 +288,25 @@ void summarize_boundary_layer_nature(
     suzerain_bl_compute_viscous(&wall, &viscous);
 
     // Evaluate state at the edge (y=thick.delta) from B-spline coefficients
-    // If slow, we could evaluate basis once and then re-use for linear combo
     std::fill_n(reinterpret_cast<double *>(&edge),
                 sizeof(edge)/sizeof(double),
                 std::numeric_limits<double>::quiet_NaN());
-    b.linear_combination(0, lay.a().data(),   thick.delta, &(edge.a));
     edge.gamma = scenario.gamma;
-    b.linear_combination(0, lay.mu().data(),  thick.delta, &(edge.mu));
-    edge.Pr = scenario.Pr;
-    b.linear_combination(0, lay.rho().data(), thick.delta, &(edge.rho));
-    b.linear_combination(0, lay.T().data(),   thick.delta, &(edge.T));
-    assert(&(edge.u) + 1 == &(edge.u__y)); // Next, compute both u and u__y
-    b.linear_combination(1, lay.u().col(0).data(), thick.delta, &(edge.u), 1);
-    b.linear_combination(0, lay.u().col(1).data(), thick.delta, &(edge.v));
+    edge.Pr    = scenario.Pr;
+    if (SUZERAIN_UNLIKELY((isnan)(thick.delta))) {
+        // NOP as fill_n above ensured NaN propagated correctly
+    } else {
+        // Later, could more quickly evaluate basis once and then re-use that
+        // result to repeatedly form the necessary linear combinations.
+        const double delta = thick.delta;
+        b.linear_combination(0, lay.a().data(),        delta, &(edge.a));
+        b.linear_combination(0, lay.mu().data(),       delta, &(edge.mu));
+        b.linear_combination(0, lay.rho().data(),      delta, &(edge.rho));
+        b.linear_combination(0, lay.T().data(),        delta, &(edge.T));
+        assert(&(edge.u) + 1 == &(edge.u__y)); // Next, compute both u and u__y
+        b.linear_combination(1, lay.u().col(0).data(), delta, &(edge.u), 1);
+        b.linear_combination(0, lay.u().col(1).data(), delta, &(edge.v));
+    }
 
     // Compute general quantities of interest
     suzerain_bl_compute_qoi(scenario.Ma, scenario.Re,
@@ -305,11 +315,16 @@ void summarize_boundary_layer_nature(
     // Mean pressure and streamwise velocity gradients come from slow growth
     double edge_p__x = 0, edge_u__x = 0;
     if (sg && sg->formulation.enabled()) {
-        largo_state base, dy, dx; // as_is()
-        sg->get_baseflow(thick.delta, base.as_is(), dy.as_is(), dx.as_is());
-        sg->get_baseflow_pressure(thick.delta, base.p, dy.p, dx.p);
-        edge_p__x = dx.p;                                       // Direct
-        edge_u__x = (dx.mx - dx.mx/base.rho*dx.rho) / base.rho; // Chained
+        const double delta = thick.delta;
+        if (SUZERAIN_UNLIKELY((isnan)(delta))) {
+            edge_p__x = edge_u__x = std::numeric_limits<real_t>::quiet_NaN();
+        } else {
+            largo_state base, dy, dx; // as_is()
+            sg->get_baseflow(delta, base.as_is(), dy.as_is(), dx.as_is());
+            sg->get_baseflow_pressure(delta, base.p, dy.p, dx.p);
+            edge_p__x = dx.p;                                       // Direct
+            edge_u__x = (dx.mx - dx.mx/base.rho*dx.rho) / base.rho; // Chained
+        }
     }
     suzerain_bl_compute_pg(scenario.Ma, scenario.Re, &wall, &viscous, &edge,
                            edge_p__x, edge_u__x, &thick, &pg);
