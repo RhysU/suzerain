@@ -6,7 +6,7 @@ set -e
 : ${LAMINAR_ADVANCE:=@bindir@/perfect_advance}
 
 # Parse incoming parameters
-OPTS="k:,htdelta:,alpha:,beta:,gamma:,Re:,Ma:,Pr:,Re_x:,largo_formulation:,largo_grdelta:"
+OPTS="k:,htdelta:,alpha:,beta:,gamma:,Ly:,Re:,Ma:,Pr:,Re_x:,largo_formulation:,largo_grdelta:"
 ARGS=$(getopt -n "$(basename -- "$0")" -o "h" -l "$OPTS,help" -- "$@")
 if [ $? -ne 0 ]; then exit 1; fi
 eval set -- "$ARGS"
@@ -18,6 +18,7 @@ htdelta=3
 alpha=
 beta=0.7
 gamma=
+Ly=2
 Re=3000
 Ma=1.5
 Pr=0.7
@@ -41,6 +42,7 @@ do
   &--alpha&Ratio of bulk to dynamic viscosity&${alpha:+(Default $alpha)}
   &--beta&Temperature power law exponent&${beta:+(Default $beta)}
   &--gamma&Ratio of specific heats&${gamma:+(Default $gamma)}
+  &--Ly&Wall-normal domain size&${Ly:+(Default $Ly)}
   &--Re&Reynolds number&${Re:+(Default $Re)}
   &--Ma&Mach number&${Ma:+(Default $Ma)}
   &--Pr&Prandtl number&${Pr:+(Default $Pr)}
@@ -60,6 +62,7 @@ EOF
         --alpha)              alpha="$2";              shift 2;;
         --beta)               beta="$2";               shift 2;;
         --gamma)              gamma="$2";              shift 2;;
+        --Ly)                 Ly="$2";                 shift 2;;
         --Re)                 Re="$2";                 shift 2;;
         --Ma)                 Ma="$2";                 shift 2;;
         --Pr)                 Pr="$2";                 shift 2;;
@@ -84,7 +87,7 @@ dt=(15000 15000)
     --k=$k --Nx=1 --Ny=${Ny[0]} --Nz=1 --htdelta=$htdelta                   \
     ${alpha:+--alpha=$alpha} ${beta:+--beta=$beta} ${gamma:+--gamma=$gamma} \
     ${Re:+--Re=$Re} ${Ma:+--Ma=$Ma} ${Pr:+--Pr=$Pr}                         \
-    ${Re_x:+--Re_x=$Re_x}                                                   \
+    ${Ly:+--Ly=$Ly} ${Re_x:+--Re_x=$Re_x}                                   \
     ${largo_formulation:+--largo_formulation=$largo_formulation}            \
     ${largo_grdelta:+--largo_grdelta=$largo_grdelta}
 cp t0.h5 restart0.h5
