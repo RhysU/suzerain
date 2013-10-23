@@ -97,8 +97,7 @@ declare -i t=0
 for i in "${!Ny[@]}"
 do
     "$LAMINAR_ADVANCE" restart0.h5 --Ny=${Ny[$i]} --advance_dt=${dt[$i]} \
-        --status_nt=100 --statistics_dt=0 --statistics_nt=0              \
-        --restart_retain=10 "$@"
+        --status_nt=100 --restart_retain=10 "$@"
     t+=${dt[$i]}
     cp -v restart0.h5 t${t}.h5
 done
