@@ -4,14 +4,14 @@ TESTS               = # Append below
 
 JOBSCRIPTS  = qsub.lonestar qsub.ranger
 UTILITIES   = qlast
-UTILITIES  += channel.perfect  mms_case.perfect
+UTILITIES  += channel.perfect  mms_case.perfect  bl.perfect.in
 UTILITIES  += channel.reacting mms_case.reacting
 
 # Installation, distribution, and clean up details
 jobscriptsdir      = $(pkgdatadir)/jobscripts
 jobscripts_SCRIPTS = $(JOBSCRIPTS) $(UTILITIES)
 EXTRA_DIST         = qsub.tacc.in
-EXTRA_DIST        += channel.perfect.in  mms_case.perfect.in
+EXTRA_DIST        += channel.perfect.in  mms_case.perfect.in  bl.perfect.in
 EXTRA_DIST        += channel.reacting.in mms_case.reacting.in
 CLEANFILES         = $(JOBSCRIPTS)
 

@@ -6,22 +6,24 @@ set -e
 : ${LAMINAR_ADVANCE:=@bindir@/perfect_advance}
 
 # Parse incoming parameters
-OPTS="k:,htdelta:,alpha:,beta:,gamma:,Ly:,Re:,Ma:,Pr:"
+OPTS="k:,htdelta:,alpha:,beta:,gamma:,Ly:,Re:,Ma:,Pr:,Re_x:,largo_formulation:,largo_grdelta:"
 ARGS=$(getopt -n "$(basename -- "$0")" -o "h" -l "$OPTS,help" -- "$@")
 if [ $? -ne 0 ]; then exit 1; fi
 eval set -- "$ARGS"
 
 # Process incoming parameters versus defaults
-# Defaults based on Coleman, Kim, and Moser JFM 1995
 k=8
-htdelta=3
+htdelta=-3
 alpha=
-beta=0.7
+beta=
 gamma=
-Ly=2
+Ly=1
 Re=3000
 Ma=1.5
 Pr=0.7
+Re_x=3000
+largo_formulation=temporal
+largo_grdelta=1e-3
 while true;
 do
     case "$1" in
@@ -41,28 +43,34 @@ do
   &--Re&Reynolds number&${Re:+(Default $Re)}
   &--Ma&Mach number&${Ma:+(Default $Ma)}
   &--Pr&Prandtl number&${Pr:+(Default $Pr)}
+  &--Re_x&Used for any laminar boundary layer initialization&${Re_x:+(Default $Re_x)}
+  &--largo_formulation&Largo slow growth formulation to activate&${largo_formulation:+(Default $largo_formulation)}
+  &--largo_grdelta&Growth rate to use with any active Largo formulation&${largo_grdelta:+(Default $largo_grdelta)}
 EOF
                     echo
                     echo "GNU parallel is great for managing multiple cases.  For example,"
-                    echo "    parallel -u '@pkgdatadir@/jobscripts/channel.perfect' --k={} -- --evmagfactor=0.8 ::: 6 7 8 9"
+                    echo "    parallel -u '@pkgdatadir@/jobscripts/bl.perfect' --largo_formulation={} -- --explicit ::: temporal spatiotemporal"
                     echo "runs a collection of independent cases in parallel passing"
-                    echo "--evmagfactor to the solver to modify time step aggressiveness."
-                    echo "Output is stored in a k-specific directory name like channel_k08."
+                    echo "--largo_formulation to set different slow growth options."
+                    echo "Output stored in a formulation-, grdelta-, and k-specific directory."
                     exit;;
-        --k)        k="$2";        shift 2;;
-        --htdelta)  htdelta="$2";  shift 2;;
-        --alpha)    alpha="$2";    shift 2;;
-        --beta)     beta="$2";     shift 2;;
-        --gamma)    gamma="$2";    shift 2;;
-        --Ly)       Ly="$2";       shift 2;;
-        --Re)       Re="$2";       shift 2;;
-        --Ma)       Ma="$2";       shift 2;;
-        --Pr)       Pr="$2";       shift 2;;
+        --k)                  k="$2";                  shift 2;;
+        --htdelta)            htdelta="$2";            shift 2;;
+        --alpha)              alpha="$2";              shift 2;;
+        --beta)               beta="$2";               shift 2;;
+        --gamma)              gamma="$2";              shift 2;;
+        --Ly)                 Ly="$2";                 shift 2;;
+        --Re)                 Re="$2";                 shift 2;;
+        --Ma)                 Ma="$2";                 shift 2;;
+        --Pr)                 Pr="$2";                 shift 2;;
+        --Re_x)               Re_x="$2";               shift 2;;
+        --largo_formulation)  largo_formulation="$2";  shift 2;;
+        --largo_grdelta)      largo_grdelta="$2";      shift 2;;
     esac
 done
 
 # Create or overwrite a directory and then change into it
-dir=$(printf "channel_k%02d" $k)
+dir=$(printf "%s_k%02d%s" "${largo_formulation:-bl}" $k "${largo_grdelta+_grdelta${largo_grdelta}}")
 rm -rvf $dir
 mkdir -v $dir
 cd $dir
@@ -75,7 +83,10 @@ dt=(15000 15000)
 "$LAMINAR_INITIAL" t0.h5                                                    \
     --k=$k --Nx=1 --Ny=${Ny[0]} --Nz=1 --htdelta=$htdelta                   \
     ${alpha:+--alpha=$alpha} ${beta:+--beta=$beta} ${gamma:+--gamma=$gamma} \
-    ${Re:+--Re=$Re} ${Ma:+--Ma=$Ma} ${Pr:+--Pr=$Pr} ${Ly:+--Ly=$Ly}
+    ${Re:+--Re=$Re} ${Ma:+--Ma=$Ma} ${Pr:+--Pr=$Pr}                         \
+    ${Ly:+--Ly=$Ly} ${Re_x:+--Re_x=$Re_x}                                   \
+    ${largo_formulation:+--largo_formulation=$largo_formulation}            \
+    ${largo_grdelta:+--largo_grdelta=$largo_grdelta}
 cp t0.h5 restart0.h5
 
 # Advance through each situation in the incremental table
