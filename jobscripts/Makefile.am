@@ -4,15 +4,15 @@ TESTS               = # Append below
 
 JOBSCRIPTS  = qsub.lonestar qsub.ranger
 UTILITIES   = qlast
-UTILITIES  += laminar.perfect  mms_case.perfect
-UTILITIES  += laminar.reacting mms_case.reacting
+UTILITIES  += channel.perfect  mms_case.perfect
+UTILITIES  += channel.reacting mms_case.reacting
 
 # Installation, distribution, and clean up details
 jobscriptsdir      = $(pkgdatadir)/jobscripts
 jobscripts_SCRIPTS = $(JOBSCRIPTS) $(UTILITIES)
 EXTRA_DIST         = qsub.tacc.in
-EXTRA_DIST        += mms_case.perfect.in  laminar.perfect.in
-EXTRA_DIST        += mms_case.reacting.in laminar.reacting.in
+EXTRA_DIST        += channel.perfect.in  mms_case.perfect.in
+EXTRA_DIST        += channel.reacting.in mms_case.reacting.in
 CLEANFILES         = $(JOBSCRIPTS)
 
 # Job scripts are generated following the sed-based example at

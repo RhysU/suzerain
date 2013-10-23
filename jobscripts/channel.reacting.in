@@ -28,7 +28,7 @@ do
     case "$1" in
         --)         shift 1;break;;
         -h|--help)  echo "Usage: $(basename -- "$0") [OPTIONS]... -- [SOLVEROPTS]..."
-                    echo "Generate a laminar solution on your workstation."
+                    echo "Generate a laminar, reacting channel flow solution on your workstation."
                     echo
                     echo "Options:"
                     cat <<EOF | column -t -s "\&" | sed -e 's/^/    /' | sort
@@ -48,10 +48,10 @@ do
 EOF
                     echo
                     echo "GNU parallel is great for managing multiple cases.  For example,"
-                    echo "    parallel -u '@pkgdatadir@/jobscripts/laminar.reacting' --k={} -- --evmagfactor=0.8 ::: 6 7 8 9"
+                    echo "    parallel -u '@pkgdatadir@/jobscripts/channel.reacting' --k={} -- --evmagfactor=0.8 ::: 6 7 8 9"
                     echo "runs a collection of independent cases in parallel passing"
                     echo "--evmagfactor to the solver to modify time step aggressiveness."
-                    echo "Output is stored in a k-specific directory name like laminar_k08."
+                    echo "Output is stored in a k-specific directory name like channel_k08."
                     exit;;
         --k)          k="$2";          shift 2;;
         --htdelta)    htdelta="$2";    shift 2;;
@@ -69,7 +69,7 @@ EOF
 done
 
 # Create or overwrite a directory and then change into it
-dir=$(printf "laminar_reacting_k%02d" $k)
+dir=$(printf "channel_reacting_k%02d" $k)
 rm -rvf $dir
 mkdir -v $dir
 cd $dir

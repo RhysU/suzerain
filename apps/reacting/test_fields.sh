@@ -11,7 +11,7 @@ banner "Restarting from current laminar restart file"
 (
     : ${FIELDSDIR:=.}
     cd $testdir
-    run ../reacting_advance --explicit "${FIELDSDIR}/laminar_k08.h5" --advance_nt=0
+    run ../reacting_advance --explicit "${FIELDSDIR}/channel_k08.h5" --advance_nt=0
 )
 
 # Ensure our restart-loading routines remain backwards-compatible

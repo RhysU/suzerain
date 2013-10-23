@@ -9,7 +9,7 @@ banner "Restarting from current laminar restart file"
 (
     : ${FIELDSDIR:=.}
     cd $testdir
-    run ../perfect_advance ${DECOMP:-} "${FIELDSDIR}/laminar_k08.h5" \
+    run ../perfect_advance ${DECOMP:-} "${FIELDSDIR}/channel_k08.h5" \
         --advance_nt=0
 )
 

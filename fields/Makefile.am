@@ -4,8 +4,8 @@ fieldsdir   = $(pkgdatadir)/fields
 fields_DATA = # Data installed by 'make check'
 noinst_DATA = # Data kept with distribution but not installed
 
-# Steady state laminar fields at a variety of orders
-fields_DATA += laminar_k06.h5 laminar_k07.h5 laminar_k08.h5 laminar_k09.h5
+# Steady state laminar channel flow fields at a variety of orders
+fields_DATA += channel_k06.h5 channel_k07.h5 channel_k08.h5 channel_k09.h5
 
 # The zero-zero modes from Coleman JCP 1995-like turbulent channels.
 # Useful for testing implicit solver or relaxation time to laminar profile.

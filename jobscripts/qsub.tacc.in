@@ -28,7 +28,7 @@ test "${S_RT:=0}" -lt 0 && S_RT=0
 # Rather than editing this job submission script, modify your environment!
 # Even after job submission, 'qalter -v' can modify a job's environment.
 : ${BINARY=@bindir@/perfect_advance}
-: ${INPUT=@pkgdatadir@/fields/laminar_k08.h5}  # Use SCRATCH or WORK
+: ${INPUT=@pkgdatadir@/fields/channel_k08.h5}  # Use SCRATCH or WORK
 : ${ADVANCE=}
 : ${STATUS=--status_nt=100}
 : ${DECOMP=--Pa=$(expr $NSLOTS / $NHOSTS)}
