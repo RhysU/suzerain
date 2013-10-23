@@ -4,7 +4,7 @@ TESTS               = # Append below
 
 JOBSCRIPTS  = qsub.lonestar qsub.ranger
 UTILITIES   = qlast
-UTILITIES  += channel.perfect  mms_case.perfect  bl.perfect.in
+UTILITIES  += channel.perfect  mms_case.perfect  bl.perfect
 UTILITIES  += channel.reacting mms_case.reacting
 
 # Installation, distribution, and clean up details
