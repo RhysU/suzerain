@@ -69,6 +69,9 @@ EOF
     esac
 done
 
+# Clear largo_grdelta whenever an empty formulation is supplied.
+test -z "${largo_formulation}" && largo_grdelta=""
+
 # Create or overwrite a directory and then change into it
 dir=$(printf "%s_k%02d%s" "${largo_formulation:-bl}" $k "${largo_grdelta+_grdelta${largo_grdelta}}")
 rm -rvf $dir
