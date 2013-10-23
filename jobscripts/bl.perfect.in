@@ -73,7 +73,12 @@ done
 test -z "${largo_formulation}" && largo_grdelta=""
 
 # Create or overwrite a directory and then change into it
-dir=$(printf "%s_k%02d%s" "${largo_formulation:-bl}" $k "${largo_grdelta+_grdelta${largo_grdelta}}")
+if test -z "${largo_formulation}"; then
+  largo_grdelta=  # No formulation implies no grdelta
+  dir=$(printf "bl_k%02d%s" "$k")
+else
+  dir=$(printf "%s_%s_k%02d" "${largo_formulation}" "${largo_grdelta}" "$k")
+fi
 rm -rvf $dir
 mkdir -v $dir
 cd $dir
