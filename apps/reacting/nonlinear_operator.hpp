@@ -582,7 +582,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                                 vp_ru, vp_rw, vp_rE,
                                 Cmy_rho, Ce_rho, Ce_rv,
                                 nu, korCv, Ds,
-                                T, gamma, a,
+                                T, gamma, a, p, p2, 
                                 count // Sentry
             }; };
 
@@ -677,10 +677,13 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                 acc[ref::Ds   ](Ds[0]); // Yes, b/c constant Lewis number!
 
                 // ...and quantities needed for Giles
-                // FIXME: get density from 00 mode directly
                 acc[ref::T    ](T);
                 acc[ref::gamma](gamma);
                 acc[ref::a    ](a);
+
+                // ...and for slow growth
+                acc[ref::p    ](p);
+                acc[ref::p2   ](p*p);
 
                 // ... species-dependent quantities
                 for (unsigned int s=0; s<Ns; ++s) {
@@ -727,6 +730,8 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             common.ref_T         ()[j] = sum(acc[ref::T         ]);
             common.ref_gamma     ()[j] = sum(acc[ref::gamma     ]);
             common.ref_a         ()[j] = sum(acc[ref::a         ]);
+            common.ref_p         ()[j] = sum(acc[ref::p         ]);
+            common.ref_p2        ()[j] = sum(acc[ref::p2        ]);
 
             for (unsigned int s=0; s<Ns; ++s) {
                 common.ref_cs(s)[j] = sum(acc[ref::count     +s]);
@@ -750,9 +755,11 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
         common.refs *= o.dgrid.chi();
 
         // Copy mean velocity information into common.{u, v, w}()
-        common.u() = common.ref_ux();
-        common.v() = common.ref_uy();
-        common.w() = common.ref_uz();
+        common.u () = common.ref_ux();
+        common.v () = common.ref_uy();
+        common.w () = common.ref_uz();
+        common.p () = common.ref_p ();
+        common.p2() = common.ref_p2();
 
         // Compute species specific total energy and store in
         // common.etots_upper
@@ -786,7 +793,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
         // Zero y(j) not present on this rank to avoid accumulating garbage
         const size_t topNotOnRank = o.dgrid.local_physical_start.y();
         if (topNotOnRank) {
-            common.means.leftCols<3>().topRows(topNotOnRank).setZero();
+            common.means.topRows(topNotOnRank).setZero();
         }
 
         // Sum velocities as a function of y(j) into common.{u,v,w}()
@@ -797,51 +804,130 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             summing_accumulator_type ux;
             summing_accumulator_type uy;
             summing_accumulator_type uz;
+            summing_accumulator_type p;
+            summing_accumulator_type p2;
 
             const int last_zxoffset = offset
                                     + o.dgrid.local_physical_extent.z()
                                     * o.dgrid.local_physical_extent.x();
             for (; offset < last_zxoffset; ++offset) {
+
+                // First, unpack conserved state...
+
+                // ... mixture density
+                const real_t   rho         ( sphys(ndx::rho,    offset));
+                const real_t  irho = 1.0/rho;
+
+                // ... momentum
+                const Vector3r m    ( sphys(ndx::mx, offset),
+                                      sphys(ndx::my, offset),
+                                      sphys(ndx::mz, offset));
+
+                // ... total energy
+                const real_t e        (sphys(ndx::e,       offset));
+
+                // ... species densities
+                // NOTE: In species vector, idx 0 is the dilluter (the species
+                // that is not explicitly part of the state vector)
+                species(0) = rho;
+                for (unsigned int s=1; s<Ns; ++s) {
+                    species(s) = sphys(ndx::species + s - 1, offset);
+
+                    // dilluter density = rho_0 = rho - sum_{s=1}^{Ns-1} rho_s
+                    species(0)        -= species(s);
+                }
+
+                // Second, compute required derived quantities...
+
+                // ... mass fractions
+                for (unsigned int s=0; s<Ns; ++s) {
+                    cs(s) = irho * species(s);
+                }
+
+                // ... temperature
+                real_t   T;
+
+                // ... pressure-related quantities
+                real_t pr, pr2;
+                cmods.evaluate_pressure(
+                    e, m, rho, species, cs, Tguess,
+                    T, pr);
+                pr2    = pr * pr;
+                Tguess = T;
+
+                // compute and accumulate 
                 const real_t inv_rho = 1 / sphys(ndx::rho, offset);
                 ux(inv_rho * sphys(ndx::mx, offset));
                 uy(inv_rho * sphys(ndx::my, offset));
                 uz(inv_rho * sphys(ndx::mz, offset));
+                p (pr);
+                p2(pr * pr);
             } // end X // end Z
 
             // Store sum into common block in preparation for MPI Reduce
-            common.u()[j] = boost::accumulators::sum(ux);
-            common.v()[j] = boost::accumulators::sum(uy);
-            common.w()[j] = boost::accumulators::sum(uz);
+            common.u ()[j] = boost::accumulators::sum(ux);
+            common.v ()[j] = boost::accumulators::sum(uy);
+            common.w ()[j] = boost::accumulators::sum(uz);
+            common.p ()[j] = boost::accumulators::sum(p );
+            common.p2()[j] = boost::accumulators::sum(p2);
 
         } // end Y
 
         // Zero y(j) not present on this rank to avoid accumulating garbage
-        const size_t bottomNotOnRank = common.means.leftCols<3>().rows()
+        const size_t bottomNotOnRank = common.means.rows()
                                      - o.dgrid.local_physical_end.y();
         if (bottomNotOnRank) {
-            common.means.leftCols<3>().bottomRows(bottomNotOnRank).setZero();
+            common.means.bottomRows(bottomNotOnRank).setZero();
         }
 
-        // Reduce, scale common.{u,v,w}() sums to obtain mean on zero-zero rank
-        // Only zero-zero rank needs the information so Reduce is sufficient
-        if (o.dgrid.has_zero_zero_modes()) {
-            SUZERAIN_MPICHKR(MPI_Reduce(MPI_IN_PLACE,
-                        common.means.leftCols<3>().data(),
-                        common.means.leftCols<3>().size(),
-                        mpi::datatype<real_t>::value, MPI_SUM,
-                        o.dgrid.rank_zero_zero_modes, MPI_COMM_WORLD));
-            common.means.leftCols<3>() *= o.dgrid.chi();
-        } else {
-            ArrayXXr tmp;
-            tmp.resizeLike(common.means.leftCols<3>());
-            tmp.setZero();
-            SUZERAIN_MPICHKR(MPI_Reduce(common.means.leftCols<3>().data(),
-                        tmp.data(), common.means.leftCols<3>().size(),
-                        mpi::datatype<real_t>::value, MPI_SUM,
-                        o.dgrid.rank_zero_zero_modes, MPI_COMM_WORLD));
-        }
+        // Allreduce and scale common.refs sums to obtain means on all ranks
+        // Allreduce mandatory as all ranks need references for linearization
+        SUZERAIN_MPICHKR(MPI_Allreduce(MPI_IN_PLACE, common.means.data(),
+                common.means.size(), mpi::datatype<real_t>::value,
+                MPI_SUM, MPI_COMM_WORLD));
+        common.means *= o.dgrid.chi();
 
     } // end traversal (1)
+
+    //****************************************************************
+    // 
+    // Compute derivative of mean and rms of pressure for slow growth
+    MatrixXXr mean_p_values(Ny, 2);
+    MatrixXXr  rms_p_values(Ny, 2);
+    mean_p_values.setZero();
+    rms_p_values.setZero();
+    if (sgdef.formulation.enabled()) {
+
+        // Assign mean and finish rms computation
+        for (int j = 0; j < Ny; ++j) {
+            mean_p_values(j,0) = common.p ()[j] ;
+            rms_p_values (j,0) = sqrt(
+                common.p2()[j] - common.p()[j] * common.p()[j]);
+            // Copy the mean and rms to the 
+            // dmean and drms part of the storage in
+            // preparation to computing the derivatives
+            mean_p_values(j,1) = mean_p_values(j,0);
+            rms_p_values (j,1) = rms_p_values (j,0);
+        }
+
+        // Each process computes the y-derivative of the 
+        // mean and rms
+
+        // Obtain mean in bspline coefficients
+        o.masslu()->solve(1, &mean_p_values(0,1), 1, Ny);
+
+        // Compute derivative of mean at collocation points
+        o.cop.apply(1, 1, 1.0, &mean_p_values(0,1), 1, Ny);
+
+        // Obtain rms in bspline coefficients
+        o.masslu()->solve(1, &rms_p_values(0,1), 1, Ny);
+
+        // Compute derivative of rms at collocation points
+        o.cop.apply(1, 1, 1.0, &rms_p_values(0,1), 1, Ny);
+
+    } // end computation of mean and rms of p for slow growth
+
+
 
     //****************************************************************
     //
@@ -1078,14 +1164,14 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
 
             // Compute slow growth prestep values
             real_t ycoord = o.y(j);
-            real_t mean [Ns+4];
-            real_t dmean [Ns+4];
+            real_t mean [Ns+4+1];
+            real_t dmean [Ns+4+1];
             if (sgdef.formulation.enabled()) {
                 // FIXME: Need to have available rms and d(rms)dy of
                 //        state variables for turbulent simulation
 
                 // field
-                real_t field [Ns+4];
+                real_t field [Ns+4+1];
                 field[0] = rho;
                 field[1] = m[0];
                 field[2] = m[1];
@@ -1094,6 +1180,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                 for (unsigned int s=1; s<Ns; s++){
                     field[4+s] = species(s);
                 }
+                field[Ns+4] = 0;
 
                 // mean
                 mean[0] = mean_values(j,ndx::rho);
@@ -1104,6 +1191,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                 for (unsigned int s=1; s<Ns; s++){
                     mean[4+s] = mean_values(j,ndx::rho+s);
                 }
+                mean[Ns+4] = mean_p_values(j,0);
 
                 // dmean
                 dmean[0] = mean_values(j,state_count+ndx::rho);
@@ -1114,9 +1202,10 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                 for (unsigned int s=1; s<Ns; s++){
                     dmean[4+s] = mean_values(j,state_count+ndx::rho+s);
                 }
+                dmean[Ns+4] = mean_p_values(j,1);
 
                 // rms
-                real_t rms [Ns+4];
+                real_t rms [Ns+4+1];
                 rms[0] = rms_values(j,ndx::rho);
                 rms[1] = rms_values(j,ndx::mx);
                 rms[2] = rms_values(j,ndx::my);
@@ -1125,9 +1214,10 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                 for (unsigned int s=1; s<Ns; s++){
                     rms[4+s] = rms_values(j,ndx::rho+s);
                 }
+                rms[4+Ns] = rms_p_values(j,0);
 
                 // drms
-                real_t drms[Ns+4];
+                real_t drms[Ns+4+1];
                 drms[0] = rms_values(j,state_count+ndx::rho);
                 drms[1] = rms_values(j,state_count+ndx::mx);
                 drms[2] = rms_values(j,state_count+ndx::my);
@@ -1136,6 +1226,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                 for (unsigned int s=1; s<Ns; s++){
                     drms[4+s] = rms_values(j,state_count+ndx::rho+s);
                 }
+                drms[4+Ns] = rms_p_values(j,1);
 
                 // mean_rqq
                 real_t mean_rqq [Ns+4];
@@ -1147,6 +1238,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                 for (unsigned int s=1; s<Ns; s++){
                     mean_rqq[4+s] = 0;
                 }
+                mean_rqq[4+Ns] = 0;
 
                 // dmean_rqq
                 real_t dmean_rqq [Ns+4];
@@ -1158,18 +1250,19 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                 for (unsigned int s=1; s<Ns; s++){
                     dmean_rqq[4+s] = 0;
                 }
+                dmean_rqq[4+Ns] = 0;
 
                 // baseflow arrays
-                real_t    grDA    [Ns+4];
-                real_t    grDArms [Ns+4];
-                real_t    base    [Ns+4];
-                real_t  dybase    [Ns+4];
-                real_t  dxbase    [Ns+4];
-                real_t  dtbase    [Ns+4];
-                real_t srcbase    [Ns+4];
-                real_t    wall    [Ns+4];
-                real_t  dywall    [Ns+4];
-                real_t  dxwall    [Ns+4];
+                real_t    grDA    [Ns+4+1];
+                real_t    grDArms [Ns+4+1];
+                real_t    base    [Ns+4+1];
+                real_t  dybase    [Ns+4+1];
+                real_t  dxbase    [Ns+4+1];
+                real_t  dtbase    [Ns+4+1];
+                real_t srcbase    [Ns+4+1];
+                real_t    wall    [Ns+4+1];
+                real_t  dywall    [Ns+4+1];
+                real_t  dxwall    [Ns+4+1];
                 for (unsigned int ivar=0; ivar<Ns+4; ivar++){
                        grDA[ivar] = 0;
                     grDArms[ivar] = 0;
@@ -1192,6 +1285,10 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                 // Compute baseflow from coefficients
                 sgdef.get_baseflow(ycoord, &base[0], &dybase[0], &dxbase[0]);
                 sgdef.get_baseflow_pressure(ycoord, Pbase, dyPbase, dxPbase);
+
+                base  [Ns+4] =   Pbase;
+                dybase[Ns+4] = dyPbase;
+                dxbase[Ns+4] = dxPbase;
 
                 if (base[0]>0) {
                     // growth rate of ru:
@@ -1246,7 +1343,9 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                 largo_init (sgdef.workspace, sgdef.grdelta, grDA, grDArms);
 
                 // Basefow prestep
-                largo_prestep_baseflow (sgdef.workspace, base, dybase, dtbase, dxbase, srcbase);
+                if (base[0] > 0.) {
+                    largo_prestep_baseflow (sgdef.workspace, base, dybase, dtbase, dxbase, srcbase);
+                }
 
                 // Flow stats prestep
                 largo_prestep_seta (sgdef.workspace, ycoord, field, mean, rms, mean_rqq, dmean, drms, dmean_rqq);

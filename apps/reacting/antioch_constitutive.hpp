@@ -207,6 +207,28 @@ public:
                    real_t&   Cv) const;
 
     /**
+     * Given conserved state, compute required thermodynamic and
+     * transport quantities for evaluating Navier-Stokes operator.
+     *
+     * @param[in] e       Total energy per unit volume.
+     * @param[in] m       Pointer to momentum components, m[0] = x-momentum, etc.
+     * @param[in] rho     Mixture density.
+     * @param[in] species Species densities.
+     * @param[in] cs      Species mass fractions.
+     * @param[in] Tinit  Initial guess for temperature.
+     * @param[out] T      Temperature.
+     * @param[out] p      Pressure.
+     */
+    void evaluate_pressure (const real_t    e,
+                            const Vector3r& m,
+                            const real_t    rho,
+                            const VectorXr& species,
+                            const VectorXr& cs,
+                            const real_t    Tinit,
+                            real_t&   T,
+                            real_t&   p) const;
+
+    /**
      * Given conserved state, compute derivatives of pressure wrt
      * state required for linear operator reference quantities.
      *

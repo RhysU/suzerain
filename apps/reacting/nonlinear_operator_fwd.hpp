@@ -85,7 +85,7 @@ enum type {
 class operator_common_block
 {
     /** Type of the contiguous storage housing all mean quantities */
-    typedef Array<real_t, Dynamic, 20, ColMajor> means_type;
+    typedef Array<real_t, Dynamic, 22, ColMajor> means_type;
 
 
     /** Type of the contiguous storage housing all reference quantities */
@@ -220,6 +220,8 @@ public:
     mean_type       Crhow()             { return means.col(17); }
     mean_type       Crho()              { return means.col(18); }
     mean_type       Crhou_dot_u()       { return means.col(19); }
+    mean_type       p()                 { return means.col(20); }
+    mean_type       p2()                { return means.col(21); }
 
     /** Type returned by the const mean quantity accessors. */
     typedef means_type::ConstColXpr const_mean_type;
@@ -244,6 +246,8 @@ public:
     const_mean_type Crhow()       const { return means.col(17); }
     const_mean_type Crho()        const { return means.col(18); }
     const_mean_type Crhou_dot_u() const { return means.col(19); }
+    const_mean_type p()           const { return means.col(20); }
+    const_mean_type p2()          const { return means.col(21); }
 
     /** @} */
 
@@ -294,9 +298,11 @@ public:
     ref_type       ref_T()                   { return refs.row(17       );}
     ref_type       ref_gamma()               { return refs.row(18       );}
     ref_type       ref_a()                   { return refs.row(19       );}
-    ref_type       ref_cs(const int s)       { return refs.row(20     +s);}
-    ref_type       ref_es(const int s)       { return refs.row(20+  Ns+s);}
-    ref_type       ref_hs(const int s)       { return refs.row(20+2*Ns+s);}
+    ref_type       ref_p()                   { return refs.row(20       );}
+    ref_type       ref_p2()                  { return refs.row(21       );}
+    ref_type       ref_cs(const int s)       { return refs.row(22     +s);}
+    ref_type       ref_es(const int s)       { return refs.row(22+  Ns+s);}
+    ref_type       ref_hs(const int s)       { return refs.row(22+2*Ns+s);}
 
     /** Type returned by the const reference quantity accessors. */
     typedef refs_type::ConstRowXpr const_ref_type;
@@ -321,11 +327,13 @@ public:
     const_ref_type ref_T()             const {return refs.row(17       );}
     const_ref_type ref_gamma()         const {return refs.row(18       );}
     const_ref_type ref_a()             const {return refs.row(19       );}
-    const_ref_type ref_cs(const int s) const {return refs.row(20     +s);}
-    const_ref_type ref_es(const int s) const {return refs.row(20+  Ns+s);}
-    const_ref_type ref_hs(const int s) const {return refs.row(20+2*Ns+s);}
+    const_ref_type ref_p()             const {return refs.row(20       );}
+    const_ref_type ref_p2()            const {return refs.row(21       );}
+    const_ref_type ref_cs(const int s) const {return refs.row(22     +s);}
+    const_ref_type ref_es(const int s) const {return refs.row(22+  Ns+s);}
+    const_ref_type ref_hs(const int s) const {return refs.row(22+2*Ns+s);}
 
-    std::size_t Nref() const { return 20+3*this->Ns; }
+    std::size_t Nref() const { return 22+3*this->Ns; }
 
     /** Prepare data for use by implicit operator API in reacting_imexop.h. */
     void imexop_ref(suzerain_reacting_imexop_ref   &ref,
@@ -353,6 +361,8 @@ public:
         ref.T          = ref_T().data();
         ref.gamma      = ref_gamma().data();
         ref.a          = ref_a().data();
+        ref.p          = ref_p().data();
+        ref.p2         = ref_p2().data();
 
         const int inc = refs.colStride();
         ld.ux         = inc;
@@ -375,6 +385,8 @@ public:
         ld.T          = inc;
         ld.gamma      = inc;
         ld.a          = inc;
+        ld.p          = inc;
+        ld.p2         = inc;
     }
 
     /** @} */

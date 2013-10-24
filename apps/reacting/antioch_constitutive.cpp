@@ -534,6 +534,34 @@ antioch_constitutive::evaluate (const real_t    e,
 }
 
 void
+antioch_constitutive::evaluate_pressure (const real_t    e,
+                                         const Vector3r& m,
+                                         const real_t    rho,
+                                         const VectorXr& species,
+                                         const VectorXr& cs,
+                                         const real_t    Tinit,
+                                         real_t&   T,
+                                         real_t&   p) const
+{
+    SUZERAIN_TIMER_SCOPED("antioch evaluate");
+
+    const real_t irho = 1.0/rho;
+
+    const size_t Ns = this->Ns();
+
+    // Mixture gas constant
+    const real_t R_mix = this->mixture->R(cs);
+
+    // Compute temperature from internal energy (assuming thermal equilibrium)
+    const real_t re_internal = e - 0.5*irho*(m[0]*m[0] + m[1]*m[1] + m[2]*m[2]);
+    T = this->sm_thermo->T_from_e_tot(irho*re_internal, cs, Tinit);
+
+    // Compute pressure: ideal gas law with mixture gas constant
+    p = rho*R_mix*T;
+}
+
+
+void
 antioch_constitutive::evaluate_pressure_derivs_and_trans (const real_t    e,
                                                           const Vector3r& m,
                                                           const real_t    rho,
