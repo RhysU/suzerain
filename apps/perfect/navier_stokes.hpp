@@ -965,10 +965,87 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
         // Construction/destruction automatically resets counts at each y(j)
         array<summing_accumulator_type, barf_type::ColsAtCompileTime> barf_acc;
 
-        // Iterate across the j-th ZX plane
+        // Prepare to iterate across the j-th ZX plane
         const int last_zxoffset = offset
                                 + o.dgrid.local_physical_extent.z()
                                 * o.dgrid.local_physical_extent.x();
+
+//2983//// FIXME: Draft logic for Redmine #2983-related testing
+//2983//// At wall-normal outflows, adjust viscous conditions per Dutt SINUM
+//2983//// 1988 [http://dx.doi.org/10.1137/0725018] equation 4.14 and 4.15.
+//2983//// rearranged to constrain wall-normal primitive derivatives.  Notice
+//2983//// this treatment differ wildly from the classic Poinsot and Lele JCP
+//2983//// 1992 [http://dx.doi.org/10.1016/0021-9991(92)90046-2] despite
+//2983//// Poinsot and Lele's comments on page 113.  Dutt's approach chosen
+//2983//// because it permits easily adjusting state outside the main RHS loop.
+//2983//if (j == 0 || j == o.grid.N.y() - 1) {  // At upper/lower boundary...
+//2983//    const int outflow = j==0 ? -1 : 1;  // ...define outflow direction
+//2983//
+//2983//    // Iterate across the j-th ZX plane preserving "offset"...
+//2983//    SUZERAIN_TIMER_SCOPED("viscous conditions at outflow");
+//2983//    for (int pos = offset; pos < last_zxoffset; ++pos) {
+//2983//        // ...and short-circuiting unless outflow detected.
+//2983//        if (sphys(ndx::my, pos) * outflow <= 0) continue;
+//2983//
+//2983//        // Unpack local conserved state its first derivatives
+//2983//        const real_t   e      (sphys(ndx::e,     pos));
+//2983//        const Vector3r m      (sphys(ndx::mx,    pos),
+//2983//                               sphys(ndx::my,    pos),
+//2983//                               sphys(ndx::mz,    pos));
+//2983//        const real_t   rho    (sphys(ndx::rho,   pos));
+//2983//        const Vector3r grad_e  (auxp(aux::e_x,   pos),
+//2983//                                auxp(aux::e_y,   pos),
+//2983//                                auxp(aux::e_z,   pos));
+//2983//        const Matrix3r grad_m;
+//2983//        const_cast<Matrix3r&>(grad_m) <<
+//2983//                                auxp(aux::mx_x,  pos),
+//2983//                                auxp(aux::mx_y,  pos),
+//2983//                                auxp(aux::mx_z,  pos),
+//2983//                                auxp(aux::my_x,  pos),
+//2983//                                auxp(aux::my_y,  pos),
+//2983//                                auxp(aux::my_z,  pos),
+//2983//                                auxp(aux::mz_x,  pos),
+//2983//                                auxp(aux::mz_y,  pos),
+//2983//                                auxp(aux::mz_z,  pos);
+//2983//        const Vector3r grad_rho(auxp(aux::rho_x, pos),
+//2983//                                auxp(aux::rho_y, pos),
+//2983//                                auxp(aux::rho_z, pos));
+//2983//
+//2983//        // Compute local thermodynamic state and its derivatives
+//2983//        real_t p, T;
+//2983//        Vector3r grad_p, grad_T;
+//2983//        rholut::p_T(alpha, beta, gamma, Ma,
+//2983//                    rho, grad_rho, m, grad_m, e, grad_e,
+//2983//                    p, grad_p, T, grad_T);
+//2983//
+//2983//        // Adjust \partial_y \rho{}E so that \partial_y T = 0
+//2983//        // via expansion of \frac{\partial_y p}{\gamma-1}
+//2983//        // employing T = \frac{\gamma p}{\rho}
+//2983//        auxp(aux::e_y, pos) -= rho * grad_T.y() / gamma / gamma1;
+//2983//
+//2983//        // Compute gradient of local velocity
+//2983//        const Matrix3r grad_u = rholut::grad_u(rho, grad_rho,
+//2983//                                               m,   grad_m);
+//2983//
+//2983//        // Adjust \partial_y \rho{}u so \partial_y u = -\partial_x v
+//2983//        auxp(aux::mx_y, pos) -= rho*(grad_u(0,1) - grad_u(1,0));
+//2983//
+//2983//        // Adjust \partial_y \rho{}v so
+//2983//        // \partial_y v = -\frac{\lambda}{2\mu + \lambda}
+//2983//        //                \left(\partial_x u + \partial_z w)
+//2983//        // using that by \lambda = \left(\alpha + \frac{2}{3})\mu
+//2983//        // the leading coefficient is only a function of \alpha.
+//2983//        const real_t coeff = (3*alpha - 2) / (4 + 3*alpha);
+//2983//        auxp(aux::mx_y, pos) -= rho*(         grad_u(1,1)
+//2983//                                      - coeff*grad_u(0,0)
+//2983//                                      - coeff*grad_u(2,2));
+//2983//
+//2983//        // Adjust \partial_y \rho{}w so \partial_y w = -\partial_z v.
+//2983//        auxp(aux::mz_y, pos) -= rho*(grad_u(2,1) - grad_u(1,2));
+//2983//    }
+//2983//}
+
+        // Iterate across the j-th ZX plane
         for (; offset < last_zxoffset; ++offset) {
 
             // Unpack local conserved state
