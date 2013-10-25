@@ -1116,21 +1116,6 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                                           auxp(aux::rho_yz, offset),
                                           auxp(aux::rho_zz, offset);
 
-            // Compute velocity-related quantities
-            const Vector3r u          = rholut::u(
-                                            rho, m);
-            const real_t div_m        = grad_m.trace();
-            const real_t div_u        = rholut::div_u(
-                                            rho, grad_rho, m, div_m);
-            const Matrix3r grad_u     = rholut::grad_u(
-                                            rho, grad_rho, m, grad_m);
-            const Vector3r grad_div_u = rholut::grad_div_u(
-                                            rho, grad_rho, grad_grad_rho,
-                                            m, div_m, grad_m, grad_div_m);
-            const Vector3r div_grad_u = rholut::div_grad_u(
-                                            rho, grad_rho, div_grad_rho,
-                                            m, grad_m, div_grad_m);
-
             // Compute quantities related to the equation of state
             real_t p, T, mu, lambda;
             Vector3r grad_p, grad_T, grad_mu, grad_lambda;
@@ -1149,13 +1134,26 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                                         rho, grad_rho, div_grad_rho,
                                         p, grad_p, div_grad_p);
 
-            // Compute quantities related to the viscous stress tensor
-            const Matrix3r tau     = rholut::tau(
-                                        mu, lambda, div_u, grad_u);
-            const Vector3r div_tau = rholut::div_tau(
-                                        mu, grad_mu, lambda, grad_lambda,
-                                        div_u, grad_u, div_grad_u,
-                                        grad_div_u);
+            // Compute velocity-related quantities as well as
+            // quantities related to the viscous stress tensor
+            const Vector3r u          = rholut::u(
+                                            rho, m);
+            const Matrix3r grad_u     = rholut::grad_u(
+                                            rho, grad_rho, m, grad_m);
+            const real_t   div_u      = grad_u.trace();
+            const Matrix3r tau        = rholut::tau(
+                                            mu, lambda, div_u, grad_u);
+            const real_t div_m        = grad_m.trace();
+            const Vector3r grad_div_u = rholut::grad_div_u(
+                                            rho, grad_rho, grad_grad_rho,
+                                            m, div_m, grad_m, grad_div_m);
+            const Vector3r div_grad_u = rholut::div_grad_u(
+                                            rho, grad_rho, div_grad_rho,
+                                            m, grad_m, div_grad_m);
+            const Vector3r div_tau    = rholut::div_tau(
+                                            mu, grad_mu, lambda, grad_lambda,
+                                            div_u, grad_u, div_grad_u,
+                                            grad_div_u);
 
             // If necessary, Largo performs any final pointwise computations
             if (SlowTreatment == slowgrowth::largo) {
