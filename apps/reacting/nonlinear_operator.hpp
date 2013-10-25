@@ -1341,6 +1341,9 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                         srcbase[4+ivar]  = dtbase[4+ivar];
                         srcbase[4+ivar] += base_cs * dybase[2] + base_v * dybase[4+ivar] - base_v * base_cs * dybase[0];
                     }
+                } else { // Assign values to initialize the velocity scale for spatiotemporal
+                    wall[0] = common.rho_ref; 
+                    wall[1] = common.rho_ref * common.u_ref; 
                 }
 
                 // Init
