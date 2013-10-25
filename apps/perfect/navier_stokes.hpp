@@ -1063,9 +1063,6 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             const real_t div_grad_e(auxp(aux::div_grad_e, offset));
 
             // Unpack momentum-related derivatives
-            const real_t   div_m(  auxp(aux::mx_x, offset)
-                                 + auxp(aux::my_y, offset)
-                                 + auxp(aux::mz_z, offset));
             const Matrix3r grad_m;
             const_cast<Matrix3r&>(grad_m) <<
                                         auxp(aux::mx_x,  offset),
@@ -1122,6 +1119,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             // Compute velocity-related quantities
             const Vector3r u          = rholut::u(
                                             rho, m);
+            const real_t div_m        = grad_m.trace();
             const real_t div_u        = rholut::div_u(
                                             rho, grad_rho, m, div_m);
             const Matrix3r grad_u     = rholut::grad_u(
