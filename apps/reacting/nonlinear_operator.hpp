@@ -1262,7 +1262,9 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                 real_t srcbase    [Ns+4+1];
                 real_t    wall    [Ns+4+1];
                 real_t  dywall    [Ns+4+1];
+                real_t  dtwall    [Ns+4+1];
                 real_t  dxwall    [Ns+4+1];
+                real_t srcwall    [Ns+4+1];
                 for (unsigned int ivar=0; ivar<Ns+4; ivar++){
                        grDA[ivar] = 0;
                     grDArms[ivar] = 0;
@@ -1273,7 +1275,9 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                     srcbase[ivar] = 0;
                        wall[ivar] = 0;
                      dywall[ivar] = 0;
+                     dtwall[ivar] = 0;
                      dxwall[ivar] = 0;
+                    srcwall[ivar] = 0;
                 }
 
                 // baseflow arrays, pressure
@@ -1341,6 +1345,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
 
                 // Init
                 largo_init (sgdef.workspace, sgdef.grdelta, grDA, grDArms);
+                largo_init_wall_baseflow (sgdef.workspace, wall, dywall, dtwall, dxwall, srcwall);
 
                 // Basefow prestep
                 if (base[0] > 0.) {
