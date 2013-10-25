@@ -50,7 +50,7 @@ if [ test x$build_writeups = xtrue ]; then
     AX_ADD_AM_LATEX
     ACLTX_CLASSES([amsart],AMSART_CLASS,,[build_writeups=false])
 else
-    AC_MSG_WARN([LaTeX prerequisites not satisfied so writeups will not be built.])
+    AC_MSG_WARN([LaTeX prerequisites not satisfied so writeups cannot be built.])
 fi
 AM_CONDITIONAL([BUILD_WRITEUPS], [test x$build_writeups = xtrue])
 AC_CACHE_SAVE
