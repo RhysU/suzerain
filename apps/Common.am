@@ -13,6 +13,7 @@ bin_PROGRAMS        = # Append elsewhere
 BUILT_SOURCES       = # Append elsewhere
 CLEANFILES          = # Append elsewhere
 dist_check_SCRIPTS  = # Append elsewhere
+EXTRA_DIST          = # Append elsewhere
 EXTRA_PROGRAMS      = # Append elsewhere
 lib_LTLIBRARIES     = # Append elsewhere
 noinst_LTLIBRARIES  = # Append elsewhere

@@ -144,11 +144,9 @@ test_largo_state_LDADD    += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
 
 ##
 ## Miscellaneous manual testing scripts
+## Adding a directory to EXTRA_DIST recursively distributes the contents
 ##
-
-dist_check_SCRIPTS += manual.nrbc/pulse_perfect_init.sh
-dist_check_SCRIPTS += manual.nrbc/pulse_perfect.py
-dist_check_SCRIPTS += manual.nrbc/ticket2399.sh
+EXTRA_DIST += manual.nrbc
 
 # Required for AX_AM_MACROS
 @INC_AMINCLUDE@
