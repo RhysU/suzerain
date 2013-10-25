@@ -29,10 +29,17 @@ AC_PROG_GREP
 AC_PROG_SED
 AC_CACHE_SAVE
 
+dnl ----------------------------------------------
+dnl Allow user to disable the writeups/ subdirectory
+dnl ----------------------------------------------
+AC_ARG_ENABLE([writeups],
+    [AS_HELP_STRING([--disable-writeups],
+                    [Do not build writeups/ subdirectory])],
+    [build_writeups=false], [build_writeups=true])
+
 dnl ------------------------------------------------
 dnl LaTeX capabilities (not required but suggested)
 dnl ------------------------------------------------
-build_writeups=true
 ACLTX_PROG_TEX(      [build_writeups=false])
 ACLTX_PROG_PDFTEX(   [build_writeups=false])
 ACLTX_PROG_LATEX(    [build_writeups=false])
