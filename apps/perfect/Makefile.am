@@ -147,6 +147,7 @@ test_largo_state_LDADD    += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
 ## Adding a directory to EXTRA_DIST recursively distributes the contents
 ##
 EXTRA_DIST += manual.nrbc
+EXTRA_DIST += manual.gold
 
 # Required for AX_AM_MACROS
 @INC_AMINCLUDE@
