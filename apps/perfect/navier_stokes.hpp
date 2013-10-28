@@ -1055,6 +1055,15 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                                    sphys(ndx::mz,  offset));
             const real_t   rho    (sphys(ndx::rho, offset));
 
+//zero_d2y//if ((unsigned) j == Ny-1 && m.y() > 0) { // FIXME Ticket #2983
+//zero_d2y//    auxp(aux::div_grad_e, offset) -= auxp(aux::e_yy, offset);
+//zero_d2y//    auxp(aux::e_yy      , offset)  = 0;
+//zero_d2y//    auxp(aux::mx_yy     , offset)  = 0;
+//zero_d2y//    auxp(aux::my_yy     , offset)  = 0;
+//zero_d2y//    auxp(aux::mz_yy     , offset)  = 0;
+//zero_d2y//    auxp(aux::rho_yy    , offset)  = 0;
+//zero_d2y//}
+
             // Unpack total energy-related derivatives
             const Vector3r grad_e  (auxp(aux::e_x,        offset),
                                     auxp(aux::e_y,        offset),
