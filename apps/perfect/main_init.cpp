@@ -53,7 +53,7 @@ struct driver_init : public driver
                  "RESTART-FILE",
 "Initializes channel flow profile per --npower option unless --Re_x is\n"
 "supplied.  In that case, a Blasius-like boundary layer profile is prepared.\n"
-"The Blasius solution will unique fix both --upper_u and --upper_v.\n"
+"The Blasius solution will uniquely fix both --upper_u and --upper_v.\n"
 "When in doubt, please read through the source code.\n",
                  revstr)
         , who("init")
