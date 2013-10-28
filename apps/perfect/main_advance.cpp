@@ -243,9 +243,18 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
         INFO0(who, "Setting freestream reference state on upper boundary");
         isothermal->upper_rho = rho_inf;
         isothermal->upper_u   = u_inf;
-        DEBUG0(who, "Retaining reference upper_v = " << isothermal->upper_v);
-        DEBUG0(who, "Retaining reference upper_w = " << isothermal->upper_w);
-        DEBUG0(who, "Retaining reference upper_T = " << isothermal->upper_T);
+        if (sg->formulation.enabled()) {
+            // Homogenization modifies the inviscid characteristics.
+            // See discussion (or placeholder thereof) at Redmine #2982
+            isothermal->upper_v = isothermal->lower_v
+                                - grid->L.y()*sg->grdelta;
+            INFO0(who, "Matching upper_v with prescribed"
+                       " grdelta, lower_v, and Ly: " << isothermal->upper_v);
+        } else {
+            DEBUG0(who, "Keeping reference upper_v = " << isothermal->upper_v);
+        }
+        DEBUG0(who, "Keeping reference upper_w = " << isothermal->upper_w);
+        DEBUG0(who, "Keeping reference upper_T = " << isothermal->upper_T);
 
         if (scenario->bulk_rho) {
             WARN0(who, "Removing channel-like bulk_rho setting");
