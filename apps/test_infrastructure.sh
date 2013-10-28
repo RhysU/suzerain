@@ -10,7 +10,7 @@
 prereq_status=
 for tool in column cut mktemp mpiexec tail
 do
-    if ! which $tool >/dev/null ; then
+    if ! which $tool >/dev/null 2>/dev/null; then
         echo "ERROR: Unable to find utility $tool" 1>&2
         prereq_status=1
     fi
