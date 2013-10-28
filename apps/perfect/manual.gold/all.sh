@@ -3,6 +3,7 @@ set -eu
 
 ## A testing script to run every gold solution case in parallel.
 ## Failing test case names are displayed after all have finished.
+## Any flags, e.g. --use-system-epsilon, will be propagated.
 
 # Used to build and report failed cases
 tempfile() { tempprefix=$(basename "$0"); mktemp /tmp/${tempprefix}.XXXXXX; }
@@ -13,7 +14,7 @@ trap 'rm -f $FAILURES' EXIT
 SCRIPTDIR="$( cd "$( echo "${BASH_SOURCE[0]%/*}" )"; pwd )"
 for script in "$SCRIPTDIR"/*/check.sh
 do
-    ( "$script" || echo "$script" >> $FAILURES ) &
+    ( "$script" "$@" || echo "$script" "$@" >> $FAILURES ) &
 done
 
 # Wait for all subshells to finish
