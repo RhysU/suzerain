@@ -114,6 +114,7 @@ nobase_pkginclude_HEADERS += radial_nozzle.h
 nobase_pkginclude_HEADERS += richardson.h
 nobase_pkginclude_HEADERS += rngstream.hpp
 nobase_pkginclude_HEADERS += running_statistics.hpp
+nobase_pkginclude_HEADERS += safe_bool.hpp
 nobase_pkginclude_HEADERS += sbmv.h
 nobase_pkginclude_HEADERS += shared_range.hpp
 nobase_pkginclude_HEADERS += state_fwd.hpp
