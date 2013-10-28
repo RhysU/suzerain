@@ -252,7 +252,7 @@ const double ChallengingFixture::coeffs_H0[ChallengingFixture::ndof] = {
 BOOST_FIXTURE_TEST_CASE( find_edge, ChallengingFixture )
 {
     // Sanity check the provided data amount
-    BOOST_REQUIRE_EQUAL(b.n(), ndof);
+    BOOST_REQUIRE_EQUAL(b.n(), static_cast<int>(ndof));
 
     // Prepare working storage
     shared_ptr<gsl_matrix> dB(gsl_matrix_alloc(b.k(), 3), gsl_matrix_free);
