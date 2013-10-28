@@ -54,6 +54,7 @@ struct driver_init : public driver
 "Initializes channel flow profile per --npower option unless --Re_x is\n"
 "supplied.  In that case, a Blasius-like boundary layer profile is prepared.\n"
 "The Blasius solution will uniquely fix both --upper_u and --upper_v.\n"
+"Boundary layers homogenized by Largo employ a linear ramp in v.\n"
 "When in doubt, please read through the source code.\n",
                  revstr)
         , who("init")
@@ -290,9 +291,9 @@ suzerain::perfect::driver_init::run(int argc, char **argv)
         ArrayXr T = ArrayXr::Constant(Ny, numeric_limits<real_t>::quiet_NaN());
         ArrayXr p = ArrayXr::Constant(Ny, numeric_limits<real_t>::quiet_NaN());
 
-        if (options.variables().count("Re_x")) {
-
-            INFO0(who, "Computing mean freestream behavior per plate scenario");
+        if (    options.variables().count("Re_x")
+             && !sg->formulation.enabled()) {
+            INFO(who, "Initializing a classical boundary layer profile");
 
             INFO("Blasius base profile for u, v, and T uses Re_x = "
                  << Re_x << ", Pr = " << scenario->Pr);
@@ -307,6 +308,7 @@ suzerain::perfect::driver_init::run(int argc, char **argv)
             shared_ptr<gsl_interp_accel> accel(gsl_interp_accel_alloc(),
                                                gsl_interp_accel_free);
 
+            INFO0(who, "Computing mean freestream behavior per plate scenario");
             // See plate_treatment.tex for origin of T-dependent scaling
             // Blasius profile fixes upper_{u,v} for the freestream...
             isothermal->upper_u   = sqrt(isothermal->upper_T); // Eqn (6)
@@ -334,7 +336,48 @@ suzerain::perfect::driver_init::run(int argc, char **argv)
             p = isothermal->upper_rho * T / scenario->gamma;
             INFO("Base field uses p from " << p(0) << " to " << p(Ny - 1));
 
+        } else if (    options.variables().count("Re_x")
+                    && sg->formulation.enabled()) {
+            INFO(who, "Initializing approximate homogenized boundary layer");
+
+            INFO("Blasius base profile for u and T uses Re_x = "
+                 << Re_x << ", Pr = " << scenario->Pr);
+            INFO("Linear ramp uses for v from "
+                 << isothermal->lower_v << " to " << isothermal->upper_v);
+            INFO("Linear ramp uses for w from "
+                 << isothermal->lower_w << " to " << isothermal->upper_w);
+            shared_ptr<gsl_spline> fit_u(suzerain_blasius_u(Re_x),
+                                         gsl_spline_free);
+            shared_ptr<gsl_spline> fit_T(suzerain_blasius_T(Re_x, scenario->Pr),
+                                         gsl_spline_free);
+            shared_ptr<gsl_interp_accel> accel(gsl_interp_accel_alloc(),
+                                               gsl_interp_accel_free);
+
+            INFO(who, "Computing mean freestream behavior per plate scenario");
+            // See plate_treatment.tex for origin of T-dependent scaling
+            // Blasius profile fixes upper_u for the freestream...
+            isothermal->upper_u   = sqrt(isothermal->upper_T); // Eqn (6)
+            isothermal->upper_rho = pow(isothermal->upper_T,
+                                        scenario->beta - 0.5); // Eqn (8)
+            // ...where we've blissfully ignored lower_u (tra la la)
+
+            // Denormalize calls honor lower, upper values for u, v, w, T.
+            for (int j = 0; j < Ny; ++j) {
+                const double y_j = b->collocation_point(j);
+                u[j] = isothermal->denormalize_u(
+                        gsl_spline_eval(fit_u.get(), y_j, accel.get()));
+                v[j] = isothermal->denormalize_v(y_j / grid->L.y());
+                w[j] = isothermal->denormalize_w(y_j / grid->L.y());
+                T[j] = isothermal->denormalize_T(
+                        gsl_spline_eval(fit_T.get(), y_j, accel.get()));
+            }
+
+            // Find pressure using constant density taken from freestream
+            p = isothermal->upper_rho * T / scenario->gamma;
+            INFO("Base field uses p from " << p(0) << " to " << p(Ny - 1));
+
         } else {
+            INFO(who, "Initializing channel flow profile");
 
             INFO("Base field starts from linear ramps for u, v, w, and T");
             for (int j = 0; j < Ny; ++j) {
