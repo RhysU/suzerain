@@ -393,14 +393,6 @@ AX_INTEL_SC_ANALYSIS
 AC_CACHE_SAVE
 
 dnl ------------------------------------------------
-dnl Use libSegFault.so for development if possible
-dnl Appears last to avoid upsetting any other tests
-dnl ------------------------------------------------
-if test "x$ax_enable_debug" != "xno"; then
-    AC_CHECK_LIB([SegFault],[main])
-fi
-
-dnl ------------------------------------------------
 dnl Display optimization details
 dnl ------------------------------------------------
 if test "x$ax_enable_debug" != "xno"; then
