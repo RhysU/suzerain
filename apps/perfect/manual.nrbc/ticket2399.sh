@@ -123,6 +123,10 @@ trap 'rm -f $FAILURES' EXIT
 echo 'Quiet base flow suite one: outflow upper boundary'
 echo '######################################################'
 (
+    # Ticket #2399 showed problems with subsonic viscous outflow.
+    # Ticket #2983 failed in an attempt to fix them quickly.
+    # FIXME A thorough, IMEX-friendly solution requires some thought.
+    # This test case will misbehave until the #2983 and #2957 are resolved.
     case="quiet_pos_v"
     rmmkcd "ticket2399/$case"
     (

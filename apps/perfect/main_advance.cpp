@@ -268,23 +268,10 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
         constrainer->physical[ndx::rho].reset(
                 new constraint::constant_upper(rho_inf, *cop, 0));
 
-//2983//// FIXME: Disabling second derivative of conserved state constraints
-//2983//// Approximately disables some viscous terms to provide stable
-//2983//// operation following Chapter 4 of Giles' thesis and Tables III and IV
-//2983//// of Poinsot and Lele JCP 1992.  Necessary for subsonic outflows in
-//2983//// Table IV and some subsonic inflows in Table IV but notice case "SI
-//2983//// 1" does not require it.  See Redmine ticket #2399 updates 22 and 23
-//2983//// for details and also personal notes dated 26 June 2013.
-//2983//if (isothermal->upper_v > 0) {
-//2983//    INFO0(who, "Constraining outflow freestream mean state "
-//2983//               "second derivatives to be zero");
-//2983//    constrainer->numerical[ndx::e  ].reset(
-//2983//            new constraint::constant_upper_derivative(0, *cop, 2));
-//2983//    constrainer->numerical[ndx::mx ] = constrainer->numerical[ndx::e];
-//2983//    constrainer->numerical[ndx::my ] = constrainer->numerical[ndx::e];
-//2983//    constrainer->numerical[ndx::mz ] = constrainer->numerical[ndx::e];
-//2983//    constrainer->numerical[ndx::rho] = constrainer->numerical[ndx::e];
-//2983//}
+        if (isothermal->upper_v > 0 && (boost::math::isinf)(scenario->Re)) {
+            WARN0(who, "Nonreflecting viscous outflow boundary problematic"
+                       << " (Redmine #2983)");
+        }
 
     } else {
 
