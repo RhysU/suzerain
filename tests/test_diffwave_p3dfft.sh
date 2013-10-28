@@ -4,14 +4,17 @@
 # always use mpiexec on some login nodes.  Better to warn the user that a test
 # was skipped then worry them when make check fails as a result.
 
+# Requires AM_TESTS_FD_REDIRECT in Makefile.am
+alert() { if test -t 9; then echo WARN: "$@" >&9; else echo WARN: "$@"; fi; }
+
 if ! [ -x test_diffwave_p3dfft ]; then
-    echo "test_diffwave_p3dfft binary not found or not executable"
+    alert "test_diffwave_p3dfft binary not found or not executable"
     exit 1
 fi
 
-if ! which mpiexec > /dev/null ; then
-    echo "WARNING: Unable to find mpiexec; skipping test_diffwave_p3dfft"
-    exit 0
+if ! which mpiexec >/dev/null 2>/dev/null; then
+    alert "Unable to find mpiexec; skipping test_diffwave_p3dfft"
+    exit 77
 fi
 
 set -e # Fail on first error

@@ -6,17 +6,25 @@
 # always use mpiexec on some login nodes.  Better to warn the user that a test
 # was skipped then worry them when make check fails as a result.
 
+alert() {
+    # Requires AM_TESTS_FD_REDIRECT in Makefile.am
+    if test -t 9; then
+        echo WARN: "$@" >&9
+    fi
+    echo WARN: "$@"
+}
+
 # Check prerequisites and die loudly if the tools we need aren't available
 prereq_status=
 for tool in column cut mktemp mpiexec tail
 do
     if ! which $tool >/dev/null 2>/dev/null; then
-        echo "ERROR: Unable to find utility $tool" 1>&2
-        prereq_status=1
+        alert "Unable to find utility $tool"
+        prereq_status=77
     fi
 done
 if test x$prereq_status != x ; then
-    echo `basename $0` ": unable to continue.  Exiting with status $prereq_status" 1>&2
+    alert `basename $0` ": skipped due to missing prerequisites."
     exit $prereq_status
 fi
 
@@ -38,14 +46,6 @@ teardown() {
 test -z "${TEST_DEBUG-}" && trap "teardown" EXIT
 
 # Minimalistic command execution infrastructure
-
-alert() {
-    # Requires AM_TESTS_FD_REDIRECT in Makefile.am
-    if test -t 9; then
-        echo WARN: "$@" >&9
-    fi
-    echo WARN: "$@"
-}
 
 banner_prefix=`basename $0`
 banner() {
