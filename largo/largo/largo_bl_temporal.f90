@@ -14,7 +14,7 @@ module largo_BL_temporal
   private
 
 
-  ! interface for rans prestep function 
+  ! interface for rans prestep function
   abstract interface
     subroutine prestep_setamean_rans(cp, y, mean, ddy_mean)
       import
@@ -26,7 +26,7 @@ module largo_BL_temporal
   end interface
 
 
-  ! interface for rans source function 
+  ! interface for rans source function
   abstract interface
     subroutine sourcevec_rans(cp, A, B, srcvec)
       import
@@ -238,7 +238,7 @@ contains
     ! Check number of turbulence variables
     select case (trim(ransmodel))
     case ("laminar", "dns")
-      ! FIXME: if (ntvar_ /= 0) point to an error 
+      ! FIXME: if (ntvar_ /= 0) point to an error
     case ("turbulent_viscosity")
       ! FIXME: if (ntvar_ /= 1) point to an error
     case ("k_epsilon")
@@ -260,9 +260,9 @@ contains
       auxp%gr_DA_tvar   = 0.0_WP
     end if
 
-    ! Initialize turbulence variables function pointers 
-    largo_BL_temporal_prestep_sEtaMean_rans => largo_bl_temporal_prestep_sEtaMean_rans_generic 
-    largo_BL_temporal_sEta_rans                => largo_bl_temporal_sEta_rans_generic 
+    ! Initialize turbulence variables function pointers
+    largo_BL_temporal_prestep_sEtaMean_rans => largo_bl_temporal_prestep_sEtaMean_rans_generic
+    largo_BL_temporal_sEta_rans                => largo_bl_temporal_sEta_rans_generic
 
     ! Get C pointer from Fortran pointer
     cp = c_loc(auxp)
@@ -515,7 +515,7 @@ contains
     auxp%fluc_rhoW = qflow(irhoW) - auxp%mean_rhoW
     auxp%fluc_rhoE = qflow(irhoE) - auxp%mean_rhoE
 
-    auxp%TsRms_rho  = auxp%fluc_rho  * (- auxp%gr_DA_rms_rho  + auxp%ygrms_rho ) 
+    auxp%TsRms_rho  = auxp%fluc_rho  * (- auxp%gr_DA_rms_rho  + auxp%ygrms_rho )
     auxp%TsRms_rhoU = auxp%fluc_rhoU * (- auxp%gr_DA_rms_rhoU + auxp%ygrms_rhoU)
     auxp%TsRms_rhoV = auxp%fluc_rhoV * (- auxp%gr_DA_rms_rhoV + auxp%ygrms_rhoV)
     auxp%TsRms_rhoW = auxp%fluc_rhoW * (- auxp%gr_DA_rms_rhoW + auxp%ygrms_rhoW)
