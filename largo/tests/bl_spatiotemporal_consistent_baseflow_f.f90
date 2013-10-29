@@ -138,7 +138,6 @@ program bl_spatiotemporal_consistent_baseflow_f
     real(WP), dimension(neq), parameter :: &
       grxDArms = grtDArms / uIw
 
-#ifndef BASEFLOW_UNIFORM
     real(WP), dimension(neq+1), parameter :: &
       base    = (/                 &
       &         5.0_WP/ 1000.0_WP,  &
@@ -151,6 +150,7 @@ program bl_spatiotemporal_consistent_baseflow_f
       &      2000.0_WP              &
       /)
 
+#ifndef BASEFLOW_UNIFORM
     real(WP), dimension(neq+1), parameter :: &
       dybase  = (/                &
       &         5.0_WP/ 100.0_WP,  &
@@ -186,7 +186,11 @@ program bl_spatiotemporal_consistent_baseflow_f
       &       1.0_WP/2300000.0_WP,  &
       &      50.0_WP/     23.0_WP   &
       /)
-
+#else
+    real(WP), dimension(neq), parameter ::  dybase = 0.0_WP &
+                                         ,  dtbase = 0.0_WP &
+                                         ,  dxbase = 0.0_WP
+#endif
 
     real(WP), dimension(neq), parameter :: &
       srcbase = (/                &
@@ -198,13 +202,6 @@ program bl_spatiotemporal_consistent_baseflow_f
       &         2.0_WP/1000000.0_WP,  &
       &         1.0_WP/1000000.0_WP   &
       /)
-#else
-    real(WP), dimension(neq), parameter ::    base = 0.0_WP &
-                                         ,  dybase = 0.0_WP &
-                                         ,  dtbase = 0.0_WP &
-                                         , srcbase = 0.0_WP &
-                                         ,  dxbase = 0.0_WP
-#endif
 
     real(WP), dimension(neq)            :: srcmean
     real(WP), dimension(neq)            :: srcrms

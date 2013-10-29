@@ -129,7 +129,6 @@ program bl_temporal_consistent_baseflow_f
       &       2.0_WP/100000.0_WP    &
       /)
 
-#ifndef BASEFLOW_UNIFORM
     real(WP), dimension(neq), parameter :: &
       base    = (/                  &
       &         5.0_WP/ 1000.0_WP,  &
@@ -141,6 +140,7 @@ program bl_temporal_consistent_baseflow_f
       &         5.0_WP/10000.0_WP   &
       /)
 
+#ifndef BASEFLOW_UNIFORM
     real(WP), dimension(neq), parameter :: &
       dybase  = (/                &
       &         5.0_WP/ 100.0_WP,  &
@@ -163,6 +163,14 @@ program bl_temporal_consistent_baseflow_f
       &         2.0_WP/10000.0_WP   &
       /)
 
+    real(WP), dimension(neq)            :: &
+      dxbase  = 0.0_WP
+#else
+    real(WP), dimension(neq), parameter ::  dybase = 0.0_WP &
+                                         ,  dtbase = 0.0_WP &
+                                         ,  dxbase = 0.0_WP
+#endif
+
     real(WP), dimension(neq), parameter :: &
       srcbase = (/                &
       &         1.0_WP/ 1000.0_WP,  &
@@ -174,15 +182,6 @@ program bl_temporal_consistent_baseflow_f
       &         1.0_WP/10000.0_WP   &
       /)
 
-    real(WP), dimension(neq)            :: &
-      dxbase  = 0.0_WP
-#else
-    real(WP), dimension(neq), parameter ::    base = 0.0_WP &
-                                         ,  dybase = 0.0_WP &
-                                         ,  dtbase = 0.0_WP &
-                                         , srcbase = 0.0_WP &
-                                         ,  dxbase = 0.0_WP
-#endif
 
     real(WP), dimension(neq)            :: srcmean
     real(WP), dimension(neq)            :: srcfull
