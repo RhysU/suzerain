@@ -75,7 +75,7 @@ program generic_bl_temporal_f
       &         1.0_WP/100.0_WP   &
       /)
 
-    real(WP), dimension(neq), parameter :: & 
+    real(WP), dimension(neq), parameter :: &
       rms     = (/                &
       &      4.0_WP/ 10000.0_WP,  &
       &     25.0_WP/   100.0_WP,  &
@@ -88,13 +88,13 @@ program generic_bl_temporal_f
 
     real(WP), dimension(neq), parameter :: &
       drms    = (/                 &
-      &      42.0_WP/ 1000.0_WP,   & 
+      &      42.0_WP/ 1000.0_WP,   &
       &      24.0_WP/   10.0_WP,   &
       &     153.0_WP/  100.0_WP,   &
       &      12.0_WP/   10.0_WP,   &
       &    3200.0_WP           ,   &
-      &      82.0_WP/10000.0_WP,   & 
-      &      41.0_WP/10000.0_WP    & 
+      &      82.0_WP/10000.0_WP,   &
+      &      41.0_WP/10000.0_WP    &
       /)
 
     real(WP), dimension(neq), parameter :: &
@@ -147,12 +147,12 @@ program generic_bl_temporal_f
     call largo_allocate (generic_workspace, "bl_temporal", neq, ns, 0, "dns")
 
     ! Init growth rates
-    call largo_init     (generic_workspace, grDelta, & 
+    call largo_init     (generic_workspace, grDelta, &
                      (/ 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP /), &
                      (/ 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP /))
 
     ! Compute prestep values
-    call largo_preStep_sEta_innery  (generic_workspace, y,         & 
+    call largo_preStep_sEta_innery  (generic_workspace, y,         &
                                               mean, rms, mean_rqq, &
                                            dmean, drms, dmean_rqq)
     call largo_preStep_sEta_innerxz (generic_workspace, field)
@@ -210,7 +210,7 @@ program generic_bl_temporal_f
     call largo_allocate (generic_workspace, "bl_temporal", neq, ns, 0, "dns")
 
     ! Compute prestep values
-    call largo_preStep_sEta (generic_workspace, y*grDelta, field, & 
+    call largo_preStep_sEta (generic_workspace, y*grDelta, field, &
                                            mean,  rms,  mean_rqq, &
                                           dmean, drms, dmean_rqq)
 

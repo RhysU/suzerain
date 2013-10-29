@@ -100,7 +100,7 @@ program generic_bl_temporal_tconsistent_f
       /)
 
 
-    real(WP), dimension(neq), parameter :: & 
+    real(WP), dimension(neq), parameter :: &
       rms     = (/                &
       &      4.0_WP/ 10000.0_WP,  &
       &     25.0_WP/   100.0_WP,  &
@@ -113,13 +113,13 @@ program generic_bl_temporal_tconsistent_f
 
     real(WP), dimension(neq), parameter :: &
       drms    = (/                 &
-      &      42.0_WP/ 1000.0_WP,   & 
+      &      42.0_WP/ 1000.0_WP,   &
       &      24.0_WP/   10.0_WP,   &
       &     153.0_WP/  100.0_WP,   &
       &      12.0_WP/   10.0_WP,   &
       &    3200.0_WP           ,   &
-      &      82.0_WP/10000.0_WP,   & 
-      &      41.0_WP/10000.0_WP    & 
+      &      82.0_WP/10000.0_WP,   &
+      &      41.0_WP/10000.0_WP    &
       /)
 
     real(WP), dimension(neq)            :: srcmean
@@ -162,7 +162,7 @@ program generic_bl_temporal_tconsistent_f
       &  neq, ns, 0, "dns")
 
     ! Compute prestep values
-    call largo_preStep_sEta_innery  (generic_workspace, y*grDelta, & 
+    call largo_preStep_sEta_innery  (generic_workspace, y*grDelta, &
                                              mean,  rms,  meanrqq, &
                                             dmean, drms, dmeanrqq)
     call largo_preStep_sEta_innerxz (generic_workspace, field)

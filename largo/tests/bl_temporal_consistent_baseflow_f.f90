@@ -107,24 +107,24 @@ program bl_temporal_consistent_baseflow_f
 
     real(WP), dimension(neq), parameter :: &
       grDA    = (/                 &
-      &       2.0_WP/  100.0_WP,   & 
+      &       2.0_WP/  100.0_WP,   &
       &       1.0_WP/   10.0_WP,   &
       &       1.0_WP/  100.0_WP,   &
       &       3.0_WP/  100.0_WP,   &
       &       4.0_WP/  100.0_WP,   &
-      &       1.0_WP/ 1000.0_WP,   & 
-      &       2.0_WP/ 1000.0_WP    & 
+      &       1.0_WP/ 1000.0_WP,   &
+      &       2.0_WP/ 1000.0_WP    &
       /)
 
     real(WP), dimension(neq), parameter :: &
       grDArms = (/                  &
-      &       1.0_WP/  1000.0_WP,   & 
+      &       1.0_WP/  1000.0_WP,   &
       &       5.0_WP/  1000.0_WP,   &
       &       5.0_WP/ 10000.0_WP,   &
       &       2.0_WP/  1000.0_WP,   &
       &       1.0_WP/  1000.0_WP,   &
-      &       1.0_WP/100000.0_WP,   & 
-      &       2.0_WP/100000.0_WP    & 
+      &       1.0_WP/100000.0_WP,   &
+      &       2.0_WP/100000.0_WP    &
       /)
 
     real(WP), dimension(neq), parameter :: &
@@ -160,7 +160,7 @@ program bl_temporal_consistent_baseflow_f
       &         2.0_WP/10000.0_WP   &
       /)
 
-    real(WP), dimension(neq), parameter :: & 
+    real(WP), dimension(neq), parameter :: &
       srcbase = (/                &
       &         1.0_WP/ 1000.0_WP,  &
       &         5.0_WP/   10.0_WP,  &

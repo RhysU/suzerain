@@ -80,7 +80,7 @@ program bl_spatiotemporal_baseflow_f
       &     42000.0_WP            &
       /)
 
-    real(WP), dimension(neq), parameter :: & 
+    real(WP), dimension(neq), parameter :: &
       rms     = (/                &
       &      4.0_WP/ 10000.0_WP,  &
       &     25.0_WP/   100.0_WP,  &
@@ -93,13 +93,13 @@ program bl_spatiotemporal_baseflow_f
 
     real(WP), dimension(neq), parameter :: &
       drms    = (/                 &
-      &      42.0_WP/ 1000.0_WP,   & 
+      &      42.0_WP/ 1000.0_WP,   &
       &      24.0_WP/   10.0_WP,   &
       &     153.0_WP/  100.0_WP,   &
       &      12.0_WP/   10.0_WP,   &
       &    3200.0_WP           ,   &
-      &      82.0_WP/10000.0_WP,   & 
-      &      41.0_WP/10000.0_WP    & 
+      &      82.0_WP/10000.0_WP,   &
+      &      41.0_WP/10000.0_WP    &
       /)
 
     real(WP), dimension(neq+1), parameter :: &
@@ -183,7 +183,7 @@ program bl_spatiotemporal_baseflow_f
       /)
 
 
-    real(WP), dimension(neq), parameter :: & 
+    real(WP), dimension(neq), parameter :: &
       srcbase = (/                &
       &         1.0_WP/ 100000.0_WP,  &
       &         5.0_WP/   1000.0_WP,  &
@@ -241,7 +241,7 @@ program bl_spatiotemporal_baseflow_f
     call largo_BL_spatiotemporal_init  (workspace, grxDelta, grxDA, grxDArms)
 
     ! Init wall baseflow
-    call largo_BL_spatiotemporal_init_wall_baseflow(workspace   &  
+    call largo_BL_spatiotemporal_init_wall_baseflow(workspace   &
       ,(/ 1.0_WP,    uIw, 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP  /) &
       ,(/ 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP  /) &
       ,(/ 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP  /) &
@@ -313,7 +313,7 @@ program bl_spatiotemporal_baseflow_f
     call largo_BL_spatiotemporal_init  (workspace, grxDelta, grxDA, grxDArms)
 
     ! Init wall baseflow
-    call largo_BL_spatiotemporal_init_wall_baseflow(workspace   &  
+    call largo_BL_spatiotemporal_init_wall_baseflow(workspace   &
       ,(/ 1.0_WP,    uIw, 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP  /) &
       ,(/ 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP  /) &
       ,(/ 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP  /) &

@@ -108,24 +108,24 @@ program generic_bl_temporal_consistent_f
 
     real(WP), dimension(neq), parameter :: &
       grDA    = (/                 &
-      &       2.0_WP/  100.0_WP,   & 
+      &       2.0_WP/  100.0_WP,   &
       &       1.0_WP/   10.0_WP,   &
       &       1.0_WP/  100.0_WP,   &
       &       3.0_WP/  100.0_WP,   &
       &       4.0_WP/  100.0_WP,   &
-      &       1.0_WP/ 1000.0_WP,   & 
-      &       2.0_WP/ 1000.0_WP    & 
+      &       1.0_WP/ 1000.0_WP,   &
+      &       2.0_WP/ 1000.0_WP    &
       /)
 
     real(WP), dimension(neq), parameter :: &
       grDArms = (/                  &
-      &       1.0_WP/  1000.0_WP,   & 
+      &       1.0_WP/  1000.0_WP,   &
       &       5.0_WP/  1000.0_WP,   &
       &       5.0_WP/ 10000.0_WP,   &
       &       2.0_WP/  1000.0_WP,   &
       &       1.0_WP/  1000.0_WP,   &
-      &       1.0_WP/100000.0_WP,   & 
-      &       2.0_WP/100000.0_WP    & 
+      &       1.0_WP/100000.0_WP,   &
+      &       2.0_WP/100000.0_WP    &
       /)
 
     real(WP), dimension(neq), parameter :: &
@@ -161,7 +161,7 @@ program generic_bl_temporal_consistent_f
       &         2.0_WP/10000.0_WP   &
       /)
 
-    real(WP), dimension(neq), parameter :: & 
+    real(WP), dimension(neq), parameter :: &
       srcbase = (/                &
       &         1.0_WP/ 1000.0_WP,  &
       &         5.0_WP/   10.0_WP,  &
@@ -221,7 +221,7 @@ program generic_bl_temporal_consistent_f
     ! Compute prestep values
     call largo_preStep_baseflow  (generic_workspace,   base,  dybase,  &
                                              dtbase, dxbase, srcbase)
-    call largo_preStep_sEta_innery  (generic_workspace, y, & 
+    call largo_preStep_sEta_innery  (generic_workspace, y, &
                                              mean,  rms,  meanrqq, &
                                             dmean, drms, dmeanrqq)
     call largo_preStep_sEta_innerxz (generic_workspace, field)

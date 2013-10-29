@@ -185,7 +185,7 @@ program bl_spatiotemporal_consistent_baseflow_f
       /)
 
 
-    real(WP), dimension(neq), parameter :: & 
+    real(WP), dimension(neq), parameter :: &
       srcbase = (/                &
       &         1.0_WP/ 100000.0_WP,  &
       &         5.0_WP/   1000.0_WP,  &
@@ -202,13 +202,13 @@ program bl_spatiotemporal_consistent_baseflow_f
 
     real(WP), dimension(neq), parameter :: &
       srcmean_good = (/              &
-      &  -    31.0_WP/    8000.0_WP,  &  
-      &  - 17927.0_WP/    3680.0_WP,  &  
-      &  -   803.0_WP/ 1840000.0_WP,  &  
-      &  -  4789.0_WP/  184000.0_WP,  &  
-      &  -548600.0_WP/      23.0_WP,  &  
-      &  -   447.0_WP/  287500.0_WP,  &  
-      &  -  4249.0_WP/ 4600000.0_WP   &  
+      &  -    31.0_WP/    8000.0_WP,  &
+      &  - 17927.0_WP/    3680.0_WP,  &
+      &  -   803.0_WP/ 1840000.0_WP,  &
+      &  -  4789.0_WP/  184000.0_WP,  &
+      &  -548600.0_WP/      23.0_WP,  &
+      &  -   447.0_WP/  287500.0_WP,  &
+      &  -  4249.0_WP/ 4600000.0_WP   &
       /)
 
     real(WP), dimension(neq), parameter :: &
@@ -239,7 +239,7 @@ program bl_spatiotemporal_consistent_baseflow_f
     call largo_BL_spatiotemporal_consistent_init  (workspace, grxDelta, grxDA, grxDArms)
 
     ! Init wall baseflow
-    call largo_BL_spatiotemporal_consistent_init_wall_baseflow(workspace   &  
+    call largo_BL_spatiotemporal_consistent_init_wall_baseflow(workspace   &
       ,(/ 1.0_WP,    uIw, 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP  /) &
       ,(/ 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP  /) &
       ,(/ 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP  /) &
@@ -312,7 +312,7 @@ program bl_spatiotemporal_consistent_baseflow_f
     call largo_BL_spatiotemporal_consistent_init  (workspace, grxDelta, grxDA, grxDArms)
 
     ! Init wall baseflow
-    call largo_BL_spatiotemporal_consistent_init_wall_baseflow(workspace   &  
+    call largo_BL_spatiotemporal_consistent_init_wall_baseflow(workspace   &
       ,(/ 1.0_WP,    uIw, 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP  /) &
       ,(/ 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP  /) &
       ,(/ 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP  /) &

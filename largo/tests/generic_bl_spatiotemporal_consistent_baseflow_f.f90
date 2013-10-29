@@ -187,7 +187,7 @@ program generic_bl_spatiotemporal_consistent_f
       &      50.0_WP/     23.0_WP   &
       /)
 
-    real(WP), dimension(neq), parameter :: & 
+    real(WP), dimension(neq), parameter :: &
       srcbase = (/                &
       &         1.0_WP/ 100000.0_WP,  &
       &         5.0_WP/   1000.0_WP,  &
@@ -203,13 +203,13 @@ program generic_bl_spatiotemporal_consistent_f
 
     real(WP), dimension(neq), parameter :: &
       srcmean_good = (/              &
-      &  -    31.0_WP/    8000.0_WP,  &  
-      &  - 17927.0_WP/    3680.0_WP,  &  
-      &  -   803.0_WP/ 1840000.0_WP,  &  
-      &  -  4789.0_WP/  184000.0_WP,  &  
-      &  -548600.0_WP/      23.0_WP,  &  
-      &  -   447.0_WP/  287500.0_WP,  &  
-      &  -  4249.0_WP/ 4600000.0_WP   &  
+      &  -    31.0_WP/    8000.0_WP,  &
+      &  - 17927.0_WP/    3680.0_WP,  &
+      &  -   803.0_WP/ 1840000.0_WP,  &
+      &  -  4789.0_WP/  184000.0_WP,  &
+      &  -548600.0_WP/      23.0_WP,  &
+      &  -   447.0_WP/  287500.0_WP,  &
+      &  -  4249.0_WP/ 4600000.0_WP   &
       /)
 
     real(WP), dimension(neq), parameter :: &
@@ -241,7 +241,7 @@ program generic_bl_spatiotemporal_consistent_f
     call largo_init  (generic_workspace, grxDelta, grxDA, grxDArms)
 
     ! Init wall baseflow
-    call largo_init_wall_baseflow(generic_workspace   &  
+    call largo_init_wall_baseflow(generic_workspace   &
       ,(/ 1.0_WP,    uIw, 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP  /) &
       ,(/ 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP  /) &
       ,(/ 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP  /) &
@@ -252,7 +252,7 @@ program generic_bl_spatiotemporal_consistent_f
     ! Compute prestep values
     call largo_preStep_baseflow  (generic_workspace,   base,  dybase,  &
                                              dtbase, dxbase, srcbase)
-    call largo_preStep_sEta_innery  (generic_workspace, y, & 
+    call largo_preStep_sEta_innery  (generic_workspace, y, &
                                              mean,  rms,  mean_rqq, &
                                             dmean, drms, dmean_rqq)
     call largo_preStep_sEta_innerxz (generic_workspace, field)
@@ -310,7 +310,7 @@ program generic_bl_spatiotemporal_consistent_f
     call largo_init  (generic_workspace, grxDelta, grxDA, grxDArms)
 
     ! Init wall baseflow
-    call largo_init_wall_baseflow(generic_workspace   &  
+    call largo_init_wall_baseflow(generic_workspace   &
       ,(/ 1.0_WP,    uIw, 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP  /) &
       ,(/ 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP  /) &
       ,(/ 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP  /) &

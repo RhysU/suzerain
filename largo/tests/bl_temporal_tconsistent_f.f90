@@ -99,7 +99,7 @@ program bl_temporal_tconsistent_f
       /)
 
 
-    real(WP), dimension(neq), parameter :: & 
+    real(WP), dimension(neq), parameter :: &
       rms     = (/                &
       &      4.0_WP/ 10000.0_WP,  &
       &     25.0_WP/   100.0_WP,  &
@@ -112,13 +112,13 @@ program bl_temporal_tconsistent_f
 
     real(WP), dimension(neq), parameter :: &
       drms    = (/                 &
-      &      42.0_WP/ 1000.0_WP,   & 
+      &      42.0_WP/ 1000.0_WP,   &
       &      24.0_WP/   10.0_WP,   &
       &     153.0_WP/  100.0_WP,   &
       &      12.0_WP/   10.0_WP,   &
       &    3200.0_WP           ,   &
-      &       0.0_WP/10000.0_WP,   & 
-      &       0.0_WP/10000.0_WP    & 
+      &       0.0_WP/10000.0_WP,   &
+      &       0.0_WP/10000.0_WP    &
       /)
 
     real(WP), dimension(neq)            :: srcmean
