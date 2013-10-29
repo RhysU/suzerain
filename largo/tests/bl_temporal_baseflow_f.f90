@@ -288,8 +288,9 @@ program bl_temporal_baseflow_f
 !      call largo_BL_temporal_species_sEtaRms (workspace, 0.0_WP, 1.0_WP, srcrms(5+is), is)
 !    end do
 
-#ifndef BASEFLOW_TRIVIAL
     ! Check mean part
+    ASSERT(.not.any(isnan(srcmean)))
+#ifndef BASEFLOW_TRIVIAL
     ASSERT(abs((srcmean(1)/srcmean_good(1))-1.0_WP) < tolerance )
     ASSERT(abs((srcmean(2)/srcmean_good(2))-1.0_WP) < tolerance )
     ASSERT(abs((srcmean(3)/srcmean_good(3))-1.0_WP) < tolerance )
@@ -298,13 +299,11 @@ program bl_temporal_baseflow_f
     do is=1, ns
       ASSERT(abs((srcmean(5+is)/srcmean_good(5+is))-1.0_WP) < tolerance )
     end do
-#else
-    ! Trivial baseflow should produce non-NAN results
-    ASSERT(.not.any(isnan(srcmean)))
 #endif
 
-#ifndef BASEFLOW_TRIVIAL
     ! Check rms part
+    ASSERT(.not.any(isnan(srcrms)))
+#ifndef BASEFLOW_TRIVIAL
     ASSERT(abs((srcrms(1) /srcrms_good(1))-1.0_WP)  < tolerance )
     ASSERT(abs((srcrms(2) /srcrms_good(2))-1.0_WP)  < tolerance )
     ASSERT(abs((srcrms(3) /srcrms_good(3))-1.0_WP)  < tolerance )
@@ -313,9 +312,6 @@ program bl_temporal_baseflow_f
     do is=1, ns
       ASSERT(abs((srcrms(5+is)/srcrms_good(5+is))-1.0_WP) < tolerance )
     end do
-#else
-    ! Trivial baseflow should produce non-NAN results
-    ASSERT(.not.any(isnan(srcrms)))
 #endif
 
     ! Deallocate workspace
@@ -344,8 +340,9 @@ program bl_temporal_baseflow_f
     call largo_BL_temporal_sEta      (workspace, 0.0_WP, 1.0_WP, srcall (1))
     call largo_BL_temporal_sEta_rans (workspace, 0.0_WP, 1.0_WP, srcturb(1))
 
-#ifndef BASEFLOW_TRIVIAL
     ! Check all
+    ASSERT(.not.any(isnan(srcall)))
+#ifndef BASEFLOW_TRIVIAL
     ASSERT(abs((srcall(1)/srcall_good(1))-1.0_WP) < tolerance )
     ASSERT(abs((srcall(2)/srcall_good(2))-1.0_WP) < tolerance )
     ASSERT(abs((srcall(3)/srcall_good(3))-1.0_WP) < tolerance )
@@ -354,13 +351,12 @@ program bl_temporal_baseflow_f
     do is=1, ns
       ASSERT(abs((srcall(5+is)/srcall_good(5+is))-1.0_WP) < tolerance )
     end do
+#endif
+    ASSERT(.not.any(isnan(srcturb)))
+#ifndef BASEFLOW_TRIVIAL
     do it=1, ntvar
       ASSERT(abs((srcturb(it)/srcturb_good(it))-1.0_WP) < tolerance )
     end do
-#else
-    ! Trivial baseflow should produce non-NAN results
-    ASSERT(.not.any(isnan(srcall )))
-    ASSERT(.not.any(isnan(srcturb)))
 #endif
 
     ! Deallocate workspace
