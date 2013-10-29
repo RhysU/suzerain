@@ -68,7 +68,8 @@ dnl Manipulate Fortran
 dnl ------------------
 AC_PROG_FC
 AC_LANG_PUSH([Fortran])
-AC_FC_SRCEXT([f90])
+AC_FC_PP_DEFINE()   dnl PP_DEFINE must be before...
+AC_FC_SRCEXT([f90]) dnl ...SRCEXT for some reason.
 AC_FC_FREEFORM()
 AC_FC_LINE_LENGTH([unlimited])
 dnl BEGIN: Enable the preprocessor for all Fortran .f90 sources
