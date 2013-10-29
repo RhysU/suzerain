@@ -335,23 +335,26 @@ contains
     call c_f_pointer(cp, auxp)
 
     ! Store baseflow information
-    auxp%base_rho = base(irho )
-    auxp%base_U   = base(irhoU)/base(irho )
-    auxp%base_V   = base(irhoV)/base(irho )
-    auxp%base_W   = base(irhoW)/base(irho )
-    auxp%base_E   = base(irhoE)/base(irho )
+    if (base(irho) > 0.0_WP) then
+      auxp%base_rho = base(irho )
+      auxp%base_U   = base(irhoU)/base(irho )
+      auxp%base_V   = base(irhoV)/base(irho )
+      auxp%base_W   = base(irhoW)/base(irho )
+      auxp%base_E   = base(irhoE)/base(irho )
 
-    auxp%ddy_base_rho = ddy_base(irho )
-    auxp%ddy_base_U   = ddy_base(irhoU)/base(irho ) - auxp%base_U/base(irho ) * ddy_base(irho )
-    auxp%ddy_base_V   = ddy_base(irhoV)/base(irho ) - auxp%base_V/base(irho ) * ddy_base(irho )
-    auxp%ddy_base_W   = ddy_base(irhoW)/base(irho ) - auxp%base_W/base(irho ) * ddy_base(irho )
-    auxp%ddy_base_E   = ddy_base(irhoE)/base(irho ) - auxp%base_E/base(irho ) * ddy_base(irho )
+      auxp%ddy_base_rho = ddy_base(irho )
+      auxp%ddy_base_U   = ddy_base(irhoU)/base(irho ) - auxp%base_U/base(irho ) * ddy_base(irho )
+      auxp%ddy_base_V   = ddy_base(irhoV)/base(irho ) - auxp%base_V/base(irho ) * ddy_base(irho )
+      auxp%ddy_base_W   = ddy_base(irhoW)/base(irho ) - auxp%base_W/base(irho ) * ddy_base(irho )
+      auxp%ddy_base_E   = ddy_base(irhoE)/base(irho ) - auxp%base_E/base(irho ) * ddy_base(irho )
 
-    auxp%ddt_base_rho = ddt_base(irho )
-    auxp%ddt_base_U   = ddt_base(irhoU)/base(irho ) - auxp%base_U/base(irho ) * ddt_base(irho )
-    auxp%ddt_base_V   = ddt_base(irhoV)/base(irho ) - auxp%base_V/base(irho ) * ddt_base(irho )
-    auxp%ddt_base_W   = ddt_base(irhoW)/base(irho ) - auxp%base_W/base(irho ) * ddt_base(irho )
-    auxp%ddt_base_E   = ddt_base(irhoE)/base(irho ) - auxp%base_E/base(irho ) * ddt_base(irho )
+      auxp%ddt_base_rho = ddt_base(irho )
+      auxp%ddt_base_U   = ddt_base(irhoU)/base(irho ) - auxp%base_U/base(irho ) * ddt_base(irho )
+      auxp%ddt_base_V   = ddt_base(irhoV)/base(irho ) - auxp%base_V/base(irho ) * ddt_base(irho )
+      auxp%ddt_base_W   = ddt_base(irhoW)/base(irho ) - auxp%base_W/base(irho ) * ddt_base(irho )
+      auxp%ddt_base_E   = ddt_base(irhoE)/base(irho ) - auxp%base_E/base(irho ) * ddt_base(irho )
+    end if
+
 
 !!$     auxp%src_base_rho = src_base(irho )
 !!$     auxp%src_base_U   = src_base(irhoU)
