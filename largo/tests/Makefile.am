@@ -57,7 +57,6 @@ bl_temporal_baseflow_f_LDADD    = ../largo/liblargof.la
 
 ## Above case modified to provide a trivial baseflow and ensure non-NANs result
 TESTS                                  += bl_temporal_baseflow_trivial_f
-XFAIL_TESTS                            += bl_temporal_baseflow_trivial_f # FIXME
 check_PROGRAMS                         += bl_temporal_baseflow_trivial_f
 bl_temporal_baseflow_trivial_f_SOURCES  = bl_temporal_baseflow_f.f90 testframework.f90
 bl_temporal_baseflow_trivial_f_FCFLAGS  = $(AM_FCFLAGS) $(FC_DEFINE)BASEFLOW_TRIVIAL
