@@ -129,7 +129,7 @@ program bl_temporal_consistent_baseflow_f
       &       2.0_WP/100000.0_WP    &
       /)
 
-#ifndef BASEFLOW_TRIVIAL
+#ifndef BASEFLOW_UNIFORM
     real(WP), dimension(neq), parameter :: &
       base    = (/                  &
       &         5.0_WP/ 1000.0_WP,  &
@@ -254,7 +254,7 @@ program bl_temporal_consistent_baseflow_f
     ! Check mean part
     if (any(isnan(srcmean))) write (error_unit, *) "srcmean: ", srcmean
     ASSERT(.not.any(isnan(srcmean)))
-#ifndef BASEFLOW_TRIVIAL
+#ifndef BASEFLOW_UNIFORM
     ASSERT(abs((srcmean(1)/srcmean_good(1))-1.0_WP) < tolerance )
     ASSERT(abs((srcmean(2)/srcmean_good(2))-1.0_WP) < tolerance )
     ASSERT(abs((srcmean(3)/srcmean_good(3))-1.0_WP) < tolerance )
@@ -268,7 +268,7 @@ program bl_temporal_consistent_baseflow_f
     ! Check full part
     if (any(isnan(srcfull))) write (error_unit, *) "srcfull: ", srcfull
     ASSERT(.not.any(isnan(srcfull)))
-#ifndef BASEFLOW_TRIVIAL
+#ifndef BASEFLOW_UNIFORM
     ASSERT(abs((srcfull(1) /srcfull_good(1))-1.0_WP)  < tolerance * 100.0_WP)
     ASSERT(abs((srcfull(2) /srcfull_good(2))-1.0_WP)  < tolerance * 100.0_WP)
     ASSERT(abs((srcfull(3) /srcfull_good(3))-1.0_WP)  < tolerance * 100.0_WP)
@@ -304,7 +304,7 @@ program bl_temporal_consistent_baseflow_f
     ! Check full part
     if (any(isnan(srcfull))) write (error_unit, *) "srcfull: ", srcfull
     ASSERT(.not.any(isnan(srcfull)))
-#ifndef BASEFLOW_TRIVIAL
+#ifndef BASEFLOW_UNIFORM
     ASSERT(abs((srcfull(1) /srcfull_good(1))-1.0_WP)  < tolerance * 100.0_WP)
     ASSERT(abs((srcfull(2) /srcfull_good(2))-1.0_WP)  < tolerance * 100.0_WP)
     ASSERT(abs((srcfull(3) /srcfull_good(3))-1.0_WP)  < tolerance * 100.0_WP)

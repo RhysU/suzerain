@@ -138,7 +138,7 @@ program bl_spatiotemporal_consistent_baseflow_f
     real(WP), dimension(neq), parameter :: &
       grxDArms = grtDArms / uIw
 
-#ifndef BASEFLOW_TRIVIAL
+#ifndef BASEFLOW_UNIFORM
     real(WP), dimension(neq+1), parameter :: &
       base    = (/                 &
       &         5.0_WP/ 1000.0_WP,  &
@@ -292,7 +292,7 @@ program bl_spatiotemporal_consistent_baseflow_f
     ! Check mean part
     if (any(isnan(srcmean))) write (error_unit, *) "srcmean: ", srcmean
     ASSERT(.not.any(isnan(srcmean)))
-#ifndef BASEFLOW_TRIVIAL
+#ifndef BASEFLOW_UNIFORM
     ASSERT(abs((srcmean(1)/srcmean_good(1))-1.0_WP) < tolerance )
     ASSERT(abs((srcmean(2)/srcmean_good(2))-1.0_WP) < tolerance )
     ASSERT(abs((srcmean(3)/srcmean_good(3))-1.0_WP) < tolerance )
@@ -306,7 +306,7 @@ program bl_spatiotemporal_consistent_baseflow_f
     ! Check all part
     if (any(isnan(srcall))) write (error_unit, *) "srcall: ", srcall
     ASSERT(.not.any(isnan(srcall)))
-#ifndef BASEFLOW_TRIVIAL
+#ifndef BASEFLOW_UNIFORM
     ASSERT(abs((srcall(1) /srcall_good(1))-1.0_WP)  < tolerance )
     ASSERT(abs((srcall(2) /srcall_good(2))-1.0_WP)  < tolerance )
     ASSERT(abs((srcall(3) /srcall_good(3))-1.0_WP)  < tolerance )
@@ -351,7 +351,7 @@ program bl_spatiotemporal_consistent_baseflow_f
     ! Check all
     if (any(isnan(srcall))) write (error_unit, *) "srcall: ", srcall
     ASSERT(.not.any(isnan(srcall)))
-#ifndef BASEFLOW_TRIVIAL
+#ifndef BASEFLOW_UNIFORM
     ASSERT(abs((srcall(1)/srcall_good(1))-1.0_WP) < tolerance )
     ASSERT(abs((srcall(2)/srcall_good(2))-1.0_WP) < tolerance )
     ASSERT(abs((srcall(3)/srcall_good(3))-1.0_WP) < tolerance )
