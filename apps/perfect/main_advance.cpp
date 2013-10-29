@@ -205,6 +205,10 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
         INFO0("Allocating Largo model \"" << model_name
               << "\" for 5 state variables");
         largo_allocate(&sg->workspace, model_name.c_str(), 5, 0, 0, "dns");
+        if (!sg->workspace) {
+            FATAL0("Largo could not allocate model \"" << model_name << '\"');
+            return EXIT_FAILURE;
+        }
         if ((isnan)(sg->grdelta)) {
             WARN0("Slow growth rate grdelta is NaN");
         }

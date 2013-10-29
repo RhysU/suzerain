@@ -29,6 +29,12 @@ check_PROGRAMS  += basic_f
 basic_f_SOURCES  = basic_f.f90 testframework.f90
 basic_f_LDADD    = ../largo/liblargof.la
 
+## Sensible behavior on unknown model requests
+TESTS                 += unknown_model
+check_PROGRAMS        += unknown_model
+unknown_model_SOURCES  = unknown_model.c
+unknown_model_LDADD    = ../largo/liblargo.la
+
 ## Temporal boundary layer, fortran
 TESTS                 += bl_temporal_f
 check_PROGRAMS        += bl_temporal_f

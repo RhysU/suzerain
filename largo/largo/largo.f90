@@ -118,9 +118,9 @@ contains
     ! Initialize number of turbulence variables
     lauxp%ntvar = ntvar
 
-    ! Initialize according to model index
-    ! FIXME: enumerate models
+    ! Initialize according to model name
     select case (trim(fmodel))
+
     case ("bl_temporal")
       ! Initialize number of variables
       lauxp%nvar = neq
@@ -299,13 +299,18 @@ contains
       lauxp%largo_init_wall_baseflow => largo_BL_spatiotemporal_consistent_init_wall_baseflow
       lauxp%largo_prestep_baseflow   => largo_BL_spatiotemporal_consistent_preStep_baseflow
 
-
     case default
-      ! FIXME: throw an error, model not declared
+      ! Unknown model causes workspace deallocation prompting c_null_ptr below
+      deallocate (lauxp)
+
     end select
 
     ! Get C pointer from Fortran pointer
-    lcp = c_loc(lauxp)
+    if (associated(lauxp)) then
+      lcp = c_loc(lauxp)
+    else
+      lcp = c_null_ptr
+    end if
 
   end subroutine largo_allocate
 
@@ -316,6 +321,9 @@ contains
     ! largo C pointer
     type(largo_ptr), intent(inout) :: lcp
     type(largo_type), pointer      :: lauxp
+
+    ! Do nothing on deallocation of null lcp
+    if (.not. c_associated(lcp)) return
 
     call c_f_pointer(lcp, lauxp)
 

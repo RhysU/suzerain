@@ -404,8 +404,15 @@ suzerain::reacting::driver_advance::run(int argc, char **argv)
         INFO0("Allocating Largo model \"" << name
               << "\" for state count " << state_count
               << " with " << Ns << " species");
-        largo_allocate(&sgdef->workspace, name.c_str(), state_count, Ns, 
+        largo_allocate(&sgdef->workspace, name.c_str(), state_count, Ns,
                        0, "dns");
+        if (!sgdef->workspace) {
+            FATAL0("Largo could not allocate model \"" << name << '\"');
+            return EXIT_FAILURE;
+        }
+        if ((isnan)(sgdef->grdelta)) {
+            WARN0("Slow growth rate grdelta is NaN");
+        }
     }
 
     // Use --undriven as a testing- and debugging-related tool.
