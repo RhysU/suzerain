@@ -34,6 +34,8 @@ program bl_temporal_consistent_baseflow_f
                                            WP => c_double, &
                                            c_int,          &
                                            largo_workspace_ptr => c_ptr
+    use, intrinsic :: iso_fortran_env, only: output_unit, error_unit
+
     implicit none
 
     integer(c_int), parameter :: neq = 7
@@ -127,6 +129,7 @@ program bl_temporal_consistent_baseflow_f
       &       2.0_WP/100000.0_WP    &
       /)
 
+#ifndef BASEFLOW_TRIVIAL
     real(WP), dimension(neq), parameter :: &
       base    = (/                  &
       &         5.0_WP/ 1000.0_WP,  &
@@ -173,7 +176,13 @@ program bl_temporal_consistent_baseflow_f
 
     real(WP), dimension(neq)            :: &
       dxbase  = 0.0_WP
-
+#else
+    real(WP), dimension(neq), parameter ::    base = 0.0_WP &
+                                         ,  dybase = 0.0_WP &
+                                         ,  dtbase = 0.0_WP &
+                                         , srcbase = 0.0_WP &
+                                         ,  dxbase = 0.0_WP
+#endif
 
     real(WP), dimension(neq)            :: srcmean
     real(WP), dimension(neq)            :: srcfull
@@ -243,6 +252,9 @@ program bl_temporal_consistent_baseflow_f
 
 
     ! Check mean part
+    if (any(isnan(srcmean))) write (error_unit, *) "srcmean: ", srcmean
+    ASSERT(.not.any(isnan(srcmean)))
+#ifndef BASEFLOW_TRIVIAL
     ASSERT(abs((srcmean(1)/srcmean_good(1))-1.0_WP) < tolerance )
     ASSERT(abs((srcmean(2)/srcmean_good(2))-1.0_WP) < tolerance )
     ASSERT(abs((srcmean(3)/srcmean_good(3))-1.0_WP) < tolerance )
@@ -251,8 +263,12 @@ program bl_temporal_consistent_baseflow_f
     do is=1, ns
       ASSERT(abs((srcmean(5+is)/srcmean_good(5+is))-1.0_WP) < tolerance )
     end do
+#endif
 
     ! Check full part
+    if (any(isnan(srcfull))) write (error_unit, *) "srcfull: ", srcfull
+    ASSERT(.not.any(isnan(srcfull)))
+#ifndef BASEFLOW_TRIVIAL
     ASSERT(abs((srcfull(1) /srcfull_good(1))-1.0_WP)  < tolerance * 100.0_WP)
     ASSERT(abs((srcfull(2) /srcfull_good(2))-1.0_WP)  < tolerance * 100.0_WP)
     ASSERT(abs((srcfull(3) /srcfull_good(3))-1.0_WP)  < tolerance * 100.0_WP)
@@ -261,6 +277,7 @@ program bl_temporal_consistent_baseflow_f
     do is=1, ns
       ASSERT(abs((srcfull(5+is)/srcfull_good(5+is))-1.0_WP) < tolerance * 10.0_WP )
     end do
+#endif
 
 
     ! Deallocate workspace
@@ -285,6 +302,9 @@ program bl_temporal_consistent_baseflow_f
     call largo_BL_temporal_consistent_sEta (workspace, 0.0_WP, 1.0_WP, srcfull(1))
 
     ! Check full part
+    if (any(isnan(srcfull))) write (error_unit, *) "srcfull: ", srcfull
+    ASSERT(.not.any(isnan(srcfull)))
+#ifndef BASEFLOW_TRIVIAL
     ASSERT(abs((srcfull(1) /srcfull_good(1))-1.0_WP)  < tolerance * 100.0_WP)
     ASSERT(abs((srcfull(2) /srcfull_good(2))-1.0_WP)  < tolerance * 100.0_WP)
     ASSERT(abs((srcfull(3) /srcfull_good(3))-1.0_WP)  < tolerance * 100.0_WP)
@@ -293,6 +313,7 @@ program bl_temporal_consistent_baseflow_f
     do is=1, ns
       ASSERT(abs((srcfull(5+is)/srcfull_good(5+is))-1.0_WP) < tolerance )
     end do
+#endif
 
     ! Deallocate workspace
     call largo_BL_temporal_consistent_deallocate (workspace)

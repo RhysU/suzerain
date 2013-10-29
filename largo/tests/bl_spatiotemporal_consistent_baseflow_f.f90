@@ -33,6 +33,8 @@ program bl_spatiotemporal_consistent_baseflow_f
     use, intrinsic :: iso_c_binding, only: c_associated,   &
                                            WP => c_double, &
                                            c_int
+    use, intrinsic :: iso_fortran_env, only: output_unit, error_unit
+
     implicit none
 
     integer(c_int), parameter :: neq = 7
@@ -136,6 +138,7 @@ program bl_spatiotemporal_consistent_baseflow_f
     real(WP), dimension(neq), parameter :: &
       grxDArms = grtDArms / uIw
 
+#ifndef BASEFLOW_TRIVIAL
     real(WP), dimension(neq+1), parameter :: &
       base    = (/                 &
       &         5.0_WP/ 1000.0_WP,  &
@@ -195,6 +198,13 @@ program bl_spatiotemporal_consistent_baseflow_f
       &         2.0_WP/1000000.0_WP,  &
       &         1.0_WP/1000000.0_WP   &
       /)
+#else
+    real(WP), dimension(neq), parameter ::    base = 0.0_WP &
+                                         ,  dybase = 0.0_WP &
+                                         ,  dtbase = 0.0_WP &
+                                         , srcbase = 0.0_WP &
+                                         ,  dxbase = 0.0_WP
+#endif
 
     real(WP), dimension(neq)            :: srcmean
     real(WP), dimension(neq)            :: srcrms
@@ -280,6 +290,9 @@ program bl_spatiotemporal_consistent_baseflow_f
 !    end do
 
     ! Check mean part
+    if (any(isnan(srcmean))) write (error_unit, *) "srcmean: ", srcmean
+    ASSERT(.not.any(isnan(srcmean)))
+#ifndef BASEFLOW_TRIVIAL
     ASSERT(abs((srcmean(1)/srcmean_good(1))-1.0_WP) < tolerance )
     ASSERT(abs((srcmean(2)/srcmean_good(2))-1.0_WP) < tolerance )
     ASSERT(abs((srcmean(3)/srcmean_good(3))-1.0_WP) < tolerance )
@@ -288,8 +301,12 @@ program bl_spatiotemporal_consistent_baseflow_f
     do is=1, ns
       ASSERT(abs((srcmean(5+is)/srcmean_good(5+is))-1.0_WP) < tolerance )
     end do
+#endif
 
     ! Check all part
+    if (any(isnan(srcall))) write (error_unit, *) "srcall: ", srcall
+    ASSERT(.not.any(isnan(srcall)))
+#ifndef BASEFLOW_TRIVIAL
     ASSERT(abs((srcall(1) /srcall_good(1))-1.0_WP)  < tolerance )
     ASSERT(abs((srcall(2) /srcall_good(2))-1.0_WP)  < tolerance )
     ASSERT(abs((srcall(3) /srcall_good(3))-1.0_WP)  < tolerance )
@@ -299,6 +316,7 @@ program bl_spatiotemporal_consistent_baseflow_f
       print *, srcall(is+5), srcall_good(5+is)
       ASSERT(abs((srcall(5+is)/srcall_good(5+is))-1.0_WP) < tolerance )
     end do
+#endif
 
     ! Deallocate workspace
     call largo_BL_spatiotemporal_consistent_deallocate (workspace)
@@ -331,6 +349,9 @@ program bl_spatiotemporal_consistent_baseflow_f
     call largo_BL_spatiotemporal_consistent_sEta (workspace, 0.0_WP, 1.0_WP, srcall(1))
 
     ! Check all
+    if (any(isnan(srcall))) write (error_unit, *) "srcall: ", srcall
+    ASSERT(.not.any(isnan(srcall)))
+#ifndef BASEFLOW_TRIVIAL
     ASSERT(abs((srcall(1)/srcall_good(1))-1.0_WP) < tolerance )
     ASSERT(abs((srcall(2)/srcall_good(2))-1.0_WP) < tolerance )
     ASSERT(abs((srcall(3)/srcall_good(3))-1.0_WP) < tolerance )
@@ -339,6 +360,7 @@ program bl_spatiotemporal_consistent_baseflow_f
     do is=1, ns
       ASSERT(abs((srcall(5+is)/srcall_good(5+is))-1.0_WP) < tolerance )
     end do
+#endif
 
     ! Deallocate workspace
     call largo_BL_spatiotemporal_consistent_deallocate (workspace)
