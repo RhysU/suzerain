@@ -173,7 +173,7 @@ program generic_bl_temporal_consistent_f
       /)
 
     real(WP), dimension(neq)            :: &
-      dxbase  = 0d0
+      dxbase  = 0.0_WP
 
 
     real(WP), dimension(neq)            :: srcmean

@@ -174,7 +174,7 @@ program bl_temporal_baseflow_f
       /)
 
     real(WP), dimension(neq)            :: &
-      dxbase  = 0d0
+      dxbase  = 0.0_WP
 
     real(WP), dimension(ntvar), parameter :: &
       meanTurb = (/               &
