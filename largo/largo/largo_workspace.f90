@@ -9,7 +9,7 @@ module largo_workspace
 
   implicit none ! is in effect throughout entire module
 
-  
+
   abstract interface
     subroutine allocate_rans(cp, fmodel)
       import
