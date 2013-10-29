@@ -51,9 +51,10 @@ const largo_formulation largo_formulation::temporal(
         boost::assign::list_of("temporal")
             .convert_to_container<std::vector<std::string> >());
 
+// Notice "Unimplemented placeholder" below.  Model does not exist.
 const largo_formulation largo_formulation::spatial(
         2, "bl_spatial", false,
-        "Full spatial formulation by Topalian et al.",
+        "Unimplemented placeholder for spatial formulation by Topalian et al.",
         boost::assign::list_of("spatial")
             .convert_to_container<std::vector<std::string> >());
 
