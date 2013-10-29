@@ -398,16 +398,18 @@ suzerain::reacting::driver_advance::run(int argc, char **argv)
 
     // Allocate slow growth workspace
     if (sgdef->formulation.enabled()) {
-        const int state_count   = static_cast<int>(cmods->Ns()) + 4;
-        const int Ns            = static_cast<int>(cmods->Ns()) - 1;
-        const std::string& name = sgdef->formulation.name();
-        INFO0("Allocating Largo model \"" << name
-              << "\" for state count " << state_count
-              << " with " << Ns << " species");
-        largo_allocate(&sgdef->workspace, name.c_str(), state_count, Ns,
-                       0, "dns");
+        const std::string& model = sgdef->formulation.name();
+        const int neq            = static_cast<int>(cmods->Ns()) + 4;
+        const int ns             = static_cast<int>(cmods->Ns()) - 1;
+        enum  { ntvar = 0 };
+        static const char ransmodel[] = "dns";
+        INFO0("Allocating Largo model \"" << model << "\" with neq="
+              << neq << ", ns=" << ns << ", ntvar=" << ntvar
+              << ", ransmodel=" << ransmodel);
+        largo_allocate(&sgdef->workspace, model.c_str(), neq,
+                       ns, ntvar, ransmodel);
         if (!sgdef->workspace) {
-            FATAL0("Largo could not allocate model \"" << name << '\"');
+            FATAL0("Largo could not allocate requested model");
             return EXIT_FAILURE;
         }
         if ((isnan)(sgdef->grdelta)) {

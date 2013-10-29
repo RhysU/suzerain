@@ -201,12 +201,16 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
     common_block.slow_treatment = slowgrowth::none;
     if (sg->formulation.enabled()) {
         common_block.slow_treatment = slowgrowth::largo;
-        const std::string& model_name = sg->formulation.name();
-        INFO0("Allocating Largo model \"" << model_name
-              << "\" for 5 state variables");
-        largo_allocate(&sg->workspace, model_name.c_str(), 5, 0, 0, "dns");
+        const std::string& model = sg->formulation.name();
+        enum  { neq = 5, ns = 0, ntvar = 0 };
+        static const char ransmodel[] = "dns";
+        INFO0("Allocating Largo model \"" << model << "\" with neq=" << neq
+              << ", ns=" << ns << ", ntvar=" << ntvar
+              << ", ransmodel=" << ransmodel);
+        largo_allocate(&sg->workspace, model.c_str(), neq,
+                       ns, ntvar, ransmodel);
         if (!sg->workspace) {
-            FATAL0("Largo could not allocate model \"" << model_name << '\"');
+            FATAL0("Largo could not allocate requested model");
             return EXIT_FAILURE;
         }
         if ((isnan)(sg->grdelta)) {
