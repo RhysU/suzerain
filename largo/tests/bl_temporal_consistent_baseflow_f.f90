@@ -172,7 +172,7 @@ program bl_temporal_consistent_baseflow_f
       /)
 
     real(WP), dimension(neq)            :: &
-      dxbase  = (/ 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP /)
+      dxbase  = 0d0
 
 
     real(WP), dimension(neq)            :: srcmean
