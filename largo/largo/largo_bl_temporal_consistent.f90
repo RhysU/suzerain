@@ -246,7 +246,7 @@ contains
 
   subroutine largo_BL_temporal_consistent_deallocate(cp)
 
-    type(largo_workspace_ptr), intent(out)  :: cp
+    type(largo_workspace_ptr), intent(inout)  :: cp
     type(largo_BL_temporal_consistent_workspace_type), pointer :: auxp
 
     call c_f_pointer(cp, auxp)
