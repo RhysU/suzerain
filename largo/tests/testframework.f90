@@ -80,7 +80,7 @@ contains
       write (output_unit, *) "Assertion passed at ", sourcefile, ":", line
     else if (.not. condition) then
       write (error_unit, *) "Assertion failed at ", sourcefile, ":", line
-      stop
+      stop 1
     end if
 #ifndef __INTEL_COMPILER
     flush (error_unit)

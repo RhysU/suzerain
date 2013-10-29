@@ -129,6 +129,7 @@ program bl_temporal_baseflow_f
       &       2.0_WP/100000.0_WP    &
       /)
 
+#ifndef BASEFLOW_TRIVIAL
     real(WP), dimension(neq), parameter :: &
       base    = (/                  &
       &         5.0_WP/ 1000.0_WP,  &
@@ -175,6 +176,13 @@ program bl_temporal_baseflow_f
 
     real(WP), dimension(neq)            :: &
       dxbase  = 0.0_WP
+#else
+    real(WP), dimension(neq), parameter ::    base = 0.0_WP &
+                                         ,  dybase = 0.0_WP &
+                                         ,  dtbase = 0.0_WP &
+                                         , srcbase = 0.0_WP &
+                                         ,  dxbase = 0.0_WP
+#endif
 
     real(WP), dimension(ntvar), parameter :: &
       meanTurb = (/               &

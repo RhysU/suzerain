@@ -11,6 +11,7 @@ check_PROGRAMS      = # Append below
 CLEANFILES          = # Append below
 EXTRA_DIST          = # Append below
 TESTS               = # Append below
+XFAIL_TESTS         = # Append below
 TESTS_ENVIRONMENT   = # Append below
 
 #############################################################################
@@ -22,6 +23,13 @@ TESTS              += basic
 check_PROGRAMS     += basic
 basic_SOURCES       = basic.c
 basic_LDADD         = ../largo/liblargo.la
+
+## Ensure Fortran testframework can return non-zero exit status
+TESTS            += sanity_f
+XFAIL_TESTS      += sanity_f
+check_PROGRAMS   += sanity_f
+sanity_f_SOURCES  = sanity_f.f90 testframework.f90
+sanity_f_LDADD    = ../largo/liblargof.la
 
 ## Basic Fortran API sanity checks
 TESTS           += basic_f
@@ -46,6 +54,14 @@ TESTS                          += bl_temporal_baseflow_f
 check_PROGRAMS                 += bl_temporal_baseflow_f
 bl_temporal_baseflow_f_SOURCES  = bl_temporal_baseflow_f.f90 testframework.f90
 bl_temporal_baseflow_f_LDADD    = ../largo/liblargof.la
+
+## Above case modified to provide a trivial baseflow and ensure non-NANs result
+TESTS                                  += bl_temporal_baseflow_trivial_f
+XFAIL_TESTS                            += bl_temporal_baseflow_trivial_f # FIXME
+check_PROGRAMS                         += bl_temporal_baseflow_trivial_f
+bl_temporal_baseflow_trivial_f_SOURCES  = bl_temporal_baseflow_f.f90 testframework.f90
+bl_temporal_baseflow_trivial_f_FCFLAGS  = $(AM_FCFLAGS) $(FC_DEFINE)BASEFLOW_TRIVIAL
+bl_temporal_baseflow_trivial_f_LDADD    = ../largo/liblargof.la
 
 ## Temporal tensor consistent boundary layer, fortran
 TESTS                             += bl_temporal_tconsistent_f
