@@ -25,7 +25,7 @@
 #define SUZERAIN_PERFECT_LARGO_STATE_HPP
 
 /** @file
- * Implementation of nonlinear Navier--Stokes spatial operators.
+ * Manipulation of conserved state stored as Largo expects.
  */
 
 #include <suzerain/common.hpp>
