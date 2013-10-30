@@ -87,6 +87,7 @@ nobase_pkginclude_HEADERS += iterator.hpp
 nobase_pkginclude_HEADERS += kahan.h
 nobase_pkginclude_HEADERS += l2.hpp
 nobase_pkginclude_HEADERS += largo_formulation.hpp
+nobase_pkginclude_HEADERS += largo_state.hpp
 nobase_pkginclude_HEADERS += lowstorage.hpp
 nobase_pkginclude_HEADERS += mass_operator.hpp
 nobase_pkginclude_HEADERS += math.hpp

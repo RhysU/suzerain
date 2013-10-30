@@ -31,6 +31,7 @@
 #include <suzerain/bl.h>
 #include <suzerain/error.h>
 #include <suzerain/grid_specification.hpp>
+#include <suzerain/largo_state.hpp>
 #include <suzerain/mpi_datatype.hpp>
 #include <suzerain/ndx.hpp>
 #include <suzerain/operator_tools.hpp>
@@ -40,7 +41,6 @@
 #include <suzerain/state.hpp>
 #include <suzerain/support/largo_definition.hpp>
 
-#include "largo_state.hpp"
 #include "quantities.hpp"
 #include "scenario_definition.hpp"
 

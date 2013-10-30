@@ -21,8 +21,8 @@
 //
 //--------------------------------------------------------------------------
 
-#ifndef SUZERAIN_PERFECT_LARGO_STATE_HPP
-#define SUZERAIN_PERFECT_LARGO_STATE_HPP
+#ifndef SUZERAIN_LARGO_STATE_HPP
+#define SUZERAIN_LARGO_STATE_HPP
 
 /** @file
  * Manipulation of conserved state stored as Largo expects.
@@ -32,7 +32,6 @@
 
 namespace suzerain {
 
-namespace perfect {
 
 /**
  * A Largo-related convenience class for manipulating double-valued buffers
@@ -41,6 +40,8 @@ namespace perfect {
  * computations require conserved state packed in this fashion.  Pressure
  * \f$p\f$ is wholly redundant but Largo requires it for certain slow growth
  * forcing models.
+ *
+ * @todo Extend class so it may be usable within multi-species circumstances.
  */
 union largo_state
 {
@@ -76,7 +77,7 @@ public:
     double w() const { return mz / rho; } /**< Computes \f$w = m_z/\rho \f$ */
     double E() const { return e  / rho; } /**< Computes \f$E = e  /\rho \f$ */
 
-    /** Is the state uniformly zero? */
+    /** Is the state identically zero? */
     bool trivial() const
     {
         using namespace std;
@@ -128,13 +129,11 @@ public:
      */
     rescaler rescale(double inv_Ma2) { return rescaler(this, inv_Ma2); }
 
-    /** Use this method when state needs does not go to/from Largo. */
+    /** Use this method when state does not go to/from Largo. */
     double * as_is() { return this->state; }
 
 };
 
-} // namespace perfect
-
 } // namespace suzerain
 
-#endif  /* SUZERAIN_PERFECT_LARGO_STATE_HPP */
+#endif  /* SUZERAIN_LARGO_STATE_HPP */

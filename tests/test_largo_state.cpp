@@ -24,9 +24,9 @@
 #define BOOST_TEST_MAIN
 #include <boost/test/unit_test.hpp>
 
-#include "largo_state.hpp"
+#include <suzerain/largo_state.hpp>
 
-using suzerain::perfect::largo_state;
+using suzerain::largo_state;
 
 BOOST_AUTO_TEST_CASE( size )
 {

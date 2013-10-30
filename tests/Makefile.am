@@ -549,6 +549,14 @@ test_constraint_treatment_LDADD    = ../suzerain/libsuzerain.la
 test_constraint_treatment_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
 test_constraint_treatment_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
 
+TESTS                     += test_largo_state
+EXTRA_PROGRAMS            += test_largo_state
+test_largo_state_SOURCES   = test_largo_state.cpp
+test_largo_state_CPPFLAGS  = $(AM_CPPFLAGS) -DBOOST_TEST_DYN_LINK -DBOOST_TEST_NO_LIB
+test_largo_state_LDADD     = ../suzerain/libsuzerain.la
+test_largo_state_LDADD    += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
+test_largo_state_LDADD    += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
+
 TESTS                 += test_diffwave
 EXTRA_PROGRAMS        += test_diffwave
 test_diffwave_SOURCES  = test_diffwave.cpp

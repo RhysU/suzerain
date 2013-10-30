@@ -34,6 +34,7 @@
 
 #include <suzerain/error.h>
 #include <suzerain/l2.hpp>
+#include <suzerain/largo_state.hpp>
 #include <suzerain/lowstorage.hpp>
 #include <suzerain/math.hpp>
 #include <suzerain/mpi_datatype.hpp>
@@ -50,7 +51,6 @@
 #include <suzerain/utility.hpp>
 
 #include "common_block.hpp"
-#include "largo_state.hpp"
 #include "linearize_type.hpp"
 #include "slowgrowth_type.hpp"
 
