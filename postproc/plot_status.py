@@ -19,9 +19,9 @@ from matplotlib import pyplot
 
 def getfilekind(infile):
 
-    if infile.find('rms.dat')!=-1:
+    if infile.find('rms.dat')!=-1 or infile.find('rms.fluct.dat')!=-1:
        kind = 'rms_'
-    elif infile.find('L2.dat')!=-1:
+    elif infile.find('L2.dat')!=-1 or infile.find('L2.mean.dat')!=-1:
        kind = 'L2_'
     elif infile.find('bulk.dat')!=-1:
        kind = 'bulk_'
