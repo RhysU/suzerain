@@ -29,7 +29,7 @@
  */
 
 #include <suzerain/common.hpp>
-#include <suzerain/largo_formulation.hpp>
+#include <suzerain/largo_specification.hpp>
 #include <suzerain/support/definition_base.hpp>
 #include <suzerain/support/esio_fwd.hpp>
 #include <suzerain/support/loadable.hpp>
@@ -47,9 +47,10 @@ namespace support {
 class largo_definition
     : public virtual definition_base
     , public virtual loadable
-    , public virtual overridable<largo_definition>
-    , public virtual populatable<largo_definition>
+    , public virtual overridable<largo_definition> // Not largo_specification!
+    , public virtual populatable<largo_definition> // Not largo_specification!
     , public virtual savable
+    , public largo_specification
 {
 public:
 
@@ -81,23 +82,14 @@ public:
     /** @copydoc definition_base::options_description() */
     virtual boost::program_options::options_description options_description();
 
-    /** Which \ref largo_formulation is in use? */
-    largo_formulation formulation;
-
-    /** Growth rate of reference thickness \f$\Delta\f$ */
-    real_t grdelta;
-
-    /** Pointer to largo workspace */
-    void * workspace;
-
-    /** Get baseflow field and derivatives from coefficients*/
+    /** Get baseflow field and derivatives from coefficients */
     void get_baseflow(
          const real_t    y,
          real_t *     base,
          real_t *   dybase,
          real_t *   dxbase) const;
 
-    /** Get baseflow pressure and derivatives from coefficients*/
+    /** Get baseflow pressure and derivatives from coefficients */
     void get_baseflow_pressure(
          const real_t    y,
          real_t &    Pbase,
@@ -105,13 +97,14 @@ public:
          real_t &  dxPbase) const;
 
 private:
-    /** Baseflow coefficients for the field*/
+
+    /** Baseflow coefficients for the field */
     MatrixXXr x;
 
     /** Baseflow coefficient base */
     std::string x_base;
 
-    /** Baseflow coefficients for the field derivative*/
+    /** Baseflow coefficients for the field derivative */
     MatrixXXr dx;
 
     /** Baseflow derivative coefficient base */

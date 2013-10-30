@@ -39,6 +39,7 @@
 #include <suzerain/common.hpp>
 #include <suzerain/error.h>
 #include <suzerain/exprparse.hpp>
+#include <suzerain/largo_formulation.hpp>
 #include <suzerain/support/logging.hpp>
 #include <suzerain/validation.hpp>
 
@@ -59,12 +60,13 @@ static void parse_formulation(const std::string& s, largo_formulation *t)
 }
 
 largo_definition::largo_definition()
-    : formulation(largo_formulation::disable)
-    , grdelta    (std::numeric_limits<real_t>::quiet_NaN())
+    : largo_specification()
+    , x()
+    , x_base()
+    , dx()
+    , dx_base()
 {
-    (this->workspace) = NULL;
-    (this->x).resize(0,0);
-    (this->dx).resize(0,0);
+   // NOP
 }
 
 // Strings used in options_description and populate/override/save/load.
