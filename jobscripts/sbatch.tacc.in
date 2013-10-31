@@ -2,6 +2,9 @@
 #############################################################################
 # Template for generated, generic job submission script in SLURM
 # Production-ready jobscripts are installed in $prefix/jobscripts
+#
+# https://www.tacc.utexas.edu/user-services/user-guides/stampede-user-guide
+# http://www.tacc.utexas.edu/user-services/training/course-materials/
 #############################################################################
 #
 #SBATCH -J suzerain           # Job name
