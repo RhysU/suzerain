@@ -2,7 +2,7 @@
 dist_check_SCRIPTS  = # Append below
 TESTS               = # Append below
 
-JOBSCRIPTS  = qsub.lonestar qsub.ranger
+JOBSCRIPTS  = qsub.lonestar qsub.ranger sbatch.cab sbatch.stampede
 UTILITIES   = qlast
 UTILITIES  += channel.perfect  mms_case.perfect  bl.perfect
 UTILITIES  += channel.reacting mms_case.reacting
@@ -10,7 +10,7 @@ UTILITIES  += channel.reacting mms_case.reacting
 # Installation, distribution, and clean up details
 jobscriptsdir      = $(pkgdatadir)/jobscripts
 jobscripts_SCRIPTS = $(JOBSCRIPTS) $(UTILITIES)
-EXTRA_DIST         = qsub.tacc.in
+EXTRA_DIST         = qsub.tacc.in sbatch.tacc.in sbatch.llnl.in
 EXTRA_DIST        += channel.perfect.in  mms_case.perfect.in  bl.perfect.in
 EXTRA_DIST        += channel.reacting.in mms_case.reacting.in
 CLEANFILES         = $(JOBSCRIPTS)
@@ -33,6 +33,14 @@ qsub.lonestar : qsub.tacc.in Makefile
 	chmod +x "$@"
 
 qsub.ranger : qsub.tacc.in Makefile
+	$(do_subst) "$<" | $(SED) -e 's,[@]corespernode[@],16,g' > "$@"
+	chmod +x "$@"
+
+sbatch.stampede : sbatch.tacc.in Makefile
+	$(do_subst) "$<" | $(SED) -e 's,[@]corespernode[@],16,g' > "$@"
+	chmod +x "$@"
+
+sbatch.cab : sbatch.llnl.in Makefile
 	$(do_subst) "$<" | $(SED) -e 's,[@]corespernode[@],16,g' > "$@"
 	chmod +x "$@"
 
