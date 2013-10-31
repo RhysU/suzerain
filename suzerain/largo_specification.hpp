@@ -31,6 +31,9 @@
 #include <suzerain/common.hpp>
 #include <suzerain/largo_formulation.hpp>
 
+// Forward declarations
+struct largo_workspace;
+
 namespace suzerain {
 
 /**
@@ -44,7 +47,7 @@ public:
     explicit largo_specification(
             largo_formulation formulation = largo_formulation::disable,
             real_t grdelta                = std::numeric_limits<real_t>::quiet_NaN(),
-            void *workspace               = NULL);
+            largo_workspace * workspace   = NULL);
 
     /** Which \ref largo_formulation is in use? */
     largo_formulation formulation;
@@ -53,7 +56,7 @@ public:
     real_t grdelta;
 
     /** Pointer to largo workspace */
-    void * workspace;
+    largo_workspace * workspace;
 
     /**
      * Compute baseflow state and its spatial derivatives at some position.

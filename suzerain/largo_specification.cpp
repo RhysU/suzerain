@@ -36,7 +36,7 @@ namespace suzerain {
 largo_specification::largo_specification(
          largo_formulation formulation,
          real_t grdelta,
-         void *workspace)
+         largo_workspace *workspace)
     : formulation(formulation)
     , grdelta(grdelta)
     , workspace(workspace)

@@ -70,7 +70,7 @@ FCT_BGN()
           const int neq = 7;
           const int ns  = 2;
 
-          void * generic_workspace;
+          largo_workspace * work;
           double y        =   1.0/ 10.0;
           double grtDelta =   5.0/100.0;
           double uIw      = 460.0      ;
@@ -268,43 +268,43 @@ FCT_BGN()
 
           const char model[] = "bl_spatiotemporal_consistent";
 
-          largo_allocate (&generic_workspace, model, neq, ns, 0, "dns");
+          largo_allocate (&work, model, neq, ns, 0, "dns");
 
           // Init growth rates
-          largo_init     (generic_workspace, grxDelta, grxDA, grxDArms);
+          largo_init     (work, grxDelta, grxDA, grxDArms);
 
           // Init wall baseflow
-          largo_init_wall_baseflow(generic_workspace   \ 
+          largo_init_wall_baseflow(work   \ 
             ,wall_base ,wall_ddy_base ,wall_ddt_base \
                        ,wall_ddx_base ,wall_src_base \
             );
 
           // Compute prestep values;
-          largo_prestep_baseflow  (generic_workspace,   base,  dybase,
+          largo_prestep_baseflow  (work,   base,  dybase,
                                               dtbase, dxbase, srcbase);
-          largo_prestep_seta_innery  (generic_workspace, y,
+          largo_prestep_seta_innery  (work, y,
                                              mean,  rms,  mean_rqq,
                                             dmean, drms, dmean_rqq);
-          largo_prestep_seta_innerxz (generic_workspace, field);
+          largo_prestep_seta_innerxz (work, field);
 
           // Compute mean sources;
-          largo_continuity_setamean (generic_workspace, 0.0, 1.0, &srcmean[1-1]);
-          largo_xmomentum_setamean  (generic_workspace, 0.0, 1.0, &srcmean[2-1]);
-          largo_ymomentum_setamean  (generic_workspace, 0.0, 1.0, &srcmean[3-1]);
-          largo_zmomentum_setamean  (generic_workspace, 0.0, 1.0, &srcmean[4-1]);
-          largo_energy_setamean     (generic_workspace, 0.0, 1.0, &srcmean[5-1]);
-          largo_species_setamean    (generic_workspace, 0.0, 1.0, &srcmean[5-0]);
+          largo_continuity_setamean (work, 0.0, 1.0, &srcmean[1-1]);
+          largo_xmomentum_setamean  (work, 0.0, 1.0, &srcmean[2-1]);
+          largo_ymomentum_setamean  (work, 0.0, 1.0, &srcmean[3-1]);
+          largo_zmomentum_setamean  (work, 0.0, 1.0, &srcmean[4-1]);
+          largo_energy_setamean     (work, 0.0, 1.0, &srcmean[5-1]);
+          largo_species_setamean    (work, 0.0, 1.0, &srcmean[5-0]);
 
           // Compute full sources;
-          largo_continuity_seta     (generic_workspace, 0.0, 1.0, &srcall [1-1]);
-          largo_xmomentum_seta      (generic_workspace, 0.0, 1.0, &srcall [2-1]);
-          largo_ymomentum_seta      (generic_workspace, 0.0, 1.0, &srcall [3-1]);
-          largo_zmomentum_seta      (generic_workspace, 0.0, 1.0, &srcall [4-1]);
-          largo_energy_seta         (generic_workspace, 0.0, 1.0, &srcall [5-1]);
-          largo_species_seta        (generic_workspace, 0.0, 1.0, &srcall [5-0]);
+          largo_continuity_seta     (work, 0.0, 1.0, &srcall [1-1]);
+          largo_xmomentum_seta      (work, 0.0, 1.0, &srcall [2-1]);
+          largo_ymomentum_seta      (work, 0.0, 1.0, &srcall [3-1]);
+          largo_zmomentum_seta      (work, 0.0, 1.0, &srcall [4-1]);
+          largo_energy_seta         (work, 0.0, 1.0, &srcall [5-1]);
+          largo_species_seta        (work, 0.0, 1.0, &srcall [5-0]);
 
           // Deallocate workspace
-          largo_deallocate (&generic_workspace);
+          largo_deallocate (&work);
 
           // Check mean part
           // Tolerance for energy source adjusted manually
@@ -333,26 +333,26 @@ FCT_BGN()
 
           // Recompute sources using wrapper methods
           // Allocate generic workspace;
-          largo_allocate (&generic_workspace, model, neq, ns, 0, "dns");
+          largo_allocate (&work, model, neq, ns, 0, "dns");
 
           // Init wall baseflow
-          largo_init_wall_baseflow(generic_workspace \ 
+          largo_init_wall_baseflow(work \ 
             ,wall_base ,wall_ddy_base ,wall_ddt_base \
                        ,wall_ddx_base ,wall_src_base \
             );
 
           // Init growth rates
-          largo_init     (generic_workspace, grxDelta, grxDA, grxDArms);
+          largo_init     (work, grxDelta, grxDA, grxDArms);
 
           // Compute prestep values;
-          largo_prestep_baseflow  (generic_workspace,   base,  dybase,
+          largo_prestep_baseflow  (work,   base,  dybase,
                                               dtbase, dxbase, srcbase);
-          largo_prestep_seta (generic_workspace, y, field,
+          largo_prestep_seta (work, y, field,
                                            mean,   rms,  mean_rqq,
                                           dmean,  drms, dmean_rqq);
 
           // Compute sources using wrapper method;
-          largo_seta (generic_workspace, 0.0, 1.0, &srcall[1-1]);
+          largo_seta (work, 0.0, 1.0, &srcall[1-1]);
 
           // Check sources
           // Tolerance for energy source adjusted manually
@@ -367,7 +367,7 @@ FCT_BGN()
           }
 
           // Deallocate workspace
-          largo_deallocate (&generic_workspace);
+          largo_deallocate (&work);
 
         }
         FCT_TEST_END();

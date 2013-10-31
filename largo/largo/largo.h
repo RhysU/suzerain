@@ -32,90 +32,94 @@
 extern "C" {
 #endif
 
-void  largo_allocate (void ** generic_workspace,
+/* Forward declare opaque generic Largo model workspace */
+struct largo_workspace;
+typedef struct largo_workspace largo_workspace;
+
+void largo_allocate ( largo_workspace** work,
                       const char * model,
                       int    neq,
                       int    ns,
                       int    ntvar,
-                      const char * ransmodel);
+                      const char * ransmodel );
 
-void  largo_init ( void * generic_workspace,
-                   double grDelta,
-                   double * grDA,
-                   double * grDArms);
+void largo_init ( largo_workspace* work,
+                  double grDelta,
+                  double* grDA,
+                  double* grDArms );
 
-void  largo_init_wall_baseflow ( void * generic_workspace,
-                                 double *     wall,
-                                 double * ddy_wall,
-                                 double * ddt_wall,
-                                 double * ddx_wall,
-                                 double * src_wall);
+void largo_init_wall_baseflow ( largo_workspace* work,
+                                double*      wall,
+                                double* ddy_wall,
+                                double* ddt_wall,
+                                double* ddx_wall,
+                                double* src_wall );
 
-void  largo_prestep_baseflow ( void * generic_workspace,
-                               double *     base,
-                               double * ddy_base,
-                               double * ddt_base,
-                               double * ddx_base,
-                               double * src_base);
+void largo_prestep_baseflow ( largo_workspace* work,
+                              double*      base,
+                              double* ddy_base,
+                              double* ddt_base,
+                              double* ddx_base,
+                              double* src_base );
 
-void  largo_prestep_setamean ( void * generic_workspace,
-                               double y,
-                               double * mean,
-                               double * ddy_mean);
-
-void  largo_prestep_setarms ( void * generic_workspace,
+void largo_prestep_setamean ( largo_workspace* work,
                               double y,
-                              double * rms,
-                              double * ddy_rms);
+                              double* mean,
+                              double* ddy_mean );
 
-void  largo_prestep_seta_innerxz( void * generic_workspace,
-                                  double * qflow);
+void largo_prestep_setarms ( largo_workspace* work,
+                             double y,
+                             double* rms,
+                             double* ddy_rms );
 
-void  largo_prestep_seta_innery ( void * generic_workspace,
-                                  double y,
-                                  double * mean,
-                                  double * rms,
-                                  double * mean_rqq,
-                                  double * ddy_mean,
-                                  double * ddy_rms,
-                                  double * ddy_mean_rqq);
+void largo_prestep_seta_innerxz ( largo_workspace* work,
+                                  double* qflow );
 
-void  largo_prestep_seta ( void * generic_workspace,
-                           double y,
-                           double * qflow,
-                           double * mean,
-                           double * rms,
-                           double * mean_rqq,
-                           double * ddy_mean,
-                           double * ddy_rms,
-                           double * ddy_mean_rqq);
+void largo_prestep_seta_innery ( largo_workspace* work,
+                                 double y,
+                                 double* mean,
+                                 double* rms,
+                                 double* mean_rqq,
+                                 double* ddy_mean,
+                                 double* ddy_rms,
+                                 double* ddy_mean_rqq );
+
+void largo_prestep_seta ( largo_workspace* work,
+                          double y,
+                          double* qflow,
+                          double* mean,
+                          double* rms,
+                          double* mean_rqq,
+                          double* ddy_mean,
+                          double* ddy_rms,
+                          double* ddy_mean_rqq );
 
 
-void  largo_continuity_setamean (void * generic_workspace, double A, double B, double * src);
-void  largo_xmomentum_setamean  (void * generic_workspace, double A, double B, double * src);
-void  largo_ymomentum_setamean  (void * generic_workspace, double A, double B, double * src);
-void  largo_zmomentum_setamean  (void * generic_workspace, double A, double B, double * src);
-void  largo_energy_setamean     (void * generic_workspace, double A, double B, double * src);
-void  largo_species_setamean    (void * generic_workspace, double A, double B, double * src);
-void  largo_ispecies_setamean   (void * generic_workspace, double A, double B, double * src, int is);
-void  largo_continuity_setarms  (void * generic_workspace, double A, double B, double * src);
-void  largo_xmomentum_setarms   (void * generic_workspace, double A, double B, double * src);
-void  largo_ymomentum_setarms   (void * generic_workspace, double A, double B, double * src);
-void  largo_zmomentum_setarms   (void * generic_workspace, double A, double B, double * src);
-void  largo_energy_setarms      (void * generic_workspace, double A, double B, double * src);
-void  largo_species_setarms     (void * generic_workspace, double A, double B, double * src);
-void  largo_ispecies_setarms    (void * generic_workspace, double A, double B, double * src, int is);
-void  largo_continuity_seta     (void * generic_workspace, double A, double B, double * src);
-void  largo_xmomentum_seta      (void * generic_workspace, double A, double B, double * src);
-void  largo_ymomentum_seta      (void * generic_workspace, double A, double B, double * src);
-void  largo_zmomentum_seta      (void * generic_workspace, double A, double B, double * src);
-void  largo_energy_seta         (void * generic_workspace, double A, double B, double * src);
-void  largo_species_seta        (void * generic_workspace, double A, double B, double * src);
+void largo_continuity_setamean ( largo_workspace* work, double A, double B, double* src );
+void largo_xmomentum_setamean  ( largo_workspace* work, double A, double B, double* src );
+void largo_ymomentum_setamean  ( largo_workspace* work, double A, double B, double* src );
+void largo_zmomentum_setamean  ( largo_workspace* work, double A, double B, double* src );
+void largo_energy_setamean     ( largo_workspace* work, double A, double B, double* src );
+void largo_species_setamean    ( largo_workspace* work, double A, double B, double* src );
+void largo_ispecies_setamean   ( largo_workspace* work, double A, double B, double* src, int is );
+void largo_continuity_setarms  ( largo_workspace* work, double A, double B, double* src );
+void largo_xmomentum_setarms   ( largo_workspace* work, double A, double B, double* src );
+void largo_ymomentum_setarms   ( largo_workspace* work, double A, double B, double* src );
+void largo_zmomentum_setarms   ( largo_workspace* work, double A, double B, double* src );
+void largo_energy_setarms      ( largo_workspace* work, double A, double B, double* src );
+void largo_species_setarms     ( largo_workspace* work, double A, double B, double* src );
+void largo_ispecies_setarms    ( largo_workspace* work, double A, double B, double* src, int is );
+void largo_continuity_seta     ( largo_workspace* work, double A, double B, double* src );
+void largo_xmomentum_seta      ( largo_workspace* work, double A, double B, double* src );
+void largo_ymomentum_seta      ( largo_workspace* work, double A, double B, double* src );
+void largo_zmomentum_seta      ( largo_workspace* work, double A, double B, double* src );
+void largo_energy_seta         ( largo_workspace* work, double A, double B, double* src );
+void largo_species_seta        ( largo_workspace* work, double A, double B, double* src );
 
-void  largo_setamean            (void * generic_workspace, double A, double B, double * src);
-void  largo_seta                (void * generic_workspace, double A, double B, double * src);
+void largo_setamean            ( largo_workspace* work, double A, double B, double* src );
+void largo_seta                ( largo_workspace* work, double A, double B, double* src );
 
-void  largo_deallocate          (void ** generic_workspace);
+void largo_deallocate          ( largo_workspace** work);
 
 #ifdef __cplusplus
 } /* extern "C" */

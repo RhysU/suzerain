@@ -50,16 +50,16 @@ FCT_BGN()
     {
         // Produce non-NULL address
         char dummy = 'c';
-        void * generic_workspace = &dummy;
-        fct_chk(generic_workspace != NULL);
+        largo_workspace * work = (void *) &dummy;
+        fct_chk(work != NULL);
 
         // Allocate workspace with unknown model name produces NULL pointer
-        largo_allocate (&generic_workspace, "unknown_model", 7, 2, 0, "dns");
-        fct_chk(generic_workspace == NULL);
+        largo_allocate (&work, "unknown_model", 7, 2, 0, "dns");
+        fct_chk(work == NULL);
 
         // Deallocation of the NULL pointer is okay
-        largo_deallocate (&generic_workspace);
-        fct_chk(generic_workspace == NULL);
+        largo_deallocate (&work);
+        fct_chk(work == NULL);
     }
     FCT_QTEST_END();
 }
