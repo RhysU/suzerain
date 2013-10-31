@@ -37,10 +37,8 @@ namespace suzerain {
 
 // Forward declarations
 class grid_specification;
+class largo_specification;
 class pencil_grid;
-
-// Forward declarations
-namespace support { class largo_definition; }
 
 namespace perfect {
 
@@ -68,7 +66,7 @@ public:
             const bsplineop &cop,
             bspline &b,
             operator_common_block &common,
-            support::largo_definition& sg,
+            largo_specification& sg,
             const shared_ptr<const manufactured_solution>& msoln);
 
     virtual std::vector<real_t> apply_operator(
@@ -86,7 +84,7 @@ protected:
     operator_common_block &common;
 
     /** Houses data around slow growth forcing computed via Largo */
-    support::largo_definition& sg;
+    largo_specification& sg;
 
     /** Holds optional manufactured solution forcing details */
     const shared_ptr<const manufactured_solution> msoln;

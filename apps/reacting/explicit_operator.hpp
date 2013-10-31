@@ -36,7 +36,6 @@
 #include <suzerain/operator_base.hpp>
 #include <suzerain/pencil_grid.hpp>
 #include <suzerain/state_fwd.hpp>
-#include <suzerain/support/largo_definition.hpp>
 
 #include "reacting.hpp"
 #include "manufactured_solution.hpp"
@@ -44,10 +43,12 @@
 #include "antioch_constitutive.hpp"
 #include "filter_definition.hpp"
 
-
 #pragma warning(disable:383 1572)
 
 namespace suzerain {
+
+// Forward declarations
+class largo_specification;
 
 namespace reacting {
 
@@ -70,7 +71,7 @@ public:
             bspline &b,
             operator_common_block &common,
             const filter_definition &fsdef,
-            support::largo_definition &sgdef,
+            const largo_specification &sgdef,
             const shared_ptr<const manufactured_solution>& msoln);
 
     virtual std::vector<real_t> apply_operator(
@@ -94,7 +95,7 @@ protected:
     const filter_definition &fsdef;
 
     /** The slow growth definition */
-    support::largo_definition &sgdef;
+    const largo_specification &sgdef;
 
 private:
 

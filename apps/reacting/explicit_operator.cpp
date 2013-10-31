@@ -28,6 +28,7 @@
 #include "explicit_operator.hpp"
 
 #include <suzerain/common.hpp>
+#include <suzerain/largo_specification.hpp>
 #include <suzerain/ndx.hpp>
 #include <suzerain/state.hpp>
 
@@ -65,7 +66,7 @@ explicit_nonlinear_operator::explicit_nonlinear_operator(
         bspline &b,
         operator_common_block &common,
         const filter_definition &fsdef,
-        support::largo_definition &sgdef,
+        const largo_specification &sgdef,
         const shared_ptr<const manufactured_solution>& msoln)
     : operator_base(grid, dgrid, cop, b)
     , cmods(cmods)

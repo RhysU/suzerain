@@ -29,10 +29,10 @@
 
 #include <suzerain/common.hpp>
 #include <suzerain/grid_specification.hpp>
+#include <suzerain/largo_specification.hpp>
 #include <suzerain/ndx.hpp>
 #include <suzerain/pencil_grid.hpp>
 #include <suzerain/state.hpp>
-#include <suzerain/support/largo_definition.hpp>
 
 #include "common_block.hpp"
 #include "manufactured_solution.hpp"
@@ -52,7 +52,7 @@ nonlinear_operator::nonlinear_operator(
         const bsplineop &cop,
         bspline &b,
         operator_common_block &common,
-        support::largo_definition& sg,
+        largo_specification& sg,
         const shared_ptr<const manufactured_solution>& msoln)
     : operator_base(grid, dgrid, cop, b)
     , scenario(scenario)

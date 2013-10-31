@@ -43,14 +43,8 @@ namespace suzerain {
 
 // Forward declarations
 class grid_specification;
+class largo_specification;
 class pencil_grid;
-
-namespace support {
-
-// Forward declarations
-class largo_definition;
-
-}
 
 namespace perfect {
 
@@ -218,7 +212,7 @@ layers sample_layers(
 void summarize_boundary_layer_nature(
         const layers &lay,
         const scenario_definition &scenario,
-        const shared_ptr<support::largo_definition> &sg,
+        const shared_ptr<largo_specification> &sg,
         bspline &b,
         suzerain_bl_local       &wall,
         suzerain_bl_viscous     &viscous,

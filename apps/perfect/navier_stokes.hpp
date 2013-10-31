@@ -34,6 +34,7 @@
 
 #include <suzerain/error.h>
 #include <suzerain/l2.hpp>
+#include <suzerain/largo_specification.hpp>
 #include <suzerain/largo_state.hpp>
 #include <suzerain/lowstorage.hpp>
 #include <suzerain/math.hpp>
@@ -45,7 +46,6 @@
 #include <suzerain/physical_view.hpp>
 #include <suzerain/rholut.hpp>
 #include <suzerain/state.hpp>
-#include <suzerain/support/largo_definition.hpp>
 #include <suzerain/support/support.hpp>
 #include <suzerain/timers.h>
 #include <suzerain/utility.hpp>
@@ -134,7 +134,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             const real_t Re,
             const operator_base &o,
             operator_common_block &common,
-            support::largo_definition& sg,
+            const largo_specification& sg,
             const shared_ptr<const ManufacturedSolution>& msoln,
             const real_t time,
             contiguous_state<4,complex_t> &swave,

@@ -31,6 +31,7 @@
 #include <suzerain/bl.h>
 #include <suzerain/error.h>
 #include <suzerain/grid_specification.hpp>
+#include <suzerain/largo_specification.hpp>
 #include <suzerain/largo_state.hpp>
 #include <suzerain/mpi_datatype.hpp>
 #include <suzerain/ndx.hpp>
@@ -39,7 +40,6 @@
 #include <suzerain/physical_view.hpp>
 #include <suzerain/rholut.hpp>
 #include <suzerain/state.hpp>
-#include <suzerain/support/largo_definition.hpp>
 
 #include "quantities.hpp"
 #include "scenario_definition.hpp"
@@ -250,7 +250,7 @@ layers sample_layers(
 void summarize_boundary_layer_nature(
         const layers &lay,
         const scenario_definition &scenario,
-        const shared_ptr<support::largo_definition> &sg,
+        const shared_ptr<largo_specification> &sg,
         bspline &b,
         suzerain_bl_local       &wall,
         suzerain_bl_viscous     &viscous,

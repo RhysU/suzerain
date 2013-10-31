@@ -33,13 +33,15 @@
 #include <suzerain/operator_base.hpp>
 #include <suzerain/reacting_imexop.h>
 #include <suzerain/state_fwd.hpp>
-#include <suzerain/support/largo_definition.hpp>
 #include <suzerain/timers.h>
 
 #include "reacting.hpp"
 #include "filter_definition.hpp"
 
 namespace suzerain {
+
+// Forward declarations
+class largo_specification;
 
 namespace reacting {
 
@@ -508,7 +510,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             const operator_base &o,
             operator_common_block &common,
             const filter_definition &fsdef,
-            support::largo_definition &sgdef,
+            const largo_specification &sgdef,
             const shared_ptr<const ManufacturedSolution>& msoln,
             const ConstitutiveModels& cmods,
             const real_t time,
