@@ -124,7 +124,7 @@ HEADER
 
 # Execute the command, passing along any signals, and wait for completion
 cache_binary "$PWD" "$BINARY"
-/usr/bin/time -v ibrun tacc_affinity $CMD &
+/usr/bin/time -v srun $CMD &
 CMDPID=$!
 for signal in ${SIGNALS=HUP INT TERM USR1 USR2}; do
     trap "kill -s $signal $CMDPID" $signal
