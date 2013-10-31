@@ -12,7 +12,7 @@ if [ $? -ne 0 ]; then exit 1; fi
 eval set -- "$ARGS"
 
 # Process incoming parameters versus defaults
-k=8
+k=6
 htdelta=-3
 alpha=
 beta=
@@ -23,7 +23,7 @@ Ma=1.5
 Pr=0.7
 Re_x=3000
 largo_formulation=temporal
-largo_grdelta=1e-3
+largo_grdelta=1e-1
 while true;
 do
     case "$1" in
@@ -84,8 +84,8 @@ mkdir -v $dir
 cd $dir
 
 # Table of incremental cases to run towards getting steady state
-Ny=(   64    96)
-dt=(15000 15000)
+Ny=(36 48 64)
+dt=(30 10 10)
 
 # Generate an initial condition
 "$LAMINAR_INITIAL" t0.h5                                                    \
