@@ -5,6 +5,8 @@
 #
 # using: 
 # https://computing.llnl.gov/linux/slurm/quickstart.html
+# https://computing.llnl.gov/tutorials/lc_resources/
+# https://computing.llnl.gov/?set=resources&page=OCF_resources#cab
 #############################################################################
 #
 #SBATCH -J suzerain           # Job name
