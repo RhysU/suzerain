@@ -303,11 +303,14 @@ public:
      * @copybrief suzerain_bspline_integration_coefficients
      * @see       suzerain_bspline_integration_coefficients
      */
-    int integration_coefficients(const std::size_t nderiv,
-                                 real_t * coeffs)
+    int integration_coefficients(
+            const std::size_t nderiv,
+            real_t * coeffs,
+            const real_t lo = -std::numeric_limits<real_t>::max(),
+            const real_t hi =  std::numeric_limits<real_t>::max())
     {
         return suzerain_bspline_integration_coefficients(
-                nderiv, coeffs, 1, db_, bw, dbw);
+                nderiv, coeffs, 1, lo, hi, db_, bw, dbw);
     }
 
     /**
@@ -317,8 +320,11 @@ public:
     template< typename Complex >
     typename boost::enable_if<
         suzerain::complex::traits::is_complex_t<Complex>, int
-    >::type integration_coefficients(const std::size_t nderiv,
-                                     Complex *coeffs)
+    >::type integration_coefficients(
+            const std::size_t nderiv,
+            Complex *coeffs,
+            const real_t lo = -std::numeric_limits<real_t>::max(),
+            const real_t hi =  std::numeric_limits<real_t>::max())
     {
         // Zero real and imaginary components
         for (std::size_t i = 0; i < bw->n; ++i) {
@@ -328,7 +334,7 @@ public:
         // Populate the real components
         return suzerain_bspline_integration_coefficients(
                 nderiv, reinterpret_cast<real_t *>(coeffs),
-                sizeof(complex_t)/sizeof(real_t), db_, bw, dbw);
+                sizeof(complex_t)/sizeof(real_t), lo, hi, db_, bw, dbw);
     }
 
     /**

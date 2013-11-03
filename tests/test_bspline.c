@@ -125,7 +125,8 @@ static void test_integration_coefficients()
 
         gsl_vector_set_all(coeffs, -555.0);
         gsl_test(suzerain_bspline_integration_coefficients(
-                0 , gsl_vector_ptr(coeffs,0), inc, scratch, w, dw),
+                0 , gsl_vector_ptr(coeffs,0), inc,
+                -DBL_MAX, DBL_MAX, scratch, w, dw),
                 "integration_coefficients 0 linear");
         for (size_t i = 0; i < w->n; ++i) {
             gsl_test_rel(gsl_vector_get(coeffs, 2*i), e0[2*i],
@@ -137,7 +138,8 @@ static void test_integration_coefficients()
 
         gsl_vector_set_all(coeffs, -555.0);
         gsl_test(suzerain_bspline_integration_coefficients(
-                1 , gsl_vector_ptr(coeffs,0), inc, scratch, w, dw),
+                1 , gsl_vector_ptr(coeffs,0), inc,
+                -DBL_MAX, DBL_MAX, scratch, w, dw),
                 "integration_coefficients 1 linear");
         for (size_t i = 0; i < w->n; ++i) {
             gsl_test_rel(gsl_vector_get(coeffs, 2*i), e1[2*i],
@@ -162,7 +164,8 @@ static void test_integration_coefficients()
 
         gsl_vector_set_all(coeffs, -555.0);
         gsl_test(suzerain_bspline_integration_coefficients(
-                0 , gsl_vector_ptr(coeffs,0), inc, scratch, w, dw),
+                0 , gsl_vector_ptr(coeffs,0), inc,
+                -DBL_MAX, DBL_MAX, scratch, w, dw),
                 "integration_coefficients 0 quadratic");
         for (size_t i = 0; i < w->n; ++i) {
             gsl_test_rel(gsl_vector_get(coeffs, i), e0[i],
@@ -172,7 +175,8 @@ static void test_integration_coefficients()
 
         gsl_vector_set_all(coeffs, -555.0);
         gsl_test(suzerain_bspline_integration_coefficients(
-                1 , gsl_vector_ptr(coeffs,0), inc, scratch, w, dw),
+                1 , gsl_vector_ptr(coeffs,0), inc,
+                -DBL_MAX, DBL_MAX, scratch, w, dw),
                 "integration_coefficients 1 quadratic");
         for (size_t i = 0; i < w->n; ++i) {
             gsl_test_rel(gsl_vector_get(coeffs, i), e1[i],
@@ -182,7 +186,8 @@ static void test_integration_coefficients()
 
         gsl_vector_set_all(coeffs, -555.0);
         gsl_test(suzerain_bspline_integration_coefficients(
-                2 , gsl_vector_ptr(coeffs,0), inc, scratch, w, dw),
+                2 , gsl_vector_ptr(coeffs,0), inc,
+                -DBL_MAX, DBL_MAX, scratch, w, dw),
                 "integration_coefficients 2 quadratic");
         for (size_t i = 0; i < w->n; ++i) {
             gsl_test_rel(gsl_vector_get(coeffs, i), e2[i],
@@ -207,7 +212,8 @@ static void test_integration_coefficients()
 
         gsl_vector_set_all(coeffs, -555.0);
         gsl_test(suzerain_bspline_integration_coefficients(
-                0 , gsl_vector_ptr(coeffs,0), inc, scratch, w, dw),
+                0 , gsl_vector_ptr(coeffs,0), inc,
+                -DBL_MAX, DBL_MAX, scratch, w, dw),
                 "integration_coefficients 0 cubic");
         for (size_t i = 0; i < w->n; ++i) {
             gsl_test_rel(gsl_vector_get(coeffs, i), e0[i],
@@ -217,7 +223,8 @@ static void test_integration_coefficients()
 
         gsl_vector_set_all(coeffs, -555.0);
         gsl_test(suzerain_bspline_integration_coefficients(
-                1 , gsl_vector_ptr(coeffs,0), inc, scratch, w, dw),
+                1 , gsl_vector_ptr(coeffs,0), inc,
+                -DBL_MAX, DBL_MAX, scratch, w, dw),
                 "integration_coefficients 1 cubic");
         for (size_t i = 0; i < w->n; ++i) {
             gsl_test_rel(gsl_vector_get(coeffs, i), e1[i],
@@ -227,7 +234,8 @@ static void test_integration_coefficients()
 
         gsl_vector_set_all(coeffs, -555.0);
         gsl_test(suzerain_bspline_integration_coefficients(
-                2 , gsl_vector_ptr(coeffs,0), inc, scratch, w, dw),
+                2 , gsl_vector_ptr(coeffs,0), inc,
+                -DBL_MAX, DBL_MAX, scratch, w, dw),
                 "integration_coefficients 2 cubic");
         for (size_t i = 0; i < w->n; ++i) {
             gsl_test_rel(gsl_vector_get(coeffs, i), e2[i],
@@ -237,7 +245,8 @@ static void test_integration_coefficients()
 
         gsl_vector_set_all(coeffs, -555.0);
         gsl_test(suzerain_bspline_integration_coefficients(
-                3 , gsl_vector_ptr(coeffs,0), inc, scratch, w, dw),
+                3 , gsl_vector_ptr(coeffs,0), inc,
+                -DBL_MAX, DBL_MAX, scratch, w, dw),
                 "integration_coefficients 3 cubic");
         for (size_t i = 0; i < w->n; ++i) {
             gsl_test_rel(gsl_vector_get(coeffs, i), e3[i],

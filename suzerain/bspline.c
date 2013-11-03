@@ -45,6 +45,8 @@
 #include <suzerain/error.h>
 #include <suzerain/pre_gsl.h>
 
+#include "omsect.h"
+
 int
 suzerain_bspline_linear_combination(
     const size_t nderiv,
@@ -231,6 +233,8 @@ suzerain_bspline_integration_coefficients(
     const size_t nderiv,
     double * coeffs,
     size_t inc,
+    double lo,
+    double hi,
     gsl_matrix *dB,
     gsl_bspline_workspace *w,
     gsl_bspline_deriv_workspace *dw)
@@ -252,25 +256,32 @@ suzerain_bspline_integration_coefficients(
     double xj = 0, wj = 0;
     for (size_t i = 0; i < (w->nbreak - 1); ++i) {
 
-        /* Determine i-th breakpoint interval */
-        const double a = gsl_bspline_breakpoint(i,   w);
-        const double b = gsl_bspline_breakpoint(i+1, w);
+        /* Determine "order-matching intersection" of i-th       */
+        /* breakpoint interval with integration bounds (lo, hi). */
+        /* Function omsect() is just the magic we need here to   */
+        /* make partial integration intervals and hi < lo work.  */
+        double a, b;
+        if (omsect(gsl_bspline_breakpoint(i,   w),
+                   gsl_bspline_breakpoint(i+1, w),
+                   lo, hi, &a, &b)) {
 
-        for (size_t j = 0; j < tbl->n; ++j) {
+            for (size_t j = 0; j < tbl->n; ++j) {
 
-            /* Get j-th Gauss point xj and weight wj */
-            gsl_integration_glfixed_point(a, b, j, &xj, &wj, tbl);
+                /* Get j-th Gauss point xj and weight wj */
+                gsl_integration_glfixed_point(a, b, j, &xj, &wj, tbl);
 
-            /* Evaluate basis functions at point xj */
-            size_t kstart, kend;
-            gsl_bspline_deriv_eval_nonzero(xj, nderiv,
-                    dB, &kstart, &kend, w, dw);
+                /* Evaluate basis functions at point xj */
+                size_t kstart, kend;
+                gsl_bspline_deriv_eval_nonzero(xj, nderiv,
+                        dB, &kstart, &kend, w, dw);
 
-            /* Accumulate weighted basis evaluations into coeffs */
-            for (size_t k = kstart; k <= kend; ++k) {
-                coeffs[k * inc] += wj * gsl_matrix_get(dB,
-                                                       k - kstart, nderiv);
+                /* Accumulate weighted basis evaluations into coeffs */
+                for (size_t k = kstart; k <= kend; ++k) {
+                    coeffs[k * inc] += wj * gsl_matrix_get(dB,
+                                                           k - kstart, nderiv);
+                }
             }
+
         }
     }
 

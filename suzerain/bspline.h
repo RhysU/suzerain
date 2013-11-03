@@ -216,12 +216,18 @@ suzerain_bspline_crossing(
 
 /**
  * Compute the coefficients \f$ \gamma_{i} \f$ for <code>0 <= i < w->n</code>
- * such that \f$ \vec{\gamma}\cdot\vec{\beta} = \int \sum_{i} \beta_{i}
- * B_{i}^{(\mbox{nderiv})}(x) \, dx\f$.
+ * such that \f$ \vec{\gamma}\cdot\vec{\beta} =
+ * \int_{x_\mbox{lo}}^{x_\mbox{hi}} \sum_{i} \beta_{i}
+ * B_{i}^{(\mbox{nderiv})}(x) \, dx\f$.  Integration bounds outside the support
+ * of the basis as well as a reversed bounds are handled correctly.  Ranges
+ * like <tt>[-DBL_MAX,DBL_MAX]</tt> are shorthand effectively indicating
+ * integration over the support of the B-spline basis.
  *
  * @param[in]  nderiv The derivative to integrate.
  * @param[out] coeffs Real-valued coefficients \f$ \gamma_{i} \f$.
- * @param[in]  inc Stride between elements of \c x
+ * @param[in]  inc Stride between elements of \c coeffs.
+ * @param[in]  lo The lower integration bound \f$x_\mbox{lo}$.
+ * @param[in]  hi The upper integration bound \f$x_\mbox{hi}$.
  * @param[in]  dB Temporary storage to use of size <tt>w->k</tt> by
  *             no less than <tt>nderiv + 1</tt>.
  * @param[in]  w Workspace to use (which sets the integration bounds).
@@ -235,6 +241,8 @@ suzerain_bspline_integration_coefficients(
     const size_t nderiv,
     double * coeffs,
     size_t inc,
+    double lo,
+    double hi,
     gsl_matrix *dB,
     gsl_bspline_workspace *w,
     gsl_bspline_deriv_workspace *dw);
