@@ -20,7 +20,7 @@ extern "C" {
 
 /**
  * Given points \c a, \c b, \c x, and \c y under the assumption <code>a <=
- * b\</code>, do intervals \c ab and \c xy overlap and if so what is the
+ * b</code>, do intervals \c ab and \c xy overlap and if so what is the
  * order-matching interval?  Order-matching means an interval with endpoints
  * (p, q) such that p < q whenever x <= y and p > q whenever x > y.
  *
