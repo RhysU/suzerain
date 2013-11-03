@@ -229,6 +229,7 @@ libbspline_la_SOURCES       += error.c
 libbspline_la_SOURCES       += filterop.c
 libbspline_la_SOURCES       += gbmatrix.c
 libbspline_la_SOURCES       += htstretch.c
+libbspline_la_SOURCES       += omsect.h    # Not installed
 libbspline_la_SOURCES       += pre_gsl.c
 libbspline_la_SOURCES       += reacting_imexop.c
 libbspline_la_SOURCES       += rholut_imexop.c
