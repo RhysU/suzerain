@@ -115,6 +115,28 @@ static void test_integration_coefficients()
     gsl_bspline_deriv_workspace *dw;
     gsl_matrix *scratch;
 
+    /* Piecewise constants */
+    {
+        alloc_workspaces(1, sizeof(b)/sizeof(b[0]), b, &w, &dw, &scratch);
+        const size_t inc = 1;
+        const double case0[] = { 1.0, 1.0, 1.0, 1.0 };
+        gsl_vector *coeffs = gsl_vector_alloc(sizeof(case0)/sizeof(case0[0]));
+
+        gsl_vector_set_all(coeffs, -555.0);
+        gsl_test(suzerain_bspline_integration_coefficients(
+                0 , gsl_vector_ptr(coeffs,0), inc,
+                -GSL_DBL_MAX, GSL_DBL_MAX, scratch, w, dw),
+                "integration_coefficients 0 constant");
+        for (size_t i = 0; i < w->n; ++i) {
+            gsl_test_rel(gsl_vector_get(coeffs, i), case0[i],
+                    GSL_DBL_EPSILON*1000,
+                    "integration_coefficients 0 constant %d value", i);
+        }
+
+        gsl_vector_free(coeffs);
+        free_workspaces(&w, &dw, &scratch);
+    }
+
     /* Piecewise linears with strided coefficient storage */
     {
         alloc_workspaces(2, sizeof(b)/sizeof(b[0]), b, &w, &dw, &scratch);
