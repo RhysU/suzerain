@@ -116,10 +116,13 @@ static void test_integration_coefficients()
     gsl_matrix *scratch;
 
     /* Piecewise constants */
+    /* Integrating partial regions and reversed limits tested too */
     {
         alloc_workspaces(1, sizeof(b)/sizeof(b[0]), b, &w, &dw, &scratch);
         const size_t inc = 1;
-        const double case0[] = { 1.0, 1.0, 1.0, 1.0 };
+        const double case0[] = {  1.0,  1.0,  1.0,  1.0 };  // \int_{-oo}^{oo}
+        const double case1[] = {  0.5,  1.0,  0.5,  0.0 };  // \int_{0.5}^{2.5}
+        const double case2[] = { -0.5, -1.0, -0.5, -0.0 };  // \int_{2.5}^{0.5}
         gsl_vector *coeffs = gsl_vector_alloc(sizeof(case0)/sizeof(case0[0]));
 
         gsl_vector_set_all(coeffs, -555.0);
@@ -129,6 +132,28 @@ static void test_integration_coefficients()
                 "integration_coefficients 0 constant");
         for (size_t i = 0; i < w->n; ++i) {
             gsl_test_rel(gsl_vector_get(coeffs, i), case0[i],
+                    GSL_DBL_EPSILON*1000,
+                    "integration_coefficients 0 constant %d value", i);
+        }
+
+        gsl_vector_set_all(coeffs, -555.0);
+        gsl_test(suzerain_bspline_integration_coefficients(
+                0 , gsl_vector_ptr(coeffs,0), inc,
+                0.5, 2.5, scratch, w, dw),
+                "integration_coefficients 0 constant");
+        for (size_t i = 0; i < w->n; ++i) {
+            gsl_test_rel(gsl_vector_get(coeffs, i), case1[i],
+                    GSL_DBL_EPSILON*1000,
+                    "integration_coefficients 0 constant %d value", i);
+        }
+
+        gsl_vector_set_all(coeffs, -555.0);
+        gsl_test(suzerain_bspline_integration_coefficients(
+                0 , gsl_vector_ptr(coeffs,0), inc,
+                2.5, 0.5, scratch, w, dw),
+                "integration_coefficients 0 constant");
+        for (size_t i = 0; i < w->n; ++i) {
+            gsl_test_rel(gsl_vector_get(coeffs, i), case2[i],
                     GSL_DBL_EPSILON*1000,
                     "integration_coefficients 0 constant %d value", i);
         }
