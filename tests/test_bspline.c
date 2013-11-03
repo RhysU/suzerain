@@ -123,6 +123,7 @@ static void test_integration_coefficients()
         const double e1[] = { -1, -555, 0, -555, 0, -555,  1, -555};
         gsl_vector *coeffs = gsl_vector_alloc(sizeof(e0)/sizeof(e0[0]));
 
+        /* Zeroth derivative, integrating from low to high */
         gsl_vector_set_all(coeffs, -555.0);
         gsl_test(suzerain_bspline_integration_coefficients(
                 0 , gsl_vector_ptr(coeffs,0), inc,
@@ -136,6 +137,7 @@ static void test_integration_coefficients()
                     "integration_coefficients 0 linear %d stride", 2*i + 1);
         }
 
+        /* First derivative, integrating from low to high */
         gsl_vector_set_all(coeffs, -555.0);
         gsl_test(suzerain_bspline_integration_coefficients(
                 1 , gsl_vector_ptr(coeffs,0), inc,
@@ -143,6 +145,34 @@ static void test_integration_coefficients()
                 "integration_coefficients 1 linear");
         for (size_t i = 0; i < w->n; ++i) {
             gsl_test_rel(gsl_vector_get(coeffs, 2*i), e1[2*i],
+                    GSL_DBL_EPSILON*1000,
+                    "integration_coefficients 1 linear %d value", 2*i);
+            gsl_test(gsl_vector_get(coeffs, 2*i+1) != e1[2*i+1],
+                    "integration_coefficients 1 linear %d stride", 2*i + 1);
+        }
+
+        /* Zeroth derivative, integrating from high to low */
+        gsl_vector_set_all(coeffs, -555.0);
+        gsl_test(suzerain_bspline_integration_coefficients(
+                0 , gsl_vector_ptr(coeffs,0), inc,
+                DBL_MAX, -DBL_MAX, scratch, w, dw),
+                "integration_coefficients 0 linear");
+        for (size_t i = 0; i < w->n; ++i) {
+            gsl_test_rel(gsl_vector_get(coeffs, 2*i), -1*e0[2*i],
+                    GSL_DBL_EPSILON*1000,
+                    "integration_coefficients 0 linear %d value", 2*i);
+            gsl_test(gsl_vector_get(coeffs, 2*i+1) != e0[2*i+1],
+                    "integration_coefficients 0 linear %d stride", 2*i + 1);
+        }
+
+        /* First derivative, integrating from high to low */
+        gsl_vector_set_all(coeffs, -555.0);
+        gsl_test(suzerain_bspline_integration_coefficients(
+                1 , gsl_vector_ptr(coeffs,0), inc,
+                DBL_MAX, -DBL_MAX, scratch, w, dw),
+                "integration_coefficients 1 linear");
+        for (size_t i = 0; i < w->n; ++i) {
+            gsl_test_rel(gsl_vector_get(coeffs, 2*i), -1*e1[2*i],
                     GSL_DBL_EPSILON*1000,
                     "integration_coefficients 1 linear %d value", 2*i);
             gsl_test(gsl_vector_get(coeffs, 2*i+1) != e1[2*i+1],
