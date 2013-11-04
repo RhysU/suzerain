@@ -75,8 +75,8 @@ baseflow_polynomial::get_baseflow(
     } else {
 
         using namespace std;
-        memset(base,   nstate*sizeof(real_t), 0);
-        memset(dybase, nstate*sizeof(real_t), 0);
+        memset(base,   0, nstate*sizeof(real_t));
+        memset(dybase, 0, nstate*sizeof(real_t));
 
     }
 
@@ -90,7 +90,7 @@ baseflow_polynomial::get_baseflow(
     } else {
 
         using namespace std;
-        memset(dxbase, nstate*sizeof(real_t), 0);
+        memset(dxbase, 0, nstate*sizeof(real_t));
 
     }
 }
