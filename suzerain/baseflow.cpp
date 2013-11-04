@@ -43,6 +43,38 @@ baseflow_interface::~baseflow_interface()
 {
 }
 
+baseflow_uniform::baseflow_uniform()
+    : x ()
+{
+}
+
+void
+baseflow_uniform::get_baseflow(
+        const real_t      y,
+        real_t*        base,
+        real_t*      dybase,
+        real_t*      dxbase) const
+{
+    SUZERAIN_UNUSED(y);
+    const int nstate = x.cols() - 1;
+    memcpy(base,   x.data(), nstate*sizeof(real_t));
+    memset(dybase, 0,        nstate*sizeof(real_t));
+    memset(dxbase, 0,        nstate*sizeof(real_t));
+}
+
+void
+baseflow_uniform::get_baseflow_pressure(
+        const real_t      y,
+        real_t&       Pbase,
+        real_t&     dyPbase,
+        real_t&     dxPbase) const
+{
+    SUZERAIN_UNUSED(y);
+    Pbase   = x.tail<1>()[0];
+    dyPbase = 0;
+    dxPbase = 0;
+}
+
 baseflow_polynomial::baseflow_polynomial()
     : x ()
     , dx()

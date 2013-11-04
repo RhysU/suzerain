@@ -74,21 +74,38 @@ public:
 
 };
 
-//// TODO
-//class baseflow_uniform
-//    : public virtual baseflow_interface
-//{
-//public:
-//    void get_baseflow(const real_t    y,
-//                      real_t *     base,
-//                      real_t *   dybase,
-//                      real_t *   dxbase);
-//
-//    void get_baseflow_pressure(const real_t    y,
-//                               real_t &    Pbase,
-//                               real_t &  dyPbase,
-//                               real_t &  dxPbase);
-//};
+/**
+ * Provides slow-growth-ready baseflow information for uniform flows.
+ * That is, flows for which all spatial derivatives are zero.
+ */
+class baseflow_uniform
+    : public virtual baseflow_interface
+{
+
+    /**
+     * Construct an instance
+     *
+     * Member #x must be initialized prior to using
+     * get_baseflow() or get_baseflow_pressure().
+     */
+    baseflow_uniform();
+
+    void get_baseflow(const real_t    y,
+                      real_t *     base,
+                      real_t *   dybase,
+                      real_t *   dxbase) const;
+
+    void get_baseflow_pressure(const real_t    y,
+                               real_t &    Pbase,
+                               real_t &  dyPbase,
+                               real_t &  dxPbase) const;
+
+    /**
+     * Each variable in the baseflow is represented by one entry in \c x.
+     * Pressure information is stored in the final column.
+     */
+    VectorXr x;
+};
 
 /**
  * Provides slow-growth-ready baseflow information from polynomial fits.
