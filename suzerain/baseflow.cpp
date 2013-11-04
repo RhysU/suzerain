@@ -56,7 +56,7 @@ baseflow_uniform::conserved_state(
         real_t*      dxbase) const
 {
     SUZERAIN_UNUSED(y);
-    const int nstate = x.cols() - 1;
+    const int nstate = x.size() - 1;
     memcpy(base,   x.data(), nstate*sizeof(real_t));
     memset(dybase, 0,        nstate*sizeof(real_t));
     memset(dxbase, 0,        nstate*sizeof(real_t));
