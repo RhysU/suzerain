@@ -49,7 +49,7 @@ baseflow_uniform::baseflow_uniform()
 }
 
 void
-baseflow_uniform::get_baseflow(
+baseflow_uniform::conserved_state(
         const real_t      y,
         real_t*        base,
         real_t*      dybase,
@@ -63,16 +63,16 @@ baseflow_uniform::get_baseflow(
 }
 
 void
-baseflow_uniform::get_baseflow_pressure(
-        const real_t      y,
-        real_t&       Pbase,
-        real_t&     dyPbase,
-        real_t&     dxPbase) const
+baseflow_uniform::pressure(
+        const real_t y,
+        real_t&      P,
+        real_t&      dyP,
+        real_t&      dxP) const
 {
     SUZERAIN_UNUSED(y);
-    Pbase   = x.tail<1>()[0];
-    dyPbase = 0;
-    dxPbase = 0;
+    P   = x.tail<1>()[0];
+    dyP = 0;
+    dxP = 0;
 }
 
 baseflow_polynomial::baseflow_polynomial()
@@ -82,7 +82,7 @@ baseflow_polynomial::baseflow_polynomial()
 }
 
 void
-baseflow_polynomial::get_baseflow(
+baseflow_polynomial::conserved_state(
         const real_t      y,
         real_t*        base,
         real_t*      dybase,
@@ -128,11 +128,11 @@ baseflow_polynomial::get_baseflow(
 }
 
 void
-baseflow_polynomial::get_baseflow_pressure(
+baseflow_polynomial::pressure(
         const real_t      y,
-        real_t&       Pbase,
-        real_t&     dyPbase,
-        real_t&     dxPbase) const
+        real_t&       P,
+        real_t&     dyP,
+        real_t&     dxP) const
 {
     // Ensure consistent number of state variables + pressure
     assert(x.cols() > 0);
@@ -144,13 +144,13 @@ baseflow_polynomial::get_baseflow_pressure(
         gsl_poly_eval_derivs(x.rightCols<1>().data(), x.rows(), y,
                              &res[0], sizeof(res) / sizeof(res[0]));
     }
-    Pbase   = res[0];
-    dyPbase = res[1];
+    P   = res[0];
+    dyP = res[1];
 
     // Compute x-derivative of baseflow
-    dxPbase = dx.rows()
-            ? gsl_poly_eval(dx.rightCols<1>().data(), dx.rows(), y)
-            : 0;
+    dxP = dx.rows()
+        ? gsl_poly_eval(dx.rightCols<1>().data(), dx.rows(), y)
+        : 0;
 }
 
 } // namespace suzerain
