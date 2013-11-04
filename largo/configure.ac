@@ -17,7 +17,7 @@ AC_CONFIG_AUX_DIR([build-aux])
 AC_CONFIG_MACRO_DIR([m4])
 AC_CANONICAL_TARGET
 AM_INIT_AUTOMAKE(1.11 no-define tar-ustar -Wall foreign color-tests silent-rules parallel-tests check-news)
-AC_PREREQ([2.69])
+AC_PREREQ([2.68])
 AX_AM_MACROS
 AX_SPLIT_VERSION
 AC_SUBST([AX_MAJOR_VERSION])
@@ -68,8 +68,9 @@ dnl Manipulate Fortran
 dnl ------------------
 AC_PROG_FC
 AC_LANG_PUSH([Fortran])
-AC_FC_PP_DEFINE()   dnl PP_DEFINE must be before...
-AC_FC_SRCEXT([f90]) dnl ...SRCEXT for some reason.
+dnl Poor man's PP_DEFINE allows Autoconf 2.68+ instead of requiring 2.69+
+m4_ifdef([AC_FC_PP_DEFINE], [AC_FC_PP_DEFINE],[AC_SUBST([FC_DEFINE],[-D])])
+AC_FC_SRCEXT([f90]) dnl PP_DEFINE must be before SRCEXT for some reason
 AC_FC_FREEFORM()
 AC_FC_LINE_LENGTH([unlimited])
 dnl BEGIN: Enable the preprocessor for all Fortran .f90 sources
