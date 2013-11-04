@@ -17,7 +17,7 @@ AC_CONFIG_AUX_DIR([build-aux])
 AC_CONFIG_MACRO_DIR([m4])
 AC_CANONICAL_TARGET
 AM_INIT_AUTOMAKE(1.11 no-define tar-ustar -Wall foreign color-tests silent-rules parallel-tests check-news)
-AC_PREREQ([2.61])
+AC_PREREQ([2.69])
 AX_AM_MACROS
 AX_SPLIT_VERSION
 AC_SUBST([AX_MAJOR_VERSION])
