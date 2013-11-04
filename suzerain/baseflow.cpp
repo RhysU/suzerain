@@ -29,18 +29,96 @@
 #include <suzerain/config.h>
 #endif
 
+#include <gsl/gsl_poly.h>
+
 #include <suzerain/baseflow.hpp>
 
 namespace suzerain {
 
 baseflow_interface::baseflow_interface()
 {
-    // NOP
 }
 
 baseflow_interface::~baseflow_interface()
 {
-    // NOP
+}
+
+baseflow_polynomial::baseflow_polynomial()
+    : x ()
+    , dx()
+{
+}
+
+void
+baseflow_polynomial::get_baseflow(
+        const real_t      y,
+        real_t*        base,
+        real_t*      dybase,
+        real_t*      dxbase) const
+{
+    // Consistent number of state variables + pressure must be provided.
+    assert(x.cols() > 0);
+    assert(x.cols() == dx.cols());
+    const int nstate = x.cols() - 1;
+
+    // Compute baseflow and y-derivative
+    if (x.rows()) {
+
+        double res[2];
+        for (int j = 0; j < nstate; ++j) {
+            gsl_poly_eval_derivs(x.col(j).data(), x.rows(), y,
+                                 &res[0], sizeof(res) / sizeof(res[0]));
+            base  [j] = res[0];
+            dybase[j] = res[1];
+        }
+
+    } else {
+
+        using namespace std;
+        memset(base,   nstate*sizeof(real_t), 0);
+        memset(dybase, nstate*sizeof(real_t), 0);
+
+    }
+
+    // Compute x-derivative of baseflow
+    if (dx.rows()) {
+
+        for (int j = 0; j < nstate; j++) {
+            dxbase[j] = gsl_poly_eval(dx.col(j).data(), dx.rows(), y);
+        }
+
+    } else {
+
+        using namespace std;
+        memset(dxbase, nstate*sizeof(real_t), 0);
+
+    }
+}
+
+void
+baseflow_polynomial::get_baseflow_pressure(
+        const real_t      y,
+        real_t&       Pbase,
+        real_t&     dyPbase,
+        real_t&     dxPbase) const
+{
+    // Ensure consistent number of state variables + pressure
+    assert(x.cols() > 0);
+    assert(x.cols() == dx.cols());
+
+    // Compute pressure and y-derivative
+    double res[2] = { 0, 0 };
+    if (x.rows()) {
+        gsl_poly_eval_derivs(x.rightCols<1>().data(), x.rows(), y,
+                             &res[0], sizeof(res) / sizeof(res[0]));
+    }
+    Pbase   = res[0];
+    dyPbase = res[1];
+
+    // Compute x-derivative of baseflow
+    dxPbase = dx.rows()
+            ? gsl_poly_eval(dx.rightCols<1>().data(), dx.rows(), y)
+            : 0;
 }
 
 } // namespace suzerain

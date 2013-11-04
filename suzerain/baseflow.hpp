@@ -74,6 +74,84 @@ public:
 
 };
 
+//// TODO
+//class baseflow_uniform
+//    : public virtual baseflow_interface
+//{
+//public:
+//    void get_baseflow(const real_t    y,
+//                      real_t *     base,
+//                      real_t *   dybase,
+//                      real_t *   dxbase);
+//
+//    void get_baseflow_pressure(const real_t    y,
+//                               real_t &    Pbase,
+//                               real_t &  dyPbase,
+//                               real_t &  dxPbase);
+//};
+
+/**
+ * Provides slow-growth-ready baseflow information from polynomial fits.
+ */
+class baseflow_polynomial
+    : public virtual baseflow_interface
+{
+
+    /**
+     * Construct an instance
+     *
+     * Members #x and #dx must be initialized prior to using
+     * get_baseflow() or get_baseflow_pressure().
+     */
+    baseflow_polynomial();
+
+    void get_baseflow(const real_t    y,
+                      real_t *     base,
+                      real_t *   dybase,
+                      real_t *   dxbase) const;
+
+    void get_baseflow_pressure(const real_t    y,
+                               real_t &    Pbase,
+                               real_t &  dyPbase,
+                               real_t &  dxPbase) const;
+
+    /**
+     * Polynomial coefficients for the fields.  Each variable in the baseflow
+     * is represented by one column in \c x.  Each column encodes one
+     * polynomial in the format the <a
+     * href="http://www.gnu.org/software/gsl/manual/html_node/Polynomial-Evaluation.html">
+     * GSL Polynomial Evaluation</a> routines expect.  Derivatives in the
+     * \f$y\f$ direction are taken from the same coefficient representation.
+     * Pressure information is stored in the final column.  This member must
+     * have the same number of columns as #dx but the number of rows may
+     * differ.
+     */
+    MatrixXXr x;
+
+    /**
+     * Polynomial coefficients for the field \f$x\$ derivatives.  These are
+     * stored analogously to #x.  In particular, this member must have the same
+     * number of columns as #x but the number of rows may differ.
+     */
+    MatrixXXr dx;
+};
+
+//// TODO
+//class baseflow_nozzle
+//    : public virtual baseflow_interface
+//{
+//public:
+//    void get_baseflow(const real_t    y,
+//                      real_t *     base,
+//                      real_t *   dybase,
+//                      real_t *   dxbase);
+//
+//    void get_baseflow_pressure(const real_t    y,
+//                               real_t &    Pbase,
+//                               real_t &  dyPbase,
+//                               real_t &  dxPbase);
+//};
+
 } // namespace suzerain
 
 #endif // SUZERAIN_BASEFLOW_HPP
