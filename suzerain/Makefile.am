@@ -41,6 +41,7 @@ suzerain-revision.h: $(srcdir)/*.h                            \
 
 # Public API headers
 nobase_pkginclude_HEADERS += allocator.hpp
+nobase_pkginclude_HEADERS += baseflow.hpp
 nobase_pkginclude_HEADERS += blas_et_al.h
 nobase_pkginclude_HEADERS += blas_et_al.hpp
 nobase_pkginclude_HEADERS += bl.h
@@ -256,7 +257,7 @@ libexprparse_la_SOURCES  += exprparse.hpp
 libexprparse_la_SOURCES  += exprparse_impl.hpp
 
 # Logic with more extensive external dependencies, in particular
-# depending on parallel decomposition details.
+# possibly depending on parallel decomposition details.
 #
 # When in doubt, check libbase_la_CPPFLAGS to see if something belongs.  If it
 # won't compile without libsupport_la_CPPFLAGS, it belongs in libsupport.la.
@@ -267,7 +268,8 @@ libbase_la_CPPFLAGS      += $(EIGEN_CFLAGS)
 libbase_la_CPPFLAGS      += $(UNDERLING_CFLAGS)
 libbase_la_CPPFLAGS      += $(FFTW3_MPI_THREADS_CFLAGS)
 libbase_la_CPPFLAGS      += $(GRVY_CFLAGS)
-libbase_la_SOURCES        = bl.c
+libbase_la_SOURCES        = baseflow.cpp
+libbase_la_SOURCES       += bl.c
 libbase_la_SOURCES       += blasius.c
 libbase_la_SOURCES       += bsmbsm_solver.cpp
 libbase_la_SOURCES       += constraint.cpp
