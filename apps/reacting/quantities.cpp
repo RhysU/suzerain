@@ -754,6 +754,13 @@ quantities sample_quantities(
                 sum_kappa_grad_T[1](kap * grad_T.y());
                 sum_kappa_grad_T[2](kap * grad_T.z());
 
+                sum_rho_rho[0](rho * rho);
+
+                sum_T_T[0](T * T);
+
+                sum_p_p[0](p * p);
+
+                sum_mu_mu[0](mu * mu);
 
                 // TODO Sum mean slow growth forcing contributions (Redmine #2496)
 

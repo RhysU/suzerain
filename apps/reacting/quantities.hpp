@@ -104,6 +104,10 @@ public:
     ((mu_S,              6))  /* symmetric tensor */ \
     ((mu_div_u,          1))  /* scalar           */ \
     ((kappa_grad_T,      3))  /* vector           */ \
+    ((rho_rho,           1))  /* scalar           */ \
+    ((T_T,               1))  /* scalar           */ \
+    ((p_p,               1))  /* scalar           */ \
+    ((mu_mu,             1))  /* scalar           */ \
     ((SrhoE,             1))  /* scalar           */ \
     ((Srhou,             3))  /* vector           */ \
     ((Srho,              1))  /* scalar           */ \
