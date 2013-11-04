@@ -351,7 +351,7 @@ case $ax_cv_c_compiler_vendor in #(
     portland) AX_APPEND_COMPILE_FLAGS([-Kieee -Mnofpapprox],           [CFLAGS_PRECISE]) ;;
     gnu|*)    AX_APPEND_COMPILE_FLAGS([-fno-unsafe-math-optimizations],[CFLAGS_PRECISE]) ;;
 esac
-if test "x$ax_enable_debug" != "xyes"; then
+if test "x$ax_enable_debug" = "xyes"; then
     AC_MSG_NOTICE([Debug Build Detected: Adding Precision Flags to CFLAGS.])
     CFLAGS="$CFLAGS $CFLAGS_PRECISE"
 fi
@@ -380,7 +380,7 @@ case $ax_cv_cxx_compiler_vendor in #(
     portland) AX_APPEND_COMPILE_FLAGS([-Kieee -Mnofpapprox],           [CXXFLAGS_PRECISE]) ;;
     gnu|*)    AX_APPEND_COMPILE_FLAGS([-fno-unsafe-math-optimizations],[CXXFLAGS_PRECISE]) ;;
 esac
-if test "x$ax_enable_debug" != "xyes"; then
+if test "x$ax_enable_debug" = "xyes"; then
     AC_MSG_NOTICE([Debug Build Detected: Adding Precision Flags to CXXFLAGS.])
     CXXFLAGS="$CXXFLAGS $CXXFLAGS_PRECISE"
 fi
