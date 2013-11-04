@@ -29,13 +29,17 @@
  */
 
 #include <suzerain/common.hpp>
+#include <suzerain/safe_bool.hpp>
 
 namespace suzerain {
 
 /**
  * Abstract interface for providing slow-growth-ready baseflow information.
+ * Implementers may be tested for "triviality" in a boolean context where a
+ * trivial instance is one providing no baseflow information.
  */
 class baseflow_interface
+    : public virtual safe_bool<void>
 {
 public:
 
@@ -105,6 +109,9 @@ class baseflow_uniform
      * Pressure information is stored in the final column.
      */
     VectorXr x;
+
+protected:
+    bool boolean_test() const { return x.size(); };
 };
 
 /**
@@ -151,6 +158,9 @@ class baseflow_polynomial
      * number of columns as #x but the number of rows may differ.
      */
     MatrixXXr dx;
+
+protected:
+    bool boolean_test() const { return x.size(); };
 };
 
 //// TODO
