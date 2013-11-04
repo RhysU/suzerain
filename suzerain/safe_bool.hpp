@@ -28,7 +28,9 @@
 /** @file
  * Helpers for encapsulating <a
  * href="http://www.artima.com/cppsource/safebool.html">The Safe Bool Idiom</a>
- * as described by Bjorn Karlsson.
+ * as described by Bjorn Karlsson.  The solution has additionally been
+ * modified per <a href="http://stackoverflow.com/questions/3657494/">a
+ * question on Stack Overflow</a> to address compilation issues.
  */
 
 namespace suzerain
@@ -66,7 +68,7 @@ public:
     operator bool_type() const
     {
         return (static_cast<const T*>(this))->boolean_test()
-               ? &safe_bool_base::this_type_does_not_support_comparisons : 0;
+               ? &safe_bool<T>::this_type_does_not_support_comparisons : 0;
     }
 protected:
     ~safe_bool() {}
@@ -84,7 +86,7 @@ public:
     operator bool_type() const
     {
         return boolean_test() == true ?
-               &safe_bool_base::this_type_does_not_support_comparisons : 0;
+               &safe_bool<void>::this_type_does_not_support_comparisons : 0;
     }
 protected:
     virtual bool boolean_test() const = 0;
