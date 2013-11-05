@@ -234,6 +234,19 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
 
     } else if (grid->one_sided()) { // Flat plate per plate_treatment.tex
 
+        if (scenario->bulk_rho) {
+            WARN0(who, "Removing channel-like bulk_rho setting");
+            scenario->bulk_rho   = numeric_limits<real_t>::quiet_NaN();
+        }
+        if (scenario->bulk_rho_u) {
+            WARN0(who, "Removing channel-like bulk_rho_u setting");
+            scenario->bulk_rho_u = numeric_limits<real_t>::quiet_NaN();
+        }
+        if (scenario->bulk_rho_E) {
+            WARN0(who, "Removing channel-like bulk_rho_E setting");
+            scenario->bulk_rho_E = numeric_limits<real_t>::quiet_NaN();
+        }
+
         INFO0(who, "Computing mean freestream behavior per plate scenario");
         const real_t T_inf   = isothermal->upper_T;                 // Brevity
         const real_t u_inf   = sqrt(T_inf);                         // Eqn ( 6)
@@ -263,19 +276,6 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
         }
         DEBUG0(who, "Keeping reference upper_w = " << isothermal->upper_w);
         DEBUG0(who, "Keeping reference upper_T = " << isothermal->upper_T);
-
-        if (scenario->bulk_rho) {
-            WARN0(who, "Removing channel-like bulk_rho setting");
-            scenario->bulk_rho   = numeric_limits<real_t>::quiet_NaN();
-        }
-        if (scenario->bulk_rho_u) {
-            WARN0(who, "Removing channel-like bulk_rho_u setting");
-            scenario->bulk_rho_u = numeric_limits<real_t>::quiet_NaN();
-        }
-        if (scenario->bulk_rho_E) {
-            WARN0(who, "Removing channel-like bulk_rho_E setting");
-            scenario->bulk_rho_E = numeric_limits<real_t>::quiet_NaN();
-        }
 
         INFO0(who, "Establishing driving, freestream-like state constraints");
         constrainer->physical[ndx::e  ].reset(
