@@ -49,7 +49,7 @@ baseflow_uniform::baseflow_uniform()
 }
 
 void
-baseflow_uniform::conserved_state(
+baseflow_uniform::conserved(
         const real_t      y,
         real_t*        base,
         real_t*      dybase,
@@ -82,7 +82,7 @@ baseflow_polynomial::baseflow_polynomial()
 }
 
 void
-baseflow_polynomial::conserved_state(
+baseflow_polynomial::conserved(
         const real_t      y,
         real_t*        base,
         real_t*      dybase,

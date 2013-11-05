@@ -43,30 +43,27 @@
 #include <suzerain/support/logging.hpp>
 #include <suzerain/validation.hpp>
 
-namespace suzerain {
+namespace suzerain
+{
 
-static void parse_nonnegative(const std::string& s, real_t *t, const char *n)
+static void parse_nonnegative(const std::string& s, real_t* t, const char* n)
 {
     const real_t v = exprparse<real_t>(s, n);
     validation::ensure_nonnegative(v, n);
     *t = v;
 }
 
-namespace support {
+namespace support
+{
 
-static void parse_formulation(const std::string& s, largo_formulation *t)
+static void parse_formulation(const std::string& s, largo_formulation* t)
 {
     *t = largo_formulation::lookup(s);
 }
 
 largo_definition::largo_definition()
     : largo_specification()
-    , x()
-    , x_base()
-    , dx()
-    , dx_base()
 {
-   // NOP
 }
 
 // Strings used in options_description and populate/override/save/load.
@@ -95,17 +92,17 @@ largo_definition::options_description()
     std::set<string> names = largo_formulation::names();
     std::ostringstream largo_formulation_help;
     largo_formulation_help
-        << "Which, if any, slow growth forcing should be added during time advance?"
-        << " { ";
+            << "Which, if any, slow growth forcing should be added during time advance?"
+            << " { ";
     copy(names.begin(), names.end(),
          std::ostream_iterator<string>(largo_formulation_help, " "));
     largo_formulation_help
-        << "}";
+            << "}";
     retval.add_options()
     ("largo_formulation",
      value<string>()
-        ->default_value(largo_formulation::disable.name())
-        ->notifier(bind(&parse_formulation, _1, &formulation)),
+     ->default_value(largo_formulation::disable.name())
+     ->notifier(bind(&parse_formulation, _1, &formulation)),
      largo_formulation_help.str().c_str())
     ;
 
@@ -125,29 +122,27 @@ largo_definition::options_description()
     return retval;
 }
 
-static const char location[]            = "largo";
-static const char location_baseflow[]   = "largo_baseflow";
-static const char location_baseflow_d[] = "largo_baseflow_derivative";
-
-// For maybe_XXX_impl to indicates a \c largo_definition is a default value
+// For maybe_XXX_impl to determine a \c largo_formulation is a defaulted
 static bool default_value_formulation(const largo_formulation& v)
-{ return !v.enabled(); }
+{
+    return !v.enabled();
+}
 
-static bool maybe_populate(const char*               name,
-                           const char*               description,
-                                 largo_formulation&  destination,
-                           const largo_formulation&  source,
-                           const bool verbose)
+static bool maybe_populate(const char*              name,
+                           const char*              description,
+                           largo_formulation&       destination,
+                           const largo_formulation& source,
+                           const bool               verbose)
 {
     return internal::maybe_populate_impl(
-            name, description, destination, source,
-            verbose, &default_value_formulation);
+               name, description, destination, source,
+               verbose, &default_value_formulation);
 }
 
 void
 largo_definition::populate(
-        const largo_definition& that,
-        const bool verbose)
+    const largo_definition& that,
+    const bool verbose)
 {
     using support::maybe_populate;
 #define CALL_MAYBE_POPULATE(mem)                                             \
@@ -155,23 +150,26 @@ largo_definition::populate(
     CALL_MAYBE_POPULATE(formulation);
     CALL_MAYBE_POPULATE(grdelta);
 #undef CALL_MAYBE_POPULATE
+    if (!this->baseflow) {
+        this->baseflow = that.baseflow;
+    }
 }
 
-static bool maybe_override(const char*               name,
-                           const char*               description,
-                                 largo_formulation&  destination,
-                           const largo_formulation&  source,
-                           const bool verbose)
+static bool maybe_override(const char*              name,
+                           const char*              description,
+                           largo_formulation&       destination,
+                           const largo_formulation& source,
+                           const bool               verbose)
 {
     return internal::maybe_override_impl(
-            name, description, destination, source,
-            verbose, &default_value_formulation);
+               name, description, destination, source,
+               verbose, &default_value_formulation);
 }
 
 void
 largo_definition::override(
-        const largo_definition& that,
-        const bool verbose)
+    const largo_definition& that,
+    const bool verbose)
 {
     using support::maybe_override;
 #define CALL_MAYBE_OVERRIDE(mem)                                            \
@@ -179,15 +177,30 @@ largo_definition::override(
     CALL_MAYBE_OVERRIDE(formulation);
     CALL_MAYBE_OVERRIDE(grdelta);
 #undef CALL_MAYBE_OVERRIDE
+    if (that.baseflow) {
+        this->baseflow = that.baseflow;
+    }
 }
+
+static const char attr_base[]           = "coefficient_base";
+static const char attr_formulation[]    = "formulation";
+static const char location_baseflow_d[] = "largo_baseflow_derivative";
+static const char location_baseflow[]   = "largo_baseflow";
+static const char location[]            = "largo";
+
+// std::strings permit easy comparison for largo_definition::load()
+static const std::string type_polynomial("polynomial");
+static const std::string type_uniform   ("uniform");
 
 void
 largo_definition::save(
-        const esio_handle h) const
+    const esio_handle h) const
 {
     DEBUG0("Storing largo_definition parameters");
 
-    if (!formulation.enabled()) { return; }  // Shortcircuit on no formulation
+    if (!formulation.enabled()) {
+        return;    // Shortcircuit on no formulation
+    }
 
     // Write out the "container" holding all other settings
     const int one = 1;
@@ -195,10 +208,10 @@ largo_definition::save(
     esio_handle_comm_rank(h, &procid);
     esio_line_establish(h, 1, 0, (procid == 0 ? 1 : 0));
     esio_line_write(h, location, &one, 0,
-            "Is a largo-based slow growth formulation in use?");
+                    "Is a largo-based slow growth formulation in use?");
 
     // Write out the formulation name
-    esio_string_set(h, location, "formulation", formulation.name().c_str());
+    esio_string_set(h, location, attr_formulation, formulation.name().c_str());
 
     // scalars
     if (formulation == largo_formulation::disable) {
@@ -219,39 +232,45 @@ largo_definition::save(
         SUZERAIN_ERROR_VOID_UNIMPLEMENTED();
     }
 
-    // Write baseflow field coefficients (only master process)
-    if (this->x.outerSize() > 0) {
-        esio_plane_establish(h,
-            this->x.outerSize(), 0, procid == 0 ?  this->x.outerSize() : 0,
-            this->x.innerSize(), 0, procid == 0 ?  this->x.innerSize() : 0);
-        esio_plane_write(h, location_baseflow, this->x.data(),
-            this->x.outerStride(), this->x.innerStride(),
-            "Baseflow field coefficients");
+    // FIXME Redmine #2503 Assumes coefficient-based baseflows
+    if (this->baseflow) {
+        baseflow_polynomial* const bf
+            = dynamic_cast<baseflow_polynomial*>(this->baseflow.get());
 
-        // Write out the baseflow coefficient base
-        esio_string_set(h, location_baseflow, "coefficient_base",
-                        this->x_base.c_str());
-    }
+        // Write baseflow field coefficients (only master process)
+        const MatrixXXr& x  = bf->x;
+        esio_plane_establish(
+                h,
+                x.outerSize(), 0, procid == 0 ? x.outerSize() : 0,
+                x.innerSize(), 0, procid == 0 ? x.innerSize() : 0);
+        esio_plane_write(
+                h, location_baseflow, x.data(),
+                x.outerStride(), x.innerStride(),
+                "Baseflow field coefficients");
+        esio_string_set(
+                h, location_baseflow,
+                attr_base, type_polynomial.c_str());
 
-    // Write baseflow derivative coefficients (only master process)
-    if (this->dx.outerSize() > 0) {
-        esio_plane_establish(h,
-            this->dx.outerSize(), 0, procid == 0 ?  this->dx.outerSize() : 0,
-            this->dx.innerSize(), 0, procid == 0 ?  this->dx.innerSize() : 0);
-        esio_plane_write(h, location_baseflow_d, this->dx.data(),
-            this->dx.outerStride(), this->dx.innerStride(),
-            "Baseflow derivative coefficients");
-
-        // Write out the baseflow coefficient base
-        esio_string_set(h, location_baseflow_d, "coefficient_base",
-                        this->dx_base.c_str());
+        // Write baseflow derivative coefficients (only master process)
+        const MatrixXXr& dx = bf->x;
+        esio_plane_establish(
+                h,
+                dx.outerSize(), 0, procid == 0 ?  dx.outerSize() : 0,
+                dx.innerSize(), 0, procid == 0 ?  dx.innerSize() : 0);
+        esio_plane_write(
+                h, location_baseflow_d, dx.data(),
+                dx.outerStride(), dx.innerStride(),
+                "Baseflow derivative coefficients");
+        esio_string_set(
+                h, location_baseflow_d,
+                attr_base, type_polynomial.c_str());
     }
 }
 
 void
 largo_definition::load(
-        const esio_handle h,
-        const bool verbose)
+    const esio_handle h,
+    const bool verbose)
 {
 
     largo_definition t;
@@ -263,19 +282,22 @@ largo_definition::load(
     if (ESIO_NOTFOUND != esio_line_size(h, location, NULL)) {
         esio_line_read(h, location, &in_use, 0);
     }
-    if (!in_use) return;
+    if (!in_use) {
+        return;
+    }
 
     DEBUG0("Loading largo_definition parameters");
 
     // Load formulation name and look it up in the static instance map
     {
-        char *name = esio_string_get(h, location, "formulation");
+        char* name = esio_string_get(h, location, attr_formulation);
         t.formulation = largo_formulation::lookup(name);
         free(name);
     }
 
     if (t.formulation == largo_formulation::disable) {
-        // Nothing else to load
+        // Nothing else to load, STOP!
+        return this->populate(t, verbose);
     } else if (t.formulation == largo_formulation::temporal) {
         esio_attribute_read(h, location, name_grdelta, &t.grdelta);
     } else if (t.formulation == largo_formulation::spatial) {
@@ -292,117 +314,75 @@ largo_definition::load(
         SUZERAIN_ERROR_VOID_UNIMPLEMENTED();
     }
 
-    this->populate(t, verbose);  // Prefer this to incoming
-
-    // Load baseflow coefficients
-    // Only proceed if largo_baseflow is present in the restart
+    // Strategy for loading largo_definition baseflow information:
+    // Load first.  Sort it out second.
+    // Otherwise interspersing IO with logic is a gnarly mess.
     int neqns, ncoeffs;
-    INFO0("Looking for baseflow coefficients");
+
+    DEBUG0("Probing for baseflow coefficients");
+    shared_ptr<char> base_x;
+    MatrixXXr x;
     if (ESIO_SUCCESS == esio_plane_size(h, location_baseflow,
-                                           &neqns, &ncoeffs)) {
-        // Load baseflow coefficients
-        x.resize(ncoeffs, neqns); //Using column-major storage
-
-        esio_plane_establish(h,
-            this->x.outerSize(), 0, this->x.outerSize(),
-            this->x.innerSize(), 0, this->x.innerSize());
-        esio_plane_read(h, location_baseflow, this->x.data(),
-            this->x.outerStride(), this->x.innerStride());
-
-        // Load baseflow coefficient base
-//         char *name  = esio_string_get(h, location_baseflow_d, "coefficient_base");
-//         this->dx_base = name;
-//         free(name);
-
-        WARN0("Assuming baseflow coefficients are for a polynomial base");
-        this->x_base = "polynomial";
+                                        &neqns, &ncoeffs)) {
+        using namespace std;
+        base_x.reset(esio_string_get(h, location_baseflow, attr_base),
+                     free);
+        DEBUG0("Loading baseflow coefficients with type: "
+               << (base_x ? base_x.get() : "NULL"));
+        x.resize(ncoeffs, neqns);
+        esio_plane_establish(
+                h,
+                x.outerSize(), 0, x.outerSize(),
+                x.innerSize(), 0, x.innerSize());
+        esio_plane_read(
+                h, location_baseflow, x.data(),
+                x.outerStride(), x.innerStride());
     }
 
-    // Load baseflow derivative coefficients
-    // Only proceed if largo_baseflow is present in the restart
-    INFO0("Looking for baseflow derivative coefficients");
+    DEBUG0("Probing for baseflow derivative coefficients");
+    shared_ptr<char> base_dx;
+    MatrixXXr dx;
     if (ESIO_SUCCESS == esio_plane_size(h, location_baseflow_d,
-                                           &neqns, &ncoeffs)) {
-        // Load baseflow coefficients
-        dx.resize(ncoeffs, neqns); //Using column-major storage
-
-        esio_plane_establish(h,
-            this->dx.outerSize(), 0, this->dx.outerSize(),
-            this->dx.innerSize(), 0, this->dx.innerSize());
-        esio_plane_read(h, location_baseflow_d, this->dx.data(),
-            this->dx.outerStride(), this->dx.innerStride());
-
-        // Load baseflow coefficient base
-//         char *name  = esio_string_get(h, location_baseflow_d, "coefficient_base");
-//         this->dx_base = name;
-//         free(name);
-
-        WARN0("Assuming baseflow derivative coefficients are for a polynomial base");
-        this->dx_base = "polynomial";
+                                        &neqns, &ncoeffs)) {
+        using namespace std;
+        base_dx.reset(esio_string_get(h, location_baseflow_d, attr_base),
+                      free);
+        DEBUG0("Loading baseflow coefficients with type: "
+               << (base_dx ? base_dx.get() : "NULL"));
+        dx.resize(ncoeffs, neqns);
+        esio_plane_establish(
+                h,
+                dx.outerSize(), 0, dx.outerSize(),
+                dx.innerSize(), 0, dx.innerSize());
+        esio_plane_read(
+                h, location_baseflow_d, dx.data(),
+                dx.outerStride(), dx.innerStride());
     }
-    return;
-}
 
-void
-largo_definition::get_baseflow(
-        const real_t      y,
-        real_t *       base,
-        real_t *     dybase,
-        real_t *     dhbase) const
-{
-   if (x.rows()) {
-      real_t res[2];
-      for (int j=0; j<x.cols()-1; j++){
-          // Compute baseflow and y-derivative
-          gsl_poly_eval_derivs(x.col(j).data(), x.rows(), y, &res[0], 2);
-          base  [j] = res[0];
-          dybase[j] = res[1];
-      }
-   } else {
-       // Do nothing
-       // Assume that baseflow arrays are initialized to zero
-   }
+    // FIXME Redmine #2503 Only handles polynomial-based baseflows
+    if(    base_x  && type_polynomial == base_x .get()
+        && base_dx && type_polynomial == base_dx.get()) {
 
-   // Compute x-derivative of baseflow
-   if (dx.rows()) {
-      for (int j=0; j<dx.cols()-1; j++){
-          // Compute x-derivative of baseflow
-          gsl_poly_eval_derivs(dx.col(j).data(), dx.rows(), y, &dhbase[j], 1);
-      }
-   } else {
-       // Do nothing
-       // Assume that baseflow arrays are initialized to zero
-   }
-}
+        INFO0("Preparing polynomial-based baseflow description");
+        shared_ptr<baseflow_polynomial> p = make_shared<baseflow_polynomial>();
+        p->x       = x;
+        p->dx      = dx;
+        t.baseflow = p;
 
-void
-largo_definition::get_baseflow_pressure(
-        const real_t      y,
-        real_t &      Pbase,
-        real_t &    dyPbase,
-        real_t &    dhPbase) const
-{
-   if (x.rows()) {
-      real_t res[2];
-      int j = x.cols()-1;
-      // Compute baseflow and y-derivative
-      gsl_poly_eval_derivs(x.col(j).data(), x.rows(), y, &res[0], 2);
-      Pbase   = res[0];
-      dyPbase = res[1];
-   } else {
-       // Do nothing
-       // Assume that baseflow arrays are initialized to zero
-   }
+    } else if (base_x && type_uniform == base_x.get()) {
 
-   // Compute x-derivative of baseflow
-   if (dx.rows()) {
-      int j = x.cols()-1;
-      // Compute x-derivative of baseflow
-      gsl_poly_eval_derivs(dx.col(j).data(), dx.rows(), y, &dhPbase, 1);
-   } else {
-       // Do nothing
-       // Assume that baseflow arrays are initialized to zero
-   }
+        INFO0("Preparing uniform baseflow description");
+        shared_ptr<baseflow_uniform> p = make_shared<baseflow_uniform>();
+        p->x       = x;
+        t.baseflow = p;
+
+    } else {
+
+        WARN0("Unknown baseflow description in restart file");
+
+    }
+
+    return this->populate(t, verbose);
 }
 
 } // namespace support

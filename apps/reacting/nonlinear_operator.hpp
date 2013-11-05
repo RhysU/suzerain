@@ -1287,8 +1287,12 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                 real_t  dtPbase = 0;
 
                 // Compute baseflow from coefficients
-                sgdef.get_baseflow(ycoord, &base[0], &dybase[0], &dxbase[0]);
-                sgdef.get_baseflow_pressure(ycoord, Pbase, dyPbase, dxPbase);
+                if (sgdef.baseflow) {
+                    sgdef.baseflow->conserved(
+                        ycoord, &base[0], &dybase[0], &dxbase[0]);
+                    sgdef.baseflow->pressure(
+                        ycoord, Pbase, dyPbase, dxPbase);
+                }
 
                 base  [Ns+4] =   Pbase;
                 dybase[Ns+4] = dyPbase;
@@ -1296,7 +1300,8 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
 
                 if (base[0]>0) {
                     // growth rate of ru:
-                    sgdef.get_baseflow(0.0, &wall[0], &dywall[0], &dxwall[0]);
+                    sgdef.baseflow->conserved(
+                        0.0, &wall[0], &dywall[0], &dxwall[0]);
                     real_t wall_u     =   wall[1] / wall[0];
                     real_t wall_drudx = dxwall[1];
                     grDA[1] = - wall_u * wall_drudx / (0.0 - wall_u);

@@ -40,6 +40,7 @@ largo_specification::largo_specification(
     : formulation(formulation)
     , grdelta(grdelta)
     , workspace(workspace)
+    , baseflow()
 {
 }
 

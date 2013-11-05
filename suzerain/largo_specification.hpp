@@ -29,9 +29,9 @@
  */
 
 #include <suzerain/common.hpp>
+#include <suzerain/baseflow.hpp>
 #include <suzerain/largo_formulation.hpp>
 
-// Forward declarations
 struct largo_workspace;
 
 namespace suzerain {
@@ -52,39 +52,14 @@ public:
     /** Which \ref largo_formulation is in use? */
     largo_formulation formulation;
 
-    /** Growth rate of reference thickness \f$\Delta\f$ */
+    /** Growth rate of reference thickness \f$\Delta\f$. */
     real_t grdelta;
 
-    /** Pointer to largo workspace */
+    /** Pointer to largo workspace. */
     largo_workspace * workspace;
 
-    /**
-     * Compute baseflow state and its spatial derivatives at some position.
-     *
-     * @param[in ] y      Wall-normal coordinate \f$y\f$.
-     * @param[out] base   Base flow state at \f$y\f$ stored per \ref largo_state.
-     * @param[out] dybase Wall-normal derivatives of flow state at \f$y\f$.
-     *                    Stored per \ref largo_state.
-     * @param[out] dxbase Streamwise derivatives of flow state at \f$y\f$.
-     *                    Stored per \ref largo_state.
-     */
-    virtual void get_baseflow(const real_t    y,
-                              real_t *     base,
-                              real_t *   dybase,
-                              real_t *   dxbase) const = 0;
-
-    /**
-     * Compute baseflow pressure and its spatial derivatives at some position.
-     *
-     * @param[in ] y      Wall-normal coordinate \f$y\f$.
-     * @param[out] base   Base flow pressure at \f$y\f$.
-     * @param[out] dybase Wall-normal derivative of pressure at \f$y\f$.
-     * @param[out] dxbase Streamwise derivative of pressure at \f$y\f$.
-     */
-    virtual void get_baseflow_pressure(const real_t    y,
-                                       real_t &    Pbase,
-                                       real_t &  dyPbase,
-                                       real_t &  dxPbase) const = 0;
+    /** Baseflow information. */
+    shared_ptr<baseflow_interface> baseflow;
 
 };
 

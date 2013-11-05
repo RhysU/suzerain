@@ -384,10 +384,10 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
     // If necessary, perform globally-relevant initialization calls to Largo.
     // Required only once but done every ZerothSubstep for robustness.
     largo_state basewall;
-    if (ZerothSubstep && SlowTreatment == slowgrowth::largo) {
+    if (ZerothSubstep && SlowTreatment == slowgrowth::largo && sg.baseflow) {
         largo_state dy, dx;
-        sg.get_baseflow(0.0, basewall.as_is(), dy.as_is(), dx.as_is());
-        sg.get_baseflow_pressure(0.0, basewall.p, dy.p, dx.p); // as_is()
+        sg.baseflow->conserved(0.0, basewall.as_is(), dy.as_is(), dx.as_is());
+        sg.baseflow->pressure (0.0, basewall.p, dy.p, dx.p); // as_is()
 
         largo_state grDA, grDArms;
         if (!basewall.trivial()) {
@@ -781,11 +781,11 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
          ++j) {
 
         // If necessary, Largo performs base flow computations prior to X-Z
-        if (SlowTreatment == slowgrowth::largo) {
+        if (SlowTreatment == slowgrowth::largo && sg.baseflow) {
             SUZERAIN_TIMER_SCOPED("calling largo_prestep_baseflow");
             largo_state base, dy, dx;
-            sg.get_baseflow(o.y(j), base.as_is(), dy.as_is(), dx.as_is());
-            sg.get_baseflow_pressure(o.y(j), base.p, dy.p, dx.p); // as_is()
+            sg.baseflow->conserved(o.y(j), base.as_is(), dy.as_is(), dx.as_is());
+            sg.baseflow->pressure(o.y(j), base.p, dy.p, dx.p); // as_is()
 
             // When a nontrivial inviscid base flow is present, compute
             // model-appropriate residual so that it might be eradicated.  The
