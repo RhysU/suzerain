@@ -229,16 +229,20 @@ largo_definition::save(
     } else if (formulation == largo_formulation::spatiotemporal_consistent) {
         esio_attribute_write(h, location, name_grdelta, &grdelta);
     } else {
+        FATAL0("Attempt to save unknown largo_formulation");
         SUZERAIN_ERROR_VOID_UNIMPLEMENTED();
     }
 
-    // FIXME Redmine #2503 Assumes coefficient-based baseflows
-    if (this->baseflow) {
-        baseflow_polynomial* const bf
-            = dynamic_cast<baseflow_polynomial*>(this->baseflow.get());
+    // My most sincere apologies for using dynamic_cast to dispatch (#2503)
+    // A simple OOPish design would push ESIO concerns into baseflow.hpp.
+    // A proper OOPish design would introduce the visitor pattern.
+    if (dynamic_cast<baseflow_polynomial*>(baseflow.get())) {
+
+        baseflow_polynomial* const b
+            = dynamic_cast<baseflow_polynomial*>(baseflow.get());
 
         // Write baseflow field coefficients (only master process)
-        const MatrixXXr& x  = bf->x;
+        const MatrixXXr& x  = b->x;
         esio_plane_establish(
                 h,
                 x.outerSize(), 0, procid == 0 ? x.outerSize() : 0,
@@ -252,7 +256,7 @@ largo_definition::save(
                 attr_base, type_polynomial.c_str());
 
         // Write baseflow derivative coefficients (only master process)
-        const MatrixXXr& dx = bf->dx;
+        const MatrixXXr& dx = b->dx;
         esio_plane_establish(
                 h,
                 dx.outerSize(), 0, procid == 0 ?  dx.outerSize() : 0,
@@ -264,6 +268,31 @@ largo_definition::save(
         esio_string_set(
                 h, location_baseflow_d,
                 attr_base, type_polynomial.c_str());
+
+    } else if (dynamic_cast<baseflow_uniform*>(baseflow.get())) {
+
+        baseflow_uniform* const b
+            = dynamic_cast<baseflow_uniform*>(baseflow.get());
+
+        // Write baseflow field values (only master process)
+        const MatrixXXr& x  = b->x;
+        esio_plane_establish(
+                h,
+                x.outerSize(), 0, procid == 0 ? x.outerSize() : 0,
+                x.innerSize(), 0, procid == 0 ? x.innerSize() : 0);
+        esio_plane_write(
+                h, location_baseflow, x.data(),
+                x.outerStride(), x.innerStride(),
+                "Baseflow field values");
+        esio_string_set(
+                h, location_baseflow,
+                attr_base, type_uniform.c_str());
+
+    } else {
+
+        FATAL0("Attempt to save unknown baseflow description");
+        SUZERAIN_ERROR_VOID_UNIMPLEMENTED();
+
     }
 }
 
@@ -311,6 +340,7 @@ largo_definition::load(
     } else if (t.formulation == largo_formulation::spatiotemporal_consistent) {
         esio_attribute_read(h, location, name_grdelta, &t.grdelta);
     } else {
+        FATAL0("Attempt to load unknown largo_formulation");
         SUZERAIN_ERROR_VOID_UNIMPLEMENTED();
     }
 
@@ -378,7 +408,8 @@ largo_definition::load(
 
     } else {
 
-        WARN0("Unknown baseflow description in restart file");
+        FATAL0("Attempt to load unknown baseflow description");
+        SUZERAIN_ERROR_VOID_UNIMPLEMENTED();
 
     }
 
