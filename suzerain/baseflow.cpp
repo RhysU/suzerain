@@ -129,10 +129,10 @@ baseflow_polynomial::conserved_state(
 
 void
 baseflow_polynomial::pressure(
-        const real_t      y,
-        real_t&       P,
-        real_t&     dyP,
-        real_t&     dxP) const
+        const real_t   y,
+        real_t&        P,
+        real_t&      dyP,
+        real_t&      dxP) const
 {
     // Ensure consistent number of state variables + pressure
     assert(x.cols() > 0);

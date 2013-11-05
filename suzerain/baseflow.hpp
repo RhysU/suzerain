@@ -54,10 +54,10 @@ public:
      * @param[out] dxbase Streamwise derivatives of flow state at \f$y\f$.
      *                    Stored per \ref largo_state.
      */
-    virtual void conserved_state(const real_t    y,
-                                 real_t *     base,
-                                 real_t *   dybase,
-                                 real_t *   dxbase) const = 0;
+    virtual void conserved_state(const real_t      y,
+                                 real_t *       base,
+                                 real_t *     dybase,
+                                 real_t *     dxbase) const = 0;
 
     /**
      * Compute baseflow pressure and its spatial derivatives at some position.
@@ -81,7 +81,6 @@ public:
 class baseflow_uniform
     : public virtual baseflow_interface
 {
-
     /**
      * Construct an instance
      *
@@ -90,10 +89,10 @@ class baseflow_uniform
      */
     baseflow_uniform();
 
-    void conserved_state(const real_t    y,
-                         real_t *     base,
-                         real_t *   dybase,
-                         real_t *   dxbase) const;
+    void conserved_state(const real_t      y,
+                         real_t *       base,
+                         real_t *     dybase,
+                         real_t *     dxbase) const;
 
     void pressure(const real_t    y,
                   real_t &        P,
@@ -113,7 +112,6 @@ class baseflow_uniform
 class baseflow_polynomial
     : public virtual baseflow_interface
 {
-
     /**
      * Construct an instance
      *
@@ -122,10 +120,10 @@ class baseflow_polynomial
      */
     baseflow_polynomial();
 
-    void conserved_state(const real_t    y,
-                         real_t *     base,
-                         real_t *   dybase,
-                         real_t *   dxbase) const;
+    void conserved_state(const real_t      y,
+                         real_t *       base,
+                         real_t *     dybase,
+                         real_t *     dxbase) const;
 
     void pressure(const real_t    y,
                   real_t &        P,
@@ -158,15 +156,15 @@ class baseflow_polynomial
 //    : public virtual baseflow_interface
 //{
 //public:
-//    void conserved_state(const real_t    y,
-//                         real_t *     base,
-//                         real_t *   dybase,
-//                         real_t *   dxbase);
+//    void conserved_state(const real_t      y,
+//                         real_t *       base,
+//                         real_t *     dybase,
+//                         real_t *     dxbase) const;
 //
 //    void pressure(const real_t    y,
 //                  real_t &        P,
 //                  real_t &      dyP,
-//                  real_t &      dxP);
+//                  real_t &      dxP) const;
 //};
 
 } // namespace suzerain
