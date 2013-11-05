@@ -237,7 +237,7 @@ suzerain_radial_nozzle_qoi_pexi(
  * \f{align}{
  *       \rho  &= \rho\left(R\right)
  *   \\  u_\xi &= \left|u\left(R\right)\right| \frac{x}{R}
- *   \\  v_y   &=       u\left(R\right)        \frac{y}{R}
+ *   \\  u_y   &=       u\left(R\right)        \frac{y}{R}
  *   \\  p     &= \frac{\mbox{Ma}_0^2}{\mbox{Ma}^2} \, p\left(R\right)
  * \f}
  * and
