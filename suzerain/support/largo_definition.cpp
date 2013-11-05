@@ -252,7 +252,7 @@ largo_definition::save(
                 attr_base, type_polynomial.c_str());
 
         // Write baseflow derivative coefficients (only master process)
-        const MatrixXXr& dx = bf->x;
+        const MatrixXXr& dx = bf->dx;
         esio_plane_establish(
                 h,
                 dx.outerSize(), 0, procid == 0 ?  dx.outerSize() : 0,
