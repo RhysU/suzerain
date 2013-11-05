@@ -215,7 +215,7 @@ largo_definition::save(
 
     // scalars
     if (formulation == largo_formulation::disable) {
-        // Nothing else to save
+        return; // Nothing else to save, STOP!
     } else if (formulation == largo_formulation::temporal) {
         esio_attribute_write(h, location, name_grdelta, &grdelta);
     } else if (formulation == largo_formulation::spatial) {
