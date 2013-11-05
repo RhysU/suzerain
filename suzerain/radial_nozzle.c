@@ -210,7 +210,7 @@ suzerain_radial_nozzle_qoi_pexi(
 }
 
 void
-suzerain_radial_nozzle_cartesian(
+suzerain_radial_nozzle_cartesian_primitive(
     const suzerain_radial_nozzle_solution * s,
     const size_t i,
     const double Ma,

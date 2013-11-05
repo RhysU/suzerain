@@ -228,10 +228,10 @@ suzerain_radial_nozzle_qoi_pexi(
     const size_t i);
 
 /**
- * Compute Cartesian base flow information at \f$\left(R_0, \delta_i\right)\f$,
- * including streamwise derivatives, given a radial nozzle solution.
- * Downstream is oriented to be in the positive \f$x\f$ direction regardless of
- * the sub- versus supersonic nature of the radial solution.
+ * Compute Cartesian base flow primitive state at \f$\left(R_0,
+ * \delta_i\right)\f$, including streamwise derivatives, given a radial nozzle
+ * solution.  Downstream is oriented to be in the positive \f$x\f$ direction
+ * regardless of the sub- versus supersonic nature of the radial solution.
  *
  * More concretely, compute
  * \f{align}{
@@ -289,7 +289,7 @@ suzerain_radial_nozzle_qoi_pexi(
  * @see Model documentation in <tt>writeups/baseflow.tex</tt> for details.
  */
 void
-suzerain_radial_nozzle_cartesian(
+suzerain_radial_nozzle_cartesian_primitive(
     const suzerain_radial_nozzle_solution * s,
     const size_t i,
     const double Ma,
