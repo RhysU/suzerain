@@ -221,7 +221,7 @@ quantities::quantities(
     : quantities_base(t, Ny)
     , Ns(Ns)
 {
-    species_storage.setZero(Ny, 5*Ns);
+    species_storage.setZero(Ny, 11*Ns);
 }
 
 
@@ -234,7 +234,9 @@ void quantities::save(const esio_handle h) const
         quantities_saver f("quantities", h, "bar_");
         f("rho_s", this->rho_s(0, Ns));
         f("om_s" , this->om_s (0, Ns));
-        f("rho_s_u", this->rho_s_u());
+        f("rho_s_u"          , this->rho_s_u          ());
+        f("rho_Ds_grad_cs"   , this->rho_Ds_grad_cs   ());
+        f("rho_Ds_grad_cs_hs", this->rho_Ds_grad_cs_hs());
     } else {
         WARN0("quantities", "No mean quantity samples saved--"
                             " trivial storage needs detected");
@@ -253,7 +255,7 @@ bool quantities::load(const esio_handle h)
     int cglobal, bglobal, aglobal;
     if (ESIO_SUCCESS == esio_field_size(h, "bar_rho_s",
                                         &cglobal, &bglobal, &aglobal)) {
-        this->species_storage.resize(aglobal, 5*bglobal);
+        this->species_storage.resize(aglobal, 11*bglobal);
 
         if (this->Ns==0)
             { this->Ns = bglobal; }
@@ -263,7 +265,9 @@ bool quantities::load(const esio_handle h)
         quantities_loader f("quantities", h, "bar_");
         f("rho_s", this->rho_s(0, Ns));
         f("om_s" , this->om_s (0, Ns));
-        f("rho_s_u", this->rho_s_u());
+        f("rho_s_u"          , this->rho_s_u          ());
+        f("rho_Ds_grad_cs"   , this->rho_Ds_grad_cs   ());
+        f("rho_Ds_grad_cs_hs", this->rho_Ds_grad_cs_hs());
         success = true;
     } else {
         WARN0("quantities", "No mean quantity samples loaded--"
@@ -545,7 +549,9 @@ quantities sample_quantities(
         // Vectors of species quantity accumulators
         std::vector<accumulator_type> sum_rho_s  (Ns);
         std::vector<accumulator_type> sum_om_s   (Ns);
-        std::vector<accumulator_type> sum_rho_s_u(Ns*dir::count);
+        std::vector<accumulator_type> sum_rho_s_u          (Ns*dir::count);
+        std::vector<accumulator_type> sum_rho_Ds_grad_cs   (Ns*dir::count);
+        std::vector<accumulator_type> sum_rho_Ds_grad_cs_hs(Ns*dir::count);
 
         for (int k = dgrid.local_physical_start.z();
             k < dgrid.local_physical_end.z();
@@ -668,6 +674,20 @@ quantities sample_quantities(
                     sum_rho_s_u[s*dir::count+0](species[s] * u.x());
                     sum_rho_s_u[s*dir::count+1](species[s] * u.y());
                     sum_rho_s_u[s*dir::count+2](species[s] * u.z());
+
+                    sum_rho_Ds_grad_cs[s*dir::count+0]
+                      (rho * Ds[s] * grad_cs(0,s));
+                    sum_rho_Ds_grad_cs[s*dir::count+1]
+                      (rho * Ds[s] * grad_cs(1,s));
+                    sum_rho_Ds_grad_cs[s*dir::count+2]
+                      (rho * Ds[s] * grad_cs(2,s));
+
+                    sum_rho_Ds_grad_cs_hs[s*dir::count+0]
+                      (rho * Ds[s] * grad_cs(0,s) * hs[s]);
+                    sum_rho_Ds_grad_cs_hs[s*dir::count+1]
+                      (rho * Ds[s] * grad_cs(1,s) * hs[s]);
+                    sum_rho_Ds_grad_cs_hs[s*dir::count+2]
+                      (rho * Ds[s] * grad_cs(2,s) * hs[s]);
                 }
 
                 sum_E[0](e / rho);
@@ -832,6 +852,20 @@ quantities sample_quantities(
             ret.rho_s_u(s,0)[j] = acc::sum(sum_rho_s_u[s*dir::count+0]);
             ret.rho_s_u(s,1)[j] = acc::sum(sum_rho_s_u[s*dir::count+1]);
             ret.rho_s_u(s,2)[j] = acc::sum(sum_rho_s_u[s*dir::count+2]);
+
+            ret.rho_Ds_grad_cs(s,0)[j] = 
+              acc::sum(sum_rho_Ds_grad_cs[s*dir::count+0]);
+            ret.rho_Ds_grad_cs(s,1)[j] = 
+              acc::sum(sum_rho_Ds_grad_cs[s*dir::count+1]);
+            ret.rho_Ds_grad_cs(s,2)[j] = 
+              acc::sum(sum_rho_Ds_grad_cs[s*dir::count+2]);
+
+            ret.rho_Ds_grad_cs_hs(s,0)[j] = 
+              acc::sum(sum_rho_Ds_grad_cs_hs[s*dir::count+0]);
+            ret.rho_Ds_grad_cs_hs(s,1)[j] = 
+              acc::sum(sum_rho_Ds_grad_cs_hs[s*dir::count+1]);
+            ret.rho_Ds_grad_cs_hs(s,2)[j] = 
+              acc::sum(sum_rho_Ds_grad_cs_hs[s*dir::count+2]);
         }
 
     } // end Y
