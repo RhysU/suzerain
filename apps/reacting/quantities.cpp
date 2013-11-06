@@ -221,7 +221,7 @@ quantities::quantities(
     : quantities_base(t, Ny)
     , Ns(Ns)
 {
-    species_storage.setZero(Ny, 2*Ns);
+    species_storage.setZero(Ny, 5*Ns);
 }
 
 
@@ -234,6 +234,7 @@ void quantities::save(const esio_handle h) const
         quantities_saver f("quantities", h, "bar_");
         f("rho_s", this->rho_s(0, Ns));
         f("om_s" , this->om_s (0, Ns));
+        f("rho_s_u", this->rho_s_u());
     } else {
         WARN0("quantities", "No mean quantity samples saved--"
                             " trivial storage needs detected");
@@ -252,7 +253,7 @@ bool quantities::load(const esio_handle h)
     int cglobal, bglobal, aglobal;
     if (ESIO_SUCCESS == esio_field_size(h, "bar_rho_s",
                                         &cglobal, &bglobal, &aglobal)) {
-        this->species_storage.resize(aglobal, 2*bglobal);
+        this->species_storage.resize(aglobal, 5*bglobal);
 
         if (this->Ns==0)
             { this->Ns = bglobal; }
@@ -262,6 +263,7 @@ bool quantities::load(const esio_handle h)
         quantities_loader f("quantities", h, "bar_");
         f("rho_s", this->rho_s(0, Ns));
         f("om_s" , this->om_s (0, Ns));
+        f("rho_s_u", this->rho_s_u());
         success = true;
     } else {
         WARN0("quantities", "No mean quantity samples loaded--"
@@ -541,8 +543,9 @@ quantities sample_quantities(
 #undef DECLARE
 
         // Vectors of species quantity accumulators
-        std::vector<accumulator_type> sum_rho_s(Ns);
-        std::vector<accumulator_type> sum_om_s (Ns);
+        std::vector<accumulator_type> sum_rho_s  (Ns);
+        std::vector<accumulator_type> sum_om_s   (Ns);
+        std::vector<accumulator_type> sum_rho_s_u(Ns*dir::count);
 
         for (int k = dgrid.local_physical_start.z();
             k < dgrid.local_physical_end.z();
@@ -652,10 +655,19 @@ quantities sample_quantities(
                 const Matrix3r tau = suzerain::rholut::tau(mu, lam, div_u, grad_u);
                 const Vector3r tau_u = tau * u;
 
+                // Compute Mach number
+                const real_t M = sqrt(u.x() * u.x() + 
+                                      u.y() * u.y() + 
+                                      u.z() * u.z()) / a;
+                
                 // Accumulate quantities into sum_XXX using function syntax.
                 for (unsigned int s=0; s<Ns; ++s) {
                     sum_rho_s[s](species[s]);
                     sum_om_s [s](om[s]);
+
+                    sum_rho_s_u[s*dir::count+0](species[s] * u.x());
+                    sum_rho_s_u[s*dir::count+1](species[s] * u.y());
+                    sum_rho_s_u[s*dir::count+2](species[s] * u.z());
                 }
 
                 sum_E[0](e / rho);
@@ -665,6 +677,8 @@ quantities sample_quantities(
                 sum_p[0](p);
 
                 sum_a[0](a);
+
+                sum_M[0](M);
 
                 sum_mu[0](mu);
 
@@ -739,6 +753,16 @@ quantities sample_quantities(
                 sum_rho_T_u[1](rho * T * u.y());
                 sum_rho_T_u[2](rho * T * u.z());
 
+                sum_rho_E_u[0](e * u.x());
+                sum_rho_E_u[1](e * u.y());
+                sum_rho_E_u[2](e * u.z());
+
+                sum_p_u[0](p * u.x());
+                sum_p_u[1](p * u.y());
+                sum_p_u[2](p * u.z());
+
+                sum_rho_T[0](rho * T);
+
                 sum_rho_mu[0](rho * mu);
 
                 sum_mu_S[0](mu * ( grad_u(0,0)                    - div_u / 3));
@@ -760,7 +784,15 @@ quantities sample_quantities(
 
                 sum_p_p[0](p * p);
 
+                sum_a_a[0](a * a);
+
+                sum_M_M[0](M * M);
+
                 sum_mu_mu[0](mu * mu);
+
+                sum_u_u[0](u.x() * u.x());
+                sum_u_u[1](u.y() * u.y());
+                sum_u_u[2](u.z() * u.z());
 
                 // TODO Sum mean slow growth forcing contributions (Redmine #2496)
 
@@ -796,6 +828,10 @@ quantities sample_quantities(
         for (unsigned int s=0; s<Ns; ++s) {
             ret.rho_s(s)[j] = acc::sum(sum_rho_s[s]);
             ret.om_s (s)[j] = acc::sum(sum_om_s[s] );
+
+            ret.rho_s_u(s,0)[j] = acc::sum(sum_rho_s_u[s*dir::count+0]);
+            ret.rho_s_u(s,1)[j] = acc::sum(sum_rho_s_u[s*dir::count+1]);
+            ret.rho_s_u(s,2)[j] = acc::sum(sum_rho_s_u[s*dir::count+2]);
         }
 
     } // end Y

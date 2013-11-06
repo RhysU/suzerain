@@ -84,6 +84,7 @@ public:
     ((T,                 1))  /* scalar           */ \
     ((p,                 1))  /* scalar           */ \
     ((a,                 1))  /* scalar           */ \
+    ((M,                 1))  /* scalar           */ \
     ((mu,                1))  /* scalar           */ \
     ((nu,                1))  /* scalar           */ \
     ((kappa,             1))  /* scalar           */ \
@@ -100,6 +101,9 @@ public:
     ((rho_u_u,           6))  /* symmetric tensor */ \
     ((rho_u_u_u,        10))  /* symmetric tensor */ \
     ((rho_T_u,           3))  /* vector           */ \
+    ((rho_E_u,           3))  /* vector           */ \
+    ((p_u,               3))  /* vector           */ \
+    ((rho_T,             1))  /* scalar           */ \
     ((rho_mu,            1))  /* scalar           */ \
     ((mu_S,              6))  /* symmetric tensor */ \
     ((mu_div_u,          1))  /* scalar           */ \
@@ -107,7 +111,10 @@ public:
     ((rho_rho,           1))  /* scalar           */ \
     ((T_T,               1))  /* scalar           */ \
     ((p_p,               1))  /* scalar           */ \
+    ((a_a,               1))  /* scalar           */ \
+    ((M_M,               1))  /* scalar           */ \
     ((mu_mu,             1))  /* scalar           */ \
+    ((u_u,               3))  /* vector           */ \
     ((SrhoE,             1))  /* scalar           */ \
     ((Srhou,             3))  /* vector           */ \
     ((Srho,              1))  /* scalar           */ \
@@ -375,6 +382,30 @@ public:
     species_storage_type::ConstColsBlockXpr 
     om_s(const std::size_t s, species_storage_type::Index nc) const {
         return species_storage.middleCols(this->Ns + s, nc);
+    }
+
+    // Declare a named, mutable "view" into storage for each species density
+    species_storage_type::ColXpr 
+    rho_s_u(const std::size_t s, const std::size_t i) {
+        return species_storage.col(2*this->Ns + 3*s + i);
+    }
+
+    // Declare a named, immutable "view" into storage for each species density
+    species_storage_type::ConstColXpr 
+    rho_s_u(const std::size_t s, const std::size_t i) const {
+        return species_storage.col(2*this->Ns + 3*s + i);
+    }
+
+    // Declare a named, mutable "view" into storage for all species density
+    species_storage_type::ColsBlockXpr 
+    rho_s_u() {
+        return species_storage.middleCols(2*this->Ns, 3*this->Ns);
+    }
+
+    // Declare a named, immutable "view" into storage for all species density
+    species_storage_type::ConstColsBlockXpr 
+    rho_s_u() const {
+        return species_storage.middleCols(2*this->Ns, 3*this->Ns);
     }
 
 };
