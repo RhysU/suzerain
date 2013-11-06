@@ -273,7 +273,7 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
             freestream.rho = rho_inf;
             freestream.mx  = mx_inf;
             freestream.my  = rho_inf * isothermal->lower_v;
-            freestream.mz  = 0;
+            freestream.mz  = rho_inf * isothermal->upper_w;
             freestream.e   = e_inf;
             freestream.p   = p_inf;
         }
