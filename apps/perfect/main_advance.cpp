@@ -28,10 +28,13 @@
 #include <esio/esio.h>
 #include <largo/largo.h>
 
+#include <suzerain/baseflow.hpp>
 #include <suzerain/common.hpp>
 #include <suzerain/constraint.hpp>
 #include <suzerain/constraint_treatment.hpp>
 #include <suzerain/isothermal_specification.hpp>
+#include <suzerain/largo_state.hpp>
+#include <suzerain/rholut.hpp>
 #include <suzerain/state.hpp>
 #include <suzerain/support/logging.hpp>
 #include <suzerain/support/noise_definition.hpp>
@@ -233,6 +236,7 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
                 new constraint::reference_bulk(scenario->bulk_rho_E, *b));
 
     } else if (grid->one_sided()) { // Flat plate per plate_treatment.tex
+                                    // unless complicated baseflow prescribed
 
         if (scenario->bulk_rho) {
             WARN0(who, "Removing channel-like bulk_rho setting");
@@ -247,43 +251,95 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
             scenario->bulk_rho_E = numeric_limits<real_t>::quiet_NaN();
         }
 
-        INFO0(who, "Computing mean freestream behavior per plate scenario");
-        const real_t T_inf   = isothermal->upper_T;                 // Brevity
-        const real_t u_inf   = sqrt(T_inf);                         // Eqn ( 6)
-        const real_t mx_inf  = pow(T_inf, scenario->beta);          // Eqn ( 7)
-        const real_t rho_inf = pow(T_inf, scenario->beta - 0.5);    // Eqn ( 8)
-        const real_t e_inf   = pow(T_inf, scenario->beta - 0.5) * ( // Eqn (11)
-                                   T_inf/(scenario->gamma*(scenario->gamma-1))
-                                 + pow(scenario->Ma, 2) / 2 * (
-                                       T_inf
-                                     + pow(isothermal->upper_v, 2)
-                                     + pow(isothermal->upper_w, 2)
-                                   )
-                               );
+        DEBUG0(who, "Computing freestream per vanilla flat plate scenario");
+        largo_state freestream;
+        {
+            real_t T_inf   = isothermal->upper_T;                 // Brevity
+            real_t mx_inf  = pow(T_inf, scenario->beta);          // Eqn ( 7)
+            real_t rho_inf = pow(T_inf, scenario->beta - 0.5);    // Eqn ( 8)
+            real_t e_inf   = pow(T_inf, scenario->beta - 0.5) * ( // Eqn (11)
+                                 T_inf/(scenario->gamma*(scenario->gamma-1))
+                               + pow(scenario->Ma, 2) / 2 * (
+                                     T_inf
+                                   + pow(isothermal->upper_v, 2)
+                                   + pow(isothermal->upper_w, 2)
+                                 )
+                             );
+            real_t p_inf;
+            rholut::p(scenario->gamma, rho_inf, T_inf, p_inf);
+
+            // Pack the into Largo-ready storage choosing lower_v for v
+            // This matters for establishing isothermal->upper_v below
+            freestream.rho = rho_inf;
+            freestream.mx  = mx_inf;
+            freestream.my  = rho_inf * isothermal->lower_v;
+            freestream.mz  = 0;
+            freestream.e   = e_inf;
+            freestream.p   = p_inf;
+        }
+
+        // If required by the slow growth model, add freestream baseflow
+        if (     sg->formulation.enabled()
+             && !sg->formulation.is_strictly_temporal()
+             && (   !sg->baseflow
+                 || dynamic_cast<baseflow_uniform*>(sg->baseflow.get()))) {
+            INFO0(who, "Adding uniform baseflow at freestream conditions");
+            shared_ptr<baseflow_uniform> bu(new baseflow_uniform());
+            bu->x.resize(state_linear->shape()[0] + /* pressure */ 1);
+            memcpy(bu->x.data(), freestream.as_is(), sizeof(freestream));
+            sg->baseflow = bu;
+        }
+
+        // If slow growth baseflow in use, obtain freestream from it.  Permits
+        // obtaining freestream from, e.g., baseflow_polynomial in a manner
+        // consistent with slow growth forcing.  Notice when no slow growth we
+        // still have vanilla flat plate scenario values after this block.
+        if (sg->formulation.enabled() && sg->baseflow) {
+            {
+                largo_state dontcare;
+                sg->baseflow->conserved(grid->L.y(), freestream.as_is(),
+                                        dontcare.as_is(), dontcare.as_is());
+            }
+            {
+                real_t dontcare;
+                sg->baseflow->pressure (grid->L.y(), freestream.p,
+                                        dontcare, dontcare);
+            }
+        }
 
         INFO0(who, "Setting freestream reference state on upper boundary");
-        isothermal->upper_rho = rho_inf;
-        isothermal->upper_u   = u_inf;
+        isothermal->upper_rho = freestream.rho;
+        isothermal->upper_u   = freestream.u();
         if (sg->formulation.enabled()) {
             // Homogenization modifies the inviscid characteristics.
             // See discussion (or placeholder thereof) at Redmine #2982
-            isothermal->upper_v = isothermal->lower_v
+            isothermal->upper_v = freestream.v()
                                 - grid->L.y()*sg->grdelta;
-            INFO0(who, "Matching upper_v with prescribed"
-                       " grdelta, lower_v, and Ly: " << isothermal->upper_v);
+            INFO0(who, "Matched upper_v with prescribed"
+                       " grdelta, freestream.v(), and Ly: "
+                       << isothermal->upper_v);
+
+            isothermal->upper_w = freestream.w();
+            INFO0(who, "Matched upper_w with prescribed freestream.w(): "
+                       << isothermal->upper_w);
+
+            // Employs perfect gas EOS with constant gamma.
+            isothermal->upper_T = scenario->gamma*freestream.p/freestream.rho;
+            INFO0(who, "Matched upper_T with prescribed freestream T: "
+                       << isothermal->upper_T);
         } else {
             DEBUG0(who, "Keeping reference upper_v = " << isothermal->upper_v);
+            DEBUG0(who, "Keeping reference upper_w = " << isothermal->upper_w);
+            DEBUG0(who, "Keeping reference upper_T = " << isothermal->upper_T);
         }
-        DEBUG0(who, "Keeping reference upper_w = " << isothermal->upper_w);
-        DEBUG0(who, "Keeping reference upper_T = " << isothermal->upper_T);
 
         INFO0(who, "Establishing driving, freestream-like state constraints");
         constrainer->physical[ndx::e  ].reset(
-                new constraint::constant_upper(e_inf,   *cop, 0));
+                new constraint::constant_upper(freestream.e,   *cop, 0));
         constrainer->physical[ndx::mx ].reset(
-                new constraint::constant_upper(mx_inf,  *cop, 0));
+                new constraint::constant_upper(freestream.mx,  *cop, 0));
         constrainer->physical[ndx::rho].reset(
-                new constraint::constant_upper(rho_inf, *cop, 0));
+                new constraint::constant_upper(freestream.rho, *cop, 0));
 
         if (isothermal->upper_v > 0 && (boost::math::isinf)(scenario->Re)) {
             WARN0(who, "Nonreflecting viscous outflow boundary problematic"

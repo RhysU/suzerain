@@ -236,7 +236,30 @@ largo_definition::save(
     // My most sincere apologies for using dynamic_cast to dispatch (#2503)
     // A simple OOPish design would push ESIO concerns into baseflow.hpp.
     // A proper OOPish design would introduce the visitor pattern.
-    if (dynamic_cast<baseflow_polynomial*>(baseflow.get())) {
+    if (!baseflow) {
+
+        // No baseflow to save
+
+    } else if (dynamic_cast<baseflow_uniform*>(baseflow.get())) {
+
+        baseflow_uniform* const b
+            = dynamic_cast<baseflow_uniform*>(baseflow.get());
+
+        // Write baseflow field values (only master process)
+        const MatrixXXr& x  = b->x;
+        esio_plane_establish(
+                h,
+                x.outerSize(), 0, procid == 0 ? x.outerSize() : 0,
+                x.innerSize(), 0, procid == 0 ? x.innerSize() : 0);
+        esio_plane_write(
+                h, location_baseflow, x.data(),
+                x.outerStride(), x.innerStride(),
+                "Baseflow field values");
+        esio_string_set(
+                h, location_baseflow,
+                attr_base, type_uniform.c_str());
+
+    } else if (dynamic_cast<baseflow_polynomial*>(baseflow.get())) {
 
         baseflow_polynomial* const b
             = dynamic_cast<baseflow_polynomial*>(baseflow.get());
@@ -268,25 +291,6 @@ largo_definition::save(
         esio_string_set(
                 h, location_baseflow_d,
                 attr_base, type_polynomial.c_str());
-
-    } else if (dynamic_cast<baseflow_uniform*>(baseflow.get())) {
-
-        baseflow_uniform* const b
-            = dynamic_cast<baseflow_uniform*>(baseflow.get());
-
-        // Write baseflow field values (only master process)
-        const MatrixXXr& x  = b->x;
-        esio_plane_establish(
-                h,
-                x.outerSize(), 0, procid == 0 ? x.outerSize() : 0,
-                x.innerSize(), 0, procid == 0 ? x.innerSize() : 0);
-        esio_plane_write(
-                h, location_baseflow, x.data(),
-                x.outerStride(), x.innerStride(),
-                "Baseflow field values");
-        esio_string_set(
-                h, location_baseflow,
-                attr_base, type_uniform.c_str());
 
     } else {
 
@@ -389,9 +393,12 @@ largo_definition::load(
                 dx.outerStride(), dx.innerStride());
     }
 
-    // FIXME Redmine #2503 Only handles polynomial-based baseflows
-    if(    base_x  && type_polynomial == base_x .get()
-        && base_dx && type_polynomial == base_dx.get()) {
+    if (!base_x && !base_dx) {
+
+        // No baseflow to load
+
+    } else if (    base_x  && type_polynomial == base_x .get()
+                && base_dx && type_polynomial == base_dx.get()) {
 
         INFO0("Preparing polynomial-based baseflow description");
         shared_ptr<baseflow_polynomial> p = make_shared<baseflow_polynomial>();
