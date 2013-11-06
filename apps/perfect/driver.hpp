@@ -130,6 +130,9 @@ public:
             const real_t t,
             const std::size_t nt);
 
+    // Avoid hiding superclass name with overload just below
+    using super::log_boundary_layer_quantities;
+
     /**
      * Log a variety of quantities of interest for a boundary layer simulation.
      *
