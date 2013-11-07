@@ -1352,6 +1352,11 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                 }
 
                 // Init
+                // FIXME Ticket #2997 details changes required for tensor-consistency
+                //
+                // Key off sg.formulation.expects_conserved_growth_rates() or
+                //         sg.formulation.expects_specific_growth_rates() or
+                //         throw a fit.
                 largo_init (sgdef.workspace, sgdef.grdelta, grDA, grDArms);
                 largo_init_wall_baseflow (sgdef.workspace, wall, dywall, dtwall, dxwall, srcwall);
 

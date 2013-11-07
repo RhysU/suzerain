@@ -398,6 +398,11 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             grDA.mx = - basewall.u() * dx.mx / (0.0 - basewall.u());
         }
 
+        // FIXME Ticket #2997 details changes required for tensor-consistency
+        //
+        // Key off sg.formulation.expects_conserved_growth_rates() or
+        //         sg.formulation.expects_specific_growth_rates() or
+        //         throw a fit.
         largo_init(sg.workspace, sg.grdelta,
                    grDA.rescale(inv_Ma2), grDArms.rescale(inv_Ma2));
 

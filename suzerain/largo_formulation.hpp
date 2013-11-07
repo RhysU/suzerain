@@ -69,6 +69,24 @@ public:
     const std::string& description() const
     { return d; }
 
+    /**
+     * Does the model expect conserved state growth rates?  That is, provide
+     * \f$\rho\f$, \f$\rho u\f$, \f$\rho v\f$, \f$\rho w\f$, \f$\rho E\f$ and
+     * \f$p\f$ within <code>grDA</code> and <code>grDArms</code> when calling
+     * <code>largo_init</code>.
+     */
+    bool expects_conserved_growth_rates() const
+    { return g == grspec_conserved; }
+
+    /**
+     * Does the model expect specific state growth rates?  That is, provide
+     * \f$\rho\f$, \f$u\f$, \f$v\f$, \f$w\f$, \f$E\f$ and \f$p\f$ within
+     * <code>grDA</code> and <code>grDArms</code> when calling
+     * <code>largo_init</code>.
+     */
+    bool expects_specific_growth_rates() const
+    { return g == grspec_specific; }
+
     /** Is \c this the same formulation as \c that? */
     bool operator==(const largo_formulation& that) const
     { return this->v == that.v; }
@@ -89,10 +107,28 @@ public:
 
 private:
 
+    /**
+     * Precisely what growth rate information does the model
+     * require when calling <code>largo_init</code>?
+     */
+    enum grspec_type {
+
+        /** This detail is nonsensical or unknown. */
+        grspec_unknown = 0,
+
+        /** The model expects conserved state growth rates. */
+        grspec_conserved,
+
+        /** The model expects specific state growth rates. */
+        grspec_specific
+
+    };
+
     int         v;  ///< A quickly-comparable, unique value
     std::string n;  ///< A brief, human-readable name
     bool        t;  ///< Is the formulation strictly-temporal?
     std::string d;  ///< A relatively complete description
+    grspec_type g;  ///< How are growth rates specified?
 
     /** Maintains map from name to pointer-to-static instances. */
     static std::map<std::string,const largo_formulation*> by_name;
@@ -102,10 +138,11 @@ private:
                               const largo_formulation* instance);
 
     /** Create a new (static) instance and register it. */
-    largo_formulation(const int   v,
-                      const char *n,
-                      const bool  t,
-                      const char *d);
+    largo_formulation(const int         v,
+                      const char*       n,
+                      const bool        t,
+                      const char*       d,
+                      const grspec_type g);
 
     /**
      * Create a new (static) instance and register it.
@@ -113,10 +150,11 @@ private:
      * Register \c misspellings in \c by_name as well to permit lookup
      * by any of them in addition to \c n.
      */
-    largo_formulation(const int   v,
-                      const char *n,
-                      const bool  t,
-                      const char *d,
+    largo_formulation(const int         v,
+                      const char*       n,
+                      const bool        t,
+                      const char*       d,
+                      const grspec_type g,
                       const std::vector<std::string>& misspellings);
 
 };

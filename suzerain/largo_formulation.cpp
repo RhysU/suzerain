@@ -43,11 +43,13 @@ std::map<std::string,const largo_formulation*> largo_formulation::by_name;
 // BEGIN Add known Largo formulations here
 const largo_formulation largo_formulation::disable(
         0, "disable", false,
-        "No slow growth formulation is in use");
+        "No slow growth formulation is in use",
+        largo_formulation::grspec_unknown);
 
 const largo_formulation largo_formulation::temporal(
         1, "bl_temporal", true,
         "Original temporal formulation by Topalian et al.",
+        largo_formulation::grspec_conserved,
         boost::assign::list_of("temporal")
             .convert_to_container<std::vector<std::string> >());
 
@@ -55,12 +57,14 @@ const largo_formulation largo_formulation::temporal(
 const largo_formulation largo_formulation::spatial(
         2, "bl_spatial", false,
         "Unimplemented placeholder for spatial formulation by Topalian et al.",
+        largo_formulation::grspec_unknown, // Update when added
         boost::assign::list_of("spatial")
             .convert_to_container<std::vector<std::string> >());
 
 const largo_formulation largo_formulation::temporal_tensor_consistent(
         3, "bl_temporal_tensor-consistent", true,
         "Temporal tensor-consistent formulation by Topalian et al.",
+        largo_formulation::grspec_conserved,
         boost::assign::list_of("bl_temporal_tensor_consistent")
                               ("temporal_tensor_consistent")
                               ("temporal_tensor-consistent")
@@ -69,6 +73,7 @@ const largo_formulation largo_formulation::temporal_tensor_consistent(
 const largo_formulation largo_formulation::spatiotemporal(
         4, "bl_spatiotemporal", false,
         "Spatiotemporal formulation by Topalian et al.",
+        largo_formulation::grspec_conserved,
         boost::assign::list_of("spatiotemporal")
             .convert_to_container<std::vector<std::string> >());
 
@@ -76,6 +81,7 @@ const largo_formulation largo_formulation::temporal_consistent(
         5, "bl_temporal_consistent", true,
         "Temporal consistent formulation with baseflow support "
         "by Topalian et al.",
+        largo_formulation::grspec_specific,
         boost::assign::list_of("temporal_consistent")
             .convert_to_container<std::vector<std::string> >());
 
@@ -83,28 +89,31 @@ const largo_formulation largo_formulation::spatiotemporal_consistent(
         6, "bl_spatiotemporal_consistent", false,
         "Spatiotemporal consistent formulation with baseflow support "
         "by Topalian et al.",
+        largo_formulation::grspec_specific,
         boost::assign::list_of("spatiotemporal_consistent")
             .convert_to_container<std::vector<std::string> >());
 
 // END Add known Largo formulations here
 
 largo_formulation::largo_formulation(
-        const int   v,
-        const char *n,
-        const bool  t,
-        const char *d)
-    : v(v), n(n), t(t), d(d)
+        const int         v,
+        const char*       n,
+        const bool        t,
+        const char*       d,
+        const grspec_type g)
+    : v(v), n(n), t(t), d(d), g(g)
 {
     register_name(this->n, this);
 }
 
 largo_formulation::largo_formulation(
         const int   v,
-        const char *n,
+        const char* n,
         const bool  t,
-        const char *d,
+        const char* d,
+        const grspec_type g,
         const std::vector<std::string>& misspellings)
-    : v(v), n(n), t(t), d(d)
+    : v(v), n(n), t(t), d(d), g(g)
 {
     register_name(this->n, this);
 
