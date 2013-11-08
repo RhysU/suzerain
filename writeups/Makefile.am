@@ -12,6 +12,7 @@ TEXSOURCES += perfectgas.tex
 TEXSOURCES += plate_treatment.tex
 TEXSOURCES += skewadjoint.tex
 TEXSOURCES += smr91.tex
+TEXSOURCES += twopoint.tex
 
 # Reacting doc broken out amongst many srcs.
 reacting_TEXSOURCES  = reacting_main.tex
@@ -38,7 +39,6 @@ EXTRA_DIST += inhomogeneity1.gz inhomogeneity1.eps
 EXTRA_DIST += inhomogeneity2.gz inhomogeneity2.eps
 EXTRA_DIST += symplanenorm.eps
 EXTRA_DIST += references.bib
-
 
 # Build and install writeups
 all-local:      pdf-local

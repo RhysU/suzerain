@@ -1,0 +1,86 @@
+\documentclass[letterpaper,11pt,nointlimits,reqno]{amsart}
+
+% Packages
+\usepackage{accents}
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage{enumerate}
+\usepackage{fancyhdr}
+\usepackage[final]{graphicx}
+\usepackage{fullpage}
+\usepackage{lastpage}
+\usepackage{listings}
+\usepackage{longtable}
+\usepackage{mathrsfs}
+\usepackage{mathtools}
+\usepackage[numbers,sort&compress]{natbib}
+\usepackage{setspace}
+
+% Line Spacing
+\singlespacing
+
+% Set appropriate header/footer information on each page
+\fancypagestyle{plain}{
+    \fancyhf{}
+    \renewcommand{\headheight}{2.0em}
+    \renewcommand{\headsep}{0.75em}
+    \renewcommand{\headrulewidth}{1.0pt}
+    \renewcommand{\footrulewidth}{0pt}
+    \lhead{
+        Two-point correlations computations using Suzerain's discretization
+    }
+    \rhead{
+        Page \thepage{} of \pageref{LastPage}
+    }
+}
+\pagestyle{plain}
+
+% Document-specific commands
+\newcommand{\ii}{\ensuremath{\mathrm{i}}}
+\newcommand{\htrans}[1]{{#1}^{\ensuremath{\mathsf{H}}}}
+\newcommand{\trans}[1]{{#1}^{\ensuremath{\mathsf{T}}}}
+\newcommand{\OO}[1]{\operatorname{O}\left(#1\right)}
+
+\begin{document}
+
+In this document we detail how to compute two-point correlations.  The material
+is based upon \citet[\textsection{}6.4--5]{Pope2000Turbulent} and uses that
+author's notation.  Where necessary, these computations are specialized for
+Suzerain's discretization.  In this discretization, any instantaneous,
+real-valued field
+$u\!\left(x,y,z\right)$ on the spatial domain
+$\left[-\frac{L_x}{2},\frac{L_x}{2}\right] \times{} [0,L_y] \times{}
+\left[-\frac{L_z}{2},\frac{L_z}{2}\right]$ is discretized as
+\begin{align}
+  u^h(x,y,z)
+&=
+  \sum_{l=0}^{N_y - 1}
+  \sum_{m=-\frac{N_x}{2}}^{\frac{N_x}{2}-1}
+  \sum_{n=-\frac{N_z}{2}}^{\frac{N_z}{2}-1}
+  \hat{u}_{l m n}
+  B_l\!\left(y\right)
+  e^{\ii\frac{2\pi{}m}{L_x}x}
+  e^{\ii\frac{2\pi{}n}{L_z}z}
+=
+  \sum_{l}\sum_{m}\sum_{n}
+  \hat{u}_{l m n}B_l\!\left(y\right)e^{\ii k_m x}e^{\ii k_n z}
+\end{align}
+where $k_m = 2\pi{}m/L_x$, $k_n = 2\pi{}n/L_z$, and $B_l\!\left(y\right)$ are a
+B-spline basis for some order and some knot selection.
+
+\section{The kinetic energy of the Fourier modes
+         \citep[\textsection{}6.4.3]{Pope2000Turbulent}}
+
+Discuss equation (6.152).
+
+\section{Velocity spectra
+         \citep[\textsection{}6.5]{Pope2000Turbulent}}
+
+Discuss equation (6.206).
+
+
+\newcommand*{\doi}[1]{\href{http://dx.doi.org/\detokenize{#1}}{doi: #1}}
+\bibliographystyle{plainnat}
+\bibliography{references}
+
+\end{document}
