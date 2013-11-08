@@ -130,6 +130,10 @@ void test_supersonic()
     free(s);
 }
 
+// TODO suzerain_radial_nozzle_cartesian_primitive
+
+// TODO suzerain_radial_nozzle_cartesian_conserved
+
 int main(int argc, char **argv)
 {
     SUZERAIN_UNUSED(argc);
