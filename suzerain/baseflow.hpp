@@ -29,8 +29,15 @@
  */
 
 #include <suzerain/common.hpp>
+#include <suzerain/largo_state.hpp>
+
+// Forward declarations
+struct suzerain_radial_nozzle_solution;
 
 namespace suzerain {
+
+// Forward declarations
+class bspline;
 
 /**
  * Abstract interface for providing slow-growth-ready baseflow information.
@@ -151,21 +158,46 @@ public:
     MatrixXXr dx;
 };
 
-//// TODO
-//class baseflow_nozzle
-//    : public virtual baseflow_interface
-//{
-//public:
-//    void conserved(const real_t      y,
-//                   real_t *       base,
-//                   real_t *     dybase,
-//                   real_t *     dxbase) const;
-//
-//    void pressure(const real_t    y,
-//                  real_t &        P,
-//                  real_t &      dyP,
-//                  real_t &      dxP) const;
-//};
+/**
+ * Provides slow-growth-ready baseflow information using \ref
+ * suzerain_radial_nozzle_solver.
+ */
+class baseflow_radial_nozzle : public virtual baseflow_interface
+{
+public:
+
+    baseflow_radial_nozzle();
+
+    /**
+     * Nozzle parameters provided to \ref suzerain_radial_nozzle_solver.
+     * @{*/
+    double Ma0;   //!< Reference Mach number         \f$\mbox{Ma}_0\f$
+    double gam0;  //!< Reference specific heat ratio \f$\gamma_0   \f$
+    double rho1;  //!< Initial density               \f$\rho\left(r_1\right)\f$
+    double u1;    //!< Initial radial velocity       \f$u   \left(r_1\right)\f$
+    double p1;    //!< Initial pressure              \f$p   \left(r_1\right)\f$
+    double R1;    //!< Inner radius of interest \f$R_1\f$
+    /**@}*/
+
+    // TODO Make virtual and push throughout peer classes
+    void precompute(const real_t Ma,
+                    bspline& b);
+
+    void conserved(const real_t      y,
+                   real_t *       base,
+                   real_t *     dybase,
+                   real_t *     dxbase) const;
+
+    void pressure(const real_t    y,
+                  real_t &        P,
+                  real_t &      dyP,
+                  real_t &      dxP) const;
+
+private:
+
+    shared_ptr<suzerain_radial_nozzle_solution> noz;
+
+};
 
 } // namespace suzerain
 

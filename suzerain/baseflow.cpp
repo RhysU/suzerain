@@ -29,9 +29,12 @@
 #include <suzerain/config.h>
 #endif
 
+#include <suzerain/baseflow.hpp>
+
 #include <gsl/gsl_poly.h>
 
-#include <suzerain/baseflow.hpp>
+#include <suzerain/bspline.hpp>
+#include <suzerain/radial_nozzle.h>
 
 namespace suzerain {
 
@@ -151,6 +154,45 @@ baseflow_polynomial::pressure(
     dxP = dx.rows()
         ? gsl_poly_eval(dx.rightCols<1>().data(), dx.rows(), y)
         : 0;
+}
+
+baseflow_radial_nozzle::baseflow_radial_nozzle()
+    : Ma0 (std::numeric_limits<double>::quiet_NaN())
+    , gam0(std::numeric_limits<double>::quiet_NaN())
+    , rho1(std::numeric_limits<double>::quiet_NaN())
+    , u1  (std::numeric_limits<double>::quiet_NaN())
+    , p1  (std::numeric_limits<double>::quiet_NaN())
+    , R1  (std::numeric_limits<double>::quiet_NaN())
+{
+    // FIXME Implement
+}
+
+void
+baseflow_radial_nozzle::precompute(
+        const real_t Ma,
+        bspline& b)
+{
+    // FIXME Implement
+}
+
+void
+baseflow_radial_nozzle::conserved(
+        const real_t      y,
+        real_t*        base,
+        real_t*      dybase,
+        real_t*      dxbase) const
+{
+    // FIXME Implement
+}
+
+void
+baseflow_radial_nozzle::pressure(
+        const real_t   y,
+        real_t&        P,
+        real_t&      dyP,
+        real_t&      dxP) const
+{
+    // FIXME Implement
 }
 
 } // namespace suzerain
