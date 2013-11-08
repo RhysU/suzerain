@@ -17,6 +17,9 @@ noinst_DATA += coleman5k15.00.h5 coleman5k30.00.h5
 # Temporally homogenized boundary layers at Coleman-like conditions
 noinst_DATA += temporal_1e-1_k08.h5 temporal_1e-2_k08.h5 temporal_1e-3_k08.h5
 
+# Spatiotemporally homogenized boundary layers at Coleman-like conditions
+noinst_DATA += spatiotemporal_1e-1_k06.h5 spatiotemporal_consistent_1e-1_k06.h5
+
 # Legacy fields for checking backwards-compatibility of restarting
 noinst_DATA += legacy_r22804.h5
 noinst_DATA += legacy_r38808.h5
