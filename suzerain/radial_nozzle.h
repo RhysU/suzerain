@@ -267,6 +267,31 @@ suzerain_radial_nozzle_qoi_pexi(
  *     \,
  *     p^\prime\left(R\right)
  * \f}
+ * as well as
+ * \f{align}{
+ *     \frac{\partial}{\partial{}y} \rho \!\left(x, y\right)
+ *   &=
+ *     \frac{y                     }{R} \rho^\prime\!\left(R\right)
+ *   \\
+ *     \frac{\partial}{\partial{}y} u_\xi\!\left(x, y\right)
+ *   &=
+ *     x y \operatorname{sgn}(u) \left(
+ *         \frac{u^\prime\!\left(R\right)}{R^2}
+ *       - \frac{u       \!\left(R\right)}{R^3}
+ *     \right)
+ *   \\
+ *     \frac{\partial}{\partial{}y} u_y  \!\left(x, y\right)
+ *   &=
+ *       \frac{ y^2 u^\prime\!\left(R\right) }{ R^2 }
+ *     + \frac{ x^2 u       \!\left(R\right) }{ R^3 }
+ *   \\
+ *     \frac{\partial}{\partial{}y} p    \!\left(x, y; \Mach\right)
+ *   &=
+ *     \frac{y                     }{R}
+ *     \frac{\Mach[0]^2}{\Mach^2}
+ *     \,
+ *     p^\prime\!\left(R\right)
+ * \f}
  * where \f$x=R_0\f$ and \f$y=\delta\f$.  Direction \f$\xi\f$ is nothing but
  * \f$x\f$ possibly reflected so that streamwise velocity always has positive
  * sign.  Coordinate \f$\delta\f$ is computed from \ref
@@ -285,6 +310,10 @@ suzerain_radial_nozzle_qoi_pexi(
  * @param[out] u_xi   Result \f$\frac{\partial}{\partial\xi} u_\xi\f$
  * @param[out] v_xi   Result \f$\frac{\partial}{\partial\xi} u_y  \f$
  * @param[out] p_xi   Result \f$\frac{\partial}{\partial\xi} p    \f$
+ * @param[out] rho_y  Result \f$\frac{\partial}{\partial{}y} \rho \f$
+ * @param[out] u_y    Result \f$\frac{\partial}{\partial{}y} u_\xi\f$
+ * @param[out] v_y    Result \f$\frac{\partial}{\partial{}y} u_y  \f$
+ * @param[out] p_y    Result \f$\frac{\partial}{\partial{}y} p    \f$
  *
  * @see Model documentation in <tt>writeups/baseflow.tex</tt> for details.
  */
@@ -300,7 +329,11 @@ suzerain_radial_nozzle_cartesian_primitive(
     double *rho_xi,
     double *u_xi,
     double *v_xi,
-    double *p_xi);
+    double *p_xi,
+    double *rho_y ,
+    double *u_y ,
+    double *v_y ,
+    double *p_y );
 
 /**
  * Compute Cartesian base flow conserved state at \f$\left(R_0,
@@ -318,6 +351,10 @@ suzerain_radial_nozzle_cartesian_primitive(
  * @param[out] ru_xi Result \f$\frac{\partial}{\partial\xi} \rho u_\xi\f$
  * @param[out] rv_xi Result \f$\frac{\partial}{\partial\xi} \rho u_y  \f$
  * @param[out] rE_xi Result \f$\frac{\partial}{\partial\xi} \rho E    \f$
+ * @param[out] r_y   Result \f$\frac{\partial}{\partial{}y} \rho      \f$
+ * @param[out] ru_y  Result \f$\frac{\partial}{\partial{}y} \rho u_\xi\f$
+ * @param[out] rv_y  Result \f$\frac{\partial}{\partial{}y} \rho u_y  \f$
+ * @param[out] rE_y  Result \f$\frac{\partial}{\partial{}y} \rho E    \f$
  *
  * @see Method \ref suzerain_radial_nozzle_cartesian_primitive for
  *      exactly the primitive state to which this results correspond.
@@ -334,7 +371,11 @@ suzerain_radial_nozzle_cartesian_conserved(
     double *r_xi,
     double *ru_xi,
     double *rv_xi,
-    double *rE_xi);
+    double *rE_xi,
+    double *r_y,
+    double *ru_y,
+    double *rv_y,
+    double *rE_y);
 
 #ifdef __cplusplus
 } /* extern "C" */
