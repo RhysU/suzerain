@@ -219,10 +219,10 @@ suzerain_radial_nozzle_cartesian_primitive(
     double *u,
     double *v,
     double *p,
-    double *rhop,
-    double *up,
-    double *vp,
-    double *pp)
+    double *rho_xi,
+    double *u_xi,
+    double *v_xi,
+    double *p_xi)
 {
     assert(i < s->size);
     const double x       = s->state[0].R;
@@ -232,16 +232,16 @@ suzerain_radial_nozzle_cartesian_primitive(
     const double Ma02Ma2 = gsl_pow_2(s->Ma0) / gsl_pow_2(Ma);
 
     const suzerain_radial_nozzle_state * const t = &s->state[i];
-    *rho  = t->rho;
-    *u    = fabs(t->u) * x * inv_R;
-    *v    =      t->u  * y * inv_R;
-    *p    = Ma02Ma2 * t->p;
-    *rhop = x * sgn_u * t->rhop * inv_R;
-    *up   = sgn_u * gsl_pow_2(inv_R) * (   gsl_pow_2(x) * t->up
-                                         + gsl_pow_2(y) * t->u  * inv_R);
-    *vp   = x * y * sgn_u * gsl_pow_2(inv_R) * (   t->up
-                                                 - t->u  * inv_R);
-    *pp   = x * sgn_u * Ma02Ma2 * t->pp * inv_R;
+    *rho    = t->rho;
+    *u      = fabs(t->u) * x * inv_R;
+    *v      =      t->u  * y * inv_R;
+    *p      = Ma02Ma2 * t->p;
+    *rho_xi = x * sgn_u * t->rhop * inv_R;
+    *u_xi   = sgn_u * gsl_pow_2(inv_R) * (   gsl_pow_2(x) * t->up
+                                           + gsl_pow_2(y) * t->u  * inv_R);
+    *v_xi   = x * y * sgn_u * gsl_pow_2(inv_R) * (   t->up
+                                                   - t->u  * inv_R);
+    *p_xi   = x * sgn_u * Ma02Ma2 * t->pp * inv_R;
 }
 
 void
@@ -253,15 +253,15 @@ suzerain_radial_nozzle_cartesian_conserved(
     double *ru,
     double *rv,
     double *rE,
-    double *rp,
-    double *rup,
-    double *rvp,
-    double *rEp)
+    double *r_xi,
+    double *ru_xi,
+    double *rv_xi,
+    double *rE_xi)
 {
     // Delegate to compute local primitive state
-    double rho, u, v, p, rhop, up, vp, pp;
+    double rho, u, v, p, rho_xi, u_xi, v_xi, p_xi;
     suzerain_radial_nozzle_cartesian_primitive(
-        s, i, Ma, &rho, &u, &v, &p, &rhop, &up, &vp, &pp);
+        s, i, Ma, &rho, &u, &v, &p, &rho_xi, &u_xi, &v_xi, &p_xi);
 
     // Convert primitive to conserved state
     *r  = rho;
@@ -270,12 +270,12 @@ suzerain_radial_nozzle_cartesian_conserved(
     *rE = p / (s->gam0 - 1) + Ma*Ma / 2 * rho * (u*u + v*v);
 
     // Convert primitive derivatives to conserved derivatives
-    *rp  = rhop;
-    *rup = rho*up + rhop*u;
-    *rvp = rho*vp + rhop*v;
-    *rEp = pp / (s->gam0 - 1)
-         + Ma*Ma * (
-                 rhop / 2 * (u*u  + v*v )
-              +  rho      * (u*up + v*vp)
-           );
+    *r_xi  = rho_xi;
+    *ru_xi = rho*u_xi + rho_xi*u;
+    *rv_xi = rho*v_xi + rho_xi*v;
+    *rE_xi = p_xi / (s->gam0 - 1)
+           + Ma*Ma * (
+                   rho_xi / 2 * (u*u    + v*v   )
+                +  rho        * (u*u_xi + v*v_xi)
+             );
 }
