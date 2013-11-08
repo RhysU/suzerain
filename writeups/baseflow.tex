@@ -17,7 +17,6 @@
 \usepackage[numbers,sort&compress]{natbib}
 \usepackage[usenames,dvipsnames,svgnames,table]{xcolor}
 
-
 % Avoids xcolor options clashes
 \usepackage{pgfplotstable}
 
@@ -532,8 +531,10 @@ nondimensionalization using some other Mach number $\Mach$ under the assumption
 that $p_0 = \rho_0 a_0^2$ holds in the target setting for a possibly different
 $a_0$ but $\rho_0$ and $u_0$ remain the same.
 %
-Streamwise differentiation uses $\frac{\partial}{\partial\xi} =
-\operatorname{sgn}(u) \frac{\partial}{\partial{}x}$ and yields:
+Streamwise differentiation uses $\frac{\partial}{\partial\xi}
+= \operatorname{sgn}(u) \frac{\partial}{\partial{}x}
+= \operatorname{sgn}(u) \frac{x}{R} \frac{\partial}{\partial{}R}
+$ and yields:
 %
 \begin{align}
   \frac{\partial}{\partial\xi} \rho \!\left(x, y\right)
