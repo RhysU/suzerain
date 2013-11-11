@@ -398,10 +398,10 @@ largo_definition::load(
                 h, location_baseflow_dx, dx.data(),
                 dx.outerStride(), dx.innerStride());
     } else if (ESIO_SUCCESS == esio_plane_size(  // Pre-r42574 legacy handling
-                h, "location_baseflow_derivative", &neqns, &ncoeffs)) {
-        WARN0("Detected legacy layout for '/location_baseflow_derivative'");
+                h, "largo_baseflow_derivative", &neqns, &ncoeffs)) {
+        WARN0("Detected legacy layout for '/largo_baseflow_derivative'");
         WARN0("Update code and scripts to use '/'" << location_baseflow_dx);
-        base_dx.reset(esio_string_get(h, "location_baseflow_derivative",
+        base_dx.reset(esio_string_get(h, "largo_baseflow_derivative",
                       attr_base), free);
         DEBUG0("Loading baseflow streamwise derivative coefficients with type: "
                << (base_dx ? base_dx.get() : "NULL"));
@@ -411,7 +411,7 @@ largo_definition::load(
                 dx.outerSize(), 0, dx.outerSize(),
                 dx.innerSize(), 0, dx.innerSize());
         esio_plane_read(
-                h, "location_baseflow_derivative", dx.data(),
+                h, "largo_baseflow_derivative", dx.data(),
                 dx.outerStride(), dx.innerStride());
     }
 
