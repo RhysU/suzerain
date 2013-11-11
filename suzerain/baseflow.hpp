@@ -191,8 +191,11 @@ public:
     /** Each entry in the table consists of this information. */
     struct row { largo_state base, dybase, dxbase; };
 
-    /** Tracks known data. */
-    std::map<real_t, row> table;
+    /** Keys are \c y coordinates returning \c row instances. */
+    typedef std::map<real_t, row> table_type;
+
+    /** Tracks known data with keys being \c y coordinates. */
+    table_type table;
 };
 
 } // namespace suzerain

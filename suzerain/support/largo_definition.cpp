@@ -192,6 +192,7 @@ static const char location[]             = "largo";
 // std::strings permit easy comparison for largo_definition::load()
 static const std::string type_polynomial("polynomial");
 static const std::string type_uniform   ("uniform");
+static const std::string type_map       ("map");
 
 void
 largo_definition::save(
@@ -295,9 +296,77 @@ largo_definition::save(
 
     } else if (dynamic_cast<baseflow_map*>(baseflow.get())) {
 
-        // It is someone else's responsibility to persist baseflow_map!
-        // TODO It would be nice to save profiles for debugging
-        DEBUG0("Baseflow map information not saved by largo_definition");
+        baseflow_map* const b = dynamic_cast<baseflow_map*>(baseflow.get());
+
+        // Write baseflow pointwise locations and state (only master process)
+        MatrixX7r tmp(b->table.size(), /*y + state + p*/ 7); // 6 = y + state + p
+        esio_plane_establish(
+                h,
+                tmp.outerSize(), 0, procid == 0 ? tmp.outerSize() : 0,
+                tmp.innerSize(), 0, procid == 0 ? tmp.innerSize() : 0);
+
+        // Pack pointwise data and save it to location_baseflow
+        baseflow_map::table_type::const_iterator it = b->table.begin();
+        for (int i = 0; i < tmp.rows(); ++i) {
+            tmp(i, 0) = it->first;
+            tmp(i, 1) = it->second.base.e;
+            tmp(i, 2) = it->second.base.mx;
+            tmp(i, 3) = it->second.base.my;
+            tmp(i, 4) = it->second.base.mz;
+            tmp(i, 5) = it->second.base.rho;
+            tmp(i, 6) = it->second.base.p;
+            ++it;
+        }
+        esio_plane_write(
+                h, location_baseflow, tmp.data(),
+                tmp.outerStride(), tmp.innerStride(),
+                "Non-normative baseflow pointwise state: "
+                " y, rho_E, rho_u, rho_v, rho_w, rho, p");
+        esio_string_set(
+                h, location_baseflow,
+                attr_base, type_map.c_str());
+
+        // Pack pointwise x derivatives and save to location_baseflow_dx
+        it = b->table.begin();
+        for (int i = 0; i < tmp.rows(); ++i) {
+            tmp(i, 0) = it->first;
+            tmp(i, 1) = it->second.dxbase.e;
+            tmp(i, 2) = it->second.dxbase.mx;
+            tmp(i, 3) = it->second.dxbase.my;
+            tmp(i, 4) = it->second.dxbase.mz;
+            tmp(i, 5) = it->second.dxbase.rho;
+            tmp(i, 6) = it->second.dxbase.p;
+            ++it;
+        }
+        esio_plane_write(
+                h, location_baseflow_dx, tmp.data(),
+                tmp.outerStride(), tmp.innerStride(),
+                "Non-normative baseflow pointwise x derivatives: "
+                " y, rho_E, rho_u, rho_v, rho_w, rho, p");
+        esio_string_set(
+                h, location_baseflow_dx,
+                attr_base, type_map.c_str());
+
+        // Pack pointwise y derivatives and save to location_baseflow_dy
+        it = b->table.begin();
+        for (int i = 0; i < tmp.rows(); ++i) {
+            tmp(i, 0) = it->first;
+            tmp(i, 1) = it->second.dybase.e;
+            tmp(i, 2) = it->second.dybase.mx;
+            tmp(i, 3) = it->second.dybase.my;
+            tmp(i, 4) = it->second.dybase.mz;
+            tmp(i, 5) = it->second.dybase.rho;
+            tmp(i, 6) = it->second.dybase.p;
+            ++it;
+        }
+        esio_plane_write(
+                h, location_baseflow_dy, tmp.data(),
+                tmp.outerStride(), tmp.innerStride(),
+                "Non-normative baseflow pointwise y derivatives: "
+                " y, rho_E, rho_u, rho_v, rho_w, rho, p");
+        esio_string_set(
+                h, location_baseflow_dy,
+                attr_base, type_map.c_str());
 
     } else {
 
@@ -361,14 +430,14 @@ largo_definition::load(
     // Otherwise interspersing IO with logic is a gnarly mess.
     int neqns, ncoeffs;
 
-    DEBUG0("Probing for baseflow coefficients");
+    DEBUG0("Probing for baseflow state");
     shared_ptr<char> base_x;
     MatrixXXr x;
     if (ESIO_SUCCESS == esio_plane_size(h, location_baseflow,
                                         &neqns, &ncoeffs)) {
         base_x.reset(esio_string_get(h, location_baseflow, attr_base),
                      free);
-        DEBUG0("Loading baseflow coefficients with type: "
+        DEBUG0("Loading baseflow information of type: "
                << (base_x ? base_x.get() : "NULL"));
         x.resize(ncoeffs, neqns);
         esio_plane_establish(
@@ -380,14 +449,14 @@ largo_definition::load(
                 x.outerStride(), x.innerStride());
     }
 
-    DEBUG0("Probing for baseflow streamwise derivative coefficients");
+    DEBUG0("Probing for baseflow streamwise derivatives");
     shared_ptr<char> base_dx;
     MatrixXXr dx;
     if (ESIO_SUCCESS == esio_plane_size(h, location_baseflow_dx,
                                         &neqns, &ncoeffs)) {
         base_dx.reset(esio_string_get(h, location_baseflow_dx, attr_base),
                       free);
-        DEBUG0("Loading baseflow streamwise derivative coefficients with type: "
+        DEBUG0("Loading baseflow streamwise derivative information of type: "
                << (base_dx ? base_dx.get() : "NULL"));
         dx.resize(ncoeffs, neqns);
         esio_plane_establish(
@@ -403,7 +472,7 @@ largo_definition::load(
         WARN0("Update code and scripts to use '/'" << location_baseflow_dx);
         base_dx.reset(esio_string_get(h, "largo_baseflow_derivative",
                       attr_base), free);
-        DEBUG0("Loading baseflow streamwise derivative coefficients with type: "
+        DEBUG0("Loading baseflow streamwise derivative information of type: "
                << (base_dx ? base_dx.get() : "NULL"));
         dx.resize(ncoeffs, neqns);
         esio_plane_establish(
@@ -415,14 +484,39 @@ largo_definition::load(
                 dx.outerStride(), dx.innerStride());
     }
 
-    if (!base_x && !base_dx) {
+    DEBUG0("Probing for baseflow wall-normal derivatives");
+    shared_ptr<char> base_dy;
+    MatrixXXr dy;
+    if (ESIO_SUCCESS == esio_plane_size(h, location_baseflow_dy,
+                                        &neqns, &ncoeffs)) {
+        base_dy.reset(esio_string_get(h, location_baseflow_dy, attr_base),
+                      free);
+        DEBUG0("Loading baseflow wall-normal derivative information of type: "
+               << (base_dy ? base_dy.get() : "NULL"));
+        dy.resize(ncoeffs, neqns);
+        esio_plane_establish(
+                h,
+                dy.outerSize(), 0, dy.outerSize(),
+                dy.innerSize(), 0, dy.innerSize());
+        esio_plane_read(
+                h, location_baseflow_dy, dy.data(),
+                dy.outerStride(), dy.innerStride());
+    }
+
+    if (!base_x && !base_dx && !base_dy) {
 
         // No baseflow to load
-        // This may be the case if a baseflow_map was "saved"
-        // Or it may be the case that genuinely no baseflow is present
 
-    } else if (    base_x  && type_polynomial == base_x .get()
-                && base_dx && type_polynomial == base_dx.get()) {
+    } else if (    (base_x  && type_map == base_x .get())
+                || (base_dx && type_map == base_dx.get())
+                || (base_dy && type_map == base_dy.get())) {
+
+        INFO0("Non-normative baseflow table(s) observed but wholly ignored");
+        // External logic MUST re-generate the table after load completes
+        // otherwise the baseflow is lost after restart.
+
+    } else if (    (base_x  && type_polynomial == base_x .get())
+                && (base_dx && type_polynomial == base_dx.get())) {
 
         INFO0("Preparing polynomial-based baseflow description");
         shared_ptr<baseflow_polynomial> p = make_shared<baseflow_polynomial>();
