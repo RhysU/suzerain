@@ -167,10 +167,6 @@ grid_definition::options_description()
     using boost::program_options::typed_value;
     using boost::program_options::value;
     using std::auto_ptr;
-    using std::bind1st;
-    using std::bind2nd;
-    using std::mem_fun;
-    using std::ptr_fun;
     using std::string;
     using validation::ensure_nonnegative;
     using validation::ensure_positive;
