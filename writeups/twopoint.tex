@@ -3,18 +3,31 @@
 % Packages
 \usepackage{accents}
 \usepackage{array}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage{amssymb}
 \usepackage{booktabs}
+\usepackage{cancel}
 \usepackage{enumerate}
 \usepackage{fancyhdr}
-\usepackage[final]{graphicx}
 \usepackage{fullpage}
+\usepackage{ifthen}
 \usepackage{lastpage}
+\usepackage{latexsym}
 \usepackage{listings}
-\usepackage{longtable}
 \usepackage{mathrsfs}
 \usepackage{mathtools}
 \usepackage[numbers,sort&compress]{natbib}
+\usepackage{parskip}
+\usepackage{pstricks}
 \usepackage{setspace}
+\usepackage{txfonts}
+\usepackage{units}
+\usepackage{varioref}
+\usepackage{wrapfig}
+
 
 % Line Spacing
 \singlespacing
@@ -44,10 +57,10 @@
 \begin{document}
 
 In this document we detail how to compute two-point correlations.  The material
-is based upon \citet[\textsection{}6.4--5]{Pope2000Turbulent} and uses that
-author's notation.  Where necessary, these computations are specialized for
-Suzerain's discretization.  In this discretization, any instantaneous,
-real-valued field
+is based upon \citet[\textsection{}6.4--5]{Pope2000Turbulent} and the notation
+is changed to make it consistent with Suzerain's documentations.  Where
+necessary, these computations are specialized for Suzerain's discretization.  In
+this discretization, any instantaneous, real-valued field
 $u\!\left(x,y,z\right)$ on the spatial domain
 $\left[-\frac{L_x}{2},\frac{L_x}{2}\right] \times{} [0,L_y] \times{}
 \left[-\frac{L_z}{2},\frac{L_z}{2}\right]$ is discretized as
@@ -68,15 +81,180 @@ $\left[-\frac{L_x}{2},\frac{L_x}{2}\right] \times{} [0,L_y] \times{}
 where $k_m = 2\pi{}m/L_x$, $k_n = 2\pi{}n/L_z$, and $B_l\!\left(y\right)$ are a
 B-spline basis for some order and some knot selection.
 
-\section{The kinetic energy of the Fourier modes
-         \citep[\textsection{}6.4.3]{Pope2000Turbulent}}
+\section{Two-point correlation
+         \citep[\textsection{}6.3]{Pope2000Turbulent}}
 
-Discuss equation (6.152).
+In real space, the two-point spatial correlation of two discrete fields, $u^h$ and
+$v^h$ at taken at position $\vec{x}$ and at time $t$ and is defined as 
+%
+\begin{equation}
+\begin{aligned}
+R_{ij} \left( \vec{x}, \vec{r}, t \right) 
+  &=   \overline{ 
+       u^h \left( \vec{x}+ \vec{r}, t \right)  
+       v^h \left( \vec{x}         , t \right) 
+       }
+\end{aligned}
+\end{equation}
+%
+where $\vec{r}$ is the distance vector from the position where $v$ is measured
+to where $u$ is measured. For statistically steady flow, with homogenity in 
+both $x$ and $z$, the expression reduces to  
+%
+\begin{equation}
+\begin{aligned}
+R_{ij} \left( y, \vec{r} \right) 
+  &=   \overline{
+       u^h \left( \vec{x}+ \vec{r}, t \right)
+       v^h \left( \vec{x}         , t \right) 
+       }
+\end{aligned}
+\end{equation}
+%
+where we will be interested mainly in $\vec{r}$ taken along the $x$ and 
+$z$ directions, and the expectation for any $y$ can be computed over 
+$xz$-planes over several flow fields. Specifically, the expectation 
+for any $\vec{r}_{xz} = r_x \hat{i} + r_z \hat{k}$ at time $t_i$ (implied and
+removed from the computation for simplicity) is given by
+%
+\begin{align}
+R_{uv} \left( y, \vec{r}_{xz} \right) 
+&=
+  \frac{1}{L_x L_z}
+  \int_{-\frac{L_x}{2}}^{\frac{L_x}{2}}
+  \int_{-\frac{L_z}{2}}^{\frac{L_z}{2}}
+  u^h\left( \vec{x}+ \vec{r}_{xz}\right)
+  v^h\left( \vec{x}              \right) 
+  \,d\!z \,d\!x
+\\ &=
+  \frac{1}{L_x L_z}
+  \int_{-\frac{L_x}{2}}^{\frac{L_x}{2}}
+  \int_{-\frac{L_z}{2}}^{\frac{L_z}{2}}
+  \left(
+    \sum_{l}\sum_{m}\sum_{n}
+    \hat{u}_{l m n}B_l\!\left(y\right)e^{\ii k_m (x+r_x)}e^{\ii k_n (z+r_z)}
+  \right)
+  \left(
+    \sum_{l^\prime}\sum_{m^\prime}\sum_{n^\prime}
+    \hat{v}_{l^\prime m^\prime n^\prime}^*
+    B_{l^\prime}\!\left(y\right)e^{-\ii k_{m^\prime} x}e^{-\ii k_{n^\prime} z}
+  \right)
+  \,d\!z \,d\!x
+\\ &=
+  \frac{1}{L_x L_z}
+  \sum_{l}
+  B_l\!\left(y\right)
+  \sum_{l^\prime}
+  B_{l^\prime}\!\left(y\right)
+  \sum_{m}
+  \sum_{m^\prime}
+  \int_{-\frac{L_x}{2}}^{\frac{L_x}{2}}
+  \left(
+    e^{\ii k_m (x+r_x)}
+    e^{-\ii k_{m^\prime} x}
+    \sum_{n}
+    \sum_{n^\prime}
+    \hat{u}_{l m n}
+    \hat{v}_{l^\prime m^\prime n^\prime}^*
+    e^{\ii k_n r_z}
+    \underbrace{
+    \int_{-\frac{L_z}{2}}^{\frac{L_z}{2}}
+    \left(
+      e^{\ii k_n z}
+      e^{-\ii k_{n^\prime} z}
+    \right)
+    \,d\!z
+    }_{L_z \, \textrm{if} \, n=n^\prime, \,
+       0  \, \textrm{otherwise}}
+  \right)
+  \,d\!x
+\\ &=
+  \frac{1}{L_x}
+  \sum_{l}
+  B_l\!\left(y\right)
+  \sum_{l^\prime}
+  B_{l^\prime}\!\left(y\right)
+  \sum_{m}
+  \sum_{m^\prime}
+  \sum_{n}
+  \hat{u}_{l m n}
+  \hat{v}_{l^\prime m^\prime n}^*
+  e^{\ii k_m r_x}
+  e^{\ii k_n r_z}
+  \left(
+  \underbrace{
+  \int_{-\frac{L_x}{2}}^{\frac{L_x}{2}}
+    e^{\ii k_m x+}
+    e^{-\ii k_{m^\prime} x}
+    \,d\!x
+  }_{L_x \, \textrm{if} \, m=m^\prime, \,
+       0  \, \textrm{otherwise}}
+  \right)
+\\ &=
+  \sum_{l}
+  B_l\!\left(y\right)
+  \sum_{l^\prime}
+  B_{l^\prime}\!\left(y\right)
+  \sum_{m}
+  \sum_{n}
+  \hat{u}_{l m n}
+  \hat{v}_{l^\prime m n}^*
+  e^{\ii k_m r_x}
+  e^{\ii k_n r_z}
+\\ &=
+  \sum_{m}
+  \sum_{n}
+  \left(
+  \underbrace{
+  \sum_{l}
+  B_l\!\left(y\right)
+  \hat{u}_{l m n}
+  \sum_{l^\prime}
+  B_{l^\prime}\!\left(y\right)
+  \hat{v}_{l^\prime m n}^*
+  }_{\hat{R}_{uv}\left( y, \vec{k}_{xz} \right)}
+  \right)
+  e^{\ii k_m r_x}
+  e^{\ii k_n r_z}
+\end{align}
+%
+The two-point correlation at points $y_j$ reduces to
+%
+\begin{align}
+R_{uv} \left( y_j, \vec{r}_{xz} \right) 
+  &=
+  \sum_{m}
+  \sum_{n}
+  \left(
+  \left(M \hat{u}_{m n}  \right)\bigr|_{y=y_j}
+  \left(M \hat{v}_{m n}^*\right)\bigr|_{y=y_j}
+  \right)
+  e^{\ii k_m r_x}
+  e^{\ii k_n r_z}
+\end{align}
+%
+In Suzerain we will be computing and storing the two-point correlations 
+along the $x$- and $z$-directions only. 
+
+%FIXME
+Discuss implementation details.
+
 
 \section{Velocity spectra
          \citep[\textsection{}6.5]{Pope2000Turbulent}}
 
-Discuss equation (6.206).
+%FIXME: Review this one, in particular the claimed generalization
+Here we consider a generalization of the definiton given in Pope
+\citep[\textsection{}6.3]{Pope2000Turbulent}, where the fields are considered to
+be the velocity components: the one-dimensional spectra 
+$E_{u,v}(y,\vec{k}_{xz})$ are defined to be twice the one-dimensional Fourier
+transform of $R_{u,v}(y,\vec{k}_{xz})$:
+%
+\begin{equation}
+E_{uv} = \frac{1}{\pi} \int_{-\infty}^{\infty} R_{uv}(y,\vec{k}_{xz}) 
+         \exp^{-i \vec{k}_{xz} \vec{r}_xz} \,d\!r_{xz}
+\end{equation}
+%
 
 
 \newcommand*{\doi}[1]{\href{http://dx.doi.org/\detokenize{#1}}{doi: #1}}
