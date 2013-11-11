@@ -43,23 +43,20 @@ class radial_nozzle_specification
 
 public:
 
-    /** Construct an instance with all NaN initial values. */
-    radial_nozzle_specification();
-
     /** Construct an instance with the given default values. */
     explicit radial_nozzle_specification(
-            double Ma0,
-            double gam0,
-            double rho1,
-            double u1,
-            double p1,
-            double R1);
+            double Ma0  = std::numeric_limits<double>::quiet_NaN(),
+            double gam0 = std::numeric_limits<double>::quiet_NaN(),
+            double rho1 = std::numeric_limits<double>::quiet_NaN(),
+            double u1   = std::numeric_limits<double>::quiet_NaN(),
+            double p1   = std::numeric_limits<double>::quiet_NaN(),
+            double R1   = std::numeric_limits<double>::quiet_NaN());
 
     double Ma0;   //!< Reference Mach number         \f$\mbox{Ma}_0\f$
     double gam0;  //!< Reference specific heat ratio \f$\gamma_0   \f$
-    double rho1;  //!< Initial density               \f$\rho\left(r_1\right)\f$
-    double u1;    //!< Initial radial velocity       \f$u   \left(r_1\right)\f$
-    double p1;    //!< Initial pressure              \f$p   \left(r_1\right)\f$
+    double rho1;  //!< Inner density                 \f$\rho\left(R_1\right)\f$
+    double u1;    //!< Inner radial velocity         \f$u   \left(R_1\right)\f$
+    double p1;    //!< Inner pressure                \f$p   \left(R_1\right)\f$
     double R1;    //!< Inner radius of interest      \f$R_1\f$
 
 };

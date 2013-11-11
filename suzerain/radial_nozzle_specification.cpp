@@ -33,16 +33,6 @@
 
 namespace suzerain {
 
-radial_nozzle_specification::radial_nozzle_specification()
-    : Ma0 (std::numeric_limits<double>::quiet_NaN())
-    , gam0(std::numeric_limits<double>::quiet_NaN())
-    , rho1(std::numeric_limits<double>::quiet_NaN())
-    , u1  (std::numeric_limits<double>::quiet_NaN())
-    , p1  (std::numeric_limits<double>::quiet_NaN())
-    , R1  (std::numeric_limits<double>::quiet_NaN())
-{
-}
-
 radial_nozzle_specification::radial_nozzle_specification(
             double Ma0,
             double gam0,

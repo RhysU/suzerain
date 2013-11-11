@@ -111,9 +111,9 @@ typedef struct suzerain_radial_nozzle_solution {
  *
  * @param Ma0   Reference Mach number         \f$\mbox{Ma}_0\f$
  * @param gam0  Reference specific heat ratio \f$\gamma_0   \f$
- * @param rho1  Initial density               \f$\rho\left(r_1\right)\f$
- * @param u1    Initial radial velocity       \f$u   \left(r_1\right)\f$
- * @param p1    Initial pressure              \f$p   \left(r_1\right)\f$
+ * @param rho1  Inner density                 \f$\rho\left(R_1\right)\f$
+ * @param u1    Inner radial velocity         \f$u   \left(R_1\right)\f$
+ * @param p1    Inner pressure                \f$p   \left(R_1\right)\f$
  * @param R     Radii of interest with \f$R_1\f$ taken from \c R[0].
  *              Must be a contiguous array of length \c size.
  *              Entries must be strictly increasing.
