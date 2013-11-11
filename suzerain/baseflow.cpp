@@ -156,27 +156,12 @@ baseflow_polynomial::pressure(
         : 0;
 }
 
-baseflow_radial_nozzle::baseflow_radial_nozzle()
-    : Ma0 (std::numeric_limits<double>::quiet_NaN())
-    , gam0(std::numeric_limits<double>::quiet_NaN())
-    , rho1(std::numeric_limits<double>::quiet_NaN())
-    , u1  (std::numeric_limits<double>::quiet_NaN())
-    , p1  (std::numeric_limits<double>::quiet_NaN())
-    , R1  (std::numeric_limits<double>::quiet_NaN())
+baseflow_map::baseflow_map()
 {
-    // FIXME Implement
 }
 
 void
-baseflow_radial_nozzle::precompute(
-        const real_t Ma,
-        bspline& b)
-{
-    // FIXME Implement
-}
-
-void
-baseflow_radial_nozzle::conserved(
+baseflow_map::conserved(
         const real_t      y,
         real_t*        base,
         real_t*      dybase,
@@ -186,7 +171,7 @@ baseflow_radial_nozzle::conserved(
 }
 
 void
-baseflow_radial_nozzle::pressure(
+baseflow_map::pressure(
         const real_t   y,
         real_t&        P,
         real_t&      dyP,

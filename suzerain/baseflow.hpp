@@ -159,29 +159,16 @@ public:
 };
 
 /**
- * Provides slow-growth-ready baseflow information using \ref
- * suzerain_radial_nozzle_solver.
+ * Provides map-based lookup of arbitrary baseflow profiles established at \e
+ * runtime.  This may be used with, e.g., \ref suzerain_radial_nozzle_solver
+ * and \ref suzerain_radial_nozzle_cartesian_conserved to compute baseflow
+ * information on the collocation points for a given \ref suzerain::bspline.
  */
-class baseflow_radial_nozzle : public virtual baseflow_interface
+class baseflow_map : public virtual baseflow_interface
 {
 public:
 
-    baseflow_radial_nozzle();
-
-    /**
-     * Nozzle parameters provided to \ref suzerain_radial_nozzle_solver.
-     * @{*/
-    double Ma0;   //!< Reference Mach number         \f$\mbox{Ma}_0\f$
-    double gam0;  //!< Reference specific heat ratio \f$\gamma_0   \f$
-    double rho1;  //!< Initial density               \f$\rho\left(r_1\right)\f$
-    double u1;    //!< Initial radial velocity       \f$u   \left(r_1\right)\f$
-    double p1;    //!< Initial pressure              \f$p   \left(r_1\right)\f$
-    double R1;    //!< Inner radius of interest \f$R_1\f$
-    /**@}*/
-
-    // TODO Make virtual and push throughout peer classes
-    void precompute(const real_t Ma,
-                    bspline& b);
+    baseflow_map();
 
     void conserved(const real_t      y,
                    real_t *       base,
@@ -193,9 +180,7 @@ public:
                   real_t &      dyP,
                   real_t &      dxP) const;
 
-private:
-
-    shared_ptr<suzerain_radial_nozzle_solution> noz;
+    // FIXME Add map-mechanisms
 
 };
 

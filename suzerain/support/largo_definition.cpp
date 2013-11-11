@@ -292,6 +292,12 @@ largo_definition::save(
                 h, location_baseflow_d,
                 attr_base, type_polynomial.c_str());
 
+    } else if (dynamic_cast<baseflow_map*>(baseflow.get())) {
+
+        // It is someone else's responsibility to persist baseflow_map!
+        // TODO It would be nice to save profiles for debugging
+        DEBUG0("Baseflow map information not saved by largo_definition");
+
     } else {
 
         FATAL0("Attempt to save unknown baseflow description");
@@ -396,6 +402,8 @@ largo_definition::load(
     if (!base_x && !base_dx) {
 
         // No baseflow to load
+        // This may be the case if a baseflow_map was "saved"
+        // Or it may be the case that genuinely no baseflow is present
 
     } else if (    base_x  && type_polynomial == base_x .get()
                 && base_dx && type_polynomial == base_dx.get()) {
