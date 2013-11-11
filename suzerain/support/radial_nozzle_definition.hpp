@@ -32,10 +32,10 @@
 #include <suzerain/radial_nozzle_specification.hpp>
 #include <suzerain/support/definition_base.hpp>
 #include <suzerain/support/esio_fwd.hpp>
-// #include <suzerain/support/loadable.hpp>
+#include <suzerain/support/loadable.hpp>
 #include <suzerain/support/overridable.hpp>
 #include <suzerain/support/populatable.hpp>
-// #include <suzerain/support/savable.hpp>
+#include <suzerain/support/savable.hpp>
 
 namespace suzerain {
 
@@ -47,10 +47,10 @@ namespace support {
  */
 class radial_nozzle_definition
     : public virtual definition_base
-//     , public virtual loadable
+    , public virtual loadable
     , public virtual overridable<radial_nozzle_specification>
     , public virtual populatable<radial_nozzle_specification>
-//     , public virtual savable
+    , public virtual savable
     , public radial_nozzle_specification
 {
 public:
@@ -74,14 +74,14 @@ public:
         const radial_nozzle_specification& that,
         const bool verbose = false);
 
-//    /** @copydoc savable::save */
-//    virtual void save(
-//        const esio_handle h) const;
-//
-//    /** @copydoc loadable::load */
-//    virtual void load(
-//        const esio_handle h,
-//        const bool verbose = true);
+    /** @copydoc savable::save */
+    virtual void save(
+        const esio_handle h) const;
+
+    /** @copydoc loadable::load */
+    virtual void load(
+        const esio_handle h,
+        const bool verbose = true);
 
     /** @copydoc definition_base::options_description() */
     virtual boost::program_options::options_description options_description();

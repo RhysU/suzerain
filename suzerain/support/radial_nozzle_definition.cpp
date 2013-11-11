@@ -31,7 +31,11 @@
 
 #include <suzerain/support/radial_nozzle_definition.hpp>
 
+#include <esio/esio.h>
+#include <esio/error.h>
+
 #include <suzerain/exprparse.hpp>
+#include <suzerain/support/logging.hpp>
 #include <suzerain/validation.hpp>
 
 namespace suzerain {
@@ -190,6 +194,64 @@ radial_nozzle_definition::override(
     maybe_override(name_u1,   desc_u1,   u1,   that.u1,   verbose);
     maybe_override(name_p1,   desc_p1,   p1,   that.p1,   verbose);
     maybe_override(name_R1,   desc_R1,   R1,   that.R1,   verbose);
+}
+
+void
+radial_nozzle_definition::save(
+    const esio_handle h) const
+{
+    // Save nothing if there's nothing interesting to save
+    if (this->trivial()) {
+        return;
+    }
+
+    DEBUG0("Storing radial_nozzle_definition parameters");
+
+    // Write out the "container" holding all other settings
+    const int one = 1;
+    int procid;
+    esio_handle_comm_rank(h, &procid);
+    esio_line_establish(h, 1, 0, (procid == 0 ? 1 : 0));
+    esio_line_write(h, location, &one, 0,
+                    "Is a radial nozzle definition in use?");
+
+    // Write out information as attributes within the container
+    esio_attribute_write(h, location, attr_Ma0,  &Ma0);
+    esio_attribute_write(h, location, attr_gam0, &gam0);
+    esio_attribute_write(h, location, attr_rho1, &rho1);
+    esio_attribute_write(h, location, attr_u1,   &u1);
+    esio_attribute_write(h, location, attr_p1,   &p1);
+    esio_attribute_write(h, location, attr_R1,   &R1);
+}
+
+void
+radial_nozzle_definition::load(
+    const esio_handle h,
+    const bool verbose)
+{
+    radial_nozzle_definition t;
+
+    // Only proceed if a definition is active in the restart
+    int in_use = 0;
+    esio_line_establish(h, 1, 0, 1); // All ranks load any data
+    if (ESIO_NOTFOUND != esio_line_size(h, location, NULL)) {
+        esio_line_read(h, location, &in_use, 0);
+    }
+    if (!in_use) {
+        return;
+    }
+
+    DEBUG0("Loading radial_nozzle_definition parameters");
+
+    // Read in information as attributes within the container
+    esio_attribute_read(h, location, attr_Ma0,  &t.Ma0);
+    esio_attribute_read(h, location, attr_gam0, &t.gam0);
+    esio_attribute_read(h, location, attr_rho1, &t.rho1);
+    esio_attribute_read(h, location, attr_u1,   &t.u1);
+    esio_attribute_read(h, location, attr_p1,   &t.p1);
+    esio_attribute_read(h, location, attr_R1,   &t.R1);
+
+    return this->populate(t, verbose);
 }
 
 } // end namespace support

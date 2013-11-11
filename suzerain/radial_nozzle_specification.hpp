@@ -59,6 +59,16 @@ public:
     double p1;    //!< Inner pressure                \f$p   \left(R_1\right)\f$
     double R1;    //!< Inner radius of interest      \f$R_1\f$
 
+    /** Is the instance devoid of any interesting data? */
+    bool trivial() const
+    {
+        return (boost::math::isnan)(Ma0 )
+            && (boost::math::isnan)(gam0)
+            && (boost::math::isnan)(rho1)
+            && (boost::math::isnan)(u1  )
+            && (boost::math::isnan)(p1  )
+            && (boost::math::isnan)(R1  );
+    }
 };
 
 } // namespace suzerain
