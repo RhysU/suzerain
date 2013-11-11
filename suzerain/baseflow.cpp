@@ -167,7 +167,11 @@ baseflow_map::conserved(
         real_t*      dybase,
         real_t*      dxbase) const
 {
-    // FIXME Implement
+    using namespace std;
+    const row& v = table.at(y);
+    memcpy(base,   &v.base,   sizeof(v.base  ) - sizeof(v.base  .p));
+    memcpy(dybase, &v.dybase, sizeof(v.dybase) - sizeof(v.dybase.p));
+    memcpy(dxbase, &v.dxbase, sizeof(v.dxbase) - sizeof(v.dxbase.p));
 }
 
 void
@@ -177,7 +181,11 @@ baseflow_map::pressure(
         real_t&      dyP,
         real_t&      dxP) const
 {
-    // FIXME Implement
+    using namespace std;
+    const row& v = table.at(y);
+    P   = v.base  .p;
+    dyP = v.dybase.p;
+    dxP = v.dxbase.p;
 }
 
 } // namespace suzerain

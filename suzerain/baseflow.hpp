@@ -170,18 +170,29 @@ public:
 
     baseflow_map();
 
+    /**
+     * Look up conserved state results from \c table.
+     * \throw std::out_of_range in non-existent data.
+     */
     void conserved(const real_t      y,
                    real_t *       base,
                    real_t *     dybase,
                    real_t *     dxbase) const;
 
+    /**
+     * Look up pressure results from \c table.
+     * \throw std::out_of_range in non-existent data.
+     */
     void pressure(const real_t    y,
                   real_t &        P,
                   real_t &      dyP,
                   real_t &      dxP) const;
 
-    // FIXME Add map-mechanisms
+    /** Each entry in the table consists of this information. */
+    struct row { largo_state base, dybase, dxbase; };
 
+    /** Tracks known data. */
+    std::map<real_t, row> table;
 };
 
 } // namespace suzerain
