@@ -461,8 +461,8 @@ public:
 /**
  * Using the provided state, sample the mean quantities declared in \ref
  * quantities with the notable exceptions of those listed in \ref
- * SUZERAIN_REACTING_FLOW_QUANTITIES_IMPLICIT.  This is an expensive, collective
- * method producing valid results <em>only on rank zero</em>.
+ * SUZERAIN_REACTING_FLOW_QUANTITIES_IMPLICIT.  This is an expensive,
+ * collective method.
  *
  * @param[in]     grid     Grid parameters.
  * @param[in]     dgrid    Pencil decomposition parameters.
@@ -473,7 +473,7 @@ public:
  * @return Mean quantities as B-spline coefficients.
  */
 quantities sample_quantities(
-	const antioch_constitutive& cmods,
+        const antioch_constitutive& cmods,
         const grid_specification &grid,
         const pencil_grid &dgrid,
         const bsplineop &cop,

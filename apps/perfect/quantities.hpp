@@ -277,7 +277,7 @@ private:
  * Using the provided state, sample the mean quantities declared in \ref
  * quantities with the notable exceptions of those listed in \ref
  * SUZERAIN_PERFECT_QUANTITIES_IMPLICIT.  This is an expensive, collective
- * method producing valid results <em>only on rank zero</em>.
+ * method.
  *
  * @param[in]     scenario Scenario parameters.
  * @param[in]     grid     Grid parameters.

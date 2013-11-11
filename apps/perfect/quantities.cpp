@@ -256,7 +256,7 @@ quantities sample_quantities(
     SUZERAIN_ENSURE(std::equal(swave.strides() + 1, swave.strides() + 4,
                                auxw.strides() + 1));
 
-    // Rank-specific details accumulated in ret to be MPI_Reduce-d later
+    // Rank-specific details accumulated in ret to be MPI_Allreduce later
     quantities ret(t, Ny);
 
     // Obtain samples available in wave-space from mean conserved state.
@@ -530,36 +530,11 @@ quantities sample_quantities(
     // Notice dgrid.rank_zero_zero_modes already contains "wave-sampled"
     // quantities while other ranks have zeros in those locations.
 
-    // Reduce sums onto rank zero and then return garbage from non-zero ranks
-    if (mpi::comm_rank(MPI_COMM_WORLD) == 0) {
-
-        // Reduce operation requires no additional storage on rank-zero
-        SUZERAIN_MPICHKR(MPI_Reduce(
-                MPI_IN_PLACE, ret.storage.data(), ret.storage.size(),
-                mpi::datatype<quantities::storage_type::Scalar>::value,
-                MPI_SUM, /* root */ 0, MPI_COMM_WORLD));
-
-    } else {
-
-        // Reduce operation requires temporary storage on non-zero ranks
-        ArrayXXr tmp;
-        tmp.resizeLike(ret.storage);
-        tmp.setZero();
-        SUZERAIN_MPICHKR(MPI_Reduce(ret.storage.data(), tmp.data(), tmp.size(),
-                mpi::datatype<quantities::storage_type::Scalar>::value,
-                MPI_SUM, /* root */ 0, MPI_COMM_WORLD));
-
-        // Force non-zero ranks contain all NaNs to help detect usage errors
-        ret.storage.fill(std::numeric_limits<
-                quantities::storage_type::Scalar>::quiet_NaN());
-
-        // Return from all non-zero ranks
-        return ret;
-
-    }
-
-    // Only rank zero reaches this logic because of return statement just above
-    assert(mpi::comm_rank(MPI_COMM_WORLD) == 0);
+    // Allreduce to obtain global sums on every rank
+    SUZERAIN_MPICHKR(MPI_Allreduce(
+            MPI_IN_PLACE, ret.storage.data(), ret.storage.size(),
+            mpi::datatype<quantities::storage_type::Scalar>::value,
+            MPI_SUM, MPI_COMM_WORLD));
 
     // Physical space sums, which are at collocation points, need to be
     // divided by the dealiased extents and converted to coefficients.
@@ -572,7 +547,7 @@ quantities sample_quantities(
                 quantities::start::physical).data(),
             ret.storage.innerStride(), ret.storage.outerStride());
 
-    // Fill with NaNs those samples which were not computed by this method
+    // Fill with NaNs those samples that were not computed by this method
 #define FILL(r, data, tuple)                                         \
     ret.BOOST_PP_TUPLE_ELEM(2, 0, tuple)().fill(std::numeric_limits< \
             quantities::storage_type::Scalar>::quiet_NaN());

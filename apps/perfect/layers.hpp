@@ -171,10 +171,7 @@ public:
 
 /**
  * Using the provided state, sample the mean boundary layer profiles declared
- * in \ref layers.  This is a mildly expensive, collective method producing
- * valid results <em>only on rank zero</em>.  If results are necessary on all
- * ranks, the <code>layers.storage</code> may be subsequently broadcast from
- * rank zero to all ranks.
+ * in \ref layers.  This is a mildly expensive, collective method.
  *
  * @param[in]     scenario Scenario parameters.
  * @param[in]     grid     Grid parameters.

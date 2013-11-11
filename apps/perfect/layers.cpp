@@ -112,7 +112,7 @@ layers sample_layers(
     SUZERAIN_ENSURE((unsigned) swave.strides()[2] == swave.shape()[1]);
     SUZERAIN_ENSURE((unsigned) swave.strides()[3] == swave.shape()[1]*swave.shape()[2]);
 
-    // Rank-specific details accumulated in ret to be MPI_Reduce-d later
+    // Rank-specific details accumulated in ret to be MPI_Allreduce-d later
     layers ret(Ny);
 
     // Obtain samples available in wave-space from mean conserved state.
@@ -202,36 +202,11 @@ layers sample_layers(
     // Notice dgrid.rank_zero_zero_modes already contains "wave-sampled"
     // layers while other ranks have zeros in those locations.
 
-    // Reduce sums onto rank zero and then return garbage from non-zero ranks
-    if (mpi::comm_rank(MPI_COMM_WORLD) == 0) {
-
-        // Reduce operation requires no additional storage on rank-zero
-        SUZERAIN_MPICHKR(MPI_Reduce(
-                MPI_IN_PLACE, ret.storage.data(), ret.storage.size(),
-                mpi::datatype<layers::storage_type::Scalar>::value,
-                MPI_SUM, /* root */ 0, MPI_COMM_WORLD));
-
-    } else {
-
-        // Reduce operation requires temporary storage on non-zero ranks
-        ArrayXXr tmp;
-        tmp.resizeLike(ret.storage);
-        tmp.setZero();
-        SUZERAIN_MPICHKR(MPI_Reduce(ret.storage.data(), tmp.data(), tmp.size(),
-                mpi::datatype<layers::storage_type::Scalar>::value,
-                MPI_SUM, /* root */ 0, MPI_COMM_WORLD));
-
-        // Force non-zero ranks contain all NaNs to help detect usage errors
-        ret.storage.fill(std::numeric_limits<
-                layers::storage_type::Scalar>::quiet_NaN());
-
-        // Return from all non-zero ranks
-        return ret;
-
-    }
-
-    // Only rank zero reaches this logic because of return statement just above
-    assert(mpi::comm_rank(MPI_COMM_WORLD) == 0);
+    // Allreduce to obtain global sums on every rank
+    SUZERAIN_MPICHKR(MPI_Allreduce(
+            MPI_IN_PLACE, ret.storage.data(), ret.storage.size(),
+            mpi::datatype<layers::storage_type::Scalar>::value,
+            MPI_SUM, MPI_COMM_WORLD));
 
     // Physical space sums, which are at collocation points, need to be
     // divided by the dealiased extents and converted to coefficients.
