@@ -182,11 +182,12 @@ largo_definition::override(
     }
 }
 
-static const char attr_base[]           = "coefficient_base";
-static const char attr_formulation[]    = "formulation";
-static const char location_baseflow_d[] = "largo_baseflow_derivative";
-static const char location_baseflow[]   = "largo_baseflow";
-static const char location[]            = "largo";
+static const char attr_base[]            = "coefficient_base";
+static const char attr_formulation[]     = "formulation";
+static const char location_baseflow_dx[] = "largo_baseflow_dx";
+static const char location_baseflow_dy[] = "largo_baseflow_dy";
+static const char location_baseflow[]    = "largo_baseflow";
+static const char location[]             = "largo";
 
 // std::strings permit easy comparison for largo_definition::load()
 static const std::string type_polynomial("polynomial");
@@ -285,11 +286,11 @@ largo_definition::save(
                 dx.outerSize(), 0, procid == 0 ?  dx.outerSize() : 0,
                 dx.innerSize(), 0, procid == 0 ?  dx.innerSize() : 0);
         esio_plane_write(
-                h, location_baseflow_d, dx.data(),
+                h, location_baseflow_dx, dx.data(),
                 dx.outerStride(), dx.innerStride(),
-                "Baseflow derivative coefficients");
+                "Baseflow streamwise derivative coefficients");
         esio_string_set(
-                h, location_baseflow_d,
+                h, location_baseflow_dx,
                 attr_base, type_polynomial.c_str());
 
     } else if (dynamic_cast<baseflow_map*>(baseflow.get())) {
@@ -311,6 +312,7 @@ largo_definition::load(
     const esio_handle h,
     const bool verbose)
 {
+    using std::free;
 
     largo_definition t;
     assert(t.formulation == largo_formulation::disable);
@@ -364,7 +366,6 @@ largo_definition::load(
     MatrixXXr x;
     if (ESIO_SUCCESS == esio_plane_size(h, location_baseflow,
                                         &neqns, &ncoeffs)) {
-        using namespace std;
         base_x.reset(esio_string_get(h, location_baseflow, attr_base),
                      free);
         DEBUG0("Loading baseflow coefficients with type: "
@@ -379,15 +380,14 @@ largo_definition::load(
                 x.outerStride(), x.innerStride());
     }
 
-    DEBUG0("Probing for baseflow derivative coefficients");
+    DEBUG0("Probing for baseflow streamwise derivative coefficients");
     shared_ptr<char> base_dx;
     MatrixXXr dx;
-    if (ESIO_SUCCESS == esio_plane_size(h, location_baseflow_d,
+    if (ESIO_SUCCESS == esio_plane_size(h, location_baseflow_dx,
                                         &neqns, &ncoeffs)) {
-        using namespace std;
-        base_dx.reset(esio_string_get(h, location_baseflow_d, attr_base),
+        base_dx.reset(esio_string_get(h, location_baseflow_dx, attr_base),
                       free);
-        DEBUG0("Loading baseflow coefficients with type: "
+        DEBUG0("Loading baseflow streamwise derivative coefficients with type: "
                << (base_dx ? base_dx.get() : "NULL"));
         dx.resize(ncoeffs, neqns);
         esio_plane_establish(
@@ -395,7 +395,23 @@ largo_definition::load(
                 dx.outerSize(), 0, dx.outerSize(),
                 dx.innerSize(), 0, dx.innerSize());
         esio_plane_read(
-                h, location_baseflow_d, dx.data(),
+                h, location_baseflow_dx, dx.data(),
+                dx.outerStride(), dx.innerStride());
+    } else if (ESIO_SUCCESS == esio_plane_size(  // Pre-r42574 legacy handling
+                h, "location_baseflow_derivative", &neqns, &ncoeffs)) {
+        WARN0("Detected legacy layout for '/location_baseflow_derivative'");
+        WARN0("Update code and scripts to use '/'" << location_baseflow_dx);
+        base_dx.reset(esio_string_get(h, "location_baseflow_derivative",
+                      attr_base), free);
+        DEBUG0("Loading baseflow streamwise derivative coefficients with type: "
+               << (base_dx ? base_dx.get() : "NULL"));
+        dx.resize(ncoeffs, neqns);
+        esio_plane_establish(
+                h,
+                dx.outerSize(), 0, dx.outerSize(),
+                dx.innerSize(), 0, dx.innerSize());
+        esio_plane_read(
+                h, "location_baseflow_derivative", dx.data(),
                 dx.outerStride(), dx.innerStride());
     }
 
