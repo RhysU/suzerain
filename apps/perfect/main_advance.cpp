@@ -100,6 +100,7 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
     string undriven;
 
     // Register binary-specific options
+    options.add_definition(*noz);
     options.add_definition(const_cast<support::noise_definition&>(noisedef));
     options.add_options()
         ("explicit", boost::program_options::bool_switch(),

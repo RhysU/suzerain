@@ -31,6 +31,7 @@
 #include <suzerain/support/driver_base.hpp>
 #include <suzerain/support/isothermal_definition.hpp>
 #include <suzerain/support/largo_definition.hpp>
+#include <suzerain/support/radial_nozzle_definition.hpp>
 
 #include "common_block.hpp"
 #include "manufactured_solution.hpp"
@@ -76,6 +77,9 @@ public:
 
     /** Slow growth parameters for use with the Largo library. */
     shared_ptr<support::largo_definition> sg;
+
+    /** Radial nozzle baseflow specification for possible use with Largo. */
+    shared_ptr<support::radial_nozzle_definition> noz;
 
     /** Nondimensional manufactured solution optionally used by applications. */
     shared_ptr<manufactured_solution> msoln;

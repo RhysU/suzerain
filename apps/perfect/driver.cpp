@@ -54,6 +54,7 @@ driver::driver(
     , scenario(make_shared<scenario_definition>())
     , isothermal(make_shared<support::isothermal_definition>())
     , sg(make_shared<support::largo_definition>())
+    , noz(make_shared<support::radial_nozzle_definition>())
     , who("perfect")
 {
     this->fields = default_fields();
@@ -64,13 +65,20 @@ driver::initialize(
         int argc,
         char **argv)
 {
-    // msoln is not used by all binaries and is therefore not added below
     options.add_definition(*scenario);
     options.add_definition(*isothermal);
     options.add_definition(*sg);
+    // noz   not used by all binaries and therefore not added
+    // msoln not used by all binaries and therefore not added
 
     // Delegate to superclass initialization
     std::vector<std::string> positional = super::initialize(argc, argv);
+
+    // However, if noz was provided, match its contents to other members
+    if (noz) {
+        if (scenario && (boost::math::isnan)(noz->gam0))
+            noz->gam0 = scenario->gamma;
+    }
 
     // However, if msoln was provided, match its contents to other members
     if (msoln) {
@@ -297,6 +305,7 @@ driver::save_metadata_hook(
     scenario->save(esioh);
     isothermal->save(esioh);
     sg->save(esioh);
+    noz->save(esioh);
     save(esioh, msoln, *scenario, *grid);
     return;
 }
@@ -309,6 +318,7 @@ driver::load_metadata_hook(
     scenario->load(esioh);
     isothermal->load(esioh);
     sg->load(esioh);
+    noz->load(esioh);
     load(esioh, msoln, *scenario, *grid);
     return;
 }

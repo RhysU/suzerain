@@ -109,7 +109,8 @@ radial_nozzle_definition::options_description()
     using validation::ensure_positive;
 
     options_description retval(
-            "Radial nozzle baseflow parameters for homogenized boundary layers");
+            "Radial nozzle problem parameters "
+            " for homogenized boundary layers with baseflow");
 
     auto_ptr<typed_value<string> > p;
 
