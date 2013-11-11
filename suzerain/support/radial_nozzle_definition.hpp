@@ -31,6 +31,11 @@
 #include <suzerain/common.hpp>
 #include <suzerain/radial_nozzle_specification.hpp>
 #include <suzerain/support/definition_base.hpp>
+#include <suzerain/support/esio_fwd.hpp>
+// #include <suzerain/support/loadable.hpp>
+#include <suzerain/support/overridable.hpp>
+#include <suzerain/support/populatable.hpp>
+// #include <suzerain/support/savable.hpp>
 
 namespace suzerain {
 
@@ -41,8 +46,12 @@ namespace support {
  * This permits using the instance with \ref program_options.
  */
 class radial_nozzle_definition
-    : public radial_nozzle_specification
-    , public virtual definition_base
+    : public virtual definition_base
+//     , public virtual loadable
+    , public virtual overridable<radial_nozzle_specification>
+    , public virtual populatable<radial_nozzle_specification>
+//     , public virtual savable
+    , public radial_nozzle_specification
 {
 public:
 
@@ -54,6 +63,25 @@ public:
             double u1   = std::numeric_limits<double>::quiet_NaN(),
             double p1   = std::numeric_limits<double>::quiet_NaN(),
             double R1   = std::numeric_limits<double>::quiet_NaN());
+
+    /** @copydoc populatable::populate */
+    virtual void populate(
+        const radial_nozzle_specification& that,
+        const bool verbose = false);
+
+    /** @copydoc overridable::override */
+    virtual void override(
+        const radial_nozzle_specification& that,
+        const bool verbose = false);
+
+//    /** @copydoc savable::save */
+//    virtual void save(
+//        const esio_handle h) const;
+//
+//    /** @copydoc loadable::load */
+//    virtual void load(
+//        const esio_handle h,
+//        const bool verbose = true);
 
     /** @copydoc definition_base::options_description() */
     virtual boost::program_options::options_description options_description();

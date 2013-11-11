@@ -166,6 +166,32 @@ radial_nozzle_definition::options_description()
     return retval;
 }
 
+void
+radial_nozzle_definition::populate(
+        const radial_nozzle_specification& that,
+        const bool verbose)
+{
+    maybe_populate(name_Ma0,  desc_Ma0,  Ma0,  that.Ma0,  verbose);
+    maybe_populate(name_gam0, desc_gam0, gam0, that.gam0, verbose);
+    maybe_populate(name_rho1, desc_rho1, rho1, that.rho1, verbose);
+    maybe_populate(name_u1,   desc_u1,   u1,   that.u1,   verbose);
+    maybe_populate(name_p1,   desc_p1,   p1,   that.p1,   verbose);
+    maybe_populate(name_R1,   desc_R1,   R1,   that.R1,   verbose);
+}
+
+void
+radial_nozzle_definition::override(
+        const radial_nozzle_specification& that,
+        const bool verbose)
+{
+    maybe_override(name_Ma0,  desc_Ma0,  Ma0,  that.Ma0,  verbose);
+    maybe_override(name_gam0, desc_gam0, gam0, that.gam0, verbose);
+    maybe_override(name_rho1, desc_rho1, rho1, that.rho1, verbose);
+    maybe_override(name_u1,   desc_u1,   u1,   that.u1,   verbose);
+    maybe_override(name_p1,   desc_p1,   p1,   that.p1,   verbose);
+    maybe_override(name_R1,   desc_R1,   R1,   that.R1,   verbose);
+}
+
 } // end namespace support
 
 } // end namespace suzerain
