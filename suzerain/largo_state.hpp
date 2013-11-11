@@ -132,6 +132,9 @@ public:
     /** Use this method when state does not go to/from Largo. */
     double * as_is() { return this->state; }
 
+    /** Use this method when state does not go to/from Largo. */
+    const double * as_is() const { return this->state; }
+
 };
 
 } // namespace suzerain
