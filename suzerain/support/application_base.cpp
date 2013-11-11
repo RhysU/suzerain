@@ -89,7 +89,6 @@ application_base::application_base(
 
 application_base::~application_base()
 {
-    // NOP
 }
 
 std::vector<std::string>

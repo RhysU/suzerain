@@ -117,7 +117,6 @@ operator_base::operator_base(
 
 operator_base::~operator_base()
 {
-    // NOP
 }
 
 } // namespace suzerain

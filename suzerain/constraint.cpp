@@ -40,7 +40,6 @@ namespace constraint {
 
 base::~base()
 {
-    // NOP
 }
 
 uniform::uniform(const bspline &b)
@@ -120,7 +119,6 @@ bulk::bulk(bspline &b)
 constant::constant(const real_t target)
     : t(target)
 {
-    // NOP
 }
 
 real_t
@@ -138,7 +136,6 @@ constant::enabled() const
 reference::reference(const real_t& target)
     : t(&target)
 {
-    // NOP
 }
 
 real_t
@@ -156,7 +153,6 @@ reference::enabled() const
 disabled::disabled(bspline &b)
     : uniform(b)
 {
-    // NOP
 }
 
 real_t
@@ -179,7 +175,6 @@ constant_lower::constant_lower(
     , lower(bop, nderiv)
     , uniform(bop)
 {
-    // NOP
 }
 
 constant_upper::constant_upper(
@@ -190,7 +185,6 @@ constant_upper::constant_upper(
     , upper(bop, nderiv)
     , uniform(bop)
 {
-    // NOP
 }
 
 constant_bulk::constant_bulk(const real_t target, bspline &b)
@@ -198,7 +192,6 @@ constant_bulk::constant_bulk(const real_t target, bspline &b)
     , bulk(b)
     , uniform(b)
 {
-    // NOP
 }
 
 reference_lower::reference_lower(
@@ -209,7 +202,6 @@ reference_lower::reference_lower(
     , lower(bop, nderiv)
     , uniform(bop)
 {
-    // NOP
 }
 
 reference_upper::reference_upper(
@@ -220,7 +212,6 @@ reference_upper::reference_upper(
     , upper(bop, nderiv)
     , uniform(bop)
 {
-    // NOP
 }
 
 reference_bulk::reference_bulk(const real_t& target, bspline &b)
@@ -228,7 +219,6 @@ reference_bulk::reference_bulk(const real_t& target, bspline &b)
     , bulk(b)
     , uniform(b)
 {
-    // NOP
 }
 
 constant_lower_derivative::constant_lower_derivative(
@@ -239,7 +229,6 @@ constant_lower_derivative::constant_lower_derivative(
     , lower(bop, nderiv)
     , coefficient(bop, nderiv)
 {
-    // NOP
 }
 
 constant_upper_derivative::constant_upper_derivative(
@@ -250,7 +239,6 @@ constant_upper_derivative::constant_upper_derivative(
     , upper(bop, nderiv)
     , coefficient(bop, (bop.n()-1) - nderiv)
 {
-    // NOP
 }
 
 } // namespace constraint

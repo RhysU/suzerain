@@ -39,7 +39,6 @@ hybrid_residual_operator::hybrid_residual_operator(
         const real_t chi)
     : chi(chi)
 {
-    // NOP
 }
 
 std::vector<real_t> hybrid_residual_operator::apply_operator(

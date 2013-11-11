@@ -90,7 +90,6 @@ scenario_definition::scenario_definition(
 
 scenario_definition::~scenario_definition()
 {
-    // NOP
 }
 
 // Strings used in options_description and populate/override/save/load.

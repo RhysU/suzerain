@@ -52,14 +52,12 @@ namespace perfect {
 
 layers::layers()
 {
-    // NOP
 }
 
 layers::layers(
         layers::storage_type::Index Ny)
     : storage(storage_type::Zero(Ny, storage_type::ColsAtCompileTime))
 {
-    // NOP
 }
 
 layers& layers::operator=(const quantities &q)

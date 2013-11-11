@@ -204,7 +204,6 @@ void pencil_grid_p3dfft::transform_physical_to_wave_(real_t * inout) const
 
 pencil_grid_underling::~pencil_grid_underling()
 {
-    // NOP
 }
 
 const char * pencil_grid_underling::implementation() const

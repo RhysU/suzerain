@@ -51,7 +51,6 @@ isothermal_mass_operator::isothermal_mass_operator(
     , common(common)
     , who("operator.L")
 {
-    // NOP
 }
 
 void isothermal_mass_operator::invert_mass_plus_scaled_operator(

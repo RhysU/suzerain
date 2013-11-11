@@ -68,7 +68,6 @@ nonreflecting_treatment::nonreflecting_treatment(
     , common(common)
     , who("nonreflecting_treatment")
 {
-    // NOP
 }
 
 std::vector<real_t> nonreflecting_treatment::apply_operator(

@@ -454,7 +454,6 @@ timecontroller<TimeType,StepType,StopType>::timecontroller(
       current_t_(initial_t),
       entries_(7)
 {
-    // NOP
 }
 
 template< typename TimeType, typename StepType, typename StopType >

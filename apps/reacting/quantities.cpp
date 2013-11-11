@@ -59,14 +59,12 @@ quantities_base::quantities_base()
     : t(std::numeric_limits<real_t>::quiet_NaN())
     , who(default_who)
 {
-    // NOP
 }
 
 quantities_base::quantities_base(real_t t)
     : t(t)
     , who(default_who)
 {
-    // NOP
 }
 
 quantities_base::quantities_base(
@@ -76,7 +74,6 @@ quantities_base::quantities_base(
       storage(storage_type::Zero(Ny, storage_type::ColsAtCompileTime))
     , who(default_who)
 {
-    // NOP
 }
 
 // Helper for the quantities_base::save(...) implementation just below
@@ -204,14 +201,12 @@ quantities::quantities()
     : quantities_base()
     , Ns(0)
 {
-    // NOP
 }
 
 quantities::quantities(real_t t)
     : quantities_base(t)
     , Ns(0)
 {
-    // NOP
 }
 
 quantities::quantities(

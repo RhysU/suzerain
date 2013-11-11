@@ -61,7 +61,6 @@ nonlinear_operator::nonlinear_operator(
     , msoln(msoln)
     , who("operator.N")
 {
-    // NOP
 }
 
 std::vector<real_t> nonlinear_operator::apply_operator(

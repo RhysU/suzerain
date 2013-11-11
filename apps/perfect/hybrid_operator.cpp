@@ -86,7 +86,6 @@ isothermal_hybrid_linear_operator::isothermal_hybrid_linear_operator(
     , common(common)
     , who("operator.L")
 {
-    // NOP
 }
 
 isothermal_hybrid_linear_operator::~isothermal_hybrid_linear_operator()

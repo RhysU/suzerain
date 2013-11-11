@@ -48,7 +48,6 @@ isothermal_mass_operator::isothermal_mass_operator(
     : mass_operator(grid, dgrid, cop, b)
     , spec(spec)
 {
-    // NOP
 }
 
 /**

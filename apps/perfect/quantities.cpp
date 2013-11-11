@@ -58,14 +58,12 @@ quantities::quantities()
     : t(std::numeric_limits<real_t>::quiet_NaN())
     , who(default_who)
 {
-    // NOP
 }
 
 quantities::quantities(real_t )
     : t(t)
     , who(default_who)
 {
-    // NOP
 }
 
 quantities::quantities(
@@ -75,7 +73,6 @@ quantities::quantities(
       storage(storage_type::Zero(Ny, storage_type::ColsAtCompileTime))
     , who(default_who)
 {
-    // NOP
 }
 
 // Helper for the quantities::save(...) implementation just below

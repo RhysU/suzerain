@@ -55,7 +55,6 @@ isothermal_mass_operator::isothermal_mass_operator(
     , common(common)
     , who("operator.L")
 {
-    // NOP
 }
 
 explicit_nonlinear_operator::explicit_nonlinear_operator(

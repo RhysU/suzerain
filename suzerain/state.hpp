@@ -48,7 +48,6 @@ contiguous_state<Dim,Element>::contiguous_state(
                 storage_order_type::compute_storage(sizes.begin()))),
       multi_array_type(shared_range_type::begin(), sizes, storage_order_type())
 {
-    // NOP
 }
 
 template< std::size_t Dim, typename Element >
@@ -82,7 +81,6 @@ contiguous_state<Dim,Element>::contiguous_state(
       multi_array_type(shared_range_type::begin(),
                        sizes, minstrides, storage_order_type())
 {
-    // NOP
 }
 
 template< std::size_t Dim, typename Element >
@@ -528,7 +526,6 @@ interleaved_state<Dim,Element>::interleaved_state(
                     min_total_contiguous_count))),
       multi_array_type(shared_range_type::begin(), sizes, storage_order_type())
 {
-    // NOP
 }
 
 template< std::size_t Dim, typename Element >

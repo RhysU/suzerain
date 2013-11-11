@@ -37,7 +37,6 @@ operator_common_block::operator_common_block()
     : linearization(static_cast<linearize::type>(0))    // Invalid + "false"
     , slow_treatment(static_cast<slowgrowth::type>(0))  // Invalid + "false"
 {
-    // NOP
 }
 
 void
