@@ -118,5 +118,11 @@ dist_check_SCRIPTS += test_restart_multispecies_implicit.sh
 
 endif # if BUILD_REACTING
 
+##
+## Adding a directory to EXTRA_DIST recursively distributes the contents
+##
+EXTRA_DIST += data
+EXTRA_DIST += scripts
+
 # Required for AX_AM_MACROS
 @INC_AMINCLUDE@
