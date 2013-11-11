@@ -262,33 +262,37 @@ suzerain_radial_nozzle_cartesian_conserved(
     double *ru,
     double *rv,
     double *rE,
+    double *p,
     double *r_xi,
     double *ru_xi,
     double *rv_xi,
     double *rE_xi,
+    double *p_xi,
     double *r_y,
     double *ru_y,
     double *rv_y,
-    double *rE_y)
+    double *rE_y,
+    double *p_y)
 {
     // Delegate to compute local primitive state
-    double rho, u, v, p, rho_xi, u_xi, v_xi, p_xi, rho_y, u_y, v_y, p_y;
+    double rho, u, v, rho_xi, u_xi, v_xi, rho_y, u_y, v_y;
     suzerain_radial_nozzle_cartesian_primitive(
-        s, i, Ma, &rho,    &u,    &v,    &p,
-                  &rho_xi, &u_xi, &v_xi, &p_xi,
-                  &rho_y,  &u_y,  &v_y,  &p_y);
+        s, i, Ma, &rho,    &u,    &v,    p,
+                  &rho_xi, &u_xi, &v_xi, p_xi,
+                  &rho_y,  &u_y,  &v_y,  p_y);
+
 
     // Convert primitive to conserved state
     *r  = rho;
     *ru = rho*u;
     *rv = rho*v;
-    *rE = p / (s->gam0 - 1) + Ma*Ma / 2 * rho * (u*u + v*v);
+    *rE = *p / (s->gam0 - 1) + Ma*Ma / 2 * rho * (u*u + v*v);
 
     // Convert streamwise primitive derivatives to conserved derivatives
     *r_xi  = rho_xi;
     *ru_xi = rho*u_xi + rho_xi*u;
     *rv_xi = rho*v_xi + rho_xi*v;
-    *rE_xi = p_xi / (s->gam0 - 1)
+    *rE_xi = *p_xi / (s->gam0 - 1)
            + Ma*Ma * (
                    rho_xi / 2 * (u*u    + v*v   )
                 +  rho        * (u*u_xi + v*v_xi)
@@ -298,7 +302,7 @@ suzerain_radial_nozzle_cartesian_conserved(
     *r_y   = rho_y ;
     *ru_y  = rho*u_y  + rho_y *u;
     *rv_y  = rho*v_y  + rho_y *v;
-    *rE_y  = p_y  / (s->gam0 - 1)
+    *rE_y  = *p_y  / (s->gam0 - 1)
            + Ma*Ma * (
                    rho_y  / 2 * (u*u    + v*v   )
                 +  rho        * (u*u_y  + v*v_y )
