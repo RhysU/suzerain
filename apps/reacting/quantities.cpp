@@ -877,16 +877,16 @@ quantities sample_quantities(
     if (mpi::comm_rank(MPI_COMM_WORLD) == 0) {
 
         // Reduce operation requires no additional storage on rank-zero
-        SUZERAIN_MPICHKR(MPI_Reduce(
+        SUZERAIN_MPICHKR(MPI_Allreduce(
                 MPI_IN_PLACE, ret.storage.data(), ret.storage.size(),
                 mpi::datatype<quantities::storage_type::Scalar>::value,
-                MPI_SUM, /* root */ 0, MPI_COMM_WORLD));
+                MPI_SUM, MPI_COMM_WORLD));
 
-        SUZERAIN_MPICHKR(MPI_Reduce(
+        SUZERAIN_MPICHKR(MPI_Allreduce(
                 MPI_IN_PLACE, ret.species_storage.data(), 
                               ret.species_storage.size(),
                 mpi::datatype<quantities::storage_type::Scalar>::value,
-                MPI_SUM, /* root */ 0, MPI_COMM_WORLD));
+                MPI_SUM, MPI_COMM_WORLD));
 
     } else {
 
@@ -894,9 +894,9 @@ quantities sample_quantities(
         ArrayXXr tmp;
         tmp.resizeLike(ret.storage);
         tmp.setZero();
-        SUZERAIN_MPICHKR(MPI_Reduce(ret.storage.data(), tmp.data(), tmp.size(),
+        SUZERAIN_MPICHKR(MPI_Allreduce(ret.storage.data(), tmp.data(), tmp.size(),
                 mpi::datatype<quantities::storage_type::Scalar>::value,
-                MPI_SUM, /* root */ 0, MPI_COMM_WORLD));
+                MPI_SUM, MPI_COMM_WORLD));
 
         // Force non-zero ranks contain all NaNs to help detect usage errors
         ret.storage.fill(std::numeric_limits<
@@ -904,10 +904,10 @@ quantities sample_quantities(
 
         tmp.resizeLike(ret.species_storage);
         tmp.setZero();
-        SUZERAIN_MPICHKR(MPI_Reduce(ret.species_storage.data(), 
+        SUZERAIN_MPICHKR(MPI_Allreduce(ret.species_storage.data(), 
                                     tmp.data(), tmp.size(),
                 mpi::datatype<quantities::storage_type::Scalar>::value,
-                MPI_SUM, /* root */ 0, MPI_COMM_WORLD));
+                MPI_SUM, MPI_COMM_WORLD));
 
         // Force non-zero ranks contain all NaNs to help detect usage errors
         ret.storage.fill(std::numeric_limits<
