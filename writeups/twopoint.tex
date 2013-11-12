@@ -85,7 +85,7 @@ B-spline basis for some order and some knot selection.
          \citep[\textsection{}6.3]{Pope2000Turbulent}}
 
 In real space, the two-point spatial correlation of two discrete fields, $u^h$ and
-$v^h$ at taken at position $\vec{x}$ and at time $t$ and is defined as 
+$v^h$ taken at position $\vec{x}$ and at time $t$ and is defined as 
 %
 \begin{equation}
 \begin{aligned}
@@ -240,19 +240,21 @@ along the $x$- and $z$-directions only.
 Discuss implementation details.
 
 
-\section{Velocity spectra
+\section{One-dimensional spectra
          \citep[\textsection{}6.5]{Pope2000Turbulent}}
 
 %FIXME: Review this one, in particular the claimed generalization
-Here we consider a generalization of the definiton given in Pope
-\citep[\textsection{}6.3]{Pope2000Turbulent}, where the fields are considered to
-be the velocity components: the one-dimensional spectra 
-$E_{u,v}(y,\vec{k}_{xz})$ are defined to be twice the one-dimensional Fourier
-transform of $R_{u,v}(y,\vec{k}_{xz})$:
+Here we consider a generalization (in the sense that we will apply the formula
+to any two fields) of the definiton for one-dimensional velocity spectra given
+in Pope \citep[\textsection{}6.3]{Pope2000Turbulent}, where the fields are any
+two velocity components.  The one-dimensional spectra along the
+$\vec{r}_{xz1}$-direction  $E_{u,v}(y_j,\vec{k}_{xz1})$ are defined to be twice
+the one-dimensional Fourier transform of $R_{u,v}(y_j,\vec{r}_{xz1})$:
 %
 \begin{equation}
-E_{uv} = \frac{1}{\pi} \int_{-\infty}^{\infty} R_{uv}(y,\vec{k}_{xz}) 
-         \exp^{-i \vec{k}_{xz} \vec{r}_xz} \,d\!r_{xz}
+E_{uv}(y_j,\vec{k}_{xz1}) = \frac{1}{\pi} \int_{-\infty}^{\infty}
+                           R_{uv}(y_j,\vec{r}_{xz1}) 
+                           e^{-i \vec{k}_{xz1} \vec{r}_{xz1}} \,d\!r_{xz1}
 \end{equation}
 %
 
