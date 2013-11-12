@@ -999,7 +999,7 @@ void driver_base::log_boundary_layer_quantities(
                 << ' ' << setw(fullprec<>::width) << "Pr_w"
                 << ' ' << setw(fullprec<>::width) << "ratio_nu"
                 << ' ' << setw(fullprec<>::width) << "ratio_T"
-                << ' ' << setw(fullprec<>::width) << "Re_delta1";
+                << ' ' << setw(fullprec<>::width) << "Re_delta2";
             INFO0(log, msg.str());
         }
         msg.str("");
@@ -1009,7 +1009,7 @@ void driver_base::log_boundary_layer_quantities(
             << ' ' << fullprec<>(qoi->Pr_w)
             << ' ' << fullprec<>(qoi->ratio_nu)
             << ' ' << fullprec<>(qoi->ratio_T)
-            << ' ' << fullprec<>(qoi->Re_delta1);
+            << ' ' << fullprec<>(qoi->Re_delta2);
         INFO0(log, msg.str());
     }
 
