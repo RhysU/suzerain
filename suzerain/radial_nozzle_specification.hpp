@@ -59,11 +59,15 @@ public:
     double p1;    //!< Inner pressure                \f$p   \left(R_1\right)\f$
     double R1;    //!< Inner radius of interest      \f$R_1\f$
 
-    /** Is the instance devoid of any interesting data? */
+    /**
+     * Is the instance devoid of any interesting data?
+     *
+     * Member #gam0 is not interesting as it will generally match
+     * the constant \f$\gamma\f$ used in some larger context.
+     */
     bool trivial() const
     {
         return (boost::math::isnan)(Ma0 )
-            && (boost::math::isnan)(gam0)
             && (boost::math::isnan)(rho1)
             && (boost::math::isnan)(u1  )
             && (boost::math::isnan)(p1  )
