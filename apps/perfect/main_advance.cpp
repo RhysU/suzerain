@@ -34,6 +34,7 @@
 #include <suzerain/constraint_treatment.hpp>
 #include <suzerain/isothermal_specification.hpp>
 #include <suzerain/largo_state.hpp>
+#include <suzerain/radial_nozzle.h>
 #include <suzerain/rholut.hpp>
 #include <suzerain/state.hpp>
 #include <suzerain/support/logging.hpp>
@@ -277,6 +278,54 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
             freestream.mz  = rho_inf * isothermal->upper_w;
             freestream.e   = e_inf;
             freestream.p   = p_inf;
+        }
+
+        // If the baseflow is specified by a radial nozzle problem...
+        if (sg->formulation.enabled() && !noz->trivial()) {
+            INFO0(who, "Preparing baseflow with suzerain_radial_nozzle_solver");
+
+            // ...solve problem at radii fixed by B-spline collocation points
+            ArrayXr y(b->n());
+            for (int i = 0; i < y.size(); ++i) {
+                y[i] = b->collocation_point(i);
+            }
+            ArrayXr R = (y.abs2() + noz->R1*noz->R1).sqrt();
+            shared_ptr<suzerain_radial_nozzle_solution> soln(
+                    suzerain_radial_nozzle_solver(noz->Ma0,
+                                                  noz->gam0,
+                                                  noz->rho1,
+                                                  noz->u1,
+                                                  noz->p1,
+                                                  R.data(),
+                                                  R.size()),
+                    free);
+
+            // ...and tuck solution into a baseflow_map as a function of y
+            shared_ptr<baseflow_map> bm(new baseflow_map());
+            for (int i = 0; i < y.size(); ++i) {
+                baseflow_map::row& row = bm->table[y[i]];
+                suzerain_radial_nozzle_cartesian_conserved(
+                        soln.get(), i, scenario->Ma,
+                        &row.  base.rho,
+                        &row.  base.mx ,
+                        &row.  base.my ,
+                        &row.  base.e  ,
+                        &row.  base.p  ,
+                        &row.dxbase.rho,
+                        &row.dxbase.mx ,
+                        &row.dxbase.my ,
+                        &row.dxbase.e  ,
+                        &row.dxbase.p  ,
+                        &row.dybase.rho,
+                        &row.dybase.mx ,
+                        &row.dybase.my ,
+                        &row.dybase.e  ,
+                        &row.dybase.p);
+                assert(row.  base.mz == 0);
+                assert(row.dxbase.mz == 0);
+                assert(row.dybase.mz == 0);
+            }
+            sg->baseflow = bm;
         }
 
         // If required by the slow growth model, add freestream baseflow
