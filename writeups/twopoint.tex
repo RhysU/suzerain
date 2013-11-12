@@ -84,161 +84,190 @@ B-spline basis for some order and some knot selection.
 \section{Two-point correlation
          \citep[\textsection{}6.3]{Pope2000Turbulent}}
 
-In real space, the two-point spatial correlation of two discrete fields, $u^h$ and
-$v^h$ taken at position $\vec{x}$ and at time $t$ and is defined as 
-%
-\begin{equation}
-\begin{aligned}
-R_{ij} \left( \vec{x}, \vec{r}, t \right) 
-  &=   \overline{ 
-       u^h \left( \vec{x}+ \vec{r}, t \right)  
-       v^h \left( \vec{x}         , t \right) 
-       }
-\end{aligned}
-\end{equation}
-%
-where $\vec{r}$ is the distance vector from the position where $v$ is measured
-to where $u$ is measured. For statistically steady flow, with homogenity in 
-both $x$ and $z$, the expression reduces to  
-%
-\begin{equation}
-\begin{aligned}
-R_{ij} \left( y, \vec{r} \right) 
+\subsection{The two-point correlation
+            as a function of separation in both $x$ and $z$}
+
+For any two real-valued, continuous functions $u$ and $v$, by definition
+\begin{align}
+R_{uv} \left( \vec{x}, \vec{r}, t \right)
   &=   \overline{
-       u^h \left( \vec{x}+ \vec{r}, t \right)
-       v^h \left( \vec{x}         , t \right) 
+       u \left( \vec{x}+ \vec{r}, t \right)
+       v \left( \vec{x}         , t \right)
        }
-\end{aligned}
-\end{equation}
-%
-where we will be interested mainly in $\vec{r}$ taken along the $x$ and 
-$z$ directions, and the expectation for any $y$ can be computed over 
-$xz$-planes over several flow fields. Specifically, the expectation 
-for any $\vec{r}_{xz} = r_x \hat{i} + r_z \hat{k}$ at time $t_i$ (implied and
-removed from the computation for simplicity) is given by
-%
-\begin{align}
-R_{uv} \left( y, \vec{r}_{xz} \right) 
-&=
-  \frac{1}{L_x L_z}
-  \int_{-\frac{L_x}{2}}^{\frac{L_x}{2}}
-  \int_{-\frac{L_z}{2}}^{\frac{L_z}{2}}
-  u^h\left( \vec{x}+ \vec{r}_{xz}\right)
-  v^h\left( \vec{x}              \right) 
-  \,d\!z \,d\!x
-\\ &=
-  \frac{1}{L_x L_z}
-  \int_{-\frac{L_x}{2}}^{\frac{L_x}{2}}
-  \int_{-\frac{L_z}{2}}^{\frac{L_z}{2}}
-  \left(
-    \sum_{l}\sum_{m}\sum_{n}
-    \hat{u}_{l m n}B_l\!\left(y\right)e^{\ii k_m (x+r_x)}e^{\ii k_n (z+r_z)}
-  \right)
-  \left(
-    \sum_{l^\prime}\sum_{m^\prime}\sum_{n^\prime}
-    \hat{v}_{l^\prime m^\prime n^\prime}^*
-    B_{l^\prime}\!\left(y\right)e^{-\ii k_{m^\prime} x}e^{-\ii k_{n^\prime} z}
-  \right)
-  \,d\!z \,d\!x
-\\ &=
-  \frac{1}{L_x L_z}
-  \sum_{l}
-  B_l\!\left(y\right)
-  \sum_{l^\prime}
-  B_{l^\prime}\!\left(y\right)
-  \sum_{m}
-  \sum_{m^\prime}
-  \int_{-\frac{L_x}{2}}^{\frac{L_x}{2}}
-  \left(
-    e^{\ii k_m (x+r_x)}
-    e^{-\ii k_{m^\prime} x}
-    \sum_{n}
-    \sum_{n^\prime}
-    \hat{u}_{l m n}
-    \hat{v}_{l^\prime m^\prime n^\prime}^*
-    e^{\ii k_n r_z}
-    \underbrace{
-    \int_{-\frac{L_z}{2}}^{\frac{L_z}{2}}
-    \left(
-      e^{\ii k_n z}
-      e^{-\ii k_{n^\prime} z}
-    \right)
-    \,d\!z
-    }_{L_z \, \textrm{if} \, n=n^\prime, \,
-       0  \, \textrm{otherwise}}
-  \right)
-  \,d\!x
-\\ &=
-  \frac{1}{L_x}
-  \sum_{l}
-  B_l\!\left(y\right)
-  \sum_{l^\prime}
-  B_{l^\prime}\!\left(y\right)
-  \sum_{m}
-  \sum_{m^\prime}
-  \sum_{n}
-  \hat{u}_{l m n}
-  \hat{v}_{l^\prime m^\prime n}^*
-  e^{\ii k_m r_x}
-  e^{\ii k_n r_z}
-  \left(
-  \underbrace{
-  \int_{-\frac{L_x}{2}}^{\frac{L_x}{2}}
-    e^{\ii k_m x+}
-    e^{-\ii k_{m^\prime} x}
-    \,d\!x
-  }_{L_x \, \textrm{if} \, m=m^\prime, \,
-       0  \, \textrm{otherwise}}
-  \right)
-\\ &=
-  \sum_{l}
-  B_l\!\left(y\right)
-  \sum_{l^\prime}
-  B_{l^\prime}\!\left(y\right)
-  \sum_{m}
-  \sum_{n}
-  \hat{u}_{l m n}
-  \hat{v}_{l^\prime m n}^*
-  e^{\ii k_m r_x}
-  e^{\ii k_n r_z}
-\\ &=
-  \sum_{m}
-  \sum_{n}
-  \left(
-  \underbrace{
-  \sum_{l}
-  B_l\!\left(y\right)
-  \hat{u}_{l m n}
-  \sum_{l^\prime}
-  B_{l^\prime}\!\left(y\right)
-  \hat{v}_{l^\prime m n}^*
-  }_{\hat{R}_{uv}\left( y, \vec{k}_{xz} \right)}
-  \right)
-  e^{\ii k_m r_x}
-  e^{\ii k_n r_z}
+       .
 \end{align}
-%
-The two-point correlation at points $y_j$ reduces to
-%
+Expanding position vector $\vec{x}$ and separation vector $\vec{r}$ into their
+scalar components and invoking stationary,
 \begin{align}
-R_{uv} \left( y_j, \vec{r}_{xz} \right) 
+R_{uv} \left( x, r_x, y, r_y, z, r_z \right)
+  &=   \overline{
+       u \left( x + r_x, y + r_y, z + r_z \right)
+       v \left( x      , y      , z       \right)
+       }
+       .
+\end{align}
+When the $x$ and $z$ directions are homogeneous and only $r_y=0$ is of interest
+for some fixed $y_j$,
+\begin{align}
+R_{uv} \left( r_x, y_j, r_z \right)
+  &=   \overline{
+       u \left( x + r_x, y_j, z + r_z \right)
+       v \left( x      , y_j, z       \right)
+       }
+\\
+  &= \frac{1}{L_x L_z}
+     \int_{-\frac{L_x}{2}}^{\frac{L_x}{2}}
+     \int_{-\frac{L_z}{2}}^{\frac{L_z}{2}}
+       u      \left( x + r_x, y_j, z + r_z \right)
+       v^\ast \left( x      , y_j, z       \right)
+     \,\mathrm{d}z
+     \,\mathrm{d}x
+\end{align}
+Here, $\ast$ denotes complex conjugation.  Substituting $u^h$ and $v^h$ for $u$
+and $v$,
+\begin{multline}
+R_{uv} \left( r_x, y_j, r_z \right)
+   = \frac{1}{L_x L_z}
+     \int_{-\frac{L_x}{2}}^{\frac{L_x}{2}}
+     \int_{-\frac{L_z}{2}}^{\frac{L_z}{2}}
+        \left(
+         \sum_{l}\sum_{m}\sum_{n}
+         \hat{u}_{l m n}B_l\left(y_j\right)
+         e^{\ii k_m \left(x+r_x\right)}e^{\ii k_n \left(z+r_z\right)}
+       \right)
+       \\
+       \left(
+         \sum_{l^\prime}\sum_{m^\prime}\sum_{n^\prime}
+         \hat{v}^\ast_{l^\prime m^\prime n^\prime} B_l^\prime\left(y_j\right)
+         e^{-\ii k_m^\prime x}e^{-\ii k_n^\prime z}
+       \right)
+     \,\mathrm{d}z
+     \,\mathrm{d}x
+\end{multline}
+As real-valued $v$ is necessarily conjugate symmetric, $\hat{v}^\ast =
+\hat{v}$.  Rearranging,
+\begin{multline}
+R_{uv} \left( r_x, y_j, r_z \right)
+   = \frac{1}{L_x L_z}
+     \sum_{l} B_l\left(y_j\right)
+     \sum_{l^\prime} B_l^\prime\left(y_j\right)
+     \\
+     \sum_{m}
+     \sum_{m^\prime}
+     e^{\ii k_m r_x}
+     \int_{-\frac{L_x}{2}}^{\frac{L_x}{2}}
+     e^{\ii k_m x  }
+     e^{-\ii k_m^\prime x}
+     \sum_{n}
+     \sum_{n^\prime}
+     \hat{u}_{l m n}
+     \hat{v}_{l^\prime m^\prime n^\prime}
+     e^{\ii k_n r_z}
+     \int_{-\frac{L_z}{2}}^{\frac{L_z}{2}}
+     e^{\ii k_n z  }
+     e^{-\ii k_n^\prime z}
+     \,\mathrm{d}z
+     \,\mathrm{d}x
+\end{multline}
+By the orthogonality of the Fourier basis,
+\begin{align}
+R_{uv} \left( r_x, y_j, r_z \right)
+  &= \frac{1}{L_x}
+     \sum_{l} B_l\left(y_j\right)
+     \sum_{l^\prime} B_l^\prime\left(y_j\right)
+     \sum_{m}
+     \sum_{m^\prime}
+     e^{\ii k_m r_x}
+     \sum_{n}
+     e^{\ii k_n r_z}
+     \int_{-\frac{L_x}{2}}^{\frac{L_x}{2}}
+     e^{\ii k_m x  }
+     e^{-\ii k_m^\prime x}
+     \hat{u}_{l m n}
+     \hat{v}_{l^\prime m^\prime n}
+     \,\mathrm{d}x
+\\
+  &= \sum_{l} B_l\left(y_j\right)
+     \sum_{l^\prime} B_l^\prime\left(y_j\right)
+     \sum_{m}
+     e^{\ii k_m r_x}
+     \sum_{n}
+     e^{\ii k_n r_z}
+     \hat{u}_{l m n}
+     \hat{v}_{l^\prime m n}
+\end{align}
+Introducing shorthand $\phi_{y_j} = \sum_{l} B_l\left(y_j\right) \phi_l$
+denoting evaluating the B-spline basis expansion at point $y_j$,
+\begin{align}
+R_{uv} \left( r_x, y_j, r_z \right)
   &=
-  \sum_{m}
-  \sum_{n}
-  \left(
-  \left(M \hat{u}_{m n}  \right)\bigr|_{y=y_j}
-  \left(M \hat{v}_{m n}^*\right)\bigr|_{y=y_j}
-  \right)
-  e^{\ii k_m r_x}
-  e^{\ii k_n r_z}
+     \sum_{m}
+     \sum_{n}
+     \hat{u}_{y_j m n}
+     \hat{v}_{y_j m n}
+     e^{\ii k_m r_x}
+     e^{\ii k_n r_z}
 \end{align}
-%
-In Suzerain we will be computing and storing the two-point correlations 
-along the $x$- and $z$-directions only. 
 
-%FIXME
-Discuss implementation details.
+Towards efficiently computing this result, relabel $x = r_x$, $z = r_z$,
+$m^\prime = m$, and $n^\prime = n$,
+\begin{align}
+R_{uv} \left( x, y_j, z \right)
+  &=
+     \sum_{m^\prime}
+     e^{\ii k_m^\prime x}
+     \sum_{n^\prime}
+     e^{\ii k_n^\prime z}
+     \hat{u}_{y_j m^\prime n^\prime}
+     \hat{v}_{y_j m^\prime n^\prime}
+\end{align}
+Applying a discrete Fourier transform in $x$ and $z$ and taking advantage of
+orthogonality,
+\begin{align}
+     \left(\hat{R}_{uv}\right)_{y_j m n}
+  &=
+     \sum_{m}
+     e^{-\ii k_m x}
+     \sum_{n}
+     e^{-\ii k_n x}
+     R_{uv} \left( x, y_j, z \right)
+\\
+  &=
+     \sum_{m}
+     e^{-\ii k_m x}
+     \sum_{m^\prime}
+     e^{\ii k_m^\prime x}
+     \sum_{n}
+     e^{-\ii k_n x}
+     \sum_{n^\prime}
+     e^{\ii k_n^\prime z}
+     \hat{u}_{y_j m^\prime n^\prime}
+     \hat{v}_{y_j m^\prime n^\prime}
+\\
+  &=
+     \hat{u}_{y_j m n}
+     \hat{v}_{y_j m n}
+  .
+\end{align}
+Evidently, the Fourier representation of the two-point correlation function
+evaluated at collocation point $y_j$ is nothing but the product of identical
+coefficient representations of $u$ and $v$.  Computation of $R_uv$ is most
+effectively performed in Fourier space via conveniently parallel,
+complex-valued wavenumber products once a collocation-based B-spline mass
+matrix has been applied to $\hat{u}_{lmn}$ and $\hat{v}_{lmn}$ to convert them
+to $\hat{u}_{y_j m n}$ and $\hat{v}_{y_j m n}$.
 
+\subsection{The two-point correlation
+            as a function of separation in only $x$}
+
+Repeat derivation for $r_z = 0$.  Beware any conjugate symmetry gotchas
+from half-complex storage.
+
+\subsection{The two-point correlation
+            as a function of separation in only $z$}
+
+Repeat derivation for $r_x = 0$.  Beware any conjugate symmetry gotchas
+from half-complex storage.
 
 \section{One-dimensional spectra
          \citep[\textsection{}6.5]{Pope2000Turbulent}}
@@ -253,11 +282,10 @@ the one-dimensional Fourier transform of $R_{u,v}(y_j,\vec{r}_{xz1})$:
 %
 \begin{equation}
 E_{uv}(y_j,\vec{k}_{xz1}) = \frac{1}{\pi} \int_{-\infty}^{\infty}
-                           R_{uv}(y_j,\vec{r}_{xz1}) 
+                           R_{uv}(y_j,\vec{r}_{xz1})
                            e^{-i \vec{k}_{xz1} \vec{r}_{xz1}} \,d\!r_{xz1}
 \end{equation}
 %
-
 
 \newcommand*{\doi}[1]{\href{http://dx.doi.org/\detokenize{#1}}{doi: #1}}
 \bibliographystyle{plainnat}
