@@ -28,6 +28,7 @@
 \usepackage{varioref}
 \usepackage{wrapfig}
 
+\mathtoolsset{showonlyrefs,showmanualtags}
 
 % Line Spacing
 \singlespacing
@@ -84,10 +85,9 @@ B-spline basis for some order and some knot selection.
 \section{Two-point correlation
          \citep[\textsection{}6.3]{Pope2000Turbulent}}
 
-\subsection{The two-point correlation
-            as a function of separation in both $x$ and $z$}
+\subsection{As a function of separation in both $x$ and $z$}
 
-For any two real-valued, continuous functions $u$ and $v$, by definition
+For any two real-valued, continuous functions $u$ and $v$,
 \begin{align}
 R_{uv} \left( \vec{x}, \vec{r}, t \right)
   &=   \overline{
@@ -207,6 +207,7 @@ R_{uv} \left( r_x, y_j, r_z \right)
      \hat{v}_{y_j m n}
      e^{\ii k_m r_x}
      e^{\ii k_n r_z}
+  \label{eq:twopoint_physical_xz}
 \end{align}
 
 Towards efficiently computing this result, relabel $x = r_x$, $z = r_z$,
@@ -251,23 +252,97 @@ orthogonality,
 \end{align}
 Evidently, the Fourier representation of the two-point correlation function
 evaluated at collocation point $y_j$ is nothing but the product of identical
-coefficient representations of $u$ and $v$.  Computation of $R_uv$ is most
-effectively performed in Fourier space via conveniently parallel,
-complex-valued wavenumber products once a collocation-based B-spline mass
-matrix has been applied to $\hat{u}_{lmn}$ and $\hat{v}_{lmn}$ to convert them
-to $\hat{u}_{y_j m n}$ and $\hat{v}_{y_j m n}$.
+coefficient representations of $u$ and $v$.  Directly employing the two
+dimensional convolution theorem to bivariate functions $u(x, y_j, z)$ and $v(x,
+y_j, z)$ permits arriving at this conclusion in one step.  Therefore,
+computation of $R_uv$ is most effectively performed in Fourier space via
+conveniently parallel, complex-valued wavenumber products once a
+collocation-based B-spline mass matrix has been applied to $\hat{u}_{lmn}$ and
+$\hat{v}_{lmn}$ to convert them to $\hat{u}_{y_j m n}$ and $\hat{v}_{y_j m n}$.
 
-\subsection{The two-point correlation
-            as a function of separation in only $x$}
+\subsection{As a function of separation in only $x$}
 
-Repeat derivation for $r_z = 0$.  Beware any conjugate symmetry gotchas
-from half-complex storage.
+Setting both $r_y = r_z = 0$ one can obtain the two-point correlation as a
+function of only $x$.  Replaying the above derivation through
+\eqref{eq:twopoint_physical_xz},
+\begin{align}
+R_{uv} \left( r_x, y_j, 0 \right)
+  &=
+     \sum_{m}
+     \sum_{n}
+     \hat{u}_{y_j m n}
+     \hat{v}_{y_j m n}
+     e^{\ii k_m r_x}
+\end{align}
+Relabeling $x = r_x$ and $m'=m$,
+\begin{align}
+R_{uv} \left( x, y_j, 0 \right)
+  &=
+     \sum_{m^\prime}
+     e^{\ii k_m^\prime x}
+     \sum_{n}
+     \hat{u}_{y_j m^\prime n}
+     \hat{v}_{y_j m^\prime n}
+\end{align}
+Applying a discrete Fourier transformation in $x$,
+\begin{align}
+     \left(\hat{R}_{uv}\right)_{y_j m \, 0}
+  &=
+     \sum_{m}
+     e^{-\ii k_m x}
+     R_{uv} \left( x, y_j, 0 \right)
+\\
+  &=
+     \sum_{m}
+     e^{-\ii k_m x}
+     \sum_{m^\prime}
+     e^{\ii k_m^\prime x}
+     \sum_{n}
+     \hat{u}_{y_j m^\prime n}
+     \hat{v}_{y_j m^\prime n}
+\\
+  &=
+     \sum_{n}
+     \hat{u}_{y_j m n}
+     \hat{v}_{y_j m n}
+\end{align}
+This Fourier coefficient product and summation may be computed directly in
+Suzerain as the $z$ direction does not employ conjugate symmetry.
 
-\subsection{The two-point correlation
-            as a function of separation in only $z$}
+\subsection{As a function of separation in only $z$}
 
-Repeat derivation for $r_x = 0$.  Beware any conjugate symmetry gotchas
-from half-complex storage.
+Setting $r_x = r_y = 0$ as above, one finds
+\begin{align}
+R_{uv} \left( 0, y_j, r_z \right)
+  &=
+     \sum_{m}
+     \sum_{n}
+     \hat{u}_{y_j m n}
+     \hat{v}_{y_j m n}
+     e^{\ii k_n r_z}
+\end{align}
+and consequently
+\begin{align}
+     \left(\hat{R}_{uv}\right)_{y_j 0 \, n}
+  &=
+     \sum_{m}
+     \hat{u}_{y_j m n}
+     \hat{v}_{y_j m n}
+   =
+     \hat{u}_{y_j 0 \, n}
+     \hat{v}_{y_j 0 \, n}
+    +
+    2 \left(
+    \sum_{m=1}^{\frac{N_x}{2}-1}
+     \hat{u}_{y_j m n}
+     \hat{v}_{y_j m n}
+    \right)
+    +
+     \hat{u}_{y_j \frac{N_x}{2} n}
+     \hat{v}_{y_j \frac{N_x}{2} n}
+\end{align}
+where the final expression equivalently uses only coefficients
+available in a conjugate symmetric treatment of the $x$ direction.
 
 \section{One-dimensional spectra
          \citep[\textsection{}6.5]{Pope2000Turbulent}}
