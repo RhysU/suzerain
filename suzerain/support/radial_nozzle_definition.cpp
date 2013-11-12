@@ -162,11 +162,11 @@ radial_nozzle_definition::options_description()
     // R1
     p.reset(value<string>());
     p->notifier(bind(&validate_option<double>, _1, &R1,
-                     &ensure_positive<double>, name_Ma0));
+                     &ensure_positive<double>, name_R1));
     if (!(boost::math::isnan)(R1)) {
         p->default_value(lexical_cast<string>(R1));
     }
-    retval.add_options()(name_Ma0, p.release(), desc_Ma0);
+    retval.add_options()(name_R1, p.release(), desc_R1);
 
     return retval;
 }
