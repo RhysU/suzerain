@@ -43,6 +43,18 @@ namespace suzerain {
 namespace support {
 
 template<typename T>
+static void parse_option(
+        const std::string& s,
+        T* value,
+        const char* name)
+{
+#pragma warning(push,disable:2259)
+    const T t = exprparse<real_t>(s, name);
+#pragma warning(pop)
+    *value = t;
+}
+
+template<typename T>
 static void validate_option(
         const std::string& s,
         T* value,
@@ -143,8 +155,7 @@ radial_nozzle_definition::options_description()
 
     // u1
     p.reset(value<string>());
-    p->notifier(bind(&validate_option<double>, _1, &u1,
-                     &ensure_positive<double>, name_u1));
+    p->notifier(bind(&parse_option<double>, _1, &u1, name_u1));
     if (!(boost::math::isnan)(u1)) {
         p->default_value(lexical_cast<string>(u1));
     }
