@@ -144,8 +144,7 @@ R_{uv} \left( r_x, y_j, r_z \right)
      \,\mathrm{d}z
      \,\mathrm{d}x
 \end{multline}
-As real-valued $v$ is necessarily conjugate symmetric, $\hat{v}^\ast =
-\hat{v}$.  Rearranging,
+Rearranging,
 \begin{multline}
 R_{uv} \left( r_x, y_j, r_z \right)
    = \frac{1}{L_x L_z}
@@ -161,7 +160,7 @@ R_{uv} \left( r_x, y_j, r_z \right)
      \sum_{n}
      \sum_{n^\prime}
      \hat{u}_{l m n}
-     \hat{v}_{l^\prime m^\prime n^\prime}
+     \hat{v}^\ast_{l^\prime m^\prime n^\prime}
      e^{\ii k_n r_z}
      \int_{-\frac{L_z}{2}}^{\frac{L_z}{2}}
      e^{\ii k_n z  }
@@ -184,7 +183,7 @@ R_{uv} \left( r_x, y_j, r_z \right)
      e^{\ii k_m x  }
      e^{-\ii k_m^\prime x}
      \hat{u}_{l m n}
-     \hat{v}_{l^\prime m^\prime n}
+     \hat{v}^\ast_{l^\prime m^\prime n}
      \,\mathrm{d}x
 \\
   &= \sum_{l} B_l\left(y_j\right)
@@ -194,7 +193,7 @@ R_{uv} \left( r_x, y_j, r_z \right)
      \sum_{n}
      e^{\ii k_n r_z}
      \hat{u}_{l m n}
-     \hat{v}_{l^\prime m n}
+     \hat{v}^\ast_{l^\prime m n}
 \end{align}
 Introducing shorthand $\phi_{y_j} = \sum_{l} B_l\left(y_j\right) \phi_l$
 denoting evaluating the B-spline basis expansion at point $y_j$,
@@ -204,7 +203,7 @@ R_{uv} \left( r_x, y_j, r_z \right)
      \sum_{m}
      \sum_{n}
      \hat{u}_{y_j m n}
-     \hat{v}_{y_j m n}
+     \hat{v}^\ast_{y_j m n}
      e^{\ii k_m r_x}
      e^{\ii k_n r_z}
   \label{eq:twopoint_physical_xz}
@@ -220,7 +219,7 @@ R_{uv} \left( x, y_j, z \right)
      \sum_{n^\prime}
      e^{\ii k_n^\prime z}
      \hat{u}_{y_j m^\prime n^\prime}
-     \hat{v}_{y_j m^\prime n^\prime}
+     \hat{v}^\ast_{y_j m^\prime n^\prime}
 \end{align}
 Applying a discrete Fourier transform in $x$ and $z$ and taking advantage of
 orthogonality,
@@ -243,11 +242,11 @@ orthogonality,
      \sum_{n^\prime}
      e^{\ii k_n^\prime z}
      \hat{u}_{y_j m^\prime n^\prime}
-     \hat{v}_{y_j m^\prime n^\prime}
+     \hat{v}^\ast_{y_j m^\prime n^\prime}
 \\
   &=
      \hat{u}_{y_j m n}
-     \hat{v}_{y_j m n}
+     \hat{v}^\ast_{y_j m n}
   .
 \end{align}
 Evidently, the Fourier representation of the two-point correlation function
@@ -255,10 +254,11 @@ evaluated at collocation point $y_j$ is nothing but the product of identical
 coefficient representations of $u$ and $v$.  Directly employing the two
 dimensional convolution theorem to bivariate functions $u(x, y_j, z)$ and $v(x,
 y_j, z)$ permits arriving at this conclusion in one step.  Therefore,
-computation of $R_uv$ is most effectively performed in Fourier space via
+computation of $R_{uv}$ is most effectively performed in Fourier space via
 conveniently parallel, complex-valued wavenumber products once a
 collocation-based B-spline mass matrix has been applied to $\hat{u}_{lmn}$ and
-$\hat{v}_{lmn}$ to convert them to $\hat{u}_{y_j m n}$ and $\hat{v}_{y_j m n}$.
+$\hat{v}^\ast_{lmn}$ to convert them to $\hat{u}_{y_j m n}$ and
+$\hat{v}^\ast_{y_j m n}$.
 
 \subsection{As a function of separation in only $x$}
 
@@ -271,7 +271,7 @@ R_{uv} \left( r_x, y_j, 0 \right)
      \sum_{m}
      \sum_{n}
      \hat{u}_{y_j m n}
-     \hat{v}_{y_j m n}
+     \hat{v}^\ast_{y_j m n}
      e^{\ii k_m r_x}
 \end{align}
 Relabeling $x = r_x$ and $m'=m$,
@@ -282,7 +282,7 @@ R_{uv} \left( x, y_j, 0 \right)
      e^{\ii k_m^\prime x}
      \sum_{n}
      \hat{u}_{y_j m^\prime n}
-     \hat{v}_{y_j m^\prime n}
+     \hat{v}^\ast_{y_j m^\prime n}
 \end{align}
 Applying a discrete Fourier transformation in $x$,
 \begin{align}
@@ -299,15 +299,15 @@ Applying a discrete Fourier transformation in $x$,
      e^{\ii k_m^\prime x}
      \sum_{n}
      \hat{u}_{y_j m^\prime n}
-     \hat{v}_{y_j m^\prime n}
+     \hat{v}^\ast_{y_j m^\prime n}
 \\
   &=
      \sum_{n}
      \hat{u}_{y_j m n}
-     \hat{v}_{y_j m n}
+     \hat{v}^\ast_{y_j m n}
 \end{align}
-This Fourier coefficient product and summation may be computed directly in
-Suzerain as the $z$ direction does not employ conjugate symmetry.
+where the summation is over $n \in \left\{-N_z/2, \dots, 0, \dots,
+N_z/2-1\right\}$.
 
 \subsection{As a function of separation in only $z$}
 
@@ -318,7 +318,7 @@ R_{uv} \left( 0, y_j, r_z \right)
      \sum_{m}
      \sum_{n}
      \hat{u}_{y_j m n}
-     \hat{v}_{y_j m n}
+     \hat{v}^\ast_{y_j m n}
      e^{\ii k_n r_z}
 \end{align}
 and consequently
@@ -327,22 +327,87 @@ and consequently
   &=
      \sum_{m}
      \hat{u}_{y_j m n}
-     \hat{v}_{y_j m n}
-   =
-     \hat{u}_{y_j 0 \, n}
-     \hat{v}_{y_j 0 \, n}
-    +
-    2 \left(
-    \sum_{m=1}^{\frac{N_x}{2}-1}
-     \hat{u}_{y_j m n}
-     \hat{v}_{y_j m n}
-    \right)
-    +
-     \hat{u}_{y_j \frac{N_x}{2} n}
-     \hat{v}_{y_j \frac{N_x}{2} n}
+     \hat{v}^\ast_{y_j m n}
 \end{align}
-where the final expression equivalently uses only coefficients
-available in a conjugate symmetric treatment of the $x$ direction.
+where the summation is over $m \in \left\{-N_x/2, \dots, 0, \dots,
+N_x/2-1\right\}$.
+
+When $u$ and $v$ are real-valued and the $x$ direction storage employs
+conjugate symmetry as an optimization technique, as in Suzerain, care must be
+taken when evaluating such summations.  More concretely, say one employs
+conjugate symmetry in the $x$ direction when computing $f\left(\hat{u}_{y_j m
+n}, \hat{v}^\ast_{y_j m n}\right)$.  Then
+\begin{align}
+  \sum_{m=-\frac{N_x}{2}}^{\frac{N_x}{2}-1}
+  f\left(\hat{u}_{y_j m n}, \hat{v}^\ast_{y_j m n}\right)
+&=
+    \sum_{m=0}^{\frac{N_x}{2}-1}
+    f\left(\hat{u}_{y_j m n}, \hat{v}^\ast_{y_j m n}\right)
+    +
+    \sum_{m=-\frac{N_x}{2}}^{-1}
+    f\left(\hat{u}_{y_j m n}, \hat{v}^\ast_{y_j m n}\right)
+\\ &=
+    \sum_{m=0}^{\frac{N_x}{2}-1}
+    f\left(\hat{u}_{y_j m n}, \hat{v}^\ast_{y_j m n}\right)
+    +
+    \sum_{m=1}^{\frac{N_x}{2}}
+    f\left(\hat{u}^\ast_{y_j m n}, \hat{v}_{y_j m n}\right)
+\\ &=
+    \left.f\left(\hat{u}_{y_j m n}, \hat{v}^\ast_{y_j m n}\right)\right|_{m=0}
+    +
+    \sum_{m=1}^{\frac{N_x}{2}-1}
+    \left[
+      f\left(\hat{u}_{y_j m n}, \hat{v}^\ast_{y_j m n}\right)
+      +
+      f\left(\hat{u}^\ast_{y_j m n}, \hat{v}_{y_j m n}\right)
+    \right]
+    +
+    \left.f\left(\hat{u}^\ast_{y_j m n}, \hat{v}_{y_j m n}\right)\right|_{m=\frac{N_x}{2}}
+  .
+\end{align}
+Consequently,
+\begin{align}
+     \left(\hat{R}_{uv}\right)_{y_j 0 \, n}
+&=
+    \hat{u}_{y_j 0 \, n} \hat{v}^\ast_{y_j 0 \, n}
+    +
+    \sum_{m=1}^{\frac{N_x}{2}-1}
+    \left[
+      \hat{u}_{y_j m n} \hat{v}^\ast_{y_j m n}
+      +
+      \hat{u}^\ast_{y_j m n} \hat{v}_{y_j m n}
+    \right]
+    +
+    \hat{u}^\ast_{y_j \frac{N_x}{2} n} \hat{v}_{y_j \frac{N_x}{2} n}
+\\
+&=
+    \hat{u}_{y_j 0 \, n} \hat{v}^\ast_{y_j 0 \, n}
+    +
+    2
+    \sum_{m=1}^{\frac{N_x}{2}-1}
+    \left[
+      \left(
+        \operatorname{Re}
+        \hat{u}_{y_j m n}
+      \right)
+      \left(
+        \operatorname{Re}
+        \hat{v}_{y_j m n}
+      \right)
+      +
+      \left(
+        \operatorname{Im}
+        \hat{u}_{y_j m n}
+      \right)
+      \left(
+        \operatorname{Im}
+        \hat{v}_{y_j m n}
+      \right)
+    \right]
+    +
+    \hat{u}^\ast_{y_j \frac{N_x}{2} n} \hat{v}_{y_j \frac{N_x}{2} n}
+  .
+\end{align}
 
 \section{One-dimensional spectra
          \citep[\textsection{}6.5]{Pope2000Turbulent}}
