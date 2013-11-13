@@ -491,8 +491,9 @@ namespace interpolate {
 
 /**
  * Interpolate a function given values at two distinct points.
- * This is quite obviously a line but has been coded up to be consistent
- * with \ref value_deriv below.
+ * This is quite obviously a line.  It has been coded up to be consistent
+ * with \ref value_deriv.  The interpolated results are exact for
+ * constant and linear functions.
  *
  * @param[in ]  x1 The first distinct point.
  * @param[in ]  y1 The function value at \c x1.
@@ -509,18 +510,15 @@ void value(const FPT&  x1,
            const FPT&  x3,
            FPT&        y3)
 {
-    const FPT x2m1 = x2 - x1;
-    const FPT x3m1 = x3 - x1;
-    const FPT y2m1 = y2 - y1;
-
-    y3 = y1 + x3m1*y2m1 / x3m1;
+    y3 = y1 + (y2 - y1) / (x2 - x1) * (x3 - x1);
 }
 
 /**
  * Interpolate a function and its derivative given values and derivatives at
  * two distinct points.  The expressions used are all derived from
  * interrogating <code>InterpolatingPolynomial[{ x1, y1, yp1}, {x2, y2, yp2}},
- * x3] </code> with Mathematica.
+ * x3] </code> with Mathematica.  The interpolated results are exact
+ * for constants through cubic polynomials, inclusive.
  *
  * @param[in ]  x1 The first distinct point.
  * @param[in ]  y1 The function value at \c x1.
@@ -544,11 +542,11 @@ void value_deriv(const FPT&  x1,
                  FPT&       yp3)
 {
     const FPT x2m1      = x2 - x1;
-    const FPT x2m1p2    = x2m1 *x2m1;
-    const FPT x2m1p3    = x2m1p2 *x2m1;
+    const FPT x2m1p2    = x2m1   * x2m1;
+    const FPT x2m1p3    = x2m1p2 * x2m1;
     const FPT invx2m1p3 = 1 / x2m1p3;
     const FPT x3m1      = x3 - x1;
-    const FPT x3m1p2    = x3m1 *x3m1;
+    const FPT x3m1p2    = x3m1 * x3m1;
     const FPT x3m2      = x3 - x2;
     const FPT y2m1      = y2 - y1;
 

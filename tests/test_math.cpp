@@ -569,3 +569,43 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( bump_shifted, T, test_types )
     BOOST_CHECK_EQUAL(shifted<T>(r    , l, r, 2, 1, 2), 1);
     BOOST_CHECK_EQUAL(shifted<T>(r+eps, l, r, 2, 1, 2), 1);
 }
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( value_deriv, T, test_types )
+{
+    using suzerain::math::interpolate::value_deriv;
+
+    const T a = 0, b = 2, c = 1;
+    T y[4], yp[4];
+
+    value_deriv<T>(a, 1,     0,     b,  1,     0,     c, y[0], yp[0]);
+    value_deriv<T>(a, a,     1,     b,  b,     1,     c, y[1], yp[1]);
+    value_deriv<T>(a, a*a,   2*a,   b,  b*b,   2*b,   c, y[2], yp[2]);
+    value_deriv<T>(a, a*a*a, 3*a*a, b,  b*b*b, 3*b*b, c, y[3], yp[3]);
+
+    const T tol = std::numeric_limits<T>::epsilon();
+
+    BOOST_CHECK_CLOSE( y[0], 1,     tol); // f(x) = 1
+    BOOST_CHECK_CLOSE( y[1], c,     tol); // f(x) = x
+    BOOST_CHECK_CLOSE( y[2], c*c,   tol); // f(x) = x^2
+    BOOST_CHECK_CLOSE( y[3], c*c*c, tol); // f(x) = x^3
+
+    BOOST_CHECK_CLOSE(yp[0], 0,   tol); // f(x) = 1
+    BOOST_CHECK_CLOSE(yp[1], 1,   tol); // f(x) = x
+    BOOST_CHECK_CLOSE(yp[2], 2*c, tol); // f(x) = x^2
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( value, T, test_types )
+{
+    using suzerain::math::interpolate::value;
+
+    const T a = 0, b = 2, c = 1;
+    T y[2];
+
+    value<T>(a, 1,     b,  1,     c, y[0]); // f(x) = 1
+    value<T>(a, a,     b,  b,     c, y[1]); // f(x) = x
+
+    const T tol = std::numeric_limits<T>::epsilon();
+
+    BOOST_CHECK_CLOSE( y[0], 1, tol); // f(x) = 1
+    BOOST_CHECK_CLOSE( y[1], c, tol); // f(x) = x
+}
