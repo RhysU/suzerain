@@ -54,6 +54,8 @@ public:
      *                     to retain.
      * @param nt           Number of simulation steps between samples.
      * @param dt           Amount of simulation time between samples.
+     * @param final        Should a final sample be taken after
+     *                     time advance successfully completes?
      *
      * @see ESIO's esio_file_close_restart() for the semantics of
      *      \c desttemplate and \c retain.
@@ -62,7 +64,8 @@ public:
             const std::string& destination            ,
             const std::size_t  retain      = (1 << 15),
             const real_t       dt          = 0        ,
-            const std::size_t  nt          = 0        );
+            const std::size_t  nt          = 0        ,
+            const bool         final       = false    );
 
     /** @copydoc definition_base::options_description() */
     virtual boost::program_options::options_description options_description();
@@ -90,6 +93,11 @@ public:
      * samples.
      */
     std::size_t nt;
+
+    /**
+     * Should a final sample be taken after time advance successfully completes?
+     */
+    bool final;
 };
 
 } // namespace support

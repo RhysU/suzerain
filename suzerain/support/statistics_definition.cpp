@@ -69,11 +69,13 @@ statistics_definition::statistics_definition(
         const std::string& destination,
         const std::size_t  retain,
         const real_t       dt,
-        const std::size_t  nt)
+        const std::size_t  nt,
+        const bool         final)
     : destination(destination)
     , retain(retain)
     , dt(dt)
     , nt(nt)
+    , final(final)
 {
 }
 
@@ -109,6 +111,9 @@ statistics_definition::options_description()
      ->notifier(bind(&parse_size_t, _1, &nt, "statistics_nt"))
      ->default_value(lexical_cast<string>(nt)),
      "Maximum number of time steps between statistical samples")
+    ("statistics_final", value<bool>(&final)
+     ->default_value(final),
+     "Should a final sample be taken after advance successfully completes?")
     ;
 
     return retval;
