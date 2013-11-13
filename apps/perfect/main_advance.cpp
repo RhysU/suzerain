@@ -472,7 +472,8 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
     log_discretization_quality();
     prepare_controller(initial_t, dgrid->chi());
     save_metadata();
-    const real_t elapsed_wall_time = advance_controller(); // Negative on error
+    const real_t elapsed_wall_time // Negative on error
+        = advance_controller(timedef->status_final);
 
     // If we advanced by any time steps, log the observed linearization error
     if (   !use_explicit

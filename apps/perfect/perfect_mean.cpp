@@ -745,13 +745,14 @@ static quantity::storage_map_type process(
     real_t time;
     scenario_definition scenario;
     grid_definition grid;
-    time_definition timedef(/* advance_dt */ 0,
-                 /* advance_nt */ 0,
-                 /* advance_wt */ 0,
-                 /* status_dt  */ 0,
-                 /* status_nt  */ 0,
-                 /* min_dt     */ 0,
-                 /* max_dt     */ 0);
+    time_definition timedef(/* advance_dt   */ 0,
+                            /* advance_nt   */ 0,
+                            /* advance_wt   */ 0,
+                            /* status_dt    */ 0,
+                            /* status_nt    */ 0,
+                            /* status_final */ false,
+                            /* min_dt       */ 0,
+                            /* max_dt       */ 0);
     shared_ptr<bspline> b;
     shared_ptr<bsplineop> cop;
     support::load_time(h.get(), time);

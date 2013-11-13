@@ -55,24 +55,26 @@ public:
      * <i>will</i> appear on the command line with integers and floats
      * defaulting to zero and NaN, respectively.
      *
-     * @param advance_dt  Maximum amount of physical time to advance
-     *                    the simulation.
-     * @param advance_nt  Maximum number of discrete time steps to
-     *                    advance the simulation.
-     * @param advance_wt  Maximum amount of wall time to advance
-     *                    the simulation.
-     *                    advance the simulation.
-     * @param status_dt   Maximum physical time between status updates.
-     * @param status_nt   Maximum number of discrete time steps between
-     *                    status updates.
-     * @param min_dt      Minimum allowable physically-driven time step.
-     * @param max_dt      Maximum allowable physically-driven time step.
+     * @param advance_dt   Maximum amount of physical time to advance
+     *                     the simulation.
+     * @param advance_nt   Maximum number of discrete time steps to
+     *                     advance the simulation.
+     * @param advance_wt   Maximum amount of wall time to advance
+     *                     the simulation.
+     * @param status_dt    Maximum physical time between status updates.
+     * @param status_nt    Maximum number of discrete time steps between
+     *                     status updates.
+     * @param status_final Should a final status update occur
+     *                     after advance completes?
+     * @param min_dt       Minimum allowable physically-driven time step.
+     * @param max_dt       Maximum allowable physically-driven time step.
      */
     time_definition(const real_t      advance_dt,
                     const std::size_t advance_nt,
                     const real_t      advance_wt,
                     const real_t      status_dt,
                     const std::size_t status_nt,
+                    const bool        status_final,
                     const real_t      min_dt,
                     const real_t      max_dt);
 
@@ -106,6 +108,9 @@ public:
 
     /** Maximum number of discrete time steps between status updates. */
     std::size_t status_nt;
+
+    /** Should a final status update occur after advance completes? */
+    bool status_final;
 
     /** Minimum allowable physically-driven time step */
     real_t min_dt;

@@ -125,30 +125,33 @@ time_definition::time_definition(const real_t      advance_dt,
                                  const real_t      advance_wt,
                                  const real_t      status_dt,
                                  const std::size_t status_nt,
+                                 const bool        status_final,
                                  const real_t      min_dt,
                                  const real_t      max_dt)
-    : advance_dt (advance_dt)
-    , advance_nt (advance_nt)
-    , advance_wt (advance_wt)
-    , status_dt  (status_dt)
-    , status_nt  (status_nt)
-    , min_dt     (min_dt)
-    , max_dt     (max_dt)
-    , evmagfactor(std::numeric_limits<real_t>::quiet_NaN())
-    , constructor(constructor1)
+    : advance_dt  (advance_dt)
+    , advance_nt  (advance_nt)
+    , advance_wt  (advance_wt)
+    , status_dt   (status_dt)
+    , status_nt   (status_nt)
+    , status_final(status_final)
+    , min_dt      (min_dt)
+    , max_dt      (max_dt)
+    , evmagfactor (std::numeric_limits<real_t>::quiet_NaN())
+    , constructor (constructor1)
 {
 }
 
 time_definition::time_definition(const real_t evmagfactor)
-    : advance_dt (std::numeric_limits<real_t>::quiet_NaN())
-    , advance_nt (0)
-    , advance_wt (std::numeric_limits<real_t>::quiet_NaN())
-    , status_dt  (std::numeric_limits<real_t>::quiet_NaN())
-    , status_nt  (0)
-    , min_dt     (std::numeric_limits<real_t>::quiet_NaN())
-    , max_dt     (std::numeric_limits<real_t>::quiet_NaN())
-    , evmagfactor(evmagfactor)
-    , constructor(constructor2)
+    : advance_dt  (std::numeric_limits<real_t>::quiet_NaN())
+    , advance_nt  (0)
+    , advance_wt  (std::numeric_limits<real_t>::quiet_NaN())
+    , status_dt   (std::numeric_limits<real_t>::quiet_NaN())
+    , status_nt   (0)
+    , status_final(true)
+    , min_dt      (std::numeric_limits<real_t>::quiet_NaN())
+    , max_dt      (std::numeric_limits<real_t>::quiet_NaN())
+    , evmagfactor (evmagfactor)
+    , constructor (constructor2)
 {
 }
 
@@ -167,6 +170,9 @@ static const char description_status_dt[]
 
 static const char description_status_nt[]
         = "Maximum number of discrete time steps between status updates";
+
+static const char description_status_final[]
+        = "Should a final status update occur after advance completes?";
 
 static const char description_min_dt[]
         = "Minimum allowable physically-driven time step";
@@ -219,6 +225,9 @@ time_definition::options_description()
          ->notifier(bind(&parse_size_t, _1, &status_nt, "status_nt"))
          ->default_value(lexical_cast<string>(status_nt)),
          description_status_nt)
+        ("status_final", value<bool>(&status_final)
+         ->default_value(status_final),
+         description_status_final)
         ("min_dt", value<string>(NULL)
          ->notifier(bind(&parse_option<real_t>, _1, &min_dt,
                          &ensure_nonnegative<real_t>, "min_dt"))

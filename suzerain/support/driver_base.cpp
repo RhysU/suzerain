@@ -127,13 +127,14 @@ driver_base::driver_base(
     , statsdef(make_shared<statistics_definition>(
                 /* destination */ "sample#.h5"))
     , timedef(make_shared<time_definition>(
-                /* advance_dt  */ 0,
-                /* advance_nt  */ 0,
-                /* advance_wt  */ 0,
-                /* status_dt   */ 0,
-                /* status_nt   */ 0,
-                /* min_dt      */ 1e-8,
-                /* max_dt      */ 1))
+                /* advance_dt   */ 0,
+                /* advance_nt   */ 0,
+                /* advance_wt   */ 0,
+                /* status_dt    */ 0,
+                /* status_nt    */ 0,
+                /* status_final */ true,
+                /* min_dt       */ 1e-8,
+                /* max_dt       */ 1))
     , method()
     , L()
     , N()
