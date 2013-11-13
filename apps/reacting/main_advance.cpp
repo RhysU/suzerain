@@ -403,17 +403,17 @@ suzerain::reacting::driver_advance::run(int argc, char **argv)
         const int ns             = static_cast<int>(cmods->Ns()) - 1;
         enum  { ntvar = 0 };
         static const char ransmodel[] = "dns";
-        INFO0("Allocating Largo model \"" << model << "\" with neq="
+        INFO0(who, "Allocating Largo model \"" << model << "\" with neq="
               << neq << ", ns=" << ns << ", ntvar=" << ntvar
               << ", ransmodel=" << ransmodel);
         largo_allocate(&sgdef->workspace, model.c_str(), neq,
                        ns, ntvar, ransmodel);
         if (!sgdef->workspace) {
-            FATAL0("Largo could not allocate requested model");
+            FATAL0(who, "Largo could not allocate requested model");
             return EXIT_FAILURE;
         }
         if ((isnan)(sgdef->grdelta)) {
-            WARN0("Slow growth rate grdelta is NaN");
+            WARN0(who, "Slow growth rate grdelta is NaN");
         }
     }
 
