@@ -479,6 +479,89 @@ FPT shifted(const FPT x, const FPT l, const FPT r,
 
 } // namespace bump
 
+/**
+ * Routines for evaluating polynomial-based interpolants.
+ *
+ * @see Mathematica's <a
+ * href="http://reference.wolfram.com/mathematica/ref/InterpolatingPolynomial.html">
+ * InterpolatingPolynomial</a> for an easy way to generate these and other
+ * similar results.
+ */
+namespace interpolate {
+
+/**
+ * Interpolate a function given values at two distinct points.
+ * This is quite obviously a line but has been coded up to be consistent
+ * with \ref value_deriv below.
+ *
+ * @param[in ]  x1 The first distinct point.
+ * @param[in ]  y1 The function value at \c x1.
+ * @param[in ]  x2 The second distinct point.
+ * @param[in ]  y2 The function value at \c x2.
+ * @param[in ]  x3 The point of interest.
+ * @param[out]  y3 The function value at \c x3.
+ */
+template<typename FPT>
+void value(const FPT&  x1,
+           const FPT&  y1,
+           const FPT&  x2,
+           const FPT&  y2,
+           const FPT&  x3,
+           FPT&        y3)
+{
+    const FPT x2m1 = x2 - x1;
+    const FPT x3m1 = x3 - x1;
+    const FPT y2m1 = y2 - y1;
+
+    y3 = y1 + x3m1*y2m1 / x3m1;
+}
+
+/**
+ * Interpolate a function and its derivative given values and derivatives at
+ * two distinct points.  The expressions used are all derived from
+ * interrogating <code>InterpolatingPolynomial[{ x1, y1, yp1}, {x2, y2, yp2}},
+ * x3] </code> with Mathematica.
+ *
+ * @param[in ]  x1 The first distinct point.
+ * @param[in ]  y1 The function value at \c x1.
+ * @param[in ] yp1 The function derivative at \c x1.
+ * @param[in ]  x2 The second distinct point.
+ * @param[in ]  y2 The function value at \c x2.
+ * @param[in ] yp2 The function derivative at \c x2.
+ * @param[in ]  x3 The point of interest.
+ * @param[out]  y3 The function value at \c x3.
+ * @param[out] yp3 The function derivative at \c x3.
+ */
+template<typename FPT>
+void value_deriv(const FPT&  x1,
+                 const FPT&  y1,
+                 const FPT& yp1,
+                 const FPT&  x2,
+                 const FPT&  y2,
+                 const FPT& yp2,
+                 const FPT&  x3,
+                 FPT&        y3,
+                 FPT&       yp3)
+{
+    const FPT x2m1      = x2 - x1;
+    const FPT x2m1p2    = x2m1 *x2m1;
+    const FPT x2m1p3    = x2m1p2 *x2m1;
+    const FPT invx2m1p3 = 1 / x2m1p3;
+    const FPT x3m1      = x3 - x1;
+    const FPT x3m1p2    = x3m1 *x3m1;
+    const FPT x3m2      = x3 - x2;
+    const FPT y2m1      = y2 - y1;
+
+    y3  = invx2m1p3*(  x2m1p3*(y1 + x3m1*yp1)
+                     + x3m1p2*(- 2*x3m2*y2m1 - x2m1p2*yp1
+                               + x2m1*(y2m1 + x3m2*(yp1 + yp2))));
+    yp3 = invx2m1p3*(  x2m1p3*yp1
+                     - 2*x3m1*(x3m1*y2m1 + 2*x3m2*y2m1 + x2m1p2*yp1)
+                     + x2m1*x3m1*(2*y2m1 + (x3m1 + 2*x3m2)*(yp1 + yp2))) ;
+}
+
+} // namespace interpolate
+
 } // namespace math
 
 } // namespace suzerain
