@@ -22,8 +22,8 @@ def rename_hdf5(pattern, repl, hdf5file, dryrun=False):
     else:
         f = h5py.File(hdf5file, 'r+')
 
-    # listnames() not iterkeys() as we mutate during iteration
-    for oldname in f.listnames():
+    # list(f.iterkeys()) as we mutate during iteration
+    for oldname in list(f.iterkeys()):
         newname = re.sub(pattern, repl, oldname)
         if newname == oldname:
             continue
