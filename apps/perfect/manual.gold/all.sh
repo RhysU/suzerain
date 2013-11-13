@@ -14,7 +14,7 @@ trap 'rm -f $FAILURES' EXIT
 SCRIPTDIR="$( cd "$( echo "${BASH_SOURCE[0]%/*}" )"; pwd )"
 for script in "$SCRIPTDIR"/*/check.sh
 do
-    ( "$script" "$@" || echo "$script" "$@" >> $FAILURES ) &
+    ( "$SCRIPTDIR/neno" "$script" "$@" || echo "$script" "$@" >> $FAILURES ) &
 done
 
 # Wait for all subshells to finish
