@@ -443,6 +443,7 @@ driver_base::prepare_controller(
 double
 driver_base::advance_controller(
             const bool final_status,
+            const bool final_statistics,
             const bool final_restart,
             const bool output_timers,
             const bool output_stepping)
@@ -519,7 +520,16 @@ driver_base::advance_controller(
         log_status(controller->current_t(), controller->current_nt());
     }
 
-    // Save a final restart if one was not just saved during time advancement
+    // Save a final statistics if not just saved during time advancement
+    if (   final_statistics
+        && success
+        && last_statistics_saved_nt != controller->current_nt()) {
+        INFO0(who, "Saving statistics file after time controller finished");
+        save_statistics(controller->current_t(), controller->current_nt());
+    }
+
+    // Save a final restart if not just saved during time advancement
+    // Smart caching by applications will prevent pointless recomputation here
     if (   final_restart
         && success
         && last_restart_saved_nt != controller->current_nt()) {

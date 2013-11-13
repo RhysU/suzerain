@@ -229,19 +229,26 @@ public:
      * Notice <tt>controller</tt> advance routines could be invoked directly,
      * but they provide none of this additional postprocessing functionality.
      *
-     * @param final_status    Invoke \ref log_status after advance completes?
-     * @param final_restart   Invoke \ref save_restart after successful advance?
-     * @param output_timers   Output performance details after advance completes?
-     * @param output_stepping Output time step size metrics after advance completes?
+     * @param final_status     Invoke \ref log_status after advance completes?
+     * @param final_statistics Invoke \ref save_statistics after successful
+     *                         advance?  Default is \c false as any
+     *                         \c final_restart will contain statistics too.
+     * @param final_restart    Invoke \ref save_restart after successful
+     *                         advance?
+     * @param output_timers    Output performance details after advance
+     *                         completes?
+     * @param output_stepping  Output time step size metrics after advance
+     *                         completes?
      *
      * @return The wall time spent advancing simulation time on success.
      *         The negated wall time spend advancing the simulation on failure.
      */
     virtual double advance_controller(
-            const bool final_status    = true,
-            const bool final_restart   = true,
-            const bool output_timers   = true,
-            const bool output_stepping = true);
+            const bool final_status     = true,
+            const bool final_statistics = false,
+            const bool final_restart    = true,
+            const bool output_timers    = true,
+            const bool output_stepping  = true);
 
     /**
      * Build a fixed-width, human-friendly way to output the given simulation
