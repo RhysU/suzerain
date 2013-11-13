@@ -190,15 +190,19 @@ public:
     /** Virtual destructor as appropriate for abstract base class */
     virtual ~quantities_base() { /* NOP */ }
 
-    /** Save quantities to a restart file. */
-    virtual void save(const esio_handle h) const;
+    /**
+     * Save quantities to a restart file.
+     *
+     * @return True if all quantities could be saved.  False otherwise.
+     */
+    virtual bool save(const esio_handle h) const;
 
     /**
      * Load quantities from a restart file.  Statistics not present in the
      * restart file are considered to be all NaNs.  Member #t, which is not
      * modified by this routine, is presumably set in some other fashion.
      *
-     * @return True if some quantities could be loaded.  False otherwise.
+     * @return True if all quantities could be loaded.  False otherwise.
      */
     virtual bool load(const esio_handle h);
 
@@ -248,36 +252,47 @@ public:
      * A foreach operation iterating over all mutable quantities in \c storage.
      * The functor is invoked as <tt>f(std::string("foo",
      * storage_type::NColsBlockXpr<size::foo>::Type))</tt> for a quantity named
-     * "foo".  See Eigen's "Writing Functions Taking Eigen Types as Parameters"
-     * for suggestions on how to write a functor, especially the \c const_cast
-     * hack details therein.  See <tt>boost::ref</tt> for how to use a stateful
-     * functor.
+     * "foo".  Each invocation must return a <tt>bool</tt> result. See Eigen's
+     * "Writing Functions Taking Eigen Types as Parameters" for suggestions on
+     * how to write a functor, especially the \c const_cast hack details
+     * therein.  See <tt>boost::ref</tt> for how to use a stateful functor.
+     *
+     * @return True if all invocations returned \c true.  False otherwise.
      */
     template <typename BinaryFunction>
-    void foreach(BinaryFunction f) {
+    bool foreach(BinaryFunction f) {
+        bool result = true;
 #define INVOKE(r, data, tuple) \
-        f(::std::string(BOOST_PP_STRINGIZE(BOOST_PP_TUPLE_ELEM(2, 0, tuple))), \
-          this->BOOST_PP_TUPLE_ELEM(2, 0, tuple)());
+        result &= f(::std::string(                                         \
+                    BOOST_PP_STRINGIZE(BOOST_PP_TUPLE_ELEM(2, 0, tuple))), \
+                    this->BOOST_PP_TUPLE_ELEM(2, 0, tuple)());
         BOOST_PP_SEQ_FOR_EACH(INVOKE,,SUZERAIN_REACTING_FLOW_QUANTITIES)
-    }
 #undef INVOKE
+        return result;
+    }
 
     /**
      * A foreach operation iterating over all immutable quantities in \c
      * storage.  The functor is invoked as <tt>f(std::string("foo",
      * storage_type::NColsBlockXpr<size::foo>::Type))</tt> for a quantity named
-     * "foo".  See Eigen's "Writing Functions Taking Eigen Types as Parameters"
-     * for suggestions on how to write a functor.  See <tt>boost::ref</tt> for
-     * how to use a stateful functor.
+     * "foo".  Each invocation must return a <tt>bool</tt> result. See Eigen's
+     * "Writing Functions Taking Eigen Types as Parameters" for suggestions on
+     * how to write a functor.  See <tt>boost::ref</tt> for how to use a
+     * stateful functor.
+     *
+     * @return True if all invocations returned \c true.  False otherwise.
      */
     template <typename BinaryFunction>
-    void foreach(BinaryFunction f) const {
-#define INVOKE(r, data, tuple) \
-        f(::std::string(BOOST_PP_STRINGIZE(BOOST_PP_TUPLE_ELEM(2, 0, tuple))), \
-          this->BOOST_PP_TUPLE_ELEM(2, 0, tuple)());
+    bool foreach(BinaryFunction f) const {
+        bool result = true;
+#define INVOKE(r, data, tuple)                                             \
+        result &= f(::std::string(                                         \
+                    BOOST_PP_STRINGIZE(BOOST_PP_TUPLE_ELEM(2, 0, tuple))), \
+                    this->BOOST_PP_TUPLE_ELEM(2, 0, tuple)());
         BOOST_PP_SEQ_FOR_EACH(INVOKE,,SUZERAIN_REACTING_FLOW_QUANTITIES)
-    }
 #undef INVOKE
+        return result;
+    }
 
 private:
 
@@ -321,19 +336,10 @@ public:
 
     std::size_t Ns;
 
-    /** Virtual destructor as appropriate for abstract base class */
-    virtual ~quantities() { /* NOP */ }
+    /** @copydoc quantities_base::save */
+    virtual bool save(const esio_handle h) const;
 
-    /** Save quantities to a restart file. */
-    virtual void save(const esio_handle h) const;
-
-    /**
-     * Load quantities from a restart file.  Statistics not present in the
-     * restart file are considered to be all NaNs.  Member #t, which is not
-     * modified by this routine, is presumably set in some other fashion.
-     *
-     * @return True if some quantities could be loaded.  False otherwise.
-     */
+    /** @copydoc quantities_base::load */
     virtual bool load(const esio_handle h);
 
     // Declare a named, mutable "view" into storage for each species density

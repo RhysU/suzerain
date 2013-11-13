@@ -178,15 +178,19 @@ public:
      */
     quantities(real_t t, storage_type::Index Ny);
 
-    /** Save quantities to a restart file. */
-    void save(const esio_handle h) const;
+    /**
+     * Save quantities to a restart file.
+     *
+     * @return True if all quantities could be saved.  False otherwise.
+     */
+    bool save(const esio_handle h) const;
 
     /**
      * Load quantities from a restart file.  Statistics not present in the
      * restart file are considered to be all NaNs.  Member #t, which is not
      * modified by this routine, is presumably set in some other fashion.
      *
-     * @return True if some quantities could be loaded.  False otherwise.
+     * @return True if all quantities could be loaded.  False otherwise.
      */
     bool load(const esio_handle h);
 
@@ -236,36 +240,47 @@ public:
      * A foreach operation iterating over all mutable quantities in \c storage.
      * The functor is invoked as <tt>f(std::string("foo",
      * storage_type::NColsBlockXpr<size::foo>::Type))</tt> for a quantity named
-     * "foo".  See Eigen's "Writing Functions Taking Eigen Types as Parameters"
-     * for suggestions on how to write a functor, especially the \c const_cast
-     * hack details therein.  See <tt>boost::ref</tt> for how to use a stateful
-     * functor.
+     * "foo".  Each invocation must return a <tt>bool</tt> result.  See Eigen's
+     * "Writing Functions Taking Eigen Types as Parameters" for suggestions on
+     * how to write a functor, especially the \c const_cast hack details
+     * therein.  See <tt>boost::ref</tt> for how to use a stateful functor.
+     *
+     * @return True if all invocations returned \c true.  False otherwise.
      */
     template <typename BinaryFunction>
-    void foreach(BinaryFunction f) {
-#define INVOKE(r, data, tuple) \
-        f(::std::string(BOOST_PP_STRINGIZE(BOOST_PP_TUPLE_ELEM(2, 0, tuple))), \
-          this->BOOST_PP_TUPLE_ELEM(2, 0, tuple)());
+    bool foreach(BinaryFunction f) {
+        bool retval = true;
+#define INVOKE(r, data, tuple)                                             \
+        retval &= f(::std::string(                                         \
+                    BOOST_PP_STRINGIZE(BOOST_PP_TUPLE_ELEM(2, 0, tuple))), \
+                    this->BOOST_PP_TUPLE_ELEM(2, 0, tuple)());
         BOOST_PP_SEQ_FOR_EACH(INVOKE,,SUZERAIN_PERFECT_QUANTITIES)
-    }
 #undef INVOKE
+        return retval;
+    }
 
     /**
      * A foreach operation iterating over all immutable quantities in \c
      * storage.  The functor is invoked as <tt>f(std::string("foo",
      * storage_type::NColsBlockXpr<size::foo>::Type))</tt> for a quantity named
-     * "foo".  See Eigen's "Writing Functions Taking Eigen Types as Parameters"
-     * for suggestions on how to write a functor.  See <tt>boost::ref</tt> for
-     * how to use a stateful functor.
+     * "foo".  Each invocation must return a <tt>bool</tt> result.  See Eigen's
+     * "Writing Functions Taking Eigen Types as Parameters" for suggestions on
+     * how to write a functor.  See <tt>boost::ref</tt> for how to use a
+     * stateful functor.
+     *
+     * @return True if all invocations returned \c true.  False otherwise.
      */
     template <typename BinaryFunction>
-    void foreach(BinaryFunction f) const {
-#define INVOKE(r, data, tuple) \
-        f(::std::string(BOOST_PP_STRINGIZE(BOOST_PP_TUPLE_ELEM(2, 0, tuple))), \
-          this->BOOST_PP_TUPLE_ELEM(2, 0, tuple)());
+    bool foreach(BinaryFunction f) const {
+        bool retval = true;
+#define INVOKE(r, data, tuple)                                             \
+        retval &= f(::std::string(                                         \
+                    BOOST_PP_STRINGIZE(BOOST_PP_TUPLE_ELEM(2, 0, tuple))), \
+                    this->BOOST_PP_TUPLE_ELEM(2, 0, tuple)());
         BOOST_PP_SEQ_FOR_EACH(INVOKE,,SUZERAIN_PERFECT_QUANTITIES)
-    }
 #undef INVOKE
+        return retval;
+    }
 
 private:
 

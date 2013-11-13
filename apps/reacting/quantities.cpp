@@ -88,7 +88,7 @@ public:
         : who(who), esioh(esioh), prefix(prefix) {}
 
     template< typename EigenArray >
-    void operator()(const std::string& name, const EigenArray& dat) const
+    bool operator()(const std::string& name, const EigenArray& dat) const
     {
         int procid;
         esio_handle_comm_rank(esioh, &procid);
@@ -99,7 +99,8 @@ public:
 
         std::string key(prefix);
         key.append(name);
-        esio_field_write(esioh, key.c_str(), dat.data(), 0, 0, 0,
+        return ESIO_SUCCESS == esio_field_write(
+            esioh, key.c_str(), dat.data(), 0, 0, 0,
             "Mean quantity sample stored using row-major indices (B-spline"
             " coefficient, tensor component, sample number) where the"
             " B-spline basis is defined by /Ny, /breakpoints_y, and /knots");
@@ -113,14 +114,15 @@ private:
 
 };
 
-void quantities_base::save(const esio_handle h) const
+bool quantities_base::save(const esio_handle h) const
 {
     if (this->storage.size()) {
         quantities_saver f(this->who, h, "bar_");
-        this->foreach(f);
+        return this->foreach(f);
     } else {
         WARN0(who, "No mean quantity samples saved--"
                    " trivial storage needs detected");
+        return true; // Warning occurs but behavior was "successful".
     }
 }
 
@@ -136,7 +138,7 @@ public:
         : who(who), esioh(esioh), prefix(prefix) {}
 
     template< typename EigenArray >
-    void operator()(const std::string& name, const EigenArray& dat_) const {
+    bool operator()(const std::string& name, const EigenArray& dat_) const {
 
         // http://eigen.tuxfamily.org/dox/TopicFunctionTakingEigenTypes.html
         EigenArray& dat = const_cast<EigenArray&>(dat_);
@@ -157,12 +159,14 @@ public:
                                  1,          0, (procid == 0 ? 1          : 0),
                                  dat.cols(), 0, (procid == 0 ? dat.cols() : 0),
                                  dat.rows(), 0, (procid == 0 ? dat.rows() : 0));
-            esio_field_read(esioh, key.c_str(), dat.data(), 0, 0, 0);
+            return ESIO_SUCCESS == esio_field_read(
+                    esioh, key.c_str(), dat.data(), 0, 0, 0);
         } else {
             WARN0(who, "Unable to load " << key
                   << " for nscalar = " << dat.cols());
             dat.fill(std::numeric_limits<
                      typename EigenArray::Scalar>::quiet_NaN());
+            return false;
         }
     }
 
@@ -187,8 +191,7 @@ bool quantities_base::load(const esio_handle h)
                                         &cglobal, &bglobal, &aglobal)) {
         this->storage.resize(aglobal, NoChange);
         quantities_loader f(this->who, h, "bar_");
-        this->foreach(f);
-        success = true;
+        success = this->foreach(f);
     } else {
         WARN0(who, "No mean quantity samples loaded--"
                    " unable to anticipate storage needs");
@@ -220,27 +223,29 @@ quantities::quantities(
 }
 
 
-void quantities::save(const esio_handle h) const
+bool quantities::save(const esio_handle h) const
 {
-    super::save(h);
+    bool retval = super::save(h);
 
     DEBUG0("Saving species statistics.");
     if (this->species_storage.size()) {
         quantities_saver f("quantities", h, "bar_");
-        f("rho_s", this->rho_s(0, Ns));
-        f("om_s" , this->om_s (0, Ns));
-        f("rho_s_u"          , this->rho_s_u          ());
-        f("rho_Ds_grad_cs"   , this->rho_Ds_grad_cs   ());
-        f("rho_Ds_grad_cs_hs", this->rho_Ds_grad_cs_hs());
+        retval &= f("rho_s",             this->rho_s(0, Ns));
+        retval &= f("om_s" ,             this->om_s (0, Ns));
+        retval &= f("rho_s_u"          , this->rho_s_u          ());
+        retval &= f("rho_Ds_grad_cs"   , this->rho_Ds_grad_cs   ());
+        retval &= f("rho_Ds_grad_cs_hs", this->rho_Ds_grad_cs_hs());
     } else {
         WARN0("quantities", "No mean quantity samples saved--"
                             " trivial storage needs detected");
     }
+
+    return retval;
 }
 
 bool quantities::load(const esio_handle h)
 {
-    bool success = super::load(h);
+    bool retval = super::load(h);
 
     // Defensively NaN out all storage in the instance prior to load.
     this->species_storage.fill(std::numeric_limits<real_t>::quiet_NaN());
@@ -258,19 +263,17 @@ bool quantities::load(const esio_handle h)
             { assert(static_cast<int>(this->Ns)==bglobal); }
 
         quantities_loader f("quantities", h, "bar_");
-        f("rho_s", this->rho_s(0, Ns));
-        f("om_s" , this->om_s (0, Ns));
-        f("rho_s_u"          , this->rho_s_u          ());
-        f("rho_Ds_grad_cs"   , this->rho_Ds_grad_cs   ());
-        f("rho_Ds_grad_cs_hs", this->rho_Ds_grad_cs_hs());
-        success = true;
+        retval &= f("rho_s", this->rho_s(0, Ns));
+        retval &= f("om_s" , this->om_s (0, Ns));
+        retval &= f("rho_s_u"          , this->rho_s_u          ());
+        retval &= f("rho_Ds_grad_cs"   , this->rho_Ds_grad_cs   ());
+        retval &= f("rho_Ds_grad_cs_hs", this->rho_Ds_grad_cs_hs());
     } else {
         WARN0("quantities", "No mean quantity samples loaded--"
                             " unable to anticipate storage needs");
     }
 
-
-    return success;
+    return retval;
 }
 
 
