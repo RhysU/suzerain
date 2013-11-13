@@ -446,7 +446,8 @@ suzerain::reacting::driver_advance::run(int argc, char **argv)
     save_metadata();
     const real_t elapsed_wall_time // Negative on error
         = advance_controller(timedef->status_final,
-                             statsdef->final);
+                             statsdef->final,
+                             restartdef->final);
 
     // Report error to the OS iff advance_control reported an error
     return elapsed_wall_time < 0;

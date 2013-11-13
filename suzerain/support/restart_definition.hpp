@@ -58,6 +58,8 @@ public:
      *                     to retain.
      * @param nt           Number of simulation steps between restart writes.
      * @param dt           Amount of simulation time between restart writes.
+     * @param final        Should a final restart write occur after
+     *                     time advance successfully completes?
      * @param physical     Should files save state in physical space?
      *
      * @see ESIO's esio_file_close_restart() for the semantics of
@@ -69,6 +71,7 @@ public:
                        const std::size_t  retain       = (1 << 15),
                        const real_t       dt           = 0        ,
                        const std::size_t  nt           = 0        ,
+                       const bool         final        = true     ,
                        const bool         physical     = false    );
 
     /** @copydoc definition_base::options_description() */
@@ -108,6 +111,12 @@ public:
      * files.
      */
     std::size_t nt;
+
+    /**
+     * Should a final restart write occur after time advance successfully
+     * completes?
+     */
+    bool final;
 
     /**
      * Save restart fields as collocation point values in physical space?

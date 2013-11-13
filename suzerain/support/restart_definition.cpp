@@ -72,6 +72,7 @@ restart_definition::restart_definition(
         const std::size_t  retain,
         const real_t       dt,
         const std::size_t  nt,
+        const bool         final,
         const bool         physical)
     : metadata(metadata)
     , uncommitted(uncommitted)
@@ -79,6 +80,7 @@ restart_definition::restart_definition(
     , retain(retain)
     , dt(dt)
     , nt(nt)
+    , final(final)
     , physical(physical)
 {
 }
@@ -123,6 +125,9 @@ restart_definition::options_description()
      ->notifier(bind(&parse_size_t, _1, &nt, "restart_nt"))
      ->default_value(lexical_cast<string>(nt)),
      "Maximum number of time steps between restart files")
+    ("restart_final", value<bool>(&final)
+     ->default_value(final),
+     "Should a final restart be written after advance successfully completes?")
     ("restart_physical", bool_switch(&physical),
      "Specify flag to save restart fields as primitive variables "
      "stored at collocation points in physical space")

@@ -474,7 +474,8 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
     save_metadata();
     const real_t elapsed_wall_time // Negative on error
         = advance_controller(timedef->status_final,
-                             statsdef->final);
+                             statsdef->final,
+                             restartdef->final);
 
     // If we advanced by any time steps, log the observed linearization error
     if (   !use_explicit
