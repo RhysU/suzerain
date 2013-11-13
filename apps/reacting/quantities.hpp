@@ -331,7 +331,7 @@ public:
      * Constructor setting <tt>this->t = t</tt> and preparing a zero-filled \c
      * storage containing \c Ny rows.
      */
-    quantities(real_t t, species_storage_type::Index Ny, 
+    quantities(real_t t, species_storage_type::Index Ny,
                          species_storage_type::Index Ns);
 
     std::size_t Ns;
@@ -343,121 +343,121 @@ public:
     virtual bool load(const esio_handle h);
 
     // Declare a named, mutable "view" into storage for each species density
-    species_storage_type::ColXpr 
+    species_storage_type::ColXpr
     rho_s(const std::size_t s) {
         return species_storage.col(s);
     }
 
     // Declare a named, immutable "view" into storage for each species density
-    species_storage_type::ConstColXpr 
+    species_storage_type::ConstColXpr
     rho_s(const std::size_t s) const {
         return species_storage.col(s);
     }
 
     // Declare a named, mutable "view" into storage for each species density
-    species_storage_type::ColsBlockXpr 
+    species_storage_type::ColsBlockXpr
     rho_s(const std::size_t s, species_storage_type::Index nc) {
         return species_storage.middleCols(s, nc);
     }
 
     // Declare a named, immutable "view" into storage for each species density
-    species_storage_type::ConstColsBlockXpr 
+    species_storage_type::ConstColsBlockXpr
     rho_s(const std::size_t s, species_storage_type::Index nc) const {
         return species_storage.middleCols(s, nc);
     }
 
     // Declare a named, mutable "view" into storage for each species density
-    species_storage_type::ColXpr 
+    species_storage_type::ColXpr
     om_s(const std::size_t s) {
         return species_storage.col(this->Ns + s);
     }
 
     // Declare a named, immutable "view" into storage for each species density
-    species_storage_type::ConstColXpr 
+    species_storage_type::ConstColXpr
     om_s(const std::size_t s) const {
         return species_storage.col(this->Ns + s);
     }
 
     // Declare a named, mutable "view" into storage for each species density
-    species_storage_type::ColsBlockXpr 
+    species_storage_type::ColsBlockXpr
     om_s(const std::size_t s, species_storage_type::Index nc) {
         return species_storage.middleCols(this->Ns + s, nc);
     }
 
     // Declare a named, immutable "view" into storage for each species density
-    species_storage_type::ConstColsBlockXpr 
+    species_storage_type::ConstColsBlockXpr
     om_s(const std::size_t s, species_storage_type::Index nc) const {
         return species_storage.middleCols(this->Ns + s, nc);
     }
 
     // Declare a named, mutable "view" into storage for each species density
-    species_storage_type::ColXpr 
+    species_storage_type::ColXpr
     rho_s_u(const std::size_t s, const std::size_t i) {
         return species_storage.col(2*this->Ns + 3*s + i);
     }
 
     // Declare a named, immutable "view" into storage for each species density
-    species_storage_type::ConstColXpr 
+    species_storage_type::ConstColXpr
     rho_s_u(const std::size_t s, const std::size_t i) const {
         return species_storage.col(2*this->Ns + 3*s + i);
     }
 
     // Declare a named, mutable "view" into storage for all species density
-    species_storage_type::ColsBlockXpr 
+    species_storage_type::ColsBlockXpr
     rho_s_u() {
         return species_storage.middleCols(2*this->Ns, 3*this->Ns);
     }
 
     // Declare a named, immutable "view" into storage for all species density
-    species_storage_type::ConstColsBlockXpr 
+    species_storage_type::ConstColsBlockXpr
     rho_s_u() const {
         return species_storage.middleCols(2*this->Ns, 3*this->Ns);
     }
 
     // Declare a named, mutable "view" into storage for each species density
-    species_storage_type::ColXpr 
+    species_storage_type::ColXpr
     rho_Ds_grad_cs(const std::size_t s, const std::size_t i) {
         return species_storage.col(5*this->Ns + 3*s + i);
     }
 
     // Declare a named, immutable "view" into storage for each species density
-    species_storage_type::ConstColXpr 
+    species_storage_type::ConstColXpr
     rho_Ds_grad_cs(const std::size_t s, const std::size_t i) const {
         return species_storage.col(5*this->Ns + 3*s + i);
     }
 
     // Declare a named, mutable "view" into storage for all species density
-    species_storage_type::ColsBlockXpr 
+    species_storage_type::ColsBlockXpr
     rho_Ds_grad_cs() {
         return species_storage.middleCols(5*this->Ns, 3*this->Ns);
     }
 
     // Declare a named, immutable "view" into storage for all species density
-    species_storage_type::ConstColsBlockXpr 
+    species_storage_type::ConstColsBlockXpr
     rho_Ds_grad_cs() const {
         return species_storage.middleCols(5*this->Ns, 3*this->Ns);
     }
 
     // Declare a named, mutable "view" into storage for each species density
-    species_storage_type::ColXpr 
+    species_storage_type::ColXpr
     rho_Ds_grad_cs_hs(const std::size_t s, const std::size_t i) {
         return species_storage.col(8*this->Ns + 3*s + i);
     }
 
     // Declare a named, immutable "view" into storage for each species density
-    species_storage_type::ConstColXpr 
+    species_storage_type::ConstColXpr
     rho_Ds_grad_cs_hs(const std::size_t s, const std::size_t i) const {
         return species_storage.col(8*this->Ns + 3*s + i);
     }
 
     // Declare a named, mutable "view" into storage for all species density
-    species_storage_type::ColsBlockXpr 
+    species_storage_type::ColsBlockXpr
     rho_Ds_grad_cs_hs() {
         return species_storage.middleCols(8*this->Ns, 3*this->Ns);
     }
 
     // Declare a named, immutable "view" into storage for all species density
-    species_storage_type::ConstColsBlockXpr 
+    species_storage_type::ConstColsBlockXpr
     rho_Ds_grad_cs_hs() const {
         return species_storage.middleCols(8*this->Ns, 3*this->Ns);
     }

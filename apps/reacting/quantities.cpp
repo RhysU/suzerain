@@ -333,7 +333,7 @@ quantities sample_quantities(
         }; };
 
     // Get total number of fields in aux storage
-    const size_t aux_count = (aux::species      + 
+    const size_t aux_count = (aux::species      +
                               dir::count*(Ns-1) );
 
     // Obtain the auxiliary storage (likely from a pool to avoid fragmenting).
@@ -432,7 +432,7 @@ quantities sample_quantities(
     // (3) Differentiate temperature in wave space and bring grad(T)
     //     back to physical space.
     // (4) (After going back to wave space with T and back down the
-    //      grad(T)), Compute heat flux along wit all the other 
+    //      grad(T)), Compute heat flux along wit all the other
     //      variables for sampling.
 
     // (1) Traversal to compute temperature
@@ -475,7 +475,7 @@ quantities sample_quantities(
 
                 // Compute temperature from internal energy
                 // (assuming thermal equilibrium)
-                const real_t re_internal = e - 
+                const real_t re_internal = e -
                     0.5*irho*(m[0]*m[0] + m[1]*m[1] + m[2]*m[2]);
                 T = cmods.sm_thermo->T_from_e_tot(irho*re_internal, cs, Tguess);
                 Tguess = T;
@@ -588,54 +588,54 @@ quantities sample_quantities(
                 // Unpack density-related quantities
                 const real_t  rho(sphys(ndx::rho, offset));
                 const real_t irho = 1.0/rho;
-                
+
                 const Vector3r grad_rho(auxp(aux::rho+dir::x, offset),
                                         auxp(aux::rho+dir::y, offset),
                                         auxp(aux::rho+dir::z, offset));
-                
-                
+
+
                 // Unpack species variables
                 // NOTE: In species vector, idx 0 is the dilluter (the species
                 // that is not explicitly part of the state vector)
                 species(0) = rho;
-                
+
                 grad_species(0,0) = grad_rho(0);
                 grad_species(1,0) = grad_rho(1);
                 grad_species(2,0) = grad_rho(2);
-                
+
                 for (unsigned int s=1; s<Ns; ++s) {
                     species(s) = sphys(ndx::species + s - 1, offset);
-                   
-                    unsigned int si = aux::species + (s-1)*dir::count; 
+
+                    unsigned int si = aux::species + (s-1)*dir::count;
                     grad_species(0,s) = auxp(si + dir::x, offset);
                     grad_species(1,s) = auxp(si + dir::y, offset);
                     grad_species(2,s) = auxp(si + dir::z, offset);
-                    
+
                     // dilluter density = rho_0 = rho - sum_{s=1}^{Ns-1} rho_s
                     species(0)        -= species(s);
-                    
+
                     grad_species(0,0) -= grad_species(0,s);
                     grad_species(1,0) -= grad_species(1,s);
                     grad_species(2,0) -= grad_species(2,s);
                 }
-                
+
                 // Compute mass fractions and mass fraction gradients
                 for (unsigned int s=0; s<Ns; ++s) {
-                    
+
                     cs(s) = irho * species(s);
-                    
+
                     grad_cs(0,s) = irho*(grad_species(0,s) - cs(s)*grad_rho(0));
                     grad_cs(1,s) = irho*(grad_species(1,s) - cs(s)*grad_rho(1));
                     grad_cs(2,s) = irho*(grad_species(2,s) - cs(s)*grad_rho(2));
-                    
+
                 }
 
                 // Compute velocity-related quantities
                 const Vector3r u     = suzerain::rholut::u(rho, m);
-                
+
                 const real_t div_u   =
                     suzerain::rholut::div_u(rho, grad_rho, m, div_m);
-                
+
                 const Matrix3r grad_u=
                     suzerain::rholut::grad_u(rho, grad_rho, m, grad_m);
 
@@ -647,23 +647,23 @@ quantities sample_quantities(
                 Tguess = auxp(aux::T, offset);
                 cmods.evaluate(e, m, rho, species, cs, Tguess,
                                T, p, Ds, mu, kap, hs, om, a, Cv);
-               
+
                 // Extract grad(T)
                 const Vector3r grad_T ( auxp(aux::gT+dir::x, offset),
                                         auxp(aux::gT+dir::y, offset),
                                         auxp(aux::gT+dir::z, offset));
 
                 const real_t lam = (cmods.alpha - 2.0/3.0)*mu;
-                
+
                 // Compute quantities related to the viscous stress tensor
                 const Matrix3r tau = suzerain::rholut::tau(mu, lam, div_u, grad_u);
                 const Vector3r tau_u = tau * u;
 
                 // Compute Mach number
-                const real_t M = sqrt(u.x() * u.x() + 
-                                      u.y() * u.y() + 
+                const real_t M = sqrt(u.x() * u.x() +
+                                      u.y() * u.y() +
                                       u.z() * u.z()) / a;
-                
+
                 // Accumulate quantities into sum_XXX using function syntax.
                 for (unsigned int s=0; s<Ns; ++s) {
                     sum_rho_s[s](species[s]);
@@ -704,7 +704,7 @@ quantities sample_quantities(
 
                 sum_kappa[0](kap);
 
-                // NOTE: D0 is meaningful alone only in the case of 
+                // NOTE: D0 is meaningful alone only in the case of
                 // constant Lewis number
                 sum_D0[0](Ds[0]);
 
@@ -851,18 +851,18 @@ quantities sample_quantities(
             ret.rho_s_u(s,1)[j] = acc::sum(sum_rho_s_u[s*dir::count+1]);
             ret.rho_s_u(s,2)[j] = acc::sum(sum_rho_s_u[s*dir::count+2]);
 
-            ret.rho_Ds_grad_cs(s,0)[j] = 
+            ret.rho_Ds_grad_cs(s,0)[j] =
               acc::sum(sum_rho_Ds_grad_cs[s*dir::count+0]);
-            ret.rho_Ds_grad_cs(s,1)[j] = 
+            ret.rho_Ds_grad_cs(s,1)[j] =
               acc::sum(sum_rho_Ds_grad_cs[s*dir::count+1]);
-            ret.rho_Ds_grad_cs(s,2)[j] = 
+            ret.rho_Ds_grad_cs(s,2)[j] =
               acc::sum(sum_rho_Ds_grad_cs[s*dir::count+2]);
 
-            ret.rho_Ds_grad_cs_hs(s,0)[j] = 
+            ret.rho_Ds_grad_cs_hs(s,0)[j] =
               acc::sum(sum_rho_Ds_grad_cs_hs[s*dir::count+0]);
-            ret.rho_Ds_grad_cs_hs(s,1)[j] = 
+            ret.rho_Ds_grad_cs_hs(s,1)[j] =
               acc::sum(sum_rho_Ds_grad_cs_hs[s*dir::count+1]);
-            ret.rho_Ds_grad_cs_hs(s,2)[j] = 
+            ret.rho_Ds_grad_cs_hs(s,2)[j] =
               acc::sum(sum_rho_Ds_grad_cs_hs[s*dir::count+2]);
         }
 
