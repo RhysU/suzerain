@@ -353,7 +353,9 @@ driver::save_statistics_hook(
 
     // Save statistics and invoke superclass hook
     // FIXME Also save boundary layer quantities of interest when one-sided?
-    mean.save(esioh);
+    if (!mean.save(esioh)) {
+        WARN0(who, "Incomplete statistics saved at time " << t);
+    }
     return super::save_statistics_hook(esioh, t);
 }
 
@@ -361,8 +363,12 @@ void
 driver::load_statistics_hook(
         const esio_handle esioh)
 {
-    mean.load(esioh);
     support::load_time(esioh, mean.t);
+    if (!mean.load(esioh)) {
+        // Notice this forces use_cached == false in save_statistics_hook
+        WARN0(who, "Incomplete statistics loaded from time " << mean.t);
+        mean.t = std::numeric_limits<real_t>::quiet_NaN();
+    }
     return super::load_statistics_hook(esioh);
 }
 
