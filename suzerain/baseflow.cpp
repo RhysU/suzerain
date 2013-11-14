@@ -34,7 +34,8 @@
 #include <gsl/gsl_poly.h>
 
 #include <suzerain/bspline.hpp>
-#include <suzerain/radial_nozzle.h>
+#include <suzerain/format.hpp>
+#include <suzerain/math.hpp>
 
 namespace suzerain {
 
@@ -160,6 +161,8 @@ baseflow_map::baseflow_map()
 {
 }
 
+// Beware this makes strong assumptions about baseflow_map::row
+// Structural changes here likely require adjusting baseflow_map::pressure
 void
 baseflow_map::conserved(
         const real_t      y,
@@ -168,12 +171,59 @@ baseflow_map::conserved(
         real_t*      dxbase) const
 {
     using namespace std;
-    const row& v = table.at(y);
-    memcpy(base,   &v.base,   sizeof(v.base  ) - sizeof(v.base  .p));
-    memcpy(dybase, &v.dybase, sizeof(v.dybase) - sizeof(v.dybase.p));
-    memcpy(dxbase, &v.dxbase, sizeof(v.dxbase) - sizeof(v.dxbase.p));
+    table_type::const_iterator lit = table.lower_bound(y);
+    if (SUZERAIN_UNLIKELY(lit == table.end())) {      // Wildly wrong y?
+        ostringstream os;
+        os << "baseflow_map::conserved("
+           << fullprec<>(y)
+           << ",...) encountered table.lower_bound(y) == table.end()";
+        throw out_of_range(os.str());
+#ifdef __INTEL_COMPILER
+#pragma warning(push,disable:1572)
+#endif
+    } if (SUZERAIN_LIKELY(lit->first == y)) {         // Precomputed y
+#ifdef __INTEL_COMPILER
+#pragma warning(pop)
+#endif
+        const row& v = lit->second;
+        memcpy(base,   &v.base,   sizeof(v.base  ) - sizeof(v.base  .p));
+        memcpy(dybase, &v.dybase, sizeof(v.dybase) - sizeof(v.dybase.p));
+        memcpy(dxbase, &v.dxbase, sizeof(v.dxbase) - sizeof(v.dxbase.p));
+    } else {
+        table_type::const_iterator uit = lit; ++uit;
+        if (SUZERAIN_UNLIKELY(uit == table.end())) {  // Cannot interpolate
+            ostringstream os;
+            os << "baseflow_map::conserved("
+            << fullprec<>(y)
+            << ",...) encountered ++table.lower_bound(y) == table.end()";
+            throw out_of_range(os.str());
+        } else {                                      // Interpolate
+            enum { N = sizeof(lit->second.base)/sizeof(lit->second.base.p) };
+            for (size_t i = 0; i < N; ++i) {
+                // Employs local smoothness to get y, dy but does not for dx
+                // Computation of dx first to aid subexpression elimination
+                using namespace suzerain::math::interpolate;
+                value(      /* x1*/ lit->first,
+                            /* y1*/ lit->second.dxbase.as_is()[i],
+                            /* x2*/ uit->first,
+                            /* y2*/ uit->second.dxbase.as_is()[i],
+                            /* x3*/ y,
+                            /* y3*/ dxbase[i]);
+                value_deriv(/* x1*/ lit->first,
+                            /* y1*/ lit->second.  base.as_is()[i],
+                            /*yp1*/ lit->second.dybase.as_is()[i],
+                            /* x2*/ uit->first,
+                            /* y2*/ uit->second.  base.as_is()[i],
+                            /*yp2*/ uit->second.dybase.as_is()[i],
+                            /* x3*/ y,
+                            /* y3*/ base  [i],
+                            /*yp3*/ dybase[i]);
+            }
+        }
+    }
 }
 
+// Structural changes here likely require adjusting baseflow_map::conserved
 void
 baseflow_map::pressure(
         const real_t   y,
@@ -182,10 +232,53 @@ baseflow_map::pressure(
         real_t&      dxP) const
 {
     using namespace std;
-    const row& v = table.at(y);
-    P   = v.base  .p;
-    dyP = v.dybase.p;
-    dxP = v.dxbase.p;
+    table_type::const_iterator lit = table.lower_bound(y);
+    if (SUZERAIN_UNLIKELY(lit == table.end())) {      // Wildly wrong y?
+        ostringstream os;
+        os << "baseflow_map::pressure("
+           << fullprec<>(y)
+           << ",...) encountered table.lower_bound(y) == table.end()";
+        throw out_of_range(os.str());
+#ifdef __INTEL_COMPILER
+#pragma warning(push,disable:1572)
+#endif
+    } if (SUZERAIN_LIKELY(lit->first == y)) {         // Precomputed y
+#ifdef __INTEL_COMPILER
+#pragma warning(pop)
+#endif
+        const row& v = lit->second;
+        P   = v.  base.p;
+        dyP = v.dybase.p;
+        dxP = v.dxbase.p;
+    } else {
+        table_type::const_iterator uit = lit; ++uit;
+        if (SUZERAIN_UNLIKELY(uit == table.end())) {  // Cannot interpolate
+            ostringstream os;
+            os << "baseflow_map::pressure("
+            << fullprec<>(y)
+            << ",...) encountered ++table.lower_bound(y) == table.end()";
+            throw out_of_range(os.str());
+        } else {                                      // Interpolate
+            // Employs local smoothness to get y, dy but does not for dx
+            // Computation of dx first to aid subexpression elimination
+            using namespace suzerain::math::interpolate;
+            value(      /* x1*/ lit->first,
+                        /* y1*/ lit->second.dxbase.p,
+                        /* x2*/ uit->first,
+                        /* y2*/ uit->second.dxbase.p,
+                        /* x3*/ y,
+                        /* y3*/ dxP);
+            value_deriv(/* x1*/ lit->first,
+                        /* y1*/ lit->second.  base.p,
+                        /*yp1*/ lit->second.dybase.p,
+                        /* x2*/ uit->first,
+                        /* y2*/ uit->second.  base.p,
+                        /*yp2*/ uit->second.dybase.p,
+                        /* x3*/ y,
+                        /* y3*/ P,
+                        /*yp3*/ dyP);
+        }
+    }
 }
 
 } // namespace suzerain

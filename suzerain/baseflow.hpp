@@ -172,7 +172,8 @@ public:
 
     /**
      * Look up conserved state results from \c table.
-     * \throw std::out_of_range in non-existent data.
+     * If not found and possible, interpolate for the results.
+     * \throw std::out_of_range on requests requiring extrapolation.
      */
     void conserved(const real_t      y,
                    real_t *       base,
@@ -181,7 +182,8 @@ public:
 
     /**
      * Look up pressure results from \c table.
-     * \throw std::out_of_range in non-existent data.
+     * If not found and possible, interpolate for the results.
+     * \throw std::out_of_range on requests requiring extrapolation.
      */
     void pressure(const real_t    y,
                   real_t &        P,
