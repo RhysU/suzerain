@@ -8,23 +8,30 @@ set -eu
 # Used to build and report failed cases
 tempfile() { tempprefix=$(basename "$0"); mktemp /tmp/${tempprefix}.XXXXXX; }
 FAILURES=$(tempfile)
-trap 'rm -f $FAILURES' EXIT
+SUCCESSES=$(tempfile)
+trap 'rm -f "$SUCCESSES" "$FAILURES"' EXIT
 
 # Scripts to test are every subdirectory with a check.sh
 SCRIPTDIR="$( cd "$( echo "${BASH_SOURCE[0]%/*}" )"; pwd )"
 for script in "$SCRIPTDIR"/*/check.sh
 do
-    ( "$SCRIPTDIR/neno" "$script" "$@" || echo "$script" "$@" >> $FAILURES ) &
+    ( "$SCRIPTDIR/neno" "$script" "$@"       \
+      && echo "$script" "$@" >> "$SUCCESSES" \
+      || echo "$script" "$@" >> "$FAILURES"  ) &
 done
 
-# Wait for all subshells to finish
-# Output any failures
+# Wait for all tests to finish
 wait
-if test -s $FAILURES
-then
+
+# Output successes and failures
+if test -s "$SUCCESSES"; then
+    echo 'Successful cases were as follows: '
+    sort "$SUCCESSES" | nl
+fi
+if test -s "$FAILURES"; then
     echo 'Failed cases were as follows: '
-    nl $FAILURES
+    sort "$FAILURES" | nl
 fi
 
 # Return success whenever $FAILURES is empty
-! test -s $FAILURES
+! test -s "$FAILURES"
