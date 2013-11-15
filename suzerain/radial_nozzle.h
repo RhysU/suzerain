@@ -330,10 +330,10 @@ suzerain_radial_nozzle_cartesian_primitive(
     double *u_xi,
     double *v_xi,
     double *p_xi,
-    double *rho_y ,
-    double *u_y ,
-    double *v_y ,
-    double *p_y );
+    double *rho_y,
+    double *u_y,
+    double *v_y,
+    double *p_y);
 
 /**
  * Compute Cartesian base flow conserved state and pressure at \f$\left(R_0,
