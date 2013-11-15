@@ -40,15 +40,26 @@ void check_radial_nozzle_residual(
     const suzerain_radial_nozzle_solution * const s,
     const double tol)
 {
-    // relative test between lhs and rhs as (lhs - rhs) may be large
     const double Ma0  = s->Ma0;
     const double gam0 = s->gam0;
     for (size_t i = 0; i < s->size; ++i) {
-        const double u   = s->state[i].u;
-        const double rhs = - (u / s->state[i].R)
-                         * (2 + Ma0*Ma0*(gam0-1) - Ma0*Ma0*(gam0-1)*u*u)
-                         / (2 + Ma0*Ma0*(gam0-1) - Ma0*Ma0*(gam0+1)*u*u);
-        gsl_test_rel(s->state[i].up, rhs, tol, "%s: res[%d] ", who, i);
+        double u      = s->state[i].u;
+        double up_rhs = - (u / s->state[i].R)
+                      * (2 + Ma0*Ma0*(gam0-1) - Ma0*Ma0*(gam0-1)*u*u)
+                      / (2 + Ma0*Ma0*(gam0-1) - Ma0*Ma0*(gam0+1)*u*u);
+        double pp_rhs = -Ma0*Ma0*s->state[i].rho*u*s->state[i].up;
+        double rp_rhs = -Ma0*Ma0*u*s->state[i].up/s->state[i].a2;
+
+        // Relative test between u' and RHS as (u' - RHS) may be large
+        gsl_test_rel(s->state[i].up, up_rhs, tol, "%s: up res[%d] ", who, i);
+
+        // Relative test between p' and RHS
+        gsl_test_rel(s->state[i].pp, pp_rhs, tol, "%s: pp res[%d] ", who, i);
+
+        // Relative test between (log rho)' and RHS
+        gsl_test_rel(s->state[i].rhop / s->state[i].rho, rp_rhs, tol,
+                     "%s: rhop res[%d] ", who, i);
+
     }
 }
 
