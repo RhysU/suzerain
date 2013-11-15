@@ -32,6 +32,26 @@
 #include <suzerain/common.h>
 #include <suzerain/error.h>
 
+// Helper method testing if the solution satisfies the governing equation.
+// If the governing equation is not satisfied, then all bets are off...
+static
+void check_radial_nozzle_residual(
+    const char * who,
+    const suzerain_radial_nozzle_solution * const s,
+    const double tol)
+{
+    // relative test between lhs and rhs as (lhs - rhs) may be large
+    const double Ma0  = s->Ma0;
+    const double gam0 = s->gam0;
+    for (size_t i = 0; i < s->size; ++i) {
+        const double u   = s->state[i].u;
+        const double rhs = - (u / s->state[i].R)
+                         * (2 + Ma0*Ma0*(gam0-1) - Ma0*Ma0*(gam0-1)*u*u)
+                         / (2 + Ma0*Ma0*(gam0-1) - Ma0*Ma0*(gam0+1)*u*u);
+        gsl_test_rel(s->state[i].up, rhs, tol, "%s: res[%d] ", who, i);
+    }
+}
+
 // Second subsonic test from writeups/notebooks/nozzle1.m
 // Beware the slightly different argument order relative to that code
 static
@@ -57,6 +77,9 @@ void test_subsonic()
     gsl_test_abs(ini.u,   u1,   GSL_DBL_EPSILON, "%s init u   ", __func__);
     gsl_test_abs(ini.rho, rho1, GSL_DBL_EPSILON, "%s init rho ", __func__);
     gsl_test_abs(ini.p,   p1,   GSL_DBL_EPSILON, "%s init p   ", __func__);
+
+    // Does the solution satisfy the basic governing equation at each radius?
+    check_radial_nozzle_residual(__func__, s, GSL_SQRT_DBL_EPSILON);
 
     // Expected results computed by writeups/notebooks/nozzle.m using Octave
     double tol = GSL_SQRT_DBL_EPSILON;
@@ -107,6 +130,9 @@ void test_supersonic()
     gsl_test_abs(ini.u,   u1,   GSL_DBL_EPSILON, "%s init u   ", __func__);
     gsl_test_abs(ini.rho, rho1, GSL_DBL_EPSILON, "%s init rho ", __func__);
     gsl_test_abs(ini.p,   p1,   GSL_DBL_EPSILON, "%s init p   ", __func__);
+
+    // Does the solution satisfy the basic governing equation at each radius?
+    check_radial_nozzle_residual(__func__, s, GSL_SQRT_DBL_EPSILON);
 
     // Expected results computed by writeups/notebooks/nozzle.m using Octave
     double tol = GSL_SQRT_DBL_EPSILON;
@@ -183,7 +209,7 @@ void test_cartesian_primitive()
     // where we've now got the spatial residual of the Euler equations in U_t.
     // As this should be a steady solution, we now check against zero:
 
-////B0RKED!
+////FIXME
 ////gsl_test_abs(U_t[0], 0.0, GSL_SQRT_DBL_EPSILON, "%s: rho_t ", __func__);
 ////gsl_test_abs(U_t[1], 0.0, GSL_SQRT_DBL_EPSILON, "%s: u_t   ", __func__);
 ////gsl_test_abs(U_t[2], 0.0, GSL_SQRT_DBL_EPSILON, "%s: v_t   ", __func__);
