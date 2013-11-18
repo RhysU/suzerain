@@ -4,12 +4,13 @@
 % Curried function results noz(Ly) and qoi(Ly) compute the flow on (R0, 0) to
 % (R0, Ly) and quantities of interest at (R0, Ly), respectively.
 %
+% Parameter 'burn_in_iterations' (>0) fixes Ma0 for some number of iterations.
 % Parameter 'opt' may supply additional nonlin_residmin options using optimset.
 % However, options 'MaxIter' and 'fixed' will be ignored.
 function [s, noz, qoi] = nozzle_baseflow(delta, gam0, Ma_e, p_exi, a2_e,    ...
+                                         burn_in_iterations = 10,           ...
                                          opt = optimset('Algorithm',        ...
-                                                        'lm_svd_feasible'), ...
-                                         burn_in_iterations = 10)
+                                                        'lm_svd_feasible'))
 
   % Relative residuals of observations vs targets for [Ma0; R0; rho1; u1; p1]
   tgt = [Ma_e; p_exi; a2_e];
@@ -29,7 +30,6 @@ function [s, noz, qoi] = nozzle_baseflow(delta, gam0, Ma_e, p_exi, a2_e,    ...
 
   % Solve the problem converting relative residual vector into absolute results
   % Fixes density and pressure and solves for other parameters in two phases
-  % Freezing Ma0 for some small number of iterates has been crucial in practice
   pkg load odepkg optim;
   phase1 = optimset(opt, 'fixed', [1;0;1;0;1], 'MaxIter', burn_in_iterations);
   phase2 = optimset(opt, 'fixed', [0;0;1;0;1], 'MaxIter',               5000);
@@ -62,31 +62,31 @@ function f = obs_vector(delta, gam0, Ma0, R0, rho1, u1, p1)
 end
 
 %!test
-%! opt = optimset('debug', 1);  % Case A
-%! tic(), s = nozzle_baseflow(1, 1.4000, 0.4000, -0.0200, 1.2000, opt), toc()
+%! opt=optimset('debug', 1);  % Case A
+%! tic(), s=nozzle_baseflow(1, 1.4000, 0.4000, -0.0200, 1.2000, 10, opt), toc()
 %! assert(s.res2 < sqrt(eps));
 
 %!test
-%! opt = optimset('debug', 1);  % Case B
-%! tic(), s = nozzle_baseflow(1, 1.4080, 0.9825, -0.0099, 4.2952, opt), toc()
+%! opt=optimset('debug', 1);  % Case B
+%! tic(), s=nozzle_baseflow(1, 1.4080, 0.9825, -0.0099, 4.2952, 10, opt), toc()
 %! assert(s.res2 < sqrt(eps));
 
 %!test
-%! opt = optimset('debug', 1);  % Case C
-%! tic(), s = nozzle_baseflow(1, 1.4083, 1.1094, -0.0097, 4.3205, opt), toc()
+%! opt=optimset('debug', 1);  % Case C
+%! tic(), s=nozzle_baseflow(1, 1.4083, 1.1094, -0.0097, 4.3205, 10, opt), toc()
 %! assert(s.res2 < sqrt(eps));
 
 %!test
-%! opt = optimset('debug', 1);  % Case D
-%! tic(), s = nozzle_baseflow(1, 1.4081, 1.0482, -0.0097, 4.3134, opt), toc()
+%! opt=optimset('debug', 1);  % Case D
+%! tic(), s=nozzle_baseflow(1, 1.4081, 1.0482, -0.0097, 4.3134, 10, opt), toc()
 %! assert(s.res2 < sqrt(eps));
 
 %!test
-%! opt = optimset('debug', 1);  % Case E
-%! tic(), s = nozzle_baseflow(1, 1.4091, 0.4112, -0.0179, 4.1291, opt), toc()
+%! opt=optimset('debug', 1);  % Case E
+%! tic(), s=nozzle_baseflow(1, 1.4091, 0.4112, -0.0179, 4.1291, 10, opt), toc()
 %! assert(s.res2 < sqrt(eps));
 
 %!test
-%! opt = optimset('debug', 1);  % Case F
-%! tic(), s = nozzle_baseflow(1, 1.4095, 0.1217, -0.0958, 3.9670, opt), toc()
+%! opt=optimset('debug', 1);  % Case F
+%! tic(), s=nozzle_baseflow(1, 1.4095, 0.1217, -0.0958, 3.9670, 10, opt), toc()
 %! assert(s.res2 < sqrt(eps));

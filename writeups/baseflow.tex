@@ -88,167 +88,140 @@ to produce base flows in the spirit of laminar CEV heat shield conditions.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 A particularly crisp derivation of the coordinate-independent,
-velocity-potential formulation for the compressible potential flow equations
-appears in section II.A of \citet{Saad2011Coordinate}.  Decomposing the
-dimensional velocity $\vec{u}$ into a scalar and vector potential and assuming
-that the flow is irrotational,
-\begin{align}
-  \vec{u} &= \vec{\nabla}\phi + \vec{\nabla}\times\vec{A} =  \vec{\nabla}\phi
-.
-\end{align}
-Inserting the scalar potential into the continuity equation and assuming
-smoothness,
-\begin{align}
-  0 &= \vec{\nabla}\cdot\rho\vec{u}
-     = \vec{\nabla}\cdot\rho\vec{\nabla}\phi
-     = \rho\vec{\nabla}^2\phi
-     + \vec{\nabla}\rho\cdot\vec{\nabla}\phi
-.
-\end{align}
-From the definition of the speed of sound $a$ notice
-\begin{align}
-    \frac{\mathrm{d}p}{\mathrm{d}\rho} = a^2
-    &\implies
-    \vec{\nabla}\rho = \frac{1}{a^2} \vec{\nabla} p
-\label{eq:gradrho_gradp_relationship}
-.
-\end{align}
-In a steady, inviscid, irrotational context the momentum equation yields
+velocity-potential formulation of the compressible potential flow equations
+appears in section II.A of \citet{Saad2011Coordinate}.  Their presentation
+essentially is recounted here but velocity potential notation is suppressed.
+Wherever necessary, sufficient smoothness is assumed.
+
+The steady, inviscid momentum equation in an irrotational flow yields
 \begin{align}
     \vec{\nabla}p
     &= -\rho \vec{u}\cdot\vec{\nabla}\vec{u}
-     = -\rho \left(   \frac{1}{2}\vec{\nabla}\vec{u}^2
+     = -\rho \left(   \frac{1}{2}\vec{\nabla}\left(\vec{u}\cdot\vec{u}\right)
                     - \vec{u}\times\vec{\nabla}\times\vec{u}
         \right)
      = - \frac{1}{2} \rho \vec{\nabla}\vec{u}^2
 \label{eq:momentum}
 .
 \end{align}
-Rearranging the continuity result followed by two straightforward substitutions
-shows
+The irrotational velocity could be replaced by the gradient of a scalar
+potential, \emph{viz.}
 \begin{align}
-    \vec{\nabla}^2\phi
-    &= -\vec{\nabla}\phi\cdot\frac{1}{\rho}\vec{\nabla}\rho
-     = -\vec{\nabla}\phi\cdot\frac{1}{\rho{}a^2}\vec{\nabla}p
-     =  \vec{\nabla}\phi\cdot\frac{1}{2a^2} \vec{\nabla}\vec{u}^2
+  \vec{u} = \vec{\nabla}\phi + \vec{\nabla}\times\vec{A} = \vec{\nabla}{\phi}
+  .
+\end{align}
+However, writing $\vec{u}$ is preferred here.  From the definition of the speed
+of sound~$a$ and~\eqref{eq:momentum},
+\begin{align}
+    \frac{\mathrm{d}p}{\mathrm{d}\rho} = a^2
+    \implies
+    \vec{\nabla}\rho = \frac{1}{a^2} \vec{\nabla} p
+                     = - \frac{\rho}{2a^2} \vec{\nabla}\vec{u}^2
+\label{eq:gradrho_gradp_relationship}
 .
 \end{align}
-Moving the denominator to the left hand side and inserting the scalar
-potential,
+Expanding the steady continuity equation and
+applying~\eqref{eq:gradrho_gradp_relationship},
 \begin{align}
-    2 a^2 \vec{\nabla}^2\phi
-    &= \vec{\nabla}\phi\cdot \vec{\nabla}\vec{u}^2
-     = \vec{\nabla}\phi\cdot \vec{\nabla}\left(\vec{\nabla}\phi\right)^2
-\label{eq:cpfgibbs_nothermo_dim}
+  0 &= \vec{\nabla}\cdot\rho\vec{u}
+     = \rho\vec{\nabla}\cdot\vec{u} + \vec{u}\cdot\vec{\nabla}\rho
+     = \rho\vec{\nabla}\cdot\vec{u}
+     - \frac{\rho\vec{u}}{2a^2} \cdot \vec{\nabla}\vec{u}^2
+\label{eq:continuity}
 .
+\end{align}
+Because $\rho>0$ and $a>0$, for nontrivial $\vec{u}$ the above
+equation may only be satisfied when
+\begin{align}
+       \frac{1}{2} \vec{u}\cdot \vec{\nabla}\vec{u}^2
+    &= a^2 \vec{\nabla}\cdot\vec{u}
+.
+\label{eq:momentum_and_continuity}
 \end{align}
 
-Next, \citeauthor{Saad2011Coordinate} employ that stagnation energy stays
-constant throughout such a flow to connect the local speed of sound to
+Following \citeauthor{Saad2011Coordinate}, we observe that stagnation energy
+stays constant throughout such a flow to connect the local speed of sound to
 reference parameters and the local velocity.  That is, for flow enthalpy $h =
 a^2 / \left(\gamma-1\right)$, reference enthalpy $h_0 = a_0^2 /
-\left(\gamma_0-1\right)$, and reference velocity $\vec{u}_0$
+\left(\gamma_0-1\right)$, and reference velocity $u_0$,
 \begin{align}
         \frac{a^2  }{\gamma  -1} + \frac{1}{2} \vec{u}^2
-     &= \frac{a_0^2}{\gamma_0-1} + \frac{1}{2} \vec{u}_0^2
+     &= \frac{a_0^2}{\gamma_0-1} + \frac{1}{2} u_0^2
 \end{align}
-holds everywhere. From this energy constraint
+holds everywhere.  After a small rearrangement, the energy constraint
 \begin{align}
-        2a^2
-     &=   2a_0^2 \frac{\gamma-1}{\gamma_0-1}
-        + \left(\gamma-1\right)\vec{u}_0^2
-        - \left(\gamma-1\right)\vec{u}^2
+        a^2
+     &=   \frac{\gamma-1}{\gamma_0-1} a_0^2
+        + \frac{\gamma-1}{2} \left(u_0^2 - \vec{u}^2\right)
 \label{eq:stagnation_sound}
 \end{align}
-may be used within~\eqref{eq:cpfgibbs_nothermo_dim} to produce
+may be used within equation \eqref{eq:momentum_and_continuity} to obtain
 \begin{align}
-    \left[
-          2a_0^2 \frac{\gamma-1}{\gamma_0-1}
-        + \left(\gamma-1\right)
-          \left(\vec{u}_0^2 - \left(\vec{\nabla}\phi\right)^2\right)
-    \right] \vec{\nabla}^2\phi
-     = \vec{\nabla}\phi\cdot \vec{\nabla}\left(\vec{\nabla}\phi\right)^2
-\label{eq:cpfgibbs_dim}
+       \vec{u}\cdot \vec{\nabla}\vec{u}^2
+    &= \left[
+          2 \frac{\gamma-1}{\gamma_0-1} a_0^2
+        + \left(\gamma-1\right) \left(u_0^2 - \vec{u}^2\right)
+       \right]\vec{\nabla}\cdot\vec{u}
 .
 \end{align}
-Realizability requires $a^2>0$ causing constraint~\eqref{eq:stagnation_sound}
-to imply that globally
+Adding a constant $\gamma=\gamma_0$ assumption, one finds the dimensional result
 \begin{align}
-  u^2 &< \frac{2 a_0^2}{\gamma_0 - 1} + u_0^2
-\label{eq:stagnation_sound_realizability}
+       \vec{u}\cdot \vec{\nabla}\vec{u}^2
+    &= \left[
+          2 a_0^2
+        + \left(\gamma_0-1\right) \left(u_0^2 - \vec{u}^2\right)
+       \right]\vec{\nabla}\cdot\vec{u}
+\label{eq:cpfgibbs_dim}
 .
 \end{align}
 
 To nondimensionalize, chose some reference length $l_0$ and declare
 \begin{align}
     x     &= x^\ast l_0
-&   u     &= u^\ast u_0
 &   a     &= a^\ast a_0
-&   \phi  &= \phi^\ast u_0 l_0
+&   u     &= u^\ast u_0 = u^\ast \Mach[0] a_0
 &   \rho  &= \rho^\ast \rho_0
 &   p     &= p^\ast \rho_0 a_0^2
 \label{eq:nondimensionalization}
 \end{align}
-where starred quantities are dimensionless.  Inserting the definitions
+where the starred quantities are dimensionless.  Inserting these definitions
 into~\eqref{eq:cpfgibbs_dim},
 \begin{align}
-    \left[
-          2a_0^2 \frac{\gamma-1}{\gamma_0-1}
-        + u_0^2 \left(\gamma-1\right)
-          \left(1 - \left(\vec{\nabla}^\ast\phi^\ast\right)^2\right)
-    \right] \frac{u_0}{l_0} {\vec{\nabla}^\ast}^2\phi^\ast
-     =       \frac{u_0^3}{l_0} \vec{\nabla}^\ast\phi^\ast
-       \cdot \vec{\nabla}^\ast\left(\vec{\nabla}^\ast\phi^\ast\right)^2
-.
-\end{align}
-Multiplying by $\frac{l_0}{a_0^2 u_0}$, identifying $\Mach[0] \equiv
-\frac{u_0}{a_0}$, and dropping the star notation,
-\begin{align}
-    \left[
-          2 \frac{\gamma-1}{\gamma_0-1}
-        + \Mach[0]^2 \left(\gamma-1\right)
-          \left(1 - \left(\vec{\nabla}\phi\right)^2\right)
-    \right] {\vec{\nabla}}^2\phi
-     =       \Mach[0]^2 \vec{\nabla}\phi
-       \cdot \vec{\nabla}\left(\vec{\nabla}\phi\right)^2
-.
-\end{align}
-Moving the $\Mach[0]^2$ term to the right hand side, rescaling, and distributing,
-\begin{align}
-       {\vec{\nabla}}^2\phi
-    &= \frac{\Mach[0]^2}{2}\frac{\gamma_0-1}{\gamma-1} \left(
-         \vec{\nabla}\phi \cdot \vec{\nabla}\left(\vec{\nabla}\phi\right)^2
-       +
+       \frac{\Mach[0]{}^3 a_0^3}{l_0}
+       \,
+       \vec{u}^\ast \cdot \vec{\nabla}^\ast{\vec{u}^\ast}^2
+    &=
        \left[
-             \left(\gamma-1\right)
-             \left(\left(\vec{\nabla}\phi\right)^2 - 1\right)
-       \right] {\vec{\nabla}}^2\phi
-       \right)
-\\  &= \frac{\Mach[0]^2}{2} \left(
-         \frac{\gamma_0-1}{\gamma-1}
-         \vec{\nabla}\phi \cdot \vec{\nabla}\left(\vec{\nabla}\phi\right)^2
-       +
+          2 a_0^2
+        + \Mach[0]{}^2 a_0^2 \left(\gamma_0-1\right) \left(1 - {\vec{u}^\ast}^2\right)
+       \right]
+       \,
+       \frac{\Mach[0]{} a_0}{l_0}
+       \,
+       \vec{\nabla}^\ast\cdot\vec{u}^\ast
+\\
+    &=
+       \frac{\Mach[0]{}^3 a_0^3}{l_0}
+       \,
        \left[
-             \left(\gamma_0-1\right)
-             \left(\left(\vec{\nabla}\phi\right)^2 - 1\right)
-       \right] {\vec{\nabla}}^2\phi
-       \right)
+          \frac{2}{\Mach[0]{}^2}
+        + \left(\gamma_0-1\right) \left(1 - {\vec{u}^\ast}^2\right)
+       \right]
+       \vec{\nabla}^\ast\cdot\vec{u}^\ast
 .
 \end{align}
-This formulation is most useful when $\gamma$ is known or when it can be
-connected to $\phi$ in some manner.  Adding a constant $\gamma=\gamma_0$
-assumption, one arrives at
+Rescaling and dropping the star notation, one finally arrives at
 \begin{align}
-       {\vec{\nabla}}^2\phi
-    &=   \frac{1}{2}\Mach[0]^2
-         \vec{\nabla}\phi \cdot \vec{\nabla}\left(\vec{\nabla}\phi\right)^2
-       +
-         \frac{\gamma_0-1}{2}\Mach[0]^2
-         \left(\left(\vec{\nabla}\phi\right)^2 - 1\right)
-         {\vec{\nabla}}^2\phi
+       \vec{u} \cdot \vec{\nabla}\vec{u}^2
+    &=
+       \left[
+          2 \Mach[0]{}^{-2}
+        + \left(\gamma_0-1\right) \left(1 - \vec{u}^2\right)
+       \right]
+       \vec{\nabla}\cdot\vec{u}
 \label{eq:cpfgibbs_nondim}
+.
 \end{align}
-which is an awfully nonlinear but pleasantly univariate result.
 
 With some $\vec{u}=\vec{\nabla}\phi$ satisfying~\eqref{eq:cpfgibbs_nondim} in
 hand, computing local $\rho$ and $p$ is often of interest.
@@ -258,18 +231,15 @@ $a$ from
   a^2 &= \frac{\gamma-1}{\gamma_0-1}
        + \Mach[0]^2\frac{\gamma-1}{2}\left(1-\vec{u}^2\right)
 \label{eq:stagnation_sound_nondim}
-.
 \end{align}
-The nondimensional analogue of
-inequality~\eqref{eq:stagnation_sound_realizability} becomes
+where clearly a realizable $a^2>0$ requires
 \begin{align}
   u^2 &< \frac{2}{\Mach[0]^2\left(\gamma_0-1\right)} + 1
 .
 \label{eq:stagnation_sound_realizability_nondim}
 \end{align}
-Combining~\eqref{eq:gradrho_gradp_relationship} and~\eqref{eq:momentum} to form
-$\vec{\nabla}\rho / \rho$, nondimensionalizing, multiplying by $l_0$, and
-simplifying,
+Forming $\vec{\nabla}\rho / \rho$ from~\eqref{eq:gradrho_gradp_relationship},
+nondimensionalizing, multiplying by $l_0$, and simplifying,
 \begin{align}
   \vec{\nabla}\log\rho
   &=
@@ -301,58 +271,62 @@ over some domain $\Omega$ and applying a corollary of Gauss' theorem:
 \section{Reduction to the radially symmetric, two-dimensional case}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-Suppose radial symmetry in which $\phi=\phi\left(r\right)$.  \emph{Mathematica}
-eases translating~\eqref{eq:cpfgibbs_nondim} into this setting
-\\\begin{minipage}{\textwidth} % BEGIN Avoids page break
-\begin{lstlisting}[language=Mathematica,columns=flexible,
-                   basicstyle={\footnotesize\sffamily}]
-    Needs["VectorAnalysis`"];
-    SetCoordinates[Cylindrical];
-    With[{f=phi[Rr]},
-        With[{gf=Simplify[Grad[f]],lf=Simplify[Laplacian[f]]},
-            With[{gf2 = Simplify[DotProduct[gf,gf]]},
-                lf-(Ma0^2/2) DotProduct[gf,Grad[gf2]]-(gamma0-1)(Ma0^2/2)(gf2-1)lf
-            ]
-        ]
-    ];
-    Collect[%,{phi''[Rr],phi'[Rr],phi[Rr]}];
-    Map[Simplify,%]
-\end{lstlisting}
-\end{minipage}                 % END   Avoids page break
-producing output equivalent to
+Suppose radial symmetry in which $u={u}\!\left(r\right)$.  Then the velocity
+potential $\vec{\nabla}\phi$ is superfluous and~\eqref{eq:cpfgibbs_nondim}
+should be transliterated into this context as
 \begin{align}
-    \frac{2+\Mach[0]^2\left(\gamma_0-1\right)}{2 r}\phi^\prime
-   -\frac{  \Mach[0]^2\left(\gamma_0-1\right)}{2 r}{\phi^\prime}^3
-   +\frac{1}{2}\left(2+\Mach[0]^2\left(\gamma_0-1\right)
-                      -\Mach[0]^2\left(\gamma_0+1\right){\phi^\prime}^2\right)
-               \phi^{\prime\prime}
-   &= 0
+       2 u^2\!\left(r\right) u^\prime\!\left(r\right)
+    &=
+       \left[
+          2 \Mach[0]{}^{-2}
+        + \left(\gamma_0-1\right) \left(1 - u^2\!\left(r\right)\right)
+       \right]
+       \left(
+          r^{-1} u\!\left(r\right) + u^\prime\!\left(r\right)
+       \right)
 .
 \end{align}
-Rewriting using $u = \phi^\prime(r)$ followed by solving for $u'$,
+Suppressing the dependence of $u$ on $r$ and collecting $u^\prime$ terms,
 \begin{align}
-   u^\prime
-   &=
-   -\frac{u}{r}
-   \cdot
-   \frac{
-      2
-    + \Mach[0]^2\left(\gamma_0-1\right)
-    - \Mach[0]^2\left(\gamma_0-1\right) u^2
-   }{
-      2
-    + \Mach[0]^2\left(\gamma_0-1\right)
-    - \Mach[0]^2\left(\gamma_0+1\right) u^2
-   }
+       \left(
+           2 u^2
+         - \left[
+              2 \Mach[0]{}^{-2} + \left(\gamma_0-1\right) \left(1 - u^2\right)
+           \right]
+       \right)
+       u^\prime
+    &=
+       \left[
+          2 \Mach[0]{}^{-2} + \left(\gamma_0-1\right) \left(1 - u^2\right)
+       \right]
+       r^{-1} u
+.
+\end{align}
+Solving for $u^\prime$,
+\begin{align}
+       u^\prime
+    &=
+       \frac{u}{r}
+       \,
+       \frac{
+         \left[
+            2 \Mach[0]{}^{-2} + \left(\gamma_0-1\right) \left(1 - u^2\right)
+         \right]
+       }{
+           2 u^2
+         - \left[
+              2 \Mach[0]{}^{-2} + \left(\gamma_0-1\right) \left(1 - u^2\right)
+           \right]
+       }
 \label{eq:cpfradial_nondim_ode}
-.
+,
 \end{align}
-With appropriate boundary conditions on some $\left[R_1, R_2\right]$,
-equation~\eqref{eq:cpfradial_nondim_ode} allows integrating for $u$.
+permits integrating for $u$ if boundary conditions on $\left[R_1, R_2\right]$
+are supplied.
 
 Given some $u$ one also wants to be able to compute local thermodynamic state.
-Equation~\eqref{eq:stagnation_sound_nondim} fixes~$a$.  The $\phi=\phi(r)$
-assumption causes~\eqref{eq:logrho_nondim} to reduce to
+Equation~\eqref{eq:stagnation_sound_nondim} fixes~$a$.  The
+$u=u\!\left(r\right)$ assumption causes~\eqref{eq:logrho_nondim} to reduce to
 \begin{align}
   \rho\!\left(R_2\right)
   &=
@@ -362,8 +336,7 @@ assumption causes~\eqref{eq:logrho_nondim} to reduce to
       \, r \, \mathrm{d}r
     + \log\rho\!\left(R_1\right)
   \right]
-\\
-  &=
+   =
   \rho\!\left(R_1\right) \exp\left[
     - \Mach[0]^2 \int_{R_1}^{R_2}
         \frac{u u'}{a^2}
@@ -380,8 +353,7 @@ Likewise~\eqref{eq:p_nondim} simplifies to
         \rho \left(u'\right)^2
       \, r \, \mathrm{d}r
     + p\!\left(R_1\right)
-\\
-  &=
+   =
     -\Mach[0]^2 \int_{R_1}^{R_2} \rho u u' \, r \, \mathrm{d}r
       + p\!\left(R_1\right)
 \label{eq:cpfradial_nondim_p}
@@ -394,12 +366,12 @@ of both $\rho$ and $p$.
 \section{The radially symmetric sub- and supersonic nozzle problems}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-Equations~\eqref{eq:cpfradial_nondim_ode}, \eqref{eq:cpfradial_nondim_rho}
-and~\eqref{eq:cpfradial_nondim_p} may be used to find solutions to idealized
-sub- and supersonic radial nozzle and diffuser problems.  In particular,
-obtaining a favorable pressure gradient, i.e. one where
-$\frac{\mathrm{d}p}{\mathrm{d}r} < 0$, requires imposing boundary conditions
-for sub- and supersonic nozzles.  Many texts, e.g.
+Equations~\eqref{eq:stagnation_sound_nondim}, \eqref{eq:cpfradial_nondim_ode},
+\eqref{eq:cpfradial_nondim_rho} and~\eqref{eq:cpfradial_nondim_p} may be used
+to find nondimensional solutions to idealized sub- and supersonic radial nozzle
+and diffuser problems.  In particular, obtaining a favorable pressure gradient,
+i.e. one where $\frac{\mathrm{d}p}{\mathrm{d}r} < 0$, requires imposing
+boundary conditions for sub- and supersonic nozzles.  Many texts, e.g.
 \citet[\textsection{}9.4]{White1999Fluid} and
 \citet[\textsection{}97]{Landau2004Fluid}, cover the simpler case when the area
 changes slowly as one progresses downstream in the device.  In contrast, this
@@ -461,19 +433,17 @@ and~\eqref{eq:cpfradial_nozzle_supersonic_bc} on $\left[R_1, R_2\right]$ in
 conjunction with~\eqref{eq:cpfradial_nondim_ode} presents initial value
 problems amenable to solution by numerical ODE integrators.  For example,
 \texttt{Octave}\citep{Eaton2008GNU} armed with the \texttt{odepkg} package can
-solve such problems.  A straightforward implementation appears in
-Listing~\ref{lst:octave_nozzle1} with demo logic producing the solutions
-depicted in Figure~\ref{fig:sample_solns}.  While
-Listing~\ref{lst:octave_nozzle1} is succinct, its $\rho$ and $p$ solution
-accuracies are not controlled in the same manner its $u$ accuracy.  By coupling
-the integration of $u'$, $\left(\log\rho\right)'$, and $p'$ one may achieve
-more accurate non-$u$ behavior with an implementation like
-Listing~\ref{lst:octave_nozzle}.
+solve such problems.  One possible implementation appears in
+Listing~\ref{lst:octave_nozzle} with demo logic producing the solutions
+depicted in Figure~\ref{fig:sample_solns}.  This implementation chooses to
+integrate the augmented state vector $\left[u^\prime,
+\left(\log\rho\right)^\prime, p^\prime\right]^\mathrm{T}$ so that automated
+solution tolerance controls apply to all three scalars.
 
-\lstinputlisting[language=Octave,float=p,
-                 caption={\texttt{nozzle1.m}: A scalar-by-scalar radial
-                 nozzle solver implementation\label{lst:octave_nozzle1}}]
-                {notebooks/nozzle1.m}
+\lstinputlisting[language=Octave,
+                 caption={\texttt{nozzle.m}: A nondimensional
+                 radial nozzle solver implementation\label{lst:octave_nozzle}}]
+                {notebooks/nozzle.m}
 
 \begin{figure}[p]
   \centering
@@ -482,16 +452,11 @@ Listing~\ref{lst:octave_nozzle}.
   \includegraphics[width=0.80\textwidth]{nozzle_supersonic}
   \caption{
       \label{fig:sample_solns}
-      Sample solutions saved by the demo logic in \texttt{nozzle1.m}.  The
+      Sample solutions saved by the demo logic in \texttt{nozzle.m}.  The
       subsonic case flows from right-to-left while the supersonic one flows
       from left-to-right.
   }
 \end{figure}
-
-\lstinputlisting[language=Octave,float=p,
-                 caption={\texttt{nozzle.m}: A higher-order, ``coupled''
-                 radial nozzle solver implementation\label{lst:octave_nozzle}}]
-                {notebooks/nozzle.m}
 
 \clearpage
 
@@ -694,11 +659,10 @@ noting:\mynobreakpar
     $\Mach[e]{}$ the mean possible $u_1\!\left(R_1\right)$ according
     to~\eqref{eq:cpfradial_nozzle_supersonic_bc} is selected.
   \item To combat the impact of this poor initial guess, optimization proceeds
-    in two phases with the first phase treating only $R_0$ and
-    $u\!\left(R_1\right)$ as free parameters.  This first phase is run only
-    briefly as otherwise the optimizer finds a woefully suboptimal local
-    minimum.  The robustness of the demonstration code can be quite sensitive
-    to this ``burn in'' detail.
+   in two phases with the first phase treating only $R_0$ and
+   $u\!\left(R_1\right)$ as free parameters.  This first phase is run only
+   briefly as otherwise the optimizer sometimes finds a woefully suboptimal
+   local minimum.
   \item As shown, $\rho\!\left(R_1\right)$ is taken fixed because because, for
     it to have appreciable impact on the optimization results, the parameter
     often take physically unbecoming values for what should be an order-one
@@ -822,20 +786,22 @@ point being the culprit.
 
 \begin{centering}
 \pgfplotstabletypeset[
-  col sep=comma, header=true, clear infinite,
-  begin table=\begin{longtable},
-  end table=\end{longtable},
-  every head row/.style={after row=\midrule\endhead},
-  columns={dstag,gamma_e,Ma_edge,p_exi,T_ratio,Ma,R0,u1,res2},
-  columns/dstag/.style=  {fixed,fixed zerofill,precision=3,dec sep align,column type/.add={}{|},column name=Arc length},
-  columns/gamma_e/.style={fixed,fixed zerofill,precision=4,dec sep align,column type/.add={}{},column name=$\gamma_e$},
-  columns/Ma_edge/.style={fixed,fixed zerofill,precision=6,dec sep align,column type/.add={}{},column name=$\Mach[e]{}$},
-  columns/p_exi/.style=  {fixed,fixed zerofill,precision=6,dec sep align,column type/.add={}{},column name=$p_{e,\xi}$},
-  columns/T_ratio/.style={fixed,fixed zerofill,precision=6,dec sep align,column type/.add={}{|},column name=$a^2_e$},
-  columns/Ma/.style=     {fixed,fixed zerofill,precision=5,dec sep align,column type/.add={}{},column name=$\Mach[0]{}$},
-  columns/R0/.style=     {fixed,fixed zerofill,precision=1,dec sep align,column type/.add={}{},column name=$R_0$},
-  columns/u1/.style=     {fixed,fixed zerofill,precision=5,dec sep align,column type/.add={}{|},column name=$u\!\left(R_1\right)$},
-  columns/res2/.style=   {sci,  sci   zerofill,precision=0,dec sep align,column type/.add={}{},column name=Residual}
+  col sep=comma
+ ,header=true
+ ,clear infinite
+ ,begin table=\begin{longtable}
+ ,end table=\end{longtable}
+ ,every head row/.style={after row=\midrule\endhead}
+ ,columns={dstag,gamma_e,Ma_edge,p_exi,T_ratio,Ma0,R0,u1,res2}
+ ,columns/dstag/.style=  {fixed,fixed zerofill,precision=3,dec sep align,column type/.add={}{|},column name=Arc length}
+ ,columns/gamma_e/.style={fixed,fixed zerofill,precision=4,dec sep align,column type/.add={}{},column name=$\gamma_e$}
+ ,columns/Ma_edge/.style={fixed,fixed zerofill,precision=6,dec sep align,column type/.add={}{},column name=$\Mach[e]{}$}
+ ,columns/p_exi/.style=  {fixed,fixed zerofill,precision=6,dec sep align,column type/.add={}{},column name=$p_{e,\xi}$}
+ ,columns/T_ratio/.style={fixed,fixed zerofill,precision=6,dec sep align,column type/.add={}{|},column name=$a^2_e$}
+ ,columns/Ma0/.style=    {fixed,fixed zerofill,precision=5,dec sep align,column type/.add={}{},column name=$\Mach[0]{}$}
+ ,columns/R0/.style=     {fixed,fixed zerofill,precision=1,dec sep align,column type/.add={}{},column name=$R_0$}
+ ,columns/u1/.style=     {fixed,fixed zerofill,precision=5,dec sep align,column type/.add={}{|},column name=$u\!\left(R_1\right)$}
+ ,columns/res2/.style=   {sci,  sci   zerofill,precision=0,dec sep align,column type/.add={}{},column name=Residual}
 ]{notebooks/cev_laminar.out}
 \end{centering}
 
