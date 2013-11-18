@@ -63,6 +63,31 @@ void check_radial_nozzle_residual(
     }
 }
 
+// Helper method if the solution satisfies Euler in polar coordinates.
+// If not, then the computed solutions aren't particularly useful to us...
+static
+void check_radial_euler_residual(
+    const char * who,
+    const suzerain_radial_nozzle_solution * const s,
+    const double tol)
+{
+    const double Ma  = s->Ma0;
+    const double gam = s->gam0;
+    for (size_t i = 0; i < s->size; ++i) {
+        const double R   = s->state[i].R;
+        const double u   = s->state[i].u,   up   = s->state[i].up;
+        const double p   = s->state[i].p,   pp   = s->state[i].pp;
+        const double rho = s->state[i].rho, rhop = s->state[i].pp;
+
+////////// FIXME Continuity residual
+////////const double mass = rho*up + u*rhop + rho*u/R;
+////////gsl_test_rel(mass, 0, tol, "%s: up mass[%d] ", who, i);
+
+////////// FIXME Radial momentum
+////////// FIXME Energy
+    }
+}
+
 // Second subsonic test from writeups/notebooks/nozzle1.m
 // Beware the slightly different argument order relative to that code
 static
@@ -89,8 +114,9 @@ void test_subsonic()
     gsl_test_abs(ini.rho, rho1, GSL_DBL_EPSILON, "%s init rho ", __func__);
     gsl_test_abs(ini.p,   p1,   GSL_DBL_EPSILON, "%s init p   ", __func__);
 
-    // Does the solution satisfy the basic governing equation at each radius?
+    // Does the solution satisfy the governing equations at each radius?
     check_radial_nozzle_residual(__func__, s, GSL_SQRT_DBL_EPSILON);
+    check_radial_euler_residual (__func__, s, GSL_SQRT_DBL_EPSILON);
 
     // Expected results computed by writeups/notebooks/nozzle.m using Octave
     double tol = GSL_SQRT_DBL_EPSILON;
@@ -142,8 +168,9 @@ void test_supersonic()
     gsl_test_abs(ini.rho, rho1, GSL_DBL_EPSILON, "%s init rho ", __func__);
     gsl_test_abs(ini.p,   p1,   GSL_DBL_EPSILON, "%s init p   ", __func__);
 
-    // Does the solution satisfy the basic governing equation at each radius?
+    // Does the solution satisfy the governing equations at each radius?
     check_radial_nozzle_residual(__func__, s, GSL_SQRT_DBL_EPSILON);
+    check_radial_euler_residual (__func__, s, GSL_SQRT_DBL_EPSILON);
 
     // Expected results computed by writeups/notebooks/nozzle.m using Octave
     double tol = GSL_SQRT_DBL_EPSILON;
