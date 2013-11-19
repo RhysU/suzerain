@@ -71,20 +71,25 @@ void check_radial_euler_residual(
     const suzerain_radial_nozzle_solution * const s,
     const double tol)
 {
-    const double Ma  = s->Ma0;
-    const double gam = s->gam0;
     for (size_t i = 0; i < s->size; ++i) {
         const double R   = s->state[i].R;
         const double u   = s->state[i].u,   up   = s->state[i].up;
         const double p   = s->state[i].p,   pp   = s->state[i].pp;
-        const double rho = s->state[i].rho, rhop = s->state[i].pp;
+        const double rho = s->state[i].rho, rhop = s->state[i].rhop;
+        (void) p;
 
-////////// FIXME Continuity residual
-////////const double mass = rho*up + u*rhop + rho*u/R;
-////////gsl_test_rel(mass, 0, tol, "%s: up mass[%d] ", who, i);
+        // Continuity residual from baseflow.tex writeup, nozzle.m
+        gsl_test_abs(0, rho*up + u*rhop + rho*u/R,
+                     tol, "%s: up mass[%d] ", who, i);
 
-////////// FIXME Radial momentum
-////////// FIXME Energy
+        // Momentum residual from baseflow.tex writeup, nozzle.m
+        gsl_test_rel(pp, -rho*u*up,
+                     tol, "%s: up momentum[%d] ", who, i);
+
+        // Energy residual from baseflow.tex writeup, nozzle.m
+        gsl_test_rel(s->state[i].a2,
+                     1 + s->Ma0*s->Ma0*(s->gam0-1)/2*(1-u*u),
+                     tol, "%s: up energy[%d] ", who, i);
     }
 }
 
