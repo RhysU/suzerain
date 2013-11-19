@@ -93,6 +93,54 @@ void check_radial_euler_residual(
     }
 }
 
+// Test conversion to Cartesian primitive state by checking the residual
+// of the Euler spatial operator computed in primitive form.  Residual
+// should be small as the radial nozzle problem produces a stationary flow.
+static
+void check_cartesian_primitive(
+    const char * who,
+    const suzerain_radial_nozzle_solution * const s,
+    const double Ma,
+    const double tol)
+{
+    // Compute primitive state at the outermost radius for Ma, s->gam0
+    double rho, u, v, p, rho_xi, u_xi, v_xi, p_xi, rho_y , u_y , v_y , p_y;
+    suzerain_radial_nozzle_cartesian_primitive(s, s->size-1, Ma, &rho, &u, &v,
+            &p, &rho_xi, &u_xi, &v_xi, &p_xi, &rho_y, &u_y, &v_y, &p_y);
+
+    // In nondimensional primitive variables with Ma dependence, that is
+    const double U  [4] = { rho,    u,    v,    p    }; (void) U;
+    const double U_x[4] = { rho_xi, u_xi, v_xi, p_xi };
+    const double U_y[4] = { rho_y,  u_y,  v_y,  p_y  };
+    // when a_0 != u_0, the 2D Euler equations take the
+    // form \partial_t U + A \partial_x U + B \partial_y U = 0 with
+    const double A[4][4] = { { u, rho,          0, 0     },
+                             { 0, u,            0, 1/rho },
+                             { 0, 0,            u, 0     },
+                             { 0, s->gam0/Ma/Ma*p, 0, u     } };
+    // and
+    const double B[4][4] = { { v, 0, rho,              0     },
+                             { 0, v, 0,                0     },
+                             { 0, 0, v,                1/rho },
+                             { 0, 0, s->gam0/Ma/Ma*p,  v     } };
+    // which may be seen writeups/notebooks/Giles_BC_Nondimensional.nb
+    // under "Sanity check the linearized evolution equation".  All together,
+    double U_t[4] = { 0, 0, 0, 0};
+    for (int i = 0; i < 4; ++i) {
+        for (int j = 0; j < 4; ++j) {
+            U_t[i] += A[i][j] * U_x[j] + B[i][j] * U_y[j];
+        }
+    }
+    // where we've now got the spatial residual of the Euler equations in U_t.
+    // As this should be a steady solution, we now check against zero:
+
+////FIXME
+////gsl_test_abs(U_t[0], 0.0, GSL_SQRT_DBL_EPSILON, "%s: rho_t ", __func__);
+////gsl_test_abs(U_t[1], 0.0, GSL_SQRT_DBL_EPSILON, "%s: u_t   ", __func__);
+////gsl_test_abs(U_t[2], 0.0, GSL_SQRT_DBL_EPSILON, "%s: v_t   ", __func__);
+////gsl_test_abs(U_t[3], 0.0, GSL_SQRT_DBL_EPSILON, "%s: p_t   ", __func__);
+}
+
 // Second subsonic test from writeups/notebooks/nozzle.m
 // Beware the slightly different argument order relative to that code
 static
@@ -119,10 +167,6 @@ void test_subsonic()
     gsl_test_abs(ini.rho, rho1, GSL_DBL_EPSILON, "%s init rho ", __func__);
     gsl_test_abs(ini.p,   p1,   GSL_DBL_EPSILON, "%s init p   ", __func__);
 
-    // Does the solution satisfy the governing equations at each radius?
-    check_radial_nozzle_residual(__func__, s, GSL_SQRT_DBL_EPSILON);
-    check_radial_euler_residual (__func__, s, GSL_SQRT_DBL_EPSILON);
-
     // Expected results computed by writeups/notebooks/nozzle.m using Octave
     double tol = GSL_SQRT_DBL_EPSILON;
     suzerain_radial_nozzle_state fin = s->state[N-1];
@@ -137,12 +181,20 @@ void test_subsonic()
     gsl_test_rel(fin.rhop, 0.0777373796467802, tol, "%s final rhop", __func__);
     gsl_test_rel(fin.pp,   0.0915710636498338, tol, "%s final pp  ", __func__);
 
+    // Does the pointwise solution satisfy the radial governing equations?
+    check_radial_nozzle_residual(__func__, s, GSL_SQRT_DBL_EPSILON);
+    check_radial_euler_residual (__func__, s, GSL_SQRT_DBL_EPSILON);
+
     // Test edge Mach and pressure gradient parameter computations
     // Expected results by writeups/notebooks/nozzle_qoi.m for delta = sqrt(3)
     const double Mae  = suzerain_radial_nozzle_qoi_Mae (s, s->size-1);
     const double pexi = suzerain_radial_nozzle_qoi_pexi(s, s->size-1);
     gsl_test_rel(Mae,   0.152951916589060, tol, "%s qoi_Mae ", __func__);
     gsl_test_rel(pexi, -1.91086402711018,  tol, "%s qoi_pexi", __func__);
+
+    // Can the results be converted to a Cartesian frame correctly?
+    check_cartesian_primitive(__func__, s, 1.5, GSL_SQRT_DBL_EPSILON);
+    // TODO check_cartesian_conserved
 
     free(s);
 }
@@ -173,10 +225,6 @@ void test_supersonic()
     gsl_test_abs(ini.rho, rho1, GSL_DBL_EPSILON, "%s init rho ", __func__);
     gsl_test_abs(ini.p,   p1,   GSL_DBL_EPSILON, "%s init p   ", __func__);
 
-    // Does the solution satisfy the governing equations at each radius?
-    check_radial_nozzle_residual(__func__, s, GSL_SQRT_DBL_EPSILON);
-    check_radial_euler_residual (__func__, s, GSL_SQRT_DBL_EPSILON);
-
     // Expected results computed by writeups/notebooks/nozzle.m using Octave
     double tol = GSL_SQRT_DBL_EPSILON;
     suzerain_radial_nozzle_state fin = s->state[N-1];
@@ -191,6 +239,10 @@ void test_supersonic()
     gsl_test_rel(fin.rhop, -0.183663783311630,  tol, "%s final rhop", __func__);
     gsl_test_rel(fin.pp,   -0.112130507369524,  tol, "%s final pp  ", __func__);
 
+    // Does the pointwise solution satisfy the radial governing equations?
+    check_radial_nozzle_residual(__func__, s, GSL_SQRT_DBL_EPSILON);
+    check_radial_euler_residual (__func__, s, GSL_SQRT_DBL_EPSILON);
+
     // Test edge Mach and pressure gradient parameter computations
     // Expected results by writeups/notebooks/nozzle_qoi.m for delta = sqrt(3)
     const double Mae  = suzerain_radial_nozzle_qoi_Mae (s, s->size-1);
@@ -198,98 +250,11 @@ void test_supersonic()
     gsl_test_rel(Mae,   1.09859906253134,  tol, "%s qoi_Mae ", __func__);
     gsl_test_rel(pexi, -0.452506737297551, tol, "%s qoi_pexi", __func__);
 
+    // Can the results be converted to a Cartesian frame correctly?
+    check_cartesian_primitive(__func__, s, 1.5, GSL_SQRT_DBL_EPSILON);
+    // TODO check_cartesian_conserved
+
     free(s);
-}
-
-// Test conversion to Cartesian primitive state by checking the residual
-// of the Euler spatial operator computed in primitive form.  Residual
-// should be small as the radial nozzle problem produces a stationary flow.
-static
-void test_cartesian_primitive()
-{
-    // Solve the test_subsonic() problem from above.
-    const double R[]  = {1., 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.};
-    const size_t N    = sizeof(R)/sizeof(R[0]);
-    const double Ma0  = 1.0;
-    const double gam0 = 1.4;
-    const double rho1 = 1.0;
-    const double u1   = -1/Ma0 + GSL_SQRT_DBL_EPSILON;
-    const double p1   = 1.0;
-    suzerain_radial_nozzle_solution * s = suzerain_radial_nozzle_solver(
-            Ma0, gam0, rho1, u1, p1, R, N);
-
-    // Compute pointwise primitive state at the outermost radius for Ma=1.5
-    const double Ma = 1.5;
-    double rho, u, v, p, rho_xi, u_xi, v_xi, p_xi, rho_y , u_y , v_y , p_y;
-    suzerain_radial_nozzle_cartesian_primitive(s, N-1, Ma, &rho, &u, &v, &p,
-            &rho_xi, &u_xi, &v_xi, &p_xi, &rho_y, &u_y, &v_y, &p_y);
-    free(s);
-    s = NULL;
-
-    // In nondimensional primitive variables with Ma dependence, that is
-    const double U  [4] = { rho,    u,    v,    p    }; (void) U;
-    const double U_x[4] = { rho_xi, u_xi, v_xi, p_xi };
-    const double U_y[4] = { rho_y,  u_y,  v_y,  p_y  };
-    // when a_0 != u_0, the 2D Euler equations take the
-    // form \partial_t U + A \partial_x U + B \partial_y U = 0 with
-    const double A[4][4] = { { u, rho,          0, 0     },
-                             { 0, u,            0, 1/rho },
-                             { 0, 0,            u, 0     },
-                             { 0, gam0/Ma/Ma*p, 0, u     } };
-    // and
-    const double B[4][4] = { { v, 0, rho,           0     },
-                             { 0, v, 0,             0     },
-                             { 0, 0, v,             1/rho },
-                             { 0, 0, gam0/Ma/Ma*p,  v     } };
-    // which may be seen writeups/notebooks/Giles_BC_Nondimensional.nb
-    // under "Sanity check the linearized evolution equation".  All together,
-    double U_t[4] = { 0, 0, 0, 0};
-    for (int i = 0; i < 4; ++i) {
-        for (int j = 0; j < 4; ++j) {
-            U_t[i] += A[i][j] * U_x[j] + B[i][j] * U_y[j];
-        }
-    }
-    // where we've now got the spatial residual of the Euler equations in U_t.
-    // As this should be a steady solution, we now check against zero:
-
-////FIXME
-////gsl_test_abs(U_t[0], 0.0, GSL_SQRT_DBL_EPSILON, "%s: rho_t ", __func__);
-////gsl_test_abs(U_t[1], 0.0, GSL_SQRT_DBL_EPSILON, "%s: u_t   ", __func__);
-////gsl_test_abs(U_t[2], 0.0, GSL_SQRT_DBL_EPSILON, "%s: v_t   ", __func__);
-////gsl_test_abs(U_t[3], 0.0, GSL_SQRT_DBL_EPSILON, "%s: p_t   ", __func__);
-}
-
-// Test conversion to Cartesian conserved state by checking the residual
-// of the Euler spatial operator computed in primitive form.  Residual
-// should be small as the radial nozzle problem produces a stationary flow.
-//
-// Test uses the test_supersonic() problem from above.
-static
-void test_cartesian_conserved()
-{
-    // Solve the test_supersonic() problem from above.
-    const double R[]  = {1., 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.};
-    const size_t N    = sizeof(R)/sizeof(R[0]);
-    const double Ma0  = 1.0;
-    const double gam0 = 1.4;
-    const double rho1 = 1.0;
-    const double u1   = 1/Ma0 + GSL_SQRT_DBL_EPSILON;
-    const double p1   = 1.0;
-    suzerain_radial_nozzle_solution * s = suzerain_radial_nozzle_solver(
-            Ma0, gam0, rho1, u1, p1, R, N);
-
-    // Compute pointwise primitive state at the outermost radius for Ma=1.5
-    const double Ma = 1.5;
-    double r,    ru,    rv,    rE,    p;
-    double r_xi, ru_xi, rv_xi, rE_xi, p_xi;
-    double r_y,  ru_y,  rv_y,  rE_y,  p_y;
-    suzerain_radial_nozzle_cartesian_conserved(s, N-1, Ma, &r, &ru, &rv,
-            &rE, &p, &r_xi, &ru_xi, &rv_xi, &rE_xi, &p_xi, &r_y, &ru_y,
-            &rv_y, &rE_y, &p_y);
-    free(s);
-    s = NULL;
-
-    // TODO Compute spatial Euler residual and compare against zero.
 }
 
 int main(int argc, char **argv)
@@ -304,8 +269,6 @@ int main(int argc, char **argv)
 
     test_subsonic();
     test_supersonic();
-    test_cartesian_primitive();
-    test_cartesian_conserved();
 
     exit(gsl_test_summary());
 }
