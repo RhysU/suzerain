@@ -38,19 +38,21 @@
 #include <gsl/gsl_math.h>
 #include <gsl/gsl_odeiv2.h>
 
-// Compute u' and a^2 given r, u, Ma02 = Ma0**2, and gam0m1 = gam0 - 1
-// Compare nozzle_upa2 function source within writeups/notebooks/nozzle.m
+// Helper computing pointwise details given r, u, Ma02=Ma0**2, gam0m1=gam0-1
+// Compare nozzle_helper function source within writeups/notebooks/nozzle.m
 static inline
-void nozzle_upa2(const double R,
-                 const double u,
-                 const double Ma02,
-                 const double gam0m1,
-                 double *up,
-                 double *a2)
+void nozzle_helper(const double R,
+                   const double u,
+                   const double Ma02,
+                   const double gam0m1,
+                   double *up,
+                   double *a2,
+                   double *logrhop)
 {
-    *up = -(u/R) * (2 + Ma02*gam0m1 - Ma02*(gam0m1  )*(u*u))
-                 / (2 + Ma02*gam0m1 - Ma02*(gam0m1+2)*(u*u));
-    *a2 = 1 + 0.5*Ma02*gam0m1*(1 - u*u);
+    double C = 2/Ma02 + gam0m1*(1 - u*u);
+    *up      = (u * C) / (R * (2*u*u - C));
+    *a2      = 1 + 0.5*Ma02*gam0m1*(1 - u*u);
+    *logrhop = -Ma02*u*(*up) / (*a2);
 }
 
 // Parameters for \ref nozzle per conventions of gsl_odeiv2_system->function
@@ -77,10 +79,9 @@ nozzle_f(double R,
     SUZERAIN_UNUSED(p);
 
     // Compute
-    double up, a2;
-    nozzle_upa2(R, u, Ma02, gam0m1, &up, &a2);
-    const double logrhop  = -Ma02*R*u*up / a2;
-    const double pp       = -Ma02*R*rho*u*up;
+    double up, a2, logrhop;
+    nozzle_helper(R, u, Ma02, gam0m1, &up, &a2, &logrhop);
+    const double pp = -Ma02*rho*u*up;
 
     // Pack
     dydt[0] = up;
@@ -162,15 +163,17 @@ suzerain_radial_nozzle_solver(
 
     // Compute sound speed squared and derivative information from state
     for (size_t i = 0; i < size; ++i) {
-        nozzle_upa2(s->state[i].R,
-                    s->state[i].u,
-                    params.Ma02,
-                    params.gam0m1,
-                    &s->state[i].up,
-                    &s->state[i].a2);
+        double logrhop;
+        nozzle_helper(s->state[i].R,
+                      s->state[i].u,
+                      params.Ma02,
+                      params.gam0m1,
+                      &s->state[i].up,
+                      &s->state[i].a2,
+                      &logrhop);
+        s->state[i].rhop = logrhop * s->state[i].rho;
         s->state[i].pp   = -params.Ma02
                          * s->state[i].rho * s->state[i].u * s->state[i].up;
-        s->state[i].rhop = s->state[i].pp / s->state[i].a2;
     }
 
     return s;

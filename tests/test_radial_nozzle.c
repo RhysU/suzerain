@@ -88,7 +88,7 @@ void check_radial_euler_residual(
     }
 }
 
-// Second subsonic test from writeups/notebooks/nozzle1.m
+// Second subsonic test from writeups/notebooks/nozzle.m
 // Beware the slightly different argument order relative to that code
 static
 void test_subsonic()
@@ -127,10 +127,10 @@ void test_subsonic()
     gsl_test_rel(fin.up,   0.183142130216718,  tol, "%s final up  ", __func__);
     // Octave and GSL RKF45 adaptive control differs, hence lower tolerances...
     tol = sqrt(tol);
-    gsl_test_rel(fin.rho,  1.61808760864002,   tol, "%s final rho ", __func__);
-    gsl_test_rel(fin.p,    1.68133559416742,   tol, "%s final p   ", __func__);
-    gsl_test_rel(fin.rhop, 0.0835239513576762, tol, "%s final rhop", __func__);
-    gsl_test_rel(fin.pp,   0.0983873794154783, tol, "%s final pp  ", __func__);
+    gsl_test_rel(fin.rho,  1.50598587203636,   tol, "%s final rho ", __func__);
+    gsl_test_rel(fin.p,    1.55284442659135,   tol, "%s final p   ", __func__);
+    gsl_test_rel(fin.rhop, 0.0777373796467802, tol, "%s final rhop", __func__);
+    gsl_test_rel(fin.pp,   0.0915710636498338, tol, "%s final pp  ", __func__);
 
     // Test edge Mach and pressure gradient parameter computations
     // Expected results by writeups/notebooks/nozzle_qoi.m for delta = sqrt(3)
@@ -142,7 +142,7 @@ void test_subsonic()
     free(s);
 }
 
-// Supersonic test from writeups/notebooks/nozzle1.m
+// Supersonic test from writeups/notebooks/nozzle.m
 // Beware the slightly different argument order relative to that code
 static
 void test_supersonic()
@@ -181,10 +181,10 @@ void test_supersonic()
     gsl_test_rel(fin.up,    0.224261011681836,  tol, "%s final up  ", __func__);
     // Octave and GSL RKF45 adaptive control differs, hence lower tolerances...
     tol = sqrt(tol);
-    gsl_test_rel(fin.rho,   0.188891739106648,  tol, "%s final rho ", __func__);
-    gsl_test_rel(fin.p,     0.336677203999661,  tol, "%s final p   ", __func__);
-    gsl_test_rel(fin.rhop, -0.119120314492264,  tol, "%s final rhop", __func__);
-    gsl_test_rel(fin.pp,   -0.0727253956159634, tol, "%s final pp  ", __func__);
+    gsl_test_rel(fin.rho,   0.291239756946575,  tol, "%s final rho ", __func__);
+    gsl_test_rel(fin.p,     0.412719892947868,  tol, "%s final p   ", __func__);
+    gsl_test_rel(fin.rhop, -0.183663783311630,  tol, "%s final rhop", __func__);
+    gsl_test_rel(fin.pp,   -0.112130507369524,  tol, "%s final pp  ", __func__);
 
     // Test edge Mach and pressure gradient parameter computations
     // Expected results by writeups/notebooks/nozzle_qoi.m for delta = sqrt(3)

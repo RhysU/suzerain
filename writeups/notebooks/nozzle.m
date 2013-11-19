@@ -62,7 +62,7 @@ end
 %!demo
 %! % Subsonic cases may (more robustly) have nearly sonic outflows prescribed
 %! pkg load odepkg; Ma0 = 1; gam0 = 1.4; Rin = 1; Rout = 2;
-%! nozzle1(Ma0, gam0, Rin, Rout, -1/Ma0+sqrt(eps), 1, 1);
+%! nozzle(Ma0, gam0, Rin, Rout, -1/Ma0+sqrt(eps), 1, 1);
 
 %!demo
 %! % Solve supersonic nozzle (specifying inflow) and plot to file

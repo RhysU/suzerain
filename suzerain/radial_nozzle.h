@@ -71,16 +71,17 @@ typedef struct suzerain_radial_nozzle_solution {
  * \f{align}{
  *     u^\prime
  *   &=
- *     -\frac{u}{r}
- *     \cdot
+ *     \frac{u}{r}
+ *     \,
  *     \frac{
- *        2
- *      + \mbox{Ma}_{0}^2\left(\gamma_0-1\right)
- *      - \mbox{Ma}_{0}^2\left(\gamma_0-1\right) u^2
+ *       \left[
+ *          2 \mbox{Ma}_0^{-2} + \left(\gamma_0-1\right) \left(1 - u^2\right)
+ *       \right]
  *     }{
- *        2
- *      + \mbox{Ma}_{0}^2\left(\gamma_0-1\right)
- *      - \mbox{Ma}_{0}^2\left(\gamma_0+1\right) u^2
+ *         2 u^2
+ *       - \left[
+ *            2 \mbox{Ma}_0^{-2} + \left(\gamma_0-1\right) \left(1 - u^2\right)
+ *         \right]
  *     }
  *   \\
  *     \left(\log\rho\right)^\prime
@@ -95,8 +96,7 @@ typedef struct suzerain_radial_nozzle_solution {
  * \f{align}{
  *     a^2
  *   &=
- *       \frac{\gamma-1}{\gamma_0-1}
- *     + \mbox{Ma}_{0}^2\frac{\gamma-1}{2}\left(1-u^2\right)
+ *     1 + \mbox{Ma}_{0}^2\frac{\gamma_0-1}{2}\left(1-u^2\right)
  * \f}
  * to solve for the quantities in \ref suzerain_radial_nozzle_state as a
  * function of \f$R\f$ given initial conditions \f$\rho\left(r_1\right)\f$,
