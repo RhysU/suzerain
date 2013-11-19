@@ -117,7 +117,7 @@ void check_cartesian_primitive(
     const double A[4][4] = { { u, rho,          0, 0     },
                              { 0, u,            0, 1/rho },
                              { 0, 0,            u, 0     },
-                             { 0, s->gam0/Ma/Ma*p, 0, u     } };
+                             { 0, s->gam0/Ma/Ma*p, 0, u  } };
     // and
     const double B[4][4] = { { v, 0, rho,              0     },
                              { 0, v, 0,                0     },
@@ -133,13 +133,12 @@ void check_cartesian_primitive(
     }
     // where we've now got the spatial residual of the Euler equations in U_t.
 
-////// FIXME #2503
-////// As we should observe a steady solution, now check against zero:
-////const double R = s->state[s->size-1].R;
-////gsl_test_abs(U_t[0], 0.0, tol, "%s: rho_t at R = %g", who, R);
-////gsl_test_abs(U_t[1], 0.0, tol, "%s: u_t   at R = %g", who, R);
-////gsl_test_abs(U_t[2], 0.0, tol, "%s: v_t   at R = %g", who, R);
-////gsl_test_abs(U_t[3], 0.0, tol, "%s: p_t   at R = %g", who, R);
+    // As we should observe a steady solution, now check against zero:
+    const double R = s->state[s->size-1].R;
+    gsl_test_abs(U_t[0], 0.0, tol, "%s: rho_t for Ma=%g at R=%g", who, Ma, R);
+    gsl_test_abs(U_t[1], 0.0, tol, "%s: u_t   for Ma=%g at R=%g", who, Ma, R);
+    gsl_test_abs(U_t[2], 0.0, tol, "%s: v_t   for Ma=%g at R=%g", who, Ma, R);
+    gsl_test_abs(U_t[3], 0.0, tol, "%s: p_t   for Ma=%g at R=%g", who, Ma, R);
 }
 
 // Second subsonic test from writeups/notebooks/nozzle.m
@@ -194,8 +193,10 @@ void test_subsonic()
     gsl_test_rel(pexi, -1.91086402711018,  tol, "%s qoi_pexi", __func__);
 
     // Can the results be converted to a Cartesian frame correctly?
-    check_cartesian_primitive(__func__, s, 1.5, GSL_SQRT_DBL_EPSILON);
-    // TODO check_cartesian_conserved
+    // TODO check_cartesian_primitive(__func__, s, 1.0, GSL_SQRT_DBL_EPSILON);
+    // TODO check_cartesian_primitive(__func__, s, 1.5, GSL_SQRT_DBL_EPSILON);
+    // TODO check_cartesian_conserved(__func__, s, 1.0, GSL_SQRT_DBL_EPSILON);
+    // TODO check_cartesian_conserved(__func__, s, 1.5, GSL_SQRT_DBL_EPSILON);
 
     free(s);
 }
@@ -252,8 +253,10 @@ void test_supersonic()
     gsl_test_rel(pexi, -0.452506737297551, tol, "%s qoi_pexi", __func__);
 
     // Can the results be converted to a Cartesian frame correctly?
-    check_cartesian_primitive(__func__, s, 1.5, GSL_SQRT_DBL_EPSILON);
-    // TODO check_cartesian_conserved
+    // check_cartesian_primitive(__func__, s, 1.0, GSL_SQRT_DBL_EPSILON);
+    // TODO check_cartesian_primitive(__func__, s, 1.5, GSL_SQRT_DBL_EPSILON);
+    // TODO check_cartesian_conserved(__func__, s, 1.0, GSL_SQRT_DBL_EPSILON);
+    // TODO check_cartesian_conserved(__func__, s, 1.5, GSL_SQRT_DBL_EPSILON);
 
     free(s);
 }
