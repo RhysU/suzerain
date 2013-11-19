@@ -132,13 +132,14 @@ void check_cartesian_primitive(
         }
     }
     // where we've now got the spatial residual of the Euler equations in U_t.
-    // As this should be a steady solution, we now check against zero:
 
-////FIXME
-////gsl_test_abs(U_t[0], 0.0, GSL_SQRT_DBL_EPSILON, "%s: rho_t ", __func__);
-////gsl_test_abs(U_t[1], 0.0, GSL_SQRT_DBL_EPSILON, "%s: u_t   ", __func__);
-////gsl_test_abs(U_t[2], 0.0, GSL_SQRT_DBL_EPSILON, "%s: v_t   ", __func__);
-////gsl_test_abs(U_t[3], 0.0, GSL_SQRT_DBL_EPSILON, "%s: p_t   ", __func__);
+////// FIXME #2503
+////// As we should observe a steady solution, now check against zero:
+////const double R = s->state[s->size-1].R;
+////gsl_test_abs(U_t[0], 0.0, tol, "%s: rho_t at R = %g", who, R);
+////gsl_test_abs(U_t[1], 0.0, tol, "%s: u_t   at R = %g", who, R);
+////gsl_test_abs(U_t[2], 0.0, tol, "%s: v_t   at R = %g", who, R);
+////gsl_test_abs(U_t[3], 0.0, tol, "%s: p_t   at R = %g", who, R);
 }
 
 // Second subsonic test from writeups/notebooks/nozzle.m
