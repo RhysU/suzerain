@@ -483,7 +483,7 @@ The favorable pressure gradient base flow profile of height $L_y$ is taken from
 a constant $x$ line segment obtained from a radially varying solution.
 Referring to Figure~\eqref{fig:mapping_geometry}, the solution
 $u\!\left(R\right)$ with accompanying $\rho\!\left(R\right)$,
-$p\!\left(R\right)$, and $a\!\left(R\right)$ is valid for
+$p\!\left(R\right)$, and $a\!\left(R\right)$ is valid for any
 $R\in\left[R_1,R_2\right]$.  For some $\left(x,y\right)$ and corresponding
 $R=\sqrt{x^2+y^2}$ one may compute the following:
 %
@@ -501,13 +501,15 @@ $R=\sqrt{x^2+y^2}$ one may compute the following:
  & \partial_x p                               &= \frac{\Mach^2}{\Mach[0]{}^2}\frac{x}{R} p^\prime\!\left(R\right)
  & \partial_y p                               &= \frac{\Mach^2}{\Mach[0]{}^2}\frac{y}{R} p^\prime\!\left(R\right)
 \end{align}
+%
 The $\Mach^2/\Mach[0]{}^2$ factor on $p$ translates pressure into a
 nondimensionalization potentially using some other Mach number $\Mach$ under
 the assumption that $p_0 = \rho_0 a_0^2$ holds in the target setting for a
 possibly different $a_0$ but $\rho_0$ and $u_0$ remain the same.  This
 translation permits using radial nozzle state as an approximate pointwise
-solution to the steady, nondimensional, primitive Euler equations in Cartesian
-coordinates:
+solution to the steady, nondimensional, primitive Euler equations for a perfect
+gas written in Cartesian coordinates:
+%
 \begin{align}
   \begin{bmatrix} 0 \\ 0 \\ 0 \\ 0 \end{bmatrix}
 &=
@@ -529,6 +531,7 @@ coordinates:
   \partial_y
   \begin{bmatrix} \rho \\ u_x \\ u_y \\ p \end{bmatrix}
 \end{align}
+%
 The approximation arises because
 assumptions~\eqref{eq:gradrho_gradp_relationship}
 and~\eqref{eq:stagnation_sound_nondim} do not match the ideal gas equation.
@@ -537,94 +540,33 @@ the mismatch is small.  If the Euler equations are written using $\rho a^2$ in
 lieu of $\gamma p$, the mismatch disappears but the sound speed $a^2$ also must
 be scaled appropriately whenever $\Mach\neq\Mach[0]$.
 
-
-% FIXME STARTHERE
-\begin{align}
-    \rho \!\left(x, y\right) &= \rho\!\left(R\right)
-\\  u_\xi\!\left(x, y\right) &= \left|u\!\left(R\right)\right| \frac{x}{R}
-\\  u_y  \!\left(x, y\right) &=       u\!\left(R\right)        \frac{y}{R}
-\\  p    \!\left(x, y; \Mach\right) &= \frac{\Mach[0]^2}{\Mach^2} \, p\!\left(R\right)
-\end{align}
-%
-Here, $\xi$ denotes the $x$ direction possibly reflected so that streamwise
-velocity always has positive sign (i.e. $x$ when $u\geq{}0$, otherwise $-x$).
-The $\Mach[0]^2/\Mach^2$ factor permits translating pressure into a
-nondimensionalization using some other Mach number $\Mach$ under the assumption
-that $p_0 = \rho_0 a_0^2$ holds in the target setting for a possibly different
-$a_0$ but $\rho_0$ and $u_0$ remain the same.
-%
-Differentiation in the streamwise direction $\xi$ and orthogonal $y$ direction
-employs, respectively,
-\begin{align}
-    \frac{\partial}{\partial\xi}
- &= \operatorname{sgn}(u) \frac{\partial}{\partial{}x}
-  = \frac{x \operatorname{sgn}(u)}{R} \frac{\partial}{\partial{}R}
-&
-    \frac{\partial}{\partial{}y}
- &= \frac{y}{R} \frac{\partial}{\partial{}R}
-\end{align}
-yielding the following:
-%
-\begin{align}
-  \frac{\partial}{\partial\xi} \rho \!\left(x, y\right)
-&=
-  \frac{x\operatorname{sgn}(u)}{R} \rho^\prime\!\left(R\right)
-&
-  \frac{\partial}{\partial{}y} \rho \!\left(x, y\right)
-&=
-  \frac{y                     }{R} \rho^\prime\!\left(R\right)
-\\
-  \frac{\partial}{\partial\xi} u_\xi\!\left(x, y\right)
-&=
-  \operatorname{sgn}(u) \left(
-      \frac{x^2 u^\prime\!\left(R\right)}{R^2}
-    + \frac{y^2 u       \!\left(R\right)}{R^3}
-  \right)
-&
-  \frac{\partial}{\partial{}y} u_\xi\!\left(x, y\right)
-&=
-  x y \operatorname{sgn}(u) \left(
-      \frac{u^\prime\!\left(R\right)}{R^2}
-    - \frac{u       \!\left(R\right)}{R^3}
-  \right)
-\\
-  \frac{\partial}{\partial\xi} u_y  \!\left(x, y\right)
-&=
-  x y \operatorname{sgn}(u) \left(
-      \frac{u^\prime\!\left(R\right)}{R^2}
-    - \frac{u       \!\left(R\right)}{R^3}
-  \right)
-&
-  \frac{\partial}{\partial{}y} u_y  \!\left(x, y\right)
-&=
-    \frac{ y^2 u^\prime\!\left(R\right) }{ R^2 }
-  + \frac{ x^2 u       \!\left(R\right) }{ R^3 }
-\\
-  \frac{\partial}{\partial\xi} p    \!\left(x, y; \Mach\right)
-&=
-  \frac{x\operatorname{sgn}(u)}{R}
-  \frac{\Mach[0]^2}{\Mach^2}
-  \,
-  p^\prime\!\left(R\right)
-&
-  \frac{\partial}{\partial{}y} p    \!\left(x, y; \Mach\right)
-&=
-  \frac{y                     }{R}
-  \frac{\Mach[0]^2}{\Mach^2}
-  \,
-  p^\prime\!\left(R\right)
-\end{align}
-%
 A Cartesian flow profile can be extracted from radial solution on the line
 segment spanning points $\left(R_0,0\right)$ and $\left(R_0,L_y\right)$ using
 these results.  Clearly, selecting
 \begin{align}
   R_1 &= R_0
-\\
+&
   R_2 &= \sqrt{R_0^2 + L_y^2}
 \end{align}
 produces the smallest radial domain possessing a solution along this entire
-segment.
+segment.  When working with both sub- and supersonic profiles, it is convenient
+to abstract away the change in sign of $u_x$.  Let $\xi$ denote the $x$
+direction possibly reflected so that streamwise velocity always has positive
+sign.  That is,
+\begin{align}
+  \xi &= \begin{cases}  x &\mbox{if } u\!\left(R_1\right) \geq 0 \\
+                       -x &\mbox{otherwise}
+  \end{cases}
+&
+    \frac{\partial}{\partial\xi}
+ &= \operatorname{sgn}(u) \frac{\partial}{\partial{}x}
+  = \frac{x \operatorname{sgn}(u)}{R} \frac{\partial}{\partial{}R}
+\end{align}
+Practically, whenever $u\left(R_1\right) < 0$ instead of evaluating $u_x$,
+$\partial_x u_x$, etc. at $\left(x,y\right)$ one evaluates $u_\xi$,
+$\partial_\xi u_\xi$, etc. at $\left(-x,y\right)$ to take advantage of the
+solution symmetry inherent in the second quadrant relative to the first
+quadrant.
 
 At some height of interest with such a profile, say an edge distance $\delta$
 from the $x$-axis, one may also compute
@@ -676,8 +618,8 @@ choices~\eqref{eq:nondimensionalization} imply $a^2 = T$ holds in that
 particular context.  A kernel building atop Listing~\ref{lst:octave_nozzle}
 that computes these quantities of interest appears in
 Listing~\ref{lst:octave_nozzle_qoi}.  By solving to boundary $R_2 = \sqrt{R_0^2
-+ \delta^2}$ the kernel both solves the cheapest possible problem and also
-causes the ODE integrator to automatically produce full-order accurate results at
++ \delta^2}$ the kernel both solves the cheapest possible problem and causes
+the ODE integrator to automatically produce full-order accurate results at
 $\left(R_0,\delta\right)$ without requiring dense output capabilities.
 
 \lstinputlisting[language=Octave,float=bp,

@@ -147,6 +147,10 @@ void check_euler_primitive_rel(
         gsl_test_rel(AU_x[1], -BU_y[1], tol, "%s: u_t   Ma=%g, R=%g", who,Ma,R);
         gsl_test_rel(AU_x[2], -BU_y[2], tol, "%s: v_t   Ma=%g, R=%g", who,Ma,R);
         gsl_test_rel(AU_x[3], -BU_y[3], tol, "%s: p_t   Ma=%g, R=%g", who,Ma,R);
+
+        // Lastly, to be sure the streamwise _xi direction is defined
+        // correctly, check that streamwise component u is always positive.
+        gsl_test_int(u >= 0, 1, "%s: positive streamwise velocity R=%g", who,R);
     }
 }
 
@@ -190,6 +194,10 @@ void check_euler_conserved_abs(
         gsl_test_abs(f_xi[1], -f_y[1], tol, "%s: rhou_t Ma=%g, R=%g", who,Ma,R);
         gsl_test_abs(f_xi[2], -f_y[2], tol, "%s: rhov_t Ma=%g, R=%g", who,Ma,R);
         gsl_test_abs(f_xi[3], -f_y[3], tol, "%s: rhoE_t Ma=%g, R=%g", who,Ma,R);
+
+        // Lastly, to be sure the streamwise _xi direction is defined
+        // correctly, check that streamwise momentum ru is always positive.
+        gsl_test_int(ru >= 0, 1, "%s: positive streamwise momentum R=%g",who,R);
     }
 }
 

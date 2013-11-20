@@ -222,7 +222,10 @@ suzerain_radial_nozzle_cartesian_primitive(
     double *p_y)
 {
     assert(i < s->size);
-    const double x       = s->state[0].R;
+    // If u(R0) >= 0, compute at coords (x,delta).  Otherwise (-x,delta).
+    // Possibly flipping from the first to the second quadrant permits
+    // flow to always be in positive x direction regardless of sonic-ness.
+    const double x       = (s->state[0].u >= 0 ? 1 : -1) * s->state[0].R;
     const double x_inv_R = x / s->state[i].R;
     const double x2      = gsl_pow_2(x);
     const double y       = suzerain_radial_nozzle_delta(s, i);
