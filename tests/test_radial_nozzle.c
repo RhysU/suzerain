@@ -111,7 +111,7 @@ void check_euler_primitive(
 {
     for (size_t i = 0; i < s->size; ++i) {
 
-        // Compute primitive state at the outermost radius for Ma, s->gam0
+        // Compute primitive state and derivatives for Ma, s->gam0
         double rho, u, v, p, rho_xi, u_xi, v_xi, p_xi, rho_y , u_y , v_y , p_y;
         suzerain_radial_nozzle_cartesian_primitive(s, i, Ma, &rho, &u, &v,
                 &p, &rho_xi, &u_xi, &v_xi, &p_xi, &rho_y, &u_y, &v_y, &p_y);
@@ -147,6 +147,65 @@ void check_euler_primitive(
         gsl_test_rel(AU_x[1], -BU_y[1], tol, "%s: u_t   Ma=%g, R=%g", who,Ma,R);
         gsl_test_rel(AU_x[2], -BU_y[2], tol, "%s: v_t   Ma=%g, R=%g", who,Ma,R);
         gsl_test_rel(AU_x[3], -BU_y[3], tol, "%s: p_t   Ma=%g, R=%g", who,Ma,R);
+    }
+}
+
+// Test conversion to Cartesian conserved state by checking the residual of the
+// Euler spatial operator computed in primitive form.  Residual should be small
+// as the radial nozzle problem produces a stationary flow.  The same ideal gas
+// EOS caveats from check_euler_primitive apply here, except magnified since
+// the EOS is used to form total energy here.
+static
+void check_euler_conserved(
+    const char * who,
+    const suzerain_radial_nozzle_solution * const s,
+    const double Ma,
+    const double tol)
+{
+    for (size_t i = 0; i < s->size; ++i) {
+
+        // Compute conserved state, pressure, and derivatives for Ma, s->gam0
+        double r,    ru,    rv,    rE,    p;
+        double r_xi, ru_xi, rv_xi, rE_xi, p_xi;
+        double r_y,  ru_y,  rv_y,  rE_y,  p_y;
+        suzerain_radial_nozzle_cartesian_conserved(s, i, Ma, &r,   &ru,   &rv,
+                &rE,   &p, &r_xi, &ru_xi, &rv_xi, &rE_xi, &p_xi, &r_y,  &ru_y,
+                &rv_y,  &rE_y,  &p_y);
+
+        // Compute velocities and their derivatives from conserved values
+        const double u    = ru / r;
+        const double v    = rv / r;
+        const double u_xi = (ru_xi - ru*r_xi/r) / r;
+        const double v_xi = (rv_xi - rv*r_xi/r) / r;
+        const double u_y  = (ru_y  - ru*r_y /r) / r;
+        const double v_y  = (rv_y  - rv*r_y /r) / r;
+
+        // Compute the convective terms from the momentum equations
+        // Averages different ways mixed terms can be computed
+        const double ruu_xi = ru_xi*u + ru*u_xi;
+        const double ruv_xi = (ru_xi*v + ru*v_xi)/2
+                            + (rv_xi*u + rv*u_xi)/2;
+        const double rvv_y  = rv_y *v + rv*v_y;
+        const double ruv_y  = (ru_y *v + ru*v_y)/2
+                            + (rv_y *u + rv*u_y)/2;
+        const double rEu_xi = rE_xi*u + rE*u_xi;
+        const double rEv_y  = rE_y *v + rE*v_y;
+        const double pu_xi  = p_xi *u + p*u_xi;
+        const double pv_y   = p_y  *v + p*v_y ;
+
+        // Check relative balance of the streamwise and wall-normal fluxes
+        const double R = s->state[i].R;
+        gsl_test_rel(ru_xi, -rv_y,
+                     tol, "%s: rho_t  Ma=%g, R=%g", who, Ma, R);
+
+        gsl_test_rel(ruu_xi + p_xi/Ma/Ma, -ruv_y,
+                     tol, "%s: rhou_t Ma=%g, R=%g", who, Ma, R);
+
+        gsl_test_rel(ruv_xi, -rvv_y - p_y/Ma/Ma,
+                     tol, "%s: rhov_t Ma=%g, R=%g", who, Ma, R);
+
+        gsl_test_rel(rEu_xi + pu_xi/Ma/Ma, -rEv_y  - pv_y /Ma/Ma,
+                     tol, "%s: rhoE_t Ma=%g, R=%g", who, Ma, R);
     }
 }
 
@@ -205,7 +264,7 @@ void test_subsonic()
     check_ideal_gas_approximation(__func__, s,      100*GSL_DBL_EPSILON);
     check_euler_primitive        (__func__, s, Ma0, 100*GSL_DBL_EPSILON);
     check_euler_primitive        (__func__, s, 5.0, 100*GSL_DBL_EPSILON);
-    // TODO check_euler_conserved(__func__, s, Ma0, 100*GSL_SQRT_DBL_EPSILON);
+    check_euler_conserved        (__func__, s, Ma0, 5e-2);
     // TODO check_euler_conserved(__func__, s, 5.0, 100*GSL_SQRT_DBL_EPSILON);
 
     free(s);
