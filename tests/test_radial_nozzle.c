@@ -168,44 +168,28 @@ void check_euler_conserved(
         double r,    ru,    rv,    rE,    p;
         double r_xi, ru_xi, rv_xi, rE_xi, p_xi;
         double r_y,  ru_y,  rv_y,  rE_y,  p_y;
-        suzerain_radial_nozzle_cartesian_conserved(s, i, Ma, &r,   &ru,   &rv,
-                &rE,   &p, &r_xi, &ru_xi, &rv_xi, &rE_xi, &p_xi, &r_y,  &ru_y,
-                &rv_y,  &rE_y,  &p_y);
+        suzerain_radial_nozzle_cartesian_conserved(s, i, Ma, &r, &ru, &rv,
+                &rE, &p, &r_xi, &ru_xi, &rv_xi, &rE_xi, &p_xi, &r_y, &ru_y,
+                &rv_y, &rE_y, &p_y);
 
-        // Compute velocities and their derivatives from conserved values
-        const double u    = ru / r;
-        const double v    = rv / r;
-        const double u_xi = (ru_xi - ru*r_xi/r) / r;
-        const double v_xi = (rv_xi - rv*r_xi/r) / r;
-        const double u_y  = (ru_y  - ru*r_y /r) / r;
-        const double v_y  = (rv_y  - rv*r_y /r) / r;
+        // Compute fluxes using conserved quantities and pressure
+        const double f_xi[4] = {   ru_xi
+                               ,   p_xi/Ma/Ma + ru/r*(2*ru_xi - ru*r_xi/r)
+                               ,   (ru_xi*rv + ru*rv_xi - ru*rv*r_xi/r)/r
+                               ,   (ru_xi*rE + ru*rE_xi - ru*rE*r_xi/r)/r
+                                 + (ru_xi*p + ru*p_xi - ru*p*r_xi/r)/r/Ma/Ma };
+        const double f_y[4] = {   rv_y
+                              ,   (ru_y*rv + ru*rv_y - ru*rv*r_y/r)/r
+                              ,   p_y/Ma/Ma  + rv/r*(2*rv_y  - rv*r_y /r)
+                              ,   (rv_y *rE + rv*rE_y  - rv*rE*r_y /r)/r
+                                + (rv_y *p + rv*p_y  - rv*p*r_y /r)/r/Ma/Ma };
 
-        // Compute the convective terms from the momentum equations
-        // Averages different ways mixed terms can be computed
-        const double ruu_xi = ru_xi*u + ru*u_xi;
-        const double ruv_xi = (ru_xi*v + ru*v_xi)/2
-                            + (rv_xi*u + rv*u_xi)/2;
-        const double rvv_y  = rv_y *v + rv*v_y;
-        const double ruv_y  = (ru_y *v + ru*v_y)/2
-                            + (rv_y *u + rv*u_y)/2;
-        const double rEu_xi = rE_xi*u + rE*u_xi;
-        const double rEv_y  = rE_y *v + rE*v_y;
-        const double pu_xi  = p_xi *u + p*u_xi;
-        const double pv_y   = p_y  *v + p*v_y ;
-
-        // Check relative balance of the streamwise and wall-normal fluxes
+        // Check absolute balance of the streamwise and wall-normal fluxes
         const double R = s->state[i].R;
-        gsl_test_rel(ru_xi, -rv_y,
-                     tol, "%s: rho_t  Ma=%g, R=%g", who, Ma, R);
-
-        gsl_test_rel(ruu_xi + p_xi/Ma/Ma, -ruv_y,
-                     tol, "%s: rhou_t Ma=%g, R=%g", who, Ma, R);
-
-        gsl_test_rel(ruv_xi, -rvv_y - p_y/Ma/Ma,
-                     tol, "%s: rhov_t Ma=%g, R=%g", who, Ma, R);
-
-        gsl_test_rel(rEu_xi + pu_xi/Ma/Ma, -rEv_y  - pv_y /Ma/Ma,
-                     tol, "%s: rhoE_t Ma=%g, R=%g", who, Ma, R);
+        gsl_test_abs(f_xi[0], -f_y[0], tol, "%s: rho_t  Ma=%g, R=%g", who,Ma,R);
+        gsl_test_abs(f_xi[1], -f_y[1], tol, "%s: rhou_t Ma=%g, R=%g", who,Ma,R);
+        gsl_test_abs(f_xi[2], -f_y[2], tol, "%s: rhov_t Ma=%g, R=%g", who,Ma,R);
+        gsl_test_abs(f_xi[3], -f_y[3], tol, "%s: rhoE_t Ma=%g, R=%g", who,Ma,R);
     }
 }
 
@@ -331,7 +315,8 @@ void test_supersonic1()
     free(s);
 }
 
-// Supersonic with huge radius so ideal gas EOS is better approximated
+// Supersonic with large radius so ideal gas EOS is better approximated
+// relative to test_supersonic1().
 static
 void test_supersonic2()
 {
@@ -353,7 +338,7 @@ void test_supersonic2()
     check_ideal_gas_approximation(__func__, s,      1e4*GSL_DBL_EPSILON);
     check_euler_primitive        (__func__, s, Ma0, GSL_SQRT_DBL_EPSILON);
     check_euler_primitive        (__func__, s, 5.0, GSL_SQRT_DBL_EPSILON);
-////check_euler_conserved        (__func__, s, Ma0, 0.025);
+    check_euler_conserved        (__func__, s, Ma0, 0.0015);
 ////check_euler_conserved        (__func__, s, 5.0, 0.025);
 
     free(s);
