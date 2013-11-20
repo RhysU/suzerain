@@ -89,10 +89,12 @@ suzerain_radial_nozzle_solver(
     const double         gam0,
     const double         rho1,
     const double         u1,
-    const double         p1,
     const double * const R,
     const size_t         size)
 {
+    // Initial p1 computed from nondimensional ideal gas equation of state
+    const double p1 = rho1/gam0*(1+(gam0-1)/2*Ma0*Ma0*(1-u1*u1));
+
     // Sanity check incoming arguments and realizability
     if (Ma0  <= 0) SUZERAIN_ERROR_NULL("Ma0 <= 0",  SUZERAIN_EDOM);
     if (gam0 <= 1) SUZERAIN_ERROR_NULL("gam0 <= 1", SUZERAIN_EDOM);

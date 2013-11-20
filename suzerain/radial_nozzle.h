@@ -70,7 +70,7 @@ typedef struct suzerain_radial_nozzle_solution {
  * Solve the requested radial nozzle problem.  That is, advance the system
  * \f{align}{
  *     u^\prime
- *   &=
+ *  &=
  *     \frac{u}{r}
  *     \,
  *     \frac{
@@ -80,17 +80,17 @@ typedef struct suzerain_radial_nozzle_solution {
  *     }{
  *         2 u^2
  *       - \left[
- *            2 \mbox{Ma}_0^{-2} + \left(\gamma_0-1\right) \left(1 - u^2\right)
+ *            2 \mbox{Ma}0^{-2} + \left(\gamma_0-1\right) \left(1 - u^2\right)
  *         \right]
  *     }
  *   \\
- *     \left(\log\rho\right)^\prime
+ *     \rho^\prime
  *   &=
- *     -\frac{\mbox{Ma}_{0}^2}{2}\frac{\left(u^2\right)^\prime}{a^2}
+ *     \frac{1}{a^2} p^\prime
  *   \\
  *     p^\prime
  *   &=
- *     - \frac{1}{2}\mbox{Ma}_{0}^2 \, \rho\left(u^2\right)^\prime
+ *     -\frac{\mbox{Ma}_0^2}{2} \rho u u^\prime
  * \f}
  * employing the equation of state
  * \f{align}{
@@ -99,21 +99,22 @@ typedef struct suzerain_radial_nozzle_solution {
  *     1 + \mbox{Ma}_{0}^2\frac{\gamma_0-1}{2}\left(1-u^2\right)
  * \f}
  * to solve for the quantities in \ref suzerain_radial_nozzle_state as a
- * function of \f$R\f$ given initial conditions \f$\rho\left(r_1\right)\f$,
- * \f$u\left(r_1\right)\f$, and \f$p\left(r_1\right)\f$ satisfying the
- * realizability constraint
+ * function of \f$R\f$ given initial conditions \f$\rho\left(r_1\right)\f$ and
+ * \f$u\left(r_1\right)\f$ satisfying the realizability constraint
  * \f{align}{
  *     u^2
  *   &<
  *     \frac{2}{\mbox{Ma}_{0}^2\left(\gamma_0-1\right)} + 1
  * .
  * \f}
+ * At \f$R_1\f$ the pressure is fixed by \f$p = \rho a^2 / \gamma_0\f$ though
+ * this ideal gas equation of state generally will not be satisfied by any
+ * returned solution.
  *
  * @param Ma0   Reference Mach number         \f$\mbox{Ma}_0\f$
  * @param gam0  Reference specific heat ratio \f$\gamma_0   \f$
  * @param rho1  Inner density                 \f$\rho\left(R_1\right)\f$
  * @param u1    Inner radial velocity         \f$u   \left(R_1\right)\f$
- * @param p1    Inner pressure                \f$p   \left(R_1\right)\f$
  * @param R     Radii of interest with \f$R_1\f$ taken from \c R[0].
  *              Must be a contiguous array of length \c size.
  *              Entries must be strictly increasing.
@@ -132,7 +133,6 @@ suzerain_radial_nozzle_solver(
     const double         gam0,
     const double         rho1,
     const double         u1,
-    const double         p1,
     const double * const R,
     const size_t         size);
 
@@ -230,71 +230,9 @@ suzerain_radial_nozzle_qoi_pexi(
 /**
  * Compute Cartesian base flow primitive state at \f$\left(R_0,
  * \delta_i\right)\f$, including streamwise derivatives, given a radial nozzle
- * solution.  Downstream is oriented to be in the positive \f$x\f$ direction
- * regardless of the sub- versus supersonic nature of the radial solution.
- *
- * More concretely, compute
- * \f{align}{
- *       \rho  &= \rho\left(R\right)
- *   \\  u_\xi &= \left|u\left(R\right)\right| \frac{x}{R}
- *   \\  u_y   &=       u\left(R\right)        \frac{y}{R}
- *   \\  p     &= \frac{\mbox{Ma}_0^2}{\mbox{Ma}^2} \, p\left(R\right)
- * \f}
- * and
- * \f{align}{
- *     \frac{\partial}{\partial\xi} \rho
- *   &=
- *     \frac{x\operatorname{sgn}(u)}{R} \rho^\prime\left(R\right)
- *   \\
- *     \frac{\partial}{\partial\xi} u_\xi
- *   &=
- *     \operatorname{sgn}(u) \left(
- *         \frac{x^2 u^\prime\left(R\right)}{R^2}
- *       + \frac{y^2 u       \left(R\right)}{R^3}
- *     \right)
- *   \\
- *     \frac{\partial}{\partial\xi} u_y
- *   &=
- *     x y \operatorname{sgn}(u) \left(
- *         \frac{u^\prime\left(R\right)}{R^2}
- *       - \frac{u       \left(R\right)}{R^3}
- *     \right)
- *   \\
- *     \frac{\partial}{\partial\xi} p
- *   &=
- *     \frac{x\operatorname{sgn}(u)}{R}
- *     \frac{\mbox{Ma}_0^2}{\mbox{Ma}^2}
- *     \,
- *     p^\prime\left(R\right)
- * \f}
- * as well as
- * \f{align}{
- *     \frac{\partial}{\partial{}y} \rho \!\left(x, y\right)
- *   &=
- *     \frac{y                     }{R} \rho^\prime\!\left(R\right)
- *   \\
- *     \frac{\partial}{\partial{}y} u_\xi\!\left(x, y\right)
- *   &=
- *     x y \operatorname{sgn}(u) \left(
- *         \frac{u^\prime\!\left(R\right)}{R^2}
- *       - \frac{u       \!\left(R\right)}{R^3}
- *     \right)
- *   \\
- *     \frac{\partial}{\partial{}y} u_y  \!\left(x, y\right)
- *   &=
- *       \frac{ y^2 u^\prime\!\left(R\right) }{ R^2 }
- *     + \frac{ x^2 u       \!\left(R\right) }{ R^3 }
- *   \\
- *     \frac{\partial}{\partial{}y} p    \!\left(x, y; \Mach\right)
- *   &=
- *     \frac{y                     }{R}
- *     \frac{\Mach[0]^2}{\Mach^2}
- *     \,
- *     p^\prime\!\left(R\right)
- * \f}
- * where \f$x=R_0\f$ and \f$y=\delta\f$.  Direction \f$\xi\f$ is nothing but
- * \f$x\f$ possibly reflected so that streamwise velocity always has positive
- * sign.  Coordinate \f$\delta\f$ is computed from \ref
+ * solution.  Downstream \f$\xi\f$ is oriented to be in the positive \f$x\f$
+ * direction regardless of the sub- versus supersonic nature of the radial
+ * solution.  Coordinate \f$\delta\f$ is computed from \ref
  * suzerain_radial_nozzle_delta using \c s and \c i.  Parameter \f$\mbox{Ma}\f$
  * permits translating the nondimensional results into a setting where
  * \f$\mbox{Ma} \ne \mbox{Ma}_0\f$.

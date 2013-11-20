@@ -212,9 +212,8 @@ void test_subsonic()
     const double gam0 = 1.4;
     const double rho1 =  9./10;
     const double u1   = -2./ 7;
-    const double p1   = rho1/gam0 *(1+(gam0-1)/2*Ma0*Ma0*(1-u1*u1));
     suzerain_radial_nozzle_solution * s = suzerain_radial_nozzle_solver(
-            Ma0, gam0, rho1, u1, p1, R, N);
+            Ma0, gam0, rho1, u1, R, N);
 
     // Check that the scenario parameters were stored correctly
     gsl_test_abs(s->Ma0,  Ma0,  GSL_DBL_EPSILON, "%s Ma0 ", __func__);
@@ -225,7 +224,6 @@ void test_subsonic()
     gsl_test_abs(ini.R,   R[0], GSL_DBL_EPSILON, "%s init R   ", __func__);
     gsl_test_abs(ini.u,   u1,   GSL_DBL_EPSILON, "%s init u   ", __func__);
     gsl_test_abs(ini.rho, rho1, GSL_DBL_EPSILON, "%s init rho ", __func__);
-    gsl_test_abs(ini.p,   p1,   GSL_DBL_EPSILON, "%s init p   ", __func__);
 
     // Expected results computed by notebooks/nozzle.m using Octave
     double tol = GSL_SQRT_DBL_EPSILON;
@@ -274,9 +272,8 @@ void test_supersonic1()
     const double gam0 = 1.4;
     const double rho1 = 1.0;
     const double u1   = 1/Ma0 + GSL_SQRT_DBL_EPSILON;
-    const double p1   = rho1/gam0 *(1+(gam0-1)/2*Ma0*Ma0*(1-u1*u1));
     suzerain_radial_nozzle_solution * s = suzerain_radial_nozzle_solver(
-            Ma0, gam0, rho1, u1, p1, R, N);
+            Ma0, gam0, rho1, u1, R, N);
 
     // Check that the scenario parameters were stored correctly
     gsl_test_abs(s->Ma0,  Ma0,  GSL_DBL_EPSILON, "%s Ma0 ", __func__);
@@ -287,7 +284,6 @@ void test_supersonic1()
     gsl_test_abs(ini.R,   R[0], GSL_DBL_EPSILON, "%s init R   ", __func__);
     gsl_test_abs(ini.u,   u1,   GSL_DBL_EPSILON, "%s init u   ", __func__);
     gsl_test_abs(ini.rho, rho1, GSL_DBL_EPSILON, "%s init rho ", __func__);
-    gsl_test_abs(ini.p,   p1,   GSL_DBL_EPSILON, "%s init p   ", __func__);
 
     // Expected results computed by notebooks/nozzle.m using Octave
     double tol = GSL_SQRT_DBL_EPSILON;
@@ -334,9 +330,8 @@ void test_supersonic2()
     const double gam0 = 1.4;
     const double rho1 = 1.0;
     const double u1   = 1/Ma0 + GSL_SQRT_DBL_EPSILON;
-    const double p1   = rho1/gam0 *(1+(gam0-1)/2*Ma0*Ma0*(1-u1*u1));
     suzerain_radial_nozzle_solution * s = suzerain_radial_nozzle_solver(
-            Ma0, gam0, rho1, u1, p1, R, N);
+            Ma0, gam0, rho1, u1, R, N);
 
     // Does the pointwise solution satisfy the governing equations?
     check_radial_nozzle_residual (__func__, s, 100*GSL_DBL_EPSILON);

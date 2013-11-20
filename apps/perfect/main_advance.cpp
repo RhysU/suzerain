@@ -295,7 +295,6 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
                                                   noz->gam0,
                                                   noz->rho1,
                                                   noz->u1,
-                                                  noz->p1,
                                                   R.data(),
                                                   R.size()),
                     free);

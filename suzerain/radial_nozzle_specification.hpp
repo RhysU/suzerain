@@ -49,14 +49,12 @@ public:
             double gam0 = std::numeric_limits<double>::quiet_NaN(),
             double rho1 = std::numeric_limits<double>::quiet_NaN(),
             double u1   = std::numeric_limits<double>::quiet_NaN(),
-            double p1   = std::numeric_limits<double>::quiet_NaN(),
             double R1   = std::numeric_limits<double>::quiet_NaN());
 
     double Ma0;   //!< Reference Mach number         \f$\mbox{Ma}_0\f$
     double gam0;  //!< Reference specific heat ratio \f$\gamma_0   \f$
     double rho1;  //!< Inner density                 \f$\rho\left(R_1\right)\f$
     double u1;    //!< Inner radial velocity         \f$u   \left(R_1\right)\f$
-    double p1;    //!< Inner pressure                \f$p   \left(R_1\right)\f$
     double R1;    //!< Inner radius of interest      \f$R_1\f$
 
     /**
@@ -70,7 +68,6 @@ public:
         return (boost::math::isnan)(Ma0 )
             && (boost::math::isnan)(rho1)
             && (boost::math::isnan)(u1  )
-            && (boost::math::isnan)(p1  )
             && (boost::math::isnan)(R1  );
     }
 };

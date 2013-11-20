@@ -38,13 +38,11 @@ radial_nozzle_specification::radial_nozzle_specification(
             double gam0,
             double rho1,
             double u1,
-            double p1,
             double R1)
     : Ma0 (Ma0)
     , gam0(gam0)
     , rho1(rho1)
     , u1  (u1)
-    , p1  (p1)
     , R1  (R1)
 {
 }

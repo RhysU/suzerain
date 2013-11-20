@@ -61,7 +61,6 @@ public:
             double gam0 = std::numeric_limits<double>::quiet_NaN(),
             double rho1 = std::numeric_limits<double>::quiet_NaN(),
             double u1   = std::numeric_limits<double>::quiet_NaN(),
-            double p1   = std::numeric_limits<double>::quiet_NaN(),
             double R1   = std::numeric_limits<double>::quiet_NaN());
 
     /** @copydoc populatable::populate */
