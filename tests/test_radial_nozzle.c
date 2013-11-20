@@ -32,7 +32,7 @@
 #include <suzerain/common.h>
 #include <suzerain/error.h>
 
-// Helper method testing if the solution satisfies the governing equation.
+// Helper seiing if the solution satisfies the governing equation.
 // If the governing equation is not satisfied, then all bets are off...
 static
 void check_radial_nozzle_residual(
@@ -63,7 +63,25 @@ void check_radial_nozzle_residual(
     }
 }
 
-// Helper method if the solution satisfies Euler in polar coordinates.
+// Helper seeing if the solution satisfies the ideal gas equation of state.
+// This is only approximately satisfied because of constant stagnation energy
+// assumption used in the derivation.  Larger radii should provide better
+// agreement.
+static
+void check_ideal_gas_approximation(
+    const char * who,
+    const suzerain_radial_nozzle_solution * const s,
+    const double tol)
+{
+    for (size_t i = 0; i < s->size; ++i) {
+        gsl_test_rel(s->state[i].rho * s->state[i].a2,
+                     s->gam0 * s->state[i].p,
+                     tol, "%s: ideal_EOS[%d] at %g", who, i, s->state[i].R);
+
+    }
+}
+
+// Helper seeing if the solution satisfies Euler in polar coordinates.
 // If not, then the computed solutions aren't particularly useful to us...
 static
 void check_radial_euler_residual(
@@ -188,9 +206,10 @@ void test_subsonic()
     gsl_test_rel(fin.rhop, 0.0113207052839328, tol, "%s final rhop", __func__);
     gsl_test_rel(fin.pp,   0.0160429419457325, tol, "%s final pp  ", __func__);
 
-    // Does the pointwise solution satisfy the radial governing equations?
-    check_radial_nozzle_residual(__func__, s, GSL_SQRT_DBL_EPSILON);
-    check_radial_euler_residual (__func__, s, GSL_SQRT_DBL_EPSILON);
+    // Does the pointwise solution satisfy the appropriate equations?
+    check_radial_nozzle_residual (__func__, s, GSL_SQRT_DBL_EPSILON);
+    check_radial_euler_residual  (__func__, s, GSL_SQRT_DBL_EPSILON);
+    check_ideal_gas_approximation(__func__, s, GSL_SQRT_DBL_EPSILON);
 
     // Test edge Mach and pressure gradient parameter computations
     // Expected from notebooks/nozzle_qoi.m for delta = sqrt(10.5**2 - 10**2)
@@ -199,11 +218,11 @@ void test_subsonic()
     gsl_test_rel(Mae,   0.324318914847395, tol, "%s qoi_Mae ", __func__);
     gsl_test_rel(pexi, -0.362152908606146, tol, "%s qoi_pexi", __func__);
 
-    // Can the results be converted to a Cartesian frame correctly?
+    // Are results correctly converted to Cartesian coordinates at various Ma?
     check_cartesian_primitive(__func__, s, Ma0, GSL_SQRT_DBL_EPSILON);
-    // TODO check_cartesian_primitive(__func__, s, 1.5, GSL_SQRT_DBL_EPSILON);
-    // TODO check_cartesian_conserved(__func__, s, 1.0, GSL_SQRT_DBL_EPSILON);
-    // TODO check_cartesian_conserved(__func__, s, 1.5, GSL_SQRT_DBL_EPSILON);
+    // TODO check_cartesian_primitive(__func__, s, 5.0, GSL_SQRT_DBL_EPSILON);
+    // TODO check_cartesian_conserved(__func__, s, Ma0, GSL_SQRT_DBL_EPSILON);
+    // TODO check_cartesian_conserved(__func__, s, 5.0, GSL_SQRT_DBL_EPSILON);
 
     free(s);
 }
@@ -248,9 +267,10 @@ void test_supersonic()
     gsl_test_rel(fin.rhop, -0.183663783311630,  tol, "%s final rhop", __func__);
     gsl_test_rel(fin.pp,   -0.112130507369524,  tol, "%s final pp  ", __func__);
 
-    // Does the pointwise solution satisfy the radial governing equations?
-    check_radial_nozzle_residual(__func__, s, GSL_SQRT_DBL_EPSILON);
-    check_radial_euler_residual (__func__, s, GSL_SQRT_DBL_EPSILON);
+    // Does the pointwise solution satisfy the appropriate equations?
+    check_radial_nozzle_residual (__func__, s, GSL_SQRT_DBL_EPSILON);
+    check_radial_euler_residual  (__func__, s, GSL_SQRT_DBL_EPSILON);
+    // TODO check_ideal_gas_approximation(__func__, s, GSL_SQRT_DBL_EPSILON);
 
     // Test edge Mach and pressure gradient parameter computations
     // Expected results by notebooks/nozzle_qoi.m for delta = sqrt(3)
@@ -259,11 +279,11 @@ void test_supersonic()
     gsl_test_rel(Mae,   1.09859906253134,  tol, "%s qoi_Mae ", __func__);
     gsl_test_rel(pexi, -0.452506737297551, tol, "%s qoi_pexi", __func__);
 
-    // Can the results be converted to a Cartesian frame correctly?
+    // Are results correctly converted to Cartesian coordinates at various Ma?
     check_cartesian_primitive(__func__, s, Ma0, GSL_SQRT_DBL_EPSILON);
-    // TODO check_cartesian_primitive(__func__, s, 1.5, GSL_SQRT_DBL_EPSILON);
-    // TODO check_cartesian_conserved(__func__, s, 1.0, GSL_SQRT_DBL_EPSILON);
-    // TODO check_cartesian_conserved(__func__, s, 1.5, GSL_SQRT_DBL_EPSILON);
+    // TODO check_cartesian_primitive(__func__, s, 5.0, GSL_SQRT_DBL_EPSILON);
+    // TODO check_cartesian_conserved(__func__, s, Ma0, GSL_SQRT_DBL_EPSILON);
+    // TODO check_cartesian_conserved(__func__, s, 5.0, GSL_SQRT_DBL_EPSILON);
 
     free(s);
 }
