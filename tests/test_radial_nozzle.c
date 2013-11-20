@@ -204,7 +204,7 @@ void test_subsonic()
     // Radii are sufficiently large that ideal gas EOS holds nicely.
     check_ideal_gas_approximation(__func__, s,      100*GSL_DBL_EPSILON);
     check_euler_primitive        (__func__, s, Ma0, 100*GSL_DBL_EPSILON);
-    // TODO check_euler_primitive(__func__, s, 5.0, 100*GSL_SQRT_DBL_EPSILON);
+    check_euler_primitive        (__func__, s, 5.0, 100*GSL_DBL_EPSILON);
     // TODO check_euler_conserved(__func__, s, Ma0, 100*GSL_SQRT_DBL_EPSILON);
     // TODO check_euler_conserved(__func__, s, 5.0, 100*GSL_SQRT_DBL_EPSILON);
 
@@ -265,7 +265,7 @@ void test_supersonic()
     // Small radii case the ideal gas EOS to not be quite-so-satisfied.
     check_ideal_gas_approximation(__func__, s,          GSL_SQRT_DBL_EPSILON);
     check_euler_primitive        (__func__, s, Ma0, 100*GSL_SQRT_DBL_EPSILON);
-    // TODO check_euler_primitive(__func__, s, 5.0, 100*GSL_SQRT_DBL_EPSILON);
+    check_euler_primitive        (__func__, s, 5.0, 100*GSL_SQRT_DBL_EPSILON);
     // TODO check_euler_conserved(__func__, s, Ma0, 100*GSL_SQRT_DBL_EPSILON);
     // TODO check_euler_conserved(__func__, s, 5.0, 100*GSL_SQRT_DBL_EPSILON);
 
