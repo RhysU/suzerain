@@ -117,19 +117,19 @@ void check_cartesian_primitive(
         const double U_y[4] = { rho_y,  u_y,  v_y,  p_y  };
         // when a_0 != u_0, the 2D Euler equations take the
         // form \partial_t U + A \partial_x U + B \partial_y U = 0 with
-        const double A[4][4] = { { u, rho,                0, 0     },
-                                 { 0, u,                  0, 1/rho },
-                                 { 0, 0,                  u, 0     },
-                                 { 0, rho*s->state[i].a2, 0, u     } };
+        const double A[4][4] = { { u, rho,                0, 0           },
+                                 { 0, u,                  0, 1/rho/Ma/Ma },
+                                 { 0, 0,                  u, 0           },
+                                 { 0, rho*s->state[i].a2, 0, u           } };
         // and
-        const double B[4][4] = { { v, 0, rho,                 0     },
-                                 { 0, v, 0,                   0     },
-                                 { 0, 0, v,                   1/rho },
-                                 { 0, 0, rho*s->state[i].a2,  v     } };
-        // which may be seen notebooks/Giles_BC_Nondimensional.nb
+        const double B[4][4] = { { v, 0, rho,                 0           },
+                                 { 0, v, 0,                   0           },
+                                 { 0, 0, v,                   1/rho/Ma/Ma },
+                                 { 0, 0, rho*s->state[i].a2,  v           } };
+        // which may be seen in notebooks/Giles_BC_Nondimensional.nb
         // under "Sanity check the linearized evolution equation".
-        // For pressure, rho*a2 and not gam0*p must appear due to
-        // isentropic EOS.  Computing,
+        // For pressure, rho*a2 and not gam0*p must appear from use of
+        // a constant stagnation energy and not the ideal gas EOS.  Computing,
         double AU_x[4] = { 0, 0, 0, 0 };
         double BU_y[4] = { 0, 0, 0, 0 };
         for (int i = 0; i < 4; ++i) {
@@ -142,8 +142,8 @@ void check_cartesian_primitive(
         // As we should observe a steady solution, check these balance.
         const double R = s->state[i].R;
         gsl_test_rel(AU_x[0], -BU_y[0], tol, "%s: rho_t Ma=%g, R=%g", who,Ma,R);
-//FIXME/gsl_test_rel(AU_x[1], -BU_y[1], tol, "%s: u_t   Ma=%g, R=%g", who,Ma,R);
-//FIXME/gsl_test_rel(AU_x[2], -BU_y[2], tol, "%s: v_t   Ma=%g, R=%g", who,Ma,R);
+        gsl_test_rel(AU_x[1], -BU_y[1], tol, "%s: u_t   Ma=%g, R=%g", who,Ma,R);
+        gsl_test_rel(AU_x[2], -BU_y[2], tol, "%s: v_t   Ma=%g, R=%g", who,Ma,R);
         gsl_test_rel(AU_x[3], -BU_y[3], tol, "%s: p_t   Ma=%g, R=%g", who,Ma,R);
     }
 }
