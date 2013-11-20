@@ -47,19 +47,19 @@ void check_radial_nozzle_residual(
         double up_rhs = - (u / s->state[i].R)
                       * (2 + Ma0*Ma0*(gam0-1) - Ma0*Ma0*(gam0-1)*u*u)
                       / (2 + Ma0*Ma0*(gam0-1) - Ma0*Ma0*(gam0+1)*u*u);
-        double pp_rhs = -Ma0*Ma0*s->state[i].rho*u*s->state[i].up;
-        double rp_rhs = -Ma0*Ma0*u*s->state[i].up/s->state[i].a2;
 
         // Relative test between u' and RHS as (u' - RHS) may be large
         gsl_test_rel(s->state[i].up, up_rhs, tol, "%s: up res[%d] ", who, i);
 
         // Relative test between p' and RHS
-        gsl_test_rel(s->state[i].pp, pp_rhs, tol, "%s: pp res[%d] ", who, i);
+        gsl_test_rel(s->state[i].pp,
+                     -Ma0*Ma0*s->state[i].rho*u*s->state[i].up,
+                     tol, "%s: pp res[%d] ", who, i);
 
         // Relative test between (log rho)' and RHS
-        gsl_test_rel(s->state[i].rhop / s->state[i].rho, rp_rhs, tol,
-                     "%s: rhop res[%d] ", who, i);
-
+        gsl_test_rel(s->state[i].rhop / s->state[i].rho,
+                     -Ma0*Ma0*u*s->state[i].up/s->state[i].a2,
+                    tol, "%s: rhop res[%d] ", who, i);
     }
 }
 
@@ -80,16 +80,17 @@ void check_radial_euler_residual(
 
         // Continuity residual from baseflow.tex writeup, nozzle.m
         gsl_test_abs(0, rho*up + u*rhop + rho*u/R,
-                     tol, "%s: up mass[%d] ", who, i);
+                     tol, "%s: res_mass[%d] ", who, i);
 
         // Momentum residual from baseflow.tex writeup, nozzle.m
-        gsl_test_rel(pp, -rho*u*up,
-                     tol, "%s: up momentum[%d] ", who, i);
+        gsl_test_rel(pp, -s->Ma0*s->Ma0*rho*u*up,
+                     tol, "%s: res_momentum[%d] ", who, i);
 
         // Energy residual from baseflow.tex writeup, nozzle.m
         gsl_test_rel(s->state[i].a2,
                      1 + s->Ma0*s->Ma0*(s->gam0-1)/2*(1-u*u),
-                     tol, "%s: up energy[%d] ", who, i);
+                     tol, "%s: res_energy[%d] ", who, i);
+
     }
 }
 
@@ -103,56 +104,62 @@ void check_cartesian_primitive(
     const double Ma,
     const double tol)
 {
-    // Compute primitive state at the outermost radius for Ma, s->gam0
-    double rho, u, v, p, rho_xi, u_xi, v_xi, p_xi, rho_y , u_y , v_y , p_y;
-    suzerain_radial_nozzle_cartesian_primitive(s, s->size-1, Ma, &rho, &u, &v,
-            &p, &rho_xi, &u_xi, &v_xi, &p_xi, &rho_y, &u_y, &v_y, &p_y);
+    for (size_t i = 0; i < s->size; ++i) {
 
-    // In nondimensional primitive variables with Ma dependence, that is
-    const double U  [4] = { rho,    u,    v,    p    }; (void) U;
-    const double U_x[4] = { rho_xi, u_xi, v_xi, p_xi };
-    const double U_y[4] = { rho_y,  u_y,  v_y,  p_y  };
-    // when a_0 != u_0, the 2D Euler equations take the
-    // form \partial_t U + A \partial_x U + B \partial_y U = 0 with
-    const double A[4][4] = { { u, rho,          0, 0     },
-                             { 0, u,            0, 1/rho },
-                             { 0, 0,            u, 0     },
-                             { 0, s->gam0/Ma/Ma*p, 0, u  } };
-    // and
-    const double B[4][4] = { { v, 0, rho,              0     },
-                             { 0, v, 0,                0     },
-                             { 0, 0, v,                1/rho },
-                             { 0, 0, s->gam0/Ma/Ma*p,  v     } };
-    // which may be seen writeups/notebooks/Giles_BC_Nondimensional.nb
-    // under "Sanity check the linearized evolution equation".  All together,
-    double U_t[4] = { 0, 0, 0, 0};
-    for (int i = 0; i < 4; ++i) {
-        for (int j = 0; j < 4; ++j) {
-            U_t[i] += A[i][j] * U_x[j] + B[i][j] * U_y[j];
+        // Compute primitive state at the outermost radius for Ma, s->gam0
+        double rho, u, v, p, rho_xi, u_xi, v_xi, p_xi, rho_y , u_y , v_y , p_y;
+        suzerain_radial_nozzle_cartesian_primitive(s, i, Ma, &rho, &u, &v,
+                &p, &rho_xi, &u_xi, &v_xi, &p_xi, &rho_y, &u_y, &v_y, &p_y);
+
+        // In nondimensional primitive variables with Ma dependence, that is
+        const double U  [4] = { rho,    u,    v,    p    }; (void) U;
+        const double U_x[4] = { rho_xi, u_xi, v_xi, p_xi };
+        const double U_y[4] = { rho_y,  u_y,  v_y,  p_y  };
+        // when a_0 != u_0, the 2D Euler equations take the
+        // form \partial_t U + A \partial_x U + B \partial_y U = 0 with
+        const double A[4][4] = { { u, rho,                0, 0     },
+                                 { 0, u,                  0, 1/rho },
+                                 { 0, 0,                  u, 0     },
+                                 { 0, rho*s->state[i].a2, 0, u     } };
+        // and
+        const double B[4][4] = { { v, 0, rho,                 0     },
+                                 { 0, v, 0,                   0     },
+                                 { 0, 0, v,                   1/rho },
+                                 { 0, 0, rho*s->state[i].a2,  v     } };
+        // which may be seen notebooks/Giles_BC_Nondimensional.nb
+        // under "Sanity check the linearized evolution equation".
+        // For pressure, rho*a2 and not gam0*p must appear due to
+        // isentropic EOS.  Computing,
+        double AU_x[4] = { 0, 0, 0, 0 };
+        double BU_y[4] = { 0, 0, 0, 0 };
+        for (int i = 0; i < 4; ++i) {
+            for (int j = 0; j < 4; ++j) {
+                AU_x[i] += A[i][j] * U_x[j];
+                BU_y[i] += B[i][j] * U_y[j];
+            }
         }
+        // we've now got the spatial residual of the Euler equations.
+        // As we should observe a steady solution, check these balance.
+        const double R = s->state[i].R;
+        gsl_test_rel(AU_x[0], -BU_y[0], tol, "%s: rho_t Ma=%g, R=%g", who,Ma,R);
+//FIXME/gsl_test_rel(AU_x[1], -BU_y[1], tol, "%s: u_t   Ma=%g, R=%g", who,Ma,R);
+//FIXME/gsl_test_rel(AU_x[2], -BU_y[2], tol, "%s: v_t   Ma=%g, R=%g", who,Ma,R);
+        gsl_test_rel(AU_x[3], -BU_y[3], tol, "%s: p_t   Ma=%g, R=%g", who,Ma,R);
     }
-    // where we've now got the spatial residual of the Euler equations in U_t.
-
-    // As we should observe a steady solution, now check against zero:
-    const double R = s->state[s->size-1].R;
-    gsl_test_abs(U_t[0], 0.0, tol, "%s: rho_t for Ma=%g at R=%g", who, Ma, R);
-    gsl_test_abs(U_t[1], 0.0, tol, "%s: u_t   for Ma=%g at R=%g", who, Ma, R);
-    gsl_test_abs(U_t[2], 0.0, tol, "%s: v_t   for Ma=%g at R=%g", who, Ma, R);
-    gsl_test_abs(U_t[3], 0.0, tol, "%s: p_t   for Ma=%g at R=%g", who, Ma, R);
 }
 
-// Second subsonic test from writeups/notebooks/nozzle.m
+// Subsonic verification test from notebooks/nozzle.m
 // Beware the slightly different argument order relative to that code
 static
 void test_subsonic()
 {
-    const double R[]  = {1., 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.};
+    const double R[]  = {10.0, 10.1, 10.2, 10.3, 10.4, 10.5};
     const size_t N    = sizeof(R)/sizeof(R[0]);
-    const double Ma0  = 1.0;
+    const double Ma0  = 1.5;
     const double gam0 = 1.4;
-    const double rho1 = 1.0;
-    const double u1   = -1/Ma0 + GSL_SQRT_DBL_EPSILON;
-    const double p1   = 1.0;
+    const double rho1 =  9./10;
+    const double u1   = -2./ 7;
+    const double p1   = rho1/gam0 *(1+(gam0-1)/2*Ma0*Ma0*(1-u1*u1));
     suzerain_radial_nozzle_solution * s = suzerain_radial_nozzle_solver(
             Ma0, gam0, rho1, u1, p1, R, N);
 
@@ -167,33 +174,33 @@ void test_subsonic()
     gsl_test_abs(ini.rho, rho1, GSL_DBL_EPSILON, "%s init rho ", __func__);
     gsl_test_abs(ini.p,   p1,   GSL_DBL_EPSILON, "%s init p   ", __func__);
 
-    // Expected results computed by writeups/notebooks/nozzle.m using Octave
+    // Expected results computed by notebooks/nozzle.m using Octave
     double tol = GSL_SQRT_DBL_EPSILON;
     suzerain_radial_nozzle_state fin = s->state[N-1];
     gsl_test_rel(fin.R,    R[N-1],             tol, "%s final R   ", __func__);
-    gsl_test_rel(fin.u,   -0.332008421365410,  tol, "%s final u   ", __func__);
-    gsl_test_rel(fin.a2,   1.17795408162849,   tol, "%s final a2  ", __func__);
-    gsl_test_rel(fin.up,   0.183142130216718,  tol, "%s final up  ", __func__);
+    gsl_test_rel(fin.u,   -0.270256147749861,  tol, "%s final u   ", __func__);
+    gsl_test_rel(fin.a2,   1.41713272657153,   tol, "%s final a2  ", __func__);
+    gsl_test_rel(fin.up,   0.0291149687163293, tol, "%s final up  ", __func__);
     // Octave and GSL RKF45 adaptive control differs, hence lower tolerances...
     tol = sqrt(tol);
-    gsl_test_rel(fin.rho,  1.50598587203636,   tol, "%s final rho ", __func__);
-    gsl_test_rel(fin.p,    1.55284442659135,   tol, "%s final p   ", __func__);
-    gsl_test_rel(fin.rhop, 0.0777373796467802, tol, "%s final rhop", __func__);
-    gsl_test_rel(fin.pp,   0.0915710636498338, tol, "%s final pp  ", __func__);
+    gsl_test_rel(fin.rho,  0.906169799365092,  tol, "%s final rho ", __func__);
+    gsl_test_rel(fin.p,    0.917259198936451,  tol, "%s final p   ", __func__);
+    gsl_test_rel(fin.rhop, 0.0113207052839328, tol, "%s final rhop", __func__);
+    gsl_test_rel(fin.pp,   0.0160429419457325, tol, "%s final pp  ", __func__);
 
     // Does the pointwise solution satisfy the radial governing equations?
     check_radial_nozzle_residual(__func__, s, GSL_SQRT_DBL_EPSILON);
     check_radial_euler_residual (__func__, s, GSL_SQRT_DBL_EPSILON);
 
     // Test edge Mach and pressure gradient parameter computations
-    // Expected results by writeups/notebooks/nozzle_qoi.m for delta = sqrt(3)
+    // Expected from notebooks/nozzle_qoi.m for delta = sqrt(10.5**2 - 10**2)
     const double Mae  = suzerain_radial_nozzle_qoi_Mae (s, s->size-1);
     const double pexi = suzerain_radial_nozzle_qoi_pexi(s, s->size-1);
-    gsl_test_rel(Mae,   0.152951916589060, tol, "%s qoi_Mae ", __func__);
-    gsl_test_rel(pexi, -1.91086402711018,  tol, "%s qoi_pexi", __func__);
+    gsl_test_rel(Mae,   0.324318914847395, tol, "%s qoi_Mae ", __func__);
+    gsl_test_rel(pexi, -0.362152908606146, tol, "%s qoi_pexi", __func__);
 
     // Can the results be converted to a Cartesian frame correctly?
-    // TODO check_cartesian_primitive(__func__, s, 1.0, GSL_SQRT_DBL_EPSILON);
+    check_cartesian_primitive(__func__, s, Ma0, GSL_SQRT_DBL_EPSILON);
     // TODO check_cartesian_primitive(__func__, s, 1.5, GSL_SQRT_DBL_EPSILON);
     // TODO check_cartesian_conserved(__func__, s, 1.0, GSL_SQRT_DBL_EPSILON);
     // TODO check_cartesian_conserved(__func__, s, 1.5, GSL_SQRT_DBL_EPSILON);
@@ -201,7 +208,7 @@ void test_subsonic()
     free(s);
 }
 
-// Supersonic test from writeups/notebooks/nozzle.m
+// Supersonic test from notebooks/nozzle.m
 // Beware the slightly different argument order relative to that code
 static
 void test_supersonic()
@@ -227,7 +234,7 @@ void test_supersonic()
     gsl_test_abs(ini.rho, rho1, GSL_DBL_EPSILON, "%s init rho ", __func__);
     gsl_test_abs(ini.p,   p1,   GSL_DBL_EPSILON, "%s init p   ", __func__);
 
-    // Expected results computed by writeups/notebooks/nozzle.m using Octave
+    // Expected results computed by notebooks/nozzle.m using Octave
     double tol = GSL_SQRT_DBL_EPSILON;
     suzerain_radial_nozzle_state fin = s->state[N-1];
     gsl_test_rel(fin.R,     R[N-1],             tol, "%s final R   ", __func__);
@@ -246,14 +253,14 @@ void test_supersonic()
     check_radial_euler_residual (__func__, s, GSL_SQRT_DBL_EPSILON);
 
     // Test edge Mach and pressure gradient parameter computations
-    // Expected results by writeups/notebooks/nozzle_qoi.m for delta = sqrt(3)
+    // Expected results by notebooks/nozzle_qoi.m for delta = sqrt(3)
     const double Mae  = suzerain_radial_nozzle_qoi_Mae (s, s->size-1);
     const double pexi = suzerain_radial_nozzle_qoi_pexi(s, s->size-1);
     gsl_test_rel(Mae,   1.09859906253134,  tol, "%s qoi_Mae ", __func__);
     gsl_test_rel(pexi, -0.452506737297551, tol, "%s qoi_pexi", __func__);
 
     // Can the results be converted to a Cartesian frame correctly?
-    // check_cartesian_primitive(__func__, s, 1.0, GSL_SQRT_DBL_EPSILON);
+    check_cartesian_primitive(__func__, s, Ma0, GSL_SQRT_DBL_EPSILON);
     // TODO check_cartesian_primitive(__func__, s, 1.5, GSL_SQRT_DBL_EPSILON);
     // TODO check_cartesian_conserved(__func__, s, 1.0, GSL_SQRT_DBL_EPSILON);
     // TODO check_cartesian_conserved(__func__, s, 1.5, GSL_SQRT_DBL_EPSILON);

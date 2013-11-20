@@ -31,28 +31,34 @@
 
 #include <suzerain/radial_nozzle.h>
 
-#include <suzerain/common.h>
-#include <suzerain/error.h>
-
 #include <gsl/gsl_errno.h>
 #include <gsl/gsl_math.h>
 #include <gsl/gsl_odeiv2.h>
 
-// Helper computing pointwise details given r, u, Ma02=Ma0**2, gam0m1=gam0-1
-// Compare nozzle_helper function source within writeups/notebooks/nozzle.m
+#include <suzerain/common.h>
+#include <suzerain/error.h>
+
+// Find pointwise solution details given state, Ma2=Ma**2, gamm1=gam-1
+// Compare nozzle_details function source within writeups/notebooks/nozzle.m
 static inline
-void nozzle_helper(const double R,
-                   const double u,
-                   const double Ma02,
-                   const double gam0m1,
-                   double *up,
-                   double *a2,
-                   double *logrhop)
+void nozzle_details(const double R,
+                    const double u,
+                    const double rho,
+                    const double p,
+                    const double Ma02,
+                    const double gam0m1,
+                    double *up,
+                    double *rhop,
+                    double *pp,
+                    double *a2)
 {
-    double C = 2/Ma02 + gam0m1*(1 - u*u);
-    *up      = (u * C) / (R * (2*u*u - C));
-    *a2      = 1 + 0.5*Ma02*gam0m1*(1 - u*u);
-    *logrhop = -Ma02*u*(*up) / (*a2);
+    const double u2 = u*u;
+    const double C  = (2/Ma02 + gam0m1*(1 - u2));
+    *up   = (u*C) / (R*(2*u2 - C));
+    *pp   = -Ma02*rho*u*(*up);
+    *a2   = 1 + Ma02/2*gam0m1*(1 - u2);
+    *rhop = *pp / *a2;
+    SUZERAIN_UNUSED(p);
 }
 
 // Parameters for \ref nozzle per conventions of gsl_odeiv2_system->function
@@ -61,33 +67,18 @@ typedef struct params_type {
     double gam0m1; // gamma_0 - 1
 } params_type;
 
-// Find [u; log rho; p]' given r, x=[u; log rho; p], Ma02=Ma0**2, gam0m1=gam0-1
-// Compare nozzle_f function source within writeups/notebooks/nozzle.m
-static
-int
-nozzle_f(double R,
-         const double y[],
-         double dydt[],
-         void *params)
+// Find [u; rho; p]' given r, x=[u; rho; p], Ma02=Ma0**2, gam0m1=gam0-1
+// Compare nozzle_rhs function source within writeups/notebooks/nozzle.m
+static int nozzle_rhs(double R,
+                      const double y[],
+                      double dydt[],
+                      void *params)
 {
-    // Unpack
-    const double Ma02   = ((params_type *)params)->Ma02;
-    const double gam0m1 = ((params_type *)params)->gam0m1;
-    const double u      =     y[0];
-    const double rho    = exp(y[1]);
-    const double p      =     y[2];
-    SUZERAIN_UNUSED(p);
-
-    // Compute
-    double up, a2, logrhop;
-    nozzle_helper(R, u, Ma02, gam0m1, &up, &a2, &logrhop);
-    const double pp = -Ma02*rho*u*up;
-
-    // Pack
-    dydt[0] = up;
-    dydt[1] = logrhop;
-    dydt[2] = pp;
-
+    double a2;
+    nozzle_details(R, y[0], y[1], y[2],
+                   ((params_type *)params)->Ma02,
+                   ((params_type *)params)->gam0m1,
+                   &dydt[0], &dydt[1], &dydt[2], &a2);
     return GSL_SUCCESS;
 }
 
@@ -122,11 +113,11 @@ suzerain_radial_nozzle_solver(
     if (!s) SUZERAIN_ERROR_NULL("Solution allocation failed", SUZERAIN_ENOMEM);
     s->state[0].R = s->state[0].u = s->state[0].rho = s->state[0].p = GSL_NAN;
 
-    // Use GNU Scientific Library ODE integrator on [u; log rho; p]' system
+    // Use GNU Scientific Library ODE integrator on [u; rho; p]' system
     double current_R = R[0];
-    double y[3] = { u1, log(rho1), p1 };
+    double y[3] = { u1, rho1, p1 };
     params_type params = { Ma0*Ma0, gam0 - 1 };
-    gsl_odeiv2_system sys = { &nozzle_f, NULL, sizeof(y)/sizeof(y[0]), &params};
+    gsl_odeiv2_system sys = { &nozzle_rhs, 0, sizeof(y)/sizeof(y[0]), &params};
     const double abstol = GSL_SQRT_DBL_EPSILON;
     const double reltol = GSL_SQRT_DBL_EPSILON;
     gsl_odeiv2_driver * driver = gsl_odeiv2_driver_alloc_y_new(
@@ -139,9 +130,9 @@ suzerain_radial_nozzle_solver(
     for (size_t i = 1; i < size && !error; ++i) { // Advance state to R[i]
         error = gsl_odeiv2_driver_apply(driver, &current_R, R[i], y);
         s->state[i].R   = current_R;
-        s->state[i].u   =     y[0];
-        s->state[i].rho = exp(y[1]); // (log rho) -> (rho)
-        s->state[i].p   =     y[2];
+        s->state[i].u   = y[0];
+        s->state[i].rho = y[1];
+        s->state[i].p   = y[2];
     }
     gsl_odeiv2_driver_free(driver);
     if (error) {
@@ -152,7 +143,7 @@ suzerain_radial_nozzle_solver(
         SUZERAIN_ERROR_NULL(msg, GSL_EFAILED);
     }
 
-    // Save solution parameters and initial conditions
+    // Save scenario parameters and initial conditions (marking solution valid)
     s->Ma0          = Ma0;
     s->gam0         = gam0;
     s->size         = size;
@@ -161,19 +152,18 @@ suzerain_radial_nozzle_solver(
     s->state[0].rho = rho1;
     s->state[0].p   = p1;
 
-    // Compute sound speed squared and derivative information from state
+    // Compute derivatives and sound speed squared directly from state
     for (size_t i = 0; i < size; ++i) {
-        double logrhop;
-        nozzle_helper(s->state[i].R,
-                      s->state[i].u,
-                      params.Ma02,
-                      params.gam0m1,
-                      &s->state[i].up,
-                      &s->state[i].a2,
-                      &logrhop);
-        s->state[i].rhop = logrhop * s->state[i].rho;
-        s->state[i].pp   = -params.Ma02
-                         * s->state[i].rho * s->state[i].u * s->state[i].up;
+        nozzle_details(s->state[i].R,
+                       s->state[i].u,
+                       s->state[i].rho,
+                       s->state[i].p,
+                       s->Ma0 * s->Ma0,
+                       s->gam0 - 1,
+                       &s->state[i].up,
+                       &s->state[i].rhop,
+                       &s->state[i].pp,
+                       &s->state[i].a2);
     }
 
     return s;
@@ -238,22 +228,21 @@ suzerain_radial_nozzle_cartesian_primitive(
     const double y2      = gsl_pow_2(y);
     const double inv_R   = 1 / s->state[i].R;
     const double inv_R2  = gsl_pow_2(inv_R);
-    const double sgn_u   = s->state[i].u >= 0 ? 1 : -1;
-    const double Ma02Ma2 = gsl_pow_2(s->Ma0 / Ma);
+    const double Ma2Ma02 = gsl_pow_2(Ma / s->Ma0);
 
     const suzerain_radial_nozzle_state * const t = &s->state[i];
     *rho    = t->rho;
-    *u      = fabs(t->u) * x * inv_R;
-    *v      =      t->u  * y * inv_R;
-    *p      = Ma02Ma2 * t->p;
-    *rho_xi = x * sgn_u * t->rhop * inv_R;
-    *u_xi   = sgn_u * inv_R2 * ( x2 * t->up + y2 * t->u  * inv_R);
-    *v_xi   = x * y * sgn_u * inv_R2 * ( t->up - t->u * inv_R);
-    *p_xi   = x * sgn_u * Ma02Ma2 * t->pp * inv_R;
-    *rho_y  = y * t->rhop * inv_R;
-    *u_y    = *v_xi;
-    *v_y    = inv_R2 * ( y2 * t->up + x2 * t->u * inv_R);
-    *p_y    = y * Ma02Ma2 * t->pp * inv_R;
+    *u      = t->u * x * inv_R;
+    *v      = t->u * y * inv_R;
+    *p      = t->p * Ma2Ma02;
+    *rho_xi = t->rhop * x * inv_R;
+    *u_xi   =         inv_R2 * (x2 * t->up + y2 * inv_R * t->u);
+    *v_xi   = x * y * inv_R2 * (     t->up -      inv_R * t->u);
+    *p_xi   = t->pp   * Ma2Ma02 * x * inv_R;
+    *rho_y  = t->rhop * y * inv_R;
+    *u_y    = x * y * inv_R2 * (     t->up -      inv_R * t->u);
+    *v_y    =         inv_R2 * (y2 * t->up + x2 * inv_R * t->u);
+    *p_y    = t->pp * Ma2Ma02 * y * inv_R;
 }
 
 void
@@ -283,7 +272,6 @@ suzerain_radial_nozzle_cartesian_conserved(
         s, i, Ma, &rho,    &u,    &v,    p,
                   &rho_xi, &u_xi, &v_xi, p_xi,
                   &rho_y,  &u_y,  &v_y,  p_y);
-
 
     // Convert primitive to conserved state
     const double invgam0m1 = 1/(s->gam0 - 1), Ma2 = Ma*Ma, u2 = u*u, v2 = v*v;
