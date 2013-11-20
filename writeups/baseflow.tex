@@ -729,9 +729,9 @@ Figure~\ref{fig:cev_symplane}.  The laminar boundary layer character was
 quantified as a function of leeward arc length, measured in meters, from the
 stagnation region.
 
-\begin{figure}
+\begin{figure}[p]
   \centering
-  \includegraphics[height=0.55\textheight]{symplanenorm}
+  \includegraphics[height=0.75\textheight]{symplanenorm}
   \caption{
     \label{fig:cev_symplane}
     The velocity magnitude on the symmetry plane for the fully laminar
@@ -748,7 +748,7 @@ it captures the local speed of sound.  Specifically, for a perfect gas equation
 of state nondimensionalized by $a_0^2=\gamma_{0}RT_0$, this ratio defines
 nondimensional $a_e^2$ when $a_w^2=T_w=1$ is prescribed as an isothermal wall
 condition.  Though present in the CEV simulations and depicted here, heat
-shield curvature is neglected.
+shield curvature and wall blowing are neglected.
 
 \begin{figure}[p]
   \centering
@@ -788,14 +788,15 @@ of digits, appear below.  As these base flows are intended to be used in a
 simulation with roughly nondimensional unit thickness, $\delta=1$ was specified
 for all cases.
 
-The resulting solutions are also tabulated below.  Parameters
-$\rho\!\left(R_1\right) = 1$ and $p\!\left(R_1\right) = 1$ were fixed with the
-remaining $\Mach[0]$, $R_0$, and $u\!\left(R_1\right)$ comprising the problem
-space.  Generally, Listing~\ref{lst:octave_nozzle_baseflow} with exactly the
-shown initial conditions did a good job of producing solutions with residual
-sum of square results less than $\sqrt{\epsilon}$.  However, at arc length
-3.586 it is apparent that the solver encountered trouble as it
-approached $\Mach[e]{}\approx{}1$.  For reasons unknown, the
+The resulting solutions are also tabulated below.  Parameters $\Mach[0]$,
+$R_0$, and $u\!\left(R_1\right)$ comprised the search space.  Parameter
+$\rho\!\left(R_1\right) = 1$ was fixed and $p\!\left(R_1\right) = 1$ was set to
+be consistent with the nondimensional ideal gas equation of state.  Generally,
+Listing~\ref{lst:octave_nozzle_baseflow} with exactly the shown initial
+conditions did a good job of producing solutions with residual sum of square
+results less than $\sqrt{\epsilon}$.  However, at arc length 3.586 it is
+apparent that the solver encountered trouble as it approached
+$\Mach[e]{}\approx{}1$.  For reasons unknown, the
 \texttt{nonlin\_residmin}-based solver ran afoul of \texttt{NaN}s at arc length
 3.287 despite the surrounding cases being well-behaved.  Finally, results from
 arc lengths 0.217 to -0.176 are unsatisfying with the hypothesis being that the
