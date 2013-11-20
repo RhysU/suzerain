@@ -223,26 +223,28 @@ suzerain_radial_nozzle_cartesian_primitive(
 {
     assert(i < s->size);
     const double x       = s->state[0].R;
+    const double x_inv_R = x / s->state[i].R;
     const double x2      = gsl_pow_2(x);
     const double y       = suzerain_radial_nozzle_delta(s, i);
     const double y2      = gsl_pow_2(y);
+    const double y_inv_R = y / s->state[i].R;
     const double inv_R   = 1 / s->state[i].R;
     const double inv_R2  = gsl_pow_2(inv_R);
     const double Ma2Ma02 = gsl_pow_2(Ma / s->Ma0);
 
     const suzerain_radial_nozzle_state * const t = &s->state[i];
     *rho    = t->rho;
-    *u      = t->u * x * inv_R;
-    *v      = t->u * y * inv_R;
+    *u      = t->u * x_inv_R;
+    *v      = t->u * y_inv_R;
     *p      = t->p * Ma2Ma02;
-    *rho_xi = t->rhop * x * inv_R;
-    *u_xi   =         inv_R2 * (x2 * t->up + y2 * inv_R * t->u);
-    *v_xi   = x * y * inv_R2 * (     t->up -      inv_R * t->u);
-    *p_xi   = t->pp   * Ma2Ma02 * x * inv_R;
-    *rho_y  = t->rhop * y * inv_R;
-    *u_y    = x * y * inv_R2 * (     t->up -      inv_R * t->u);
-    *v_y    =         inv_R2 * (y2 * t->up + x2 * inv_R * t->u);
-    *p_y    = t->pp * Ma2Ma02 * y * inv_R;
+    *rho_xi = t->rhop * x_inv_R;
+    *u_xi   =          inv_R2 * (x2 * t->up + y2 * inv_R * t->u);
+    *v_xi   = x_inv_R*y_inv_R * (     t->up -      inv_R * t->u);
+    *p_xi   = t->pp   * Ma2Ma02 * x_inv_R;
+    *rho_y  = t->rhop * y_inv_R;
+    *u_y    = x_inv_R*y_inv_R * (     t->up -      inv_R * t->u);
+    *v_y    =          inv_R2 * (y2 * t->up + x2 * inv_R * t->u);
+    *p_y    = t->pp   * Ma2Ma02 * y_inv_R;
 }
 
 void
