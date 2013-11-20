@@ -43,7 +43,7 @@ end
 %! % A verification test, including derivatives, against governing equations.
 %! % Ideal gas EOS will be approximately satisfied for "large enough" radii.
 %! pkg load odepkg; Ma=1.5; gam=1.4; Rin=10; Rout=Rin+1/2; u1=-2/7; rho1=9/10;
-%! [r u rho p a2 up rhop pp] = nozzle(Ma, gam, Rout, Rin, u1, rho1);
+%! [r u rho p a2 up rhop pp] = nozzle(Ma, gam, Rin, Rout, u1, rho1);
 %! assert(zeros(size(r))', (u.*rho./r+rho.*up+u.*rhop)', 11*eps);  # Mass
 %! assert(pp', (-Ma.**2.*rho.*u.*up)', 10*eps);                    # Momentum
 %! assert(a2', (1 + Ma.**2.*(gam-1)./2.*(1-u.**2))', 10*eps);      # Energy
