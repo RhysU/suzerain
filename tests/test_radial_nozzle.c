@@ -115,8 +115,15 @@ void check_radial_euler_residual(
 // Test conversion to Cartesian primitive state by checking the residual
 // of the Euler spatial operator computed in primitive form.  Residual
 // should be small as the radial nozzle problem produces a stationary flow.
+//
+// Technically rho*a2 and not gam0*p should appear in A and B because the
+// nozzle problem employed a constant stagnation energy approximation rather
+// than requiring the ideal gas EOS to hold.  However, for large enough radii
+// the approximation should be sane.  but the ideal gas EOS should
+// approximately hold.  Test that with check_ideal_gas_approximation() first to
+// discover tolerances.
 static
-void check_cartesian_primitive(
+void check_euler_primitive(
     const char * who,
     const suzerain_radial_nozzle_solution * const s,
     const double Ma,
@@ -135,19 +142,16 @@ void check_cartesian_primitive(
         const double U_y[4] = { rho_y,  u_y,  v_y,  p_y  };
         // when a_0 != u_0, the 2D Euler equations take the
         // form \partial_t U + A \partial_x U + B \partial_y U = 0 with
-        const double A[4][4] = { { u, rho,                0, 0           },
-                                 { 0, u,                  0, 1/rho/Ma/Ma },
-                                 { 0, 0,                  u, 0           },
-                                 { 0, rho*s->state[i].a2, 0, u           } };
+        const double A[4][4] = { { u, rho,          0, 0           },
+                                 { 0, u,            0, 1/rho/Ma/Ma },
+                                 { 0, 0,            u, 0           },
+                                 { 0, s->gam0*p, 0, u              } };
         // and
-        const double B[4][4] = { { v, 0, rho,                 0           },
-                                 { 0, v, 0,                   0           },
-                                 { 0, 0, v,                   1/rho/Ma/Ma },
-                                 { 0, 0, rho*s->state[i].a2,  v           } };
-        // which may be seen in notebooks/Giles_BC_Nondimensional.nb
-        // under "Sanity check the linearized evolution equation".
-        // For pressure, rho*a2 and not gam0*p must appear from use of
-        // a constant stagnation energy and not the ideal gas EOS.  Computing,
+        const double B[4][4] = { { v, 0, rho,        0           },
+                                 { 0, v, 0,          0           },
+                                 { 0, 0, v,          1/rho/Ma/Ma },
+                                 { 0, 0, s->gam0*p,  v           } };
+        // Computing the two matrix-vector products,
         double AU_x[4] = { 0, 0, 0, 0 };
         double BU_y[4] = { 0, 0, 0, 0 };
         for (int i = 0; i < 4; ++i) {
@@ -209,7 +213,6 @@ void test_subsonic()
     // Does the pointwise solution satisfy the appropriate equations?
     check_radial_nozzle_residual (__func__, s, 100*GSL_DBL_EPSILON);
     check_radial_euler_residual  (__func__, s, 100*GSL_DBL_EPSILON);
-    check_ideal_gas_approximation(__func__, s, GSL_SQRT_DBL_EPSILON);
 
     // Test edge Mach and pressure gradient parameter computations
     // Expected from notebooks/nozzle_qoi.m for delta = sqrt(10.5**2 - 10**2)
@@ -219,10 +222,12 @@ void test_subsonic()
     gsl_test_rel(pexi, -0.362152908606146, tol, "%s qoi_pexi", __func__);
 
     // Are results correctly converted to Cartesian coordinates at various Ma?
-    check_cartesian_primitive(__func__, s, Ma0, GSL_SQRT_DBL_EPSILON);
-    // TODO check_cartesian_primitive(__func__, s, 5.0, GSL_SQRT_DBL_EPSILON);
-    // TODO check_cartesian_conserved(__func__, s, Ma0, GSL_SQRT_DBL_EPSILON);
-    // TODO check_cartesian_conserved(__func__, s, 5.0, GSL_SQRT_DBL_EPSILON);
+    // Radii are sufficiently large that ideal gas EOS holds nicely.
+    check_ideal_gas_approximation(__func__, s,      100*GSL_DBL_EPSILON);
+    check_euler_primitive        (__func__, s, Ma0, 100*GSL_DBL_EPSILON);
+    // TODO check_euler_primitive(__func__, s, 5.0, 100*GSL_SQRT_DBL_EPSILON);
+    // TODO check_euler_conserved(__func__, s, Ma0, 100*GSL_SQRT_DBL_EPSILON);
+    // TODO check_euler_conserved(__func__, s, 5.0, 100*GSL_SQRT_DBL_EPSILON);
 
     free(s);
 }
@@ -270,7 +275,6 @@ void test_supersonic()
     // Does the pointwise solution satisfy the appropriate equations?
     check_radial_nozzle_residual (__func__, s, 100*GSL_DBL_EPSILON);
     check_radial_euler_residual  (__func__, s, 100*GSL_DBL_EPSILON);
-    check_ideal_gas_approximation(__func__, s, GSL_SQRT_DBL_EPSILON);
 
     // Test edge Mach and pressure gradient parameter computations
     // Expected results by notebooks/nozzle_qoi.m for delta = sqrt(3)
@@ -280,10 +284,12 @@ void test_supersonic()
     gsl_test_rel(pexi, -0.452506737297551, tol, "%s qoi_pexi", __func__);
 
     // Are results correctly converted to Cartesian coordinates at various Ma?
-    check_cartesian_primitive(__func__, s, Ma0, GSL_SQRT_DBL_EPSILON);
-    // TODO check_cartesian_primitive(__func__, s, 5.0, GSL_SQRT_DBL_EPSILON);
-    // TODO check_cartesian_conserved(__func__, s, Ma0, GSL_SQRT_DBL_EPSILON);
-    // TODO check_cartesian_conserved(__func__, s, 5.0, GSL_SQRT_DBL_EPSILON);
+    // Small radii case the ideal gas EOS to not be quite-so-satisfied.
+    check_ideal_gas_approximation(__func__, s,          GSL_SQRT_DBL_EPSILON);
+    check_euler_primitive        (__func__, s, Ma0, 100*GSL_SQRT_DBL_EPSILON);
+    // TODO check_euler_primitive(__func__, s, 5.0, 100*GSL_SQRT_DBL_EPSILON);
+    // TODO check_euler_conserved(__func__, s, Ma0, 100*GSL_SQRT_DBL_EPSILON);
+    // TODO check_euler_conserved(__func__, s, 5.0, 100*GSL_SQRT_DBL_EPSILON);
 
     free(s);
 }
