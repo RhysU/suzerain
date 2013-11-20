@@ -110,10 +110,10 @@ potential, \emph{viz.}
   \vec{u} = \vec{\nabla}\phi + \vec{\nabla}\times\vec{A} = \vec{\nabla}{\phi}
   .
 \end{align}
-However, writing $\vec{u}$ is preferred here.  From the definition of the speed
-of sound~$a$ and~\eqref{eq:momentum},
+From the definition of the speed of sound~$a$, an isentropic assumption,
+and equation~\eqref{eq:momentum},
 \begin{align}
-    \frac{\mathrm{d}p}{\mathrm{d}\rho} = a^2
+    \left(\frac{\partial p}{\partial \rho}\right)_{s} = a^2
     \implies
     \vec{\nabla}\rho = \frac{1}{a^2} \vec{\nabla} p
                      = - \frac{\rho}{2a^2} \vec{\nabla}\vec{u}^2
@@ -139,7 +139,7 @@ equation may only be satisfied when
 \label{eq:momentum_and_continuity}
 \end{align}
 
-Following \citeauthor{Saad2011Coordinate}, we observe that stagnation energy
+Following \citeauthor{Saad2011Coordinate}, we invoke that stagnation energy
 stays constant throughout such a flow to connect the local speed of sound to
 reference parameters and the local velocity.  That is, for flow enthalpy $h =
 a^2 / \left(\gamma-1\right)$, reference enthalpy $h_0 = a_0^2 /
@@ -148,7 +148,9 @@ a^2 / \left(\gamma-1\right)$, reference enthalpy $h_0 = a_0^2 /
         \frac{a^2  }{\gamma  -1} + \frac{1}{2} \vec{u}^2
      &= \frac{a_0^2}{\gamma_0-1} + \frac{1}{2} u_0^2
 \end{align}
-holds everywhere.  After a small rearrangement, the energy constraint
+holds everywhere.  Notice the ideal gas equation of state, $\rho a^2 = \gamma
+p$, was not imposed and it therefore will not be satisfied in general.  After a
+small rearrangement, our energy constraint
 \begin{align}
         a^2
      &=   \frac{\gamma-1}{\gamma_0-1} a_0^2
@@ -478,10 +480,24 @@ a constant $x$ line segment obtained from a radially varying solution.
 Referring to Figure~\eqref{fig:mapping_geometry}, the solution
 $u\!\left(R\right)$ with accompanying $\rho\!\left(R\right)$,
 $p\!\left(R\right)$, and $a\!\left(R\right)$ is valid for
-$R\in\left[R_1,R_2\right]$.  For a valid, first quadrant coordinate
-$\left(x,y\right)$ with corresponding $R=\sqrt{x^2+y^2}$ one may compute the
-following:
+$R\in\left[R_1,R_2\right]$.  For some $\left(x,y\right)$ and corresponding
+$R=\sqrt{x^2+y^2}$ one may compute: following:
 %
+\begin{align}
+               \rho \!\left(x, y\right) &= \rho\!\left(R\right)
+ &  \partial_x \rho                     &= \frac{x}{R} \rho^\prime\!\left(R\right)
+ &  \partial_y \rho                     &= \frac{y}{R} \rho^\prime\!\left(R\right)
+\\             u_x  \!\left(x, y\right) &= u   \!\left(R\right) \frac{x}{R}
+ &  \partial_x u_x                      &= \frac{1}{R^2}\left[x^2 u^\prime\!\left(R\right) + \frac{y^2}{R} u\!\left(R\right)\right]
+ &  \partial_y u_x                      &= \frac{xy}{R^2}\left[u^\prime\!\left(R\right) - \frac{1}{R}u\!\left(R\right)\right]
+\\             u_y  \!\left(x, y\right) &= u   \!\left(R\right) \frac{y}{R}
+ &  \partial_x u_y                      &= \frac{xy}{R^2}\left[u^\prime\!\left(R\right) - \frac{1}{R}u\!\left(R\right)\right]
+ &  \partial_y u_y                      &= \frac{1}{R^2}\left[y^2 u^\prime\!\left(R\right) + \frac{x^2}{R} u\!\left(R\right)\right]
+\\             p    \!\left(x, y\right) &= p   \!\left(R\right)
+ &  \partial_x p                        &= \frac{x}{R} p^\prime\!\left(R\right)
+ &  \partial_y p                        &= \frac{y}{R} p^\prime\!\left(R\right)
+\end{align}
+% FIXME STARTHERE
 \begin{align}
     \rho \!\left(x, y\right) &= \rho\!\left(R\right)
 \\  u_\xi\!\left(x, y\right) &= \left|u\!\left(R\right)\right| \frac{x}{R}
