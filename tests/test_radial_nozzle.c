@@ -261,11 +261,12 @@ void test_subsonic()
 
     // Do results approximately satisfy Cartesian Euler at various Ma?
     // Radii are sufficiently large that ideal gas EOS holds nicely.
+    // The implicit conversion to conserved state incurs more error.
     check_ideal_gas_approximation(__func__, s,      100*GSL_DBL_EPSILON);
     check_euler_primitive        (__func__, s, Ma0, 100*GSL_DBL_EPSILON);
     check_euler_primitive        (__func__, s, 5.0, 100*GSL_DBL_EPSILON);
-    check_euler_conserved        (__func__, s, Ma0, 5e-2);
-    // TODO check_euler_conserved(__func__, s, 5.0, 100*GSL_SQRT_DBL_EPSILON);
+    check_euler_conserved        (__func__, s, Ma0, 0.025);
+    check_euler_conserved        (__func__, s, 5.0, 0.025);
 
     free(s);
 }
@@ -273,7 +274,7 @@ void test_subsonic()
 // Supersonic test from notebooks/nozzle.m
 // Beware the slightly different argument order relative to that code
 static
-void test_supersonic()
+void test_supersonic1()
 {
     const double R[]  = {1., 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.};
     const size_t N    = sizeof(R)/sizeof(R[0]);
@@ -325,8 +326,35 @@ void test_supersonic()
     check_ideal_gas_approximation(__func__, s,          GSL_SQRT_DBL_EPSILON);
     check_euler_primitive        (__func__, s, Ma0, 100*GSL_SQRT_DBL_EPSILON);
     check_euler_primitive        (__func__, s, 5.0, 100*GSL_SQRT_DBL_EPSILON);
-    // TODO check_euler_conserved(__func__, s, Ma0, 100*GSL_SQRT_DBL_EPSILON);
-    // TODO check_euler_conserved(__func__, s, 5.0, 100*GSL_SQRT_DBL_EPSILON);
+    // check_euler_conserved() is a disaster for these radii so do not bother.
+
+    free(s);
+}
+
+// Supersonic with huge radius so ideal gas EOS is better approximated
+static
+void test_supersonic2()
+{
+    const double R[]  = {1000.0, 1000.1, 1000.2, 1000.3, 1000.4, 1000.5};
+    const size_t N    = sizeof(R)/sizeof(R[0]);
+    const double Ma0  = 1.1;
+    const double gam0 = 1.4;
+    const double rho1 = 1.0;
+    const double u1   = 1/Ma0 + GSL_SQRT_DBL_EPSILON;
+    const double p1   = rho1/gam0 *(1+(gam0-1)/2*Ma0*Ma0*(1-u1*u1));
+    suzerain_radial_nozzle_solution * s = suzerain_radial_nozzle_solver(
+            Ma0, gam0, rho1, u1, p1, R, N);
+
+    // Does the pointwise solution satisfy the governing equations?
+    check_radial_nozzle_residual (__func__, s, 100*GSL_DBL_EPSILON);
+
+    // Do results approximately satisfy Cartesian Euler at various Ma?
+    // Small radii case the ideal gas EOS to not be quite-so-satisfied.
+    check_ideal_gas_approximation(__func__, s,      1e4*GSL_DBL_EPSILON);
+    check_euler_primitive        (__func__, s, Ma0, GSL_SQRT_DBL_EPSILON);
+    check_euler_primitive        (__func__, s, 5.0, GSL_SQRT_DBL_EPSILON);
+////check_euler_conserved        (__func__, s, Ma0, 0.025);
+////check_euler_conserved        (__func__, s, 5.0, 0.025);
 
     free(s);
 }
@@ -342,7 +370,8 @@ int main(int argc, char **argv)
     }
 
     test_subsonic();
-    test_supersonic();
+    test_supersonic1();
+    test_supersonic2();
 
     exit(gsl_test_summary());
 }
