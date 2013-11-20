@@ -274,9 +274,9 @@ over some domain $\Omega$ and applying a corollary of Gauss' theorem:
 \section{Reduction to the radially symmetric, two-dimensional case}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-Suppose radial symmetry in which $u={u}\!\left(r\right)$.  Then the velocity
-potential $\vec{\nabla}\phi$ is superfluous and~\eqref{eq:cpfgibbs_nondim}
-should be transliterated into this context as
+Suppose radial symmetry in which $\vec{u}={u}\!\left(r\right)\hat{r}$.  Then
+the velocity potential $\vec{\nabla}\phi$ is superfluous
+and~\eqref{eq:cpfgibbs_nondim} is nothing but the scalar equation
 \begin{align}
        2 u^2\!\left(r\right) u^\prime\!\left(r\right)
     &=
@@ -327,7 +327,7 @@ Solving for $u^\prime$,
 permits integrating for $u$ if boundary conditions on $\left[R_1, R_2\right]$
 are supplied.
 
-Given some $u$ one also wants to be able to compute local thermodynamic state.
+Given some $u$ computing local thermodynamic state is of interest.
 Equation~\eqref{eq:stagnation_sound_nondim} fixes~$a$.  The
 $u=u\!\left(r\right)$ assumption causes~\eqref{eq:logrho_nondim} to reduce to
 \begin{align}
@@ -442,9 +442,10 @@ problems amenable to solution by numerical ODE integrators.  For example,
 solve such problems.  One possible implementation appears in
 Listing~\ref{lst:octave_nozzle} with a verification test.  Its demo logic
 produces the solutions depicted in Figure~\ref{fig:sample_solns}.  Though only
-scalar $u$ needs to be integrated, this implementation integrates the state
-vector $\left[u, \rho, p\right]^\mathrm{T}$ so that \texttt{odepkg}'s automated
-solution tolerance controls apply to all three components.
+scalar $u^\prime\!\left(r\right)$ needs to be integrated, this implementation
+integrates the state vector $\left[u, \rho, p\right]^\mathrm{T}$ so that
+\texttt{odepkg}'s automated solution tolerance controls apply to all three
+components.
 
 \lstinputlisting[language=Octave,
                  caption={\texttt{nozzle.m}: A nondimensional
