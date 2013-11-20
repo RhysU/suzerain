@@ -657,11 +657,12 @@ A nonlinear optimization problem may be formulated over $\Mach[0]$, $R_0$,
 $\rho\!\left(R_1\right)$, and $u\!\left(R_1\right)$ to match some target
 $\Mach[e]{}$, $p_{e,\xi}$, and $T_e$ given fixed $\delta$ and $\gamma_0$.
 Parameter $p\!\left(R_1\right)$ may be arbitrarily fixed as it does not impact
-these particular target quantities.  One possible implementation, written using
-the \texttt{nonlim\_resid} method from \texttt{Octave}'s \texttt{optim}
-package, is given in Listing~\ref{lst:octave_nozzle_baseflow}.
+these particular target quantities.  Setting it to match the ideal gas equation
+of state is chosen here.  One possible implementation, written using the
+\texttt{nonlim\_resid} method from \texttt{Octave}'s \texttt{optim} package, is
+given in Listing~\ref{lst:octave_nozzle_baseflow}.
 
-Several details took considerable effort to refine are therefore worth
+Several details took considerable effort to refine and are therefore worth
 noting:\mynobreakpar
 \begin{enumerate}
   \item The relative residuals are minimized rather than the absolute residuals
@@ -678,10 +679,10 @@ noting:\mynobreakpar
     $\Mach[e]{}$ the mean possible $u_1\!\left(R_1\right)$ according
     to~\eqref{eq:cpfradial_nozzle_supersonic_bc} is selected.
   \item To combat the impact of this poor initial guess, optimization proceeds
-   in two phases with the first phase treating only $R_0$ and
-   $u\!\left(R_1\right)$ as free parameters.  This first phase is run only
-   briefly as otherwise the optimizer sometimes finds a woefully suboptimal
-   local minimum.
+    in two phases with the first phase treating only $R_0$ and
+    $u\!\left(R_1\right)$ as free parameters.  This first phase is run only
+    briefly as otherwise the optimizer sometimes finds a woefully suboptimal
+    local minimum.
   \item As shown, $\rho\!\left(R_1\right)$ is taken fixed because because, for
     it to have appreciable impact on the optimization results, the parameter
     often take physically unbecoming values for what should be an order-one

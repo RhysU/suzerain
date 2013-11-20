@@ -1,6 +1,6 @@
-% Seek [Ma0, R0, rho1, u1, p1] producing requested conditions at (R0, delta).
+% Seek [Ma0, R0, rho1, u1] producing requested conditions at (R0, delta).
 % Returns struct s with fields s.Ma0, s.R0, s.rho1, s.u1, and s.p1 producing a
-% flow with observed values s.Ma_e, s.p_exi, and s.a2_e.
+% flow with observed s.Ma_e, s.p_exi, and s.a2_e and s.p1 matching ideal EOS.
 % Curried function results noz(Ly) and qoi(Ly) compute the flow on (R0, 0) to
 % (R0, Ly) and quantities of interest at (R0, Ly), respectively.
 %
@@ -12,15 +12,15 @@ function [s noz qoi] = nozzle_baseflow(delta, gam0, Ma_e, p_exi, a2_e,    ...
                                        opt = optimset('Algorithm',        ...
                                                       'lm_svd_feasible'))
 
-  % Relative residuals of observations vs targets for [Ma0; R0; rho1; u1; p1]
+  % Relative residuals of observations vs targets for [Ma0; R0; rho1; u1]
   tgt = [Ma_e; p_exi; a2_e];
-  f   = @(x) (obs_vector(delta, gam0, x(1), x(2), x(3), x(4), x(5)) - tgt)./tgt;
+  f   = @(x) (obs_vector(delta, gam0, x(1), x(2), x(3), x(4)) - tgt)./tgt;
 
-  % Establish bounds for [Ma0; R0; rho1; u1; p1], a guess, and constraint(s)
-  opt = optimset(opt, 'lbound', [eps; eps; eps; -inf; eps],
-                      'ubound', [inf; inf; inf;  inf; inf]);
-  p = [Ma_e; 10*delta; 1; NaN; 1];  % Guess for Ma_e, R0, rho1, p1
-  if Ma_e < 1;                      % Guess for u1 per Ma_e
+  % Establish bounds for [Ma0; R0; rho1; u1], a guess, and constraint(s)
+  opt = optimset(opt, 'lbound', [eps; eps; eps; -inf],
+                      'ubound', [inf; inf; inf;  inf]);
+  p = [Ma_e; 10*delta; 1; NaN];  % Guess for Ma_e, R0, rho1
+  if Ma_e < 1;                   % Guess for u1 per Ma_e
     p(4) = max (-1/p(1), -realsqrt(2 / p(1)**2 / (gam0 - 1) + 1));
   else
     p(4) = mean([1/p(1); +realsqrt(2 / p(1)**2 / (gam0 - 1) + 1)]);
@@ -29,10 +29,10 @@ function [s noz qoi] = nozzle_baseflow(delta, gam0, Ma_e, p_exi, a2_e,    ...
   opt = optimset(opt, 'inequc', {zeros(length(p)), ones(size(p)), realizable});
 
   % Solve the problem converting relative residual vector into absolute results
-  % Fixes density and pressure and solves for other parameters in two phases
+  % Fixes density and solves for other parameters in two distinct phases
   pkg load odepkg optim;
-  phase1 = optimset(opt, 'fixed', [1;0;1;0;1], 'MaxIter', burn_in_iterations);
-  phase2 = optimset(opt, 'fixed', [0;0;1;0;1], 'MaxIter',               5000);
+  phase1 = optimset(opt, 'fixed', [1;0;1;0], 'MaxIter', burn_in_iterations);
+  phase2 = optimset(opt, 'fixed', [0;0;1;0], 'MaxIter',               5000);
   try
     niter = 0; res = nan(3,1);
     [p, ans, cvg, outp] = nonlin_residmin(f, p, phase1); niter += outp.niter;
@@ -47,17 +47,17 @@ function [s noz qoi] = nozzle_baseflow(delta, gam0, Ma_e, p_exi, a2_e,    ...
 
   % Package up problem specification, solution, results, and runtime behavior
   s = struct('delta', delta, 'gam0', gam0,
-             'Ma0', p(1), 'R0', p(2), 'rho1', p(3), 'u1', p(4), 'p1', p(5),
+             'Ma0', p(1), 'R0', p(2), 'rho1', p(3), 'u1', p(4),
              'Ma_e', res(1), 'p_exi', res(2), 'a2_e', res(3),
              'res2', res2, 'cvg', cvg, 'niter', niter);
-  noz = @(Ly) nozzle    (s.Ma0, s.gam0, s.R0, realsqrt(s.R0**2+Ly**2), ...
-                         s.u1, s.rho1, s.p1);
-  qoi = @(Ly) nozzle_qoi(Ly, s.gam0, s.Ma0, s.R0, s.rho1, s.u1, s.p1);
+  noz = @(Ly) nozzle    (s.Ma0, s.gam0, s.R0, realsqrt(s.R0**2+Ly**2),
+                         s.u1, s.rho1);
+  qoi = @(Ly) nozzle_qoi(Ly, s.gam0, s.Ma0, s.R0, s.rho1, s.u1);
 end
 
 % Repackage nozzle_qoi multiple return values into a vector of observations.
-function f = obs_vector(delta, gam0, Ma0, R0, rho1, u1, p1)
-  [Ma_e, p_exi, a2_e, a2_w] = nozzle_qoi(delta, gam0, Ma0, R0, rho1, u1, p1);
+function f = obs_vector(delta, gam0, Ma0, R0, rho1, u1)
+  [Ma_e, p_exi, a2_e, a2_w] = nozzle_qoi(delta, gam0, Ma0, R0, rho1, u1);
   f = [Ma_e; p_exi; a2_e];  % Ignore a2_w
 end
 
