@@ -274,29 +274,21 @@ suzerain_radial_nozzle_cartesian_conserved(
                   &rho_y,  &u_y,  &v_y,  p_y);
 
     // Convert primitive to conserved state
-    const double invgam0m1 = 1/(s->gam0 - 1), Ma2 = Ma*Ma, u2 = u*u, v2 = v*v;
+    const double invgam0m1 = 1/(s->gam0 - 1), Ma22 = Ma*Ma/2;
     *r  = rho;
     *ru = rho*u;
     *rv = rho*v;
-    *rE = *p * invgam0m1 + Ma2 / 2 * rho * (u2 + v2);
+    *rE = *p*invgam0m1 + Ma22*(*ru*u + *rv*v);
 
     // Convert streamwise primitive derivatives to conserved derivatives
     *r_xi  = rho_xi;
     *ru_xi = rho*u_xi + rho_xi*u;
     *rv_xi = rho*v_xi + rho_xi*v;
-    *rE_xi = *p_xi * invgam0m1
-           + Ma2 * (
-                   rho_xi / 2 * (u2     + v2    )
-                +  rho        * (u*u_xi + v*v_xi)
-             );
+    *rE_xi = *p_xi*invgam0m1 + Ma22*(*ru_xi*u + *rv_xi*v + *ru*u_xi + *rv*v_xi);
 
     // Convert wall-normal primitive derivatives to conserved derivatives
     *r_y   = rho_y ;
     *ru_y  = rho*u_y  + rho_y *u;
     *rv_y  = rho*v_y  + rho_y *v;
-    *rE_y  = *p_y * invgam0m1
-           + Ma2 * (
-                   rho_y  / 2 * (u2     + v2    )
-                +  rho        * (u*u_y  + v*v_y )
-             );
+    *rE_y  = *p_y *invgam0m1 + Ma22*(*ru_y *u + *rv_y *v + *ru*u_y  + *rv*v_y );
 }
