@@ -84,14 +84,14 @@ to produce base flows in the spirit of laminar CEV heat shield conditions.
 \tableofcontents
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{The nondimensional, compressible potential flow equation}
+\section{The nondimensional, compressible potential flow equations}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-A particularly crisp derivation of the coordinate-independent,
-velocity-potential formulation of the compressible potential flow equations
-appears in section II.A of \citet{Saad2011Coordinate}.  Their presentation
-essentially is recounted here but velocity potential notation is suppressed.
-Wherever necessary, sufficient smoothness is assumed.
+A succinct, coordinate-independent derivation of the velocity-potential
+formulation of the compressible potential flow equations appears in section
+II.A of \citet{Saad2011Coordinate}.  Their presentation essentially is
+recounted here but velocity potential notation is suppressed.  Wherever
+necessary, sufficient smoothness is assumed.
 
 The steady, inviscid momentum equation in an irrotational flow yields
 \begin{align}
@@ -110,7 +110,7 @@ potential, \emph{viz.}
   \vec{u} = \vec{\nabla}\phi + \vec{\nabla}\times\vec{A} = \vec{\nabla}{\phi}
   .
 \end{align}
-From the definition of the speed of sound~$a$, an isentropic assumption,
+Combining the definition of the speed of sound~$a$, an isentropic assumption,
 and equation~\eqref{eq:momentum},
 \begin{align}
     \left(\frac{\partial p}{\partial \rho}\right)_{s} = a^2
@@ -149,8 +149,8 @@ a^2 / \left(\gamma-1\right)$, reference enthalpy $h_0 = a_0^2 /
      &= \frac{a_0^2}{\gamma_0-1} + \frac{1}{2} u_0^2
 \end{align}
 holds everywhere.  Notice the ideal gas equation of state, $\rho a^2 = \gamma
-p$, was not imposed and it therefore will not be satisfied in general.  After a
-small rearrangement, our energy constraint
+p$, was not imposed and will not be precisely satisfied.  After a slight
+rearrangement, our constant stagnation condition
 \begin{align}
         a^2
      &=   \frac{\gamma-1}{\gamma_0-1} a_0^2
@@ -377,7 +377,10 @@ boundary conditions for sub- and supersonic nozzles.  Many texts, e.g.
 \citet[\textsection{}9.4]{White1999Fluid} and
 \citet[\textsection{}97]{Landau2004Fluid}, cover the simpler case when the area
 changes slowly as one progresses downstream in the device.  In contrast, this
-treatment produces geometries violating that requirement.
+treatment permits geometries violating that requirement.  While not guaranteed
+by the formulation, for sufficiently large radii the ideal gas equation of
+state will be approximately satisfied provided that the chosen initial
+conditions adhere to it.
 
 A subsonic nozzle may be posed on nondimensional~$\left[R_{1}, R_{2}\right]$ by
 setting inflow per
@@ -436,11 +439,11 @@ conjunction with~\eqref{eq:cpfradial_nondim_ode} presents initial value
 problems amenable to solution by numerical ODE integrators.  For example,
 \texttt{Octave}\citep{Eaton2008GNU} armed with the \texttt{odepkg} package can
 solve such problems.  One possible implementation appears in
-Listing~\ref{lst:octave_nozzle} with demo logic producing the solutions
-depicted in Figure~\ref{fig:sample_solns}.  This implementation chooses to
-integrate the augmented state vector $\left[u^\prime,
-\left(\log\rho\right)^\prime, p^\prime\right]^\mathrm{T}$ so that automated
-solution tolerance controls apply to all three scalars.
+Listing~\ref{lst:octave_nozzle} with a verification test.  Its demo logic
+produces the solutions depicted in Figure~\ref{fig:sample_solns}.  Though only
+scalar $u$ needs to be integrated, this implementation integrates the state
+vector $\left[u, \rho, p\right]^\mathrm{T}$ so that \texttt{odepkg}'s automated
+solution tolerance controls apply to all three components.
 
 \lstinputlisting[language=Octave,
                  caption={\texttt{nozzle.m}: A nondimensional
