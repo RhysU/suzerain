@@ -207,8 +207,8 @@ void test_subsonic()
     gsl_test_rel(fin.pp,   0.0160429419457325, tol, "%s final pp  ", __func__);
 
     // Does the pointwise solution satisfy the appropriate equations?
-    check_radial_nozzle_residual (__func__, s, GSL_SQRT_DBL_EPSILON);
-    check_radial_euler_residual  (__func__, s, GSL_SQRT_DBL_EPSILON);
+    check_radial_nozzle_residual (__func__, s, 100*GSL_DBL_EPSILON);
+    check_radial_euler_residual  (__func__, s, 100*GSL_DBL_EPSILON);
     check_ideal_gas_approximation(__func__, s, GSL_SQRT_DBL_EPSILON);
 
     // Test edge Mach and pressure gradient parameter computations
@@ -268,8 +268,8 @@ void test_supersonic()
     gsl_test_rel(fin.pp,   -0.112130507235967, tol, "%s final pp  ", __func__);
 
     // Does the pointwise solution satisfy the appropriate equations?
-    check_radial_nozzle_residual (__func__, s, GSL_SQRT_DBL_EPSILON);
-    check_radial_euler_residual  (__func__, s, GSL_SQRT_DBL_EPSILON);
+    check_radial_nozzle_residual (__func__, s, 100*GSL_DBL_EPSILON);
+    check_radial_euler_residual  (__func__, s, 100*GSL_DBL_EPSILON);
     check_ideal_gas_approximation(__func__, s, GSL_SQRT_DBL_EPSILON);
 
     // Test edge Mach and pressure gradient parameter computations
