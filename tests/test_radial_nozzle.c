@@ -43,23 +43,34 @@ void check_radial_nozzle_residual(
     const double Ma0  = s->Ma0;
     const double gam0 = s->gam0;
     for (size_t i = 0; i < s->size; ++i) {
-        double u      = s->state[i].u;
-        double up_rhs = - (u / s->state[i].R)
-                      * (2 + Ma0*Ma0*(gam0-1) - Ma0*Ma0*(gam0-1)*u*u)
-                      / (2 + Ma0*Ma0*(gam0-1) - Ma0*Ma0*(gam0+1)*u*u);
+        const double R   = s->state[i].R;
+        const double u   = s->state[i].u,   up   = s->state[i].up;
+        const double p   = s->state[i].p,   pp   = s->state[i].pp;
+        const double rho = s->state[i].rho, rhop = s->state[i].rhop;
+        const double a2  = s->state[i].a2;
+        (void) p;
 
         // Relative test between u' and RHS as (u' - RHS) may be large
-        gsl_test_rel(s->state[i].up, up_rhs, tol, "%s: up res[%d] ", who, i);
+        double up_rhs = - (u / R)
+                      * (2 + Ma0*Ma0*(gam0-1) - Ma0*Ma0*(gam0-1)*u*u)
+                      / (2 + Ma0*Ma0*(gam0-1) - Ma0*Ma0*(gam0+1)*u*u);
+        gsl_test_rel(up, up_rhs, tol, "%s: up res[%d] ", who, i);
 
-        // Relative test between p' and RHS
-        gsl_test_rel(s->state[i].pp,
-                     -Ma0*Ma0*s->state[i].rho*u*s->state[i].up,
+        // Relative test between p' and RHS (momentum equation)
+        gsl_test_rel(pp, -Ma0*Ma0*rho*u*up,
                      tol, "%s: pp res[%d] ", who, i);
 
         // Relative test between (log rho)' and RHS
-        gsl_test_rel(s->state[i].rhop / s->state[i].rho,
-                     -Ma0*Ma0*u*s->state[i].up/s->state[i].a2,
-                    tol, "%s: rhop res[%d] ", who, i);
+        gsl_test_rel(rhop / rho, -Ma0*Ma0*u*up/a2,
+                     tol, "%s: rhop res[%d] ", who, i);
+
+        // Energy residual from baseflow.tex writeup, nozzle.m
+        gsl_test_rel(a2, 1 + Ma0*Ma0*(gam0-1)/2*(1-u*u),
+                     tol, "%s: res_energy[%d] ", who, i);
+
+        // Continuity polar residual from baseflow.tex writeup, nozzle.m
+        gsl_test_abs(0, rho*up + u*rhop + rho*u/R,
+                     tol, "%s: res_mass[%d] ", who, i);
     }
 }
 
@@ -77,37 +88,6 @@ void check_ideal_gas_approximation(
         gsl_test_rel(s->state[i].rho * s->state[i].a2,
                      s->gam0 * s->state[i].p,
                      tol, "%s: ideal_EOS[%d] at %g", who, i, s->state[i].R);
-
-    }
-}
-
-// Helper seeing if the solution satisfies Euler in polar coordinates.
-// If not, then the computed solutions aren't particularly useful to us...
-static
-void check_radial_euler_residual(
-    const char * who,
-    const suzerain_radial_nozzle_solution * const s,
-    const double tol)
-{
-    for (size_t i = 0; i < s->size; ++i) {
-        const double R   = s->state[i].R;
-        const double u   = s->state[i].u,   up   = s->state[i].up;
-        const double p   = s->state[i].p,   pp   = s->state[i].pp;
-        const double rho = s->state[i].rho, rhop = s->state[i].rhop;
-        (void) p;
-
-        // Continuity residual from baseflow.tex writeup, nozzle.m
-        gsl_test_abs(0, rho*up + u*rhop + rho*u/R,
-                     tol, "%s: res_mass[%d] ", who, i);
-
-        // Momentum residual from baseflow.tex writeup, nozzle.m
-        gsl_test_rel(pp, -s->Ma0*s->Ma0*rho*u*up,
-                     tol, "%s: res_momentum[%d] ", who, i);
-
-        // Energy residual from baseflow.tex writeup, nozzle.m
-        gsl_test_rel(s->state[i].a2,
-                     1 + s->Ma0*s->Ma0*(s->gam0-1)/2*(1-u*u),
-                     tol, "%s: res_energy[%d] ", who, i);
 
     }
 }
@@ -210,9 +190,8 @@ void test_subsonic()
     gsl_test_rel(fin.rhop, 0.0113207052839328, tol, "%s final rhop", __func__);
     gsl_test_rel(fin.pp,   0.0160429419457325, tol, "%s final pp  ", __func__);
 
-    // Does the pointwise solution satisfy the appropriate equations?
+    // Does the pointwise solution satisfy the governing equations?
     check_radial_nozzle_residual (__func__, s, 100*GSL_DBL_EPSILON);
-    check_radial_euler_residual  (__func__, s, 100*GSL_DBL_EPSILON);
 
     // Test edge Mach and pressure gradient parameter computations
     // Expected from notebooks/nozzle_qoi.m for delta = sqrt(10.5**2 - 10**2)
@@ -221,7 +200,7 @@ void test_subsonic()
     gsl_test_rel(Mae,   0.324318914847395, tol, "%s qoi_Mae ", __func__);
     gsl_test_rel(pexi, -0.362152908606146, tol, "%s qoi_pexi", __func__);
 
-    // Are results correctly converted to Cartesian coordinates at various Ma?
+    // Do results approximately satisfy Cartesian Euler at various Ma?
     // Radii are sufficiently large that ideal gas EOS holds nicely.
     check_ideal_gas_approximation(__func__, s,      100*GSL_DBL_EPSILON);
     check_euler_primitive        (__func__, s, Ma0, 100*GSL_DBL_EPSILON);
@@ -272,9 +251,8 @@ void test_supersonic()
     gsl_test_rel(fin.rhop, -0.183663783096991, tol, "%s final rhop", __func__);
     gsl_test_rel(fin.pp,   -0.112130507235967, tol, "%s final pp  ", __func__);
 
-    // Does the pointwise solution satisfy the appropriate equations?
+    // Does the pointwise solution satisfy the governing equations?
     check_radial_nozzle_residual (__func__, s, 100*GSL_DBL_EPSILON);
-    check_radial_euler_residual  (__func__, s, 100*GSL_DBL_EPSILON);
 
     // Test edge Mach and pressure gradient parameter computations
     // Expected results by notebooks/nozzle_qoi.m for delta = sqrt(3)
@@ -283,7 +261,7 @@ void test_supersonic()
     gsl_test_rel(Mae,   1.09859906253134,  tol, "%s qoi_Mae ", __func__);
     gsl_test_rel(pexi, -0.452506737297551, tol, "%s qoi_pexi", __func__);
 
-    // Are results correctly converted to Cartesian coordinates at various Ma?
+    // Do results approximately satisfy Cartesian Euler at various Ma?
     // Small radii case the ideal gas EOS to not be quite-so-satisfied.
     check_ideal_gas_approximation(__func__, s,          GSL_SQRT_DBL_EPSILON);
     check_euler_primitive        (__func__, s, Ma0, 100*GSL_SQRT_DBL_EPSILON);
