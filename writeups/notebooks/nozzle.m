@@ -51,21 +51,21 @@ end
 
 %!demo
 %! % Solve subsonic nozzle (specifying inflow) and plot to file
-%! pkg load odepkg; Ma = 1; gam = 1.4; Rin = 1; Rout = 2;
-%! nozzle(Ma, gam, Rout, Rin, -2/7, 1, 1);
+%! pkg load odepkg; Ma=1; gam=1.4; Rin=1; Rout=Rin+1; u1=-2/7; rho1=1;
+%! nozzle(Ma, gam, Rout, Rin, u1, rho1);
 %! title('Subsonic nozzle');
 %! print('nozzle_subsonic.eps', '-depsc2', '-S512,384', '-F:8');
 %! close();
 
 %!demo
 %! % Subsonic cases may (more robustly) have nearly sonic outflows prescribed
-%! pkg load odepkg; Ma = 1; gam = 1.4; Rin = 1; Rout = 2;
-%! nozzle(Ma, gam, Rin, Rout, -1/Ma+sqrt(eps), 1, 1);
+%! pkg load odepkg; Ma=1; gam=1.4; Rin=1; Rout=Rin+2; rho1=1;
+%! nozzle(Ma, gam, Rin, Rout, -1/Ma+sqrt(eps), rho1);
 
 %!demo
 %! % Solve supersonic nozzle (specifying inflow) and plot to file
-%! pkg load odepkg; Ma = 1; gam = 1.4; Rin = 1; Rout = 2;
-%! nozzle(Ma, gam, Rin, Rout, 1/Ma+sqrt(eps), 1, 1);
+%! pkg load odepkg; Ma=1; gam=1.4; Rin=1; Rout=Rin+1; rho1=1;
+%! nozzle(Ma, gam, Rin, Rout, 1/Ma+sqrt(eps), rho1);
 %! title('Supersonic nozzle');
 %! print('nozzle_supersonic.eps', '-depsc2', '-S512,384', '-F:8');
 %! close();

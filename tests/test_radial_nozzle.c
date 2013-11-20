@@ -238,7 +238,7 @@ void test_supersonic()
     const double gam0 = 1.4;
     const double rho1 = 1.0;
     const double u1   = 1/Ma0 + GSL_SQRT_DBL_EPSILON;
-    const double p1   = 1.0;
+    const double p1   = rho1/gam0 *(1+(gam0-1)/2*Ma0*Ma0*(1-u1*u1));
     suzerain_radial_nozzle_solution * s = suzerain_radial_nozzle_solver(
             Ma0, gam0, rho1, u1, p1, R, N);
 
@@ -256,21 +256,21 @@ void test_supersonic()
     // Expected results computed by notebooks/nozzle.m using Octave
     double tol = GSL_SQRT_DBL_EPSILON;
     suzerain_radial_nozzle_state fin = s->state[N-1];
-    gsl_test_rel(fin.R,     R[N-1],             tol, "%s final R   ", __func__);
-    gsl_test_rel(fin.u,     1.71679859932923,   tol, "%s final u   ", __func__);
-    gsl_test_rel(fin.a2,    0.610520513868242,  tol, "%s final a2  ", __func__);
-    gsl_test_rel(fin.up,    0.224261011681836,  tol, "%s final up  ", __func__);
+    gsl_test_rel(fin.R,     R[N-1],            tol, "%s final R   ", __func__);
+    gsl_test_rel(fin.u,     1.71679859932442,  tol, "%s final u   ", __func__);
+    gsl_test_rel(fin.a2,    0.610520513871545, tol, "%s final a2  ", __func__);
+    gsl_test_rel(fin.up,    0.224261011684323, tol, "%s final up  ", __func__);
     // Octave and GSL RKF45 adaptive control differs, hence lower tolerances...
     tol = sqrt(tol);
-    gsl_test_rel(fin.rho,   0.291239756946575,  tol, "%s final rho ", __func__);
-    gsl_test_rel(fin.p,     0.412719892947868,  tol, "%s final p   ", __func__);
-    gsl_test_rel(fin.rhop, -0.183663783311630,  tol, "%s final rhop", __func__);
-    gsl_test_rel(fin.pp,   -0.112130507369524,  tol, "%s final pp  ", __func__);
+    gsl_test_rel(fin.rho,   0.291239756609692, tol, "%s final rho ", __func__);
+    gsl_test_rel(fin.p,     0.127005603875867, tol, "%s final p   ", __func__);
+    gsl_test_rel(fin.rhop, -0.183663783096991, tol, "%s final rhop", __func__);
+    gsl_test_rel(fin.pp,   -0.112130507235967, tol, "%s final pp  ", __func__);
 
     // Does the pointwise solution satisfy the appropriate equations?
     check_radial_nozzle_residual (__func__, s, GSL_SQRT_DBL_EPSILON);
     check_radial_euler_residual  (__func__, s, GSL_SQRT_DBL_EPSILON);
-    // TODO check_ideal_gas_approximation(__func__, s, GSL_SQRT_DBL_EPSILON);
+    check_ideal_gas_approximation(__func__, s, GSL_SQRT_DBL_EPSILON);
 
     // Test edge Mach and pressure gradient parameter computations
     // Expected results by notebooks/nozzle_qoi.m for delta = sqrt(3)
