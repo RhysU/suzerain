@@ -229,11 +229,10 @@ Rescaling and dropping the star notation, one finally arrives at
 
 With some $\vec{u}=\vec{\nabla}\phi$ satisfying~\eqref{eq:cpfgibbs_nondim} in
 hand, computing local $\rho$ and $p$ is often of interest.
-Nondimensionalizing~\eqref{eq:stagnation_sound} permits direct computation of
-$a$ from
+Nondimensionalizing~\eqref{eq:stagnation_sound} when $\gamma=\gamma_0$ permits
+direct computation of $a$ from
 \begin{align}
-  a^2 &= \frac{\gamma-1}{\gamma_0-1}
-       + \Mach[0]^2\frac{\gamma-1}{2}\left(1-\vec{u}^2\right)
+  a^2 &= 1 + \Mach[0]^2\frac{\gamma_0-1}{2}\left(1-\vec{u}^2\right)
 \label{eq:stagnation_sound_nondim}
 \end{align}
 where clearly a realizable $a^2>0$ requires
@@ -242,9 +241,11 @@ where clearly a realizable $a^2>0$ requires
 .
 \label{eq:stagnation_sound_realizability_nondim}
 \end{align}
-Forming $\vec{\nabla}\rho / \rho$ from~\eqref{eq:gradrho_gradp_relationship},
+Employing~\eqref{eq:gradrho_gradp_relationship},
 nondimensionalizing, multiplying by $l_0$, and simplifying,
 \begin{align}
+  \frac{\vec{\nabla}\rho}{\rho}
+  =
   \vec{\nabla}\log\rho
   &=
   -\frac{\Mach[0]^2}{2}\frac{\vec{\nabla}\vec{u}^2}{a^2}
