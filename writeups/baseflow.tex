@@ -68,16 +68,15 @@
 \begin{abstract}
 This document discusses how to obtain a favorable pressure gradient base flow
 for use within temporally homogenized boundary layer simulations.  First, a
-compressible potential flow problem is formulated for a radially symmetric
-source or sink flow with an additional constant stagnation energy assumption.
-The resulting one-dimensional problem is cast into a form commodity ODE
-integrators can solve to obtain primitive state as a function of radius.  The
-solution is then mapped from $\left(r,\theta\right)$ into $\left(x,y\right)$
-coordinates and a base flow profile extracted from some constant $x$ line
-segment.  The segment chosen, as well as the radial problem boundary conditions
-used, are taken to match some boundary layer edge state of interest using a
-numerical optimization procedure.  Finally, this procedure is used to produce
-base flows in the spirit of laminar CEV heat shield conditions.
+compressible potential flow problem is formulated for an isentropic, radially
+symmetric source or sink flow.  The resulting one-dimensional problem is cast
+into a form commodity ODE integrators can solve to obtain primitive state as a
+function of radius.  The solution is then mapped from $\left(r,\theta\right)$
+into $\left(x,y\right)$ coordinates and a base flow profile extracted from some
+constant $x$ line segment.  The segment chosen, as well as the radial problem
+boundary conditions used, are taken to match some boundary layer edge state of
+interest using a numerical optimization procedure.  Finally, this procedure is
+used to produce base flows in the spirit of laminar CEV heat shield conditions.
 \end{abstract}
 
 \maketitle
@@ -85,7 +84,7 @@ base flows in the spirit of laminar CEV heat shield conditions.
 \tableofcontents
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{The nondimensional, compressible potential flow equations}
+\section{The nondimensional, isentropic, compressible potential flow equations}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 A succinct, coordinate-independent derivation of the velocity-potential
@@ -114,7 +113,8 @@ potential, \emph{viz.}
 Combining the definition of the speed of sound~$a$, an isentropic assumption,
 and equation~\eqref{eq:momentum},
 \begin{align}
-    \left(\frac{\partial p}{\partial \rho}\right)_{s} = a^2
+    \left(\frac{\partial p}{\partial \rho}\right)_{s}
+          \frac{\partial p}{\partial \rho}            = a^2
     \implies
     \vec{\nabla}\rho = \frac{1}{a^2} \vec{\nabla} p
                      = - \frac{\rho}{2a^2} \vec{\nabla}\vec{u}^2
@@ -140,8 +140,8 @@ equation may only be satisfied when
 \label{eq:momentum_and_continuity}
 \end{align}
 
-Following \citeauthor{Saad2011Coordinate}, we assume that specific total
-enthalpy $H$ stays constant through the flow to connect $a$ and $u$ to a
+Following \citeauthor{Saad2011Coordinate}, we use that the specific total
+enthalpy $H$ stays constant throughout such a flow to connect $a$ and $u$ to a
 reference specific enthalpy $h_0 = a_0^2 / \left(\gamma_0-1\right)$ and
 reference velocity $u_0$.  That is,
 \begin{align}
@@ -151,9 +151,8 @@ reference velocity $u_0$.  That is,
       = \frac{a_0^2}{\gamma_0-1} + \frac{1}{2} u_0^2
       =  H_0
 \end{align}
-holds everywhere.  Notice the ideal gas equation of state, $\rho a^2 = \gamma
-p$, is not imposed and it will not be satisfied in generally.  After a slight
-rearrangement, our constant stagnation condition
+holds everywhere.  After a slight rearrangement, our constant stagnation
+condition
 \begin{align}
         a^2
      &=   \frac{\gamma-1}{\gamma_0-1} a_0^2
@@ -500,15 +499,17 @@ $R=\sqrt{x^2+y^2}$ one may compute the following:
 \\            p    \!\left(x, y; \Mach\right) &= \frac{\Mach^2}{\Mach[0]{}^2} p   \!\left(R\right)
  & \partial_x p                               &= \frac{\Mach^2}{\Mach[0]{}^2}\frac{x}{R} p^\prime\!\left(R\right)
  & \partial_y p                               &= \frac{\Mach^2}{\Mach[0]{}^2}\frac{y}{R} p^\prime\!\left(R\right)
+\\            a    \!\left(x, y; \Mach\right) &= \frac{\Mach  }{\Mach[0]{}  } a   \!\left(R\right)
+ & \partial_x a                               &= \frac{1-\gamma_0}{2}\frac{x}{R}\frac{\Mach{}\Mach[0]{}\,u\!\left(R\right)}{a\!\left(R\right)} u^\prime\left(R\right)
+ & \partial_y a                               &= \frac{1-\gamma_0}{2}\frac{y}{R}\frac{\Mach{}\Mach[0]{}\,u\!\left(R\right)}{a\!\left(R\right)} u^\prime\left(R\right)
 \end{align}
 %
-The $\Mach^2/\Mach[0]{}^2$ factor on $p$ translates pressure into a
-nondimensionalization potentially using some other Mach number $\Mach$ under
-the assumption that $p_0 = \rho_0 a_0^2$ holds in the target setting for a
-possibly different $a_0$ while $\rho_0$ and $u_0$ remain the same.  This
-translation permits using radial nozzle state as an approximate pointwise
-solution to the steady, nondimensional, primitive Euler equations for a perfect
-gas written in Cartesian coordinates:
+The $\Mach/\Mach[0]{}$ factors on $p$ and $a$ prepare them for use within a
+nondimensionalization possessing a potentially different Mach number, $\Mach$,
+assuming $p_0 = \rho_0 a_0^2$, $\rho_0$, and $u_0$ still hold in that target
+setting.  Such a translation permits using radial nozzle solutions within the
+steady, nondimensional, primitive Euler equations written in Cartesian
+coordinates:
 %
 \begin{align}
   \begin{bmatrix} 0 \\ 0 \\ 0 \\ 0 \end{bmatrix}
@@ -517,7 +518,7 @@ gas written in Cartesian coordinates:
      u_x  &  \rho      &  0    &  0                    \\
      0    &  u_x       &  0    &  \rho^{-1}\Mach^{-2}  \\
      0    &  0         &  u_x  &  0                    \\
-     0    &  \gamma{}p &  0    &  u_x
+     0    &  \rho{}a^2 &  0    &  u_x
   \end{bmatrix}
   \partial_x
   \begin{bmatrix} \rho \\ u_x \\ u_y \\ p \end{bmatrix}
@@ -526,23 +527,22 @@ gas written in Cartesian coordinates:
      u_y  &  0    &  \rho       &  0                    \\
      0    &  u_y  &  0          &  0                    \\
      0    &  0    &  u_y        &  \rho^{-1}\Mach^{-2}  \\
-     0    &  0    &  \gamma{}p  &  u_y
+     0    &  0    &  \rho{}a^2  &  u_y
   \end{bmatrix}
   \partial_y
   \begin{bmatrix} \rho \\ u_x \\ u_y \\ p \end{bmatrix}
 \end{align}
 %
-The approximation arises because
+Here, the pressure equation uses $\rho{}a^2$ and not $\gamma{}p$ as
 assumptions~\eqref{eq:gradrho_gradp_relationship}
-and~\eqref{eq:stagnation_sound_nondim} do not match the ideal gas equation.
-That is, $\rho a^2 \approx \gamma p$ only.  At sufficiently large nozzle radii,
-the mismatch is small.  If the Euler equations are written using $\rho a^2$ in
-lieu of $\gamma p$, the mismatch disappears but the sound speed $a^2$ also must
-be scaled appropriately whenever $\Mach\neq\Mach[0]$.
+and~\eqref{eq:stagnation_sound_nondim} do not recover the ideal gas equation of
+state, $\rho{}a^2=\gamma_{0} p$.  However, at sufficiently large radii when
+care is taken in supplying initial conditions, it is possible to achieve
+solutions in which $\rho a^2 \approx \gamma_{0} p$.
 
-A Cartesian flow profile can be extracted from radial solution on the line
-segment spanning points $\left(R_0,0\right)$ and $\left(R_0,L_y\right)$ using
-these results.  Clearly, selecting
+More specifically, the Cartesian flow profile should be computed from the
+radial solution on the line segment spanning points $\left(R_0,0\right)$ and
+$\left(R_0,L_y\right)$.  Clearly, selecting
 \begin{align}
   R_1 &= R_0
 &
@@ -563,10 +563,9 @@ sign.  That is,
   = \frac{x \operatorname{sgn}(u)}{R} \frac{\partial}{\partial{}R}
 \end{align}
 Practically, whenever $u\left(R_1\right) < 0$ instead of evaluating $u_x$,
-$\partial_x u_x$, etc. at $\left(x,y\right)$ one evaluates $u_\xi$,
-$\partial_\xi u_\xi$, etc. at $\left(-x,y\right)$ to take advantage of the
-solution symmetry inherent in the second quadrant relative to the first
-quadrant.
+$\partial_x u_x$, etc. at $\left(x,y\right)$ one evaluates $u_x$, $\partial_x
+u_x$, etc. at $\left(-x,y\right)$ to take advantage of the solution symmetry
+inherent in the second quadrant relative to the first quadrant.
 
 At some height of interest with such a profile, say an edge distance $\delta$
 from the $x$-axis, one may also compute

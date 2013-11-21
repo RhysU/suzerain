@@ -95,13 +95,6 @@ void check_ideal_gas_approximation(
 // Test conversion to Cartesian primitive state by checking the residual
 // of the Euler spatial operator computed in primitive form.  Residual
 // should be small as the radial nozzle problem produces a stationary flow.
-//
-// Technically rho*a2 and not gam0*p should appear in A and B because the
-// nozzle problem employed a constant stagnation energy approximation rather
-// than requiring the ideal gas EOS to hold.  However, for large enough radii
-// the approximation should be sane.  but the ideal gas EOS should
-// approximately hold.  Test that with check_ideal_gas_approximation() first to
-// discover tolerances.
 static
 void check_euler_primitive_rel(
     const char * who,
@@ -116,6 +109,7 @@ void check_euler_primitive_rel(
         suzerain_radial_nozzle_cartesian_primitive(s, i, Ma, &rho, &u, &v,
                 &p, &rho_xi, &u_xi, &v_xi, &p_xi, &rho_y, &u_y, &v_y, &p_y);
 
+        // FIXME Push Ma**2/Ma0**2 factor into nozzle_cartesian_primitive
         // In nondimensional primitive variables with Ma dependence, that is
         const double U  [4] = { rho,    u,    v,    p    }; (void) U;
         const double U_x[4] = { rho_xi, u_xi, v_xi, p_xi };
@@ -125,12 +119,12 @@ void check_euler_primitive_rel(
         const double A[4][4] = { { u, rho,          0, 0           },
                                  { 0, u,            0, 1/rho/Ma/Ma },
                                  { 0, 0,            u, 0           },
-                                 { 0, s->gam0*p, 0, u              } };
+                                 { 0, rho*s->state[i].a2*Ma*Ma/s->Ma0/s->Ma0, 0, u              } };
         // and
         const double B[4][4] = { { v, 0, rho,        0           },
                                  { 0, v, 0,          0           },
                                  { 0, 0, v,          1/rho/Ma/Ma },
-                                 { 0, 0, s->gam0*p,  v           } };
+                                 { 0, 0, rho*s->state[i].a2*Ma*Ma/s->Ma0/s->Ma0,  v           } };
         // Computing the two matrix-vector products,
         double AU_x[4] = { 0, 0, 0, 0 };
         double BU_y[4] = { 0, 0, 0, 0 };
@@ -311,9 +305,9 @@ void test_supersonic1()
 
     // Do results approximately satisfy Cartesian Euler at various Ma?
     // Small radii case the ideal gas EOS to not be quite-so-satisfied.
-    check_ideal_gas_approximation(__func__, s,          GSL_SQRT_DBL_EPSILON);
-    check_euler_primitive_rel    (__func__, s, Ma0, 100*GSL_SQRT_DBL_EPSILON);
-    check_euler_primitive_rel    (__func__, s, 5.0, 100*GSL_SQRT_DBL_EPSILON);
+    check_ideal_gas_approximation(__func__, s,      GSL_SQRT_DBL_EPSILON);
+    check_euler_primitive_rel    (__func__, s, Ma0, GSL_SQRT_DBL_EPSILON);
+    check_euler_primitive_rel    (__func__, s, 5.0, GSL_SQRT_DBL_EPSILON);
     // check_euler_conserved_abs() is a disaster at small radii so don't bother
 
     free(s);
