@@ -214,14 +214,17 @@ suzerain_radial_nozzle_cartesian_primitive(
     double *u,
     double *v,
     double *p,
+    double *a,
     double *rho_xi,
     double *u_xi,
     double *v_xi,
     double *p_xi,
+    double *a_xi,
     double *rho_y,
     double *u_y,
     double *v_y,
-    double *p_y)
+    double *p_y,
+    double *a_y)
 {
     assert(i < s->size);
     // If u(R0) >= 0, compute at coords (x,delta).  Otherwise (-x,delta).
@@ -237,19 +240,23 @@ suzerain_radial_nozzle_cartesian_primitive(
     const double inv_R2  = gsl_pow_2(inv_R);
     const double Ma2Ma02 = gsl_pow_2(Ma / s->Ma0);
 
+    // Beware (*a) contains Ma/Ma0*a when computing (*a_xi) and (*a_y)
     const suzerain_radial_nozzle_state * const t = &s->state[i];
     *rho    = t->rho;
     *u      = t->u * x_inv_R;
     *v      = t->u * y_inv_R;
     *p      = t->p * Ma2Ma02;
+    *a      = sqrt(t->a2 * Ma2Ma02);
     *rho_xi = t->rhop * x_inv_R;
     *u_xi   =          inv_R2 * (x2 * t->up + y2 * inv_R * t->u);
     *v_xi   = x_inv_R*y_inv_R * (     t->up -      inv_R * t->u);
     *p_xi   = t->pp   * Ma2Ma02 * x_inv_R;
+    *a_xi   = (1 - s->gam0)/2 * x_inv_R * Ma * Ma * t->u * t->up / (*a);
     *rho_y  = t->rhop * y_inv_R;
     *u_y    = x_inv_R*y_inv_R * (     t->up -      inv_R * t->u);
     *v_y    =          inv_R2 * (y2 * t->up + x2 * inv_R * t->u);
     *p_y    = t->pp   * Ma2Ma02 * y_inv_R;
+    *a_y    = (1 - s->gam0)/2 * y_inv_R * Ma * Ma * t->u * t->up / (*a);
 }
 
 void
@@ -274,11 +281,11 @@ suzerain_radial_nozzle_cartesian_conserved(
     double *p_y)
 {
     // Delegate to compute local primitive state
-    double rho, u, v, rho_xi, u_xi, v_xi, rho_y, u_y, v_y;
+    double rho, u, v, a, rho_xi, u_xi, v_xi, a_xi, rho_y, u_y, v_y, a_y;
     suzerain_radial_nozzle_cartesian_primitive(
-        s, i, Ma, &rho,    &u,    &v,    p,
-                  &rho_xi, &u_xi, &v_xi, p_xi,
-                  &rho_y,  &u_y,  &v_y,  p_y);
+            s, i, Ma, &rho,    &u,    &v,    p,    &a,
+                      &rho_xi, &u_xi, &v_xi, p_xi, &a_xi,
+                      &rho_y,  &u_y,  &v_y,  p_y,  &a_y);
 
     // Convert primitive to conserved state
     const double invgam0m1 = 1/(s->gam0 - 1), Ma22 = Ma*Ma/2;

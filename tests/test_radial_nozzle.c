@@ -105,26 +105,29 @@ void check_euler_primitive_rel(
     for (size_t i = 0; i < s->size; ++i) {
 
         // Compute primitive state and derivatives for Ma, s->gam0
-        double rho, u, v, p, rho_xi, u_xi, v_xi, p_xi, rho_y , u_y , v_y , p_y;
-        suzerain_radial_nozzle_cartesian_primitive(s, i, Ma, &rho, &u, &v,
-                &p, &rho_xi, &u_xi, &v_xi, &p_xi, &rho_y, &u_y, &v_y, &p_y);
+        double rho,    u,    v,    p,    a;
+        double rho_xi, u_xi, v_xi, p_xi, a_xi;
+        double rho_y,  u_y,  v_y,  p_y,  a_y;
+        suzerain_radial_nozzle_cartesian_primitive(
+                s, i, Ma, &rho,    &u,    &v,    &p,    &a,
+                          &rho_xi, &u_xi, &v_xi, &p_xi, &a_xi,
+                          &rho_y,  &u_y,  &v_y,  &p_y,  &a_y);
 
-        // FIXME Push Ma**2/Ma0**2 factor into nozzle_cartesian_primitive
         // In nondimensional primitive variables with Ma dependence, that is
         const double U  [4] = { rho,    u,    v,    p    }; (void) U;
         const double U_x[4] = { rho_xi, u_xi, v_xi, p_xi };
         const double U_y[4] = { rho_y,  u_y,  v_y,  p_y  };
         // when a_0 != u_0, the 2D Euler equations take the
         // form \partial_t U + A \partial_x U + B \partial_y U = 0 with
-        const double A[4][4] = { { u, rho,          0, 0           },
-                                 { 0, u,            0, 1/rho/Ma/Ma },
-                                 { 0, 0,            u, 0           },
-                                 { 0, rho*s->state[i].a2*Ma*Ma/s->Ma0/s->Ma0, 0, u              } };
+        const double A[4][4] = { { u, rho,     0, 0           },
+                                 { 0, u,       0, 1/rho/Ma/Ma },
+                                 { 0, 0,       u, 0           },
+                                 { 0, rho*a*a, 0, u           } };
         // and
-        const double B[4][4] = { { v, 0, rho,        0           },
-                                 { 0, v, 0,          0           },
-                                 { 0, 0, v,          1/rho/Ma/Ma },
-                                 { 0, 0, rho*s->state[i].a2*Ma*Ma/s->Ma0/s->Ma0,  v           } };
+        const double B[4][4] = { { v, 0, rho,      0           },
+                                 { 0, v, 0,        0           },
+                                 { 0, 0, v,        1/rho/Ma/Ma },
+                                 { 0, 0, rho*a*a,  v           } };
         // Computing the two matrix-vector products,
         double AU_x[4] = { 0, 0, 0, 0 };
         double BU_y[4] = { 0, 0, 0, 0 };

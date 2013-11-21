@@ -244,14 +244,17 @@ suzerain_radial_nozzle_qoi_pexi(
  * @param[out] u      Result \f$u_\xi\f$
  * @param[out] v      Result \f$u_y  \f$
  * @param[out] p      Result \f$p    \f$
+ * @param[out] p      Result \f$a    \f$
  * @param[out] rho_xi Result \f$\frac{\partial}{\partial\xi} \rho \f$
  * @param[out] u_xi   Result \f$\frac{\partial}{\partial\xi} u_\xi\f$
  * @param[out] v_xi   Result \f$\frac{\partial}{\partial\xi} u_y  \f$
  * @param[out] p_xi   Result \f$\frac{\partial}{\partial\xi} p    \f$
+ * @param[out] a_xi   Result \f$\frac{\partial}{\partial\xi} a    \f$
  * @param[out] rho_y  Result \f$\frac{\partial}{\partial{}y} \rho \f$
  * @param[out] u_y    Result \f$\frac{\partial}{\partial{}y} u_\xi\f$
  * @param[out] v_y    Result \f$\frac{\partial}{\partial{}y} u_y  \f$
  * @param[out] p_y    Result \f$\frac{\partial}{\partial{}y} p    \f$
+ * @param[out] a_y    Result \f$\frac{\partial}{\partial{}y} a    \f$
  *
  * @see Model documentation in <tt>writeups/baseflow.tex</tt> for details.
  */
@@ -264,14 +267,17 @@ suzerain_radial_nozzle_cartesian_primitive(
     double *u,
     double *v,
     double *p,
+    double *a,
     double *rho_xi,
     double *u_xi,
     double *v_xi,
     double *p_xi,
+    double *a_xi,
     double *rho_y,
     double *u_y,
     double *v_y,
-    double *p_y);
+    double *p_y,
+    double *a_y);
 
 /**
  * Compute Cartesian base flow conserved state and pressure at \f$\left(R_0,
