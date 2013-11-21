@@ -140,17 +140,19 @@ equation may only be satisfied when
 \label{eq:momentum_and_continuity}
 \end{align}
 
-Following \citeauthor{Saad2011Coordinate}, we invoke that stagnation energy
-stays constant throughout such a flow to connect the local speed of sound to
-reference parameters and the local velocity.  That is, for flow enthalpy $h =
-a^2 / \left(\gamma-1\right)$, reference enthalpy $h_0 = a_0^2 /
-\left(\gamma_0-1\right)$, and reference velocity $u_0$,
+Following \citeauthor{Saad2011Coordinate}, we assume that specific total
+enthalpy $H$ stays constant through the flow to connect $a$ and $u$ to a
+reference specific enthalpy $h_0 = a_0^2 / \left(\gamma_0-1\right)$ and
+reference velocity $u_0$.  That is,
 \begin{align}
+     H
+     &=
         \frac{a^2  }{\gamma  -1} + \frac{1}{2} \vec{u}^2
-     &= \frac{a_0^2}{\gamma_0-1} + \frac{1}{2} u_0^2
+      = \frac{a_0^2}{\gamma_0-1} + \frac{1}{2} u_0^2
+      =  H_0
 \end{align}
 holds everywhere.  Notice the ideal gas equation of state, $\rho a^2 = \gamma
-p$, was not imposed and it will not be precisely satisfied.  After a slight
+p$, is not imposed and it will not be satisfied in generally.  After a slight
 rearrangement, our constant stagnation condition
 \begin{align}
         a^2
@@ -503,7 +505,7 @@ $R=\sqrt{x^2+y^2}$ one may compute the following:
 The $\Mach^2/\Mach[0]{}^2$ factor on $p$ translates pressure into a
 nondimensionalization potentially using some other Mach number $\Mach$ under
 the assumption that $p_0 = \rho_0 a_0^2$ holds in the target setting for a
-possibly different $a_0$ but $\rho_0$ and $u_0$ remain the same.  This
+possibly different $a_0$ while $\rho_0$ and $u_0$ remain the same.  This
 translation permits using radial nozzle state as an approximate pointwise
 solution to the steady, nondimensional, primitive Euler equations for a perfect
 gas written in Cartesian coordinates:
