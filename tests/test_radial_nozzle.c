@@ -153,11 +153,9 @@ void check_euler_primitive_rel(
 
 // Test conversion to Cartesian conserved state by checking the residual of the
 // Euler spatial operator computed in primitive form.  Residual should be small
-// as the radial nozzle problem produces a stationary flow.  The same ideal gas
-// EOS caveats from check_euler_primitive_rel apply here, except magnified since
-// the EOS is used to form total energy here.
+// as the radial nozzle problem produces a stationary flow.
 static
-void check_euler_conserved_abs(
+void check_euler_conserved_rel(
     const char * who,
     const suzerain_radial_nozzle_solution * const s,
     const double Ma,
@@ -178,19 +176,19 @@ void check_euler_conserved_abs(
                                ,   p_xi/Ma/Ma + ru/r*(2*ru_xi - ru*r_xi/r)
                                ,   (ru_xi*rv + ru*rv_xi - ru*rv*r_xi/r)/r
                                ,   (ru_xi*rE + ru*rE_xi - ru*rE*r_xi/r)/r
-                                 + (ru_xi*p + ru*p_xi - ru*p*r_xi/r)/r/Ma/Ma };
+                                 + (ru_xi*p + ru*p_xi - ru*p*r_xi/r)/r };
         const double f_y[4] = {   rv_y
                               ,   (ru_y*rv + ru*rv_y - ru*rv*r_y/r)/r
                               ,   p_y/Ma/Ma  + rv/r*(2*rv_y  - rv*r_y /r)
                               ,   (rv_y *rE + rv*rE_y  - rv*rE*r_y /r)/r
-                                + (rv_y *p + rv*p_y  - rv*p*r_y /r)/r/Ma/Ma };
+                                + (rv_y *p + rv*p_y  - rv*p*r_y /r)/r };
 
         // Check absolute balance of the streamwise and wall-normal fluxes
         const double R = s->state[i].R;
-        gsl_test_abs(f_xi[0], -f_y[0], tol, "%s: rho_t  Ma=%g, R=%g", who,Ma,R);
-        gsl_test_abs(f_xi[1], -f_y[1], tol, "%s: rhou_t Ma=%g, R=%g", who,Ma,R);
-        gsl_test_abs(f_xi[2], -f_y[2], tol, "%s: rhov_t Ma=%g, R=%g", who,Ma,R);
-        gsl_test_abs(f_xi[3], -f_y[3], tol, "%s: rhoE_t Ma=%g, R=%g", who,Ma,R);
+        gsl_test_rel(f_xi[0], -f_y[0], tol, "%s: rho_t  Ma=%g, R=%g", who,Ma,R);
+        gsl_test_rel(f_xi[1], -f_y[1], tol, "%s: rhou_t Ma=%g, R=%g", who,Ma,R);
+        gsl_test_rel(f_xi[2], -f_y[2], tol, "%s: rhov_t Ma=%g, R=%g", who,Ma,R);
+        gsl_test_rel(f_xi[3], -f_y[3], tol, "%s: rhoE_t Ma=%g, R=%g", who,Ma,R);
 
         // Lastly, to be sure the streamwise _xi direction is defined
         // correctly, check that streamwise momentum ru is always positive.
@@ -252,8 +250,8 @@ void test_subsonic()
     check_ideal_gas_approximation(__func__, s,      100*GSL_DBL_EPSILON);
     check_euler_primitive_rel    (__func__, s, Ma0, 100*GSL_DBL_EPSILON);
     check_euler_primitive_rel    (__func__, s, 5.0, 100*GSL_DBL_EPSILON);
-    check_euler_conserved_abs    (__func__, s, Ma0, 0.02);
-    check_euler_conserved_abs    (__func__, s, 5.0, 0.02);
+    check_euler_conserved_rel    (__func__, s, Ma0, GSL_SQRT_DBL_EPSILON);
+    check_euler_conserved_rel    (__func__, s, 5.0, GSL_SQRT_DBL_EPSILON);
 
     free(s);
 }
@@ -308,10 +306,11 @@ void test_supersonic1()
 
     // Do results approximately satisfy Cartesian Euler at various Ma?
     // Small radii case the ideal gas EOS to not be quite-so-satisfied.
-    check_ideal_gas_approximation(__func__, s,      GSL_SQRT_DBL_EPSILON);
-    check_euler_primitive_rel    (__func__, s, Ma0, GSL_SQRT_DBL_EPSILON);
-    check_euler_primitive_rel    (__func__, s, 5.0, GSL_SQRT_DBL_EPSILON);
-    // check_euler_conserved_abs() is a disaster at small radii so don't bother
+    check_ideal_gas_approximation(__func__, s,          GSL_SQRT_DBL_EPSILON);
+    check_euler_primitive_rel    (__func__, s, Ma0,     GSL_SQRT_DBL_EPSILON);
+    check_euler_primitive_rel    (__func__, s, 5.0,     GSL_SQRT_DBL_EPSILON);
+    check_euler_conserved_rel    (__func__, s, Ma0, 100*GSL_SQRT_DBL_EPSILON);
+    check_euler_conserved_rel    (__func__, s, 1.2, 100*GSL_SQRT_DBL_EPSILON);
 
     free(s);
 }
@@ -338,8 +337,8 @@ void test_supersonic2()
     check_ideal_gas_approximation(__func__, s,      1e4*GSL_DBL_EPSILON);
     check_euler_primitive_rel    (__func__, s, Ma0, GSL_SQRT_DBL_EPSILON);
     check_euler_primitive_rel    (__func__, s, 5.0, GSL_SQRT_DBL_EPSILON);
-    check_euler_conserved_abs    (__func__, s, Ma0, 0.0015);
-    check_euler_conserved_abs    (__func__, s, 1.2, 0.0025);
+    check_euler_conserved_rel    (__func__, s, Ma0, GSL_SQRT_DBL_EPSILON);
+    check_euler_conserved_rel    (__func__, s, 1.2, GSL_SQRT_DBL_EPSILON);
 
     free(s);
 }
