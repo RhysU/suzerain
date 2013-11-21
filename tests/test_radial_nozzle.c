@@ -306,11 +306,11 @@ void test_supersonic1()
 
     // Do results approximately satisfy Cartesian Euler at various Ma?
     // Small radii case the ideal gas EOS to not be quite-so-satisfied.
-    check_ideal_gas_approximation(__func__, s,          GSL_SQRT_DBL_EPSILON);
-    check_euler_primitive_rel    (__func__, s, Ma0,     GSL_SQRT_DBL_EPSILON);
-    check_euler_primitive_rel    (__func__, s, 5.0,     GSL_SQRT_DBL_EPSILON);
-    check_euler_conserved_rel    (__func__, s, Ma0, 100*GSL_SQRT_DBL_EPSILON);
-    check_euler_conserved_rel    (__func__, s, 1.2, 100*GSL_SQRT_DBL_EPSILON);
+    check_ideal_gas_approximation(__func__, s,      GSL_SQRT_DBL_EPSILON);
+    check_euler_primitive_rel    (__func__, s, Ma0, GSL_SQRT_DBL_EPSILON);
+    check_euler_primitive_rel    (__func__, s, 5.0, GSL_SQRT_DBL_EPSILON);
+    check_euler_conserved_rel    (__func__, s, Ma0, GSL_SQRT_DBL_EPSILON);
+    check_euler_conserved_rel    (__func__, s, 1.2, GSL_SQRT_DBL_EPSILON);
 
     free(s);
 }
