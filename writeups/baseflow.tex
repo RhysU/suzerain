@@ -68,7 +68,7 @@
 \begin{abstract}
 This document discusses how to obtain a favorable pressure gradient base flow
 for use within temporally homogenized boundary layer simulations.  First, a
-compressible potential flow problem is formulated for an isentropic, radially
+compressible potential flow problem is formulated for an isenthalpic, radially
 symmetric source or sink flow.  The resulting one-dimensional problem is cast
 into a form commodity ODE integrators can solve to obtain primitive state as a
 function of radius.  The solution is then mapped from $\left(r,\theta\right)$
@@ -83,9 +83,9 @@ used to produce base flows in the spirit of laminar CEV heat shield conditions.
 
 \tableofcontents
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{The nondimensional, isentropic, compressible potential flow equations}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{The nondimensional, compressible, isenthalpic potential flow equation}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 A succinct, coordinate-independent derivation of the velocity-potential
 formulation of the compressible potential flow equations appears in section
@@ -104,17 +104,16 @@ The steady, inviscid momentum equation in an irrotational flow yields
 \label{eq:momentum}
 .
 \end{align}
-The irrotational velocity could be replaced by the gradient of a scalar
+The irrotational velocity may be replaced by the gradient of a scalar
 potential, \emph{viz.}
 \begin{align}
   \vec{u} = \vec{\nabla}\phi + \vec{\nabla}\times\vec{A} = \vec{\nabla}{\phi}
   .
 \end{align}
-Combining the definition of the speed of sound~$a$, an isentropic assumption,
+Combining the definition of the speed of sound~$a$
 and equation~\eqref{eq:momentum},
 \begin{align}
-    \left(\frac{\partial p}{\partial \rho}\right)_{s} =
-          \frac{\partial p}{\partial \rho}            = a^2
+    \left(\frac{\partial p}{\partial \rho}\right)_{s} = a^2
     \implies
     \vec{\nabla}\rho = \frac{1}{a^2} \vec{\nabla} p
                      = - \frac{\rho}{2a^2} \vec{\nabla}\vec{u}^2
