@@ -240,23 +240,25 @@ suzerain_radial_nozzle_cartesian_primitive(
     const double inv_R2  = gsl_pow_2(inv_R);
     const double Ma2Ma02 = gsl_pow_2(Ma / s->Ma0);
 
-    // Beware (*a) contains Ma/Ma0*a when computing (*a_xi) and (*a_y)
     const suzerain_radial_nozzle_state * const t = &s->state[i];
     *rho    = t->rho;
     *u      = t->u * x_inv_R;
     *v      = t->u * y_inv_R;
     *p      = t->p * Ma2Ma02;
-    *a      = sqrt(t->a2 * Ma2Ma02);
     *rho_xi = t->rhop * x_inv_R;
     *u_xi   =          inv_R2 * (x2 * t->up + y2 * inv_R * t->u);
     *v_xi   = x_inv_R*y_inv_R * (     t->up -      inv_R * t->u);
     *p_xi   = t->pp   * Ma2Ma02 * x_inv_R;
-    *a_xi   = (1 - s->gam0)/2 * x_inv_R * Ma * Ma * t->u * t->up / (*a);
     *rho_y  = t->rhop * y_inv_R;
     *u_y    = x_inv_R*y_inv_R * (     t->up -      inv_R * t->u);
     *v_y    =          inv_R2 * (y2 * t->up + x2 * inv_R * t->u);
     *p_y    = t->pp   * Ma2Ma02 * y_inv_R;
-    *a_y    = (1 - s->gam0)/2 * y_inv_R * Ma * Ma * t->u * t->up / (*a);
+
+    // Beware (*a) contains Ma/Ma0*a when computing ap, *a_xi, and *a_y
+    *a    = sqrt(t->a2 * Ma2Ma02);
+    const double ap = (1 - s->gam0) / 2 * Ma * Ma * t->u * t->up / (*a);
+    *a_xi = x_inv_R * ap;
+    *a_y  = y_inv_R * ap;
 }
 
 void
