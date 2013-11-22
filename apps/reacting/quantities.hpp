@@ -85,10 +85,13 @@ public:
     ((p,                 1))  /* scalar           */ \
     ((a,                 1))  /* scalar           */ \
     ((M,                 1))  /* scalar           */ \
+    ((Cv,                1))  /* scalar           */ \
+    ((Cp,                1))  /* scalar           */ \
     ((mu,                1))  /* scalar           */ \
     ((nu,                1))  /* scalar           */ \
     ((kappa,             1))  /* scalar           */ \
     ((D0,                1))  /* scalar           */ \
+    ((rho_D0,            1))  /* scalar           */ \
     ((u,                 3))  /* vector           */ \
     ((sym_grad_u,        6))  /* symmetric tensor */ \
     ((sym_rho_grad_u,    6))  /* symmetric tensor */ \

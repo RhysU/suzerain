@@ -170,7 +170,8 @@ public:
                    real_t* hs,
                    real_t* om,
                    real_t& a,
-                   real_t& Cv) const;
+                   real_t& Cv,
+                   real_t& Cp) const;
 
     /**
      * Given conserved state, compute required thermodynamic and
@@ -204,7 +205,8 @@ public:
                    VectorXr& hs,
                    VectorXr& om,
                    real_t&   a,
-                   real_t&   Cv) const;
+                   real_t&   Cv,
+                   real_t&   Cp) const;
 
     /**
      * Given conserved state, compute required thermodynamic and

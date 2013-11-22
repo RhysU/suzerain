@@ -643,10 +643,10 @@ quantities sample_quantities(
                 // Compute temperature, pressure, mass diffusivities,
                 // viscosity, thermal conductivity, species enthalpies, and
                 // reaction source terms
-                real_t T, p, mu, kap, a, Cv;
+                real_t T, p, mu, kap, a, Cv, Cp;
                 Tguess = auxp(aux::T, offset);
                 cmods.evaluate(e, m, rho, species, cs, Tguess,
-                               T, p, Ds, mu, kap, hs, om, a, Cv);
+                               T, p, Ds, mu, kap, hs, om, a, Cv, Cp);
 
                 // Extract grad(T)
                 const Vector3r grad_T ( auxp(aux::gT+dir::x, offset),
@@ -698,6 +698,10 @@ quantities sample_quantities(
 
                 sum_M[0](M);
 
+                sum_Cv[0](Cv);
+
+                sum_Cp[0](Cp);
+
                 sum_mu[0](mu);
 
                 sum_nu[0](mu / rho);
@@ -707,6 +711,8 @@ quantities sample_quantities(
                 // NOTE: D0 is meaningful alone only in the case of
                 // constant Lewis number
                 sum_D0[0](Ds[0]);
+
+                sum_rho_D0[0](rho * Ds[0]);
 
                 sum_u[0](u.x());
                 sum_u[1](u.y());
@@ -894,7 +900,7 @@ quantities sample_quantities(
             ret.storage.middleCols<quantities::nscalars::physical>(
                 quantities::start::physical).data(),
             ret.storage.innerStride(), ret.storage.outerStride());
-    scaled_mass.solve(2*Ns, ret.species_storage.data(),
+    scaled_mass.solve(11*Ns, ret.species_storage.data(),
                       ret.species_storage.innerStride(),
                       ret.species_storage.outerStride());
 
