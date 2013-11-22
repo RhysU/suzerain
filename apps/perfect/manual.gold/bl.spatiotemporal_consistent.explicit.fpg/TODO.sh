@@ -26,7 +26,6 @@ h5diff -r -c -v --exclude-path /metadata_generated "$@" "$SCRIPTDIR/initial.h5" 
                    --radial_nozzle_gam0=1.40926817855057 \
                    --radial_nozzle_rho1=1                \
                    --radial_nozzle_u1=-0.154983103461198 \
-                   --radial_nozzle_p1=1                  \
                    --radial_nozzle_R1=46.1242981386578
 h5diff -r -c -v --exclude-path /metadata_generated "$@" "$SCRIPTDIR/initial0.h5" initial0.h5
 
