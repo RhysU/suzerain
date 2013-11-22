@@ -120,10 +120,10 @@ suzerain_radial_nozzle_solver(
     double y[3] = { u1, rho1, p1 };
     params_type params = { Ma0*Ma0, gam0 - 1 };
     gsl_odeiv2_system sys = { &nozzle_rhs, 0, sizeof(y)/sizeof(y[0]), &params};
-    const double abstol = GSL_SQRT_DBL_EPSILON;
+    const double abstol = 0;
     const double reltol = GSL_SQRT_DBL_EPSILON;
     gsl_odeiv2_driver * driver = gsl_odeiv2_driver_alloc_y_new(
-            &sys, gsl_odeiv2_step_rkf45, sqrt(abstol), abstol, reltol);
+            &sys, gsl_odeiv2_step_rkf45, GSL_SQRT_DBL_EPSILON, abstol, reltol);
     if (!driver) {
         free(s);
         SUZERAIN_ERROR_NULL("Driver allocation failed", GSL_EFAILED);
