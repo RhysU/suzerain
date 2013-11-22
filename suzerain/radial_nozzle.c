@@ -280,34 +280,34 @@ suzerain_radial_nozzle_cartesian_conserved(
     double *rE_y,
     double *p_y)
 {
-    // Delegate to compute local primitive state
+    // Though expected from formulation, method does not assume H = constant
+
+    // Delegate to compute local primitive state and p, p_xi, p_y
     double rho, u, v, a, rho_xi, u_xi, v_xi, a_xi, rho_y, u_y, v_y, a_y;
     suzerain_radial_nozzle_cartesian_primitive(
             s, i, Ma, &rho,    &u,    &v,    p,    &a,
                       &rho_xi, &u_xi, &v_xi, p_xi, &a_xi,
                       &rho_y,  &u_y,  &v_y,  p_y,  &a_y);
 
-    // Convert to conserved state using \rho H = \rho E + p.
+
+    // Convert to conserved state using \rho H = \rho E + p
     const double invgam0m1 = 1/(s->gam0 - 1);
     const double Ma22      = Ma*Ma/2;
-    const double H         = a*a*invgam0m1 + Ma22*u*u;
+    const double H         = a*a*invgam0m1 + Ma22*(u*u + v*v);
     *r  = rho;
     *ru = rho*u;
     *rv = rho*v;
     *rE = rho*H - *p;
 
-    // Convert streamwise primitive derivatives to conserved derivatives.
-    // FIXME Though expected by formulation, does not assume H = H0 = constant.
+    // Convert streamwise primitive derivatives to conserved derivatives
     const double H_xi = 0; // FIXME 2*(a*a_xi*invgam0m1 + Ma22*u*u_xi);
     *r_xi  = rho_xi;
     *ru_xi = rho*u_xi + rho_xi*u;
     *rv_xi = rho*v_xi + rho_xi*v;
     *rE_xi = rho*H_xi + rho_xi*H - *p_xi;
 
-    // Convert wall-normal primitive derivatives to conserved derivatives.
-    // FIXME Though expected by formulation, does not assume H = H0 = constant.
+    // Convert wall-normal primitive derivatives to conserved derivatives
     const double H_y = 0; // FIXME 2*(a*a_y*invgam0m1 + Ma22*u*u_y);
-    *r_xi = rho_xi;
     *r_y  = rho_y ;
     *ru_y = rho*u_y + rho_y*u;
     *rv_y = rho*v_y + rho_y*v;
