@@ -255,10 +255,10 @@ suzerain_radial_nozzle_cartesian_primitive(
     *p_y    = t->pp   * Ma2Ma02 * y_inv_R;
 
     // Beware (*a) contains Ma/Ma0*a when computing ap, *a_xi, and *a_y
-    *a    = sqrt(t->a2 * Ma2Ma02);
+    *a              = sqrt(t->a2 * Ma2Ma02);
     const double ap = (1 - s->gam0) / 2 * Ma * Ma * t->u * t->up / (*a);
-    *a_xi = x_inv_R * ap;
-    *a_y  = y_inv_R * ap;
+    *a_xi           = x_inv_R * ap;
+    *a_y            = y_inv_R * ap;
 }
 
 void
