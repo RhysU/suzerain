@@ -6,7 +6,7 @@ file "$BASH_SOURCE" | grep "Bourne-Again shell script" >/dev/null
 
 # Check that all bash scripts have valid syntax
 status=0
-for entry in *; do
+for entry in "*"; do
     if file "$entry" | grep "Bourne-Again shell script" >/dev/null; then
            (bash -n "$entry" && echo "$entry: syntax ok"   ) \
         || (status=1         && echo "$entry: syntax ERROR")
