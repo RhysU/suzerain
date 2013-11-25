@@ -105,11 +105,11 @@ if test -n "${radial_nozzle}"; then
 			EOD
 		) -F, dstag Ma0 gam0 rho1 u1 R0 | sed "${radial_nozzle}!d"
 	)
-	test -n "${radial_nozzle_Ma0}"  || echo Problem getting Ma0  && false
-	test -n "${radial_nozzle_gam0}" || echo Problem getting gam0 && false
-	test -n "${radial_nozzle_rho1}" || echo Problem getting rho1 && false
-	test -n "${radial_nozzle_u1}"   || echo Problem getting u1   && false
-	test -n "${radial_nozzle_R1}"   || echo Problem getting R1   && false
+	test -n "${radial_nozzle_Ma0}"  || (echo Problem getting Ma0  && false)
+	test -n "${radial_nozzle_gam0}" || (echo Problem getting gam0 && false)
+	test -n "${radial_nozzle_rho1}" || (echo Problem getting rho1 && false)
+	test -n "${radial_nozzle_u1}"   || (echo Problem getting u1   && false)
+	test -n "${radial_nozzle_R1}"   || (echo Problem getting R1   && false)
 	echo Loaded data for distance $dstag leeward of stagnation point
 	gamma=${radial_nozzle_gam0} && echo Forced --gamma=${gamma}
 fi
