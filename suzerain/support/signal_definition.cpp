@@ -98,7 +98,8 @@ static std::vector<int> parse_spec(const std::string& name,
 signal_definition::signal_definition(const std::string& specstatus,
                                      const std::string& specrestart,
                                      const std::string& specstatistics,
-                                     const std::string& specteardown)
+                                     const std::string& specteardown,
+                                     const std::string& spechalt)
     : status    (parse_spec("signal_definition(specstatus,...)",
                             specstatus))
     , restart   (parse_spec("signal_definition(...,specrestart,...)",
@@ -107,6 +108,8 @@ signal_definition::signal_definition(const std::string& specstatus,
                             specstatistics))
     , teardown  (parse_spec("signal_definition(...,specteardown)",
                             specteardown))
+    , halt      (parse_spec("signal_definition(...,spechalt)",
+                            spechalt))
 {
 }
 
@@ -144,6 +147,11 @@ signal_definition::options_description()
               back_insert_iterator<vector<string> >(names_teardown),
               &suzerain_signal_name);
 
+    vector<string> names_halt;
+    transform(halt.begin(), halt.end(),
+              back_insert_iterator<vector<string> >(names_halt),
+              &suzerain_signal_name);
+
     // Construct the collection of options to be returned
     retval.add_options()
     ("signal_status", value<std::string>()
@@ -165,6 +173,11 @@ signal_definition::options_description()
      ->default_value(join(names_teardown, ","))
      ->notifier(boost::bind(&signal_definition::parse_teardown, this, _1)),
      "Tear down simulation on any signal in this comma-separated list")
+
+    ("signal_halt", value<std::string>()
+     ->default_value(join(names_halt, ","))
+     ->notifier(boost::bind(&signal_definition::parse_halt, this, _1)),
+     "Halt simulation on any signal in this comma-separated list")
     ;
 
     return retval;
@@ -192,6 +205,12 @@ void signal_definition::parse_teardown(const std::string& spec)
 {
     std::vector<int> tmp = parse_spec("--signal_teardown", spec);
     this->teardown.swap(tmp);
+}
+
+void signal_definition::parse_halt(const std::string& spec)
+{
+    std::vector<int> tmp = parse_spec("--signal_halt", spec);
+    this->halt.swap(tmp);
 }
 
 } // end namespace support

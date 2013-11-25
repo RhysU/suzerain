@@ -54,13 +54,16 @@ public:
      * @param specstatistics Comma-separated signal names indicating statistics
      *                       should be sampled and output to file.
      * @param specteardown   Comma-separated signal names indicating the
-     *                       simulation should be exited.
+     *                       simulation should be torn down.
+     * @param spechalt       Comma-separated signal names indicating the
+     *                       simulation should be halted.
      */
     explicit signal_definition(
             const std::string& specstatus      = "HUP",
             const std::string& specrestart     = "HUP",
             const std::string& specstatistics  = "",
-            const std::string& specteardown    = "INT,USR1,USR2,TERM");
+            const std::string& specteardown    = "USR1,USR2,TERM",
+            const std::string& spechalt        = "INT");
 
     /** @copydoc definition_base::options_description() */
     virtual boost::program_options::options_description options_description();
@@ -74,8 +77,11 @@ public:
     /** Signal numbers indicating a statistics file should be written. */
     std::vector<int> statistics;
 
-    /** Signal numbers indicating the simulation should be exited. */
+    /** Signal numbers indicating the simulation should be torn down. */
     std::vector<int> teardown;
+
+    /** Signal numbers indicating the simulation should be halted. */
+    std::vector<int> halt;
 
 private:
 
@@ -90,6 +96,9 @@ private:
 
     /** Parse a status specification into this->teardown */
     void parse_teardown(const std::string& spec);
+
+    /** Parse a status specification into this->halt */
+    void parse_halt(const std::string& spec);
 };
 
 } // namespace support

@@ -95,6 +95,12 @@ static void driver_base_process_signal(const int sig)
 
     // signal::global_received[signal::teardown_proactive] "detected"
     // within delta_t_allreducer::operator()(...).
+    //
+    // Determine if we should halt the simulation due to the signal
+    end = driver_base::signaldef.halt.end();
+    if (find(driver_base::signaldef.halt.begin(), end, sig) != end) {
+        signal::global_received[signal::halt_reactive] = sig;
+    }
 
     // Determine if we should compute and write statistics due to the signal
     end = driver_base::signaldef.statistics.end();
@@ -140,6 +146,7 @@ driver_base::driver_base(
     , N()
     , controller()
     , received_teardown(true)
+    , received_halt(false)
     , log_status_L2_header_shown(false)
     , log_status_bulk_header_shown(false)
     , log_boundary_layer_quantities_wall_header_shown(false)
@@ -405,6 +412,8 @@ driver_base::prepare_controller(
                           signaldef.statistics.end());
         s.insert(s.end(), signaldef.teardown.begin(),
                           signaldef.teardown.end());
+        s.insert(s.end(), signaldef.halt.begin(),
+                          signaldef.halt.end());
         sort(s.begin(), s.end());
         s.erase(unique(s.begin(), s.end()), s.end());
 
@@ -462,6 +471,7 @@ driver_base::advance_controller(
     const time_type t_initial  = controller->current_t();
     const step_type nt_initial = controller->current_nt();
     received_teardown = false;
+    received_halt = false;
     wtime_advance_start = MPI_Wtime();
 #pragma warning(push,disable:1572)
     switch ((!!timedef->advance_dt << 1) + !!timedef->advance_nt) {
@@ -505,8 +515,11 @@ driver_base::advance_controller(
 #endif
     }
     if (received_teardown) {
-        INFO0(who, "Time controller stopped in reaction to tear down signal");
+        INFO0(who, "Time controller stopped in reaction to tear down request");
         success = true; // ...treat like successful advance
+    } else if (received_halt) {
+        INFO0(who, "Time controller halted because of incoming signal");
+        success = false; // ...treat like failed advance
     } else if (!success && controller->current_dt() < controller->min_dt()) {
         WARN0(who, "Time controller halted because step "
               << controller->current_dt() << " was smaller than min_dt "
@@ -1425,21 +1438,24 @@ driver_base::process_any_signals_received(
         keep_advancing = keep_advancing && save_restart(t, nt);
     }
 
-    if (signal_received[signal::teardown_reactive]) {
-        const char * const name = suzerain_signal_name(
-                signal_received[signal::teardown_reactive]);
-        INFO0(log_signal,
-              "Initiating teardown due to receipt of " << name);
-        received_teardown = true;
-        keep_advancing    = false;
-        switch (signal_received[signal::teardown_reactive]) {
-        case SIGINT:
-        case SIGTERM:
-            INFO0(log_signal,
-                  "Receipt of another " << name <<
-                  " will forcibly terminate program");
-            signal2(signal_received[signal::teardown_reactive], SIG_DFL);
-            break;
+    {
+        signal::received_type::value_type signum; // Assigned in "if"
+        if (    (signum = signal_received[signal::teardown_reactive])
+            ||  (signum = signal_received[signal::halt_reactive    ])) {
+            const char * const name = suzerain_signal_name(signum);
+            INFO0(log_signal, "Tearing down due to receipt of " << name);
+            received_teardown = signal_received[signal::teardown_reactive];
+            received_halt     = signal_received[signal::halt_reactive    ];
+            keep_advancing    = false;
+            switch (signum) {
+            case SIGINT:
+            case SIGTERM:
+                INFO0(log_signal,
+                      "Receipt of another " << name <<
+                      " will forcibly terminate program");
+                signal2(signum, SIG_DFL);
+                break;
+            }
         }
     }
 

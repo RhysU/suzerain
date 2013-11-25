@@ -60,11 +60,14 @@ enum action_type
     /** Write a restart file */
     write_restart,
 
-    /** Tear down the simulation (proactively due to --advance_wt limit). */
+    /** Tear down the simulation (reactively due to an incoming signal). */
     teardown_reactive,
 
-    /** Tear down the simulation (reactively due to an incoming signal). */
+    /** Tear down the simulation (proactively due to --advance_wt limit). */
     teardown_proactive,
+
+    /** Halt the simulation (reactively due to an incoming signal). */
+    halt_reactive,
 
     /** Compute and write a statistics file. */
     write_statistics,
@@ -644,9 +647,15 @@ protected:
     virtual void default_status_interval(time_type& dt, step_type& nt);
 
     /**
-     * Did the previous time advance end in a predicted, controlled manner?
+     * Did the previous time advance end because of tear down receipt?
      */
     bool received_teardown;
+
+    /**
+     * Did the previous time advance end because of halt receipt?  This is like
+     * #received_teardown except #advance_controller considers it a failure.
+     */
+    bool received_halt;
 
     /**
      * Flag used to control whether \ref log_status_L2 shows headers.
