@@ -79,7 +79,7 @@ test -z "${largo_formulation}" && largo_grdelta=""
 # Disgusting hoops permit easily updating CSV data embedded at end of file.
 if test -n "${radial_nozzle}"; then
 	echo Looking radial nozzle problem with index "${radial_nozzle}"...
-	read dstag radial_nozzle_{Ma0,gam0,rho1,u1,R1} <(
+	read dstag radial_nozzle_{Ma0,gam0,rho1,u1,R1} < <(
 		cat <(sed -e '0,/^exit *# *Embedded/d' $0) | awk -f <(cat - <<-'EOD'
 			# Modified from http://stackoverflow.com/questions/16092167.
 			BEGIN {
