@@ -646,7 +646,7 @@ protected:
     /**
      * Did the previous time advance end in a predicted, controlled manner?
      */
-    bool soft_teardown;
+    bool received_teardown;
 
     /**
      * Flag used to control whether \ref log_status_L2 shows headers.

@@ -139,7 +139,7 @@ driver_base::driver_base(
     , L()
     , N()
     , controller()
-    , soft_teardown(true)
+    , received_teardown(true)
     , log_status_L2_header_shown(false)
     , log_status_bulk_header_shown(false)
     , log_boundary_layer_quantities_wall_header_shown(false)
@@ -461,7 +461,7 @@ driver_base::advance_controller(
     bool success = true;
     const time_type t_initial  = controller->current_t();
     const step_type nt_initial = controller->current_nt();
-    soft_teardown = false;
+    received_teardown = false;
     wtime_advance_start = MPI_Wtime();
 #pragma warning(push,disable:1572)
     switch ((!!timedef->advance_dt << 1) + !!timedef->advance_nt) {
@@ -504,7 +504,7 @@ driver_base::advance_controller(
         grvy_log_setlevel(GRVY_INFO);   // Re-enable GRVY warnings
 #endif
     }
-    if (soft_teardown) {
+    if (received_teardown) {
         INFO0(who, "Time controller stopped in reaction to tear down signal");
         success = true; // ...treat like successful advance
     } else if (!success && controller->current_dt() < controller->min_dt()) {
@@ -1430,8 +1430,8 @@ driver_base::process_any_signals_received(
                 signal_received[signal::teardown_reactive]);
         INFO0(log_signal,
               "Initiating teardown due to receipt of " << name);
-        soft_teardown  = true;
-        keep_advancing = false;
+        received_teardown = true;
+        keep_advancing    = false;
         switch (signal_received[signal::teardown_reactive]) {
         case SIGINT:
         case SIGTERM:
@@ -1446,8 +1446,8 @@ driver_base::process_any_signals_received(
     if (signal_received[signal::teardown_proactive]) {
         INFO0(log_signal,
               "Initiating proactive teardown because of wall time constraint");
-        soft_teardown  = true;
-        keep_advancing = false;
+        received_teardown = true;
+        keep_advancing    = false;
     }
 
     if (signal_received[signal::write_statistics]) {
@@ -1512,7 +1512,7 @@ real_t delta_t_allreducer::operator()(
     // When possible, obtain time step period statistics and a projected
     // wall time for when we could complete the next time step and dump a
     // restart file.  If the projection is after --advance_wt, register
-    // teardown.  Logic here is key to proactive soft_teardown success.
+    // teardown.  Logic here is key to proactive soft teardown success.
     static double wtime_last = std::numeric_limits<double>::quiet_NaN();
     if (timedef->advance_wt > 0 && (boost::math::isfinite)(wtime_last)) {
 
