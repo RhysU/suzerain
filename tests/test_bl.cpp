@@ -176,7 +176,7 @@ BOOST_FIXTURE_TEST_CASE( blasius_find_edge, fixture_four_thousand )
         ke.get() /* \approx H_0 */, &location, dB.get(), b.bw, b.dbw));
 
     // Thickness from eyeballing results computed in Octave
-    //   source writeups/notebooks/blasius.m
+    //   source notebooks/blasius.m
     //   Re=1000; plot(blasius_y(Re), blasius_kepp(Re),
     //                 blasius_y(Re), zeros(size(blasius_eta)))
     //   ylim([-eps eps])
@@ -280,7 +280,7 @@ BOOST_FIXTURE_TEST_CASE( blasius_compute_thicknesses, fixture_four_ten_thousand)
 
     // Compute a bunch of thickness-related quantities
     // Thickness from eyeballing results computed in Octave:
-    //   source writeups/notebooks/blasius.m
+    //   source notebooks/blasius.m
     //   Re=10000; plot(blasius_y(Re), blasius_kepp(Re),
     //                  blasius_y(Re), zeros(size(blasius_eta)))
     // Integrals found using Octave's trapz against this data.

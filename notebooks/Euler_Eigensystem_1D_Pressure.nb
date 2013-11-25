@@ -22,18 +22,18 @@ Notebook[{
 Cell[CellGroupData[{
 Cell[BoxData[{
  RowBox[{
-  RowBox[{"A", "=", 
-   RowBox[{"{", 
+  RowBox[{"A", "=",
+   RowBox[{"{",
     RowBox[{
-     RowBox[{"{", 
-      RowBox[{"0", ",", " ", "\[Rho]", ",", "0"}], "}"}], ",", 
-     RowBox[{"{", 
-      RowBox[{"0", ",", "0", ",", 
-       RowBox[{"1", "/", "\[Rho]"}]}], "}"}], ",", 
-     RowBox[{"{", 
-      RowBox[{"0", ",", 
-       RowBox[{"\[Gamma]", " ", "p"}], ",", " ", "0"}], "}"}]}], "}"}]}], 
-  ";"}], "\[IndentingNewLine]", 
+     RowBox[{"{",
+      RowBox[{"0", ",", " ", "\[Rho]", ",", "0"}], "}"}], ",",
+     RowBox[{"{",
+      RowBox[{"0", ",", "0", ",",
+       RowBox[{"1", "/", "\[Rho]"}]}], "}"}], ",",
+     RowBox[{"{",
+      RowBox[{"0", ",",
+       RowBox[{"\[Gamma]", " ", "p"}], ",", " ", "0"}], "}"}]}], "}"}]}],
+  ";"}], "\[IndentingNewLine]",
  RowBox[{"%", "//", "MatrixForm"}]}], "Input",
  CellChangeTimes->{{3.570273698751494*^9, 3.5702737558905783`*^9}}],
 
@@ -41,22 +41,22 @@ Cell[BoxData[
  TagBox[
   RowBox[{"(", "\[NoBreak]", GridBox[{
      {"0", "\[Rho]", "0"},
-     {"0", "0", 
+     {"0", "0",
       FractionBox["1", "\[Rho]"]},
-     {"0", 
+     {"0",
       RowBox[{"p", " ", "\[Gamma]"}], "0"}
     },
     GridBoxAlignment->{
-     "Columns" -> {{Center}}, "ColumnsIndexed" -> {}, "Rows" -> {{Baseline}}, 
+     "Columns" -> {{Center}}, "ColumnsIndexed" -> {}, "Rows" -> {{Baseline}},
       "RowsIndexed" -> {}},
     GridBoxSpacings->{"Columns" -> {
         Offset[0.27999999999999997`], {
-         Offset[0.7]}, 
+         Offset[0.7]},
         Offset[0.27999999999999997`]}, "ColumnsIndexed" -> {}, "Rows" -> {
         Offset[0.2], {
-         Offset[0.4]}, 
+         Offset[0.4]},
         Offset[0.2]}, "RowsIndexed" -> {}}], "\[NoBreak]", ")"}],
-  Function[BoxForm`e$, 
+  Function[BoxForm`e$,
    MatrixForm[BoxForm`e$]]]], "Output",
  CellChangeTimes->{3.570273734002186*^9}]
 }, Open  ]],
@@ -68,18 +68,18 @@ Cell[BoxData[
  CellChangeTimes->{{3.570273736600482*^9, 3.5702737404281*^9}}],
 
 Cell[BoxData[
- RowBox[{"{", 
-  RowBox[{"0", ",", 
-   RowBox[{"-", 
+ RowBox[{"{",
+  RowBox[{"0", ",",
+   RowBox[{"-",
     FractionBox[
      RowBox[{
-      SqrtBox["p"], " ", 
-      SqrtBox["\[Gamma]"]}], 
-     SqrtBox["\[Rho]"]]}], ",", 
+      SqrtBox["p"], " ",
+      SqrtBox["\[Gamma]"]}],
+     SqrtBox["\[Rho]"]]}], ",",
    FractionBox[
     RowBox[{
-     SqrtBox["p"], " ", 
-     SqrtBox["\[Gamma]"]}], 
+     SqrtBox["p"], " ",
+     SqrtBox["\[Gamma]"]}],
     SqrtBox["\[Rho]"]]}], "}"}]], "Output",
  CellChangeTimes->{3.570273740972313*^9}]
 }, Open  ]],
@@ -88,18 +88,18 @@ Cell[CellGroupData[{
 
 Cell[BoxData[{
  RowBox[{
-  RowBox[{"B", "=", 
-   RowBox[{"{", 
+  RowBox[{"B", "=",
+   RowBox[{"{",
     RowBox[{
-     RowBox[{"{", 
-      RowBox[{"0", ",", " ", "0", ",", "0"}], "}"}], ",", 
-     RowBox[{"{", 
-      RowBox[{"0", ",", "0", ",", 
-       RowBox[{"1", "/", "\[Rho]"}]}], "}"}], ",", 
-     RowBox[{"{", 
-      RowBox[{"0", ",", 
-       RowBox[{"\[Gamma]", " ", "p"}], ",", " ", "0"}], "}"}]}], "}"}]}], 
-  ";"}], "\[IndentingNewLine]", 
+     RowBox[{"{",
+      RowBox[{"0", ",", " ", "0", ",", "0"}], "}"}], ",",
+     RowBox[{"{",
+      RowBox[{"0", ",", "0", ",",
+       RowBox[{"1", "/", "\[Rho]"}]}], "}"}], ",",
+     RowBox[{"{",
+      RowBox[{"0", ",",
+       RowBox[{"\[Gamma]", " ", "p"}], ",", " ", "0"}], "}"}]}], "}"}]}],
+  ";"}], "\[IndentingNewLine]",
  RowBox[{"%", "//", "MatrixForm"}]}], "Input",
  CellChangeTimes->{{3.570273698751494*^9, 3.570273767806547*^9}}],
 
@@ -107,22 +107,22 @@ Cell[BoxData[
  TagBox[
   RowBox[{"(", "\[NoBreak]", GridBox[{
      {"0", "0", "0"},
-     {"0", "0", 
+     {"0", "0",
       FractionBox["1", "\[Rho]"]},
-     {"0", 
+     {"0",
       RowBox[{"p", " ", "\[Gamma]"}], "0"}
     },
     GridBoxAlignment->{
-     "Columns" -> {{Center}}, "ColumnsIndexed" -> {}, "Rows" -> {{Baseline}}, 
+     "Columns" -> {{Center}}, "ColumnsIndexed" -> {}, "Rows" -> {{Baseline}},
       "RowsIndexed" -> {}},
     GridBoxSpacings->{"Columns" -> {
         Offset[0.27999999999999997`], {
-         Offset[0.7]}, 
+         Offset[0.7]},
         Offset[0.27999999999999997`]}, "ColumnsIndexed" -> {}, "Rows" -> {
         Offset[0.2], {
-         Offset[0.4]}, 
+         Offset[0.4]},
         Offset[0.2]}, "RowsIndexed" -> {}}], "\[NoBreak]", ")"}],
-  Function[BoxForm`e$, 
+  Function[BoxForm`e$,
    MatrixForm[BoxForm`e$]]]], "Output",
  CellChangeTimes->{{3.570273763851233*^9, 3.570273768493033*^9}}]
 }, Open  ]],
@@ -134,18 +134,18 @@ Cell[BoxData[
  CellChangeTimes->{{3.5702737709014807`*^9, 3.57027377340405*^9}}],
 
 Cell[BoxData[
- RowBox[{"{", 
-  RowBox[{"0", ",", 
-   RowBox[{"-", 
+ RowBox[{"{",
+  RowBox[{"0", ",",
+   RowBox[{"-",
     FractionBox[
      RowBox[{
-      SqrtBox["p"], " ", 
-      SqrtBox["\[Gamma]"]}], 
-     SqrtBox["\[Rho]"]]}], ",", 
+      SqrtBox["p"], " ",
+      SqrtBox["\[Gamma]"]}],
+     SqrtBox["\[Rho]"]]}], ",",
    FractionBox[
     RowBox[{
-     SqrtBox["p"], " ", 
-     SqrtBox["\[Gamma]"]}], 
+     SqrtBox["p"], " ",
+     SqrtBox["\[Gamma]"]}],
     SqrtBox["\[Rho]"]]}], "}"}]], "Output",
  CellChangeTimes->{3.570273774169314*^9}]
 }, Open  ]]
@@ -187,4 +187,3 @@ Cell[3846, 135, 355, 14, 58, "Output"]
 *)
 
 (* End of internal cache information *)
-

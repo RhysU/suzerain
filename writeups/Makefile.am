@@ -31,9 +31,8 @@ perfectgas.dvi perfectgas.pdf: perfectgas.tex
 perfectgas.dvi perfectgas.pdf: inhomogeneity1.eps inhomogeneity2.eps
 baseflow.dvi   baseflow.pdf:   nozzle_subsonic.eps nozzle_supersonic.eps
 
-# Notebooks, Images, Source Data, References, etc.
-EXTRA_DIST  = notebooks # Recursively distributes the entire directory
-EXTRA_DIST += cev_summary1.eps cev_summary2.eps cev_summary_fpg.eps
+# Images, Source Data, References, etc.
+EXTRA_DIST  = cev_summary1.eps cev_summary2.eps cev_summary_fpg.eps
 EXTRA_DIST += nozzle_schematic.eps nozzle_subsonic.eps nozzle_supersonic.eps
 EXTRA_DIST += inhomogeneity1.gz inhomogeneity1.eps
 EXTRA_DIST += inhomogeneity2.gz inhomogeneity2.eps

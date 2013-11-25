@@ -39,7 +39,7 @@
 #include <suzerain/error.h>
 
 // Find pointwise solution details given state, Ma2=Ma**2, gamm1=gam-1
-// Compare nozzle_details function source within writeups/notebooks/nozzle.m
+// Compare nozzle_details function source within notebooks/nozzle.m
 static inline
 void nozzle_details(const double R,
                     const double u,
@@ -68,7 +68,7 @@ typedef struct params_type {
 } params_type;
 
 // Find [u; rho; p]' given r, x=[u; rho; p], Ma02=Ma0**2, gam0m1=gam0-1
-// Compare nozzle_rhs function source within writeups/notebooks/nozzle.m
+// Compare nozzle_rhs function source within notebooks/nozzle.m
 static int nozzle_rhs(double R,
                       const double y[],
                       double dydt[],
@@ -82,7 +82,7 @@ static int nozzle_rhs(double R,
     return GSL_SUCCESS;
 }
 
-// Compare nozzle function source within writeups/notebooks/nozzle.m
+// Compare nozzle function source within notebooks/nozzle.m
 suzerain_radial_nozzle_solution *
 suzerain_radial_nozzle_solver(
     const double         Ma0,
