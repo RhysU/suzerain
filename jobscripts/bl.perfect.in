@@ -6,7 +6,7 @@ set -eu
 : ${LAMINAR_ADVANCE:=@bindir@/perfect_advance}
 
 # Parse incoming parameters
-OPTS="k:,htdelta:,alpha:,beta:,gamma:,Ly:,Re:,Ma:,Pr:,Re_x:,largo_formulation:,largo_grdelta:"
+OPTS="k:,htdelta:,alpha:,beta:,gamma:,Ly:,Re:,Ma:,Pr:,Re_x:,largo_formulation:,largo_grdelta:,radial_nozzle:"
 ARGS=$(getopt -n "$(basename -- "$0")" -o "h" -l "$OPTS,help" -- "$@")
 if [ $? -ne 0 ]; then exit 1; fi
 eval set -- "$ARGS"
