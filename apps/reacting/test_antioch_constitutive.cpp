@@ -378,11 +378,11 @@ int test_evaluate(const std::string& chem_xml_file)
 
     // Storage for computed quantities
     real_t T=-1, p=-1, Ds[5], mu, kap,
-        hs[5], om[5]={1.0, 1.0, 1.0, 1.0, 1.0}, a=-1, Cp=0;
+        hs[5], om[5]={1.0, 1.0, 1.0, 1.0, 1.0}, a=-1, Cv=0, Cp=0;
 
     // Eval rxn sources, trans, thermo
     acl1.evaluate(e, m, rho, species, cs, Tguess,  /* input  */
-                  T, p, Ds, mu, kap, hs, om, a, Cp /* output */);
+                  T, p, Ds, mu, kap, hs, om, a, Cv, Cp /* output */);
 
 
     // check that it did something potentially sane
@@ -458,13 +458,13 @@ int test_evaluate_eigen(const std::string& chem_xml_file)
     real_t Tguess= -1; 
 
     // Storage for computed quantities
-    real_t T=-1, p=-1, mu, kap, a=-1, Cp=0;
+    real_t T=-1, p=-1, mu, kap, a=-1, Cv=0, Cp=0;
     VectorXr Ds(Ns), hs(Ns), om(Ns);
     om(0) = om(1) = om(2) = om(3) = om(4) = 1.0;
 
     // Eval rxn sources, trans, thermo
     acl1.evaluate(e, m, rho, species, cs, Tguess,  /* input  */
-                  T, p, Ds, mu, kap, hs, om, a, Cp /* output */);
+                  T, p, Ds, mu, kap, hs, om, a, Cv, Cp /* output */);
 
 
     // check that it did something potentially sane
