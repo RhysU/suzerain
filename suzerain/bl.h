@@ -52,39 +52,40 @@ extern "C" {
 
 /**
  * Information characterizing local state in a boundary layer.
- * Quantities possess dimensional units or nondimensional scaling as
- * detailed for each member.
+ * Each nondimensional quantity is scaled as documented.
  */
 typedef struct suzerain_bl_local {
-    double a;      /**< Sound speed with units \f$a_0\f$.                   */
+    double a;      /**< Sound speed divided by \f$a_0\f$.                   */
     double gamma;  /**< Nondimensional Ratio of specific heats \f$\gamma\f$.*/
-    double mu;     /**< Dynamic viscosity with units \f$\mu_0\f$.           */
+    double mu;     /**< Dynamic viscosity divided by \f$\mu_0\f$.           */
     double Pr;     /**< Nondimensional Prandtl number \f$C_p \mu/\kappa\f$. */
-    double rho;    /**< Density with units \f$\rho_0\f$.                    */
-    double T;      /**< Temperature with units \f$T_0\f$.                   */
+    double rho;    /**< Density divided by \f$\rho_0\f$.                    */
+    double T;      /**< Temperature divided by \f$T_0\f$.                   */
     double T__y;   /**< Wall-normal derivative of temperature
-                        with units \f$T_0 / l_0\f$.                         */
-    double u;      /**< Streamwise velocity with units \f$u_0\f$.           */
+                        divided by \f$T_0 / l_0\f$.                         */
+    double u;      /**< Streamwise velocity divided by \f$u_0\f$.           */
     double u__y;   /**< Wall-normal derivative of streamwise velocity
-                        with units \f$u_0 / l_0\f$.                         */
-    double v;      /**< Wall-normal velocity with units \f$u_0\f$.          */
+                        divided by \f$u_0 / l_0\f$.                         */
+    double v;      /**< Wall-normal velocity divided by \f$u_0\f$.          */
 } suzerain_bl_local;
 
 /**
  * Information characterizing wall-related viscous scales.
- * Quantities possess dimensional units or nondimensional scaling as
- * detailed for each member.
+ * Each nondimensional quantity is scaled as documented.
  */
 typedef struct suzerain_bl_viscous {
     double tau_w;    /**< Wall shear stress \f$\tau_w\f$
-                          with units \f$\mu_0 u_0 / l_0\f$.                */
-    double u_tau;    /**< Wall velocity \f$u_\tau\f$ with units \f$u_0\f$. */
-    double delta_nu; /**< Wall length scale with units \f$l_0\f$.          */
+                          divided by \f$\rho_0 u_0^2\f$.                   */
+    double u_tau;    /**< Wall velocity \f$u_\tau\f$ divided by \f$u_0\f$. */
+    double delta_nu; /**< Wall length scale divided by \f$l_0\f$.          */
 } suzerain_bl_viscous;
 
 /**
  * Compute viscous-related wall scalings.
  *
+ * \param[in ] code_Re Reynolds number \f$\rho_0 u_0 l_0/\mu_0\f$ used to scale
+ *                     nondimensional quantities.  For dimensional
+ *                     calculations, use <code>1</code.
  * \param[in ] wall    Local state information from the wall.
  * \param[out] viscous Populated on success.
  *                     See type documentation for contents.
@@ -94,6 +95,7 @@ typedef struct suzerain_bl_viscous {
  */
 int
 suzerain_bl_compute_viscous(
+        double code_Re,
         const suzerain_bl_local   * wall,
               suzerain_bl_viscous * viscous);
 
@@ -282,8 +284,9 @@ suzerain_bl_enthalpy_thickness(
 
 /**
  * Information characterizing boundary layer thickness in various ways.  Each
- * member has units of \f$l_0\f$.  Using \ref suzerain_bl_compute_thicknesses
- * is the recommended way to populate this data.
+ * nondimensional quantity has been divided by \f$l_0\f$.  Using \ref
+ * suzerain_bl_compute_thicknesses is the recommended way to populate this
+ * data.
  */
 typedef struct suzerain_bl_thicknesses {
     double delta;     /**< Boundary layer thickness \f$\delta\f$. */
@@ -418,6 +421,7 @@ typedef struct suzerain_bl_pg {
 
 /**
  * Compute nondimensional boundary layer pressure gradient parameters.
+ * Each nondimensional quantity is scaled as documented.
  *
  * \param[in ] code_Ma   Mach number \f$u_0/a_0\f$ used to scale
  *                       nondimensional quantities.  For dimensional
@@ -429,10 +433,10 @@ typedef struct suzerain_bl_pg {
  * \param[in ] viscous   Viscous-related wall scaling information
  * \param[in ] edge      Local state information from the boundary layer edge.
  * \param[in ] edge_p__x Streamwise derivative of pressure
- *                       at the boundary layer edge with units
+ *                       at the boundary layer edge divided by
                          \f$p_0 / l_0 = \rho_0 a_0^2 / l_0\f$.
  * \param[in ] edge_u__x Streamwise derivative of streamwise velocity at the
- *                       boundary layer edge with units \f$u_0 / l_0\f$.
+ *                       boundary layer edge divided by \f$u_0 / l_0\f$.
  * \param[in ] thick     Thickness information for the boundary layer.
  * \param[out] pg        Populated on success.
  *                       See type documentation for contents.

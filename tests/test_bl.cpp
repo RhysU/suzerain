@@ -354,8 +354,8 @@ static const edge_type edge;
 BOOST_AUTO_TEST_CASE( compute_viscous )
 {
     suzerain_bl_viscous viscous;
-    BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS,
-                        suzerain_bl_compute_viscous(&wall, &viscous));
+    BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS, suzerain_bl_compute_viscous(
+                /*code_Re*/1, &wall, &viscous));
 
     size_t cnt = 0; // Tracks if all quantities were tested
     const double tol = GSL_SQRT_DBL_EPSILON;

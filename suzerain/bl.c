@@ -51,15 +51,24 @@ static inline double square(double x) { return x*x; }
 
 int
 suzerain_bl_compute_viscous(
+        const double code_Re,
         const suzerain_bl_local   * wall,
               suzerain_bl_viscous * viscous)
 {
     FILL_WITH_NANS(viscous);
 
-    // Compute dimensional quantities in "code units" each having [units    ]
+    // Compute quantities of interest in "code units" divided by  [units    ]
     viscous->tau_w    = wall->mu * wall->u__y;                 // [\mu u / l]
     viscous->u_tau    = sqrt(viscous->tau_w / wall->rho);      // [u        ]
     viscous->delta_nu = wall->mu / wall->rho / viscous->u_tau; // [l        ]
+
+    // Adjust for code Reynolds number per writeups/viscous_nondim.pdf which
+    // details why and how how these scaling factors appear.  Provided that
+    // they are addressed here, they don't "leak" into other computations.
+    const double sqrt_code_Re = sqrt(code_Re);
+    viscous->tau_w    /= code_Re;
+    viscous->u_tau    /= sqrt_code_Re;
+    viscous->delta_nu /= sqrt_code_Re;
 
     return SUZERAIN_SUCCESS;
 }
@@ -374,8 +383,10 @@ suzerain_bl_compute_qoi(
 
     // Nondimensional quantities are computed with the first line being the
     // quantity and the final line being any needed "code unit" correction.
+    // Notice viscous->tau_w and viscous->u_tau already account for code_Re;
+    // see the suzerain_bl_viscous struct declaration to check their scaling.
     qoi->cf          = 2 * viscous->tau_w / edge->rho / square(edge->u)
-                     / code_Re;
+                     * 1;
     qoi->gamma_e     = edge->gamma
                      * 1;
     qoi->Ma_e        = edge->u / edge->a
@@ -420,14 +431,16 @@ suzerain_bl_compute_pg(
 
     // Nondimensional quantities are computed with the first line being the
     // quantity and the second line being any needed "code unit" correction.
+    // Notice viscous->tau_w and viscous->u_tau already account for code_Re;
+    // see the suzerain_bl_viscous struct declaration to check their scaling.
     pg->Clauser      = thick->delta1 / viscous->tau_w * edge_p__x
-                     * code_Re / square(code_Ma);
+                     / square(code_Ma);
     pg->Launder_e    = edge->mu * edge_u__x / edge->rho / square(edge->u)
                      / code_Re;
     pg->Launder_w    = wall->mu * edge_u__x / edge->rho / square(edge->u)
                      / code_Re;
     pg->Lambda_n     = - thick->delta / viscous->tau_w * edge_p__x
-                     * code_Re / square(code_Ma);
+                     / square(code_Ma);
     pg->p_ex         = thick->delta / edge->rho / square(edge->u) * edge_p__x
                      / square(code_Ma);
     pg->Pohlhausen   = square(thick->delta) * edge->rho / edge->mu * edge_u__x

@@ -259,7 +259,7 @@ void summarize_boundary_layer_nature(
     wall.v     = lay.u().col(1)[0];
 
     // Compute viscous quantities based only on wall information
-    suzerain_bl_compute_viscous(&wall, &viscous);
+    suzerain_bl_compute_viscous(scenario.Re, &wall, &viscous);
 
     // Evaluate state at the edge (y=thick.delta) from B-spline coefficients
     std::fill_n(reinterpret_cast<double *>(&edge),
