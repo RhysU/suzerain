@@ -342,7 +342,7 @@ public:
      * @param pg         Possibly computed by suzerain_bl_compute_pg().
      *                   If \c NULL, no pressure gradient-related information
      *                   will be logged.
-     * @param name_wall  Logging name for wall-related quantities.
+     * @param name_visc  Logging name for viscous-related quantities.
      *                   If \c NULL, this message will not be logged.
      * @param name_thick Logging name for boundary layer thickness details.
      *                   If \c NULL, this message will not be logged.
@@ -357,7 +357,7 @@ public:
             const suzerain_bl_thicknesses * const thick,
             const suzerain_bl_qoi         * const qoi,
             const suzerain_bl_pg          * const pg,
-            const char * const name_wall  =  "bl.wall",
+            const char * const name_visc  =  "bl.visc",
             const char * const name_thick =  "bl.thick",
             const char * const name_qoi   =  "bl.qoi",
             const char * const name_pg    =  "bl.pg");
@@ -679,10 +679,10 @@ protected:
 
     /**
      * Flag used to control whether \ref log_boundary_layer_quantities shows
-     * wall-related headers.  The default implementation disables headers after
+     * viscous-related headers.  The default implementation disables headers after
      * the first invocation.
      */
-    bool log_boundary_layer_quantities_wall_header_shown;
+    bool log_boundary_layer_quantities_visc_header_shown;
 
     /**
      * Flag used to control whether \ref log_boundary_layer_quantities shows

@@ -149,7 +149,7 @@ driver_base::driver_base(
     , received_halt(false)
     , log_status_L2_header_shown(false)
     , log_status_bulk_header_shown(false)
-    , log_boundary_layer_quantities_wall_header_shown(false)
+    , log_boundary_layer_quantities_visc_header_shown(false)
     , log_boundary_layer_quantities_thick_header_shown(false)
     , log_boundary_layer_quantities_qoi_header_shown(false)
     , log_boundary_layer_quantities_pg_header_shown(false)
@@ -954,7 +954,7 @@ void driver_base::log_boundary_layer_quantities(
         const suzerain_bl_thicknesses * const thick,
         const suzerain_bl_qoi         * const qoi,
         const suzerain_bl_pg          * const pg,
-        const char * const name_wall,
+        const char * const name_visc,
         const char * const name_thick,
         const char * const name_qoi,
         const char * const name_pg)
@@ -966,10 +966,10 @@ void driver_base::log_boundary_layer_quantities(
     logging::logger_type log; // Logging pointer to be repeatedly set
     std::ostringstream   msg; // Buffer to be repeatedly reused below
 
-    log = logging::get_logger(name_wall);
+    log = logging::get_logger(name_visc);
     if (log != NULL && INFO0_ENABLED(log)) {
-        if (!log_boundary_layer_quantities_wall_header_shown) {
-            log_boundary_layer_quantities_wall_header_shown = true;
+        if (!log_boundary_layer_quantities_visc_header_shown) {
+            log_boundary_layer_quantities_visc_header_shown = true;
             msg.str("");
             msg << setw(timeprefix.size()) << build_timeprefix_description()
                 << ' ' << setw(fullprec<>::width) << "cf"
