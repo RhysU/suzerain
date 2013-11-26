@@ -134,17 +134,15 @@ public:
             const real_t t,
             const std::size_t nt);
 
-    // Avoid hiding superclass name with overload just below
-    using super::log_boundary_layer_quantities;
-
     /**
-     * Log a variety of quantities of interest for a boundary layer simulation.
+     * Log a variety of quantities of interest for a boundary layer or channel
+     * flow simulation.
      *
      * The computation costs a significant fraction of a Runge--Kutta substep
      * but \e is low-storage-friendly.  It destroys the contents of \ref
      * state_nonlinear.
      */
-    virtual void log_boundary_layer_quantities(
+    virtual void log_quantities_of_interest(
             const std::string& timeprefix,
             const real_t t,
             const std::size_t nt);

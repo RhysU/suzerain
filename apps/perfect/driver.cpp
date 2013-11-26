@@ -28,7 +28,9 @@
 #include "driver.hpp"
 
 #include <suzerain/bl.h>
+#include <suzerain/channel.h>
 #include <suzerain/diffwave.hpp>
+#include <suzerain/error.h>
 #include <suzerain/format.hpp>
 #include <suzerain/l2.hpp>
 #include <suzerain/ndx.hpp>
@@ -201,7 +203,7 @@ driver::log_linearization_error(
     INFO0(lin_abserr, msg.str());
 }
 
-void driver::log_boundary_layer_quantities(
+void driver::log_quantities_of_interest(
         const std::string& timeprefix,
         const real_t t,
         const std::size_t nt)
@@ -209,10 +211,9 @@ void driver::log_boundary_layer_quantities(
     SUZERAIN_UNUSED(t);
     SUZERAIN_UNUSED(nt);
 
-    // Only applicable for boundary layers
-    if (!grid || !grid->one_sided()) return;
+    if (!grid) return;
 
-    SUZERAIN_TIMER_SCOPED("driver::log_boundary_layer_quantities");
+    SUZERAIN_TIMER_SCOPED("driver::log_quantities_of_interest");
 
     // If possible, use existing information from mean quantities
     // Otherwise compute from instantaneous fields stored in state_linear
@@ -224,19 +225,41 @@ void driver::log_boundary_layer_quantities(
         prof = sample_profile(*scenario, *grid, *dgrid, *cop, *state_nonlinear);
     }
 
-    // Compute many details about the boundary layer for logging
-    suzerain_bl_local       wall;
-    suzerain_bl_viscous     viscous;
-    suzerain_bl_local       edge;
-    suzerain_bl_thicknesses thick;
-    suzerain_bl_qoi         qoi;
-    suzerain_bl_pg          pg;
-    summarize_boundary_layer_nature(prof, *scenario, sg, *b,
-                                    wall, viscous, edge, thick, qoi, pg);
+    if (grid->one_sided()) {
 
-    // Log messages using application-agnostic superclass functionality
-    super::log_boundary_layer_quantities(timeprefix,
-                                         &viscous, &thick, &qoi, &pg);
+        // Compute many details about the boundary layer for logging
+        suzerain_bl_local       wall;
+        suzerain_bl_viscous     viscous;
+        suzerain_bl_local       edge;
+        suzerain_bl_thicknesses thick;
+        suzerain_bl_qoi         qoi;
+        suzerain_bl_pg          pg;
+        summarize_boundary_layer_nature(prof, *scenario, sg, *b,
+                                        wall, viscous, edge, thick, qoi, pg);
+
+        // Log messages using application-agnostic superclass functionality
+        this->log_boundary_layer_quantities(timeprefix,
+                                            &viscous, &thick, &qoi, &pg);
+
+    } else if (grid->two_sided()) {
+
+        // Compute many details about the boundary layer for logging
+        suzerain_channel_local   wall;
+        suzerain_channel_viscous viscous;
+        suzerain_channel_local   center;
+        suzerain_channel_qoi     qoi;
+        summarize_channel_nature(prof, *scenario, *b,
+                                 wall, viscous, center, qoi);
+
+        // Log messages using application-agnostic superclass functionality
+        this->log_channel_quantities(timeprefix,
+                                     &wall, &viscous, &center, &qoi);
+
+    } else {
+
+        SUZERAIN_ERROR_REPORT_UNIMPLEMENTED();
+
+    }
 }
 
 void
@@ -293,7 +316,7 @@ driver::log_status_hook(
 {
     const bool retval = super::log_status_hook(timeprefix, t, nt);
     log_manufactured_solution_absolute_error(timeprefix, t, nt);
-    log_boundary_layer_quantities(timeprefix, t, nt);
+    log_quantities_of_interest(timeprefix, t, nt);
     return retval;
 }
 
