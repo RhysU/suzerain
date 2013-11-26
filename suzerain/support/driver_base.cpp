@@ -35,6 +35,7 @@
 #include <esio/error.h>
 
 #include <suzerain/bl.h>
+#include <suzerain/channel.h>
 #include <suzerain/countof.h>
 #include <suzerain/error.h>
 #include <suzerain/format.hpp>
@@ -153,6 +154,10 @@ driver_base::driver_base(
     , log_boundary_layer_quantities_thick_header_shown(false)
     , log_boundary_layer_quantities_qoi_header_shown(false)
     , log_boundary_layer_quantities_pg_header_shown(false)
+    , log_channel_quantities_wall_header_shown(false)
+    , log_channel_quantities_visc_header_shown(false)
+    , log_channel_quantities_center_header_shown(false)
+    , log_channel_quantities_qoi_header_shown(false)
     , wtime_load_restart(std::numeric_limits<double>::quiet_NaN())
     , wtime_advance_start(std::numeric_limits<double>::quiet_NaN())
     , last_status_nt(std::numeric_limits<step_type>::max())
@@ -207,6 +212,15 @@ driver_base::log4cxx_config()
         "log4j.appender.BULK.append=${log4j.appender.LOG.append}\n"
         "log4j.appender.BULK.layout=${log4j.appender.LOG.layout}\n"
         "log4j.appender.BULK.layout.ConversionPattern=${log4j.appender.LOG.layout.ConversionPattern}\n"
+        "\n"
+        "## Collect \"chan\" messages into only chan.dat mimicking LOG file behavior\n"
+        "log4j.logger.chan=INHERITED, CHAN\n"
+        "log4j.additivity.chan=false\n"
+        "log4j.appender.CHAN=${log4j.appender.LOG}\n"
+        "log4j.appender.CHAN.filename=chan.dat\n"
+        "log4j.appender.CHAN.append=${log4j.appender.LOG.append}\n"
+        "log4j.appender.CHAN.layout=${log4j.appender.LOG.layout}\n"
+        "log4j.appender.CHAN.layout.ConversionPattern=${log4j.appender.LOG.layout.ConversionPattern}\n"
         "\n"
         "## Collect \"L2\" messages into L2.dat mimicking LOG file behavior\n"
         "log4j.logger.L2=INHERITED, L2\n"
@@ -1061,6 +1075,125 @@ void driver_base::log_boundary_layer_quantities(
             << ' ' << fullprec<>(pg->Launder_w)
             << ' ' << fullprec<>(pg->Pohlhausen)
             << ' ' << fullprec<>(pg->p_ex);
+        INFO0(log, msg.str());
+    }
+}
+
+void driver_base::log_channel_quantities(
+        const std::string& timeprefix,
+        const suzerain_channel_local   * const wall,
+        const suzerain_channel_viscous * const viscous,
+        const suzerain_channel_local   * const center,
+        const suzerain_channel_qoi     * const qoi,
+        const char * const name_wall,
+        const char * const name_visc,
+        const char * const name_center,
+        const char * const name_qoi)
+{
+    // Only rank zero pays to prepare the output, others short circuit.
+    if (!dgrid->has_zero_zero_modes()) return;
+
+    using std::setw;          // Brevity
+    logging::logger_type log; // Logging pointer to be repeatedly set
+    std::ostringstream   msg; // Buffer to be repeatedly reused below
+
+    log = logging::get_logger(name_wall);
+    if (log != NULL && INFO0_ENABLED(log)) {
+        if (!log_channel_quantities_wall_header_shown) {
+            log_channel_quantities_wall_header_shown = true;
+            msg.str("");
+            msg << setw(timeprefix.size()) << build_timeprefix_description()
+                << ' ' << setw(fullprec<>::width) << "a"
+                << ' ' << setw(fullprec<>::width) << "mu"
+                << ' ' << setw(fullprec<>::width) << "rho"
+                << ' ' << setw(fullprec<>::width) << "T"
+                << ' ' << setw(fullprec<>::width) << "u"
+                << ' ' << setw(fullprec<>::width) << "v";
+            INFO0(log, msg.str());
+        }
+        msg.str("");
+        msg << timeprefix
+            << ' ' << fullprec<>(wall->a)
+            << ' ' << fullprec<>(wall->mu)
+            << ' ' << fullprec<>(wall->rho)
+            << ' ' << fullprec<>(wall->T)
+            << ' ' << fullprec<>(wall->u)
+            << ' ' << fullprec<>(wall->v);
+        INFO0(log, msg.str());
+    }
+
+    log = logging::get_logger(name_visc);
+    if (log != NULL && INFO0_ENABLED(log)) {
+        if (!log_channel_quantities_visc_header_shown) {
+            log_channel_quantities_visc_header_shown = true;
+            msg.str("");
+            msg << setw(timeprefix.size()) << build_timeprefix_description()
+                << ' ' << setw(fullprec<>::width) << "cf"
+                << ' ' << setw(fullprec<>::width) << "delta_nu"
+                << ' ' << setw(fullprec<>::width) << "tau_w"
+                << ' ' << setw(fullprec<>::width) << "u_tau"
+                << ' ' << setw(fullprec<>::width) << "neg_Bq"
+                << ' ' << setw(fullprec<>::width) << "v_wallplus";
+            INFO0(log, msg.str());
+        }
+        msg.str("");
+        msg << timeprefix
+            << ' ' << fullprec<>(qoi->cf)
+            << ' ' << fullprec<>(viscous->delta_nu)
+            << ' ' << fullprec<>(viscous->tau_w)
+            << ' ' << fullprec<>(viscous->u_tau)
+            << ' ' << fullprec<>(qoi->neg_Bq)
+            << ' ' << fullprec<>(qoi->v_wallplus);
+        INFO0(log, msg.str());
+    }
+
+    log = logging::get_logger(name_center);
+    if (log != NULL && INFO0_ENABLED(log)) {
+        if (!log_channel_quantities_center_header_shown) {
+            log_channel_quantities_center_header_shown = true;
+            msg.str("");
+            msg << setw(timeprefix.size()) << build_timeprefix_description()
+                << ' ' << setw(fullprec<>::width) << "a"
+                << ' ' << setw(fullprec<>::width) << "mu"
+                << ' ' << setw(fullprec<>::width) << "rho"
+                << ' ' << setw(fullprec<>::width) << "T"
+                << ' ' << setw(fullprec<>::width) << "u"
+                << ' ' << setw(fullprec<>::width) << "v";
+            INFO0(log, msg.str());
+        }
+        msg.str("");
+        msg << timeprefix
+            << ' ' << fullprec<>(center->a)
+            << ' ' << fullprec<>(center->mu)
+            << ' ' << fullprec<>(center->rho)
+            << ' ' << fullprec<>(center->T)
+            << ' ' << fullprec<>(center->u)
+            << ' ' << fullprec<>(center->v);
+        INFO0(log, msg.str());
+    }
+
+    log = logging::get_logger(name_qoi);
+    if (log != NULL && INFO0_ENABLED(log)) {
+        if (!log_channel_quantities_qoi_header_shown) {
+            log_channel_quantities_qoi_header_shown = true;
+            msg.str("");
+            msg << setw(timeprefix.size()) << build_timeprefix_description()
+                << ' ' << setw(fullprec<>::width) << "gamma_c"
+                << ' ' << setw(fullprec<>::width) << "Ma_c"
+                << ' ' << setw(fullprec<>::width) << "Ma_tau"
+                << ' ' << setw(fullprec<>::width) << "Pr_w"
+                << ' ' << setw(fullprec<>::width) << "Re_c"
+                << ' ' << setw(fullprec<>::width) << "Re_tau";
+            INFO0(log, msg.str());
+        }
+        msg.str("");
+        msg << timeprefix
+            << ' ' << fullprec<>(qoi->gamma_c)
+            << ' ' << fullprec<>(qoi->Ma_c)
+            << ' ' << fullprec<>(qoi->Ma_tau)
+            << ' ' << fullprec<>(qoi->Pr_w)
+            << ' ' << fullprec<>(qoi->Re_c)
+            << ' ' << fullprec<>(qoi->Re_tau);
         INFO0(log, msg.str());
     }
 }

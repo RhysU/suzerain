@@ -39,10 +39,13 @@
 #include <suzerain/timecontroller.hpp>
 
 // Forward declarations
-struct suzerain_bl_viscous;
-struct suzerain_bl_thicknesses;
-struct suzerain_bl_qoi;
 struct suzerain_bl_pg;
+struct suzerain_bl_qoi;
+struct suzerain_bl_thicknesses;
+struct suzerain_bl_viscous;
+struct suzerain_channel_local;
+struct suzerain_channel_qoi;
+struct suzerain_channel_viscous;
 
 namespace suzerain {
 
@@ -361,6 +364,41 @@ public:
             const char * const name_thick =  "bl.thick",
             const char * const name_qoi   =  "bl.qoi",
             const char * const name_pg    =  "bl.pg");
+
+    /**
+     * Log messages containing a wide variety of quantities of interest for a
+     * channel flow simulation.  Data to be logged must be provided in \c wall,
+     * \c viscous, \c center, and \c qoi.
+     *
+     * This method produces well-formatted results given relevant computed
+     * quantities.  Subclasses will likely provide an overload that gathers
+     * these details in a simulation-dependent manner and then invoke this
+     * method within a \ref log_status_hook() or \ref log_statistics_hook()
+     * overload.
+     *
+     * @param wall        Local information from the wall.
+     * @param viscous     Possibly from suzerain_channel_compute_viscous().
+     * @param center      Local information from the channel centerline.
+     * @param qoi         Possibly from suzerain_channel_compute_qoi().
+     * @param name_wall   Logging name for wall-related quantities.
+     *                    If \c NULL, this message will not be logged.
+     * @param name_visc   Logging name for viscous-related quantities.
+     *                    If \c NULL, this message will not be logged.
+     * @param name_center Logging name for centerline-related quantities.
+     *                    If \c NULL, this message will not be logged.
+     * @param name_qoi    Logging name for general quantities of interest.
+     *                    If \c NULL, this message will not be logged.
+     */
+    virtual void log_channel_quantities(
+            const std::string& timeprefix,
+            const suzerain_channel_local   * const wall,
+            const suzerain_channel_viscous * const viscous,
+            const suzerain_channel_local   * const center,
+            const suzerain_channel_qoi     * const qoi,
+            const char * const name_wall   = "chan.wall",
+            const char * const name_visc   = "chan.visc",
+            const char * const name_center = "chan.center",
+            const char * const name_qoi    = "chan.qoi");
 
     /**
      * Save time-independent metadata that must appear in all restart and
@@ -704,6 +742,34 @@ protected:
      * headers after the first invocation.
      */
     bool log_boundary_layer_quantities_pg_header_shown;
+
+    /**
+     * Flag used to control whether \ref log_channel_quantities shows
+     * wall-related headers.  The default implementation disables headers after
+     * the first invocation.
+     */
+    bool log_channel_quantities_wall_header_shown;
+
+    /**
+     * Flag used to control whether \ref log_channel_quantities shows
+     * viscous-related headers.  The default implementation disables headers after
+     * the first invocation.
+     */
+    bool log_channel_quantities_visc_header_shown;
+
+    /**
+     * Flag used to control whether \ref log_channel_quantities shows
+     * centerline-related headers.  The default implementation disables headers
+     * after the first invocation.
+     */
+    bool log_channel_quantities_center_header_shown;
+
+    /**
+     * Flag used to control whether \ref log_channel_quantities shows
+     * general quantity of interest headers.  The default implementation
+     * disables headers after the first invocation.
+     */
+    bool log_channel_quantities_qoi_header_shown;
 
     /** Wall time elapsed during loading of state from the restart file */
     double wtime_load_restart;
