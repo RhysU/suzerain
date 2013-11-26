@@ -42,7 +42,7 @@ EXTRA_DIST += references.bib
 # Build and install writeups
 all-local:      pdf-local
 pdf-local:      $(PDFS)
-PDFS          = $(TEXSOURCES:.tex=.pdf) reacting_main.pdf
+PDFS          = $(TEXSOURCES:.tex=.pdf) reacting_main.pdf viscous_nondim.pdf
 writeupsdir   = $(pkgdatadir)/writeups
 writeups_DATA = $(PDFS)
 
