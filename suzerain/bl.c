@@ -391,6 +391,8 @@ suzerain_bl_compute_qoi(
                      * 1;
     qoi->Ma_e        = edge->u / edge->a
                      * code_Ma;
+    qoi->Ma_tau      = viscous->u_tau / wall->a
+                     * code_Ma;
     qoi->Pr_w        = wall->Pr;
     qoi->neg_Bq      = (wall->mu * wall->T__y)
                      / (qoi->Pr_w * wall->rho * viscous->u_tau * wall->T)

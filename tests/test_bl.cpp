@@ -398,8 +398,9 @@ BOOST_AUTO_TEST_CASE( compute_qoi_and_pg )
     BOOST_CHECK_CLOSE(qoi.cf,          0.0044697874046917899,  tol); ++cnt;
     BOOST_CHECK_CLOSE(qoi.gamma_e,     1.4083595370046604,     tol); ++cnt;
     BOOST_CHECK_CLOSE(qoi.Ma_e,        0.71394455827465408,    tol); ++cnt;
+    /* Quantity Ma_tau  not tested */                                ++cnt;
     BOOST_CHECK_CLOSE(qoi.Pr_w,        0.65543907074081864,    tol); ++cnt;
-    /* Currently neg_Bq not tested */                                ++cnt;
+    /* Quantity neg_Bq not tested */                                 ++cnt;
     BOOST_CHECK_CLOSE(qoi.ratio_rho,   edge.rho / wall.rho,    tol); ++cnt;
     BOOST_CHECK_CLOSE(qoi.ratio_nu,      (edge.mu / edge.rho)
                                        / (wall.mu / wall.rho), tol); ++cnt;

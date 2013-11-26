@@ -335,6 +335,8 @@ typedef struct suzerain_bl_qoi {
                               \frac{2 \tau_w}{\rho_e u_e^2}\f$. */
     double gamma_e;      /**< The ratio of specific heats at the edge. */
     double Ma_e;         /**< The local Mach number at the edge. */
+    double Ma_tau;       /**< The friction Mach number
+                              \f$\mbox{Ma}_\tau = u_\tau / a_w\f$. */
     double Pr_w;         /**< The Prandtl number at the wall. */
     double neg_Bq;       /**< The negated nondimensional heat flux
                               \f$-B_q = \frac{k \nabla T}{\rho_w C_p
