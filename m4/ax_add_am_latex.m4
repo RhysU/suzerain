@@ -62,16 +62,16 @@ AX_ADD_AM_MACRO([
 # Added by AX_ADD_AM_LATEX m4 macro
 %%.dvi : %%.tex
 	if file \$< | grep LaTeX &>/dev/null ; then \\
-		env \"TEXINPUTS=\$(abs_srcdir):\" \$(abs_top_srcdir)/\$(tex_it_dir)/tex-it \$(latex) \$(LATEX_FLAGS) \$< ;\\
+		env \"TEXINPUTS=\$(abs_srcdir):\$(abs_top_srcdir):\" \$(abs_top_srcdir)/\$(tex_it_dir)/tex-it \$(latex) \$(LATEX_FLAGS) \$< ;\\
 	else \\
-		env \"TEXINPUTS=\$(abs_srcdir):\" \$(abs_top_srcdir)/\$(tex_it_dir)/tex-it \$(TEX) \$(TEX_FLAGS) \$< ;\\
+		env \"TEXINPUTS=\$(abs_srcdir):\$(abs_top_srcdir):\" \$(abs_top_srcdir)/\$(tex_it_dir)/tex-it \$(TEX) \$(TEX_FLAGS) \$< ;\\
 	fi
 
 %%.pdf : %%.tex
 	if file \$< | grep LaTeX &>/dev/null ; then \\
-		env \"TEXINPUTS=\$(abs_srcdir):\" \$(abs_top_srcdir)/\$(tex_it_dir)/tex-it \$(pdflatex) \$(PDFLATEX_FLAGS) \$< ;\\
+		env \"TEXINPUTS=\$(abs_srcdir):\$(abs_top_srcdir):\" \$(abs_top_srcdir)/\$(tex_it_dir)/tex-it \$(pdflatex) \$(PDFLATEX_FLAGS) \$< ;\\
 	else \\
-		env \"TEXINPUTS=\$(abs_srcdir):\" \$(abs_top_srcdir)/\$(tex_it_dir)/tex-it \$(pdftex) \$(PDFTEX_FLAGS) \$< ;\\
+		env \"TEXINPUTS=\$(abs_srcdir):\$(abs_top_srcdir):\" \$(abs_top_srcdir)/\$(tex_it_dir)/tex-it \$(pdftex) \$(PDFTEX_FLAGS) \$< ;\\
 	fi
 ])
 ])
