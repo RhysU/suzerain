@@ -373,7 +373,7 @@ suzerain_bl_compute_qoi(
     FILL_WITH_NANS(qoi);
 
     // Nondimensional quantities are computed with the first line being the
-    // quantity and the second line being any needed "code unit" correction.
+    // quantity and the final line being any needed "code unit" correction.
     qoi->cf          = 2 * viscous->tau_w / edge->rho / square(edge->u)
                      / code_Re;
     qoi->gamma_e     = edge->gamma
@@ -381,6 +381,9 @@ suzerain_bl_compute_qoi(
     qoi->Ma_e        = edge->u / edge->a
                      * code_Ma;
     qoi->Pr_w        = wall->Pr;
+    qoi->neg_Bq      = (wall->mu * wall->T__y)
+                     / (qoi->Pr_w * wall->rho * viscous->u_tau * wall->T)
+                     / code_Re;
     qoi->ratio_nu    = (edge->mu / edge->rho) / (wall->mu / wall->rho)
                      * 1;
     qoi->ratio_rho   = edge->rho / wall->rho

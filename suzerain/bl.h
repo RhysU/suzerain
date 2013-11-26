@@ -62,6 +62,8 @@ typedef struct suzerain_bl_local {
     double Pr;     /**< Nondimensional Prandtl number \f$C_p \mu/\kappa\f$. */
     double rho;    /**< Density with units \f$\rho_0\f$.                    */
     double T;      /**< Temperature with units \f$T_0\f$.                   */
+    double T__y;   /**< Wall-normal derivative of temperature
+                        with units \f$T_0 / l_0\f$.                         */
     double u;      /**< Streamwise velocity with units \f$u_0\f$.           */
     double u__y;   /**< Wall-normal derivative of streamwise velocity
                         with units \f$u_0 / l_0\f$.                         */
@@ -331,6 +333,10 @@ typedef struct suzerain_bl_qoi {
     double gamma_e;      /**< The ratio of specific heats at the edge. */
     double Ma_e;         /**< The local Mach number at the edge. */
     double Pr_w;         /**< The Prandtl number at the wall. */
+    double neg_Bq;       /**< The negated nondimensional heat flux
+                              \f$-B_q = \frac{k \nabla T}{\rho_w C_p
+                              u_\tau T_w} = \frac{\mu \nabla T}{\mbox{Pr}
+                              \rho_w C_p u_\tau T_w} \f$. */
     double ratio_rho;    /**< The ratio of edge to wall density. */
     double ratio_nu;     /**< The ratio of edge to wall kinematic viscosity. */
     double ratio_T;      /**< The ratio of edge to wall temperature. */

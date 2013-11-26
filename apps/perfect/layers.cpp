@@ -252,7 +252,8 @@ void summarize_boundary_layer_nature(
     wall.mu    = lay.mu()[0];
     wall.Pr    = scenario.Pr;
     wall.rho   = lay.rho()[0];
-    wall.T     = lay.T()[0];
+    assert(&(wall.T) + 1 == &(wall.T__y)); // Next, compute both T and T__y
+    b.linear_combination(1, lay.T().col(0).data(), 0.0, &(wall.T), 1);
     assert(&(wall.u) + 1 == &(wall.u__y)); // Next, compute both u and u__y
     b.linear_combination(1, lay.u().col(0).data(), 0.0, &(wall.u), 1);
     wall.v     = lay.u().col(1)[0];
@@ -275,7 +276,8 @@ void summarize_boundary_layer_nature(
         b.linear_combination(0, lay.a().data(),        delta, &(edge.a));
         b.linear_combination(0, lay.mu().data(),       delta, &(edge.mu));
         b.linear_combination(0, lay.rho().data(),      delta, &(edge.rho));
-        b.linear_combination(0, lay.T().data(),        delta, &(edge.T));
+        assert(&(edge.T) + 1 == &(edge.T__y)); // Next, compute both T and T__y
+        b.linear_combination(1, lay.T().col(0).data(), delta, &(edge.T), 1);
         assert(&(edge.u) + 1 == &(edge.u__y)); // Next, compute both u and u__y
         b.linear_combination(1, lay.u().col(0).data(), delta, &(edge.u), 1);
         b.linear_combination(0, lay.u().col(1).data(), delta, &(edge.v));
