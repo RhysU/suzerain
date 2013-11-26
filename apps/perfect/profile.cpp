@@ -29,6 +29,7 @@
 
 #include <suzerain/blas_et_al.hpp>
 #include <suzerain/bl.h>
+#include <suzerain/channel.h>
 #include <suzerain/error.h>
 #include <suzerain/grid_specification.hpp>
 #include <suzerain/largo_specification.hpp>
@@ -303,6 +304,56 @@ void summarize_boundary_layer_nature(
     }
     suzerain_bl_compute_pg(scenario.Ma, scenario.Re, &wall, &viscous, &edge,
                            edge_p__x, edge_u__x, &thick, &pg);
+}
+
+void summarize_channel_nature(
+        const profile &prof,
+        const scenario_definition &scenario,
+        bspline &b,
+        suzerain_channel_local   &wall,
+        suzerain_channel_viscous &viscous,
+        suzerain_channel_local   &center,
+        suzerain_channel_qoi     &qoi)
+{
+    // Prepare local state at the wall (y=0)
+    // Uses B-spline 0th coefficient being wall value to reduce costs.
+    std::fill_n(reinterpret_cast<double *>(&wall),
+                sizeof(wall)/sizeof(double),
+                std::numeric_limits<double>::quiet_NaN());
+    wall.y     = b.collocation_point(0);
+    wall.a     = prof.a()[0];
+    wall.gamma = scenario.gamma;
+    wall.mu    = prof.mu()[0];
+    wall.Pr    = scenario.Pr;
+    wall.rho   = prof.rho()[0];
+    assert(&(wall.T) + 1 == &(wall.T__y)); // Next, compute both T and T__y
+    b.linear_combination(1, prof.T().col(0).data(), wall.y, &(wall.T), 1);
+    assert(&(wall.u) + 1 == &(wall.u__y)); // Next, compute both u and u__y
+    b.linear_combination(1, prof.u().col(0).data(), wall.y, &(wall.u), 1);
+    wall.v     = prof.u().col(1)[0];
+
+    // Compute viscous quantities based only on wall information
+    suzerain_channel_compute_viscous(scenario.Re, &wall, &viscous);
+
+    // Evaluate state at the centerline from B-spline basis
+    std::fill_n(reinterpret_cast<double *>(&center),
+                sizeof(center)/sizeof(double),
+                std::numeric_limits<double>::quiet_NaN());
+    center.y = b.collocation_point(b.n()-1) / 2;
+    b.linear_combination(0, prof.a().data(),        center.y, &(center.a));
+    center.gamma = scenario.gamma;
+    b.linear_combination(0, prof.mu().data(),       center.y, &(center.mu));
+    center.Pr    = scenario.Pr;
+    b.linear_combination(0, prof.rho().data(),      center.y, &(center.rho));
+    assert(&(center.T) + 1 == &(center.T__y)); // Next, compute both T and T__y
+    b.linear_combination(1, prof.T().col(0).data(), center.y, &(center.T), 1);
+    assert(&(center.u) + 1 == &(center.u__y)); // Next, compute both u and u__y
+    b.linear_combination(1, prof.u().col(0).data(), center.y, &(center.u), 1);
+    b.linear_combination(0, prof.u().col(1).data(), center.y, &(center.v));
+
+    // Compute general quantities of interest
+    suzerain_channel_compute_qoi(scenario.Ma, scenario.Re,
+                                 &wall, &viscous, &center, &qoi);
 }
 
 } // namespace perfect

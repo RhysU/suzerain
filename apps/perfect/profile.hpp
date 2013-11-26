@@ -34,10 +34,13 @@
 
 // Forward declarations
 struct suzerain_bl_local;
-struct suzerain_bl_viscous;
-struct suzerain_bl_thicknesses;
-struct suzerain_bl_qoi;
 struct suzerain_bl_pg;
+struct suzerain_bl_qoi;
+struct suzerain_bl_thicknesses;
+struct suzerain_bl_viscous;
+struct suzerain_channel_local;
+struct suzerain_channel_qoi;
+struct suzerain_channel_viscous;
 
 namespace suzerain {
 
@@ -189,7 +192,6 @@ profile sample_profile(
         const bsplineop &cop,
         contiguous_state<4,complex_t> &swave);
 
-
 /**
  * Use the boundary layer information in \c prof and possibly base flow
  * information in \c sg to compute many quantities of interest.  This is
@@ -218,6 +220,26 @@ void summarize_boundary_layer_nature(
         suzerain_bl_thicknesses &thick,
         suzerain_bl_qoi         &qoi,
         suzerain_bl_pg          &pg);
+
+/**
+ * Use the boundary layer information in \c prof to compute many quantities of
+ * interest.  This is a purely local computation requiring no communication.
+ *
+ * @param[in]  prof     Profile information from \ref sample_profile().
+ * @param[in]  scenario Scenario of interest.
+ * @param[out] wall     Populated on return.
+ * @param[out] viscous  Populated on return.
+ * @param[out] center   Populated on return.
+ * @param[out] qoi      Populated on return.
+ */
+void summarize_channel_nature(
+        const profile &prof,
+        const scenario_definition &scenario,
+        bspline &b,
+        suzerain_channel_local   &wall,
+        suzerain_channel_viscous &viscous,
+        suzerain_channel_local   &center,
+        suzerain_channel_qoi     &qoi);
 
 } // end namespace perfect
 
