@@ -51,7 +51,6 @@ extern "C" {
  * Each nondimensional quantity is scaled as documented.
  */
 typedef struct suzerain_channel_local {
-    double y;      /**< Distance from the wall divided by \f$l_0\f$.        */
     double a;      /**< Sound speed divided by \f$a_0\f$.                   */
     double gamma;  /**< Nondimensional Ratio of specific heats \f$\gamma\f$.*/
     double mu;     /**< Dynamic viscosity divided by \f$\mu_0\f$.           */
@@ -64,6 +63,7 @@ typedef struct suzerain_channel_local {
     double u__y;   /**< Wall-normal derivative of streamwise velocity
                         divided by \f$u_0 / l_0\f$.                         */
     double v;      /**< Wall-normal velocity divided by \f$u_0\f$.          */
+    double y;      /**< Distance from the wall divided by \f$l_0\f$.        */
 } suzerain_channel_local;
 
 /**
@@ -144,10 +144,10 @@ int
 suzerain_channel_compute_qoi(
         double code_Ma,
         double code_Re,
-        const suzerain_channel_local       * wall,
-        const suzerain_channel_viscous     * viscous,
-        const suzerain_channel_local       * center,
-              suzerain_channel_qoi         * qoi);
+        const suzerain_channel_local   * wall,
+        const suzerain_channel_viscous * viscous,
+        const suzerain_channel_local   * center,
+              suzerain_channel_qoi     * qoi);
 
 #ifdef __cplusplus
 } /* extern "C" */
