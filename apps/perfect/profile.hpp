@@ -21,11 +21,11 @@
 //
 //--------------------------------------------------------------------------
 
-#ifndef SUZERAIN_PERFECT_LAYERS_HPP
-#define SUZERAIN_PERFECT_LAYERS_HPP
+#ifndef SUZERAIN_PERFECT_PROFILE_HPP
+#define SUZERAIN_PERFECT_PROFILE_HPP
 
 /** @file
- * Sampling logistics for boundary layer profiles.
+ * Sampling logistics for solution profiles.
  */
 
 #include <suzerain/common.hpp>
@@ -53,42 +53,43 @@ class scenario_definition;
 class quantities;
 
 /**
- * Encapsulates boundary layer profiles necessary for using \ref bl.h.
+ * Encapsulates solution profiles necessary for using \ref bl.h
+ * or \ref channel.h.
  *
  * Samples of each quantity are made available through two-dimensional
  * column-major arrays.  The row index iterates over wall-normal B-spline
  * coefficients and the column index iterates over tensor indices.  Scalars
- * have only a single tensor index.  Vector layers have two indices
+ * have only a single tensor index.  Vector quantities have two indices
  * corresponding to the streamwise x and wall-normal y directions.  The
  * homogeneous spanwise direction z is not reported.
  */
-class layers
+class profile
 {
 public:
 
 /**
- * A Boost.Preprocessor sequence of tuples of layers computed in wave
+ * A Boost.Preprocessor sequence of tuples of quantities computed in wave
  * space.
  */
-#define SUZERAIN_PERFECT_LAYERS_WAVE             \
+#define SUZERAIN_PERFECT_PROFILE_WAVE             \
     ((rho,                      1)) /* scalar */ \
     ((rho_u,                    2)) /* vector */
 
 /**
- * A Boost.Preprocessor sequence of tuples of layers computed in physical
+ * A Boost.Preprocessor sequence of tuples of quantities computed in physical
  * space.
  */
-#define SUZERAIN_PERFECT_LAYERS_PHYSICAL   \
+#define SUZERAIN_PERFECT_PROFILE_PHYSICAL   \
     ((a,                 1))  /* scalar */ \
     ((H0,                1))  /* scalar */ \
     ((mu,                1))  /* scalar */ \
     ((T,                 1))  /* scalar */ \
     ((u,                 2))  /* vector */
 
-/** A Boost.Preprocessor sequence of tuples of all sampled layers. */
-#define SUZERAIN_PERFECT_LAYERS      \
-    SUZERAIN_PERFECT_LAYERS_WAVE     \
-    SUZERAIN_PERFECT_LAYERS_PHYSICAL
+/** A Boost.Preprocessor sequence of tuples of all sampled quantity profiles. */
+#define SUZERAIN_PERFECT_PROFILE      \
+    SUZERAIN_PERFECT_PROFILE_WAVE     \
+    SUZERAIN_PERFECT_PROFILE_PHYSICAL
 
     /* Compile-time totals of the number of scalars sampled at each point */
     struct nscalars { enum {
@@ -96,13 +97,13 @@ public:
 #define SUM(s, state, x) BOOST_PP_ADD(state, x)
 
         wave = BOOST_PP_SEQ_FOLD_LEFT(SUM, 0, BOOST_PP_SEQ_TRANSFORM(
-                    EXTRACT,,SUZERAIN_PERFECT_LAYERS_WAVE)),
+                    EXTRACT,,SUZERAIN_PERFECT_PROFILE_WAVE)),
 
         physical = BOOST_PP_SEQ_FOLD_LEFT(SUM, 0, BOOST_PP_SEQ_TRANSFORM(
-                    EXTRACT,,SUZERAIN_PERFECT_LAYERS_PHYSICAL)),
+                    EXTRACT,,SUZERAIN_PERFECT_PROFILE_PHYSICAL)),
 
         total = BOOST_PP_SEQ_FOLD_LEFT(SUM, 0, BOOST_PP_SEQ_TRANSFORM(
-                    EXTRACT,,SUZERAIN_PERFECT_LAYERS))
+                    EXTRACT,,SUZERAIN_PERFECT_PROFILE))
 
 #undef EXTRACT
 #undef SUM
@@ -111,14 +112,14 @@ public:
     /** Type of the contiguous storage used to house all scalars */
     typedef Array<real_t, Dynamic, nscalars::total> storage_type;
 
-    /** Contiguous storage used to house all mean layer profiles */
+    /** Contiguous storage used to house all quantity profiles */
     storage_type storage;
 
     /** Default constructor. Resize <tt>this->storage</tt> prior to use. */
-    layers();
+    profile();
 
     /** Constructor prepares zero-filled \c storage containing \c Ny rows. */
-    explicit layers(storage_type::Index Ny);
+    explicit profile(storage_type::Index Ny);
 
 #define OP(r, data, tuple)                                              \
     BOOST_PP_TUPLE_ELEM(2, 0, tuple) = BOOST_PP_TUPLE_ELEM(2, 1, tuple)
@@ -128,13 +129,13 @@ public:
         wave     = 0,                      // Start of wave block
         physical = wave + nscalars::wave,  // Start of physical block
         BOOST_PP_SEQ_ENUM(BOOST_PP_SEQ_TRANSFORM(
-                OP,,SUZERAIN_SHIFTED_SUM(SUZERAIN_PERFECT_LAYERS)))
+                OP,,SUZERAIN_SHIFTED_SUM(SUZERAIN_PERFECT_PROFILE)))
     }; };
 
     /** Compile-time sizes for each quantity within \c storage */
     struct size { enum {
         BOOST_PP_SEQ_ENUM(BOOST_PP_SEQ_TRANSFORM(OP,,
-                    SUZERAIN_PERFECT_LAYERS))
+                    SUZERAIN_PERFECT_PROFILE))
     }; };
 
 #undef OP
@@ -147,7 +148,7 @@ public:
         return storage.middleCols<size::BOOST_PP_TUPLE_ELEM(2, 0, tuple)>(    \
                 start::BOOST_PP_TUPLE_ELEM(2, 0, tuple));                     \
     }
-    BOOST_PP_SEQ_FOR_EACH(DECLARE,,SUZERAIN_PERFECT_LAYERS)
+    BOOST_PP_SEQ_FOR_EACH(DECLARE,,SUZERAIN_PERFECT_PROFILE)
 #undef DECLARE
 
     // Declare a named, immutable "view" into storage for each quantity
@@ -158,20 +159,20 @@ public:
         return storage.middleCols<size::BOOST_PP_TUPLE_ELEM(2, 0, tuple)>(         \
                 start::BOOST_PP_TUPLE_ELEM(2, 0, tuple));                          \
     }
-    BOOST_PP_SEQ_FOR_EACH(DECLARE,,SUZERAIN_PERFECT_LAYERS)
+    BOOST_PP_SEQ_FOR_EACH(DECLARE,,SUZERAIN_PERFECT_PROFILE)
 #undef DECLARE
 
     /**
      * Copy information from a \ref quantities instance.
-     * May permit avoiding \ref sample_layers calls in some circumstances.
+     * May permit avoiding \ref sample_profile calls in some circumstances.
      */
-    layers& operator=(const quantities &q);
+    profile& operator=(const quantities &q);
 
 };
 
 /**
- * Using the provided state, sample the mean boundary layer profiles declared
- * in \ref layers.  This is a mildly expensive, collective method.
+ * Using the provided state, sample the mean solution profiles declared
+ * in \ref profile.  This is a mildly expensive, collective method.
  *
  * @param[in]     scenario Scenario parameters.
  * @param[in]     grid     Grid parameters.
@@ -179,9 +180,9 @@ public:
  * @param[in]     cop      B-spline operator workspace.
  * @param[in,out] swave    Destroyed in the computation
  *
- * @return Mean boundary layer layers as B-spline coefficients.
+ * @return Mean quantity profiles as B-spline coefficients.
  */
-layers sample_layers(
+profile sample_profile(
         const scenario_definition &scenario,
         const grid_specification &grid,
         const pencil_grid &dgrid,
@@ -190,11 +191,11 @@ layers sample_layers(
 
 
 /**
- * Use the boundary layer information in \c lay and possibly base flow
+ * Use the boundary layer information in \c prof and possibly base flow
  * information in \c sg to compute many quantities of interest.  This is
  * a purely local computation requiring no communication.
  *
- * @param[in]  lay      Profile information from \ref sample_layers().
+ * @param[in]  prof     Profile information from \ref sample_profile().
  * @param[in]  scenario Scenario of interest.
  * @param[in]  sg       Slow growth definition optionally in use
  *                      which provides base flow details for
@@ -207,7 +208,7 @@ layers sample_layers(
  * @param[out] pg       Populated on return.
  */
 void summarize_boundary_layer_nature(
-        const layers &lay,
+        const profile &prof,
         const scenario_definition &scenario,
         const shared_ptr<largo_specification> &sg,
         bspline &b,
@@ -222,4 +223,4 @@ void summarize_boundary_layer_nature(
 
 } // end namespace suzerain
 
-#endif // SUZERAIN_PERFECT_LAYERS_HPP
+#endif // SUZERAIN_PERFECT_PROFILE_HPP

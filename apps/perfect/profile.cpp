@@ -22,10 +22,10 @@
 //--------------------------------------------------------------------------
 
 /** @file
- * @copydoc layers.hpp
+ * @copydoc profile.hpp
  */
 
-#include "layers.hpp"
+#include "profile.hpp"
 
 #include <suzerain/blas_et_al.hpp>
 #include <suzerain/bl.h>
@@ -50,17 +50,17 @@ namespace suzerain {
 
 namespace perfect {
 
-layers::layers()
+profile::profile()
 {
 }
 
-layers::layers(
-        layers::storage_type::Index Ny)
+profile::profile(
+        profile::storage_type::Index Ny)
     : storage(storage_type::Zero(Ny, storage_type::ColsAtCompileTime))
 {
 }
 
-layers& layers::operator=(const quantities &q)
+profile& profile::operator=(const quantities &q)
 {
     // Resize our storage and defensively NaN in case we miss something
     this->storage.setConstant(q.storage.rows(),
@@ -82,7 +82,7 @@ layers& layers::operator=(const quantities &q)
 }
 
 // This logic is a trimmed down version of quantities.cpp. See comments there.
-layers sample_layers(
+profile sample_profile(
         const scenario_definition &scenario,
         const grid_specification &grid,
         const pencil_grid &dgrid,
@@ -90,7 +90,7 @@ layers sample_layers(
         contiguous_state<4,complex_t> &swave)
 {
     // State enters method as coefficients in X, Y, and Z directions
-    SUZERAIN_TIMER_SCOPED("sample_layers");
+    SUZERAIN_TIMER_SCOPED("sample_profile");
 
     // We are only prepared to handle a fixed number of fields in this routine
     enum { state_count = 5 };
@@ -111,7 +111,7 @@ layers sample_layers(
     SUZERAIN_ENSURE((unsigned) swave.strides()[3] == swave.shape()[1]*swave.shape()[2]);
 
     // Rank-specific details accumulated in ret to be MPI_Allreduce-d later
-    layers ret(Ny);
+    profile ret(Ny);
 
     // Obtain samples available in wave-space from mean conserved state.
     // These coefficients are inherently averaged across the X-Z plane.
@@ -150,7 +150,7 @@ layers sample_layers(
         accumulator_type BOOST_PP_CAT(sum_,BOOST_PP_TUPLE_ELEM(2, 0, tuple)) \
                 [BOOST_PP_TUPLE_ELEM(2, 1, tuple)];
         BOOST_PP_SEQ_FOR_EACH(DECLARE,,
-                SUZERAIN_PERFECT_LAYERS_PHYSICAL)
+                SUZERAIN_PERFECT_PROFILE_PHYSICAL)
 #undef DECLARE
 
         // Iterate across the j-th ZX plane
@@ -191,19 +191,19 @@ layers sample_layers(
             BOOST_PP_ENUM(BOOST_PP_TUPLE_ELEM(2, 1, tuple),               \
                           EXTRACT_SUM, BOOST_PP_TUPLE_ELEM(2, 0, tuple));
         BOOST_PP_SEQ_FOR_EACH(MOVE_SUM_INTO_TMP,,
-                SUZERAIN_PERFECT_LAYERS_PHYSICAL)
+                SUZERAIN_PERFECT_PROFILE_PHYSICAL)
 #undef EXTRACT_SUM
 #undef MOVE_SUM_INTO_TMP
 
     } // end Y
 
     // Notice dgrid.rank_zero_zero_modes already contains "wave-sampled"
-    // layers while other ranks have zeros in those locations.
+    // profile while other ranks have zeros in those locations.
 
     // Allreduce to obtain global sums on every rank
     SUZERAIN_MPICHKR(MPI_Allreduce(
             MPI_IN_PLACE, ret.storage.data(), ret.storage.size(),
-            mpi::datatype<layers::storage_type::Scalar>::value,
+            mpi::datatype<profile::storage_type::Scalar>::value,
             MPI_SUM, MPI_COMM_WORLD));
 
     // Physical space sums, which are at collocation points, need to be
@@ -212,16 +212,16 @@ layers sample_layers(
     bsplineop_lu scaled_mass(cop);
     scaled_mass.opform(1, &scale_factor, cop);
     scaled_mass.factor();
-    scaled_mass.solve(layers::nscalars::physical,
-            ret.storage.middleCols<layers::nscalars::physical>(
-                layers::start::physical).data(),
+    scaled_mass.solve(profile::nscalars::physical,
+            ret.storage.middleCols<profile::nscalars::physical>(
+                profile::start::physical).data(),
             ret.storage.innerStride(), ret.storage.outerStride());
 
     return ret;
 }
 
 void summarize_boundary_layer_nature(
-        const layers &lay,
+        const profile &prof,
         const scenario_definition &scenario,
         const shared_ptr<largo_specification> &sg,
         bspline &b,
@@ -237,9 +237,9 @@ void summarize_boundary_layer_nature(
     using boost::math::isnan;
 
     // Compute boundary layer thicknesses, including delta
-    suzerain_bl_compute_thicknesses(lay.H0().data(),
-                                    lay.rho_u().col(0).data(),
-                                    lay.u().col(0).data(),
+    suzerain_bl_compute_thicknesses(prof.H0().data(),
+                                    prof.rho_u().col(0).data(),
+                                    prof.u().col(0).data(),
                                     &thick, b.bw, b.dbw);
 
     // Prepare local state at the wall (y=0)
@@ -247,16 +247,16 @@ void summarize_boundary_layer_nature(
     std::fill_n(reinterpret_cast<double *>(&wall),
                 sizeof(wall)/sizeof(double),
                 std::numeric_limits<double>::quiet_NaN());
-    wall.a     = lay.a()[0];
+    wall.a     = prof.a()[0];
     wall.gamma = scenario.gamma;
-    wall.mu    = lay.mu()[0];
+    wall.mu    = prof.mu()[0];
     wall.Pr    = scenario.Pr;
-    wall.rho   = lay.rho()[0];
+    wall.rho   = prof.rho()[0];
     assert(&(wall.T) + 1 == &(wall.T__y)); // Next, compute both T and T__y
-    b.linear_combination(1, lay.T().col(0).data(), 0.0, &(wall.T), 1);
+    b.linear_combination(1, prof.T().col(0).data(), 0.0, &(wall.T), 1);
     assert(&(wall.u) + 1 == &(wall.u__y)); // Next, compute both u and u__y
-    b.linear_combination(1, lay.u().col(0).data(), 0.0, &(wall.u), 1);
-    wall.v     = lay.u().col(1)[0];
+    b.linear_combination(1, prof.u().col(0).data(), 0.0, &(wall.u), 1);
+    wall.v     = prof.u().col(1)[0];
 
     // Compute viscous quantities based only on wall information
     suzerain_bl_compute_viscous(scenario.Re, &wall, &viscous);
@@ -273,14 +273,14 @@ void summarize_boundary_layer_nature(
         // Later, could more quickly evaluate basis once and then re-use that
         // result to repeatedly form the necessary linear combinations.
         const double delta = thick.delta;
-        b.linear_combination(0, lay.a().data(),        delta, &(edge.a));
-        b.linear_combination(0, lay.mu().data(),       delta, &(edge.mu));
-        b.linear_combination(0, lay.rho().data(),      delta, &(edge.rho));
+        b.linear_combination(0, prof.a().data(),        delta, &(edge.a));
+        b.linear_combination(0, prof.mu().data(),       delta, &(edge.mu));
+        b.linear_combination(0, prof.rho().data(),      delta, &(edge.rho));
         assert(&(edge.T) + 1 == &(edge.T__y)); // Next, compute both T and T__y
-        b.linear_combination(1, lay.T().col(0).data(), delta, &(edge.T), 1);
+        b.linear_combination(1, prof.T().col(0).data(), delta, &(edge.T), 1);
         assert(&(edge.u) + 1 == &(edge.u__y)); // Next, compute both u and u__y
-        b.linear_combination(1, lay.u().col(0).data(), delta, &(edge.u), 1);
-        b.linear_combination(0, lay.u().col(1).data(), delta, &(edge.v));
+        b.linear_combination(1, prof.u().col(0).data(), delta, &(edge.u), 1);
+        b.linear_combination(0, prof.u().col(1).data(), delta, &(edge.v));
     }
 
     // Compute general quantities of interest

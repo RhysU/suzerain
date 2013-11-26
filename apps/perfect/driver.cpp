@@ -35,7 +35,7 @@
 #include <suzerain/support/logging.hpp>
 #include <suzerain/support/support.hpp>
 
-#include "layers.hpp"
+#include "profile.hpp"
 #include "perfect.hpp"
 
 namespace suzerain {
@@ -216,12 +216,12 @@ void driver::log_boundary_layer_quantities(
 
     // If possible, use existing information from mean quantities
     // Otherwise compute from instantaneous fields stored in state_linear
-    layers lay;
+    profile prof;
     if (controller && t == mean.t) {
-        lay = mean;
+        prof = mean;
     } else {
         state_nonlinear->assign_from(*state_linear);
-        lay = sample_layers(*scenario, *grid, *dgrid, *cop, *state_nonlinear);
+        prof = sample_profile(*scenario, *grid, *dgrid, *cop, *state_nonlinear);
     }
 
     // Compute many details about the boundary layer for logging
@@ -231,7 +231,7 @@ void driver::log_boundary_layer_quantities(
     suzerain_bl_thicknesses thick;
     suzerain_bl_qoi         qoi;
     suzerain_bl_pg          pg;
-    summarize_boundary_layer_nature(lay, *scenario, sg, *b,
+    summarize_boundary_layer_nature(prof, *scenario, sg, *b,
                                     wall, viscous, edge, thick, qoi, pg);
 
     // Log messages using application-agnostic superclass functionality
