@@ -400,9 +400,9 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
                                         state.as_is(),
                                         dontcare.as_is(),
                                         dontcare.as_is());
-                constrainer->physical[ndx::e  ]->shape[i] = 2; // TODO state.e  ;
-                constrainer->physical[ndx::mx ]->shape[i] = 2; // TODO state.mx ;
-                constrainer->physical[ndx::rho]->shape[i] = 2; // TODO state.rho;
+                constrainer->physical[ndx::e  ]->shape[i] = state.e  ;
+                constrainer->physical[ndx::mx ]->shape[i] = state.mx ;
+                constrainer->physical[ndx::rho]->shape[i] = state.rho;
             }
             for (size_t i = 0; i < constrainer->physical.size(); ++i) {
                 if (!constrainer->physical[i]->enabled()) {
