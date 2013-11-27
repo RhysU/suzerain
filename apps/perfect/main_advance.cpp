@@ -391,7 +391,6 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
         constrainer->physical[ndx::rho].reset(
                 new constraint::constant_upper(freestream.rho, *cop, 0));
         if (sg->formulation.enabled() && sg->baseflow) {
-            // FIXME Structurally correct for #3003 but something's amiss...
             INFO0(who, "Matching freestream constraint enforcement"
                        " profile to baseflow");
             largo_state state, dontcare;
