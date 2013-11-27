@@ -134,7 +134,7 @@ public:
      * implicit numerical[ndx::rho] forcing is combined with
      * physical[ndx::rho]'s effect and stored within \c /bar_Crho.
      */
-    array<shared_ptr<const constraint::base>, 5> physical;
+    array<shared_ptr<constraint::base>, 5> physical;
 
     /**
      * Catalog of numerically-oriented constraints to be indexed by equation
@@ -150,10 +150,10 @@ public:
      * The mean implicit numerical[ndx::rho] forcing is combined with
      * physical[ndx::rho]'s effect and stored within \c /bar_Crho.
      */
-    array<shared_ptr<const constraint::base>, 5> numerical;
+    array<shared_ptr<constraint::base>, 5> numerical;
 
     /** An appropriately-size, do-nothing constraint usable by callers. */
-    const shared_ptr<const constraint::disabled> none;
+    const shared_ptr<constraint::disabled> none;
 
 protected:
 
