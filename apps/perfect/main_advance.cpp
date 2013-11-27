@@ -32,6 +32,7 @@
 #include <suzerain/common.hpp>
 #include <suzerain/constraint.hpp>
 #include <suzerain/constraint_treatment.hpp>
+#include <suzerain/format.hpp>
 #include <suzerain/isothermal_specification.hpp>
 #include <suzerain/largo_state.hpp>
 #include <suzerain/radial_nozzle.h>
@@ -391,8 +392,8 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
                 new constraint::constant_upper(freestream.rho, *cop, 0));
         if (sg->formulation.enabled() && sg->baseflow) {
             // FIXME Structurally correct for #3003 but something's amiss...
-            // FIXME Specifically, constant profiles behave but shaped do not?
-            INFO0(who, "Matching freestream constraint profile to baseflow");
+            INFO0(who, "Matching freestream constraint enforcement"
+                       " profile to baseflow");
             largo_state state, dontcare;
             for (int i = 0; i < b->n(); ++i) {
                 sg->baseflow->conserved(b->collocation_point(i),
@@ -402,6 +403,17 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
                 constrainer->physical[ndx::e  ]->shape[i] = 2; // TODO state.e  ;
                 constrainer->physical[ndx::mx ]->shape[i] = 2; // TODO state.mx ;
                 constrainer->physical[ndx::rho]->shape[i] = 2; // TODO state.rho;
+            }
+            for (size_t i = 0; i < constrainer->physical.size(); ++i) {
+                if (!constrainer->physical[i]->enabled()) {
+                    continue;
+                }
+                real_t minval = constrainer->physical[i]->shape.minCoeff();
+                real_t maxval = constrainer->physical[i]->shape.maxCoeff();
+                INFO0(who, "Constraint profile for " << ndx::identifier[i]
+                            << " has range ["
+                            << fullprec<>(minval) << ", "
+                            << fullprec<>(maxval) << ']');
             }
         }
 
