@@ -389,6 +389,21 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
                 new constraint::constant_upper(freestream.mx,  *cop, 0));
         constrainer->physical[ndx::rho].reset(
                 new constraint::constant_upper(freestream.rho, *cop, 0));
+        if (sg->formulation.enabled() && sg->baseflow) {
+            // FIXME Structurally correct for #3003 but something's amiss...
+            // FIXME Specifically, constant profiles behave but shaped do not?
+            INFO0(who, "Matching freestream constraint profile to baseflow");
+            largo_state state, dontcare;
+            for (int i = 0; i < b->n(); ++i) {
+                sg->baseflow->conserved(b->collocation_point(i),
+                                        state.as_is(),
+                                        dontcare.as_is(),
+                                        dontcare.as_is());
+                constrainer->physical[ndx::e  ]->shape[i] = 2; // TODO state.e  ;
+                constrainer->physical[ndx::mx ]->shape[i] = 2; // TODO state.mx ;
+                constrainer->physical[ndx::rho]->shape[i] = 2; // TODO state.rho;
+            }
+        }
 
         if (isothermal->upper_v > 0 && (boost::math::isinf)(scenario->Re)) {
             WARN0(who, "Nonreflecting viscous outflow boundary problematic"
