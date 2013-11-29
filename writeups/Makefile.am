@@ -40,11 +40,12 @@ EXTRA_DIST += symplanenorm.eps
 EXTRA_DIST += references.bib
 
 # Build and install writeups
-all-local:      pdf-local
-pdf-local:      $(PDFS)
-PDFS          = $(TEXSOURCES:.tex=.pdf) reacting_main.pdf viscous_nondim.pdf
-writeupsdir   = $(pkgdatadir)/writeups
-writeups_DATA = $(PDFS)
+all-local:       pdf-local
+pdf-local:       $(PDFS)
+PDFS           = $(TEXSOURCES:.tex=.pdf) reacting_main.pdf
+PDFS          += viscous_nondim.pdf thicknesses.pdf
+writeupsdir    = $(pkgdatadir)/writeups
+writeups_DATA  = $(PDFS)
 
 # Files to clean up based on common TeX-based tools
 CLEANFILES  = *.aux *.bbl *.blg *.dvi *.log *.out *.pdf *.ps *.toc
