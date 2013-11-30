@@ -178,7 +178,7 @@ Adding a constant $\gamma=\gamma_0$ assumption, one finds the dimensional result
 .
 \end{align}
 
-To nondimensionalize, chose some reference length $l_0$ and declare
+To nondimensionalize, choose some reference length $l_0$ and declare
 \begin{align}
     x     &= x^\ast l_0
 &   a     &= a^\ast a_0
@@ -325,10 +325,10 @@ Solving for $u^\prime$,
 \label{eq:cpfradial_nondim_ode}
 ,
 \end{align}
-permits integrating for $u$ if boundary conditions on $\left[R_1, R_2\right]$
-are supplied.
+permits integrating using $u$ via classical ODE techniques whenever a boundary
+condition on either $R_1$ or $R_2$ is supplied.
 
-Given some $u$ computing local thermodynamic state is of interest.
+Given some $u$, computing local thermodynamic state is of interest.
 Equation~\eqref{eq:stagnation_sound_nondim} fixes~$a$.  The
 $u=u\!\left(r\right)$ assumption causes~\eqref{eq:logrho_nondim} to reduce to
 \begin{align}
@@ -671,15 +671,15 @@ All of these choices were required to pass test cases A--F appearing at the end
 of Listing~\ref{lst:octave_nozzle_baseflow}.
 
 Not surprisingly, matching $\Mach[e]{}\approx{}1$ taxes this formulation as
-implemented here.  Though a realizability constraint is implemented, in practice
-it seems not to be encountered by the chosen optimizer with this particular
-initialization procedure.  The second \texttt{nonlin\_residmin} invocation
-permits many iterations as pre-asymptotic convergence has been quite slow on
-one test (not shown).  Generally, fewer than 50 total iterations are required
-for convergence to $\sqrt{\epsilon}$-like sum-of-squared mismatch residuals.
-After optimization completes, the full base flow profile may be computed by
-supplying the results along with $R_2 = \sqrt{R_0^2 + L_y^2}$ to
-Listing~\ref{lst:octave_nozzle}.
+implemented here.  Though a realizability constraint is implemented, in
+practice it seems not to be encountered by the chosen optimizer with this
+particular initialization procedure.  The second \texttt{nonlin\_residmin}
+invocation permits many iterations as pre-asymptotic convergence has been quite
+slow on one test (not shown).  Generally, fewer than 50 total iterations and a
+few core-seconds of compute time are required for convergence to
+$\sqrt{\epsilon}$-like sum-of-squared mismatch residuals.  After optimization
+completes, the full base flow profile may be computed by supplying the results
+along with $R_2 = \sqrt{R_0^2 + L_y^2}$ to Listing~\ref{lst:octave_nozzle}.
 
 \lstinputlisting[language=Octave,float=p,
                  caption={\texttt{nozzle\_baseflow.m}: A driver for targeting
