@@ -587,8 +587,39 @@ double integrand_thickness_enthalpy(
 {
     const params_thickness_enthalpy * const p
             = (params_thickness_enthalpy *) params;
+    size_t istart, iend;
     double integrand = GSL_NAN;
-    // TODO Calculate per Ticket #3010
+    if (!gsl_bspline_eval_nonzero(y, p->Bk, &istart, &iend, p->w)) {
+
+        double rhou_visc = 0;
+        for (size_t i = istart; i <= iend; ++i) {
+            rhou_visc += p->rhou_visc[i] * gsl_vector_get(p->Bk, i-istart);
+        }
+
+        double H_visc = 0;
+        for (size_t i = istart; i <= iend; ++i) {
+            H_visc += p->H_visc[i] * gsl_vector_get(p->Bk, i-istart);
+        }
+
+        integrand = - rhou_visc * H_visc;
+
+        if (y >= p->inner_cutoff) {
+
+            double rhou_inv = 0;
+            for (size_t i = istart; i <= iend; ++i) {
+                rhou_inv += p->rhou_inv[i] * gsl_vector_get(p->Bk, i-istart);
+            }
+
+            double H_inv = 0;
+            for (size_t i = istart; i <= iend; ++i) {
+                H_inv += p->H_inv[i] * gsl_vector_get(p->Bk, i-istart);
+            }
+
+            integrand += rhou_inv * H_inv;
+
+        }
+
+    }
     return integrand;
 }
 
