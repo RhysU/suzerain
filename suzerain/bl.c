@@ -32,6 +32,7 @@
 #include <suzerain/bl.h>
 
 #include <gsl/gsl_bspline.h>
+#include <gsl/gsl_errno.h>
 #include <gsl/gsl_integration.h>
 #include <gsl/gsl_math.h>
 #include <gsl/gsl_nan.h>
@@ -385,8 +386,22 @@ double integrand_thickness_displacement(
 {
     params_thickness_displacement * const p
             = (params_thickness_displacement *) params;
+    size_t istart, iend;
     double integrand = GSL_NAN;
-    // TODO Calculate per Ticket #3010
+    if (!gsl_bspline_eval_nonzero(y, p->Bk, &istart, &iend, p->w)) {
+        integrand = 0.0;
+        if (y >= p->inner_cutoff) {
+            for (size_t i = istart; i <= iend; ++i) {
+                integrand += (p->rhou_inv[i] - p->rhou_visc[i])
+                           * gsl_vector_get(p->Bk, i-istart);
+            }
+        } else {
+            for (size_t i = istart; i <= iend; ++i) {
+                integrand -= p->rhou_visc[i]
+                           * gsl_vector_get(p->Bk, i-istart);
+            }
+        }
+    }
     return integrand;
 }
 
