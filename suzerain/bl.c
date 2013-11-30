@@ -384,7 +384,7 @@ static
 double integrand_thickness_displacement(
         double y, void * params)
 {
-    params_thickness_displacement * const p
+    const params_thickness_displacement * const p
             = (params_thickness_displacement *) params;
     size_t istart, iend;
     double integrand = GSL_NAN;
@@ -417,7 +417,7 @@ static
 double integrand_reynolds_displacement(
         double y, void * params)
 {
-    params_reynolds_displacement * const p
+    const params_reynolds_displacement * const p
             = (params_reynolds_displacement *) params;
     double integrand = GSL_NAN;
     // TODO Calculate per Ticket #3010
@@ -439,7 +439,7 @@ static
 double integrand_thickness_momentum(
         double y, void * params)
 {
-    params_thickness_momentum * const p
+    const params_thickness_momentum * const p
             = (params_thickness_momentum *) params;
     size_t istart, iend;
     double integrand = GSL_NAN;
@@ -490,7 +490,7 @@ static
 double integrand_reynolds_momentum(
         double y, void * params)
 {
-    params_reynolds_momentum * const p
+    const params_reynolds_momentum * const p
             = (params_reynolds_momentum *) params;
     double integrand = GSL_NAN;
     // TODO Calculate per Ticket #3010
@@ -512,10 +512,41 @@ static
 double integrand_thickness_energy(
         double y, void * params)
 {
-    params_thickness_energy * const p
+    const params_thickness_energy * const p
             = (params_thickness_energy *) params;
+    size_t istart, iend;
     double integrand = GSL_NAN;
-    // TODO Calculate per Ticket #3010
+    if (!gsl_bspline_eval_nonzero(y, p->Bk, &istart, &iend, p->w)) {
+
+        double rhou_visc = 0;
+        for (size_t i = istart; i <= iend; ++i) {
+            rhou_visc += p->rhou_visc[i] * gsl_vector_get(p->Bk, i-istart);
+        }
+
+        double u_visc = 0;
+        for (size_t i = istart; i <= iend; ++i) {
+            u_visc += p->u_visc[i] * gsl_vector_get(p->Bk, i-istart);
+        }
+
+        integrand = - rhou_visc * (u_visc * u_visc);
+
+        if (y >= p->inner_cutoff) {
+
+            double rhou_inv = 0;
+            for (size_t i = istart; i <= iend; ++i) {
+                rhou_inv += p->rhou_inv[i] * gsl_vector_get(p->Bk, i-istart);
+            }
+
+            double u_inv = 0;
+            for (size_t i = istart; i <= iend; ++i) {
+                u_inv += p->u_inv[i] * gsl_vector_get(p->Bk, i-istart);
+            }
+
+            integrand += rhou_inv * (u_inv * u_inv);
+
+        }
+
+    }
     return integrand;
 }
 
@@ -532,7 +563,7 @@ static
 double integrand_reynolds_energy(
         double y, void * params)
 {
-    params_reynolds_energy * const p
+    const params_reynolds_energy * const p
             = (params_reynolds_energy *) params;
     double integrand = GSL_NAN;
     // TODO Calculate per Ticket #3010
@@ -554,7 +585,7 @@ static
 double integrand_thickness_enthalpy(
         double y, void * params)
 {
-    params_thickness_enthalpy * const p
+    const params_thickness_enthalpy * const p
             = (params_thickness_enthalpy *) params;
     double integrand = GSL_NAN;
     // TODO Calculate per Ticket #3010
@@ -574,7 +605,7 @@ static
 double integrand_reynolds_enthalpy(
         double y, void * params)
 {
-    params_reynolds_enthalpy * const p
+    const params_reynolds_enthalpy * const p
             = (params_reynolds_enthalpy *) params;
     double integrand = GSL_NAN;
     // TODO Calculate per Ticket #3010
