@@ -407,8 +407,8 @@ double integrand_thickness_displacement(
 
 // Parameters for baseflow-ready integrand_reynolds_displacement
 typedef struct {
-    const double          *rhou_inv;
     const double          *rhou_visc;
+    const double          *rhou_inv;
     gsl_vector            *Bk;
     gsl_bspline_workspace *w;
 } params_reynolds_displacement;
@@ -427,10 +427,10 @@ double integrand_reynolds_displacement(
 // Parameters for baseflow-ready integrand_thickness_momentum
 typedef struct {
     double                 inner_cutoff;
-    const double          *rhou_inv;
-    const double          *u_inv;
     const double          *rhou_visc;
     const double          *u_visc;
+    const double          *rhou_inv;
+    const double          *u_inv;
     gsl_vector            *Bk;
     gsl_bspline_workspace *w;
 } params_thickness_momentum;
@@ -441,16 +441,47 @@ double integrand_thickness_momentum(
 {
     params_thickness_momentum * const p
             = (params_thickness_momentum *) params;
+    size_t istart, iend;
     double integrand = GSL_NAN;
-    // TODO Calculate per Ticket #3010
+    if (!gsl_bspline_eval_nonzero(y, p->Bk, &istart, &iend, p->w)) {
+
+        double rhou_visc = 0;
+        for (size_t i = istart; i <= iend; ++i) {
+            rhou_visc += p->rhou_visc[i] * gsl_vector_get(p->Bk, i-istart);
+        }
+
+        double u_visc = 0;
+        for (size_t i = istart; i <= iend; ++i) {
+            u_visc += p->u_visc[i] * gsl_vector_get(p->Bk, i-istart);
+        }
+
+        integrand = - rhou_visc * u_visc;
+
+        if (y >= p->inner_cutoff) {
+
+            double rhou_inv = 0;
+            for (size_t i = istart; i <= iend; ++i) {
+                rhou_inv += p->rhou_inv[i] * gsl_vector_get(p->Bk, i-istart);
+            }
+
+            double u_inv = 0;
+            for (size_t i = istart; i <= iend; ++i) {
+                u_inv += p->u_inv[i] * gsl_vector_get(p->Bk, i-istart);
+            }
+
+            integrand += rhou_inv * u_inv;
+
+        }
+
+    }
     return integrand;
 }
 
 // Parameters for baseflow-ready integrand_reynolds_momentum
 typedef struct {
-    const double          *u_inv;
     const double          *rhou_visc;
     const double          *u_visc;
+    const double          *u_inv;
     gsl_vector            *Bk;
     gsl_bspline_workspace *w;
 } params_reynolds_momentum;
@@ -469,10 +500,10 @@ double integrand_reynolds_momentum(
 // Parameters for baseflow-ready integrand_thickness_energy
 typedef struct {
     double                 inner_cutoff;
-    const double          *rhou_inv;
-    const double          *u_inv;
     const double          *rhou_visc;
     const double          *u_visc;
+    const double          *rhou_inv;
+    const double          *u_inv;
     gsl_vector            *Bk;
     gsl_bspline_workspace *w;
 } params_thickness_energy;
@@ -490,9 +521,9 @@ double integrand_thickness_energy(
 
 // Parameters for baseflow-ready integrand_reynolds_energy
 typedef struct {
-    const double          *u_inv;
     const double          *rhou_visc;
     const double          *u_visc;
+    const double          *u_inv;
     gsl_vector            *Bk;
     gsl_bspline_workspace *w;
 } params_reynolds_energy;
@@ -511,10 +542,10 @@ double integrand_reynolds_energy(
 // Parameters for baseflow-ready integrand_thickness_enthalpy
 typedef struct {
     double                 inner_cutoff;
-    const double          *rhou_inv;
-    const double          *H_inv;
     const double          *rhou_visc;
     const double          *H_visc;
+    const double          *rhou_inv;
+    const double          *H_inv;
     gsl_vector            *Bk;
     gsl_bspline_workspace *w;
 } params_thickness_enthalpy;
@@ -532,9 +563,9 @@ double integrand_thickness_enthalpy(
 
 // Parameters for baseflow-ready integrand_reynolds_enthalpy
 typedef struct {
-    const double          *H_inv;
     const double          *rhou_visc;
     const double          *H_visc;
+    const double          *H_inv;
     gsl_vector            *Bk;
     gsl_bspline_workspace *w;
 } params_reynolds_enthalpy;
