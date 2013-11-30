@@ -381,7 +381,7 @@ typedef struct {
 } params_thickness_displacement;
 
 // Per writeups/thicknesses.pdf, when p->inner_cutoff == \delta^\ast this
-// integral evaluated over [0, \infty] should be zero.
+// integral evaluated over [0, \infty) should be zero.
 static
 double integrand_thickness_displacement(
         double y, void * params)
@@ -415,14 +415,23 @@ typedef struct {
     gsl_bspline_workspace *w;
 } params_reynolds_displacement;
 
+// Per writeups/thicknesses.pdf, this integral evaluated over
+// [0, \infty) should produce \mu * Re_{\delta^\ast}
 static
 double integrand_reynolds_displacement(
         double y, void * params)
 {
     const params_reynolds_displacement * const p
             = (params_reynolds_displacement *) params;
+    size_t istart, iend;
     double integrand = GSL_NAN;
-    // TODO Calculate per Ticket #3010
+    if (!gsl_bspline_eval_nonzero(y, p->Bk, &istart, &iend, p->w)) {
+        integrand = 0.0;
+        for (size_t i = istart; i <= iend; ++i) {
+            integrand += (p->rhou_inv[i] - p->rhou_visc[i])
+                       * gsl_vector_get(p->Bk, i-istart);
+        }
+    }
     return integrand;
 }
 
@@ -438,7 +447,7 @@ typedef struct {
 } params_thickness_momentum;
 
 // Per writeups/thicknesses.pdf, when p->inner_cutoff == \delta^\ast + \theta
-// this integral evaluated over [0, \infty] should be zero.
+// this integral evaluated over [0, \infty) should be zero.
 static
 double integrand_thickness_momentum(
         double y, void * params)
@@ -513,7 +522,7 @@ typedef struct {
 } params_thickness_energy;
 
 // Per writeups/thicknesses.pdf, when p->inner_cutoff == \delta^\ast + \delta_3
-// this integral evaluated over [0, \infty] should be zero.
+// this integral evaluated over [0, \infty) should be zero.
 static
 double integrand_thickness_energy(
         double y, void * params)
@@ -588,7 +597,7 @@ typedef struct {
 } params_thickness_enthalpy;
 
 // Per writeups/thicknesses.pdf, when p->inner_cutoff == \delta^\ast + \delta_h
-// this integral evaluated over [0, \infty] should be zero.
+// this integral evaluated over [0, \infty) should be zero.
 static
 double integrand_thickness_enthalpy(
         double y, void * params)
