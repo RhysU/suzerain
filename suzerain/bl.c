@@ -31,6 +31,7 @@
 
 #include <suzerain/bl.h>
 
+#include <gsl/gsl_bspline.h>
 #include <gsl/gsl_integration.h>
 #include <gsl/gsl_math.h>
 #include <gsl/gsl_nan.h>
@@ -367,6 +368,171 @@ done:
 
     gsl_matrix_free(dB);
     return status;
+}
+
+// Parameters for baseflow-ready integrand_thickness_displacement
+typedef struct {
+    double                  inner_cutoff;
+    const double          * rhou_inv;
+    const double          * rhou_visc;
+    gsl_vector            * Bk;
+    gsl_bspline_workspace * w;
+} params_thickness_displacement;
+
+static
+double integrand_thickness_displacement(
+        double y, void * params)
+{
+    params_thickness_displacement * const p
+            = (params_thickness_displacement *) params;
+    double integrand = GSL_NAN;
+    // TODO Calculate per Ticket #3010
+    return integrand;
+}
+
+// Parameters for baseflow-ready integrand_reynolds_displacement
+typedef struct {
+    const double          *rhou_inv;
+    const double          *rhou_visc;
+    gsl_vector            *Bk;
+    gsl_bspline_workspace *w;
+} params_reynolds_displacement;
+
+static
+double integrand_reynolds_displacement(
+        double y, void * params)
+{
+    params_reynolds_displacement * const p
+            = (params_reynolds_displacement *) params;
+    double integrand = GSL_NAN;
+    // TODO Calculate per Ticket #3010
+    return integrand;
+}
+
+// Parameters for baseflow-ready integrand_thickness_momentum
+typedef struct {
+    double                 inner_cutoff;
+    const double          *rhou_inv;
+    const double          *u_inv;
+    const double          *rhou_visc;
+    const double          *u_visc;
+    gsl_vector            *Bk;
+    gsl_bspline_workspace *w;
+} params_thickness_momentum;
+
+static
+double integrand_thickness_momentum(
+        double y, void * params)
+{
+    params_thickness_momentum * const p
+            = (params_thickness_momentum *) params;
+    double integrand = GSL_NAN;
+    // TODO Calculate per Ticket #3010
+    return integrand;
+}
+
+// Parameters for baseflow-ready integrand_reynolds_momentum
+typedef struct {
+    const double          *u_inv;
+    const double          *rhou_visc;
+    const double          *u_visc;
+    gsl_vector            *Bk;
+    gsl_bspline_workspace *w;
+} params_reynolds_momentum;
+
+static
+double integrand_reynolds_momentum(
+        double y, void * params)
+{
+    params_reynolds_momentum * const p
+            = (params_reynolds_momentum *) params;
+    double integrand = GSL_NAN;
+    // TODO Calculate per Ticket #3010
+    return integrand;
+}
+
+// Parameters for baseflow-ready integrand_thickness_energy
+typedef struct {
+    double                 inner_cutoff;
+    const double          *rhou_inv;
+    const double          *u_inv;
+    const double          *rhou_visc;
+    const double          *u_visc;
+    gsl_vector            *Bk;
+    gsl_bspline_workspace *w;
+} params_thickness_energy;
+
+static
+double integrand_thickness_energy(
+        double y, void * params)
+{
+    params_thickness_energy * const p
+            = (params_thickness_energy *) params;
+    double integrand = GSL_NAN;
+    // TODO Calculate per Ticket #3010
+    return integrand;
+}
+
+// Parameters for baseflow-ready integrand_reynolds_energy
+typedef struct {
+    const double          *u_inv;
+    const double          *rhou_visc;
+    const double          *u_visc;
+    gsl_vector            *Bk;
+    gsl_bspline_workspace *w;
+} params_reynolds_energy;
+
+static
+double integrand_reynolds_energy(
+        double y, void * params)
+{
+    params_reynolds_energy * const p
+            = (params_reynolds_energy *) params;
+    double integrand = GSL_NAN;
+    // TODO Calculate per Ticket #3010
+    return integrand;
+}
+
+// Parameters for baseflow-ready integrand_thickness_enthalpy
+typedef struct {
+    double                 inner_cutoff;
+    const double          *rhou_inv;
+    const double          *H_inv;
+    const double          *rhou_visc;
+    const double          *H_visc;
+    gsl_vector            *Bk;
+    gsl_bspline_workspace *w;
+} params_thickness_enthalpy;
+
+static
+double integrand_thickness_enthalpy(
+        double y, void * params)
+{
+    params_thickness_enthalpy * const p
+            = (params_thickness_enthalpy *) params;
+    double integrand = GSL_NAN;
+    // TODO Calculate per Ticket #3010
+    return integrand;
+}
+
+// Parameters for baseflow-ready integrand_reynolds_enthalpy
+typedef struct {
+    const double          *H_inv;
+    const double          *rhou_visc;
+    const double          *H_visc;
+    gsl_vector            *Bk;
+    gsl_bspline_workspace *w;
+} params_reynolds_enthalpy;
+
+static
+double integrand_reynolds_enthalpy(
+        double y, void * params)
+{
+    params_reynolds_enthalpy * const p
+            = (params_reynolds_enthalpy *) params;
+    double integrand = GSL_NAN;
+    // TODO Calculate per Ticket #3010
+    return integrand;
 }
 
 int
