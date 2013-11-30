@@ -706,10 +706,42 @@ double integrand_reynolds_enthalpy(
 {
     const params_reynolds_enthalpy * const p
             = (params_reynolds_enthalpy *) params;
+    size_t istart, iend;
     double integrand = GSL_NAN;
-    // TODO Calculate per Ticket #3010
+    if (!gsl_bspline_eval_nonzero(y, p->Bk, &istart, &iend, p->w)) {
+
+        double H_visc = 0;
+        for (size_t i = istart; i <= iend; ++i) {
+            H_visc += p->H_visc[i] * gsl_vector_get(p->Bk, i-istart);
+        }
+
+        double H_inv = 0;
+        for (size_t i = istart; i <= iend; ++i) {
+            H_inv += p->H_inv[i] * gsl_vector_get(p->Bk, i-istart);
+        }
+
+        integrand = 1 - H_visc / H_inv;
+
+        double rhou_visc = 0;
+        for (size_t i = istart; i <= iend; ++i) {
+            rhou_visc += p->rhou_visc[i] * gsl_vector_get(p->Bk, i-istart);
+        }
+
+        integrand *= rhou_visc;
+
+    }
     return integrand;
 }
+
+// TODO Use integrand_reynolds_displacement
+// TODO Use integrand_reynolds_energy
+// TODO Use integrand_reynolds_enthalpy
+// TODO Use integrand_reynolds_momentum
+
+// TODO Use integrand_thickness_displacement
+// TODO Use integrand_thickness_energy
+// TODO Use integrand_thickness_enthalpy
+// TODO Use integrand_thickness_momentum
 
 int
 suzerain_bl_compute_qoi(
