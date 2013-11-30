@@ -346,11 +346,15 @@ typedef struct suzerain_bl_qoi {
     double ratio_nu;     /**< The ratio of edge to wall kinematic viscosity. */
     double ratio_T;      /**< The ratio of edge to wall temperature. */
     double Re_delta;     /**< Reynolds number based on boundary layer
-                              thickness \f$\delta\f$ and \f$\nu_e\f$. */
+                              thickness \f$\delta\f$ and \f$\mu_e\f$. */
     double Re_delta1;    /**< Reynolds number based on displacement
-                              thickness \f$\delta_1\f$ and \f$\nu_e\f$. */
+                              thickness \f$\delta_1\f$ and \f$\mu_e\f$. */
     double Re_delta2;    /**< Reynolds number based on momentum
-                              thickness \f$\delta_2\f$ and \f$\nu_e\f$. */
+                              thickness \f$\delta_2\f$ and \f$\mu_e\f$. */
+    double Re_delta3;    /**< Reynolds number based on energy
+                              thickness \f$\delta_3\f$ and \f$\mu_e\f$. */
+    double Re_deltaH;    /**< Reynolds number based on enthalpy
+                              thickness \f$\delta_H\f$ and \f$\mu_e\f$. */
     double shapefactor;  /**< The shape factor \f$\delta_1 / \delta_2. */
     double v_wallplus;   /**< The wall transpiration rate in plus units.*/
 } suzerain_bl_qoi;

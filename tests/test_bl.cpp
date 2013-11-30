@@ -408,6 +408,8 @@ BOOST_AUTO_TEST_CASE( compute_qoi_and_pg )
     BOOST_CHECK_CLOSE(qoi.Re_delta,    1494.1943713234461,     tol); ++cnt;
     BOOST_CHECK_CLOSE(qoi.Re_delta1,   141.95952214875473,     tol); ++cnt;
     BOOST_CHECK_CLOSE(qoi.Re_delta2,   189.49842591559681,     tol); ++cnt;
+    /* Quantity Re_delta3 not tested */                              ++cnt;
+    /* Quantity Re_deltaH not tested */                              ++cnt;
     BOOST_CHECK_CLOSE(qoi.shapefactor, 0.7491329886401481,     tol); ++cnt;
     BOOST_CHECK_CLOSE(qoi.v_wallplus,  0.0094118607746200931,  tol); ++cnt;
     BOOST_CHECK_EQUAL(cnt, sizeof(qoi)/sizeof(qoi.cf));

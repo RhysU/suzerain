@@ -783,6 +783,10 @@ suzerain_bl_compute_qoi(
                      * code_Re;
     qoi->Re_delta2   = edge->rho * edge->u * thick->delta2 / edge->mu
                      * code_Re;
+    qoi->Re_delta3   = edge->rho * edge->u * thick->delta3 / edge->mu
+                     * code_Re;
+    qoi->Re_deltaH   = edge->rho * edge->u * thick->deltaH / edge->mu
+                     * code_Re;
     qoi->shapefactor = thick->delta1 / thick->delta2
                      * 1;
     qoi->v_wallplus  = wall->v / viscous->u_tau
