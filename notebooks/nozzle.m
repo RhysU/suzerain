@@ -15,7 +15,7 @@ function [r u rho p a2 up rhop pp] = nozzle(Ma, gam, R1, R2, u1, rho1,
   [up rhop pp a2] = nozzle_details(r, u, rho, p, Ma2, gam1);
   if 0 == nargout
     figure();
-    plot(r, u, '-', r, sqrt(a2), '-', r, rho, '-', r, p, 'g-');
+    plot(r, u, '-', r, sqrt(a2), '-', r, rho, '-', r, p, '-');
     legend('Velocity', 'Sound speed', 'Density', 'Pressure', ...
            'location', 'north', 'orientation', 'horizontal');
     xlabel('Radius');
