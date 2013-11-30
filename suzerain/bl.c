@@ -380,6 +380,8 @@ typedef struct {
     gsl_bspline_workspace * w;
 } params_thickness_displacement;
 
+// Per writeups/thicknesses.pdf, when p->inner_cutoff == \delta^\ast this
+// integral evaluated over [0, \infty] should be zero.
 static
 double integrand_thickness_displacement(
         double y, void * params)
@@ -435,6 +437,8 @@ typedef struct {
     gsl_bspline_workspace *w;
 } params_thickness_momentum;
 
+// Per writeups/thicknesses.pdf, when p->inner_cutoff == \delta^\ast + \theta
+// this integral evaluated over [0, \infty] should be zero.
 static
 double integrand_thickness_momentum(
         double y, void * params)
@@ -508,6 +512,8 @@ typedef struct {
     gsl_bspline_workspace *w;
 } params_thickness_energy;
 
+// Per writeups/thicknesses.pdf, when p->inner_cutoff == \delta^\ast + \delta_3
+// this integral evaluated over [0, \infty] should be zero.
 static
 double integrand_thickness_energy(
         double y, void * params)
@@ -581,6 +587,8 @@ typedef struct {
     gsl_bspline_workspace *w;
 } params_thickness_enthalpy;
 
+// Per writeups/thicknesses.pdf, when p->inner_cutoff == \delta^\ast + \delta_h
+// this integral evaluated over [0, \infty] should be zero.
 static
 double integrand_thickness_enthalpy(
         double y, void * params)
