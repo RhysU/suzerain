@@ -499,14 +499,38 @@ typedef struct {
     gsl_bspline_workspace *w;
 } params_reynolds_momentum;
 
+// Per writeups/thicknesses.pdf, this integral evaluated over
+// [0, \infty) should produce \mu * Re_{\theta}
 static
 double integrand_reynolds_momentum(
         double y, void * params)
 {
     const params_reynolds_momentum * const p
             = (params_reynolds_momentum *) params;
+    size_t istart, iend;
     double integrand = GSL_NAN;
-    // TODO Calculate per Ticket #3010
+    if (!gsl_bspline_eval_nonzero(y, p->Bk, &istart, &iend, p->w)) {
+
+        double u_visc = 0;
+        for (size_t i = istart; i <= iend; ++i) {
+            u_visc += p->u_visc[i] * gsl_vector_get(p->Bk, i-istart);
+        }
+
+        double u_inv = 0;
+        for (size_t i = istart; i <= iend; ++i) {
+            u_inv += p->u_inv[i] * gsl_vector_get(p->Bk, i-istart);
+        }
+
+        integrand = 1 - u_visc / u_inv;
+
+        double rhou_visc = 0;
+        for (size_t i = istart; i <= iend; ++i) {
+            rhou_visc += p->rhou_visc[i] * gsl_vector_get(p->Bk, i-istart);
+        }
+
+        integrand *= rhou_visc;
+
+    }
     return integrand;
 }
 
@@ -574,6 +598,8 @@ typedef struct {
     gsl_bspline_workspace *w;
 } params_reynolds_energy;
 
+// Per writeups/thicknesses.pdf, this integral evaluated over
+// [0, \infty) should produce \mu * Re_{\delta_3}
 static
 double integrand_reynolds_energy(
         double y, void * params)
@@ -649,6 +675,8 @@ typedef struct {
     gsl_bspline_workspace *w;
 } params_reynolds_enthalpy;
 
+// Per writeups/thicknesses.pdf, this integral evaluated over
+// [0, \infty) should produce \mu * Re_{\delta_h}
 static
 double integrand_reynolds_enthalpy(
         double y, void * params)
