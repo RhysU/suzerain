@@ -606,8 +606,31 @@ double integrand_reynolds_energy(
 {
     const params_reynolds_energy * const p
             = (params_reynolds_energy *) params;
+    size_t istart, iend;
     double integrand = GSL_NAN;
-    // TODO Calculate per Ticket #3010
+    if (!gsl_bspline_eval_nonzero(y, p->Bk, &istart, &iend, p->w)) {
+
+        double u_visc = 0;
+        for (size_t i = istart; i <= iend; ++i) {
+            u_visc += p->u_visc[i] * gsl_vector_get(p->Bk, i-istart);
+        }
+
+        double u_inv = 0;
+        for (size_t i = istart; i <= iend; ++i) {
+            u_inv += p->u_inv[i] * gsl_vector_get(p->Bk, i-istart);
+        }
+
+        integrand = u_visc / u_inv;
+        integrand = 1 - integrand*integrand;
+
+        double rhou_visc = 0;
+        for (size_t i = istart; i <= iend; ++i) {
+            rhou_visc += p->rhou_visc[i] * gsl_vector_get(p->Bk, i-istart);
+        }
+
+        integrand *= rhou_visc;
+
+    }
     return integrand;
 }
 
