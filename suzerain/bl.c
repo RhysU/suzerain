@@ -374,8 +374,9 @@ done:
 // Parameters for baseflow-ready integrand_thickness_displacement
 typedef struct {
     double                  inner_cutoff;
-    const double          * rhou_inv;
-    const double          * rhou_visc;
+    const double          * rhou_visc;    // Always stride one
+    int                     stride_inv;   // Stride for rhou_inv
+    const double          * rhou_inv;     // May have stride zero
     gsl_vector            * Bk;
     gsl_bspline_workspace * w;
 } params_thickness_displacement;
@@ -392,9 +393,10 @@ double integrand_thickness_displacement(
     double integrand = GSL_NAN;
     if (!gsl_bspline_eval_nonzero(y, p->Bk, &istart, &iend, p->w)) {
         integrand = 0.0;
+        const int stride_inv = p->stride_inv;
         if (y >= p->inner_cutoff) {
             for (size_t i = istart; i <= iend; ++i) {
-                integrand += (p->rhou_inv[i] - p->rhou_visc[i])
+                integrand += (p->rhou_inv[i*stride_inv] - p->rhou_visc[i])
                            * gsl_vector_get(p->Bk, i-istart);
             }
         } else {
@@ -409,8 +411,9 @@ double integrand_thickness_displacement(
 
 // Parameters for baseflow-ready integrand_reynolds_displacement
 typedef struct {
-    const double          *rhou_visc;
-    const double          *rhou_inv;
+    const double          *rhou_visc;    // Always stride one
+    int                    stride_inv;   // Stride for rhou_inv
+    const double          *rhou_inv;     // May have stride zero
     gsl_vector            *Bk;
     gsl_bspline_workspace *w;
 } params_reynolds_displacement;
@@ -427,8 +430,9 @@ double integrand_reynolds_displacement(
     double integrand = GSL_NAN;
     if (!gsl_bspline_eval_nonzero(y, p->Bk, &istart, &iend, p->w)) {
         integrand = 0.0;
+        const int stride_inv = p->stride_inv;
         for (size_t i = istart; i <= iend; ++i) {
-            integrand += (p->rhou_inv[i] - p->rhou_visc[i])
+            integrand += (p->rhou_inv[i*stride_inv] - p->rhou_visc[i])
                        * gsl_vector_get(p->Bk, i-istart);
         }
     }
@@ -438,10 +442,11 @@ double integrand_reynolds_displacement(
 // Parameters for baseflow-ready integrand_thickness_momentum
 typedef struct {
     double                 inner_cutoff;
-    const double          *rhou_visc;
-    const double          *u_visc;
-    const double          *rhou_inv;
-    const double          *u_inv;
+    const double          *rhou_visc;    // Always stride one
+    const double          *u_visc;       // Always stride one
+    int                    stride_inv;   // Stride for rhou_inv, u_inv
+    const double          *rhou_inv;     // Strided per stride_inv
+    const double          *u_inv;        // Strided per stride_inv
     gsl_vector            *Bk;
     gsl_bspline_workspace *w;
 } params_thickness_momentum;
@@ -471,15 +476,18 @@ double integrand_thickness_momentum(
         integrand = - rhou_visc * u_visc;
 
         if (y >= p->inner_cutoff) {
+            const int stride_inv = p->stride_inv;
 
             double rhou_inv = 0;
             for (size_t i = istart; i <= iend; ++i) {
-                rhou_inv += p->rhou_inv[i] * gsl_vector_get(p->Bk, i-istart);
+                rhou_inv += p->rhou_inv[i*stride_inv]
+                          * gsl_vector_get(p->Bk, i-istart);
             }
 
             double u_inv = 0;
             for (size_t i = istart; i <= iend; ++i) {
-                u_inv += p->u_inv[i] * gsl_vector_get(p->Bk, i-istart);
+                u_inv += p->u_inv[i*stride_inv]
+                       * gsl_vector_get(p->Bk, i-istart);
             }
 
             integrand += rhou_inv * u_inv;
@@ -492,9 +500,10 @@ double integrand_thickness_momentum(
 
 // Parameters for baseflow-ready integrand_reynolds_momentum
 typedef struct {
-    const double          *rhou_visc;
-    const double          *u_visc;
-    const double          *u_inv;
+    const double          *rhou_visc;   // Always stride one
+    const double          *u_visc;      // Always stride one
+    int                    stride_inv;  // Stride for u_inv
+    const double          *u_inv;       // Strided per stride_inv
     gsl_vector            *Bk;
     gsl_bspline_workspace *w;
 } params_reynolds_momentum;
@@ -517,8 +526,9 @@ double integrand_reynolds_momentum(
         }
 
         double u_inv = 0;
+        const int stride_inv = p->stride_inv;
         for (size_t i = istart; i <= iend; ++i) {
-            u_inv += p->u_inv[i] * gsl_vector_get(p->Bk, i-istart);
+            u_inv += p->u_inv[i*stride_inv] * gsl_vector_get(p->Bk, i-istart);
         }
 
         integrand = 1 - u_visc / u_inv;
@@ -537,10 +547,11 @@ double integrand_reynolds_momentum(
 // Parameters for baseflow-ready integrand_thickness_energy
 typedef struct {
     double                 inner_cutoff;
-    const double          *rhou_visc;
-    const double          *u_visc;
-    const double          *rhou_inv;
-    const double          *u_inv;
+    const double          *rhou_visc;     // Always stride one
+    const double          *u_visc;        // Always stride one
+    int                    stride_inv;    // Stride for rhou_inv, u_inv
+    const double          *rhou_inv;      // May have stride zero
+    const double          *u_inv;         // May have stride zero
     gsl_vector            *Bk;
     gsl_bspline_workspace *w;
 } params_thickness_energy;
@@ -570,15 +581,18 @@ double integrand_thickness_energy(
         integrand = - rhou_visc * (u_visc * u_visc);
 
         if (y >= p->inner_cutoff) {
+            const int stride_inv = p->stride_inv;
 
             double rhou_inv = 0;
             for (size_t i = istart; i <= iend; ++i) {
-                rhou_inv += p->rhou_inv[i] * gsl_vector_get(p->Bk, i-istart);
+                rhou_inv += p->rhou_inv[i*stride_inv]
+                          * gsl_vector_get(p->Bk, i-istart);
             }
 
             double u_inv = 0;
             for (size_t i = istart; i <= iend; ++i) {
-                u_inv += p->u_inv[i] * gsl_vector_get(p->Bk, i-istart);
+                u_inv += p->u_inv[i*stride_inv]
+                       * gsl_vector_get(p->Bk, i-istart);
             }
 
             integrand += rhou_inv * (u_inv * u_inv);
@@ -591,9 +605,10 @@ double integrand_thickness_energy(
 
 // Parameters for baseflow-ready integrand_reynolds_energy
 typedef struct {
-    const double          *rhou_visc;
-    const double          *u_visc;
-    const double          *u_inv;
+    const double          *rhou_visc;    // Always stride one
+    const double          *u_visc;       // Always stride one
+    int                    stride_inv;   // Stride for u_inv
+    const double          *u_inv;        // Strided per stride_inv
     gsl_vector            *Bk;
     gsl_bspline_workspace *w;
 } params_reynolds_energy;
@@ -616,8 +631,9 @@ double integrand_reynolds_energy(
         }
 
         double u_inv = 0;
+        const int stride_inv = p->stride_inv;
         for (size_t i = istart; i <= iend; ++i) {
-            u_inv += p->u_inv[i] * gsl_vector_get(p->Bk, i-istart);
+            u_inv += p->u_inv[i*stride_inv] * gsl_vector_get(p->Bk, i-istart);
         }
 
         integrand = u_visc / u_inv;
@@ -637,10 +653,11 @@ double integrand_reynolds_energy(
 // Parameters for baseflow-ready integrand_thickness_enthalpy
 typedef struct {
     double                 inner_cutoff;
-    const double          *rhou_visc;
-    const double          *H_visc;
-    const double          *rhou_inv;
-    const double          *H_inv;
+    const double          *rhou_visc;     // Always stride one
+    const double          *H_visc;        // Always stride one
+    int                    stride_inv;    // Stride for rhou_inv, H_inv
+    const double          *rhou_inv;      // Strided per stride_inv
+    const double          *H_inv;         // Strided per stride_inv
     gsl_vector            *Bk;
     gsl_bspline_workspace *w;
 } params_thickness_enthalpy;
@@ -670,15 +687,18 @@ double integrand_thickness_enthalpy(
         integrand = - rhou_visc * H_visc;
 
         if (y >= p->inner_cutoff) {
+            const int stride_inv = p->stride_inv;
 
             double rhou_inv = 0;
             for (size_t i = istart; i <= iend; ++i) {
-                rhou_inv += p->rhou_inv[i] * gsl_vector_get(p->Bk, i-istart);
+                rhou_inv += p->rhou_inv[i*stride_inv]
+                          * gsl_vector_get(p->Bk, i-istart);
             }
 
             double H_inv = 0;
             for (size_t i = istart; i <= iend; ++i) {
-                H_inv += p->H_inv[i] * gsl_vector_get(p->Bk, i-istart);
+                H_inv += p->H_inv[i*stride_inv]
+                       * gsl_vector_get(p->Bk, i-istart);
             }
 
             integrand += rhou_inv * H_inv;
@@ -691,9 +711,10 @@ double integrand_thickness_enthalpy(
 
 // Parameters for baseflow-ready integrand_reynolds_enthalpy
 typedef struct {
-    const double          *rhou_visc;
-    const double          *H_visc;
-    const double          *H_inv;
+    const double          *rhou_visc;   // Always stride one
+    const double          *H_visc;      // Always stride one
+    int                    stride_inv;  // Stride for rhou_inv
+    const double          *H_inv;       // Strided per stride_inv
     gsl_vector            *Bk;
     gsl_bspline_workspace *w;
 } params_reynolds_enthalpy;
@@ -716,8 +737,9 @@ double integrand_reynolds_enthalpy(
         }
 
         double H_inv = 0;
+        const int stride_inv = p->stride_inv;
         for (size_t i = istart; i <= iend; ++i) {
-            H_inv += p->H_inv[i] * gsl_vector_get(p->Bk, i-istart);
+            H_inv += p->H_inv[i*stride_inv] * gsl_vector_get(p->Bk, i-istart);
         }
 
         integrand = 1 - H_visc / H_inv;
