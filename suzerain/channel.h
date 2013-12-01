@@ -108,8 +108,8 @@ typedef struct suzerain_channel_qoi {
     double Ma_tau;       /**< The friction Mach number
                               \f$\mbox{Ma}_\tau = u_\tau / a_w\f$. */
     double Pr_w;         /**< The Prandtl number at the wall. */
-    double neg_Bq;       /**< The negated nondimensional heat flux
-                              \f$-B_q = \frac{k \nabla T}{\rho_w C_p
+    double Bq;           /**< The nondimensional heat flux
+                              \f$ B_q = - \frac{k \nabla T}{\rho_w C_p
                               u_\tau T_w} = \frac{\mu \nabla T}{\mbox{Pr}
                               \rho_w C_p u_\tau T_w} \f$. */
     double ratio_rho;    /**< The ratio of center to wall density. */

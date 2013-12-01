@@ -94,7 +94,7 @@ suzerain_channel_compute_qoi(
     qoi->Ma_tau      = viscous->u_tau / wall->a
                      * code_Ma;
     qoi->Pr_w        = wall->Pr;
-    qoi->neg_Bq      = (wall->mu * wall->T__y)
+    qoi->Bq          = - (wall->mu * wall->T__y)
                      / (qoi->Pr_w * wall->rho * viscous->u_tau * wall->T)
                      / code_Re;
     qoi->ratio_nu    = (center->mu / center->rho) / (wall->mu / wall->rho)
