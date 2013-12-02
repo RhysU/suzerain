@@ -782,6 +782,144 @@ double integrand_reynolds_enthalpy(
     return integrand;
 }
 
+int
+suzerain_bl_baseflow_compute_reynolds(
+    const double                          code_Re,
+    const double                  * const coeffs_vis_H0,
+    const double                  * const coeffs_vis_rhou,
+    const double                  * const coeffs_vis_u,
+    const int                             inv_stride,
+    const double                  * const coeffs_inv_H0,
+    const double                  * const coeffs_inv_rhou,
+    const double                  * const coeffs_inv_u,
+    const suzerain_bl_local       * const edge,
+    const suzerain_bl_thicknesses * const thick,
+    suzerain_bl_reynolds          * const reynolds,
+    gsl_bspline_workspace         * const w)
+{
+    // See suzerain_bl_compute_reynolds for the constant baseflow version of
+    // these quantities, including commentary on the code unit scaling.  See
+    // writeups/thicknesses.pdf for how the integrals in this function are
+    // defined and used.
+
+    // Prepare repeatedly used inputs to gsl_integration_qagp(...)
+    assert(w->knots->stride == 1);                // Breakpoints are contiguous
+    double * const pts  = w->knots->data+w->k-1;  // Per gsl_bspline_nbreak
+    const size_t npts   = w->nbreak;              // "Singular" at breakpoints
+    const size_t limit  = npts * (1+w->k/2);      // Hopefully sufficient for..
+    const double epsabs = GSL_DBL_EPSILON;        // ..either this...
+    const double epsrel = GSL_SQRT_DBL_EPSILON;   // ..or this tolerance
+    double abserr       = GSL_NAN;                // Repeatedly used in calls
+
+    int status = SUZERAIN_SUCCESS;
+
+    gsl_integration_workspace * iw = NULL;
+    gsl_vector                * Bk = NULL;
+    if (NULL == (iw = gsl_integration_workspace_alloc(limit))) {
+        SUZERAIN_ERROR_REPORT("failed to allocate iw",
+                              (status = SUZERAIN_ENOMEM));
+    }
+    if (NULL == (Bk = gsl_vector_alloc(w->k))) {
+        SUZERAIN_ERROR_REPORT("failed to allocate Bk",
+                              (status = SUZERAIN_ENOMEM));
+    }
+    if (SUZERAIN_UNLIKELY(status != SUZERAIN_SUCCESS)) goto done;
+
+    // Re_delta from edge->rho, edge->u, thick->delta, edge->mu, and code_Re
+    {
+        reynolds->delta  = edge->rho * edge->u * thick->delta / edge->mu
+                         * code_Re;
+    }
+
+    // Nondimensional quantities are computed with the first line being the
+    // quantity and the final line being any needed "code unit" correction.
+
+    // Re_delta1 from integrand_reynolds_displacement, edge->mu, code_Re
+    {
+        params_reynolds_displacement params = {
+            .vis_rhou   = coeffs_vis_rhou,
+            .inv_stride = inv_stride,
+            .inv_rhou   = coeffs_inv_rhou,
+            .Bk         = Bk,
+            .w          = w
+        };
+        gsl_function F = {
+            &integrand_reynolds_displacement,
+            &params
+        };
+        status = gsl_integration_qagp(&F, pts, npts, epsabs, epsrel, limit, iw,
+                                      &reynolds->delta1, &abserr);
+        reynolds->delta1 *= code_Re / edge->mu;
+    }
+    if (SUZERAIN_UNLIKELY(status != SUZERAIN_SUCCESS)) goto done;
+
+    // Re_delta2 from integrand_reynolds_momentum, edge->mu, code_Re
+    {
+        params_reynolds_momentum params = {
+            .vis_rhou    = coeffs_vis_rhou,
+            .vis_u       = coeffs_vis_u,
+            .inv_stride  = inv_stride,
+            .inv_u       = coeffs_inv_u,
+            .Bk          = Bk,
+            .w           = w
+        };
+        gsl_function F = {
+            .function = &integrand_reynolds_momentum,
+            .params   = &params
+        };
+        status = gsl_integration_qagp(&F, pts, npts, epsabs, epsrel, limit, iw,
+                                      &reynolds->delta2, &abserr);
+        reynolds->delta2 *= code_Re / edge->mu;
+    }
+    if (SUZERAIN_UNLIKELY(status != SUZERAIN_SUCCESS)) goto done;
+
+    // Re_delta3 from integrand_reynolds_energy, edge->mu, code_Re
+    {
+        params_reynolds_energy params = {
+            .vis_rhou    = coeffs_vis_rhou,
+            .vis_u       = coeffs_vis_u,
+            .inv_stride  = inv_stride,
+            .inv_u       = coeffs_inv_u,
+            .Bk          = Bk,
+            .w           = w
+        };
+        gsl_function F = {
+            .function = &integrand_reynolds_energy,
+            .params   = &params
+        };
+        status = gsl_integration_qagp(&F, pts, npts, epsabs, epsrel, limit, iw,
+                                      &reynolds->delta3, &abserr);
+        reynolds->delta3 *= code_Re / edge->mu;
+    }
+    if (SUZERAIN_UNLIKELY(status != SUZERAIN_SUCCESS)) goto done;
+
+    // Re_delta3 from integrand_reynolds_enthalpy, edge->mu, code_Re
+    {
+        params_reynolds_enthalpy params = {
+            .vis_rhou    = coeffs_vis_rhou,
+            .vis_H0      = coeffs_vis_H0,
+            .inv_stride  = inv_stride,
+            .inv_H0      = coeffs_inv_H0,
+            .Bk          = Bk,
+            .w           = w
+        };
+        gsl_function F = {
+            .function = &integrand_reynolds_enthalpy,
+            .params   = &params
+        };
+        status = gsl_integration_qagp(&F, pts, npts, epsabs, epsrel, limit, iw,
+                                      &reynolds->deltaH, &abserr);
+        reynolds->deltaH *= code_Re / edge->mu;
+    }
+    if (SUZERAIN_UNLIKELY(status != SUZERAIN_SUCCESS)) goto done;
+
+done:
+    gsl_integration_workspace_free(iw);
+    gsl_vector_free(Bk);
+
+    return status;
+}
+
 // TODO Use integrand_thickness_displacement
 // TODO Use integrand_thickness_energy
 // TODO Use integrand_thickness_enthalpy
