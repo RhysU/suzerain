@@ -680,7 +680,7 @@ static const std::streamsize timeprefix_setw_nt = 7;
 std::string
 driver_base::build_timeprefix(
         const driver_base::time_type t,
-        const driver_base::step_type nt)
+        const driver_base::step_type nt) const
 {
     // Precision computations ensure multiple status lines minimally distinct
     const std::streamsize np = build_timeprefix_mantissa_digits();
@@ -704,7 +704,7 @@ driver_base::build_timeprefix(
 std::string
 driver_base::build_timeprefix_description(
             const char * describe_t,
-            const char * describe_nt)
+            const char * describe_nt) const
 {
     // Build string with inter-label spacing matching build_timeprefix output
     std::ostringstream oss;
@@ -715,7 +715,7 @@ driver_base::build_timeprefix_description(
 }
 
 int
-driver_base::build_timeprefix_mantissa_digits()
+driver_base::build_timeprefix_mantissa_digits() const
 {
     using std::max;
     using std::floor;

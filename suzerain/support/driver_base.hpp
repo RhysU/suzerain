@@ -273,7 +273,7 @@ public:
      */
     virtual std::string build_timeprefix(
             const time_type t,
-            const step_type nt);
+            const step_type nt) const;
 
     /**
      * Build a fixed-width label matching the output of \ref build_timeprefix.
@@ -284,7 +284,7 @@ public:
      */
     virtual std::string build_timeprefix_description(
             const char * describe_t  = "t",
-            const char * describe_nt = "nt");
+            const char * describe_nt = "nt") const;
 
     /**
      * Compute digits required in mantissa to ensure time output is monotonic.
@@ -294,7 +294,7 @@ public:
      * @return the maximum of <code>max(0, -floor(log10(dt)))</code>
      * across several pathological values of \c dt implied by #timedef.
      */
-    virtual int build_timeprefix_mantissa_digits();
+    virtual int build_timeprefix_mantissa_digits() const;
 
     /**
      * Routine to output status, generally called via the timecontroller.
