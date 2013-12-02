@@ -143,12 +143,12 @@ suzerain_bl_find_edge(
  * where the value from the final B-spline collocation point is taken to
  * be "at infinity".
  *
- * \param[in ] coeffs_rho_u B-spline coefficients for \f$\rho u\f$.
- * \param[out] delta1       The computed displacement thickness.
- * \param[in]  dB           Temporary storage to use of size <tt>w->k</tt> by
- *                          no less than <tt>1</tt>.
- * \param[in ] w            Workspace to use.
- * \param[in ] dw           Workspace to use.
+ * \param[in ] coeffs_rhou B-spline coefficients for \f$\rho u\f$.
+ * \param[out] delta1      The computed displacement thickness.
+ * \param[in]  dB          Temporary storage to use of size <tt>w->k</tt> by
+ *                         no less than <tt>1</tt>.
+ * \param[in ] w           Workspace to use.
+ * \param[in ] dw          Workspace to use.
  *
  * \return ::SUZERAIN_SUCCESS on success and returns the answer in
  * <code>*delta1</code>.  On recoverable error sets <code>*delta1</code> to be
@@ -157,7 +157,7 @@ suzerain_bl_find_edge(
  */
 int
 suzerain_bl_displacement_thickness(
-    const double * coeffs_rho_u,
+    const double * coeffs_rhou,
     double * delta1,
     gsl_matrix * dB,
     gsl_bspline_workspace * w,
@@ -179,13 +179,13 @@ suzerain_bl_displacement_thickness(
  * href="http://www.worldcat.org/title/elements-of-gasdynamics/oclc/636935705">
  * Elements of Gasdynamics</a>.
  *
- * \param[in ] coeffs_rho_u B-spline coefficients for \f$\rho u\f$.
- * \param[in ] coeffs_u     B-spline coefficients for \f$u\f$.
- * \param[out] delta2       The computed momentum thickness.
- * \param[in]  dB           Temporary storage to use of size <tt>w->k</tt> by
- *                          no less than <tt>1</tt>.
- * \param[in ] w            Workspace to use.
- * \param[in ] dw           Workspace to use.
+ * \param[in ] coeffs_rhou B-spline coefficients for \f$\rho u\f$.
+ * \param[in ] coeffs_u    B-spline coefficients for \f$u\f$.
+ * \param[out] delta2      The computed momentum thickness.
+ * \param[in]  dB          Temporary storage to use of size <tt>w->k</tt> by
+ *                         no less than <tt>1</tt>.
+ * \param[in ] w           Workspace to use.
+ * \param[in ] dw          Workspace to use.
  *
  * \return ::SUZERAIN_SUCCESS on success and returns the answer in
  * <code>*delta2</code>.  On recoverable error sets <code>*delta2</code> to be
@@ -194,7 +194,7 @@ suzerain_bl_displacement_thickness(
  */
 int
 suzerain_bl_momentum_thickness(
-    const double * coeffs_rho_u,
+    const double * coeffs_rhou,
     const double * coeffs_u,
     double * delta2,
     gsl_matrix * dB,
@@ -218,13 +218,13 @@ suzerain_bl_momentum_thickness(
  * href="http://www.worldcat.org/title/boundary-layer-theory-with-22-tables/oclc/615466700">
  * Boundary Layer Theory</a>.
  *
- * \param[in ] coeffs_rho_u B-spline coefficients for \f$\rho u\f$.
- * \param[in ] coeffs_u     B-spline coefficients for \f$u\f$.
- * \param[out] delta3       The computed momentum thickness.
- * \param[in]  dB           Temporary storage to use of size <tt>w->k</tt> by
- *                          no less than <tt>1</tt>.
- * \param[in ] w            Workspace to use.
- * \param[in ] dw           Workspace to use.
+ * \param[in ] coeffs_rhou B-spline coefficients for \f$\rho u\f$.
+ * \param[in ] coeffs_u    B-spline coefficients for \f$u\f$.
+ * \param[out] delta3      The computed momentum thickness.
+ * \param[in]  dB          Temporary storage to use of size <tt>w->k</tt> by
+ *                         no less than <tt>1</tt>.
+ * \param[in ] w           Workspace to use.
+ * \param[in ] dw          Workspace to use.
  *
  * \return ::SUZERAIN_SUCCESS on success and returns the answer in
  * <code>*delta3</code>.  On recoverable error sets <code>*delta3</code> to be
@@ -233,7 +233,7 @@ suzerain_bl_momentum_thickness(
  */
 int
 suzerain_bl_energy_thickness(
-    const double * coeffs_rho_u,
+    const double * coeffs_rhou,
     const double * coeffs_u,
     double * delta3,
     gsl_matrix * dB,
@@ -260,13 +260,13 @@ suzerain_bl_energy_thickness(
  * href="http://www.worldcat.org/title/elements-of-gasdynamics/oclc/636935705">
  * Elements of Gasdynamics</a> but is there called "energy thickness".
  *
- * \param[in ] coeffs_rho_u B-spline coefficients for \f$\rho u\f$.
- * \param[in ] coeffs_H0    B-spline coefficients for \f$H_0\f$.
- * \param[out] deltaH       The computed enthalpy thickness.
- * \param[in]  dB           Temporary storage to use of size <tt>w->k</tt> by
- *                          no less than <tt>1</tt>.
- * \param[in ] w            Workspace to use.
- * \param[in ] dw           Workspace to use.
+ * \param[in ] coeffs_rhou B-spline coefficients for \f$\rho u\f$.
+ * \param[in ] coeffs_H0   B-spline coefficients for \f$H_0\f$.
+ * \param[out] deltaH      The computed enthalpy thickness.
+ * \param[in]  dB          Temporary storage to use of size <tt>w->k</tt> by
+ *                         no less than <tt>1</tt>.
+ * \param[in ] w           Workspace to use.
+ * \param[in ] dw          Workspace to use.
  *
  * \return ::SUZERAIN_SUCCESS on success and returns the answer in
  * <code>*deltaH</code>.  On recoverable error sets <code>*deltaH</code> to be
@@ -275,7 +275,7 @@ suzerain_bl_energy_thickness(
  */
 int
 suzerain_bl_enthalpy_thickness(
-    const double * coeffs_rho_u,
+    const double * coeffs_rhou,
     const double * coeffs_H0,
     double * deltaH,
     gsl_matrix * dB,
@@ -307,13 +307,13 @@ typedef struct suzerain_bl_thicknesses {
  * \ref suzerain_bl_energy_thickness, and \ref suzerain_bl_enthalpy_thickness
  * packing the results into a \ref suzerain_bl_thicknesses structure.
  *
- * \param[in ] coeffs_H0    Coefficient representation of \f$H_0\f$.
- * \param[in ] coeffs_rho_u Coefficient representation of \f$\rho u\f$.
- * \param[in ] coeffs_u     Coefficient representation of \f$u\f$.
- * \param[out] thicknesses  Populated on success.
- *                          See type documentation for contents.
- * \param[in ] w            Workspace to use.
- * \param[in ] dw           Workspace to use.
+ * \param[in ] coeffs_H0   Coefficient representation of \f$H_0\f$.
+ * \param[in ] coeffs_rhou Coefficient representation of \f$\rho u\f$.
+ * \param[in ] coeffs_u    Coefficient representation of \f$u\f$.
+ * \param[out] thicknesses Populated on success.
+ *                         See type documentation for contents.
+ * \param[in ] w           Workspace to use.
+ * \param[in ] dw          Workspace to use.
  *
  * \return ::SUZERAIN_SUCCESS on success.  On error calls suzerain_error() and
  *      returns one of #suzerain_error_status.
@@ -321,7 +321,7 @@ typedef struct suzerain_bl_thicknesses {
 int
 suzerain_bl_compute_thicknesses(
     const double * coeffs_H0,
-    const double * coeffs_rho_u,
+    const double * coeffs_rhou,
     const double * coeffs_u,
     suzerain_bl_thicknesses * thick,
     gsl_bspline_workspace * w,

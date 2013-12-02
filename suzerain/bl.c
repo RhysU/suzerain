@@ -125,7 +125,7 @@ suzerain_bl_find_edge(
 
 int
 suzerain_bl_displacement_thickness(
-    const double * coeffs_rho_u,
+    const double * coeffs_rhou,
     double * delta1,
     gsl_matrix *dB,
     gsl_bspline_workspace *w,
@@ -143,7 +143,7 @@ suzerain_bl_displacement_thickness(
 
     /* Momentum at infinity taken from final B_spline collocation point */
     /* which happens to be the value of the final coefficient */
-    const double rho_u_edge = coeffs_rho_u[w->n - 1];
+    const double rho_u_edge = coeffs_rhou[w->n - 1];
 
     /* Accumulate the breakpoint-by-breakpoint contributions into *delta1 */
     *delta1 = 0;
@@ -167,7 +167,7 @@ suzerain_bl_displacement_thickness(
             /* Accumulate basis linear combinations to evaluate rho_u */
             double rho_u = 0;
             for (size_t k = kstart; k <= kend; ++k) {
-                rho_u += coeffs_rho_u[k] * gsl_matrix_get(dB, k - kstart, 0);
+                rho_u += coeffs_rhou[k] * gsl_matrix_get(dB, k - kstart, 0);
             }
 
             /* Then use integrand scaled by weight to accumulate result */
@@ -183,7 +183,7 @@ suzerain_bl_displacement_thickness(
 
 int
 suzerain_bl_momentum_thickness(
-    const double * coeffs_rho_u,
+    const double * coeffs_rhou,
     const double * coeffs_u,
     double * delta2,
     gsl_matrix *dB,
@@ -203,8 +203,8 @@ suzerain_bl_momentum_thickness(
 
     /* State at infinity taken from final B_spline collocation point */
     /* which happens to be the value of the final coefficient */
-    const double rho_u_edge = coeffs_rho_u[w->n - 1];
-    const double     u_edge = coeffs_u    [w->n - 1];
+    const double rho_u_edge = coeffs_rhou[w->n - 1];
+    const double     u_edge = coeffs_u   [w->n - 1];
 
     /* Accumulate the breakpoint-by-breakpoint contributions into *delta2 */
     *delta2 = 0;
@@ -230,8 +230,8 @@ suzerain_bl_momentum_thickness(
             double u     = 0;
             for (size_t k = kstart; k <= kend; ++k) {
                 const double Bk = gsl_matrix_get(dB, k - kstart, 0);
-                rho_u += coeffs_rho_u[k] * Bk;
-                u     += coeffs_u[k]     * Bk;
+                rho_u += coeffs_rhou[k] * Bk;
+                u     += coeffs_u[k]    * Bk;
             }
 
             /* Then use integrand scaled by weight to accumulate result */
@@ -247,7 +247,7 @@ suzerain_bl_momentum_thickness(
 
 int
 suzerain_bl_energy_thickness(
-    const double * coeffs_rho_u,
+    const double * coeffs_rhou,
     const double * coeffs_u,
     double * delta3,
     gsl_matrix *dB,
@@ -267,8 +267,8 @@ suzerain_bl_energy_thickness(
 
     /* State at infinity taken from final B_spline collocation point */
     /* which happens to be the value of the final coefficient */
-    const double rho_u_edge = coeffs_rho_u[w->n - 1];
-    const double     u_edge = coeffs_u    [w->n - 1];
+    const double rho_u_edge = coeffs_rhou[w->n - 1];
+    const double     u_edge = coeffs_u   [w->n - 1];
 
     /* Accumulate the breakpoint-by-breakpoint contributions into *delta3 */
     *delta3 = 0;
@@ -294,8 +294,8 @@ suzerain_bl_energy_thickness(
             double u     = 0;
             for (size_t k = kstart; k <= kend; ++k) {
                 const double Bk = gsl_matrix_get(dB, k - kstart, 0);
-                rho_u += coeffs_rho_u[k] * Bk;
-                u     += coeffs_u[k]     * Bk;
+                rho_u += coeffs_rhou[k] * Bk;
+                u     += coeffs_u[k]    * Bk;
             }
 
             /* Then use integrand scaled by weight to accumulate result */
@@ -311,7 +311,7 @@ suzerain_bl_energy_thickness(
 
 int
 suzerain_bl_enthalpy_thickness(
-    const double * coeffs_rho_u,
+    const double * coeffs_rhou,
     const double * coeffs_H0,
     double * deltaH,
     gsl_matrix *dB,
@@ -321,13 +321,13 @@ suzerain_bl_enthalpy_thickness(
     // The form of the enthalpy thickness equation is nothing but
     // the displacement thickness with H_0 replacing u.
     return suzerain_bl_momentum_thickness(
-            coeffs_rho_u, coeffs_H0, deltaH, dB, w, dw);
+            coeffs_rhou, coeffs_H0, deltaH, dB, w, dw);
 }
 
 int
 suzerain_bl_compute_thicknesses(
     const double * coeffs_H0,
-    const double * coeffs_rho_u,
+    const double * coeffs_rhou,
     const double * coeffs_u,
     suzerain_bl_thicknesses * thick,
     gsl_bspline_workspace * w,
@@ -350,19 +350,19 @@ suzerain_bl_compute_thicknesses(
     if (SUZERAIN_UNLIKELY(status != SUZERAIN_SUCCESS)) goto done;
 
     status = suzerain_bl_displacement_thickness(
-            coeffs_rho_u, &thick->delta1, dB, w, dw);
+            coeffs_rhou, &thick->delta1, dB, w, dw);
     if (SUZERAIN_UNLIKELY(status != SUZERAIN_SUCCESS)) goto done;
 
     status = suzerain_bl_momentum_thickness(
-            coeffs_rho_u, coeffs_u, &thick->delta2, dB, w, dw);
+            coeffs_rhou, coeffs_u, &thick->delta2, dB, w, dw);
     if (SUZERAIN_UNLIKELY(status != SUZERAIN_SUCCESS)) goto done;
 
     status = suzerain_bl_energy_thickness(
-            coeffs_rho_u, coeffs_u, &thick->delta3, dB, w, dw);
+            coeffs_rhou, coeffs_u, &thick->delta3, dB, w, dw);
     if (SUZERAIN_UNLIKELY(status != SUZERAIN_SUCCESS)) goto done;
 
     status = suzerain_bl_enthalpy_thickness(
-            coeffs_rho_u, coeffs_H0, &thick->deltaH, dB, w, dw);
+            coeffs_rhou, coeffs_H0, &thick->deltaH, dB, w, dw);
     /* Done regardless of status */
 
 done:
