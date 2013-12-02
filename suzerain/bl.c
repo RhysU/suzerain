@@ -827,8 +827,8 @@ suzerain_bl_baseflow_compute_reynolds(
 
     // Re_delta from edge->rho, edge->u, thick->delta, edge->mu, and code_Re
     {
-        reynolds->delta  = edge->rho * edge->u * thick->delta / edge->mu
-                         * code_Re;
+        reynolds->delta = edge->rho * edge->u * thick->delta / edge->mu
+                        * code_Re;
     }
 
     // Nondimensional quantities are computed with the first line being the
