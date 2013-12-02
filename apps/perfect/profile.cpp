@@ -230,6 +230,7 @@ void summarize_boundary_layer_nature(
         suzerain_bl_viscous     &viscous,
         suzerain_bl_local       &edge,
         suzerain_bl_thicknesses &thick,
+        suzerain_bl_reynolds    &reynolds,
         suzerain_bl_qoi         &qoi,
         suzerain_bl_pg          &pg)
 {
@@ -284,9 +285,12 @@ void summarize_boundary_layer_nature(
         b.linear_combination(0, prof.u().col(1).data(), delta, &(edge.v));
     }
 
+    // Compute Reynolds numbers
+    suzerain_bl_compute_reynolds(scenario.Re, &edge, &thick, &reynolds);
+
     // Compute general quantities of interest
     suzerain_bl_compute_qoi(scenario.Ma, scenario.Re,
-                            &wall, &viscous, &edge, & thick, &qoi);
+                            &wall, &viscous, &edge, &thick, &qoi);
 
     // Mean pressure and streamwise velocity gradients come from slow growth
     double edge_p__x = 0, edge_u__x = 0;

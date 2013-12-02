@@ -152,6 +152,7 @@ driver_base::driver_base(
     , log_status_bulk_header_shown(false)
     , log_boundary_layer_quantities_visc_header_shown(false)
     , log_boundary_layer_quantities_thick_header_shown(false)
+    , log_boundary_layer_quantities_Re_header_shown(false)
     , log_boundary_layer_quantities_qoi_header_shown(false)
     , log_boundary_layer_quantities_pg_header_shown(false)
     , log_channel_quantities_wall_header_shown(false)
@@ -966,10 +967,12 @@ void driver_base::log_boundary_layer_quantities(
         const std::string& timeprefix,
         const suzerain_bl_viscous     * const viscous,
         const suzerain_bl_thicknesses * const thick,
+        const suzerain_bl_reynolds    * const reynolds,
         const suzerain_bl_qoi         * const qoi,
         const suzerain_bl_pg          * const pg,
         const char * const name_visc,
         const char * const name_thick,
+        const char * const name_Re,
         const char * const name_qoi,
         const char * const name_pg)
 {
@@ -1028,6 +1031,29 @@ void driver_base::log_boundary_layer_quantities(
         INFO0(log, msg.str());
     }
 
+    log = logging::get_logger(name_Re);
+    if (log != NULL && INFO0_ENABLED(log)) {
+        if (!log_boundary_layer_quantities_Re_header_shown) {
+            log_boundary_layer_quantities_Re_header_shown = true;
+            msg.str("");
+            msg << setw(timeprefix.size()) << build_timeprefix_description()
+                << ' ' << setw(fullprec<>::width) << "Re_delta"
+                << ' ' << setw(fullprec<>::width) << "Re_delta1"
+                << ' ' << setw(fullprec<>::width) << "Re_delta2"
+                << ' ' << setw(fullprec<>::width) << "Re_delta3"
+                << ' ' << setw(fullprec<>::width) << "Re_deltaH";
+            INFO0(log, msg.str());
+        }
+        msg.str("");
+        msg << timeprefix
+            << ' ' << fullprec<>(reynolds->delta)
+            << ' ' << fullprec<>(reynolds->delta1)
+            << ' ' << fullprec<>(reynolds->delta2)
+            << ' ' << fullprec<>(reynolds->delta3)
+            << ' ' << fullprec<>(reynolds->deltaH);
+        INFO0(log, msg.str());
+    }
+
     log = logging::get_logger(name_qoi);
     if (log != NULL && INFO0_ENABLED(log)) {
         if (!log_boundary_layer_quantities_qoi_header_shown) {
@@ -1036,20 +1062,22 @@ void driver_base::log_boundary_layer_quantities(
             msg << setw(timeprefix.size()) << build_timeprefix_description()
                 << ' ' << setw(fullprec<>::width) << "gamma_e"
                 << ' ' << setw(fullprec<>::width) << "Ma_e"
+                << ' ' << setw(fullprec<>::width) << "Ma_tau"
                 << ' ' << setw(fullprec<>::width) << "Pr_w"
+                << ' ' << setw(fullprec<>::width) << "ratio_rho"
                 << ' ' << setw(fullprec<>::width) << "ratio_nu"
-                << ' ' << setw(fullprec<>::width) << "ratio_T"
-                << ' ' << setw(fullprec<>::width) << "Re_delta2";
+                << ' ' << setw(fullprec<>::width) << "ratio_T";
             INFO0(log, msg.str());
         }
         msg.str("");
         msg << timeprefix
             << ' ' << fullprec<>(qoi->gamma_e)
             << ' ' << fullprec<>(qoi->Ma_e)
+            << ' ' << fullprec<>(qoi->Ma_tau)
             << ' ' << fullprec<>(qoi->Pr_w)
+            << ' ' << fullprec<>(qoi->ratio_rho)
             << ' ' << fullprec<>(qoi->ratio_nu)
-            << ' ' << fullprec<>(qoi->ratio_T)
-            << ' ' << fullprec<>(qoi->Re_delta2);
+            << ' ' << fullprec<>(qoi->ratio_T);
         INFO0(log, msg.str());
     }
 

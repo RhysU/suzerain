@@ -371,6 +371,33 @@ done:
     return status;
 }
 
+int
+suzerain_bl_compute_reynolds(
+    const double code_Re,
+    const suzerain_bl_local       * const edge,
+    const suzerain_bl_thicknesses * const thick,
+          suzerain_bl_reynolds    * const reynolds)
+{
+    FILL_WITH_NANS(reynolds);
+
+    // Nondimensional quantities are computed with the first line being the
+    // quantity and the final line being any needed "code unit" correction.
+    // Notice viscous->tau_w and viscous->u_tau already account for code_Re;
+    // see the suzerain_bl_viscous struct declaration to check their scaling.
+    reynolds->delta  = edge->rho * edge->u * thick->delta  / edge->mu
+                     * code_Re;
+    reynolds->delta1 = edge->rho * edge->u * thick->delta1 / edge->mu
+                     * code_Re;
+    reynolds->delta2 = edge->rho * edge->u * thick->delta2 / edge->mu
+                     * code_Re;
+    reynolds->delta3 = edge->rho * edge->u * thick->delta3 / edge->mu
+                     * code_Re;
+    reynolds->deltaH = edge->rho * edge->u * thick->deltaH / edge->mu
+                     * code_Re;
+
+    return SUZERAIN_SUCCESS;
+}
+
 // Parameters for baseflow-ready integrand_thickness_displacement
 typedef struct {
     double                  inner_cutoff;
@@ -799,16 +826,6 @@ suzerain_bl_compute_qoi(
                      * 1;
     qoi->ratio_T     = edge->T / wall->T
                      * 1;
-    qoi->Re_delta    = edge->rho * edge->u * thick->delta  / edge->mu
-                     * code_Re;
-    qoi->Re_delta1   = edge->rho * edge->u * thick->delta1 / edge->mu
-                     * code_Re;
-    qoi->Re_delta2   = edge->rho * edge->u * thick->delta2 / edge->mu
-                     * code_Re;
-    qoi->Re_delta3   = edge->rho * edge->u * thick->delta3 / edge->mu
-                     * code_Re;
-    qoi->Re_deltaH   = edge->rho * edge->u * thick->deltaH / edge->mu
-                     * code_Re;
     qoi->shapefactor = thick->delta1 / thick->delta2
                      * 1;
     qoi->v_wallplus  = wall->v / viscous->u_tau

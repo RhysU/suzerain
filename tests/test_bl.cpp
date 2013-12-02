@@ -388,13 +388,26 @@ BOOST_AUTO_TEST_CASE( compute_qoi_and_pg )
 
     const double code_Ma = 1;               // Data from a dimensional code
     const double code_Re = 1;               // Ditto
-    suzerain_bl_qoi qoi;
-    BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS, suzerain_bl_compute_qoi(
-            code_Ma, code_Re, &wall, &viscous, &edge, &thick, &qoi));
+
+    suzerain_bl_reynolds reynolds;
+    BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS, suzerain_bl_compute_reynolds(
+            code_Re, &edge, &thick, &reynolds));
 
     size_t cnt = 0; // Tracks if all quantities were tested
     const double tol = GSL_SQRT_DBL_EPSILON;
     const double meh = sqrt(tol);
+    BOOST_CHECK_CLOSE(reynolds.delta,    1494.1943713234461,   tol); ++cnt;
+    BOOST_CHECK_CLOSE(reynolds.delta1,   141.95952214875473,   tol); ++cnt;
+    BOOST_CHECK_CLOSE(reynolds.delta2,   189.49842591559681,   tol); ++cnt;
+    /* Quantity reynolds.delta3 not tested */                        ++cnt;
+    /* Quantity reynolds.deltaH not tested */                        ++cnt;
+    BOOST_CHECK_EQUAL(cnt, sizeof(reynolds)/sizeof(reynolds.delta));
+
+    suzerain_bl_qoi qoi;
+    BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS, suzerain_bl_compute_qoi(
+            code_Ma, code_Re, &wall, &viscous, &edge, &thick, &qoi));
+
+    cnt = 0; // Tracks if all quantities were tested
     BOOST_CHECK_CLOSE(qoi.cf,          0.0044697874046917899,  tol); ++cnt;
     BOOST_CHECK_CLOSE(qoi.gamma_e,     1.4083595370046604,     tol); ++cnt;
     BOOST_CHECK_CLOSE(qoi.Ma_e,        0.71394455827465408,    tol); ++cnt;
@@ -405,11 +418,6 @@ BOOST_AUTO_TEST_CASE( compute_qoi_and_pg )
     BOOST_CHECK_CLOSE(qoi.ratio_nu,      (edge.mu / edge.rho)
                                        / (wall.mu / wall.rho), tol); ++cnt;
     BOOST_CHECK_CLOSE(qoi.ratio_T,     4.1960728537236802,     tol); ++cnt;
-    BOOST_CHECK_CLOSE(qoi.Re_delta,    1494.1943713234461,     tol); ++cnt;
-    BOOST_CHECK_CLOSE(qoi.Re_delta1,   141.95952214875473,     tol); ++cnt;
-    BOOST_CHECK_CLOSE(qoi.Re_delta2,   189.49842591559681,     tol); ++cnt;
-    /* Quantity Re_delta3 not tested */                              ++cnt;
-    /* Quantity Re_deltaH not tested */                              ++cnt;
     BOOST_CHECK_CLOSE(qoi.shapefactor, 0.7491329886401481,     tol); ++cnt;
     BOOST_CHECK_CLOSE(qoi.v_wallplus,  0.0094118607746200931,  tol); ++cnt;
     BOOST_CHECK_EQUAL(cnt, sizeof(qoi)/sizeof(qoi.cf));

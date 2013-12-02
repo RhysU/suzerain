@@ -232,14 +232,16 @@ void driver::log_quantities_of_interest(
         suzerain_bl_viscous     viscous;
         suzerain_bl_local       edge;
         suzerain_bl_thicknesses thick;
+        suzerain_bl_reynolds    reynolds;
         suzerain_bl_qoi         qoi;
         suzerain_bl_pg          pg;
         summarize_boundary_layer_nature(prof, *scenario, sg, *b,
-                                        wall, viscous, edge, thick, qoi, pg);
+                                        wall, viscous, edge, thick,
+                                        reynolds, qoi, pg);
 
         // Log messages using application-agnostic superclass functionality
-        this->log_boundary_layer_quantities(timeprefix,
-                                            &viscous, &thick, &qoi, &pg);
+        this->log_boundary_layer_quantities(timeprefix, &viscous, &thick,
+                                            &reynolds, &qoi, &pg);
 
     } else if (grid->two_sided()) {
 

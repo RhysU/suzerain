@@ -41,6 +41,7 @@
 // Forward declarations
 struct suzerain_bl_pg;
 struct suzerain_bl_qoi;
+struct suzerain_bl_reynolds;
 struct suzerain_bl_thicknesses;
 struct suzerain_bl_viscous;
 struct suzerain_channel_local;
@@ -331,7 +332,7 @@ public:
     /**
      * Log messages containing a wide variety of quantities of interest for a
      * boundary layer simulation.  Data to be logged must be provided in \c
-     * viscous, \c thick, \c qoi, and \c pg.
+     * viscous, \c thick, \c reynolds, \c qoi, and \c pg.
      *
      * This method produces well-formatted results given relevant computed
      * quantities.  Subclasses will likely provide an overload that gathers
@@ -341,6 +342,7 @@ public:
      *
      * @param viscous    Possibly computed by suzerain_bl_compute_viscous().
      * @param thick      Possibly computed by suzerain_bl_compute_thicknesses().
+     * @param reynolds   Possibly computed by suzerain_bl_compute_reynolds().
      * @param qoi        Possibly computed by suzerain_bl_compute_qoi().
      * @param pg         Possibly computed by suzerain_bl_compute_pg().
      *                   If \c NULL, no pressure gradient-related information
@@ -348,6 +350,8 @@ public:
      * @param name_visc  Logging name for viscous-related quantities.
      *                   If \c NULL, this message will not be logged.
      * @param name_thick Logging name for boundary layer thickness details.
+     *                   If \c NULL, this message will not be logged.
+     * @param name_Re    Logging name for boundary layer Reynolds numbers.
      *                   If \c NULL, this message will not be logged.
      * @param name_qoi   Logging name for general quantities of interest.
      *                   If \c NULL, this message will not be logged.
@@ -358,10 +362,12 @@ public:
             const std::string& timeprefix,
             const suzerain_bl_viscous     * const viscous,
             const suzerain_bl_thicknesses * const thick,
+            const suzerain_bl_reynolds    * const reynolds,
             const suzerain_bl_qoi         * const qoi,
             const suzerain_bl_pg          * const pg,
             const char * const name_visc  =  "bl.visc",
             const char * const name_thick =  "bl.thick",
+            const char * const name_Re    =  "bl.Re",
             const char * const name_qoi   =  "bl.qoi",
             const char * const name_pg    =  "bl.pg");
 
@@ -728,6 +734,13 @@ protected:
      * after the first invocation.
      */
     bool log_boundary_layer_quantities_thick_header_shown;
+
+    /**
+     * Flag used to control whether \ref log_boundary_layer_quantities shows
+     * Reynolds number-related headers.  The default implementation disables
+     * headers after the first invocation.
+     */
+    bool log_boundary_layer_quantities_Re_header_shown;
 
     /**
      * Flag used to control whether \ref log_boundary_layer_quantities shows

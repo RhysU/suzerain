@@ -127,9 +127,9 @@ int
 suzerain_bl_find_edge(
     const double * coeffs_H0,
     double * location,
-    gsl_matrix *dB,
-    gsl_bspline_workspace *w,
-    gsl_bspline_deriv_workspace *dw);
+    gsl_matrix * dB,
+    gsl_bspline_workspace * w,
+    gsl_bspline_deriv_workspace * dw);
 
 /**
  * Compute the displacement thickness \f$\delta_1\f$ (sometimes written
@@ -159,9 +159,9 @@ int
 suzerain_bl_displacement_thickness(
     const double * coeffs_rho_u,
     double * delta1,
-    gsl_matrix *dB,
-    gsl_bspline_workspace *w,
-    gsl_bspline_deriv_workspace *dw);
+    gsl_matrix * dB,
+    gsl_bspline_workspace * w,
+    gsl_bspline_deriv_workspace * dw);
 
 /**
  * Compute the momentum thickness \f$\delta_2\f$ (sometimes written
@@ -197,9 +197,9 @@ suzerain_bl_momentum_thickness(
     const double * coeffs_rho_u,
     const double * coeffs_u,
     double * delta2,
-    gsl_matrix *dB,
-    gsl_bspline_workspace *w,
-    gsl_bspline_deriv_workspace *dw);
+    gsl_matrix * dB,
+    gsl_bspline_workspace * w,
+    gsl_bspline_deriv_workspace * dw);
 
 /**
  * Compute the energy thickness \f$\delta_3\f$ (not to be confused with
@@ -236,9 +236,9 @@ suzerain_bl_energy_thickness(
     const double * coeffs_rho_u,
     const double * coeffs_u,
     double * delta3,
-    gsl_matrix *dB,
-    gsl_bspline_workspace *w,
-    gsl_bspline_deriv_workspace *dw);
+    gsl_matrix * dB,
+    gsl_bspline_workspace * w,
+    gsl_bspline_deriv_workspace * dw);
 
 /**
  * Compute the enthalpy thickness \f$\delta_H\f$ (sometimes written
@@ -278,9 +278,9 @@ suzerain_bl_enthalpy_thickness(
     const double * coeffs_rho_u,
     const double * coeffs_H0,
     double * deltaH,
-    gsl_matrix *dB,
-    gsl_bspline_workspace *w,
-    gsl_bspline_deriv_workspace *dw);
+    gsl_matrix * dB,
+    gsl_bspline_workspace * w,
+    gsl_bspline_deriv_workspace * dw);
 
 /**
  * Information characterizing boundary layer thickness in various ways.  Each
@@ -323,9 +323,47 @@ suzerain_bl_compute_thicknesses(
     const double * coeffs_H0,
     const double * coeffs_rho_u,
     const double * coeffs_u,
-    suzerain_bl_thicknesses *thick,
-    gsl_bspline_workspace *w,
-    gsl_bspline_deriv_workspace *dw);
+    suzerain_bl_thicknesses * thick,
+    gsl_bspline_workspace * w,
+    gsl_bspline_deriv_workspace * dw);
+
+/**
+ * Boundary layer Reynolds numbers of interest.  These are computed from the
+ * indicated length scales and some dynamic viscosity \f$\mu\f$.
+ */
+typedef struct suzerain_bl_reynolds {
+    double delta;     /**< Reynolds number based on boundary layer
+                           thickness \f$\delta\f$. */
+    double delta1;    /**< Reynolds number based on displacement
+                           thickness \f$\delta_1\f$. */
+    double delta2;    /**< Reynolds number based on momentum
+                           thickness \f$\delta_2\f$. */
+    double delta3;    /**< Reynolds number based on energy
+                           thickness \f$\delta_3\f$. */
+    double deltaH;    /**< Reynolds number based on enthalpy
+                           thickness \f$\delta_H\f$. */
+} suzerain_bl_reynolds;
+
+/**
+ * Compute boundary layer Reynolds numbers.
+ *
+ * \param[in ] code_Re  Reynolds number \f$\rho_0 u_0 l_0/\mu_0\f$ used to scale
+ *                      nondimensional quantities.  For dimensional
+ *                      calculations, use <code>1</code.
+ * \param[in ] edge     Local state information from the boundary layer edge.
+ * \param[in ] thick    Thickness information for the boundary layer.
+ * \param[out] reynolds Populated on success.
+ *                      See type documentation for contents.
+ *
+ * \return ::SUZERAIN_SUCCESS on success.  On error calls suzerain_error() and
+ *      returns one of #suzerain_error_status.
+ */
+int
+suzerain_bl_compute_reynolds(
+    double code_Re,
+    const suzerain_bl_local       * edge,
+    const suzerain_bl_thicknesses * thick,
+          suzerain_bl_reynolds    * reynolds);
 
 /**
  * Nondimensional boundary layer quantities of general interest.
@@ -345,16 +383,6 @@ typedef struct suzerain_bl_qoi {
     double ratio_rho;    /**< The ratio of edge to wall density. */
     double ratio_nu;     /**< The ratio of edge to wall kinematic viscosity. */
     double ratio_T;      /**< The ratio of edge to wall temperature. */
-    double Re_delta;     /**< Reynolds number based on boundary layer
-                              thickness \f$\delta\f$ and \f$\mu_e\f$. */
-    double Re_delta1;    /**< Reynolds number based on displacement
-                              thickness \f$\delta_1\f$ and \f$\mu_e\f$. */
-    double Re_delta2;    /**< Reynolds number based on momentum
-                              thickness \f$\delta_2\f$ and \f$\mu_e\f$. */
-    double Re_delta3;    /**< Reynolds number based on energy
-                              thickness \f$\delta_3\f$ and \f$\mu_e\f$. */
-    double Re_deltaH;    /**< Reynolds number based on enthalpy
-                              thickness \f$\delta_H\f$ and \f$\mu_e\f$. */
     double shapefactor;  /**< The shape factor \f$\delta_1 / \delta_2. */
     double v_wallplus;   /**< The wall transpiration rate in plus units.*/
 } suzerain_bl_qoi;
