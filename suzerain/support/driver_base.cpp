@@ -965,6 +965,45 @@ driver_base::log_status_boundary_state(
     }
 }
 
+// A building block called from both log_{channel,boundary_layer}_quantities
+template< class Local >
+void log_quantities_local_helper(
+        const driver_base&  driver,
+        const std::string&  timeprefix,
+        const Local * const local,
+        const char  * const name,
+        bool&               header_shown,
+        std::ostringstream& msg)
+{
+    using std::setw;
+    logging::logger_type log = logging::get_logger(name);
+
+    if (log != NULL && INFO0_ENABLED(log)) {
+        if (!header_shown) {
+            header_shown = true;
+            msg.str("");
+            msg << setw(timeprefix.size())
+                << driver.build_timeprefix_description()
+                << ' ' << setw(fullprec<>::width) << "a"
+                << ' ' << setw(fullprec<>::width) << "mu"
+                << ' ' << setw(fullprec<>::width) << "rho"
+                << ' ' << setw(fullprec<>::width) << "T"
+                << ' ' << setw(fullprec<>::width) << "u"
+                << ' ' << setw(fullprec<>::width) << "v";
+            INFO0(log, msg.str());
+        }
+        msg.str("");
+        msg << timeprefix
+            << ' ' << fullprec<>(local->a)
+            << ' ' << fullprec<>(local->mu)
+            << ' ' << fullprec<>(local->rho)
+            << ' ' << fullprec<>(local->T)
+            << ' ' << fullprec<>(local->u)
+            << ' ' << fullprec<>(local->v);
+        INFO0(log, msg.str());
+    }
+}
+
 void driver_base::log_boundary_layer_quantities(
         const std::string& timeprefix,
         const suzerain_bl_local       * const wall,
@@ -1160,6 +1199,10 @@ void driver_base::log_channel_quantities(
         INFO0(log, msg.str());
     }
 
+    log_quantities_local_helper(*this, timeprefix, wall, name_wall,
+                                log_channel_quantities_wall_header_shown,
+                                msg);
+
     log = logging::get_logger(name_visc);
     if (log != NULL && INFO0_ENABLED(log)) {
         if (!log_channel_quantities_visc_header_shown) {
@@ -1185,30 +1228,9 @@ void driver_base::log_channel_quantities(
         INFO0(log, msg.str());
     }
 
-    log = logging::get_logger(name_center);
-    if (log != NULL && INFO0_ENABLED(log)) {
-        if (!log_channel_quantities_center_header_shown) {
-            log_channel_quantities_center_header_shown = true;
-            msg.str("");
-            msg << setw(timeprefix.size()) << build_timeprefix_description()
-                << ' ' << setw(fullprec<>::width) << "a"
-                << ' ' << setw(fullprec<>::width) << "mu"
-                << ' ' << setw(fullprec<>::width) << "rho"
-                << ' ' << setw(fullprec<>::width) << "T"
-                << ' ' << setw(fullprec<>::width) << "u"
-                << ' ' << setw(fullprec<>::width) << "v";
-            INFO0(log, msg.str());
-        }
-        msg.str("");
-        msg << timeprefix
-            << ' ' << fullprec<>(center->a)
-            << ' ' << fullprec<>(center->mu)
-            << ' ' << fullprec<>(center->rho)
-            << ' ' << fullprec<>(center->T)
-            << ' ' << fullprec<>(center->u)
-            << ' ' << fullprec<>(center->v);
-        INFO0(log, msg.str());
-    }
+    log_quantities_local_helper(*this, timeprefix, center, name_center,
+                                log_channel_quantities_center_header_shown,
+                                msg);
 
     log = logging::get_logger(name_qoi);
     if (log != NULL && INFO0_ENABLED(log)) {
