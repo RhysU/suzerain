@@ -985,7 +985,9 @@ void log_quantities_local_helper(
             msg << setw(timeprefix.size())
                 << driver.build_timeprefix_description()
                 << ' ' << setw(fullprec<>::width) << "a"
+                << ' ' << setw(fullprec<>::width) << "gamma"
                 << ' ' << setw(fullprec<>::width) << "mu"
+                << ' ' << setw(fullprec<>::width) << "Pr"
                 << ' ' << setw(fullprec<>::width) << "rho"
                 << ' ' << setw(fullprec<>::width) << "T"
                 << ' ' << setw(fullprec<>::width) << "u"
@@ -995,7 +997,9 @@ void log_quantities_local_helper(
         msg.str("");
         msg << timeprefix
             << ' ' << fullprec<>(local->a)
+            << ' ' << fullprec<>(local->gamma)
             << ' ' << fullprec<>(local->mu)
+            << ' ' << fullprec<>(local->Pr)
             << ' ' << fullprec<>(local->rho)
             << ' ' << fullprec<>(local->T)
             << ' ' << fullprec<>(local->u)
@@ -1038,7 +1042,6 @@ void driver_base::log_boundary_layer_quantities(
             log_boundary_layer_quantities_visc_header_shown = true;
             msg.str("");
             msg << setw(timeprefix.size()) << build_timeprefix_description()
-                << ' ' << setw(fullprec<>::width) << "cf"
                 << ' ' << setw(fullprec<>::width) << "delta_nu"
                 << ' ' << setw(fullprec<>::width) << "tau_w"
                 << ' ' << setw(fullprec<>::width) << "u_tau"
@@ -1048,7 +1051,6 @@ void driver_base::log_boundary_layer_quantities(
         }
         msg.str("");
         msg << timeprefix
-            << ' ' << fullprec<>(qoi->cf)
             << ' ' << fullprec<>(viscous->delta_nu)
             << ' ' << fullprec<>(viscous->tau_w)
             << ' ' << fullprec<>(viscous->u_tau)
@@ -1113,10 +1115,9 @@ void driver_base::log_boundary_layer_quantities(
             log_boundary_layer_quantities_qoi_header_shown = true;
             msg.str("");
             msg << setw(timeprefix.size()) << build_timeprefix_description()
-                << ' ' << setw(fullprec<>::width) << "gamma_e"
+                << ' ' << setw(fullprec<>::width) << "cf"
                 << ' ' << setw(fullprec<>::width) << "Ma_e"
                 << ' ' << setw(fullprec<>::width) << "Ma_tau"
-                << ' ' << setw(fullprec<>::width) << "Pr_w"
                 << ' ' << setw(fullprec<>::width) << "ratio_rho"
                 << ' ' << setw(fullprec<>::width) << "ratio_nu"
                 << ' ' << setw(fullprec<>::width) << "ratio_T";
@@ -1124,10 +1125,9 @@ void driver_base::log_boundary_layer_quantities(
         }
         msg.str("");
         msg << timeprefix
-            << ' ' << fullprec<>(qoi->gamma_e)
+            << ' ' << fullprec<>(qoi->cf)
             << ' ' << fullprec<>(qoi->Ma_e)
             << ' ' << fullprec<>(qoi->Ma_tau)
-            << ' ' << fullprec<>(qoi->Pr_w)
             << ' ' << fullprec<>(qoi->ratio_rho)
             << ' ' << fullprec<>(qoi->ratio_nu)
             << ' ' << fullprec<>(qoi->ratio_T);
