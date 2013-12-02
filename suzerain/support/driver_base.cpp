@@ -1188,7 +1188,6 @@ void driver_base::log_channel_quantities(
             log_channel_quantities_visc_header_shown = true;
             msg.str("");
             msg << setw(timeprefix.size()) << build_timeprefix_description()
-                << ' ' << setw(fullprec<>::width) << "cf"
                 << ' ' << setw(fullprec<>::width) << "delta_nu"
                 << ' ' << setw(fullprec<>::width) << "tau_w"
                 << ' ' << setw(fullprec<>::width) << "u_tau"
@@ -1198,7 +1197,6 @@ void driver_base::log_channel_quantities(
         }
         msg.str("");
         msg << timeprefix
-            << ' ' << fullprec<>(qoi->cf)
             << ' ' << fullprec<>(viscous->delta_nu)
             << ' ' << fullprec<>(viscous->tau_w)
             << ' ' << fullprec<>(viscous->u_tau)
@@ -1217,7 +1215,7 @@ void driver_base::log_channel_quantities(
             log_channel_quantities_qoi_header_shown = true;
             msg.str("");
             msg << setw(timeprefix.size()) << build_timeprefix_description()
-                << ' ' << setw(fullprec<>::width) << "gamma_c"
+                << ' ' << setw(fullprec<>::width) << "cf"
                 << ' ' << setw(fullprec<>::width) << "Ma_c"
                 << ' ' << setw(fullprec<>::width) << "Ma_tau"
                 << ' ' << setw(fullprec<>::width) << "Pr_w"
@@ -1227,7 +1225,7 @@ void driver_base::log_channel_quantities(
         }
         msg.str("");
         msg << timeprefix
-            << ' ' << fullprec<>(qoi->gamma_c)
+            << ' ' << fullprec<>(qoi->cf)
             << ' ' << fullprec<>(qoi->Ma_c)
             << ' ' << fullprec<>(qoi->Ma_tau)
             << ' ' << fullprec<>(qoi->Pr_w)
