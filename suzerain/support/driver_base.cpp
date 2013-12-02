@@ -1028,7 +1028,9 @@ void driver_base::log_boundary_layer_quantities(
     logging::logger_type log; // Logging pointer to be repeatedly set
     std::ostringstream   msg; // Buffer to be repeatedly reused below
 
-    // TODO Log wall information
+    log_quantities_local_helper(*this, timeprefix, wall, name_wall,
+                                log_boundary_layer_quantities_wall_header_shown,
+                                msg);
 
     log = logging::get_logger(name_visc);
     if (log != NULL && INFO0_ENABLED(log)) {
@@ -1078,7 +1080,9 @@ void driver_base::log_boundary_layer_quantities(
         INFO0(log, msg.str());
     }
 
-    // TODO Log edge information
+    log_quantities_local_helper(*this, timeprefix, edge, name_edge,
+                                log_boundary_layer_quantities_edge_header_shown,
+                                msg);
 
     log = logging::get_logger(name_Re);
     if (log != NULL && INFO0_ENABLED(log)) {
@@ -1173,31 +1177,6 @@ void driver_base::log_channel_quantities(
     using std::setw;          // Brevity
     logging::logger_type log; // Logging pointer to be repeatedly set
     std::ostringstream   msg; // Buffer to be repeatedly reused below
-
-    log = logging::get_logger(name_wall);
-    if (log != NULL && INFO0_ENABLED(log)) {
-        if (!log_channel_quantities_wall_header_shown) {
-            log_channel_quantities_wall_header_shown = true;
-            msg.str("");
-            msg << setw(timeprefix.size()) << build_timeprefix_description()
-                << ' ' << setw(fullprec<>::width) << "a"
-                << ' ' << setw(fullprec<>::width) << "mu"
-                << ' ' << setw(fullprec<>::width) << "rho"
-                << ' ' << setw(fullprec<>::width) << "T"
-                << ' ' << setw(fullprec<>::width) << "u"
-                << ' ' << setw(fullprec<>::width) << "v";
-            INFO0(log, msg.str());
-        }
-        msg.str("");
-        msg << timeprefix
-            << ' ' << fullprec<>(wall->a)
-            << ' ' << fullprec<>(wall->mu)
-            << ' ' << fullprec<>(wall->rho)
-            << ' ' << fullprec<>(wall->T)
-            << ' ' << fullprec<>(wall->u)
-            << ' ' << fullprec<>(wall->v);
-        INFO0(log, msg.str());
-    }
 
     log_quantities_local_helper(*this, timeprefix, wall, name_wall,
                                 log_channel_quantities_wall_header_shown,
