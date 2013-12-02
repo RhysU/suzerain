@@ -150,8 +150,10 @@ driver_base::driver_base(
     , received_halt(false)
     , log_status_L2_header_shown(false)
     , log_status_bulk_header_shown(false)
+    , log_boundary_layer_quantities_wall_header_shown(false)
     , log_boundary_layer_quantities_visc_header_shown(false)
     , log_boundary_layer_quantities_thick_header_shown(false)
+    , log_boundary_layer_quantities_edge_header_shown(false)
     , log_boundary_layer_quantities_Re_header_shown(false)
     , log_boundary_layer_quantities_qoi_header_shown(false)
     , log_boundary_layer_quantities_pg_header_shown(false)
@@ -965,13 +967,17 @@ driver_base::log_status_boundary_state(
 
 void driver_base::log_boundary_layer_quantities(
         const std::string& timeprefix,
+        const suzerain_bl_local       * const wall,
         const suzerain_bl_viscous     * const viscous,
         const suzerain_bl_thicknesses * const thick,
+        const suzerain_bl_local       * const edge,
         const suzerain_bl_reynolds    * const reynolds,
         const suzerain_bl_qoi         * const qoi,
         const suzerain_bl_pg          * const pg,
+        const char * const name_wall,
         const char * const name_visc,
         const char * const name_thick,
+        const char * const name_edge,
         const char * const name_Re,
         const char * const name_qoi,
         const char * const name_pg)
@@ -982,6 +988,8 @@ void driver_base::log_boundary_layer_quantities(
     using std::setw;          // Brevity
     logging::logger_type log; // Logging pointer to be repeatedly set
     std::ostringstream   msg; // Buffer to be repeatedly reused below
+
+    // TODO Log wall information
 
     log = logging::get_logger(name_visc);
     if (log != NULL && INFO0_ENABLED(log)) {
@@ -1030,6 +1038,8 @@ void driver_base::log_boundary_layer_quantities(
             << ' ' << fullprec<>(thick->deltaH);
         INFO0(log, msg.str());
     }
+
+    // TODO Log edge information
 
     log = logging::get_logger(name_Re);
     if (log != NULL && INFO0_ENABLED(log)) {

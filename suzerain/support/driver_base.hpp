@@ -39,6 +39,7 @@
 #include <suzerain/timecontroller.hpp>
 
 // Forward declarations
+struct suzerain_bl_local;
 struct suzerain_bl_pg;
 struct suzerain_bl_qoi;
 struct suzerain_bl_reynolds;
@@ -340,16 +341,22 @@ public:
      * method within a \ref log_status_hook() or \ref log_statistics_hook()
      * overload.
      *
+     * @param wall       Local information from the wall.
      * @param viscous    Possibly computed by suzerain_bl_compute_viscous().
      * @param thick      Possibly computed by suzerain_bl_compute_thicknesses().
+     * @param edge       Local information from the boundary layer edge.
      * @param reynolds   Possibly computed by suzerain_bl_compute_reynolds().
      * @param qoi        Possibly computed by suzerain_bl_compute_qoi().
      * @param pg         Possibly computed by suzerain_bl_compute_pg().
      *                   If \c NULL, no pressure gradient-related information
      *                   will be logged.
+     * @param name_wall  Logging name for wall-related information.
+     *                   If \c NULL, this message will not be logged.
      * @param name_visc  Logging name for viscous-related quantities.
      *                   If \c NULL, this message will not be logged.
      * @param name_thick Logging name for boundary layer thickness details.
+     *                   If \c NULL, this message will not be logged.
+     * @param name_edge  Logging name for edge-related information.
      *                   If \c NULL, this message will not be logged.
      * @param name_Re    Logging name for boundary layer Reynolds numbers.
      *                   If \c NULL, this message will not be logged.
@@ -360,13 +367,17 @@ public:
      */
     virtual void log_boundary_layer_quantities(
             const std::string& timeprefix,
+            const suzerain_bl_local       * const wall,
             const suzerain_bl_viscous     * const viscous,
             const suzerain_bl_thicknesses * const thick,
+            const suzerain_bl_local       * const edge,
             const suzerain_bl_reynolds    * const reynolds,
             const suzerain_bl_qoi         * const qoi,
             const suzerain_bl_pg          * const pg,
+            const char * const name_wall  =  "bl.wall",
             const char * const name_visc  =  "bl.visc",
             const char * const name_thick =  "bl.thick",
+            const char * const name_edge  =  "bl.edge",
             const char * const name_Re    =  "bl.Re",
             const char * const name_qoi   =  "bl.qoi",
             const char * const name_pg    =  "bl.pg");
@@ -723,6 +734,13 @@ protected:
 
     /**
      * Flag used to control whether \ref log_boundary_layer_quantities shows
+     * wall-related headers.  The default implementation disables headers after
+     * the first invocation.
+     */
+    bool log_boundary_layer_quantities_wall_header_shown;
+
+    /**
+     * Flag used to control whether \ref log_boundary_layer_quantities shows
      * viscous-related headers.  The default implementation disables headers after
      * the first invocation.
      */
@@ -734,6 +752,13 @@ protected:
      * after the first invocation.
      */
     bool log_boundary_layer_quantities_thick_header_shown;
+
+    /**
+     * Flag used to control whether \ref log_boundary_layer_quantities shows
+     * edge-related headers.  The default implementation disables headers after
+     * the first invocation.
+     */
+    bool log_boundary_layer_quantities_edge_header_shown;
 
     /**
      * Flag used to control whether \ref log_boundary_layer_quantities shows

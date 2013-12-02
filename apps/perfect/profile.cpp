@@ -228,8 +228,8 @@ void summarize_boundary_layer_nature(
         bspline &b,
         suzerain_bl_local       &wall,
         suzerain_bl_viscous     &viscous,
-        suzerain_bl_local       &edge,
         suzerain_bl_thicknesses &thick,
+        suzerain_bl_local       &edge,
         suzerain_bl_reynolds    &reynolds,
         suzerain_bl_qoi         &qoi,
         suzerain_bl_pg          &pg)
@@ -237,12 +237,6 @@ void summarize_boundary_layer_nature(
     // Care taken to avoid any B-spline evaluation using NaN thicknesses
     // per Redmine #2940 as this can bring down a simulation from GSL_ERROR.
     using boost::math::isnan;
-
-    // Compute boundary layer thicknesses, including delta
-    suzerain_bl_compute_thicknesses(prof.H0().data(),
-                                    prof.rho_u().col(0).data(),
-                                    prof.u().col(0).data(),
-                                    &thick, b.bw, b.dbw);
 
     // Prepare local state at the wall (y=0)
     // Uses B-spline 0th coefficient being wall value to reduce costs.
@@ -262,6 +256,12 @@ void summarize_boundary_layer_nature(
 
     // Compute viscous quantities based only on wall information
     suzerain_bl_compute_viscous(scenario.Re, &wall, &viscous);
+
+    // Compute boundary layer thicknesses, including delta
+    suzerain_bl_compute_thicknesses(prof.H0().data(),
+                                    prof.rho_u().col(0).data(),
+                                    prof.u().col(0).data(),
+                                    &thick, b.bw, b.dbw);
 
     // Evaluate state at the edge (y=thick.delta) from B-spline coefficients
     std::fill_n(reinterpret_cast<double *>(&edge),
