@@ -491,6 +491,103 @@ suzerain_bl_compute_pg(
         const suzerain_bl_thicknesses * thick,
               suzerain_bl_pg          * pg);
 
+/**
+ * Compute Reynolds numbers accounting for an inviscid baseflow.  The results
+ * are analogous to the nondimensional parameters computed by \ref
+ * suzerain_bl_compute_reynolds.  However, unlike that method, the quantities
+ * are correct for integral quantities numbers in the presence of a known,
+ * potentially nonuniform, inviscid background flow.
+ *
+ * The method requires a B-spline coefficient representation of both the
+ * viscous and inviscid flow specific total enthalpy \f$H_0 = \frac{\rho E +
+ * p}{\rho}\f$, streamwise momentum \f$\rho u\f$, and velocity \f$u\f$.
+ *
+ * \param[in ] code_Re         Reynolds number \f$\rho_0 u_0 l_0/\mu_0\f$ used
+ *                             to scale nondimensional quantities.  For
+ *                             dimensional calculations, use <code>1</code.
+ * \param[in ] coeffs_vis_H0   Coefficients for viscous \f$H_0\f$ profile.
+ *                             These value must be contiguous in memory.
+ * \param[in ] coeffs_vis_rhou Coefficients for viscous \f$\rho u\f$ profile.
+ *                             These value must be contiguous in memory.
+ * \param[in ] coeffs_vis_u    Coefficients for viscous \f$u\f$ profile.
+ *                             These value must be contiguous in memory.
+ * \param[in ] inv_stride      Stride between inviscid profile coefficients.
+ *                             May be zero to indicate uniform inviscid data.
+ * \param[in ] coeffs_inv_H0   Coefficients for inviscid \f$H_0\f$ profile.
+ *                             These are strided per \c inv_stride.
+ * \param[in ] coeffs_inv_rhou Coefficients for inviscid \f$\rho u\f$ profile.
+ *                             These are strided per \c inv_stride.
+ * \param[in ] coeffs_inv_u    Coefficients for inviscid \f$u\f$ profile.
+ *                             These are strided per \c inv_stride.
+ * \param[in ] edge            Local information from the boundary layer edge.
+ * \param[out] reynolds        Populated on success.
+ *                             See type documentation for contents.
+ * \param[in ] w               Workspace to use.
+ *
+ * \return ::SUZERAIN_SUCCESS on success.  On error calls suzerain_error() and
+ *      returns one of #suzerain_error_status.
+ */
+int
+suzerain_bl_baseflow_compute_reynolds(
+    const double                          code_Re,
+    const double                  * const coeffs_vis_H0,
+    const double                  * const coeffs_vis_rhou,
+    const double                  * const coeffs_vis_u,
+    const int                             inv_stride,
+    const double                  * const coeffs_inv_H0,
+    const double                  * const coeffs_inv_rhou,
+    const double                  * const coeffs_inv_u,
+    const suzerain_bl_local       * const edge,
+    suzerain_bl_reynolds          * const reynolds,
+    gsl_bspline_workspace         * const w);
+
+/**
+ * Compute integral length scales accounting for an inviscid baseflow.  The
+ * results are analogous to the nondimensional parameters computed by \ref
+ * suzerain_bl_compute_reynolds.  However, unlike that method, the quantities
+ * are correct for integral quantities numbers in the presence of a known,
+ * potentially nonuniform, inviscid background flow.
+ *
+ * The method requires a B-spline coefficient representation of both the
+ * viscous and inviscid flow specific total enthalpy \f$H_0 = \frac{\rho E +
+ * p}{\rho}\f$, streamwise momentum \f$\rho u\f$, and velocity \f$u\f$.
+ *
+ * \param[in ] coeffs_vis_H0   Coefficients for viscous \f$H_0\f$ profile.
+ *                             These value must be contiguous in memory.
+ * \param[in ] coeffs_vis_rhou Coefficients for viscous \f$\rho u\f$ profile.
+ *                             These value must be contiguous in memory.
+ * \param[in ] coeffs_vis_u    Coefficients for viscous \f$u\f$ profile.
+ *                             These value must be contiguous in memory.
+ * \param[in ] inv_stride      Stride between inviscid profile coefficients.
+ *                             May be zero to indicate uniform inviscid data.
+ * \param[in ] coeffs_inv_H0   Coefficients for inviscid \f$H_0\f$ profile.
+ *                             These are strided per \c inv_stride.
+ * \param[in ] coeffs_inv_rhou Coefficients for inviscid \f$\rho u\f$ profile.
+ *                             These are strided per \c inv_stride.
+ * \param[in ] coeffs_inv_u    Coefficients for inviscid \f$u\f$ profile.
+ *                             These are strided per \c inv_stride.
+ * \param[in ] edge            Local information from the boundary layer edge.
+ * \param[out] thick           Populated on success.
+ *                             See type documentation for contents.
+ * \param[in ] w               Workspace to use.
+ * \param[in ] dw              Workspace to use.
+ *
+ * \return ::SUZERAIN_SUCCESS on success.  On error calls suzerain_error() and
+ *      returns one of #suzerain_error_status.
+ */
+int
+suzerain_bl_baseflow_compute_thicknesses(
+    const double                  * const coeffs_vis_H0,
+    const double                  * const coeffs_vis_rhou,
+    const double                  * const coeffs_vis_u,
+    const int                             inv_stride,
+    const double                  * const coeffs_inv_H0,
+    const double                  * const coeffs_inv_rhou,
+    const double                  * const coeffs_inv_u,
+    suzerain_bl_thicknesses       * const thick,
+    gsl_bspline_workspace         * const w,
+    gsl_bspline_deriv_workspace   * const dw);
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
