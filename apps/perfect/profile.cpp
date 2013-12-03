@@ -253,6 +253,7 @@ void summarize_boundary_layer_nature(
     assert(&(wall.u) + 1 == &(wall.u__y)); // Next, compute both u and u__y
     b.linear_combination(1, prof.u().col(0).data(), 0.0, &(wall.u), 1);
     wall.v     = prof.u().col(1)[0];
+    wall.y     = 0.0;
 
     // Compute viscous quantities based only on wall information
     suzerain_bl_compute_viscous(scenario.Re, &wall, &viscous);
@@ -269,20 +270,20 @@ void summarize_boundary_layer_nature(
                 std::numeric_limits<double>::quiet_NaN());
     edge.gamma = scenario.gamma;
     edge.Pr    = scenario.Pr;
-    if (SUZERAIN_UNLIKELY((isnan)(thick.delta))) {
+    edge.y     = thick.delta;
+    if (SUZERAIN_UNLIKELY((isnan)(edge.y))) {
         // NOP as fill_n above ensured NaN propagated correctly
     } else {
         // Later, could more quickly evaluate basis once and then re-use that
         // result to repeatedly form the necessary linear combinations.
-        const double delta = thick.delta;
-        b.linear_combination(0, prof.a().data(),        delta, &(edge.a));
-        b.linear_combination(0, prof.mu().data(),       delta, &(edge.mu));
-        b.linear_combination(0, prof.rho().data(),      delta, &(edge.rho));
+        b.linear_combination(0, prof.a().data(),        edge.y, &(edge.a));
+        b.linear_combination(0, prof.mu().data(),       edge.y, &(edge.mu));
+        b.linear_combination(0, prof.rho().data(),      edge.y, &(edge.rho));
         assert(&(edge.T) + 1 == &(edge.T__y)); // Next, compute both T and T__y
-        b.linear_combination(1, prof.T().col(0).data(), delta, &(edge.T), 1);
+        b.linear_combination(1, prof.T().col(0).data(), edge.y, &(edge.T), 1);
         assert(&(edge.u) + 1 == &(edge.u__y)); // Next, compute both u and u__y
-        b.linear_combination(1, prof.u().col(0).data(), delta, &(edge.u), 1);
-        b.linear_combination(0, prof.u().col(1).data(), delta, &(edge.v));
+        b.linear_combination(1, prof.u().col(0).data(), edge.y, &(edge.u), 1);
+        b.linear_combination(0, prof.u().col(1).data(), edge.y, &(edge.v));
     }
 
     // Compute Reynolds numbers

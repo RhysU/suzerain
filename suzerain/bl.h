@@ -67,6 +67,7 @@ typedef struct suzerain_bl_local {
     double u__y;   /**< Wall-normal derivative of streamwise velocity
                         divided by \f$u_0 / l_0\f$.                         */
     double v;      /**< Wall-normal velocity divided by \f$u_0\f$.          */
+    double y;      /**< Distance from the wall divided by \f$l_0\f$.        */
 } suzerain_bl_local;
 
 /**

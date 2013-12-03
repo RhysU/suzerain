@@ -793,7 +793,6 @@ suzerain_bl_baseflow_compute_reynolds(
     const double                  * const coeffs_inv_rhou,
     const double                  * const coeffs_inv_u,
     const suzerain_bl_local       * const edge,
-    const suzerain_bl_thicknesses * const thick,
     suzerain_bl_reynolds          * const reynolds,
     gsl_bspline_workspace         * const w)
 {
@@ -827,7 +826,7 @@ suzerain_bl_baseflow_compute_reynolds(
 
     // Re_delta from edge->rho, edge->u, thick->delta, edge->mu, and code_Re
     {
-        reynolds->delta = edge->rho * edge->u * thick->delta / edge->mu
+        reynolds->delta = edge->rho * edge->u * edge->y / edge->mu
                         * code_Re;
     }
 
