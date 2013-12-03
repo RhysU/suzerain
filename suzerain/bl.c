@@ -333,7 +333,6 @@ suzerain_bl_compute_thicknesses(
     gsl_bspline_workspace * w,
     gsl_bspline_deriv_workspace * dw)
 {
-
     FILL_WITH_NANS(thick);
 
     int status     = SUZERAIN_SUCCESS;
@@ -872,6 +871,8 @@ suzerain_bl_baseflow_compute_reynolds(
     suzerain_bl_reynolds          * const reynolds,
     gsl_bspline_workspace         * const w)
 {
+    FILL_WITH_NANS(reynolds);
+
     // See suzerain_bl_compute_reynolds for the constant baseflow version of
     // these quantities, including commentary on the code unit scaling.  See
     // writeups/thicknesses.pdf for how the integrals in this function are
@@ -1007,6 +1008,7 @@ typedef struct params_integral_thickness_residual {
     double         epsrel;     // ...or absolute tolerance to satistfy.
     int            status;     // Stores abserr from gsl_integration_qagp
     double         abserr;     // Stores return value from gsl_integration_qagp
+    size_t         limit;      // Maximum number of subdivisions to perform
     gsl_integration_workspace * iw;
 } params_integral_thickness_residual;
 
@@ -1048,7 +1050,7 @@ double integral_thickness_residual(
     p->status = gsl_integration_qagp(p->integrand,
                                      p->pts, p->npts,
                                      p->epsabs, p->epsrel,
-                                     p->iw->limit, p->iw,
+                                     p->limit, p->iw,
                                      &result, &p->abserr);
     return result;
 }
@@ -1057,3 +1059,140 @@ double integral_thickness_residual(
 // TODO Use integrand_thickness_energy
 // TODO Use integrand_thickness_enthalpy
 // TODO Use integrand_thickness_momentum
+
+int
+suzerain_bl_baseflow_compute_thicknesses(
+    const double                  * const coeffs_vis_H0,
+    const double                  * const coeffs_vis_rhou,
+    const double                  * const coeffs_vis_u,
+    const int                             inv_stride,
+    const double                  * const coeffs_inv_H0,
+    const double                  * const coeffs_inv_rhou,
+    const double                  * const coeffs_inv_u,
+    suzerain_bl_thicknesses       * const thick,
+    gsl_bspline_workspace         * const w,
+    gsl_bspline_deriv_workspace   * const dw)
+{
+    FILL_WITH_NANS(thick);
+
+    int status = SUZERAIN_SUCCESS;
+
+    // Prepare inputs and allocate resources for function calls
+    gsl_matrix * dB = NULL;
+    gsl_vector * Bk = NULL;
+    params_integral_thickness_residual params = { .integrand = NULL };
+    assert(w->knots->stride == 1);              // Breakpoints are contiguous
+    params.ndis   = w->nbreak;                  // Smoothness drops @ breakpoint
+    params.dis    = w->knots->data + w->k - 1;  // Per gsl_bspline_nbreak
+    params.npts   = params.ndis + 1;            // Algorithmic requirement
+    params.limit  = params.npts * (1+w->k/2);   // Hopefully sufficient for..
+    params.epsabs = GSL_DBL_EPSILON;            // ..either this...
+    params.epsrel = GSL_SQRT_DBL_EPSILON;       // ..or this tolerance
+    if (NULL == (params.iw = gsl_integration_workspace_alloc(params.limit))) {
+        SUZERAIN_ERROR_REPORT("failed to allocate params.iw",
+                              (status = SUZERAIN_ENOMEM));
+    }
+    if (NULL == (params.pts = malloc(params.npts * sizeof(params.pts[0])))) {
+        SUZERAIN_ERROR_REPORT("failed to allocate params.pts",
+                              (status = SUZERAIN_ENOMEM));
+    }
+    if (NULL == (dB = gsl_matrix_alloc(w->k, 3))) {
+        SUZERAIN_ERROR_REPORT("failed to allocate dB",
+                              (status = SUZERAIN_ENOMEM));
+    }
+    if (NULL == (Bk = gsl_vector_alloc(w->k))) {
+        SUZERAIN_ERROR_REPORT("failed to allocate Bk",
+                              (status = SUZERAIN_ENOMEM));
+    }
+    if (SUZERAIN_UNLIKELY(status != SUZERAIN_SUCCESS)) goto done;
+
+    // Find boundary layer edge: thick->delta
+    status = suzerain_bl_find_edge(
+            coeffs_vis_H0, &thick->delta, dB, w, dw);
+    if (SUZERAIN_UNLIKELY(status != SUZERAIN_SUCCESS)) goto done;
+
+    // See suzerain_bl_compute_thicknesses for the constant baseflow version of
+    // these quantities.  See writeups/thicknesses.pdf for how the integrals in
+    // this function are defined and used.
+
+    // Find displacement thickness: thick->delta1
+    {
+        params_thickness_displacement integrand_params = {
+            .vis_rhou   = coeffs_vis_rhou,
+            .inv_stride = inv_stride,
+            .inv_rhou   = coeffs_inv_rhou,
+            .Bk         = Bk,
+            .w          = w
+        };
+        params.integrand->function = &integrand_thickness_displacement;
+        params.integrand->params   = &integrand_params;
+        gsl_function F             = { &integral_thickness_residual, &params };
+        // TODO Compute
+    }
+    if (SUZERAIN_UNLIKELY(status != SUZERAIN_SUCCESS)) goto done;
+
+    // Find thickness: thick->delta1 + thick->delta2
+    {
+        params_thickness_momentum integrand_params = {
+            .vis_rhou    = coeffs_vis_rhou,
+            .vis_u       = coeffs_vis_u,
+            .inv_stride  = inv_stride,
+            .inv_u       = coeffs_inv_u,
+            .Bk          = Bk,
+            .w           = w
+        };
+        params.integrand->function = &integrand_thickness_momentum;
+        params.integrand->params   = &integrand_params;
+        gsl_function F             = { &integral_thickness_residual, &params };
+        // TODO Compute
+    }
+    // Adjust to obtain momentum thickness, thick->delta2
+    thick->delta2 -= thick->delta1;
+    if (SUZERAIN_UNLIKELY(status != SUZERAIN_SUCCESS)) goto done;
+
+    // Find energy thickness: thick->delta1 + thick->delta3
+    {
+        params_thickness_energy integrand_params = {
+            .vis_rhou    = coeffs_vis_rhou,
+            .vis_u       = coeffs_vis_u,
+            .inv_stride  = inv_stride,
+            .inv_u       = coeffs_inv_u,
+            .Bk          = Bk,
+            .w           = w
+        };
+        params.integrand->function = &integrand_thickness_energy;
+        params.integrand->params   = &integrand_params;
+        gsl_function F             = { &integral_thickness_residual, &params };
+        // TODO Compute
+    }
+    // Adjust to obtain energy thickness, thick->delta3
+    thick->delta3 -= thick->delta1;
+    if (SUZERAIN_UNLIKELY(status != SUZERAIN_SUCCESS)) goto done;
+
+    // Find thickness: thick->delta1 + thick->deltaH
+    {
+        params_thickness_enthalpy integrand_params = {
+            .vis_rhou    = coeffs_vis_rhou,
+            .vis_H0      = coeffs_vis_H0,
+            .inv_stride  = inv_stride,
+            .inv_H0      = coeffs_inv_H0,
+            .Bk          = Bk,
+            .w           = w
+        };
+        params.integrand->function = &integrand_thickness_enthalpy;
+        params.integrand->params   = &integrand_params;
+        gsl_function F             = { &integral_thickness_residual, &params };
+        // TODO Compute
+    }
+    // Adjust to obtain enthalpy thickness, thick->deltaH
+    thick->deltaH -= thick->delta1;
+    if (SUZERAIN_UNLIKELY(status != SUZERAIN_SUCCESS)) goto done;
+
+done:
+    gsl_integration_workspace_free(params.iw);
+    free(params.pts);
+    gsl_matrix_free(dB);
+    gsl_vector_free(Bk);
+
+    return status;
+}
