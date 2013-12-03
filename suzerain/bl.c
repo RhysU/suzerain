@@ -398,6 +398,82 @@ suzerain_bl_compute_reynolds(
     return SUZERAIN_SUCCESS;
 }
 
+int
+suzerain_bl_compute_qoi(
+        const double code_Ma,
+        const double code_Re,
+        const suzerain_bl_local       * const wall,
+        const suzerain_bl_viscous     * const viscous,
+        const suzerain_bl_local       * const edge,
+        const suzerain_bl_thicknesses * const thick,
+              suzerain_bl_qoi         * const qoi)
+{
+    FILL_WITH_NANS(qoi);
+
+    // Nondimensional quantities are computed with the first line being the
+    // quantity and the final line being any needed "code unit" correction.
+    // Notice viscous->tau_w and viscous->u_tau already account for code_Re;
+    // see the suzerain_bl_viscous struct declaration to check their scaling.
+    qoi->cf          = 2 * viscous->tau_w / edge->rho / square(edge->u)
+                     * 1;
+    qoi->gamma_e     = edge->gamma
+                     * 1;
+    qoi->Ma_e        = edge->u / edge->a
+                     * code_Ma;
+    qoi->Ma_tau      = viscous->u_tau / wall->a
+                     * code_Ma;
+    qoi->Pr_w        = wall->Pr;
+    qoi->Bq          = - (wall->mu * wall->T__y)
+                     / (qoi->Pr_w * wall->rho * viscous->u_tau * wall->T)
+                     / code_Re;
+    qoi->ratio_nu    = (edge->mu / edge->rho) / (wall->mu / wall->rho)
+                     * 1;
+    qoi->ratio_rho   = edge->rho / wall->rho
+                     * 1;
+    qoi->ratio_T     = edge->T / wall->T
+                     * 1;
+    qoi->shapefactor = thick->delta1 / thick->delta2
+                     * 1;
+    qoi->v_wallplus  = wall->v / viscous->u_tau
+                     * 1;
+
+    return SUZERAIN_SUCCESS;
+}
+
+int
+suzerain_bl_compute_pg(
+        const double code_Ma,
+        const double code_Re,
+        const suzerain_bl_local       * const wall,
+        const suzerain_bl_viscous     * const viscous,
+        const suzerain_bl_local       * const edge,
+        const double                          edge_p__x,
+        const double                          edge_u__x,
+        const suzerain_bl_thicknesses * const thick,
+              suzerain_bl_pg          * const pg)
+{
+    FILL_WITH_NANS(pg);
+
+    // Nondimensional quantities are computed with the first line being the
+    // quantity and the second line being any needed "code unit" correction.
+    // Notice viscous->tau_w and viscous->u_tau already account for code_Re;
+    // see the suzerain_bl_viscous struct declaration to check their scaling.
+    pg->Clauser      = thick->delta1 / viscous->tau_w * edge_p__x
+                     / square(code_Ma);
+    pg->Launder_e    = edge->mu * edge_u__x / edge->rho / square(edge->u)
+                     / code_Re;
+    pg->Launder_w    = wall->mu * edge_u__x / edge->rho / square(edge->u)
+                     / code_Re;
+    pg->Lambda_n     = - thick->delta / viscous->tau_w * edge_p__x
+                     / square(code_Ma);
+    pg->p_ex         = thick->delta / edge->rho / square(edge->u) * edge_p__x
+                     / square(code_Ma);
+    pg->Pohlhausen   = square(thick->delta) * edge->rho / edge->mu * edge_u__x
+                     * code_Re;
+
+    return SUZERAIN_SUCCESS;
+}
+
 // Parameters for baseflow-ready integrand_thickness_displacement
 typedef struct {
     double                  inner_cutoff;  // Must be first member
@@ -923,79 +999,3 @@ done:
 // TODO Use integrand_thickness_energy
 // TODO Use integrand_thickness_enthalpy
 // TODO Use integrand_thickness_momentum
-
-int
-suzerain_bl_compute_qoi(
-        const double code_Ma,
-        const double code_Re,
-        const suzerain_bl_local       * const wall,
-        const suzerain_bl_viscous     * const viscous,
-        const suzerain_bl_local       * const edge,
-        const suzerain_bl_thicknesses * const thick,
-              suzerain_bl_qoi         * const qoi)
-{
-    FILL_WITH_NANS(qoi);
-
-    // Nondimensional quantities are computed with the first line being the
-    // quantity and the final line being any needed "code unit" correction.
-    // Notice viscous->tau_w and viscous->u_tau already account for code_Re;
-    // see the suzerain_bl_viscous struct declaration to check their scaling.
-    qoi->cf          = 2 * viscous->tau_w / edge->rho / square(edge->u)
-                     * 1;
-    qoi->gamma_e     = edge->gamma
-                     * 1;
-    qoi->Ma_e        = edge->u / edge->a
-                     * code_Ma;
-    qoi->Ma_tau      = viscous->u_tau / wall->a
-                     * code_Ma;
-    qoi->Pr_w        = wall->Pr;
-    qoi->Bq          = - (wall->mu * wall->T__y)
-                     / (qoi->Pr_w * wall->rho * viscous->u_tau * wall->T)
-                     / code_Re;
-    qoi->ratio_nu    = (edge->mu / edge->rho) / (wall->mu / wall->rho)
-                     * 1;
-    qoi->ratio_rho   = edge->rho / wall->rho
-                     * 1;
-    qoi->ratio_T     = edge->T / wall->T
-                     * 1;
-    qoi->shapefactor = thick->delta1 / thick->delta2
-                     * 1;
-    qoi->v_wallplus  = wall->v / viscous->u_tau
-                     * 1;
-
-    return SUZERAIN_SUCCESS;
-}
-
-int
-suzerain_bl_compute_pg(
-        const double code_Ma,
-        const double code_Re,
-        const suzerain_bl_local       * const wall,
-        const suzerain_bl_viscous     * const viscous,
-        const suzerain_bl_local       * const edge,
-        const double                          edge_p__x,
-        const double                          edge_u__x,
-        const suzerain_bl_thicknesses * const thick,
-              suzerain_bl_pg          * const pg)
-{
-    FILL_WITH_NANS(pg);
-
-    // Nondimensional quantities are computed with the first line being the
-    // quantity and the second line being any needed "code unit" correction.
-    // Notice viscous->tau_w and viscous->u_tau already account for code_Re;
-    // see the suzerain_bl_viscous struct declaration to check their scaling.
-    pg->Clauser      = thick->delta1 / viscous->tau_w * edge_p__x
-                     / square(code_Ma);
-    pg->Launder_e    = edge->mu * edge_u__x / edge->rho / square(edge->u)
-                     / code_Re;
-    pg->Launder_w    = wall->mu * edge_u__x / edge->rho / square(edge->u)
-                     / code_Re;
-    pg->Lambda_n     = - thick->delta / viscous->tau_w * edge_p__x
-                     / square(code_Ma);
-    pg->p_ex         = thick->delta / edge->rho / square(edge->u) * edge_p__x
-                     / square(code_Ma);
-    pg->Pohlhausen   = square(thick->delta) * edge->rho / edge->mu * edge_u__x
-                     * code_Re;
-
-    return SUZERAIN_SUCCESS;
-}
