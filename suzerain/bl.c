@@ -36,6 +36,7 @@
 #include <gsl/gsl_integration.h>
 #include <gsl/gsl_math.h>
 #include <gsl/gsl_nan.h>
+#include <gsl/gsl_roots.h>
 #include <gsl/gsl_sys.h>
 
 #include <suzerain/common.h>
@@ -1077,9 +1078,7 @@ suzerain_bl_baseflow_compute_thicknesses(
 
     int status = SUZERAIN_SUCCESS;
 
-    // Prepare inputs and allocate resources for function calls
-    gsl_matrix * dB = NULL;
-    gsl_vector * Bk = NULL;
+    // Prepare inputs and allocate resources for subroutine calls
     params_integral_thickness_residual params = { .integrand = NULL };
     assert(w->knots->stride == 1);              // Breakpoints are contiguous
     params.ndis   = w->nbreak;                  // Smoothness drops @ breakpoint
@@ -1096,12 +1095,19 @@ suzerain_bl_baseflow_compute_thicknesses(
         SUZERAIN_ERROR_REPORT("failed to allocate params.pts",
                               (status = SUZERAIN_ENOMEM));
     }
-    if (NULL == (dB = gsl_matrix_alloc(w->k, 3))) {
+    gsl_matrix * const dB = gsl_matrix_alloc(w->k, 3);
+    if (NULL == dB) {
         SUZERAIN_ERROR_REPORT("failed to allocate dB",
                               (status = SUZERAIN_ENOMEM));
     }
-    if (NULL == (Bk = gsl_vector_alloc(w->k))) {
+    gsl_vector * const Bk = gsl_vector_alloc(w->k);
+    if (NULL == Bk) {
         SUZERAIN_ERROR_REPORT("failed to allocate Bk",
+                              (status = SUZERAIN_ENOMEM));
+    }
+    gsl_root_fsolver * const s = gsl_root_fsolver_alloc(gsl_root_fsolver_brent);
+    if (NULL == s) {
+        SUZERAIN_ERROR_REPORT("failed to allocate s",
                               (status = SUZERAIN_ENOMEM));
     }
     if (SUZERAIN_UNLIKELY(status != SUZERAIN_SUCCESS)) goto done;
@@ -1193,6 +1199,7 @@ done:
     free(params.pts);
     gsl_matrix_free(dB);
     gsl_vector_free(Bk);
+    gsl_root_fsolver_free(s);
 
     return status;
 }
