@@ -1032,7 +1032,7 @@ double integral_thickness_residual(
     *((double *) p->integrand->params) = thick; // ...so it can be set thusly.
 
     // Insert thick into a copied list of discontinuities/singularities
-    // A binary search, a memcpy, an assignment, and a memcpy would be better
+    // A binary search, a memcpy, an assignment, and a memcpy might be better
     {
         assert(p->npts >= p->ndis + 1);
         size_t i = 0;
