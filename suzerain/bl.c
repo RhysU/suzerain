@@ -1056,10 +1056,37 @@ double integral_thickness_residual(
     return result;
 }
 
-// TODO Use integrand_thickness_displacement
-// TODO Use integrand_thickness_energy
-// TODO Use integrand_thickness_enthalpy
-// TODO Use integrand_thickness_momentum
+static
+int fsolver_solve(
+        gsl_root_fsolver * const s,
+        gsl_function     * const f,
+        const size_t             maxiter,
+        const double             epsabs,
+        const double             epsrel,
+        double           * const lower,
+        double           * const upper,
+        double           * const root)
+{
+    // Initialize fsolver on [lower, upper]
+    gsl_error_handler_t * h = gsl_set_error_handler_off();    // Push handler
+    int status = gsl_root_fsolver_set(s, f, *lower, *upper);
+    status = (GSL_SUCCESS == status) ? GSL_CONTINUE : status;
+
+    // Proceed until success, failure, or maximum iterations reached
+    // On success, overwrite *location as described in API documentation.
+    *root = GSL_NAN;
+    for (size_t iter = 1; iter < maxiter && status == GSL_CONTINUE; ++iter) {
+        if (GSL_SUCCESS != (status = gsl_root_fsolver_iterate(s))) break;
+        *lower = gsl_root_fsolver_x_lower(s);
+        *upper = gsl_root_fsolver_x_upper(s);
+        status = gsl_root_test_interval(*lower, *upper, epsabs, epsrel);
+    }
+    if (status == GSL_SUCCESS) {
+        *root = gsl_root_fsolver_root(s);
+    }
+    gsl_set_error_handler(h);                                 // Pop handler
+    return status;
+}
 
 int
 suzerain_bl_baseflow_compute_thicknesses(
@@ -1079,6 +1106,7 @@ suzerain_bl_baseflow_compute_thicknesses(
     int status = SUZERAIN_SUCCESS;
 
     // Prepare inputs and allocate resources for subroutine calls
+    enum { maxiter = 255 };                     // How long can we wait?
     params_integral_thickness_residual params = { .integrand = NULL };
     assert(w->knots->stride == 1);              // Breakpoints are contiguous
     params.ndis   = w->nbreak;                  // Smoothness drops @ breakpoint
@@ -1121,7 +1149,7 @@ suzerain_bl_baseflow_compute_thicknesses(
     // these quantities.  See writeups/thicknesses.pdf for how the integrals in
     // this function are defined and used.
 
-    // Find displacement thickness: thick->delta1
+    // Find implicitly-defined displacement thickness: thick->delta1
     {
         params_thickness_displacement integrand_params = {
             .vis_rhou   = coeffs_vis_rhou,
@@ -1132,13 +1160,15 @@ suzerain_bl_baseflow_compute_thicknesses(
         };
         params.integrand->function = &integrand_thickness_displacement;
         params.integrand->params   = &integrand_params;
-        gsl_function F             = { &integral_thickness_residual, &params };
-        // TODO Compute
+        gsl_function f             = { &integral_thickness_residual, &params };
+        double lower = params.dis[0], upper = params.dis[params.ndis-1];
+        status = fsolver_solve(s, &f, maxiter, params.epsabs, params.epsrel,
+                               &lower, &upper, &thick->delta1);
     }
     if (SUZERAIN_UNLIKELY(status != SUZERAIN_SUCCESS)) goto done;
 
-    // Find thickness: thick->delta1 + thick->delta2
-    {
+    // Find implicitly-defined thickness: thick->delta1 + thick->delta2
+    if (!gsl_isnan(thick->delta1)) {
         params_thickness_momentum integrand_params = {
             .vis_rhou    = coeffs_vis_rhou,
             .vis_u       = coeffs_vis_u,
@@ -1149,15 +1179,18 @@ suzerain_bl_baseflow_compute_thicknesses(
         };
         params.integrand->function = &integrand_thickness_momentum;
         params.integrand->params   = &integrand_params;
-        gsl_function F             = { &integral_thickness_residual, &params };
-        // TODO Compute
+        gsl_function f             = { &integral_thickness_residual, &params };
+        gsl_root_fsolver_set(s, &f, params.dis[0], params.dis[params.ndis-1]);
+        double lower = params.dis[0], upper = params.dis[params.ndis-1];
+        status = fsolver_solve(s, &f, maxiter, params.epsabs, params.epsrel,
+                               &lower, &upper, &thick->delta2);
     }
     // Adjust to obtain momentum thickness, thick->delta2
     thick->delta2 -= thick->delta1;
     if (SUZERAIN_UNLIKELY(status != SUZERAIN_SUCCESS)) goto done;
 
-    // Find energy thickness: thick->delta1 + thick->delta3
-    {
+    // Find implicitly-defined energy thickness: thick->delta1 + thick->delta3
+    if (!gsl_isnan(thick->delta1)) {
         params_thickness_energy integrand_params = {
             .vis_rhou    = coeffs_vis_rhou,
             .vis_u       = coeffs_vis_u,
@@ -1168,15 +1201,18 @@ suzerain_bl_baseflow_compute_thicknesses(
         };
         params.integrand->function = &integrand_thickness_energy;
         params.integrand->params   = &integrand_params;
-        gsl_function F             = { &integral_thickness_residual, &params };
-        // TODO Compute
+        gsl_function f             = { &integral_thickness_residual, &params };
+        gsl_root_fsolver_set(s, &f, params.dis[0], params.dis[params.ndis-1]);
+        double lower = params.dis[0], upper = params.dis[params.ndis-1];
+        status = fsolver_solve(s, &f, maxiter, params.epsabs, params.epsrel,
+                               &lower, &upper, &thick->delta3);
     }
     // Adjust to obtain energy thickness, thick->delta3
     thick->delta3 -= thick->delta1;
     if (SUZERAIN_UNLIKELY(status != SUZERAIN_SUCCESS)) goto done;
 
-    // Find thickness: thick->delta1 + thick->deltaH
-    {
+    // Find implicitly-defined thickness: thick->delta1 + thick->deltaH
+    if (!gsl_isnan(thick->delta1)) {
         params_thickness_enthalpy integrand_params = {
             .vis_rhou    = coeffs_vis_rhou,
             .vis_H0      = coeffs_vis_H0,
@@ -1187,8 +1223,11 @@ suzerain_bl_baseflow_compute_thicknesses(
         };
         params.integrand->function = &integrand_thickness_enthalpy;
         params.integrand->params   = &integrand_params;
-        gsl_function F             = { &integral_thickness_residual, &params };
-        // TODO Compute
+        gsl_function f             = { &integral_thickness_residual, &params };
+        gsl_root_fsolver_set(s, &f, params.dis[0], params.dis[params.ndis-1]);
+        double lower = params.dis[0], upper = params.dis[params.ndis-1];
+        status = fsolver_solve(s, &f, maxiter, params.epsabs, params.epsrel,
+                               &lower, &upper, &thick->deltaH);
     }
     // Adjust to obtain enthalpy thickness, thick->deltaH
     thick->deltaH -= thick->delta1;
