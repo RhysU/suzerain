@@ -995,6 +995,64 @@ done:
     return status;
 }
 
+// Parameters for baseflow-ready integral_thickness_residual requiring a
+// function for root-finding wrapping a function for the integration integrand
+typedef struct params_integral_thickness_residual {
+    gsl_function * integrand;  // Using, e.g. integrand_thickness_displacement
+    size_t         ndis;       // # of discontinuities (breakpoints) in basis
+    double       * dis;        // Increasing list of discontinuities
+    size_t         npts;       // Buffer size for QAGP discontinuities >= ndis+1
+    double       * pts;        // Buffer for QAGP discontinuities
+    double         epsabs;     // Request relative...
+    double         epsrel;     // ...or absolute tolerance to satistfy.
+    int            status;     // Stores abserr from gsl_integration_qagp
+    double         abserr;     // Stores return value from gsl_integration_qagp
+    gsl_integration_workspace * iw;
+} params_integral_thickness_residual;
+
+// Per writeups/thicknesses.pdf, evaluate the residual of an implicit thickness
+// equation (e.g. \delta^\ast as defined by equation (*) on page 2) given that
+// thickness.
+static
+double integral_thickness_residual(
+        const double thick,
+        void * params)
+{
+    params_integral_thickness_residual * const p =
+        (params_integral_thickness_residual *) params;
+
+    // Statically assert that inner_cutoff is the first member for
+    // the variety of integrand->params types that may be encountered...
+    enum {
+        assert1 = 1/(0==offsetof(params_thickness_displacement, inner_cutoff)),
+        assert2 = 1/(0==offsetof(params_thickness_energy,       inner_cutoff)),
+        assert3 = 1/(0==offsetof(params_thickness_enthalpy,     inner_cutoff)),
+        assert4 = 1/(0==offsetof(params_thickness_momentum,     inner_cutoff))
+    };
+    *((double *) p->integrand->params) = thick; // ...so it can be set thusly.
+
+    // Insert thick into a copied list of discontinuities/singularities
+    // A binary search, a memcpy, an assignment, and a memcpy would be better
+    {
+        assert(p->npts >= p->ndis + 1);
+        size_t i = 0;
+        for (; i < p->ndis && p->dis[i] <= thick; ++i)
+            p->pts[i] = p->dis[i];
+        p->pts[i++] = thick;
+        for (; i < p->ndis; ++i)
+            p->pts[i] = p->dis[i-1];
+    }
+
+    // Adaptively evaluate the integrand
+    double result = GSL_NAN;
+    p->status = gsl_integration_qagp(p->integrand,
+                                     p->pts, p->npts,
+                                     p->epsabs, p->epsrel,
+                                     p->iw->limit, p->iw,
+                                     &result, &p->abserr);
+    return result;
+}
+
 // TODO Use integrand_thickness_displacement
 // TODO Use integrand_thickness_energy
 // TODO Use integrand_thickness_enthalpy
