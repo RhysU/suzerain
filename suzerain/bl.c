@@ -1035,7 +1035,6 @@ double integral_thickness_residual(
     *((double *) p->integrand.params) = thick; // ...so it can be set thusly.
 
     // Insert thick into a copied list of discontinuities/singularities
-    // A binary search, a memcpy, an assignment, and a memcpy might be better
     {
         assert(p->npts >= p->ndis + 1);
         size_t i = 0;
@@ -1046,10 +1045,27 @@ double integral_thickness_residual(
             p->pts[i] = p->dis[i-1];
     }
 
-    // Adaptively evaluate the integrand
+    // Uniquely insert thick into a copied list of discontinuities:
+    //   (a) When thick is on a discontinuity, we have ndis points.
+    //   (b) When thick is not, we have ndis+1 points.
+    // Be careful to distinguish the two.
+    assert(p->npts >= p->ndis + 1);
+    size_t i = 0;
+    for (; i < p->ndis && p->dis[i] < thick; ++i)
+        p->pts[i] = p->dis[i];
+    size_t j = i;
+#pragma warning(push,disable:1572)
+    if (i < p->ndis && thick != p->dis[i])
+        p->pts[i++] = thick;
+#pragma warning(pop)
+    for (; j < p->ndis; ++i, ++j)
+        p->pts[i] = p->dis[j];
+    assert(i == p->ndis || i == p->ndis + 1);
+
+    // Adaptively evaluate the integrand given p->pts[0], ..., p->pts[i-1]
     double result = GSL_NAN;
     p->status = gsl_integration_qagp(&p->integrand,
-                                     p->pts, p->npts,
+                                     p->pts, i,
                                      p->epsabs, p->epsrel,
                                      p->limit, p->iw,
                                      &result, &p->abserr);
