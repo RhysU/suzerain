@@ -271,7 +271,8 @@ BOOST_AUTO_TEST_SUITE_END();
 
 typedef BlasiusFixture<4,10000> fixture_four_ten_thousand;
 
-BOOST_FIXTURE_TEST_CASE( blasius_compute_thicknesses, fixture_four_ten_thousand)
+BOOST_FIXTURE_TEST_CASE( blasius_thicknesses_reynolds,
+                         fixture_four_ten_thousand )
 {
     // Prepare, beyond the fixture, uniform density of 0.5 by scaling u coeffs
     shared_array<double> rho_u(new double[b.n()]);
@@ -287,7 +288,7 @@ BOOST_FIXTURE_TEST_CASE( blasius_compute_thicknesses, fixture_four_ten_thousand)
     // Integrals found using Octave's trapz against this data.
     // Again, this is a very poor test for thick.delta.
     // Notice on this dataset that delta3 and deltaH are the same thing!
-    size_t cnt = 0;
+    size_t cnt = 0; // Tracks if all quantities were tested
     suzerain_bl_thicknesses thick;
     BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS, suzerain_bl_compute_thicknesses(
         ke.get() /* \approx H_0 */, rho_u.get(), u.get(), &thick, b.bw, b.dbw));
@@ -300,7 +301,7 @@ BOOST_FIXTURE_TEST_CASE( blasius_compute_thicknesses, fixture_four_ten_thousand)
 
     // Compute the same values but now with a baseflow-friendly routine using a
     // stride trick to compute with a constant baseflow.  Here we test for
-    // consistency against simpler routine rather than against golden values.
+    // consistency against simpler routine rather than against golden value.
     const double tol = GSL_SQRT_DBL_EPSILON;
     suzerain_bl_thicknesses baseflow;
     BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS,
@@ -308,11 +309,43 @@ BOOST_FIXTURE_TEST_CASE( blasius_compute_thicknesses, fixture_four_ten_thousand)
            ke.get()     /* \approx H_0 */, rho_u.get(),      u.get(),
         0, &ke[b.n()-1] /* \approx H_0 */, &rho_u[b.n()-1], &u[b.n()-1],
         &baseflow, b.bw, b.dbw));
-    BOOST_CHECK_EQUAL(thick.delta,  baseflow.delta);
-    BOOST_CHECK_CLOSE(thick.delta1, baseflow.delta1, tol);
-    BOOST_CHECK_CLOSE(thick.delta2, baseflow.delta2, tol);
-    BOOST_CHECK_CLOSE(thick.delta3, baseflow.delta3, tol);
-    BOOST_CHECK_CLOSE(thick.deltaH, baseflow.deltaH, tol);
+    cnt = 0;
+    BOOST_CHECK_EQUAL(thick.delta,  baseflow.delta);       ++cnt;
+    BOOST_CHECK_CLOSE(thick.delta1, baseflow.delta1, tol); ++cnt;
+    BOOST_CHECK_CLOSE(thick.delta2, baseflow.delta2, tol); ++cnt;
+    BOOST_CHECK_CLOSE(thick.delta3, baseflow.delta3, tol); ++cnt;
+    BOOST_CHECK_CLOSE(thick.deltaH, baseflow.deltaH, tol); ++cnt;
+    BOOST_CHECK_EQUAL(cnt, sizeof(thick)/sizeof(thick.delta));
+
+    // Prepare expected Reynolds number results
+    const double code_Re = 777;
+    suzerain_bl_local edge;
+    {
+        edge.mu   = 5;
+        edge.rho  = rho_u[b.n()-1] / u[b.n()-1];
+        edge.u    = u[b.n()-1];
+        edge.y    = thick.delta;
+    }
+    suzerain_bl_reynolds expected_Re;
+    BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS, suzerain_bl_compute_reynolds(
+                code_Re, &edge, &thick, &expected_Re));
+
+    // Test the baseflow-based Reynolds number computations using
+    // the simpler, uniform inviscid flow as a sanity check.
+    cnt = 0;
+    suzerain_bl_reynolds reynolds;
+    BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS,
+                        suzerain_bl_compute_reynolds_baseflow(
+           code_Re,
+           ke.get()     /* \approx H_0 */, rho_u.get(),      u.get(),
+        0, &ke[b.n()-1] /* \approx H_0 */, &rho_u[b.n()-1], &u[b.n()-1],
+        &edge, &reynolds, b.bw));
+    BOOST_CHECK_CLOSE(expected_Re.delta,  reynolds.delta,  tol); ++cnt;
+    BOOST_CHECK_CLOSE(expected_Re.delta1, reynolds.delta1, tol); ++cnt;
+    BOOST_CHECK_CLOSE(expected_Re.delta2, reynolds.delta2, tol); ++cnt;
+    BOOST_CHECK_CLOSE(expected_Re.delta3, reynolds.delta3, tol); ++cnt;
+    BOOST_CHECK_CLOSE(expected_Re.deltaH, reynolds.deltaH, tol); ++cnt;
+    BOOST_CHECK_EQUAL(cnt, sizeof(thick)/sizeof(thick.delta));
 }
 
 BOOST_AUTO_TEST_SUITE( qoi )
