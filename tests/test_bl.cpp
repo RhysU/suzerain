@@ -270,6 +270,7 @@ BOOST_FIXTURE_TEST_CASE( find_edge, ChallengingFixture )
 BOOST_AUTO_TEST_SUITE_END();
 
 typedef BlasiusFixture<4,10000> fixture_four_ten_thousand;
+
 BOOST_FIXTURE_TEST_CASE( blasius_compute_thicknesses, fixture_four_ten_thousand)
 {
     // Prepare, beyond the fixture, uniform density of 0.5 by scaling u coeffs
@@ -296,8 +297,23 @@ BOOST_FIXTURE_TEST_CASE( blasius_compute_thicknesses, fixture_four_ten_thousand)
     BOOST_CHECK_CLOSE(thick.delta3, 0.0104430629471855,  0.01  ); ++cnt;
     BOOST_CHECK_CLOSE(thick.deltaH, 0.0104435139441593,  0.01  ); ++cnt;
     BOOST_CHECK_EQUAL(cnt, sizeof(thick)/sizeof(thick.delta));
-}
 
+    // Compute the same values but now with a baseflow-friendly routine using a
+    // stride trick to compute with a constant baseflow.  Here we test for
+    // consistency against simpler routine rather than against golden values.
+    const double tol = GSL_SQRT_DBL_EPSILON;
+    suzerain_bl_thicknesses baseflow;
+    BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS,
+                        suzerain_bl_compute_thicknesses_baseflow(
+           ke.get()     /* \approx H_0 */, rho_u.get(),      u.get(),
+        0, &ke[b.n()-1] /* \approx H_0 */, &rho_u[b.n()-1], &u[b.n()-1],
+        &baseflow, b.bw, b.dbw));
+    BOOST_CHECK_EQUAL(thick.delta,  baseflow.delta);
+    BOOST_CHECK_CLOSE(thick.delta1, baseflow.delta1, tol);
+    BOOST_CHECK_CLOSE(thick.delta2, baseflow.delta2, tol);
+    BOOST_CHECK_CLOSE(thick.delta3, baseflow.delta3, tol);
+    BOOST_CHECK_CLOSE(thick.deltaH, baseflow.deltaH, tol);
+}
 
 BOOST_AUTO_TEST_SUITE( qoi )
 
