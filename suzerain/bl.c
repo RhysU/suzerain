@@ -859,7 +859,7 @@ double integrand_reynolds_enthalpy(
 }
 
 int
-suzerain_bl_baseflow_compute_reynolds(
+suzerain_bl_compute_reynolds_baseflow(
     const double                          code_Re,
     const double                  * const coeffs_vis_H0,
     const double                  * const coeffs_vis_rhou,
@@ -1089,7 +1089,7 @@ int fsolver_solve(
 }
 
 int
-suzerain_bl_baseflow_compute_thicknesses(
+suzerain_bl_compute_thicknesses_baseflow(
     const double                  * const coeffs_vis_H0,
     const double                  * const coeffs_vis_rhou,
     const double                  * const coeffs_vis_u,
