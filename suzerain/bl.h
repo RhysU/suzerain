@@ -86,7 +86,7 @@ typedef struct suzerain_bl_viscous {
  *
  * \param[in ] code_Re Reynolds number \f$\rho_0 u_0 l_0/\mu_0\f$ used to scale
  *                     nondimensional quantities.  For dimensional
- *                     calculations, use <code>1</code.
+ *                     calculations, use <code>1</code>.
  * \param[in ] wall    Local state information from the wall.
  * \param[out] viscous Populated on success.
  *                     See type documentation for contents.
@@ -251,7 +251,7 @@ suzerain_bl_energy_thickness(
  * \f[
  *  \delta_H = \int_0^\infty
  *  \frac{\rho u}{\rho_\infty u_\infty}
- *  \left(1 - \frac{H_0}{H_{0,\\infty}}\right)
+ *  \left(1 - \frac{H_0}{H_{0,\infty}}\right)
  *  \, \mathrm{d}y
  * \f]
  * where the value from the final B-spline collocation point is taken to be "at
@@ -350,7 +350,7 @@ typedef struct suzerain_bl_reynolds {
  *
  * \param[in ] code_Re  Reynolds number \f$\rho_0 u_0 l_0/\mu_0\f$ used to scale
  *                      nondimensional quantities.  For dimensional
- *                      calculations, use <code>1</code.
+ *                      calculations, use <code>1</code>.
  * \param[in ] edge     Local state information from the boundary layer edge.
  * \param[in ] thick    Thickness information for the boundary layer.
  * \param[out] reynolds Populated on success.
@@ -393,10 +393,10 @@ typedef struct suzerain_bl_qoi {
  *
  * \param[in ] code_Ma Mach number \f$u_0/a_0\f$ used to scale
  *                     nondimensional quantities.  For dimensional
- *                     calculations, use <code>1</code.
+ *                     calculations, use <code>1</code>.
  * \param[in ] code_Re Reynolds number \f$\rho_0 u_0 l_0/\mu_0\f$ used to scale
  *                     nondimensional quantities.  For dimensional
- *                     calculations, use <code>1</code.
+ *                     calculations, use <code>1</code>.
  * \param[in ] wall    Local state information from the wall.
  * \param[in ] viscous Viscous-related wall scaling information
  * \param[in ] edge    Local state information from the boundary layer edge.
@@ -460,10 +460,10 @@ typedef struct suzerain_bl_pg {
  *
  * \param[in ] code_Ma   Mach number \f$u_0/a_0\f$ used to scale
  *                       nondimensional quantities.  For dimensional
- *                       calculations, use <code>1</code.
+ *                       calculations, use <code>1</code>.
  * \param[in ] code_Re   Reynolds number \f$\rho_0 u_0 l_0/\mu_0\f$ used to
  *                       scale nondimensional quantities.  For dimensional
- *                       calculations, use <code>1</code.
+ *                       calculations, use <code>1</code>.
  * \param[in ] wall      Local state information from the wall.
  * \param[in ] viscous   Viscous-related wall scaling information
  * \param[in ] edge      Local state information from the boundary layer edge.
@@ -498,13 +498,37 @@ suzerain_bl_compute_pg(
  * are correct for integral quantities numbers in the presence of a known,
  * potentially nonuniform, inviscid background flow.
  *
+ * The following definitions, derived in writeups/thicknesses.pdf, are used:
+ * \f{align}{
+ *   \mbox{Re}_{\delta}   &= \frac{\rho_e u_e \delta}{\mu_e}
+ * \\
+ *   \mbox{Re}_{\delta_1} &= \mu_e^{-1} \int_0^\infty
+ *     \left(\rho u\right)_\mbox{inv}
+ *   - \left(\rho u\right)_\mbox{vis}
+ *   \, \mathrm{d}y
+ * \\
+ *   \mbox{Re}_{\delta_2} &= \mu_e^{-1} \int_0^\infty
+ *     \left(\rho u\right)_\mbox{vis}
+ *   - \left(\rho u^2\right)_\mbox{vis} u_\mbox{inv}^{-1}
+ *   \, \mathrm{d}y
+ * \\
+ *   \mbox{Re}_{\delta_3} &= \mu_e^{-1} \int_0^\infty
+ *     \left(\rho u\right)_\mbox{vis}
+ *   - \left(\rho u^3\right)_\mbox{vis} u^{-2}_\mbox{inv}
+ *   \, \mathrm{d}y
+ * \\
+ *   \mbox{Re}_{\delta_H} &= \mu_e^{-1} \int_0^\infty
+ *     \left(\rho u\right)_\mbox{vis}
+ *   - \left(\rho H_0 u\right)_\mbox{vis} {H}^{-1}_{0,\mbox{inv}}
+ *   \, \mathrm{d}y
+ * \f}
  * The method requires a B-spline coefficient representation of both the
  * viscous and inviscid flow specific total enthalpy \f$H_0 = \frac{\rho E +
  * p}{\rho}\f$, streamwise momentum \f$\rho u\f$, and velocity \f$u\f$.
  *
  * \param[in ] code_Re         Reynolds number \f$\rho_0 u_0 l_0/\mu_0\f$ used
  *                             to scale nondimensional quantities.  For
- *                             dimensional calculations, use <code>1</code.
+ *                             dimensional calculations, use <code>1</code>.
  * \param[in ] coeffs_vis_H0   Coefficients for viscous \f$H_0\f$ profile.
  *                             These value must be contiguous in memory.
  * \param[in ] coeffs_vis_rhou Coefficients for viscous \f$\rho u\f$ profile.
@@ -548,6 +572,46 @@ suzerain_bl_baseflow_compute_reynolds(
  * are correct for integral quantities numbers in the presence of a known,
  * potentially nonuniform, inviscid background flow.
  *
+ * The integral thicknesses are defined to be the values such that
+ * the following equations, derived in writeups/thicknesses.pdf, are satisfied:
+ * \f{align}{
+ *     \int_{\delta_1}^\infty
+ *         \left(\rho u\right)_\mbox{inv}
+ *       - \left(\rho u\right)_\mbox{vis}
+ *     \, \mathrm{d}y
+ *   &=
+ *     \int_0^{\delta_1}
+ *         \left(\rho u\right)_\mbox{vis}
+ *     \, \mathrm{d}y
+ * \\
+ *     \int_{\delta_1 + \delta_2}^\infty
+ *         \left(\rho u^2\right)_\mbox{inv}
+ *       - \left(\rho u^2\right)_\mbox{vis}
+ *     \, \mathrm{d}y
+ *   &=
+ *     \int_0^{\delta_1 + \delta_2}
+ *         \left(\rho u^2\right)_\mbox{vis}
+ *     \, \mathrm{d}y
+ * \\
+ *     \int_{\delta_1 + \delta_3}^\infty
+ *         \left(\rho u^3\right)_\mbox{inv}
+ *       - \left(\rho u^3\right)_\mbox{vis}
+ *     \, \mathrm{d}y
+ *   &=
+ *     \int_0^{\delta_1 + \delta_3}
+ *         \left(\rho u^3\right)_\mbox{vis}
+ *     \, \mathrm{d}y
+ * \\
+ *     \int_{\delta_1 + \delta_H}^\infty
+ *         \left(\rho H_0 u\right)_\mbox{inv}
+ *       - \left(\rho H_0 u\right)_\mbox{vis}
+ *     \, \mathrm{d}y
+ *   &=
+ *     \int_0^{\delta_1 + \delta_H}
+ *         \left(\rho H_0 u\right)_\mbox{vis}
+ *     \, \mathrm{d}y
+ * \\
+ * \f}
  * The method requires a B-spline coefficient representation of both the
  * viscous and inviscid flow specific total enthalpy \f$H_0 = \frac{\rho E +
  * p}{\rho}\f$, streamwise momentum \f$\rho u\f$, and velocity \f$u\f$.
