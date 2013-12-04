@@ -1000,7 +1000,7 @@ done:
 // Parameters for baseflow-ready integral_thickness_residual requiring a
 // function for root-finding wrapping a function for the integration integrand
 typedef struct params_integral_thickness_residual {
-    gsl_function * integrand;  // Using, e.g. integrand_thickness_displacement
+    gsl_function   integrand;  // Using, e.g. integrand_thickness_displacement
     size_t         ndis;       // # of discontinuities (breakpoints) in basis
     double       * dis;        // Increasing list of discontinuities
     size_t         npts;       // Buffer size for QAGP discontinuities >= ndis+1
@@ -1025,14 +1025,14 @@ double integral_thickness_residual(
         (params_integral_thickness_residual *) params;
 
     // Statically assert that inner_cutoff is the first member for
-    // the variety of integrand->params types that may be encountered...
+    // the variety of integrand.params types that may be encountered...
     enum {
         assert1 = 1/(0==offsetof(params_thickness_displacement, inner_cutoff)),
         assert2 = 1/(0==offsetof(params_thickness_energy,       inner_cutoff)),
         assert3 = 1/(0==offsetof(params_thickness_enthalpy,     inner_cutoff)),
         assert4 = 1/(0==offsetof(params_thickness_momentum,     inner_cutoff))
     };
-    *((double *) p->integrand->params) = thick; // ...so it can be set thusly.
+    *((double *) p->integrand.params) = thick; // ...so it can be set thusly.
 
     // Insert thick into a copied list of discontinuities/singularities
     // A binary search, a memcpy, an assignment, and a memcpy might be better
@@ -1048,7 +1048,7 @@ double integral_thickness_residual(
 
     // Adaptively evaluate the integrand
     double result = GSL_NAN;
-    p->status = gsl_integration_qagp(p->integrand,
+    p->status = gsl_integration_qagp(&p->integrand,
                                      p->pts, p->npts,
                                      p->epsabs, p->epsrel,
                                      p->limit, p->iw,
@@ -1107,7 +1107,7 @@ suzerain_bl_compute_thicknesses_baseflow(
 
     // Prepare inputs and allocate resources for subroutine calls
     enum { maxiter = 255 };                     // How long can we wait?
-    params_integral_thickness_residual params = { .integrand = NULL };
+    params_integral_thickness_residual params = { .pts = NULL, .iw = NULL };
     assert(w->knots->stride == 1);              // Breakpoints are contiguous
     params.ndis   = w->nbreak;                  // Smoothness drops @ breakpoint
     params.dis    = w->knots->data + w->k - 1;  // Per gsl_bspline_nbreak
@@ -1158,9 +1158,9 @@ suzerain_bl_compute_thicknesses_baseflow(
             .Bk         = Bk,
             .w          = w
         };
-        params.integrand->function = &integrand_thickness_displacement;
-        params.integrand->params   = &integrand_params;
-        gsl_function f             = { &integral_thickness_residual, &params };
+        params.integrand.function = &integrand_thickness_displacement;
+        params.integrand.params   = &integrand_params;
+        gsl_function f            = { &integral_thickness_residual, &params };
         double lower = params.dis[0], upper = params.dis[params.ndis-1];
         status = fsolver_solve(s, &f, maxiter, params.epsabs, params.epsrel,
                                &lower, &upper, &thick->delta1);
@@ -1173,13 +1173,14 @@ suzerain_bl_compute_thicknesses_baseflow(
             .vis_rhou    = coeffs_vis_rhou,
             .vis_u       = coeffs_vis_u,
             .inv_stride  = inv_stride,
+            .inv_rhou    = coeffs_inv_rhou,
             .inv_u       = coeffs_inv_u,
             .Bk          = Bk,
             .w           = w
         };
-        params.integrand->function = &integrand_thickness_momentum;
-        params.integrand->params   = &integrand_params;
-        gsl_function f             = { &integral_thickness_residual, &params };
+        params.integrand.function = &integrand_thickness_momentum;
+        params.integrand.params   = &integrand_params;
+        gsl_function f            = { &integral_thickness_residual, &params };
         gsl_root_fsolver_set(s, &f, params.dis[0], params.dis[params.ndis-1]);
         double lower = params.dis[0], upper = params.dis[params.ndis-1];
         status = fsolver_solve(s, &f, maxiter, params.epsabs, params.epsrel,
@@ -1195,13 +1196,14 @@ suzerain_bl_compute_thicknesses_baseflow(
             .vis_rhou    = coeffs_vis_rhou,
             .vis_u       = coeffs_vis_u,
             .inv_stride  = inv_stride,
+            .inv_rhou    = coeffs_inv_rhou,
             .inv_u       = coeffs_inv_u,
             .Bk          = Bk,
             .w           = w
         };
-        params.integrand->function = &integrand_thickness_energy;
-        params.integrand->params   = &integrand_params;
-        gsl_function f             = { &integral_thickness_residual, &params };
+        params.integrand.function = &integrand_thickness_energy;
+        params.integrand.params   = &integrand_params;
+        gsl_function f            = { &integral_thickness_residual, &params };
         gsl_root_fsolver_set(s, &f, params.dis[0], params.dis[params.ndis-1]);
         double lower = params.dis[0], upper = params.dis[params.ndis-1];
         status = fsolver_solve(s, &f, maxiter, params.epsabs, params.epsrel,
@@ -1217,13 +1219,14 @@ suzerain_bl_compute_thicknesses_baseflow(
             .vis_rhou    = coeffs_vis_rhou,
             .vis_H0      = coeffs_vis_H0,
             .inv_stride  = inv_stride,
+            .inv_rhou    = coeffs_inv_rhou,
             .inv_H0      = coeffs_inv_H0,
             .Bk          = Bk,
             .w           = w
         };
-        params.integrand->function = &integrand_thickness_enthalpy;
-        params.integrand->params   = &integrand_params;
-        gsl_function f             = { &integral_thickness_residual, &params };
+        params.integrand.function = &integrand_thickness_enthalpy;
+        params.integrand.params   = &integrand_params;
+        gsl_function f            = { &integral_thickness_residual, &params };
         gsl_root_fsolver_set(s, &f, params.dis[0], params.dis[params.ndis-1]);
         double lower = params.dis[0], upper = params.dis[params.ndis-1];
         status = fsolver_solve(s, &f, maxiter, params.epsabs, params.epsrel,

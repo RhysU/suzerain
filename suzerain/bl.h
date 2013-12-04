@@ -630,7 +630,6 @@ suzerain_bl_compute_reynolds_baseflow(
  *                             These are strided per \c inv_stride.
  * \param[in ] coeffs_inv_u    Coefficients for inviscid \f$u\f$ profile.
  *                             These are strided per \c inv_stride.
- * \param[in ] edge            Local information from the boundary layer edge.
  * \param[out] thick           Populated on success.
  *                             See type documentation for contents.
  * \param[in ] w               Workspace to use.
