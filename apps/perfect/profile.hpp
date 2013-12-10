@@ -75,7 +75,7 @@ public:
  * A Boost.Preprocessor sequence of tuples of quantities computed in wave
  * space.
  */
-#define SUZERAIN_PERFECT_PROFILE_WAVE            \
+#define SUZERAIN_PERFECT_PROFILE_WAVE             \
     ((rho,                      1)) /* scalar */ \
     ((rho_u,                    2)) /* vector */
 
@@ -83,30 +83,17 @@ public:
  * A Boost.Preprocessor sequence of tuples of quantities computed in physical
  * space.
  */
-#define SUZERAIN_PERFECT_PROFILE_PHYSICAL  \
+#define SUZERAIN_PERFECT_PROFILE_PHYSICAL   \
     ((a,                 1))  /* scalar */ \
     ((H0,                1))  /* scalar */ \
     ((mu,                1))  /* scalar */ \
     ((T,                 1))  /* scalar */ \
     ((u,                 2))  /* vector */
 
-/**
- * A Boost.Preprocessor sequence of tuples of inviscid baseflow quantities.
- * These are either computed from a suzerain::baseflow_interface, when one is
- * active, or collected from the freestream.
- */
-#define SUZERAIN_PERFECT_PROFILE_BASEFLOW  \
-    ((baseflow_H0,       1))  /* scalar */ \
-    ((baseflow_p,        1))  /* scalar */ \
-    ((baseflow_rho,      1))  /* scalar */ \
-    ((baseflow_rho_E,    1))  /* scalar */ \
-    ((baseflow_rho_u,    2))  /* vector */
-
 /** A Boost.Preprocessor sequence of tuples of all sampled quantity profiles. */
 #define SUZERAIN_PERFECT_PROFILE      \
     SUZERAIN_PERFECT_PROFILE_WAVE     \
-    SUZERAIN_PERFECT_PROFILE_PHYSICAL \
-    SUZERAIN_PERFECT_PROFILE_BASEFLOW
+    SUZERAIN_PERFECT_PROFILE_PHYSICAL
 
     /* Compile-time totals of the number of scalars sampled at each point */
     struct nscalars { enum {
@@ -118,9 +105,6 @@ public:
 
         physical = BOOST_PP_SEQ_FOLD_LEFT(SUM, 0, BOOST_PP_SEQ_TRANSFORM(
                     EXTRACT,,SUZERAIN_PERFECT_PROFILE_PHYSICAL)),
-
-        baseflow = BOOST_PP_SEQ_FOLD_LEFT(SUM, 0, BOOST_PP_SEQ_TRANSFORM(
-                    EXTRACT,,SUZERAIN_PERFECT_PROFILE_BASEFLOW)),
 
         total = BOOST_PP_SEQ_FOLD_LEFT(SUM, 0, BOOST_PP_SEQ_TRANSFORM(
                     EXTRACT,,SUZERAIN_PERFECT_PROFILE))
@@ -146,17 +130,16 @@ public:
 
     /** Compile-time offsets for each quantity within \c storage */
     struct start { enum {
-        wave     = 0,                             // Start of wave block
-        physical = wave     + nscalars::wave,     // Start of physical block
-        baseflow = physical + nscalars::physical, // Start of baseflow block
+        wave     = 0,                      // Start of wave block
+        physical = wave + nscalars::wave,  // Start of physical block
         BOOST_PP_SEQ_ENUM(BOOST_PP_SEQ_TRANSFORM(
                 OP,,SUZERAIN_SHIFTED_SUM(SUZERAIN_PERFECT_PROFILE)))
     }; };
 
     /** Compile-time sizes for each quantity within \c storage */
     struct size { enum {
-        BOOST_PP_SEQ_ENUM(BOOST_PP_SEQ_TRANSFORM(
-                OP,,SUZERAIN_PERFECT_PROFILE))
+        BOOST_PP_SEQ_ENUM(BOOST_PP_SEQ_TRANSFORM(OP,,
+                    SUZERAIN_PERFECT_PROFILE))
     }; };
 
 #undef OP
