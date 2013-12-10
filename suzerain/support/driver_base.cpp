@@ -1654,6 +1654,48 @@ driver_base::process_any_signals_received(
     return keep_advancing;
 }
 
+void
+driver_base::default_statistics_interval(
+        time_type& dt,
+        step_type& nt)
+{
+    // Possibly compute the default restart writing interval
+    using std::numeric_limits;
+    time_type tmp_dt = numeric_limits<time_type>::quiet_NaN();
+    step_type tmp_nt = 0;
+    default_restart_interval(tmp_dt, tmp_nt);
+
+    // Output statistics one-fourth as often as we restart
+    if (boost::math::isnormal(tmp_dt)) {
+        dt = tmp_dt / 4;
+    }
+    if (tmp_nt) {
+        using std::min;
+        nt = min(tmp_nt / 4, static_cast<step_type>(1));
+    }
+}
+
+void
+driver_base::default_status_interval(
+        time_type& dt,
+        step_type& nt)
+{
+    // Possibly compute the default statistics writing interval
+    using std::numeric_limits;
+    time_type tmp_dt = numeric_limits<time_type>::quiet_NaN();
+    step_type tmp_nt = 0;
+    default_statistics_interval(tmp_dt, tmp_nt);
+
+    // Output status one-fourth as often as we write statistics
+    if (boost::math::isnormal(tmp_dt)) {
+        dt = tmp_dt / 4;
+    }
+    if (tmp_nt) {
+        using std::min;
+        nt = min(tmp_nt / 4, static_cast<step_type>(1));
+    }
+}
+
 delta_t_allreducer::delta_t_allreducer(
         const double& wtime_mpi_init,
         const double& wtime_fftw_planning,
@@ -1793,48 +1835,6 @@ real_t delta_t_allreducer::operator()(
     }
 
     return delta_t;
-}
-
-void
-driver_base::default_statistics_interval(
-        time_type& dt,
-        step_type& nt)
-{
-    // Possibly compute the default restart writing interval
-    using std::numeric_limits;
-    time_type tmp_dt = numeric_limits<time_type>::quiet_NaN();
-    step_type tmp_nt = 0;
-    default_restart_interval(tmp_dt, tmp_nt);
-
-    // Output statistics one-fourth as often as we restart
-    if (boost::math::isnormal(tmp_dt)) {
-        dt = tmp_dt / 4;
-    }
-    if (tmp_nt) {
-        using std::min;
-        nt = min(tmp_nt / 4, static_cast<step_type>(1));
-    }
-}
-
-void
-driver_base::default_status_interval(
-        time_type& dt,
-        step_type& nt)
-{
-    // Possibly compute the default statistics writing interval
-    using std::numeric_limits;
-    time_type tmp_dt = numeric_limits<time_type>::quiet_NaN();
-    step_type tmp_nt = 0;
-    default_statistics_interval(tmp_dt, tmp_nt);
-
-    // Output status one-fourth as often as we write statistics
-    if (boost::math::isnormal(tmp_dt)) {
-        dt = tmp_dt / 4;
-    }
-    if (tmp_nt) {
-        using std::min;
-        nt = min(tmp_nt / 4, static_cast<step_type>(1));
-    }
 }
 
 } // end namespace support
