@@ -34,6 +34,7 @@
 #include <suzerain/format.hpp>
 #include <suzerain/l2.hpp>
 #include <suzerain/ndx.hpp>
+#include <suzerain/operator_tools.hpp> // TODO Remove
 #include <suzerain/support/logging.hpp>
 #include <suzerain/support/support.hpp>
 
@@ -222,7 +223,8 @@ void driver::log_quantities_of_interest(
         prof = mean;
     } else {
         state_nonlinear->assign_from(*state_linear);
-        prof = sample_profile(*scenario, *grid, *dgrid, *cop, *state_nonlinear);
+        operator_tools otool(*grid, *dgrid, *cop); // TODO Remove
+        prof = sample_profile(*scenario, otool, *state_nonlinear);
     }
 
     if (grid->one_sided()) {

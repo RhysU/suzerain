@@ -29,6 +29,7 @@
 
 #include <suzerain/blas_et_al.hpp>
 #include <suzerain/bl.h>
+#include <suzerain/bspline.hpp>
 #include <suzerain/channel.h>
 #include <suzerain/error.h>
 #include <suzerain/grid_specification.hpp>
@@ -85,13 +86,16 @@ profile& profile::operator=(const quantities &q)
 // This logic is a trimmed down version of quantities.cpp. See comments there.
 profile sample_profile(
         const scenario_definition &scenario,
-        const grid_specification &grid,
-        const pencil_grid &dgrid,
-        const bsplineop &cop,
+        const operator_tools& otool,
         contiguous_state<4,complex_t> &swave)
 {
     // State enters method as coefficients in X, Y, and Z directions
     SUZERAIN_TIMER_SCOPED("sample_profile");
+
+    // Shorthand for the operator_tools members commonly used
+    const grid_specification &grid = otool.grid;
+    const pencil_grid &dgrid       = otool.dgrid;
+    const bsplineop &cop           = otool.cop;
 
     // We are only prepared to handle a fixed number of fields in this routine
     enum { state_count = 5 };
@@ -124,7 +128,6 @@ profile sample_profile(
 
     // Transform to obtain physical space view of state on collocation points
     physical_view<state_count>sphys(dgrid, swave);
-    operator_tools otool(grid, dgrid, cop);
     for (std::size_t i = 0; i < state_count; ++i) {
         otool.zero_dealiasing_modes(swave, i);
         otool.bop_apply(0, 1., swave, i);

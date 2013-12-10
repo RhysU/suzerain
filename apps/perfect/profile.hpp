@@ -29,7 +29,6 @@
  */
 
 #include <suzerain/common.hpp>
-#include <suzerain/bspline.hpp>
 #include <suzerain/state_fwd.hpp>
 
 // Forward declarations
@@ -46,9 +45,9 @@ struct suzerain_channel_viscous;
 namespace suzerain {
 
 // Forward declarations
-class grid_specification;
+class bspline;
 class largo_specification;
-class pencil_grid;
+class operator_tools;
 
 namespace perfect {
 
@@ -179,18 +178,14 @@ public:
  * in \ref profile.  This is a mildly expensive, collective method.
  *
  * @param[in]     scenario Scenario parameters.
- * @param[in]     grid     Grid parameters.
- * @param[in]     dgrid    Pencil decomposition parameters.
- * @param[in]     cop      B-spline operator workspace.
+ * @param[in]     otools   Operator definitions in use.
  * @param[in,out] swave    Destroyed in the computation
  *
  * @return Mean quantity profiles as B-spline coefficients.
  */
 profile sample_profile(
         const scenario_definition &scenario,
-        const grid_specification &grid,
-        const pencil_grid &dgrid,
-        const bsplineop &cop,
+        const operator_tools& otool,
         contiguous_state<4,complex_t> &swave);
 
 /**
