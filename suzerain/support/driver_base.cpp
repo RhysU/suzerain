@@ -1673,6 +1673,7 @@ delta_t_allreducer::delta_t_allreducer(
     , last_restart_saved_nt(last_restart_saved_nt)
     , delta_t_ratios(delta_t_ratios)
     , signal_received(signal_received)
+    , who("reduce")
 {
 }
 
@@ -1687,12 +1688,15 @@ real_t delta_t_allreducer::operator()(
     static const signal::volatile_received_type::value_type zero = 0;
     signal::global_received.assign(zero);
 
-    if (DEBUG_ENABLED()) {
+    // Perform one-time lookup of named logger instance, shadowing this->who.
+    logging::logger_type who = logging::get_logger(this->who);
+
+    if (DEBUG_ENABLED(who)) {
         const int rank = suzerain::mpi::comm_rank(MPI_COMM_WORLD);
         for (std::size_t i = 0; i < signal::received_type::static_size; ++i) {
             if (signal_received[i]) {
-                DEBUG("Received signal number " << signal_received[i]
-                      << " on rank " << rank);
+                DEBUG(who, "Received signal number " << signal_received[i]
+                           << " on rank " << rank);
             }
         }
     }
@@ -1726,11 +1730,11 @@ real_t delta_t_allreducer::operator()(
         // Raise a "signal" if we suspect we cannot teardown quickly enough
         signal_received[signal::teardown_proactive]
             = (wtime_projected >= wtime_mpi_init + timedef->advance_wt);
-        if (DEBUG_ENABLED() && signal_received[signal::teardown_proactive]) {
+        if (DEBUG_ENABLED(who) && signal_received[signal::teardown_proactive]) {
             const int rank = suzerain::mpi::comm_rank(MPI_COMM_WORLD);
-            DEBUG("Rank " << rank << " projects delaying teardown until "
-                  << wtime_projected - wtime_mpi_init
-                  << " elapsed seconds is dangerous.");
+            DEBUG(who, "Rank " << rank << " projects delaying teardown until "
+                       << wtime_projected - wtime_mpi_init
+                       << " elapsed seconds is dangerous.");
         }
     }
     wtime_last = MPI_Wtime();

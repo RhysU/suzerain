@@ -927,6 +927,9 @@ private:
                                        boost::accumulators::tag::mean,
                                        boost::accumulators::tag::variance>
         > period;
+
+    /** Helps to identify from whom logging messages are being emitted. */
+    std::string who;
 };
 
 } // end namespace support
