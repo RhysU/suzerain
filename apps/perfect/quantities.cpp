@@ -31,6 +31,7 @@
 #include <esio/error.h>
 
 #include <suzerain/blas_et_al.hpp>
+#include <suzerain/bspline.hpp>
 #include <suzerain/diffwave.hpp>
 #include <suzerain/error.h>
 #include <suzerain/grid_specification.hpp>
@@ -206,14 +207,16 @@ bool quantities::load(const esio_handle h)
 // suboptimal but is expected to be invoked relatively infrequently.
 quantities sample_quantities(
         const scenario_definition &scenario,
-        const grid_specification &grid,
-        const pencil_grid &dgrid,
-        const bsplineop &cop,
+        const operator_tools &otool,
         contiguous_state<4,complex_t> &swave,
         const real_t t)
 {
     // State enters method as coefficients in X, Y, and Z directions
     SUZERAIN_TIMER_SCOPED("sample_quantities");
+
+    // Shorthand for the operator_tools members commonly used
+    const pencil_grid &dgrid       = otool.dgrid;
+    const bsplineop &cop           = otool.cop;
 
     // We are only prepared to handle a fixed number of fields in this routine
     enum { state_count = 5 };
@@ -268,9 +271,6 @@ quantities sample_quantities(
         ret.rho_u().col(2) = Map<VectorXc>(swave[ndx::mz ].origin(), Ny).real();
         ret.rho()          = Map<VectorXc>(swave[ndx::rho].origin(), Ny).real();
     }
-
-    // Obtain access to helper routines for differentiation
-    operator_tools otool(grid, dgrid, cop);
 
     // Compute Y derivatives of total energy at collocation points
     // Zero wavenumbers present only for dealiasing along the way

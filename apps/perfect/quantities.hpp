@@ -29,15 +29,14 @@
  */
 
 #include <suzerain/common.hpp>
-#include <suzerain/bspline.hpp>
 #include <suzerain/state_fwd.hpp>
 #include <suzerain/support/esio_fwd.hpp>
 
 namespace suzerain {
 
 // Forward declarations
-class grid_specification;
-class pencil_grid;
+class bspline;
+class operator_tools;
 
 namespace perfect {
 
@@ -295,9 +294,7 @@ private:
  * method.
  *
  * @param[in]     scenario Scenario parameters.
- * @param[in]     grid     Grid parameters.
- * @param[in]     dgrid    Pencil decomposition parameters.
- * @param[in]     cop      B-spline operator workspace.
+ * @param[in]     otool    Operator definitions in use.
  * @param[in,out] swave    Destroyed in the computation
  * @param[in]     t        Current simulation time
  *
@@ -305,9 +302,7 @@ private:
  */
 quantities sample_quantities(
         const scenario_definition &scenario,
-        const grid_specification &grid,
-        const pencil_grid &dgrid,
-        const bsplineop &cop,
+        const operator_tools& otool,
         contiguous_state<4,complex_t> &swave,
         const real_t t);
 

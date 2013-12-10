@@ -178,7 +178,7 @@ public:
  * in \ref profile.  This is a mildly expensive, collective method.
  *
  * @param[in]     scenario Scenario parameters.
- * @param[in]     otools   Operator definitions in use.
+ * @param[in]     otool    Operator definitions in use.
  * @param[in,out] swave    Destroyed in the computation
  *
  * @return Mean quantity profiles as B-spline coefficients.

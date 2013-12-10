@@ -93,7 +93,6 @@ profile sample_profile(
     SUZERAIN_TIMER_SCOPED("sample_profile");
 
     // Shorthand for the operator_tools members commonly used
-    const grid_specification &grid = otool.grid;
     const pencil_grid &dgrid       = otool.dgrid;
     const bsplineop &cop           = otool.cop;
 
