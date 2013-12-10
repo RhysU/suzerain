@@ -1680,6 +1680,23 @@ delta_t_allreducer::delta_t_allreducer(
 real_t delta_t_allreducer::operator()(
         const std::vector<real_t>& delta_t_candidates)
 {
+    // Perform one-time lookup of named logger, shadowing this->who.
+    logging::logger_type who = logging::get_logger(this->who);
+
+    // Squawk informatively on any non-positive delta_t_candidates values
+    {
+        const std::size_t N = delta_t_candidates.size();
+        for (std::size_t i = 0; i < N; ++i) {
+            if (SUZERAIN_LIKELY(delta_t_candidates[i] > 0)) {
+                // NOP:  Written weirdly to make NaNs trigger the else branch
+            } else {
+                const int rank = suzerain::mpi::comm_rank(MPI_COMM_WORLD);
+                WARN(who, "Non-positive delta_t_candidates[" << i << "] = "
+                           << delta_t_candidates[i] << " on rank " << rank);
+            }
+        }
+    }
+
     // Copy incoming candidates so we may mutate them
     std::vector<real_t> candidates(delta_t_candidates);
 
@@ -1687,14 +1704,10 @@ real_t delta_t_allreducer::operator()(
     signal_received = signal::global_received;
     static const signal::volatile_received_type::value_type zero = 0;
     signal::global_received.assign(zero);
-
-    // Perform one-time lookup of named logger instance, shadowing this->who.
-    logging::logger_type who = logging::get_logger(this->who);
-
     if (DEBUG_ENABLED(who)) {
-        const int rank = suzerain::mpi::comm_rank(MPI_COMM_WORLD);
         for (std::size_t i = 0; i < signal::received_type::static_size; ++i) {
-            if (signal_received[i]) {
+            if (SUZERAIN_UNLIKELY(signal_received[i])) {
+                const int rank = suzerain::mpi::comm_rank(MPI_COMM_WORLD);
                 DEBUG(who, "Received signal number " << signal_received[i]
                            << " on rank " << rank);
             }
