@@ -135,6 +135,23 @@ public:
                 OP,,SUZERAIN_SHIFTED_SUM(SUZERAIN_PERFECT_PROFILE)))
     }; };
 
+    /**
+     * Provide access to contiguous subregions within storage.
+     * @{
+     */
+    storage_type::NColsBlockXpr <nscalars::wave>::Type wave()
+    { return storage.middleCols<nscalars::wave>(start::wave); }
+
+    storage_type::NColsBlockXpr <nscalars::physical>::Type physical()
+    { return storage.middleCols<nscalars::physical>(start::physical); }
+
+    storage_type::ConstNColsBlockXpr<nscalars::wave>::Type wave() const
+    { return storage.middleCols<nscalars::wave>(start::wave); }
+
+    storage_type::ConstNColsBlockXpr<nscalars::physical>::Type physical() const
+    { return storage.middleCols<nscalars::physical>(start::physical); }
+    /** @} */
+
     /** Compile-time sizes for each quantity within \c storage */
     struct size { enum {
         BOOST_PP_SEQ_ENUM(BOOST_PP_SEQ_TRANSFORM(OP,,
