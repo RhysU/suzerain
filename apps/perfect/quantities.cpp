@@ -542,17 +542,13 @@ quantities sample_quantities(
     bsplineop_lu scaled_mass(cop);
     scaled_mass.opform(1, &scale_factor, cop);
     scaled_mass.factor();
-    scaled_mass.solve(quantities::nscalars::physical,
-            ret.storage.middleCols<quantities::nscalars::physical>(
-                quantities::start::physical).data(),
-            ret.storage.innerStride(), ret.storage.outerStride());
+    scaled_mass.solve(ret.physical().outerSize(),
+                      ret.physical().data(),
+                      ret.physical().innerStride(),
+                      ret.physical().outerStride());
 
     // Fill with NaNs those samples that were not computed by this method
-#define FILL(r, data, tuple)                                         \
-    ret.BOOST_PP_TUPLE_ELEM(2, 0, tuple)().fill(std::numeric_limits< \
-            quantities::storage_type::Scalar>::quiet_NaN());
-    BOOST_PP_SEQ_FOR_EACH(FILL,,SUZERAIN_PERFECT_QUANTITIES_IMPLICIT)
-#undef FILL
+    ret.implicit().setConstant(std::numeric_limits<real_t>::quiet_NaN());
 
     return ret;
 }

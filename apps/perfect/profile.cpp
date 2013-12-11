@@ -215,10 +215,10 @@ profile sample_profile(
     bsplineop_lu scaled_mass(cop);
     scaled_mass.opform(1, &scale_factor, cop);
     scaled_mass.factor();
-    scaled_mass.solve(profile::nscalars::physical,
-            ret.storage.middleCols<profile::nscalars::physical>(
-                profile::start::physical).data(),
-            ret.storage.innerStride(), ret.storage.outerStride());
+    scaled_mass.solve(ret.physical().outerSize(),
+                      ret.physical().data(),
+                      ret.physical().innerStride(),
+                      ret.physical().outerStride());
 
     return ret;
 }
