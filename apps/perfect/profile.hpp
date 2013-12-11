@@ -46,6 +46,7 @@ namespace suzerain {
 
 // Forward declarations
 class bspline;
+class bsplineop_lu;
 class largo_specification;
 class operator_tools;
 
@@ -215,6 +216,8 @@ profile sample_profile(
  * @param[in]  sg       Slow growth definition optionally in use
  *                      which provides base flow details for
  *                      streamwise pressure and velocity gradients.
+ * @param[in]  masslu   A factored mass matrix corresponding to \c b.
+ * @param[in]  b        The B-spline basis in use.
  * @param[out] wall     Populated on return.
  * @param[out] viscous  Populated on return.
  * @param[out] thick    Populated on return.
@@ -227,6 +230,7 @@ void summarize_boundary_layer_nature(
         const profile &prof,
         const scenario_definition &scenario,
         const shared_ptr<largo_specification> &sg,
+        const bsplineop_lu &masslu,
         bspline &b,
         suzerain_bl_local       &wall,
         suzerain_bl_viscous     &viscous,
@@ -242,6 +246,7 @@ void summarize_boundary_layer_nature(
  *
  * @param[in]  prof     Profile information from \ref sample_profile().
  * @param[in]  scenario Scenario of interest.
+ * @param[in]  b        The B-spline basis in use.
  * @param[out] wall     Populated on return.
  * @param[out] viscous  Populated on return.
  * @param[out] center   Populated on return.

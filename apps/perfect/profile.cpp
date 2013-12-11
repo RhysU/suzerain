@@ -223,6 +223,7 @@ void summarize_boundary_layer_nature(
         const profile &prof,
         const scenario_definition &scenario,
         const shared_ptr<largo_specification> &sg,
+        const bsplineop_lu &masslu,
         bspline &b,
         suzerain_bl_local       &wall,
         suzerain_bl_viscous     &viscous,

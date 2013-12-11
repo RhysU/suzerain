@@ -216,6 +216,14 @@ void driver::log_quantities_of_interest(
 
     SUZERAIN_TIMER_SCOPED("driver::log_quantities_of_interest");
 
+    // When possible, any operator_tools superclass of N is reused so that
+    // sample_quantities may benefit from any cached factorizations.
+    shared_ptr<operator_tools> otool
+            = dynamic_pointer_cast<operator_tools>(N);
+    if (!otool) {
+        otool = make_shared<operator_tools>(*grid, *dgrid, *cop);
+    }
+
     // If possible, use existing information from mean quantities
     // Otherwise compute from instantaneous fields stored in state_linear
     profile prof;
@@ -223,13 +231,6 @@ void driver::log_quantities_of_interest(
         prof = mean;
     } else {
         state_nonlinear->assign_from(*state_linear);
-        // When possible, any operator_tools superclass of N is reused so that
-        // sample_quantities may benefit from any cached factorizations.
-        shared_ptr<operator_tools> otool
-                = dynamic_pointer_cast<operator_tools>(N);
-        if (!otool) {
-            otool = make_shared<operator_tools>(*grid, *dgrid, *cop);
-        }
         prof = sample_profile(*scenario, *otool, *state_nonlinear);
     }
 
@@ -243,7 +244,8 @@ void driver::log_quantities_of_interest(
         suzerain_bl_reynolds    reynolds;
         suzerain_bl_qoi         qoi;
         suzerain_bl_pg          pg;
-        summarize_boundary_layer_nature(prof, *scenario, sg, *b,
+        summarize_boundary_layer_nature(prof, *scenario, sg,
+                                        *otool->masslu(), *b,
                                         wall, viscous, thick, edge,
                                         reynolds, qoi, pg);
 
