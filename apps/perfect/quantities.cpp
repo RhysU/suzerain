@@ -214,9 +214,8 @@ quantities sample_quantities(
     // State enters method as coefficients in X, Y, and Z directions
     SUZERAIN_TIMER_SCOPED("sample_quantities");
 
-    // Shorthand for the operator_tools members commonly used
-    const pencil_grid &dgrid       = otool.dgrid;
-    const bsplineop &cop           = otool.cop;
+    // Shorthand for the operator_tools member(s) commonly used
+    const pencil_grid &dgrid = otool.dgrid;
 
     // We are only prepared to handle a fixed number of fields in this routine
     enum { state_count = 5 };
@@ -537,15 +536,12 @@ quantities sample_quantities(
             MPI_SUM, MPI_COMM_WORLD));
 
     // Physical space sums, which are at collocation points, need to be
-    // divided by the dealiased extents and converted to coefficients.
-    const real_t scale_factor = 1 / dgrid.chi();
-    bsplineop_lu scaled_mass(cop);
-    scaled_mass.opform(1, &scale_factor, cop);
-    scaled_mass.factor();
-    scaled_mass.solve(ret.physical().outerSize(),
-                      ret.physical().data(),
-                      ret.physical().innerStride(),
-                      ret.physical().outerStride());
+    // scaled by the dealiased extents and converted to coefficients.
+    ret.physical() *= dgrid.chi();
+    otool.masslu()->solve(ret.physical().outerSize(),
+                          ret.physical().data(),
+                          ret.physical().innerStride(),
+                          ret.physical().outerStride());
 
     // Fill with NaNs those samples that were not computed by this method
     ret.implicit().setConstant(std::numeric_limits<real_t>::quiet_NaN());
