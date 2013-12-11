@@ -34,7 +34,7 @@
 #include <suzerain/format.hpp>
 #include <suzerain/l2.hpp>
 #include <suzerain/ndx.hpp>
-#include <suzerain/operator_tools.hpp> // TODO Remove
+#include <suzerain/operator_tools.hpp>
 #include <suzerain/support/logging.hpp>
 #include <suzerain/support/support.hpp>
 
@@ -223,8 +223,14 @@ void driver::log_quantities_of_interest(
         prof = mean;
     } else {
         state_nonlinear->assign_from(*state_linear);
-        operator_tools otool(*grid, *dgrid, *cop); // TODO Remove
-        prof = sample_profile(*scenario, otool, *state_nonlinear);
+        // When possible, any operator_tools superclass of N is reused so that
+        // sample_quantities may benefit from any cached factorizations.
+        shared_ptr<operator_tools> otool
+                = dynamic_pointer_cast<operator_tools>(N);
+        if (!otool) {
+            otool = make_shared<operator_tools>(*grid, *dgrid, *cop);
+        }
+        prof = sample_profile(*scenario, *otool, *state_nonlinear);
     }
 
     if (grid->one_sided()) {
@@ -275,8 +281,14 @@ driver::compute_statistics(
 
     // Obtain mean samples from instantaneous fields stored in state_linear
     state_nonlinear->assign_from(*state_linear);
-    operator_tools otool(*grid, *dgrid, *cop); // TODO Remove
-    mean = sample_quantities(*scenario, otool, *state_nonlinear, t);
+    // When possible, any operator_tools superclass of N is reused so that
+    // sample_quantities may benefit from any cached factorizations.
+    shared_ptr<operator_tools> otool
+            = dynamic_pointer_cast<operator_tools>(N);
+    if (!otool) {
+        otool = make_shared<operator_tools>(*grid, *dgrid, *cop);
+    }
+    mean = sample_quantities(*scenario, *otool, *state_nonlinear, t);
 
     // Obtain mean quantities computed via implicit forcing (when possible)
     if (common_block.implicits.rows() == mean.storage.rows()) {

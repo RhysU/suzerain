@@ -64,6 +64,9 @@ public:
         , cop(cop)
     {}
 
+    /** Gain the benefits and curses of virtual behavior. */
+    virtual ~operator_tools() {}
+
     /**
      * Perform scaled operator accumulation on two state fields.
      *

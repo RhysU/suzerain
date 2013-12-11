@@ -97,12 +97,13 @@ SUZERAIN_GCC_DIAG_OFF(unused-variable);
 #include <boost/mpl/logical.hpp>
 #include <boost/mpl/range_c.hpp>
 #include <boost/mpl/size.hpp>
-#include <boost/mpl/vector.hpp>
 #include <boost/mpl/vector_c.hpp>
+#include <boost/mpl/vector.hpp>
 #include <boost/multi_array.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/numeric/conversion/cast.hpp>
 #include <boost/numeric/conversion/converter.hpp>
+#include <boost/pointer_cast.hpp>
 #include <boost/ptr_container/ptr_list.hpp>
 #include <boost/ptr_container/ptr_map.hpp>
 #include <boost/ptr_container/ptr_vector.hpp>
@@ -242,11 +243,14 @@ typedef std::complex<real_t> complex_t;
 
 // Bring ubiquitous smart pointer definitions into this namespace
 // Done because these may be part of public APIs, as well as for convenience.
-using boost::make_shared;   /**< \namespace suzerain */
-using boost::scoped_array;  /**< \namespace suzerain */
-using boost::scoped_ptr;    /**< \namespace suzerain */
-using boost::shared_array;  /**< \namespace suzerain */
-using boost::shared_ptr;    /**< \namespace suzerain */
+using boost::const_pointer_cast;        /**< \namespace suzerain */
+using boost::dynamic_pointer_cast;      /**< \namespace suzerain */
+using boost::make_shared;               /**< \namespace suzerain */
+using boost::reinterpret_pointer_cast;  /**< \namespace suzerain */
+using boost::scoped_array;              /**< \namespace suzerain */
+using boost::scoped_ptr;                /**< \namespace suzerain */
+using boost::shared_array;              /**< \namespace suzerain */
+using boost::shared_ptr;                /**< \namespace suzerain */
 
 // Likewise, bring boost::array into this namespace
 using boost::array;         /**< \namespace suzerain */
