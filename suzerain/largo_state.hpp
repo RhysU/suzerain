@@ -72,10 +72,11 @@ private:
 public:
 
     // Helpers for computing commonly-accessed results
-    double u() const { return mx / rho; } /**< Computes \f$u = m_x/\rho \f$ */
-    double v() const { return my / rho; } /**< Computes \f$v = m_y/\rho \f$ */
-    double w() const { return mz / rho; } /**< Computes \f$w = m_z/\rho \f$ */
-    double E() const { return e  / rho; } /**< Computes \f$E = e  /\rho \f$ */
+    double u () const { return mx   / rho; } /**< \f$u  = m_x  /\rho \f$ */
+    double v () const { return my   / rho; } /**< \f$v  = m_y  /\rho \f$ */
+    double w () const { return mz   / rho; } /**< \f$w  = m_z  /\rho \f$ */
+    double E () const { return e    / rho; } /**< \f$E  = e    /\rho \f$ */
+    double H0() const { return (e+p)/ rho; } /**< \f$H0 = (e+p)/\rho \f$ */
 
     /** Is the state identically zero? */
     bool trivial() const
