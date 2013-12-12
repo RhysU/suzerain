@@ -1203,7 +1203,7 @@ suzerain_bl_compute_thicknesses_baseflow(
         params.integrand.function = &integrand_thickness_momentum;
         params.integrand.params   = &integrand_params;
         gsl_function f            = { &integral_thickness_residual, &params };
-        double lower = params.dis[0], upper = params.dis[params.ndis-1];
+        double lower = thick->delta1, upper = params.dis[params.ndis-1];
         int tmp = fsolver_solve(s, &f, maxiter, params.epsabs, params.epsrel,
                                 &lower, &upper, &thick->delta2);
         if (status == SUZERAIN_SUCCESS) status = tmp;
@@ -1225,7 +1225,7 @@ suzerain_bl_compute_thicknesses_baseflow(
         params.integrand.function = &integrand_thickness_energy;
         params.integrand.params   = &integrand_params;
         gsl_function f            = { &integral_thickness_residual, &params };
-        double lower = params.dis[0], upper = params.dis[params.ndis-1];
+        double lower = thick->delta1, upper = params.dis[params.ndis-1];
         int tmp = fsolver_solve(s, &f, maxiter, params.epsabs, params.epsrel,
                                 &lower, &upper, &thick->delta3);
         if (status == SUZERAIN_SUCCESS) status = tmp;
@@ -1247,7 +1247,7 @@ suzerain_bl_compute_thicknesses_baseflow(
         params.integrand.function = &integrand_thickness_enthalpy;
         params.integrand.params   = &integrand_params;
         gsl_function f            = { &integral_thickness_residual, &params };
-        double lower = params.dis[0], upper = params.dis[params.ndis-1];
+        double lower = thick->delta1, upper = params.dis[params.ndis-1];
         int tmp = fsolver_solve(s, &f, maxiter, params.epsabs, params.epsrel,
                                 &lower, &upper, &thick->deltaH);
         if (status == SUZERAIN_SUCCESS) status = tmp;
