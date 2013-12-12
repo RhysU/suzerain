@@ -874,6 +874,10 @@ suzerain_bl_compute_reynolds_baseflow(
 {
     FILL_WITH_NANS(reynolds);
 
+    // Tracks status of first failure for return from routine.
+    // Where sensible, processing continues on a "best effort" basis.
+    int status = SUZERAIN_SUCCESS;
+
     // See suzerain_bl_compute_reynolds for the constant baseflow version of
     // these quantities, including commentary on the code unit scaling.  See
     // writeups/thicknesses.pdf for how the integrals in this function are
@@ -887,8 +891,6 @@ suzerain_bl_compute_reynolds_baseflow(
     const double epsabs = GSL_DBL_EPSILON;        // ..either this...
     const double epsrel = GSL_SQRT_DBL_EPSILON;   // ..or this tolerance
     double abserr       = GSL_NAN;                // Repeatedly used in calls
-
-    int status = SUZERAIN_SUCCESS;
 
     gsl_integration_workspace * iw = NULL;
     gsl_vector                * Bk = NULL;
@@ -924,11 +926,11 @@ suzerain_bl_compute_reynolds_baseflow(
             &integrand_reynolds_displacement,
             &params
         };
-        status = gsl_integration_qagp(&F, pts, npts, epsabs, epsrel, limit, iw,
-                                      &reynolds->delta1, &abserr);
+        int tmp = gsl_integration_qagp(&F, pts, npts, epsabs, epsrel,
+                                       limit, iw, &reynolds->delta1, &abserr);
         reynolds->delta1 *= code_Re / edge->mu;
+        if (status == SUZERAIN_SUCCESS) status = tmp;
     }
-    if (SUZERAIN_UNLIKELY(status != SUZERAIN_SUCCESS)) goto done;
 
     // Re_delta2 from integrand_reynolds_momentum, edge->mu, code_Re
     {
@@ -944,11 +946,11 @@ suzerain_bl_compute_reynolds_baseflow(
             .function = &integrand_reynolds_momentum,
             .params   = &params
         };
-        status = gsl_integration_qagp(&F, pts, npts, epsabs, epsrel, limit, iw,
-                                      &reynolds->delta2, &abserr);
+        int tmp = gsl_integration_qagp(&F, pts, npts, epsabs, epsrel,
+                                       limit, iw, &reynolds->delta2, &abserr);
         reynolds->delta2 *= code_Re / edge->mu;
+        if (status == SUZERAIN_SUCCESS) status = tmp;
     }
-    if (SUZERAIN_UNLIKELY(status != SUZERAIN_SUCCESS)) goto done;
 
     // Re_delta3 from integrand_reynolds_energy, edge->mu, code_Re
     {
@@ -964,11 +966,11 @@ suzerain_bl_compute_reynolds_baseflow(
             .function = &integrand_reynolds_energy,
             .params   = &params
         };
-        status = gsl_integration_qagp(&F, pts, npts, epsabs, epsrel, limit, iw,
-                                      &reynolds->delta3, &abserr);
+        int tmp = gsl_integration_qagp(&F, pts, npts, epsabs, epsrel,
+                                       limit, iw, &reynolds->delta3, &abserr);
         reynolds->delta3 *= code_Re / edge->mu;
+        if (status == SUZERAIN_SUCCESS) status = tmp;
     }
-    if (SUZERAIN_UNLIKELY(status != SUZERAIN_SUCCESS)) goto done;
 
     // Re_delta3 from integrand_reynolds_enthalpy, edge->mu, code_Re
     {
@@ -984,11 +986,11 @@ suzerain_bl_compute_reynolds_baseflow(
             .function = &integrand_reynolds_enthalpy,
             .params   = &params
         };
-        status = gsl_integration_qagp(&F, pts, npts, epsabs, epsrel, limit, iw,
-                                      &reynolds->deltaH, &abserr);
+        int tmp = gsl_integration_qagp(&F, pts, npts, epsabs, epsrel,
+                                       limit, iw, &reynolds->deltaH, &abserr);
         reynolds->deltaH *= code_Re / edge->mu;
+        if (status == SUZERAIN_SUCCESS) status = tmp;
     }
-    if (SUZERAIN_UNLIKELY(status != SUZERAIN_SUCCESS)) goto done;
 
 done:
     gsl_integration_workspace_free(iw);
@@ -1091,7 +1093,7 @@ int fsolver_solve(
     // Proceed until success, failure, or maximum iterations reached
     // On success, overwrite *location as described in API documentation.
     *root = GSL_NAN;
-    for (size_t iter = 1; iter < maxiter && status == GSL_CONTINUE; ++iter) {
+    for (size_t iter = 1; iter <= maxiter && status == GSL_CONTINUE; ++iter) {
         if (GSL_SUCCESS != (status = gsl_root_fsolver_iterate(s))) break;
         *lower = gsl_root_fsolver_x_lower(s);
         *upper = gsl_root_fsolver_x_upper(s);
@@ -1119,6 +1121,8 @@ suzerain_bl_compute_thicknesses_baseflow(
 {
     FILL_WITH_NANS(thick);
 
+    // Tracks status of first failure for return from routine.
+    // Where sensible, processing continues on a "best effort" basis.
     int status = SUZERAIN_SUCCESS;
 
     // Prepare inputs and allocate resources for subroutine calls
@@ -1157,9 +1161,11 @@ suzerain_bl_compute_thicknesses_baseflow(
     if (SUZERAIN_UNLIKELY(status != SUZERAIN_SUCCESS)) goto done;
 
     // Find boundary layer edge: thick->delta
-    status = suzerain_bl_find_edge(
-            coeffs_vis_H0, &thick->delta, dB, w, dw);
-    if (SUZERAIN_UNLIKELY(status != SUZERAIN_SUCCESS)) goto done;
+    {
+        int tmp = suzerain_bl_find_edge(
+                coeffs_vis_H0, &thick->delta, dB, w, dw);
+        if (status == SUZERAIN_SUCCESS) status = tmp;
+    }
 
     // See suzerain_bl_compute_thicknesses for the constant baseflow version of
     // these quantities.  See writeups/thicknesses.pdf for how the integrals in
@@ -1178,10 +1184,10 @@ suzerain_bl_compute_thicknesses_baseflow(
         params.integrand.params   = &integrand_params;
         gsl_function f            = { &integral_thickness_residual, &params };
         double lower = params.dis[0], upper = params.dis[params.ndis-1];
-        status = fsolver_solve(s, &f, maxiter, params.epsabs, params.epsrel,
-                               &lower, &upper, &thick->delta1);
+        int tmp = fsolver_solve(s, &f, maxiter, params.epsabs, params.epsrel,
+                                &lower, &upper, &thick->delta1);
+        if (status == SUZERAIN_SUCCESS) status = tmp;
     }
-    if (SUZERAIN_UNLIKELY(status != SUZERAIN_SUCCESS)) goto done;
 
     // Find implicitly-defined thickness: thick->delta1 + thick->delta2
     if (!gsl_isnan(thick->delta1)) {
@@ -1198,12 +1204,12 @@ suzerain_bl_compute_thicknesses_baseflow(
         params.integrand.params   = &integrand_params;
         gsl_function f            = { &integral_thickness_residual, &params };
         double lower = params.dis[0], upper = params.dis[params.ndis-1];
-        status = fsolver_solve(s, &f, maxiter, params.epsabs, params.epsrel,
-                               &lower, &upper, &thick->delta2);
+        int tmp = fsolver_solve(s, &f, maxiter, params.epsabs, params.epsrel,
+                                &lower, &upper, &thick->delta2);
+        if (status == SUZERAIN_SUCCESS) status = tmp;
     }
     // Adjust to obtain momentum thickness, thick->delta2
     thick->delta2 -= thick->delta1;
-    if (SUZERAIN_UNLIKELY(status != SUZERAIN_SUCCESS)) goto done;
 
     // Find implicitly-defined energy thickness: thick->delta1 + thick->delta3
     if (!gsl_isnan(thick->delta1)) {
@@ -1220,12 +1226,12 @@ suzerain_bl_compute_thicknesses_baseflow(
         params.integrand.params   = &integrand_params;
         gsl_function f            = { &integral_thickness_residual, &params };
         double lower = params.dis[0], upper = params.dis[params.ndis-1];
-        status = fsolver_solve(s, &f, maxiter, params.epsabs, params.epsrel,
-                               &lower, &upper, &thick->delta3);
+        int tmp = fsolver_solve(s, &f, maxiter, params.epsabs, params.epsrel,
+                                &lower, &upper, &thick->delta3);
+        if (status == SUZERAIN_SUCCESS) status = tmp;
     }
     // Adjust to obtain energy thickness, thick->delta3
     thick->delta3 -= thick->delta1;
-    if (SUZERAIN_UNLIKELY(status != SUZERAIN_SUCCESS)) goto done;
 
     // Find implicitly-defined thickness: thick->delta1 + thick->deltaH
     if (!gsl_isnan(thick->delta1)) {
@@ -1242,12 +1248,12 @@ suzerain_bl_compute_thicknesses_baseflow(
         params.integrand.params   = &integrand_params;
         gsl_function f            = { &integral_thickness_residual, &params };
         double lower = params.dis[0], upper = params.dis[params.ndis-1];
-        status = fsolver_solve(s, &f, maxiter, params.epsabs, params.epsrel,
-                               &lower, &upper, &thick->deltaH);
+        int tmp = fsolver_solve(s, &f, maxiter, params.epsabs, params.epsrel,
+                                &lower, &upper, &thick->deltaH);
+        if (status == SUZERAIN_SUCCESS) status = tmp;
     }
     // Adjust to obtain enthalpy thickness, thick->deltaH
     thick->deltaH -= thick->delta1;
-    if (SUZERAIN_UNLIKELY(status != SUZERAIN_SUCCESS)) goto done;
 
 done:
     gsl_integration_workspace_free(params.iw);
