@@ -257,11 +257,48 @@ void summarize_boundary_layer_nature(
     // Compute viscous quantities based only on wall information
     suzerain_bl_compute_viscous(scenario.Re, &wall, &viscous);
 
+    // Prepare inviscid baseflow coefficients if necessary
+    ArrayX3r coeffs_inviscid; // Columns are H0, rhou, u
+    if (sg && sg->formulation.enabled() && sg->baseflow) {
+        coeffs_inviscid.resize(b.n(), 3);
+
+        // Retrieve values on collocation points
+        largo_state state, dontcare;
+        baseflow_interface &baseflow = *sg->baseflow;
+        for (int j = 0; j < b.n(); ++j) {
+            const real_t y_j = b.collocation_point(j);
+            baseflow.conserved(y_j, state.as_is(),
+                               dontcare.as_is(), dontcare.as_is());
+            baseflow.pressure (y_j, state.p,
+                               dontcare.p, dontcare.p);
+            coeffs_inviscid(j, 0) = state.H0();
+            coeffs_inviscid(j, 1) = state.mx;
+            coeffs_inviscid(j, 2) = state.u();
+        }
+
+        // Convert to coefficients using mass matrix
+        masslu.solve(coeffs_inviscid.outerSize(),
+                     coeffs_inviscid.data(),
+                     coeffs_inviscid.innerStride(),
+                     coeffs_inviscid.outerStride());
+    }
+
     // Compute boundary layer thicknesses, including delta
-    suzerain_bl_compute_thicknesses(prof.H0().data(),
-                                    prof.rho_u().col(0).data(),
-                                    prof.u().col(0).data(),
-                                    &thick, b.bw, b.dbw);
+    // TODO WARN on non-SUCCESS return
+    if (0 == coeffs_inviscid.size()) {
+        suzerain_bl_compute_thicknesses(prof.H0().data(),
+                                        prof.rho_u().col(0).data(),
+                                        prof.u().col(0).data(),
+                                        &thick, b.bw, b.dbw);
+    } else {
+        suzerain_bl_compute_thicknesses_baseflow(prof.H0().data(),
+                                                 prof.rho_u().col(0).data(),
+                                                 prof.u().col(0).data(), 1,
+                                                 coeffs_inviscid.col(0).data(),
+                                                 coeffs_inviscid.col(1).data(),
+                                                 coeffs_inviscid.col(2).data(),
+                                                 &thick, b.bw, b.dbw);
+    }
 
     // Evaluate state at the edge (y=thick.delta) from B-spline coefficients
     std::fill_n(reinterpret_cast<double *>(&edge),
@@ -286,7 +323,19 @@ void summarize_boundary_layer_nature(
     }
 
     // Compute Reynolds numbers
-    suzerain_bl_compute_reynolds(scenario.Re, &edge, &thick, &reynolds);
+    // TODO WARN on non-SUCCESS return
+    if (0 == coeffs_inviscid.size()) {
+        suzerain_bl_compute_reynolds(scenario.Re, &edge, &thick, &reynolds);
+    } else {
+        suzerain_bl_compute_reynolds_baseflow(scenario.Re,
+                                              prof.H0().data(),
+                                              prof.rho_u().col(0).data(),
+                                              prof.u().col(0).data(), 1,
+                                              coeffs_inviscid.col(0).data(),
+                                              coeffs_inviscid.col(1).data(),
+                                              coeffs_inviscid.col(2).data(),
+                                              &edge, &reynolds, b.bw);
+    }
 
     // Compute general quantities of interest
     suzerain_bl_compute_qoi(scenario.Ma, scenario.Re,
