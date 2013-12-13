@@ -521,14 +521,28 @@ void timecontroller<TimeType,StepType,StopType>::add_periodic_callback(
         return;
     }
 
-    Entry *e    = new Entry;      // Allocate Entry on heap
+    Entry *e    = new Entry;        // Allocate Entry on heap
     e->periodic = true;
     e->every_dt = every_dt;
     e->every_nt = every_nt;
-    e->next_t   = add_and_coerce_overflow_to_max(current_t_,   first_dt);
+    e->next_t   = add_and_coerce_overflow_to_max(current_t_, first_dt);
+#pragma warning(push,disable:1572)
+    if (e->next_t == current_t_) {
+        // Pathological, first_dt is O(eps) and current_t_+first_dt was NOP.
+        // We re-register the event to occur at the 2nd and subsequent freq.
+        // Presumably, any status/restart/whatever we should save in O(eps) can
+        // be recovered from what the restart file triggering this case.
+        e->next_t = add_and_coerce_overflow_to_max(current_t_, every_dt);
+        if (e->next_t == current_t_) {
+            throw std::invalid_argument(
+                    "Insufficient precision in current_t_"
+                    " to track events of frequency every_dt");
+        }
+    }
+#pragma warning(pop)
     e->next_nt  = add_and_coerce_overflow_to_max(current_nt(), every_nt);
     e->callback = callback;
-    entries_.push_back(e);        // Transfer Entry memory ownership
+    entries_.push_back(e);          // Transfer Entry memory ownership
 }
 
 template< typename TimeType, typename StepType, typename StopType >
