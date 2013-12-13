@@ -568,10 +568,15 @@ StopType timecontroller<TimeType,StepType,StopType>::advance(
     // Advance time until done or we abort for some reason
     while (current_t_ < final_t && current_nt() < final_nt) {
 
-        // Determine maximum possible step size allowed by all criteria
+        // Determine maximum possible step size allowed by all event criteria
         const TimeType possible_dt
             = min(max_dt_, min(final_t, next_event_t) - current_t_);
-        SUZERAIN_ENSURE(possible_dt > 0);
+        // Check possible_dt is strictly positive in two steps as
+        // a failure in one versus the other is informative for debugging.
+#pragma warning(push,disable:1572)
+        SUZERAIN_ENSURE(possible_dt != 0);
+        SUZERAIN_ENSURE(possible_dt  > 0);
+#pragma warning(pop)
 
         // Take a single step, record new step and time, and update statistics
         current_dt_ = stepper_(possible_dt);
