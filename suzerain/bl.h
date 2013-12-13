@@ -102,16 +102,18 @@ suzerain_bl_compute_viscous(
 
 // TODO Find reference discussing NASA's technique mentioned below.
 /**
- * Find the boundary layer edge within <tt>[lower, upper]</tt> given a B-spline
- * coefficient representation of the specific total enthalpy \f$H_0 =
+ * Find the boundary layer edge within <tt>[lowerbnd, upperbnd]</tt> given a
+ * B-spline coefficient representation of the specific total enthalpy \f$H_0 =
  * \frac{\rho E + p}{\rho}\f$ in \c coeffs_H0.  The procedure looks for the
  * second derivative of \f$H_0 \approx{} 0\f$ based on discussions with T.
- * Oliver about what NASA has done in practice to get robust results.
- * In an incompressible context, other quantities might be substituted for
- * \f$H_0\f$ in this computation.
+ * Oliver about what NASA has done in practice to get robust results.  In an
+ * incompressible context, other quantities might be substituted for \f$H_0\f$
+ * in this computation.
  *
  * \param[in ] coeffs_H0 Coefficient representation of \f$H_0\f$
  *                       using the basis provided in \c w and \c dw.
+ * \param[in]  lowerbnd  Lower bound (inclusive) for the search.
+ * \param[in]  upperbnd  Upper bound (inclusive) for the search.
  * \param[out] location  Location at which edge is detected.
  * \param[in]  dB        Temporary storage to use of size <tt>w->k</tt> by
  *                       no less than <tt>3</tt>.
@@ -127,6 +129,8 @@ suzerain_bl_compute_viscous(
 int
 suzerain_bl_find_edge(
     const double * coeffs_H0,
+    const double lowerbnd,
+    const double upperbnd,
     double * location,
     gsl_matrix * dB,
     gsl_bspline_workspace * w,

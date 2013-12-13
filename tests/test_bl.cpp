@@ -173,7 +173,10 @@ BOOST_FIXTURE_TEST_CASE( blasius_find_edge, fixture_four_thousand )
     // Find edge using kinetic energy profile
     double location = GSL_NAN;
     BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS, suzerain_bl_find_edge(
-        ke.get() /* \approx H_0 */, &location, dB.get(), b.bw, b.dbw));
+        ke.get() /* \approx H_0 */,
+        gsl_bspline_breakpoint(0,              b.bw),
+        gsl_bspline_breakpoint(b.bw->nbreak-1, b.bw),
+        &location, dB.get(), b.bw, b.dbw));
 
     // Thickness from eyeballing results computed in Octave
     //   source notebooks/blasius.m
@@ -261,7 +264,10 @@ BOOST_FIXTURE_TEST_CASE( find_edge, ChallengingFixture )
     // Find edge using H0 already expressed as coefficients
     double location = GSL_NAN;
     BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS, suzerain_bl_find_edge(
-        coeffs_H0, &location, dB.get(), b.bw, b.dbw));
+        coeffs_H0,
+        gsl_bspline_breakpoint(0,              b.bw),
+        gsl_bspline_breakpoint(b.bw->nbreak-1, b.bw),
+        &location, dB.get(), b.bw, b.dbw));
 
     // Ensure we found an actual edge in this profile
     BOOST_CHECK(!(boost::math::isnan)(location));

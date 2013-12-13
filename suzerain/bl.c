@@ -34,6 +34,7 @@
 #include <gsl/gsl_bspline.h>
 #include <gsl/gsl_errno.h>
 #include <gsl/gsl_integration.h>
+#include <gsl/gsl_interp.h>
 #include <gsl/gsl_math.h>
 #include <gsl/gsl_nan.h>
 #include <gsl/gsl_roots.h>
@@ -79,6 +80,8 @@ suzerain_bl_compute_viscous(
 int
 suzerain_bl_find_edge(
     const double * coeffs_H0,
+    const double lowerbnd,
+    const double upperbnd,
     double * location,
     gsl_matrix *dB,
     gsl_bspline_workspace *w,
@@ -97,15 +100,25 @@ suzerain_bl_find_edge(
     *location  = GSL_NAN;
     int status = SUZERAIN_EFAILED;
 
-    /* Start by evaluating function on 0th breakpoint... */
-    double flower = GSL_NAN, lower = gsl_bspline_breakpoint(0, w);
+    /* Searching for bounding intervals within breakpoints.                  */
+    /* gsl_interp_bsearch has exactly the semantics that we want, so use it. */
+    assert(w->knots->stride == 1);
+    const double * const breakpts = w->knots->data+w->k-1; // gsl_bspline_nbreak
+    const size_t ilo = gsl_interp_bsearch(breakpts, lowerbnd, 0,   w->nbreak);
+    const size_t ihi = gsl_interp_bsearch(breakpts, upperbnd, ilo, w->nbreak);
+
+    /* Start by evaluating function on the trimmed lower bound... */
+    double flower = GSL_NAN, lower = GSL_MAX(lowerbnd, breakpts[ilo]);
     suzerain_bspline_linear_combination(
             nderiv, coeffs_H0, 1, &lower, &flower, 0, dB, w, dw);
 
     /* ...look breakpoint-by-breakpoint for upwards crossing of threshold... */
     double fupper = GSL_NAN, upper = GSL_NAN;
-    for (size_t i = 1; i < w->nbreak; ++i, lower = upper, flower = fupper) {
-        upper = gsl_bspline_breakpoint(i, w);
+    for (size_t i = ilo+1; i <= ihi; ++i, lower = upper, flower = fupper) {
+
+        /* ...(honoring any requested upper bound)... */
+        upper = breakpts[i];
+        if (upper > upperbnd) break;
         suzerain_bspline_linear_combination(
                 nderiv, coeffs_H0, 1, &upper, &fupper, 0, dB, w, dw);
 
@@ -345,12 +358,16 @@ suzerain_bl_compute_thicknesses(
     }
     if (SUZERAIN_UNLIKELY(status != SUZERAIN_SUCCESS)) goto done;
 
-    status = suzerain_bl_find_edge(
-            coeffs_H0, &thick->delta, dB, w, dw);
-    if (SUZERAIN_UNLIKELY(status != SUZERAIN_SUCCESS)) goto done;
-
     status = suzerain_bl_displacement_thickness(
             coeffs_rhou, &thick->delta1, dB, w, dw);
+    if (SUZERAIN_UNLIKELY(status != SUZERAIN_SUCCESS)) goto done;
+
+    // As \delta_{99} should always be outside \delta_1 and the latter
+    // is more robust than the former, use \delta_1 as a lower bound on
+    // where we might find \delta_{99}.
+    status = suzerain_bl_find_edge(
+            coeffs_H0, thick->delta1, gsl_bspline_breakpoint(w->nbreak-1, w),
+            &thick->delta, dB, w, dw);
     if (SUZERAIN_UNLIKELY(status != SUZERAIN_SUCCESS)) goto done;
 
     status = suzerain_bl_momentum_thickness(
@@ -1160,13 +1177,6 @@ suzerain_bl_compute_thicknesses_baseflow(
     }
     if (SUZERAIN_UNLIKELY(status != SUZERAIN_SUCCESS)) goto done;
 
-    // Find boundary layer edge: thick->delta
-    {
-        int tmp = suzerain_bl_find_edge(
-                coeffs_vis_H0, &thick->delta, dB, w, dw);
-        if (status == SUZERAIN_SUCCESS) status = tmp;
-    }
-
     // See suzerain_bl_compute_thicknesses for the constant baseflow version of
     // these quantities.  See writeups/thicknesses.pdf for how the integrals in
     // this function are defined and used.
@@ -1186,6 +1196,17 @@ suzerain_bl_compute_thicknesses_baseflow(
         double lower = params.dis[0], upper = params.dis[params.ndis-1];
         int tmp = fsolver_solve(s, &f, maxiter, params.epsabs, params.epsrel,
                                 &lower, &upper, &thick->delta1);
+        if (status == SUZERAIN_SUCCESS) status = tmp;
+    }
+
+    // As \delta_{99} should always be outside \delta_1 and the latter
+    // is more robust than the former, use \delta_1 as a lower bound on
+    // where we might find \delta_{99}.
+    if (!gsl_isnan(thick->delta1)) {
+        int tmp = suzerain_bl_find_edge(
+                coeffs_vis_H0, thick->delta1,
+                gsl_bspline_breakpoint(w->nbreak-1, w),
+                &thick->delta, dB, w, dw);
         if (status == SUZERAIN_SUCCESS) status = tmp;
     }
 
