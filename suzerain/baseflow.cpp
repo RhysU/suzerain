@@ -181,7 +181,7 @@ baseflow_map::conserved(
 #ifdef __INTEL_COMPILER
 #pragma warning(push,disable:1572)
 #endif
-    } if (SUZERAIN_LIKELY(lit->first == y)) {         // Precomputed y
+    } else if (SUZERAIN_LIKELY(lit->first == y)) {    // Precomputed y
 #ifdef __INTEL_COMPILER
 #pragma warning(pop)
 #endif
@@ -242,7 +242,7 @@ baseflow_map::pressure(
 #ifdef __INTEL_COMPILER
 #pragma warning(push,disable:1572)
 #endif
-    } if (SUZERAIN_LIKELY(lit->first == y)) {         // Precomputed y
+    } else if (SUZERAIN_LIKELY(lit->first == y)) {    // Precomputed y
 #ifdef __INTEL_COMPILER
 #pragma warning(pop)
 #endif
