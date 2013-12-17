@@ -299,71 +299,88 @@ largo_definition::save(
         baseflow_map* const b = dynamic_cast<baseflow_map*>(baseflow.get());
 
         // Write baseflow pointwise locations and state (only master process)
-        MatrixX7r tmp(b->table.size(), /*y + state + p*/ 7); // 6 = y + state + p
+        MatrixXAr tmp(b->table.size(), /*y + state + p + u + v + w*/ 10);
         esio_plane_establish(
                 h,
                 tmp.outerSize(), 0, procid == 0 ? tmp.outerSize() : 0,
                 tmp.innerSize(), 0, procid == 0 ? tmp.innerSize() : 0);
 
         // Pack pointwise data and save it to location_baseflow
+        // computing primitive velocity on the fly
         baseflow_map::table_type::const_iterator it = b->table.begin();
         for (int i = 0; i < tmp.rows(); ++i) {
-            tmp(i, 0) = it->first;
-            tmp(i, 1) = it->second.base.e;
-            tmp(i, 2) = it->second.base.mx;
-            tmp(i, 3) = it->second.base.my;
-            tmp(i, 4) = it->second.base.mz;
-            tmp(i, 5) = it->second.base.rho;
-            tmp(i, 6) = it->second.base.p;
+            const largo_state& base = it->second.base;
+            tmp.row(i) << it->first,
+                          base.e,
+                          base.mx,
+                          base.my,
+                          base.mz,
+                          base.rho,
+                          base.p,
+                          base.mx / base.rho,
+                          base.my / base.rho,
+                          base.mz / base.rho;
             ++it;
         }
         esio_plane_write(
                 h, location_baseflow, tmp.data(),
                 tmp.outerStride(), tmp.innerStride(),
-                "Non-normative baseflow pointwise state: "
-                " y, rho_E, rho_u, rho_v, rho_w, rho, p");
+                "Non-normative baseflow pointwise state:"
+                " y, rho_E, rho_u, rho_v, rho_w, rho, p, u, v, w");
         esio_string_set(
                 h, location_baseflow,
                 attr_base, type_map.c_str());
 
         // Pack pointwise x derivatives and save to location_baseflow_dx
+        // computing primitive velocity derivatives on the fly
         it = b->table.begin();
         for (int i = 0; i < tmp.rows(); ++i) {
-            tmp(i, 0) = it->first;
-            tmp(i, 1) = it->second.dxbase.e;
-            tmp(i, 2) = it->second.dxbase.mx;
-            tmp(i, 3) = it->second.dxbase.my;
-            tmp(i, 4) = it->second.dxbase.mz;
-            tmp(i, 5) = it->second.dxbase.rho;
-            tmp(i, 6) = it->second.dxbase.p;
+            const largo_state& base   = it->second.base;
+            const largo_state& dxbase = it->second.dxbase;
+            tmp.row(i) << it->first,
+                          dxbase.e,
+                          dxbase.mx,
+                          dxbase.my,
+                          dxbase.mz,
+                          dxbase.rho,
+                          dxbase.p,
+                          (dxbase.mx - dxbase.rho*base.mx/base.rho)/base.rho,
+                          (dxbase.my - dxbase.rho*base.my/base.rho)/base.rho,
+                          (dxbase.mz - dxbase.rho*base.mz/base.rho)/base.rho;
             ++it;
         }
         esio_plane_write(
                 h, location_baseflow_dx, tmp.data(),
                 tmp.outerStride(), tmp.innerStride(),
-                "Non-normative baseflow pointwise x derivatives: "
-                " y, rho_E, rho_u, rho_v, rho_w, rho, p");
+                "Non-normative baseflow pointwise x derivatives:"
+                " y, rho_E, rho_u, rho_v, rho_w, rho, p, u, v, w");
         esio_string_set(
                 h, location_baseflow_dx,
                 attr_base, type_map.c_str());
 
         // Pack pointwise y derivatives and save to location_baseflow_dy
+        // computing primitive velocity derivatives on the fly
         it = b->table.begin();
         for (int i = 0; i < tmp.rows(); ++i) {
-            tmp(i, 0) = it->first;
-            tmp(i, 1) = it->second.dybase.e;
-            tmp(i, 2) = it->second.dybase.mx;
-            tmp(i, 3) = it->second.dybase.my;
-            tmp(i, 4) = it->second.dybase.mz;
-            tmp(i, 5) = it->second.dybase.rho;
-            tmp(i, 6) = it->second.dybase.p;
+            const largo_state& base   = it->second.base;
+            const largo_state& dybase = it->second.dybase;
+            tmp.row(i) << it->first,
+                          dybase.e,
+                          dybase.mx,
+                          dybase.my,
+                          dybase.mz,
+                          dybase.rho,
+                          dybase.p,
+                          (dybase.mx - dybase.rho*base.mx/base.rho)/base.rho,
+                          (dybase.my - dybase.rho*base.my/base.rho)/base.rho,
+                          (dybase.mz - dybase.rho*base.mz/base.rho)/base.rho;
             ++it;
         }
         esio_plane_write(
                 h, location_baseflow_dy, tmp.data(),
                 tmp.outerStride(), tmp.innerStride(),
-                "Non-normative baseflow pointwise y derivatives: "
-                " y, rho_E, rho_u, rho_v, rho_w, rho, p");
+                "Non-normative baseflow pointwise y derivatives:"
+                " y, rho_E, rho_u, rho_v, rho_w, rho, p, u, v, w");
         esio_string_set(
                 h, location_baseflow_dy,
                 attr_base, type_map.c_str());
