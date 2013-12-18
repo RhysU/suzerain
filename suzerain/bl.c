@@ -1182,6 +1182,7 @@ suzerain_bl_compute_thicknesses_baseflow(
     // this function are defined and used.
 
     // Find implicitly-defined displacement thickness: thick->delta1
+    // Displacement thickness more robust than delta99 or delta{2,3,H}
     {
         params_thickness_displacement integrand_params = {
             .vis_rhou   = coeffs_vis_rhou,
@@ -1193,13 +1194,16 @@ suzerain_bl_compute_thicknesses_baseflow(
         params.integrand.function = &integrand_thickness_displacement;
         params.integrand.params   = &integrand_params;
         gsl_function f            = { &integral_thickness_residual, &params };
-        double lower = params.dis[0], upper = params.dis[params.ndis-1];
+
+        // Look across the whole domain, usually [0, oo), for the thickness
+        double lower = params.dis[0];
+        double upper = params.dis[params.ndis-1];
         int tmp = fsolver_solve(s, &f, maxiter, params.epsabs, params.epsrel,
                                 &lower, &upper, &thick->delta1);
         if (status == SUZERAIN_SUCCESS) status = tmp;
     }
 
-    // As \delta_{99} should always be outside \delta_1 and the latter
+    // As \delta_{99} must always be outside \delta_1 and the latter
     // is more robust than the former, use \delta_1 as a lower bound on
     // where we might find \delta_{99}.
     if (!gsl_isnan(thick->delta1)) {
@@ -1224,9 +1228,20 @@ suzerain_bl_compute_thicknesses_baseflow(
         params.integrand.function = &integrand_thickness_momentum;
         params.integrand.params   = &integrand_params;
         gsl_function f            = { &integral_thickness_residual, &params };
-        double lower = thick->delta1, upper = params.dis[params.ndis-1];
+
+        // Try interval [delta1, oo) which may yield nonnegative delta2...
+        // (thus increasing our robustness/speed in the common delta2>0 case)
+        double lower = thick->delta1;
+        double upper = params.dis[params.ndis-1];
         int tmp = fsolver_solve(s, &f, maxiter, params.epsabs, params.epsrel,
                                 &lower, &upper, &thick->delta2);
+        if (SUZERAIN_UNLIKELY(tmp != SUZERAIN_SUCCESS)) {
+            // ...but accept a negative thick->delta2 if observed.  So it goes.
+            lower = params.dis[0];
+            upper = thick->delta1;
+            tmp = fsolver_solve(s, &f, maxiter, params.epsabs, params.epsrel,
+                                &lower, &upper, &thick->delta2);
+        }
         if (status == SUZERAIN_SUCCESS) status = tmp;
     }
     // Adjust to obtain momentum thickness, thick->delta2
@@ -1246,9 +1261,20 @@ suzerain_bl_compute_thicknesses_baseflow(
         params.integrand.function = &integrand_thickness_energy;
         params.integrand.params   = &integrand_params;
         gsl_function f            = { &integral_thickness_residual, &params };
-        double lower = thick->delta1, upper = params.dis[params.ndis-1];
+
+        // Try interval [delta1, oo) which may yield nonnegative delta3...
+        // (thus increasing our robustness/speed in the common delta2>0 case)
+        double lower = thick->delta1;
+        double upper = params.dis[params.ndis-1];
         int tmp = fsolver_solve(s, &f, maxiter, params.epsabs, params.epsrel,
                                 &lower, &upper, &thick->delta3);
+        if (SUZERAIN_UNLIKELY(tmp != SUZERAIN_SUCCESS)) {
+            // ...but accept a negative thick->delta3 if observed.  So it goes.
+            lower = params.dis[0];
+            upper = thick->delta1;
+            tmp = fsolver_solve(s, &f, maxiter, params.epsabs, params.epsrel,
+                                &lower, &upper, &thick->delta3);
+        }
         if (status == SUZERAIN_SUCCESS) status = tmp;
     }
     // Adjust to obtain energy thickness, thick->delta3
@@ -1268,9 +1294,20 @@ suzerain_bl_compute_thicknesses_baseflow(
         params.integrand.function = &integrand_thickness_enthalpy;
         params.integrand.params   = &integrand_params;
         gsl_function f            = { &integral_thickness_residual, &params };
-        double lower = thick->delta1, upper = params.dis[params.ndis-1];
+
+        // Try interval [delta1, oo) which may yield nonnegative deltaH...
+        // (thus increasing our robustness/speed in the common delta2>0 case)
+        double lower = thick->delta1;
+        double upper = params.dis[params.ndis-1];
         int tmp = fsolver_solve(s, &f, maxiter, params.epsabs, params.epsrel,
                                 &lower, &upper, &thick->deltaH);
+        if (SUZERAIN_UNLIKELY(tmp != SUZERAIN_SUCCESS)) {
+            // ...but accept a negative thick->deltaH if observed.  So it goes.
+            lower = params.dis[0];
+            upper = thick->delta1;
+            tmp = fsolver_solve(s, &f, maxiter, params.epsabs, params.epsrel,
+                                &lower, &upper, &thick->deltaH);
+        }
         if (status == SUZERAIN_SUCCESS) status = tmp;
     }
     // Adjust to obtain enthalpy thickness, thick->deltaH
