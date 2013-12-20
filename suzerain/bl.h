@@ -550,7 +550,8 @@ suzerain_bl_compute_pg(
  * \\
  *   \mbox{Re}_{\delta_h} &= \mu_e^{-1} \int_0^\infty
  *     \left(\rho u\right)_\mbox{vis}
- *   - \left(\rho h u\right)_\mbox{vis} {h}^{-1}_\mbox{inv}
+ *     \frac{h_\mbox{inv}        - h_\mbox{vis}     }
+ *          {h_\mbox{inv,\infty} - h_\mbox{vis,wall}}
  *   \, \mathrm{d}y
  * \f}
  * where the internal specific enthalpy \f$h = H_0 - \mbox{Ma}^2
@@ -558,7 +559,6 @@ suzerain_bl_compute_pg(
  * of both the viscous and inviscid flow specific total enthalpy \f$H_0\f$,
  * streamwise momentum \f$\rho u\f$, and specific kinetic energy
  * \f$\vec{u}^2/2\f$.
- *
  *
  * \param[in ] code_Ma         Mach number \f$u_0/a_0\f$ used to scale
  *                             nondimensional quantities.  For dimensional

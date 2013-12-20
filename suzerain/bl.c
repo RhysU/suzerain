@@ -880,8 +880,10 @@ typedef struct {
     gsl_bspline_workspace *w;
 } params_reynolds_enthalpy;
 
-// Per writeups/thicknesses.pdf, this integral evaluated over
-// [0, \infty) should produce \mu * Re_{\delta_h}
+// Per writeups/thicknesses.pdf, this integral evaluated over [0, \infty)
+// should produce \mu * Re_{\delta_h} Relative to that write up, this more
+// clearly uses internal enthalpy in the computation and also works correctly
+// for both hot and cold wall flows.
 static
 double integrand_reynolds_enthalpy(
         double y, void * params)
@@ -926,11 +928,18 @@ double integrand_reynolds_enthalpy(
                     * gsl_vector_get(p->Bk, i-istart);
         }
 
-        const double vis_h = vis_H0 - Ma2*vis_ke;
-        const double inv_h = inv_H0 - Ma2*(inv_u*inv_u + inv_v*inv_v)/2;
-        integrand = vis_rhou*(1 - vis_h / inv_h);
+        const double inv_h     = inv_H0 - Ma2*(inv_u*inv_u + inv_v*inv_v)/2;
+        const double vis_h     = vis_H0 - Ma2*vis_ke;
+        const size_t invedge   = (p->w->n - 1)*p->inv_stride;
+        const double invedge_h = p->inv_H0[invedge] - Ma2*(
+                                      p->inv_u[invedge]*p->inv_u[invedge]
+                                    + p->inv_v[invedge]*p->inv_v[invedge]
+                                 ) / 2;
+        const double viswall_h = p->vis_H0[0] - Ma2*p->vis_ke[0];
 
+        integrand = vis_rhou * (inv_h - vis_h) / (invedge_h - viswall_h);
     }
+
     return integrand;
 }
 
