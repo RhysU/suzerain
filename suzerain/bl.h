@@ -650,12 +650,15 @@ suzerain_bl_compute_reynolds_baseflow(
  *     \, \mathrm{d}y
  * \\
  *     \int_{\delta_1 + \delta_h}^\infty
- *         \left(\rho h u\right)_\mbox{inv}
- *       - \left(\rho h u\right)_\mbox{vis}
+ *         \left(\rho u\right)_\mbox{inv}
+ *         \left(h_\mbox{inv} - h_\mbox{vis,wall}\right)
+ *       - \left(\rho u\right)_\mbox{vis}
+ *         \left(h_\mbox{vis} - h_\mbox{vis,wall}\right)
  *     \, \mathrm{d}y
  *   &=
  *     \int_0^{\delta_1 + \delta_h}
- *         \left(\rho h u\right)_\mbox{vis}
+ *         \left(\rho u\right)_\mbox{vis}
+ *         \left(h_\mbox{vis} - h_\mbox{vis,wall}\right)
  *     \, \mathrm{d}y
  * \\
  * \f}

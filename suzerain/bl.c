@@ -801,7 +801,9 @@ typedef struct {
 } params_thickness_enthalpy;
 
 // Per writeups/thicknesses.pdf, when p->inner_cutoff == \delta^\ast + \delta_h
-// this integral evaluated over [0, \infty) should be zero.
+// this integral evaluated over [0, \infty) should be zero.  Relative to that
+// write up, this more clearly uses internal enthalpy in the computation and
+// also works correctly for both hot and cold wall flows.
 static
 double integrand_thickness_enthalpy(
         double y, void * params)
@@ -828,7 +830,9 @@ double integrand_thickness_enthalpy(
             vis_rhou += p->vis_rhou[i] * gsl_vector_get(p->Bk, i-istart);
         }
 
-        integrand = - vis_rhou * (vis_H0 - Ma2*vis_ke);
+        const double viswall_h = p->vis_H0[0] - Ma2*p->vis_ke[0];
+        const double vis_h     =    vis_H0    - Ma2*   vis_ke;
+        integrand = - vis_rhou * (vis_h - viswall_h);
 
         if (y >= p->inner_cutoff) {
             const int inv_stride = p->inv_stride;
@@ -858,8 +862,7 @@ double integrand_thickness_enthalpy(
             }
 
             const double inv_h = inv_H0 - Ma2*(inv_u*inv_u + inv_v*inv_v)/2;
-            integrand += inv_rhou * inv_h;
-
+            integrand += inv_rhou * (inv_h - viswall_h);
         }
 
     }
