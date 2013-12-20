@@ -75,6 +75,7 @@ profile& profile::operator=(const quantities &q)
     this->rho_u().col(1) = q.rho_u().col(1);
     this->a()            = q.a();
     this->H0()           = q.H0();
+    this->ke()           = q.ke();
     this->T()            = q.T();
     this->mu()           = q.mu();
     this->u().col(0)     = q.u().col(0);
@@ -178,6 +179,7 @@ profile sample_profile(
             // Accumulate into sum_XXX using function syntax.
             sum_a [0](std::sqrt(T));
             sum_H0[0]((e + p) / rho);
+            sum_ke[0](u.squaredNorm() / 2);
             sum_mu[0](mu);
             sum_T [0](T);
             sum_u [0](u.x());
@@ -258,9 +260,9 @@ void summarize_boundary_layer_nature(
     suzerain_bl_compute_viscous(scenario.Re, &wall, &viscous);
 
     // Prepare inviscid baseflow coefficients if necessary
-    ArrayX3r coeffs_inviscid; // Columns are H0, rhou, u
+    ArrayX4r coeffs_inviscid; // Columns are H0, rhou, u, v
     if (sg && sg->formulation.enabled() && sg->baseflow) {
-        coeffs_inviscid.resize(b.n(), 3);
+        coeffs_inviscid.resize(b.n(), NoChange);
 
         // Retrieve values on collocation points
         largo_state state, dontcare;
@@ -274,6 +276,7 @@ void summarize_boundary_layer_nature(
             coeffs_inviscid(j, 0) = state.H0();
             coeffs_inviscid(j, 1) = state.mx;
             coeffs_inviscid(j, 2) = state.u();
+            coeffs_inviscid(j, 3) = state.v();
         }
 
         // Convert to coefficients using mass matrix
@@ -286,17 +289,23 @@ void summarize_boundary_layer_nature(
     // Compute boundary layer thicknesses, including delta
     // TODO WARN on non-SUCCESS return
     if (0 == coeffs_inviscid.size()) {
-        suzerain_bl_compute_thicknesses(prof.H0().data(),
+        suzerain_bl_compute_thicknesses(scenario.Ma,
+                                        prof.H0().data(),
+                                        prof.ke().data(),
                                         prof.rho_u().col(0).data(),
                                         prof.u().col(0).data(),
                                         &thick, b.bw, b.dbw);
     } else {
-        suzerain_bl_compute_thicknesses_baseflow(prof.H0().data(),
+        suzerain_bl_compute_thicknesses_baseflow(scenario.Ma,
+                                                 prof.H0().data(),
+                                                 prof.ke().data(),
                                                  prof.rho_u().col(0).data(),
-                                                 prof.u().col(0).data(), 1,
+                                                 prof.u().col(0).data(),
+                                                 coeffs_inviscid.innerStride(),
                                                  coeffs_inviscid.col(0).data(),
                                                  coeffs_inviscid.col(1).data(),
                                                  coeffs_inviscid.col(2).data(),
+                                                 coeffs_inviscid.col(3).data(),
                                                  &thick, b.bw, b.dbw);
     }
 
@@ -327,13 +336,17 @@ void summarize_boundary_layer_nature(
     if (0 == coeffs_inviscid.size()) {
         suzerain_bl_compute_reynolds(scenario.Re, &edge, &thick, &reynolds);
     } else {
-        suzerain_bl_compute_reynolds_baseflow(scenario.Re,
+        suzerain_bl_compute_reynolds_baseflow(scenario.Ma,
+                                              scenario.Re,
                                               prof.H0().data(),
+                                              prof.ke().data(),
                                               prof.rho_u().col(0).data(),
-                                              prof.u().col(0).data(), 1,
+                                              prof.u().col(0).data(),
+                                              1,
                                               coeffs_inviscid.col(0).data(),
                                               coeffs_inviscid.col(1).data(),
                                               coeffs_inviscid.col(2).data(),
+                                              coeffs_inviscid.col(3).data(),
                                               &edge, &reynolds, b.bw);
     }
 

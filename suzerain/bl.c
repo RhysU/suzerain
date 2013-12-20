@@ -141,23 +141,20 @@ int
 suzerain_bl_displacement_thickness(
     const double * coeffs_rhou,
     double * delta1,
-    gsl_matrix *dB,
+    gsl_vector *Bk,
     gsl_bspline_workspace *w,
-    gsl_bspline_deriv_workspace *dw)
+    const gsl_integration_glfixed_table * tbl)
 {
-    /* Obtain an appropriate order Gauss-Legendre integration rule */
-    /* when integrand has same order as basis                      */
-    gsl_integration_glfixed_table * const tbl
-        = gsl_integration_glfixed_table_alloc((w->k + 1)/2);
-    if (SUZERAIN_UNLIKELY(tbl == NULL)) {
+    /* Integrand has same piecewise polynomial order as basis. */
+    if (SUZERAIN_UNLIKELY(tbl->n < (w->k + 1)/2)) {
         *delta1 = GSL_NAN;
-        SUZERAIN_ERROR("failed to obtain Gauss-Legendre rule from GSL",
+        SUZERAIN_ERROR("Gaussian quadrature table order too low",
                        SUZERAIN_ESANITY);
     }
 
     /* Momentum at infinity taken from final B_spline collocation point */
     /* which happens to be the value of the final coefficient */
-    const double rho_u_edge = coeffs_rhou[w->n - 1];
+    const double edge_rhou = coeffs_rhou[w->n - 1];
 
     /* Accumulate the breakpoint-by-breakpoint contributions into *delta1 */
     *delta1 = 0;
@@ -175,22 +172,18 @@ suzerain_bl_displacement_thickness(
 
             /* Evaluate basis functions at point xj */
             size_t kstart, kend;
-            gsl_bspline_deriv_eval_nonzero(xj, 0,
-                    dB, &kstart, &kend, w, dw);
+            gsl_bspline_eval_nonzero(xj, Bk, &kstart, &kend, w);
 
-            /* Accumulate basis linear combinations to evaluate rho_u */
-            double rho_u = 0;
+            /* Accumulate basis linear combinations to evaluate rhou */
+            double rhou = 0;
             for (size_t k = kstart; k <= kend; ++k) {
-                rho_u += coeffs_rhou[k] * gsl_matrix_get(dB, k - kstart, 0);
+                rhou += coeffs_rhou[k] * gsl_vector_get(Bk, k - kstart);
             }
 
             /* Then use integrand scaled by weight to accumulate result */
-            *delta1 += wj * (1 - rho_u / rho_u_edge);
+            *delta1 += wj * (1 - rhou / edge_rhou);
         }
     }
-
-    /* Free integration rule resources */
-    gsl_integration_glfixed_table_free(tbl);
 
     return SUZERAIN_SUCCESS;
 }
@@ -200,25 +193,22 @@ suzerain_bl_momentum_thickness(
     const double * coeffs_rhou,
     const double * coeffs_u,
     double * delta2,
-    gsl_matrix *dB,
+    gsl_vector *Bk,
     gsl_bspline_workspace *w,
-    gsl_bspline_deriv_workspace *dw)
+    const gsl_integration_glfixed_table * tbl)
 {
-    /* Obtain an appropriate order Gauss-Legendre integration rule     */
-    /* when integrand has twice the order of the basis.                */
-    /* That is, solve 2*(k - 1) = 2*n - 1 for number of Gauss points n */
-    gsl_integration_glfixed_table * const tbl
-        = gsl_integration_glfixed_table_alloc(w->k);
-    if (SUZERAIN_UNLIKELY(tbl == NULL)) {
+    /* Integrand has twice the piecewise polynomial order of the basis. */
+    /* That is, solve 2*(k - 1) = 2*n - 1 for number of Gauss points n. */
+    if (SUZERAIN_UNLIKELY(tbl->n < w->k)) {
         *delta2 = GSL_NAN;
-        SUZERAIN_ERROR("failed to obtain Gauss-Legendre rule from GSL",
+        SUZERAIN_ERROR("Gaussian quadrature table order too low",
                        SUZERAIN_ESANITY);
     }
 
     /* State at infinity taken from final B_spline collocation point */
     /* which happens to be the value of the final coefficient */
-    const double rho_u_edge = coeffs_rhou[w->n - 1];
-    const double     u_edge = coeffs_u   [w->n - 1];
+    const double edge_rhou = coeffs_rhou[w->n - 1];
+    const double edge_u    = coeffs_u   [w->n - 1];
 
     /* Accumulate the breakpoint-by-breakpoint contributions into *delta2 */
     *delta2 = 0;
@@ -236,56 +226,68 @@ suzerain_bl_momentum_thickness(
 
             /* Evaluate basis functions at point xj */
             size_t kstart, kend;
-            gsl_bspline_deriv_eval_nonzero(xj, 0,
-                    dB, &kstart, &kend, w, dw);
+            gsl_bspline_eval_nonzero(xj, Bk, &kstart, &kend, w);
 
-            /* Accumulate basis linear combinations to evaluate rho_u, u */
-            double rho_u = 0;
-            double u     = 0;
+            /* Accumulate basis linear combinations to evaluate rhou, u */
+            double rhou = 0;
+            double u    = 0;
             for (size_t k = kstart; k <= kend; ++k) {
-                const double Bk = gsl_matrix_get(dB, k - kstart, 0);
-                rho_u += coeffs_rhou[k] * Bk;
-                u     += coeffs_u[k]    * Bk;
+                const double B = gsl_vector_get(Bk, k - kstart);
+                rhou += coeffs_rhou[k] * B;
+                u    += coeffs_u[k]    * B;
             }
 
             /* Then use integrand scaled by weight to accumulate result */
-            *delta2 += wj * (rho_u / rho_u_edge) * (1 - u / u_edge);
+            *delta2 += wj * (rhou / edge_rhou) * (1 - u / edge_u);
         }
     }
-
-    /* Free integration rule resources */
-    gsl_integration_glfixed_table_free(tbl);
 
     return SUZERAIN_SUCCESS;
 }
 
 int
 suzerain_bl_energy_thickness(
+    const double * coeffs_ke,
     const double * coeffs_rhou,
-    const double * coeffs_u,
     double * delta3,
-    gsl_matrix *dB,
+    gsl_vector *Bk,
     gsl_bspline_workspace *w,
-    gsl_bspline_deriv_workspace *dw)
+    const gsl_integration_glfixed_table * tbl)
 {
-    /* Obtain an appropriate order Gauss-Legendre integration rule     */
-    /* when integrand has three times the order of the basis.          */
-    /* That is, solve 3*(k - 1) = 2*n - 1 for number of Gauss points n */
-    gsl_integration_glfixed_table * const tbl
-        = gsl_integration_glfixed_table_alloc((3*w->k+1)/2 - 1);
-    if (SUZERAIN_UNLIKELY(tbl == NULL)) {
-        *delta3 = GSL_NAN;
-        SUZERAIN_ERROR("failed to obtain Gauss-Legendre rule from GSL",
+    // The form of the energy thickness definition is nothing but the momentum
+    // thickness with ke = u^2/2 replacing u.  Notice argument order changed.
+    return suzerain_bl_momentum_thickness(
+            coeffs_rhou, coeffs_ke, delta3, Bk, w, tbl);
+}
+
+int
+suzerain_bl_enthalpy_thickness(
+    const double code_Ma,
+    const double * coeffs_H0,
+    const double * coeffs_ke,
+    const double * coeffs_rhou,
+    double * deltah,
+    gsl_vector * Bk,
+    gsl_bspline_workspace * w,
+    const gsl_integration_glfixed_table * tbl)
+{
+    /* Integrand has twice the piecewise polynomial order of the basis. */
+    /* That is, solve 2*(k - 1) = 2*n - 1 for number of Gauss points n. */
+    if (SUZERAIN_UNLIKELY(tbl->n < w->k)) {
+        *deltah = GSL_NAN;
+        SUZERAIN_ERROR("Gaussian quadrature table order too low",
                        SUZERAIN_ESANITY);
     }
 
     /* State at infinity taken from final B_spline collocation point */
     /* which happens to be the value of the final coefficient */
-    const double rho_u_edge = coeffs_rhou[w->n - 1];
-    const double     u_edge = coeffs_u   [w->n - 1];
+    const double edge_H0   = coeffs_H0  [w->n - 1];
+    const double edge_ke   = coeffs_ke  [w->n - 1];
+    const double edge_rhou = coeffs_rhou[w->n - 1];
+    const double edge_h    = edge_H0 - code_Ma*code_Ma*edge_ke;
 
-    /* Accumulate the breakpoint-by-breakpoint contributions into *delta3 */
-    *delta3 = 0;
+    /* Accumulate the breakpoint-by-breakpoint contributions into *deltah */
+    *deltah = 0;
     double xj = 0, wj = 0;
     for (size_t i = 0; i < (w->nbreak - 1); ++i) {
 
@@ -300,47 +302,33 @@ suzerain_bl_energy_thickness(
 
             /* Evaluate basis functions at point xj */
             size_t kstart, kend;
-            gsl_bspline_deriv_eval_nonzero(xj, 0,
-                    dB, &kstart, &kend, w, dw);
+            gsl_bspline_eval_nonzero(xj, Bk, &kstart, &kend, w);
 
-            /* Accumulate basis linear combinations to evaluate rho_u, u */
-            double rho_u = 0;
-            double u     = 0;
+            /* Accumulate basis linear combinations to evaluate rhou, u */
+            double H0   = 0;
+            double ke   = 0;
+            double rhou = 0;
             for (size_t k = kstart; k <= kend; ++k) {
-                const double Bk = gsl_matrix_get(dB, k - kstart, 0);
-                rho_u += coeffs_rhou[k] * Bk;
-                u     += coeffs_u[k]    * Bk;
+                const double B = gsl_vector_get(Bk, k - kstart);
+                H0   += coeffs_H0  [k] * B;
+                ke   += coeffs_ke  [k] * B;
+                rhou += coeffs_rhou[k] * B;
             }
 
             /* Then use integrand scaled by weight to accumulate result */
-            *delta3 += wj * (rho_u / rho_u_edge) * (1 - square(u / u_edge));
+            const double h = H0 - code_Ma*code_Ma*ke;
+            *deltah += wj * (rhou / edge_rhou) * (1 - h / edge_h);
         }
     }
-
-    /* Free integration rule resources */
-    gsl_integration_glfixed_table_free(tbl);
 
     return SUZERAIN_SUCCESS;
 }
 
 int
-suzerain_bl_enthalpy_thickness(
-    const double * coeffs_rhou,
-    const double * coeffs_H0,
-    double * deltaH,
-    gsl_matrix *dB,
-    gsl_bspline_workspace *w,
-    gsl_bspline_deriv_workspace *dw)
-{
-    // The form of the enthalpy thickness equation is nothing but
-    // the displacement thickness with H_0 replacing u.
-    return suzerain_bl_momentum_thickness(
-            coeffs_rhou, coeffs_H0, deltaH, dB, w, dw);
-}
-
-int
 suzerain_bl_compute_thicknesses(
+    const double code_Ma,
     const double * coeffs_H0,
+    const double * coeffs_ke,
     const double * coeffs_rhou,
     const double * coeffs_u,
     suzerain_bl_thicknesses * thick,
@@ -349,17 +337,23 @@ suzerain_bl_compute_thicknesses(
 {
     FILL_WITH_NANS(thick);
 
-    int status     = SUZERAIN_SUCCESS;
-    gsl_matrix *dB = NULL;
-
+    // Prepare repeatedly used resources
+    int status                         = SUZERAIN_SUCCESS;
+    gsl_matrix *dB                     = NULL;
+    gsl_integration_glfixed_table *tbl = NULL;
     if (NULL == (dB = gsl_matrix_alloc(w->k, 3))) {
         SUZERAIN_ERROR_REPORT("failed to allocate dB",
+                              (status = SUZERAIN_ENOMEM));
+    }
+    gsl_vector_view Bk = gsl_matrix_column(dB, 0);
+    if (NULL == (tbl = gsl_integration_glfixed_table_alloc(w->k))) {
+        SUZERAIN_ERROR_REPORT("failed to allocate tbl",
                               (status = SUZERAIN_ENOMEM));
     }
     if (SUZERAIN_UNLIKELY(status != SUZERAIN_SUCCESS)) goto done;
 
     status = suzerain_bl_displacement_thickness(
-            coeffs_rhou, &thick->delta1, dB, w, dw);
+            coeffs_rhou, &thick->delta1, &Bk.vector, w, tbl);
     if (SUZERAIN_UNLIKELY(status != SUZERAIN_SUCCESS)) goto done;
 
     // As \delta_{99} should always be outside \delta_1 and the latter
@@ -371,19 +365,21 @@ suzerain_bl_compute_thicknesses(
     if (SUZERAIN_UNLIKELY(status != SUZERAIN_SUCCESS)) goto done;
 
     status = suzerain_bl_momentum_thickness(
-            coeffs_rhou, coeffs_u, &thick->delta2, dB, w, dw);
+            coeffs_rhou, coeffs_u, &thick->delta2, &Bk.vector, w, tbl);
     if (SUZERAIN_UNLIKELY(status != SUZERAIN_SUCCESS)) goto done;
 
     status = suzerain_bl_energy_thickness(
-            coeffs_rhou, coeffs_u, &thick->delta3, dB, w, dw);
+            coeffs_ke, coeffs_rhou, &thick->delta3, &Bk.vector, w, tbl);
     if (SUZERAIN_UNLIKELY(status != SUZERAIN_SUCCESS)) goto done;
 
     status = suzerain_bl_enthalpy_thickness(
-            coeffs_rhou, coeffs_H0, &thick->deltaH, dB, w, dw);
+            code_Ma, coeffs_H0, coeffs_ke, coeffs_rhou,
+            &thick->deltah, &Bk.vector, w, tbl);
     /* Done regardless of status */
 
 done:
 
+    gsl_integration_glfixed_table_free(tbl);
     gsl_matrix_free(dB);
     return status;
 }
@@ -409,7 +405,7 @@ suzerain_bl_compute_reynolds(
                      * code_Re;
     reynolds->delta3 = edge->rho * edge->u * thick->delta3 / edge->mu
                      * code_Re;
-    reynolds->deltaH = edge->rho * edge->u * thick->deltaH / edge->mu
+    reynolds->deltah = edge->rho * edge->u * thick->deltah / edge->mu
                      * code_Re;
 
     return SUZERAIN_SUCCESS;
@@ -667,11 +663,12 @@ double integrand_reynolds_momentum(
 // Parameters for baseflow-ready integrand_thickness_energy
 typedef struct {
     double                 inner_cutoff;  // Must be first member
+    const double          *vis_ke;        // Always stride one
     const double          *vis_rhou;      // Always stride one
-    const double          *vis_u;         // Always stride one
-    int                    inv_stride;    // Stride for inv_rhou, inv_u
+    int                    inv_stride;    // Stride for inv_rhou, inv_u, inv_v
     const double          *inv_rhou;      // May have stride zero
     const double          *inv_u;         // May have stride zero
+    const double          *inv_v;         // May have stride zero
     gsl_vector            *Bk;
     gsl_bspline_workspace *w;
 } params_thickness_energy;
@@ -693,12 +690,12 @@ double integrand_thickness_energy(
             vis_rhou += p->vis_rhou[i] * gsl_vector_get(p->Bk, i-istart);
         }
 
-        double vis_u = 0;
+        double vis_ke = 0;
         for (size_t i = istart; i <= iend; ++i) {
-            vis_u += p->vis_u[i] * gsl_vector_get(p->Bk, i-istart);
+            vis_ke += p->vis_ke[i] * gsl_vector_get(p->Bk, i-istart);
         }
 
-        integrand = - vis_rhou * (vis_u * vis_u);
+        integrand = - vis_rhou * (2*vis_ke);
 
         if (y >= p->inner_cutoff) {
             const int inv_stride = p->inv_stride;
@@ -715,7 +712,13 @@ double integrand_thickness_energy(
                        * gsl_vector_get(p->Bk, i-istart);
             }
 
-            integrand += inv_rhou * (inv_u * inv_u);
+            double inv_v = 0;
+            for (size_t i = istart; i <= iend; ++i) {
+                inv_v += p->inv_v[i*inv_stride]
+                       * gsl_vector_get(p->Bk, i-istart);
+            }
+
+            integrand += inv_rhou * (inv_u*inv_u + inv_v*inv_v);
 
         }
 
@@ -725,10 +728,11 @@ double integrand_thickness_energy(
 
 // Parameters for baseflow-ready integrand_reynolds_energy
 typedef struct {
+    const double          *vis_ke;       // Always stride one
     const double          *vis_rhou;     // Always stride one
-    const double          *vis_u;        // Always stride one
     int                    inv_stride;   // Stride for inv_u
     const double          *inv_u;        // Strided per inv_stride
+    const double          *inv_v;        // Strided per inv_stride
     gsl_vector            *Bk;
     gsl_bspline_workspace *w;
 } params_reynolds_energy;
@@ -745,26 +749,30 @@ double integrand_reynolds_energy(
     double integrand = GSL_NAN;
     if (!gsl_bspline_eval_nonzero(y, p->Bk, &istart, &iend, p->w)) {
 
-        double vis_u = 0;
+        double vis_ke = 0;
         for (size_t i = istart; i <= iend; ++i) {
-            vis_u += p->vis_u[i] * gsl_vector_get(p->Bk, i-istart);
+            vis_ke += p->vis_ke[i] * gsl_vector_get(p->Bk, i-istart);
         }
-
-        double inv_u = 0;
-        const int inv_stride = p->inv_stride;
-        for (size_t i = istart; i <= iend; ++i) {
-            inv_u += p->inv_u[i*inv_stride] * gsl_vector_get(p->Bk, i-istart);
-        }
-
-        integrand = vis_u / inv_u;
-        integrand = 1 - integrand*integrand;
 
         double vis_rhou = 0;
         for (size_t i = istart; i <= iend; ++i) {
             vis_rhou += p->vis_rhou[i] * gsl_vector_get(p->Bk, i-istart);
         }
 
-        integrand *= vis_rhou;
+        double inv_u = 0;
+        for (size_t i = istart; i <= iend; ++i) {
+            inv_u += p->inv_u[i*p->inv_stride]
+                   * gsl_vector_get(p->Bk, i-istart);
+        }
+
+        double inv_v = 0;
+        for (size_t i = istart; i <= iend; ++i) {
+            inv_v += p->inv_v[i*p->inv_stride]
+                   * gsl_vector_get(p->Bk, i-istart);
+        }
+
+        integrand = vis_rhou
+                  * (1 - (2*vis_ke) / (inv_u*inv_u + inv_v*inv_v));
 
     }
     return integrand;
@@ -773,11 +781,15 @@ double integrand_reynolds_energy(
 // Parameters for baseflow-ready integrand_thickness_enthalpy
 typedef struct {
     double                 inner_cutoff;  // Must be first member
-    const double          *vis_rhou;      // Always stride one
+    double                 code_Ma;       // Scales kinetic energies
     const double          *vis_H0;        // Always stride one
-    int                    inv_stride;    // Stride for inv_rhou, inv_H0
-    const double          *inv_rhou;      // Strided per inv_stride
+    const double          *vis_ke;        // Always stride one
+    const double          *vis_rhou;      // Always stride one
+    int                    inv_stride;    // Stride for inv_rhou, inv_h
     const double          *inv_H0;        // Strided per inv_stride
+    const double          *inv_rhou;      // Strided per inv_stride
+    const double          *inv_u;         // Strided per inv_stride
+    const double          *inv_v;         // Strided per inv_stride
     gsl_vector            *Bk;
     gsl_bspline_workspace *w;
 } params_thickness_enthalpy;
@@ -790,24 +802,36 @@ double integrand_thickness_enthalpy(
 {
     const params_thickness_enthalpy * const p
             = (params_thickness_enthalpy *) params;
+    const double Ma2 = p->code_Ma*p->code_Ma;
     size_t istart, iend;
     double integrand = GSL_NAN;
     if (!gsl_bspline_eval_nonzero(y, p->Bk, &istart, &iend, p->w)) {
-
-        double vis_rhou = 0;
-        for (size_t i = istart; i <= iend; ++i) {
-            vis_rhou += p->vis_rhou[i] * gsl_vector_get(p->Bk, i-istart);
-        }
 
         double vis_H0 = 0;
         for (size_t i = istart; i <= iend; ++i) {
             vis_H0 += p->vis_H0[i] * gsl_vector_get(p->Bk, i-istart);
         }
 
-        integrand = - vis_rhou * vis_H0;
+        double vis_ke = 0;
+        for (size_t i = istart; i <= iend; ++i) {
+            vis_ke += p->vis_ke[i] * gsl_vector_get(p->Bk, i-istart);
+        }
+
+        double vis_rhou = 0;
+        for (size_t i = istart; i <= iend; ++i) {
+            vis_rhou += p->vis_rhou[i] * gsl_vector_get(p->Bk, i-istart);
+        }
+
+        integrand = - vis_rhou * (vis_H0 - Ma2*vis_ke);
 
         if (y >= p->inner_cutoff) {
             const int inv_stride = p->inv_stride;
+
+            double inv_H0 = 0;
+            for (size_t i = istart; i <= iend; ++i) {
+                inv_H0 += p->inv_H0[i*inv_stride]
+                        * gsl_vector_get(p->Bk, i-istart);
+            }
 
             double inv_rhou = 0;
             for (size_t i = istart; i <= iend; ++i) {
@@ -815,13 +839,20 @@ double integrand_thickness_enthalpy(
                           * gsl_vector_get(p->Bk, i-istart);
             }
 
-            double inv_H0 = 0;
+            double inv_u = 0;
             for (size_t i = istart; i <= iend; ++i) {
-                inv_H0 += p->inv_H0[i*inv_stride]
+                inv_u += p->inv_u[i*inv_stride]
                        * gsl_vector_get(p->Bk, i-istart);
             }
 
-            integrand += inv_rhou * inv_H0;
+            double inv_v = 0;
+            for (size_t i = istart; i <= iend; ++i) {
+                inv_v += p->inv_v[i*inv_stride]
+                       * gsl_vector_get(p->Bk, i-istart);
+            }
+
+            const double inv_h = inv_H0 - Ma2*(inv_u*inv_u + inv_v*inv_v)/2;
+            integrand += inv_rhou * inv_h;
 
         }
 
@@ -831,10 +862,14 @@ double integrand_thickness_enthalpy(
 
 // Parameters for baseflow-ready integrand_reynolds_enthalpy
 typedef struct {
-    const double          *vis_rhou;    // Always stride one
+    double                 code_Ma;     // Scales kinetic energies
     const double          *vis_H0;      // Always stride one
+    const double          *vis_ke;      // Always stride one
+    const double          *vis_rhou;    // Always stride one
     int                    inv_stride;  // Stride for inv_rhou
     const double          *inv_H0;      // Strided per inv_stride
+    const double          *inv_u;       // Strided per inv_stride
+    const double          *inv_v;       // Strided per inv_stride
     gsl_vector            *Bk;
     gsl_bspline_workspace *w;
 } params_reynolds_enthalpy;
@@ -847,6 +882,7 @@ double integrand_reynolds_enthalpy(
 {
     const params_reynolds_enthalpy * const p
             = (params_reynolds_enthalpy *) params;
+    const double Ma2 = p->code_Ma*p->code_Ma;
     size_t istart, iend;
     double integrand = GSL_NAN;
     if (!gsl_bspline_eval_nonzero(y, p->Bk, &istart, &iend, p->w)) {
@@ -856,20 +892,37 @@ double integrand_reynolds_enthalpy(
             vis_H0 += p->vis_H0[i] * gsl_vector_get(p->Bk, i-istart);
         }
 
-        double inv_H0 = 0;
-        const int inv_stride = p->inv_stride;
+        double vis_ke = 0;
         for (size_t i = istart; i <= iend; ++i) {
-            inv_H0 += p->inv_H0[i*inv_stride] * gsl_vector_get(p->Bk, i-istart);
+            vis_ke += p->vis_ke[i] * gsl_vector_get(p->Bk, i-istart);
         }
-
-        integrand = 1 - vis_H0 / inv_H0;
 
         double vis_rhou = 0;
         for (size_t i = istart; i <= iend; ++i) {
             vis_rhou += p->vis_rhou[i] * gsl_vector_get(p->Bk, i-istart);
         }
 
-        integrand *= vis_rhou;
+        double inv_H0 = 0;
+        for (size_t i = istart; i <= iend; ++i) {
+            inv_H0 += p->inv_H0[i*p->inv_stride]
+                    * gsl_vector_get(p->Bk, i-istart);
+        }
+
+        double inv_u = 0;
+        for (size_t i = istart; i <= iend; ++i) {
+            inv_u += p->inv_u[i*p->inv_stride]
+                    * gsl_vector_get(p->Bk, i-istart);
+        }
+
+        double inv_v = 0;
+        for (size_t i = istart; i <= iend; ++i) {
+            inv_v += p->inv_v[i*p->inv_stride]
+                    * gsl_vector_get(p->Bk, i-istart);
+        }
+
+        const double vis_h = vis_H0 - Ma2*vis_ke;
+        const double inv_h = inv_H0 - Ma2*(inv_u*inv_u + inv_v*inv_v)/2;
+        integrand = vis_rhou*(1 - vis_h / inv_h);
 
     }
     return integrand;
@@ -877,17 +930,20 @@ double integrand_reynolds_enthalpy(
 
 int
 suzerain_bl_compute_reynolds_baseflow(
-    const double                          code_Re,
-    const double                  * const coeffs_vis_H0,
-    const double                  * const coeffs_vis_rhou,
-    const double                  * const coeffs_vis_u,
-    const int                             inv_stride,
-    const double                  * const coeffs_inv_H0,
-    const double                  * const coeffs_inv_rhou,
-    const double                  * const coeffs_inv_u,
-    const suzerain_bl_local       * const edge,
-    suzerain_bl_reynolds          * const reynolds,
-    gsl_bspline_workspace         * const w)
+    const double                    code_Ma,
+    const double                    code_Re,
+    const double            * const coeffs_vis_H0,
+    const double            * const coeffs_vis_ke,
+    const double            * const coeffs_vis_rhou,
+    const double            * const coeffs_vis_u,
+    const int                       inv_stride,
+    const double            * const coeffs_inv_H0,
+    const double            * const coeffs_inv_rhou,
+    const double            * const coeffs_inv_u,
+    const double            * const coeffs_inv_v,
+    const suzerain_bl_local * const edge,
+    suzerain_bl_reynolds    * const reynolds,
+    gsl_bspline_workspace   * const w)
 {
     FILL_WITH_NANS(reynolds);
 
@@ -972,10 +1028,11 @@ suzerain_bl_compute_reynolds_baseflow(
     // Re_delta3 from integrand_reynolds_energy, edge->mu, code_Re
     {
         params_reynolds_energy params = {
+            .vis_ke      = coeffs_vis_ke,
             .vis_rhou    = coeffs_vis_rhou,
-            .vis_u       = coeffs_vis_u,
             .inv_stride  = inv_stride,
             .inv_u       = coeffs_inv_u,
+            .inv_v       = coeffs_inv_v,
             .Bk          = Bk,
             .w           = w
         };
@@ -992,10 +1049,14 @@ suzerain_bl_compute_reynolds_baseflow(
     // Re_delta3 from integrand_reynolds_enthalpy, edge->mu, code_Re
     {
         params_reynolds_enthalpy params = {
-            .vis_rhou    = coeffs_vis_rhou,
+            .code_Ma     = code_Ma,
             .vis_H0      = coeffs_vis_H0,
+            .vis_ke      = coeffs_vis_ke,
+            .vis_rhou    = coeffs_vis_rhou,
             .inv_stride  = inv_stride,
             .inv_H0      = coeffs_inv_H0,
+            .inv_u       = coeffs_inv_u,
+            .inv_v       = coeffs_inv_v,
             .Bk          = Bk,
             .w           = w
         };
@@ -1004,8 +1065,8 @@ suzerain_bl_compute_reynolds_baseflow(
             .params   = &params
         };
         int tmp = gsl_integration_qagp(&F, pts, npts, epsabs, epsrel,
-                                       limit, iw, &reynolds->deltaH, &abserr);
-        reynolds->deltaH *= code_Re / edge->mu;
+                                       limit, iw, &reynolds->deltah, &abserr);
+        reynolds->deltah *= code_Re / edge->mu;
         if (status == SUZERAIN_SUCCESS) status = tmp;
     }
 
@@ -1125,16 +1186,19 @@ int fsolver_solve(
 
 int
 suzerain_bl_compute_thicknesses_baseflow(
-    const double                  * const coeffs_vis_H0,
-    const double                  * const coeffs_vis_rhou,
-    const double                  * const coeffs_vis_u,
-    const int                             inv_stride,
-    const double                  * const coeffs_inv_H0,
-    const double                  * const coeffs_inv_rhou,
-    const double                  * const coeffs_inv_u,
-    suzerain_bl_thicknesses       * const thick,
-    gsl_bspline_workspace         * const w,
-    gsl_bspline_deriv_workspace   * const dw)
+    const double                        code_Ma,
+    const double                * const coeffs_vis_H0,
+    const double                * const coeffs_vis_ke,
+    const double                * const coeffs_vis_rhou,
+    const double                * const coeffs_vis_u,
+    const int                           inv_stride,
+    const double                * const coeffs_inv_H0,
+    const double                * const coeffs_inv_rhou,
+    const double                * const coeffs_inv_u,
+    const double                * const coeffs_inv_v,
+    suzerain_bl_thicknesses     * const thick,
+    gsl_bspline_workspace       * const w,
+    gsl_bspline_deriv_workspace * const dw)
 {
     FILL_WITH_NANS(thick);
 
@@ -1250,11 +1314,12 @@ suzerain_bl_compute_thicknesses_baseflow(
     // Find implicitly-defined energy thickness: thick->delta1 + thick->delta3
     if (!gsl_isnan(thick->delta1)) {
         params_thickness_energy integrand_params = {
+            .vis_ke      = coeffs_vis_ke,
             .vis_rhou    = coeffs_vis_rhou,
-            .vis_u       = coeffs_vis_u,
             .inv_stride  = inv_stride,
             .inv_rhou    = coeffs_inv_rhou,
             .inv_u       = coeffs_inv_u,
+            .inv_v       = coeffs_inv_v,
             .Bk          = Bk,
             .w           = w
         };
@@ -1263,7 +1328,7 @@ suzerain_bl_compute_thicknesses_baseflow(
         gsl_function f            = { &integral_thickness_residual, &params };
 
         // Try interval [delta1, oo) which may yield nonnegative delta3...
-        // (thus increasing our robustness/speed in the common delta2>0 case)
+        // (thus increasing our robustness/speed in the common delta3>0 case)
         double lower = thick->delta1;
         double upper = params.dis[params.ndis-1];
         int tmp = fsolver_solve(s, &f, maxiter, params.epsabs, params.epsrel,
@@ -1280,14 +1345,18 @@ suzerain_bl_compute_thicknesses_baseflow(
     // Adjust to obtain energy thickness, thick->delta3
     thick->delta3 -= thick->delta1;
 
-    // Find implicitly-defined thickness: thick->delta1 + thick->deltaH
+    // Find implicitly-defined thickness: thick->delta1 + thick->deltah
     if (!gsl_isnan(thick->delta1)) {
         params_thickness_enthalpy integrand_params = {
-            .vis_rhou    = coeffs_vis_rhou,
+            .code_Ma     = code_Ma,
             .vis_H0      = coeffs_vis_H0,
+            .vis_ke      = coeffs_vis_ke,
+            .vis_rhou    = coeffs_vis_rhou,
             .inv_stride  = inv_stride,
-            .inv_rhou    = coeffs_inv_rhou,
             .inv_H0      = coeffs_inv_H0,
+            .inv_rhou    = coeffs_inv_rhou,
+            .inv_u       = coeffs_inv_u,
+            .inv_v       = coeffs_inv_v,
             .Bk          = Bk,
             .w           = w
         };
@@ -1295,23 +1364,23 @@ suzerain_bl_compute_thicknesses_baseflow(
         params.integrand.params   = &integrand_params;
         gsl_function f            = { &integral_thickness_residual, &params };
 
-        // Try interval [delta1, oo) which may yield nonnegative deltaH...
-        // (thus increasing our robustness/speed in the common delta2>0 case)
+        // Try interval [delta1, oo) which may yield nonnegative deltah...
+        // (thus increasing our robustness/speed in the common deltah>0 case)
         double lower = thick->delta1;
         double upper = params.dis[params.ndis-1];
         int tmp = fsolver_solve(s, &f, maxiter, params.epsabs, params.epsrel,
-                                &lower, &upper, &thick->deltaH);
+                                &lower, &upper, &thick->deltah);
         if (SUZERAIN_UNLIKELY(tmp != SUZERAIN_SUCCESS)) {
-            // ...but accept a negative thick->deltaH if observed.  So it goes.
+            // ...but accept a negative thick->deltah if observed.  So it goes.
             lower = params.dis[0];
             upper = thick->delta1;
             tmp = fsolver_solve(s, &f, maxiter, params.epsabs, params.epsrel,
-                                &lower, &upper, &thick->deltaH);
+                                &lower, &upper, &thick->deltah);
         }
         if (status == SUZERAIN_SUCCESS) status = tmp;
     }
-    // Adjust to obtain enthalpy thickness, thick->deltaH
-    thick->deltaH -= thick->delta1;
+    // Adjust to obtain enthalpy thickness, thick->deltah
+    thick->deltah -= thick->delta1;
 
 done:
     gsl_integration_workspace_free(params.iw);

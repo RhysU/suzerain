@@ -428,6 +428,8 @@ quantities sample_quantities(
 
             sum_H0[0]((e + p) / rho);
 
+            sum_ke[0](u.squaredNorm() / 2);
+
             sum_mu[0](mu);
 
             sum_nu[0](mu / rho);

@@ -86,6 +86,7 @@ public:
 #define SUZERAIN_PERFECT_PROFILE_PHYSICAL   \
     ((a,                 1))  /* scalar */ \
     ((H0,                1))  /* scalar */ \
+    ((ke,                1))  /* scalar */ \
     ((mu,                1))  /* scalar */ \
     ((T,                 1))  /* scalar */ \
     ((u,                 2))  /* vector */

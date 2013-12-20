@@ -45,6 +45,7 @@
 #include <gsl/gsl_bspline.h>
 #include <gsl/gsl_integration.h>
 #include <gsl/gsl_matrix.h>
+#include <gsl/gsl_vector.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -150,10 +151,10 @@ suzerain_bl_find_edge(
  *
  * \param[in ] coeffs_rhou B-spline coefficients for \f$\rho u\f$.
  * \param[out] delta1      The computed displacement thickness.
- * \param[in]  dB          Temporary storage to use of size <tt>w->k</tt> by
- *                         no less than <tt>1</tt>.
+ * \param[in ] Bk          Temporary storage to use of length <tt>w->k</tt>.
  * \param[in ] w           Workspace to use.
- * \param[in ] dw          Workspace to use.
+ * \param[in ] tbl         Gaussian quadrature table
+ *                         of size at least <tt>(w->k + 1)/2</tt>.
  *
  * \return ::SUZERAIN_SUCCESS on success and returns the answer in
  * <code>*delta1</code>.  On recoverable error sets <code>*delta1</code> to be
@@ -164,9 +165,9 @@ int
 suzerain_bl_displacement_thickness(
     const double * coeffs_rhou,
     double * delta1,
-    gsl_matrix * dB,
+    gsl_vector * Bk,
     gsl_bspline_workspace * w,
-    gsl_bspline_deriv_workspace * dw);
+    const gsl_integration_glfixed_table * tbl);
 
 /**
  * Compute the momentum thickness \f$\delta_2\f$ (sometimes written
@@ -187,10 +188,10 @@ suzerain_bl_displacement_thickness(
  * \param[in ] coeffs_rhou B-spline coefficients for \f$\rho u\f$.
  * \param[in ] coeffs_u    B-spline coefficients for \f$u\f$.
  * \param[out] delta2      The computed momentum thickness.
- * \param[in]  dB          Temporary storage to use of size <tt>w->k</tt> by
- *                         no less than <tt>1</tt>.
+ * \param[in ] Bk          Temporary storage to use of length <tt>w->k</tt>.
  * \param[in ] w           Workspace to use.
- * \param[in ] dw          Workspace to use.
+ * \param[in ] tbl         Gaussian quadrature table
+ *                         of size at least <tt>w->k</tt>.
  *
  * \return ::SUZERAIN_SUCCESS on success and returns the answer in
  * <code>*delta2</code>.  On recoverable error sets <code>*delta2</code> to be
@@ -202,34 +203,36 @@ suzerain_bl_momentum_thickness(
     const double * coeffs_rhou,
     const double * coeffs_u,
     double * delta2,
-    gsl_matrix * dB,
+    gsl_vector * Bk,
     gsl_bspline_workspace * w,
-    gsl_bspline_deriv_workspace * dw);
+    const gsl_integration_glfixed_table * tbl);
 
 /**
- * Compute the energy thickness \f$\delta_3\f$ (not to be confused with
- * the enthalpy thickness) given the edge location and a B-spline coefficient
- * representation of streamwise momentum \f$\rho u\f$ and velocity \f$u\f$.
- * The method computes
+ * Compute the energy thickness \f$\delta_3\f$ (not to be confused with the
+ * enthalpy thickness) given the edge location and a B-spline coefficient
+ * representation of streamwise momentum \f$\rho u\f$ and specific kinetic
+ * energy \f$\vec{u}^2/2\f$.  The method computes
  * \f[
  *  \delta_3 = \int_0^\infty
  *  \frac{\rho u}{\rho_\infty u_\infty}
- *  \left(1 - \left(\frac{u}{u_\infty}\right)^2\right)
+ *  \left(1 - \frac{\vec{u}^2}{\vec{u}_\infty^2}\right)
  *  \, \mathrm{d}y
  * \f]
  * where the value from the final B-spline collocation point is taken to be "at
- * infinity".  Among many other places, this definition appears in equation
- * (10.97) on page 258 of Schlichting and Gersten's <a
+ * infinity".  The code Mach number \f$u_0/a_0\f$ is not required as any such
+ * scaling cancels itself within the integrand.  Among many other places, this
+ * definition appears in equation (10.97) on page 258 of Schlichting and
+ * Gersten's <a
  * href="http://www.worldcat.org/title/boundary-layer-theory-with-22-tables/oclc/615466700">
  * Boundary Layer Theory</a>.
  *
+ * \param[in ] coeffs_ke   B-spline coefficients for \f$\vec{u}^2/2\f$.
  * \param[in ] coeffs_rhou B-spline coefficients for \f$\rho u\f$.
- * \param[in ] coeffs_u    B-spline coefficients for \f$u\f$.
  * \param[out] delta3      The computed momentum thickness.
- * \param[in]  dB          Temporary storage to use of size <tt>w->k</tt> by
- *                         no less than <tt>1</tt>.
+ * \param[in ] Bk          Temporary storage to use of length <tt>w->k</tt>.
  * \param[in ] w           Workspace to use.
- * \param[in ] dw          Workspace to use.
+ * \param[in ] tbl         Gaussian quadrature table
+ *                         of size at least <tt>w->k</tt>.
  *
  * \return ::SUZERAIN_SUCCESS on success and returns the answer in
  * <code>*delta3</code>.  On recoverable error sets <code>*delta3</code> to be
@@ -238,54 +241,60 @@ suzerain_bl_momentum_thickness(
  */
 int
 suzerain_bl_energy_thickness(
+    const double * coeffs_ke,
     const double * coeffs_rhou,
-    const double * coeffs_u,
     double * delta3,
-    gsl_matrix * dB,
+    gsl_vector * Bk,
     gsl_bspline_workspace * w,
-    gsl_bspline_deriv_workspace * dw);
+    const gsl_integration_glfixed_table * tbl);
 
 /**
- * Compute the enthalpy thickness \f$\delta_H\f$ (sometimes written
- * \f$\delta_h\f$ and not to be confused with the
+ * Compute the enthalpy thickness \f$\delta_h\f$ (not to be confused with the
  * energy thickness) given the edge location and a B-spline coefficient
- * representation of streamwise momentum \f$\rho u\f$ and specific total
- * enthalpy \f$H_0 = \frac{\rho E + p}{\rho}\f$.
+ * representation of streamwise momentum \f$\rho u\f$, specific kinetic energy
+ * \f$\vec{u}^2/2\f$, and specific total enthalpy \f$H_0\f$.
  * The method computes
  * \f[
  *  \delta_H = \int_0^\infty
  *  \frac{\rho u}{\rho_\infty u_\infty}
- *  \left(1 - \frac{H_0}{H_{0,\infty}}\right)
+ *  \left(1 - \frac{h}{h_{\infty}}\right)
  *  \, \mathrm{d}y
  * \f]
- * where the value from the final B-spline collocation point is taken to be "at
+ * where the specific internal enthalpy \f$h = H_0 - \mbox{Ma}^2 \vec{u}^2/2\f$
+ * and the value from the final B-spline collocation point is taken to be "at
  * infinity".  Among many other places, this definition appears in equation
  * This definition appears in equation (13.48) on page 324 of Leipmann and
  * Roshko's <a
  * href="http://www.worldcat.org/title/elements-of-gasdynamics/oclc/636935705">
  * Elements of Gasdynamics</a> but is there called "energy thickness".
  *
- * \param[in ] coeffs_rhou B-spline coefficients for \f$\rho u\f$.
+ * \param[in ] code_Ma     Mach number \f$u_0/a_0\f$ used to scale
+ *                         nondimensional quantities.  For dimensional
+ *                         calculations, use <code>1</code>.
  * \param[in ] coeffs_H0   B-spline coefficients for \f$H_0\f$.
- * \param[out] deltaH      The computed enthalpy thickness.
- * \param[in]  dB          Temporary storage to use of size <tt>w->k</tt> by
- *                         no less than <tt>1</tt>.
+ * \param[in ] coeffs_ke   B-spline coefficients for \f$\vec{u}^2/2\f$.
+ * \param[in ] coeffs_rhou B-spline coefficients for \f$\rho u\f$.
+ * \param[out] deltah      The computed enthalpy thickness.
+ * \param[in ] Bk          Temporary storage to use of length <tt>w->k</tt>.
  * \param[in ] w           Workspace to use.
- * \param[in ] dw          Workspace to use.
+ * \param[in ] tbl         Gaussian quadrature table
+ *                         of size at least <tt>w->k</tt>.
  *
  * \return ::SUZERAIN_SUCCESS on success and returns the answer in
- * <code>*deltaH</code>.  On recoverable error sets <code>*deltaH</code> to be
+ * <code>*deltah</code>.  On recoverable error sets <code>*deltah</code> to be
  * <tt>NaN</tt> and returns one of #suzerain_error_status.  On unrecoverable
  * error, additionally calls suzerain_error().
  */
 int
 suzerain_bl_enthalpy_thickness(
-    const double * coeffs_rhou,
+    const double code_Ma,
     const double * coeffs_H0,
-    double * deltaH,
-    gsl_matrix * dB,
+    const double * coeffs_ke,
+    const double * coeffs_rhou,
+    double * deltah,
+    gsl_vector * Bk,
     gsl_bspline_workspace * w,
-    gsl_bspline_deriv_workspace * dw);
+    const gsl_integration_glfixed_table * tbl);
 
 /**
  * Information characterizing boundary layer thickness in various ways.  Each
@@ -300,19 +309,24 @@ typedef struct suzerain_bl_thicknesses {
     double delta2;    /**< Momentum thickness \f$\delta_2\f$
                            (sometimes written \f$\theta\f$).      */
     double delta3;    /**< Energy thickness \f$\delta_3\f$ .      */
-    double deltaH;    /**< Energy thickness \f$\delta_H\f$ .      */
+    double deltah;    /**< Enthalpy thickness \f$\delta_h\f$.     */
 } suzerain_bl_thicknesses;
 
 /**
  * Compute boundary layer thickness parameters.  Requires a B-spline
  * coefficient representation of specific total enthalpy \f$H_0 = \frac{\rho E
- * + p}{\rho}\f$, streamwise momentum \f$\rho u\f$, and velocity \f$u\f$.  This
- * is a convenience method around \ref suzerain_bl_find_edge, \ref
- * suzerain_bl_displacement_thickness, \ref suzerain_bl_momentum_thickness,
- * \ref suzerain_bl_energy_thickness, and \ref suzerain_bl_enthalpy_thickness
- * packing the results into a \ref suzerain_bl_thicknesses structure.
+ * + p}{\rho}\f$, specific kinetic energy \f$\vec{u}^2/2\f$, streamwise
+ * momentum \f$\rho u\f$, and velocity \f$u\f$.  This is a convenience method
+ * around \ref suzerain_bl_find_edge, \ref suzerain_bl_displacement_thickness,
+ * \ref suzerain_bl_momentum_thickness, \ref suzerain_bl_energy_thickness, and
+ * \ref suzerain_bl_enthalpy_thickness packing the results into a \ref
+ * suzerain_bl_thicknesses structure.
  *
+ * \param[in ] code_Ma     Mach number \f$u_0/a_0\f$ used to scale
+ *                         nondimensional quantities.  For dimensional
+ *                         calculations, use <code>1</code>.
  * \param[in ] coeffs_H0   Coefficient representation of \f$H_0\f$.
+ * \param[in ] coeffs_ke   Coefficient representation of \f$\vec{u}^2/2\f$.
  * \param[in ] coeffs_rhou Coefficient representation of \f$\rho u\f$.
  * \param[in ] coeffs_u    Coefficient representation of \f$u\f$.
  * \param[out] thicknesses Populated on success.
@@ -325,7 +339,9 @@ typedef struct suzerain_bl_thicknesses {
  */
 int
 suzerain_bl_compute_thicknesses(
+    const double code_Ma,
     const double * coeffs_H0,
+    const double * coeffs_ke,
     const double * coeffs_rhou,
     const double * coeffs_u,
     suzerain_bl_thicknesses * thick,
@@ -345,15 +361,15 @@ typedef struct suzerain_bl_reynolds {
                            thickness \f$\delta_2\f$. */
     double delta3;    /**< Reynolds number based on energy
                            thickness \f$\delta_3\f$. */
-    double deltaH;    /**< Reynolds number based on enthalpy
-                           thickness \f$\delta_H\f$. */
+    double deltah;    /**< Reynolds number based on enthalpy
+                           thickness \f$\delta_h\f$. */
 } suzerain_bl_reynolds;
 
 /**
  * Compute boundary layer Reynolds numbers.
  *
- * \param[in ] code_Re  Reynolds number \f$\rho_0 u_0 l_0/\mu_0\f$ used to scale
- *                      nondimensional quantities.  For dimensional
+ * \param[in ] code_Re  Reynolds number \f$\rho_0 u_0 l_0/\mu_0\f$ used to
+ *                      scale nondimensional quantities.  For dimensional
  *                      calculations, use <code>1</code>.
  * \param[in ] edge     Local state information from the boundary layer edge.
  * \param[in ] thick    Thickness information for the boundary layer.
@@ -518,35 +534,45 @@ suzerain_bl_compute_pg(
  * \\
  *   \mbox{Re}_{\delta_3} &= \mu_e^{-1} \int_0^\infty
  *     \left(\rho u\right)_\mbox{vis}
- *   - \left(\rho u^3\right)_\mbox{vis} u^{-2}_\mbox{inv}
+ *   - \left(\rho u \vec{u}^2\right)_\mbox{vis} \vec{u}^{-2}_\mbox{inv}
  *   \, \mathrm{d}y
  * \\
- *   \mbox{Re}_{\delta_H} &= \mu_e^{-1} \int_0^\infty
+ *   \mbox{Re}_{\delta_h} &= \mu_e^{-1} \int_0^\infty
  *     \left(\rho u\right)_\mbox{vis}
- *   - \left(\rho H_0 u\right)_\mbox{vis} {H}^{-1}_{0,\mbox{inv}}
+ *   - \left(\rho h u\right)_\mbox{vis} {h}^{-1}_\mbox{inv}
  *   \, \mathrm{d}y
  * \f}
- * The method requires a B-spline coefficient representation of both the
- * viscous and inviscid flow specific total enthalpy \f$H_0 = \frac{\rho E +
- * p}{\rho}\f$, streamwise momentum \f$\rho u\f$, and velocity \f$u\f$.
+ * where the internal specific enthalpy \f$h = H_0 - \mbox{Ma}^2
+ * \vec{u}^2/2\f$.  The method requires a B-spline coefficient representation
+ * of both the viscous and inviscid flow specific total enthalpy \f$H_0\f$,
+ * streamwise momentum \f$\rho u\f$, and specific kinetic energy
+ * \f$\vec{u}^2/2\f$.
  *
+ *
+ * \param[in ] code_Ma         Mach number \f$u_0/a_0\f$ used to scale
+ *                             nondimensional quantities.  For dimensional
+ *                             calculations, use <code>1</code>.
  * \param[in ] code_Re         Reynolds number \f$\rho_0 u_0 l_0/\mu_0\f$ used
  *                             to scale nondimensional quantities.  For
  *                             dimensional calculations, use <code>1</code>.
  * \param[in ] coeffs_vis_H0   Coefficients for viscous \f$H_0\f$ profile.
- *                             These value must be contiguous in memory.
+ *                             Values must be contiguous in memory.
+ * \param[in ] coeffs_vis_ke   Coefficients for viscous \f$\vec{u}^2/2\f$
+ *                             profile.  Values must be contiguous in memory.
  * \param[in ] coeffs_vis_rhou Coefficients for viscous \f$\rho u\f$ profile.
- *                             These value must be contiguous in memory.
+ *                             Values must be contiguous in memory.
  * \param[in ] coeffs_vis_u    Coefficients for viscous \f$u\f$ profile.
- *                             These value must be contiguous in memory.
+ *                             Values must be contiguous in memory.
  * \param[in ] inv_stride      Stride between inviscid profile coefficients.
  *                             May be zero to indicate uniform inviscid data.
  * \param[in ] coeffs_inv_H0   Coefficients for inviscid \f$H_0\f$ profile.
- *                             These are strided per \c inv_stride.
+ *                             Values strided per \c inv_stride.
  * \param[in ] coeffs_inv_rhou Coefficients for inviscid \f$\rho u\f$ profile.
- *                             These are strided per \c inv_stride.
+ *                             Values strided per \c inv_stride.
  * \param[in ] coeffs_inv_u    Coefficients for inviscid \f$u\f$ profile.
- *                             These are strided per \c inv_stride.
+ *                             Values strided per \c inv_stride.
+ * \param[in ] coeffs_inv_v    Coefficients for inviscid \f$v\f$ profile.
+ *                             Values strided per \c inv_stride.
  * \param[in ] edge            Local information from the boundary layer edge.
  * \param[out] reynolds        Populated on success.
  *                             See type documentation for contents.
@@ -560,17 +586,20 @@ suzerain_bl_compute_pg(
  */
 int
 suzerain_bl_compute_reynolds_baseflow(
-    const double                          code_Re,
-    const double                  * const coeffs_vis_H0,
-    const double                  * const coeffs_vis_rhou,
-    const double                  * const coeffs_vis_u,
-    const int                             inv_stride,
-    const double                  * const coeffs_inv_H0,
-    const double                  * const coeffs_inv_rhou,
-    const double                  * const coeffs_inv_u,
-    const suzerain_bl_local       * const edge,
-    suzerain_bl_reynolds          * const reynolds,
-    gsl_bspline_workspace         * const w);
+    const double                    code_Ma,
+    const double                    code_Re,
+    const double            * const coeffs_vis_H0,
+    const double            * const coeffs_vis_ke,
+    const double            * const coeffs_vis_rhou,
+    const double            * const coeffs_vis_u,
+    const int                       inv_stride,
+    const double            * const coeffs_inv_H0,
+    const double            * const coeffs_inv_rhou,
+    const double            * const coeffs_inv_u,
+    const double            * const coeffs_inv_v,
+    const suzerain_bl_local * const edge,
+    suzerain_bl_reynolds    * const reynolds,
+    gsl_bspline_workspace   * const w);
 
 /**
  * Compute integral length scales accounting for an inviscid baseflow.  The
@@ -609,34 +638,44 @@ suzerain_bl_compute_reynolds_baseflow(
  *         \left(\rho u^3\right)_\mbox{vis}
  *     \, \mathrm{d}y
  * \\
- *     \int_{\delta_1 + \delta_H}^\infty
- *         \left(\rho H_0 u\right)_\mbox{inv}
- *       - \left(\rho H_0 u\right)_\mbox{vis}
+ *     \int_{\delta_1 + \delta_h}^\infty
+ *         \left(\rho h u\right)_\mbox{inv}
+ *       - \left(\rho h u\right)_\mbox{vis}
  *     \, \mathrm{d}y
  *   &=
- *     \int_0^{\delta_1 + \delta_H}
- *         \left(\rho H_0 u\right)_\mbox{vis}
+ *     \int_0^{\delta_1 + \delta_h}
+ *         \left(\rho h u\right)_\mbox{vis}
  *     \, \mathrm{d}y
  * \\
  * \f}
- * The method requires a B-spline coefficient representation of both the
- * viscous and inviscid flow specific total enthalpy \f$H_0 = \frac{\rho E +
- * p}{\rho}\f$, streamwise momentum \f$\rho u\f$, and velocity \f$u\f$.
+ * where the internal specific enthalpy \f$h = H_0 - \mbox{Ma}^2
+ * \vec{u}^2/2\f$.  The method requires a B-spline coefficient representation
+ * of both the viscous and inviscid flow specific total enthalpy \f$H_0 =
+ * \frac{\rho E + p}{\rho}\f$, streamwise momentum \f$\rho u\f$, and streamwise
+ * velocity \f$u\f$.  The viscous specific kinetic energy \f$\vec{u}^2/2\f$ and
+ * inviscid wall-normal velocity \f$v\f$ profile are additionally required.
  *
+ * \param[in ] code_Ma         Mach number \f$u_0/a_0\f$ used to scale
+ *                             nondimensional quantities.  For dimensional
+ *                             calculations, use <code>1</code>.
  * \param[in ] coeffs_vis_H0   Coefficients for viscous \f$H_0\f$ profile.
- *                             These value must be contiguous in memory.
+ *                             Values must be contiguous in memory.
+ * \param[in ] coeffs_vis_ke   Coefficients for viscous \f$\vec{u}^2/2\f$
+ *                             profile.  Values must be contiguous in memory.
  * \param[in ] coeffs_vis_rhou Coefficients for viscous \f$\rho u\f$ profile.
- *                             These value must be contiguous in memory.
+ *                             Values must be contiguous in memory.
  * \param[in ] coeffs_vis_u    Coefficients for viscous \f$u\f$ profile.
- *                             These value must be contiguous in memory.
+ *                             Values must be contiguous in memory.
  * \param[in ] inv_stride      Stride between inviscid profile coefficients.
  *                             May be zero to indicate uniform inviscid data.
  * \param[in ] coeffs_inv_H0   Coefficients for inviscid \f$H_0\f$ profile.
- *                             These are strided per \c inv_stride.
+ *                             Values strided per \c inv_stride.
  * \param[in ] coeffs_inv_rhou Coefficients for inviscid \f$\rho u\f$ profile.
- *                             These are strided per \c inv_stride.
+ *                             Values strided per \c inv_stride.
  * \param[in ] coeffs_inv_u    Coefficients for inviscid \f$u\f$ profile.
- *                             These are strided per \c inv_stride.
+ *                             Values strided per \c inv_stride.
+ * \param[in ] coeffs_inv_v    Coefficients for inviscid \f$v\f$ profile.
+ *                             Values strided per \c inv_stride.
  * \param[out] thick           Populated on success.
  *                             See type documentation for contents.
  * \param[in ] w               Workspace to use.
@@ -650,16 +689,19 @@ suzerain_bl_compute_reynolds_baseflow(
  */
 int
 suzerain_bl_compute_thicknesses_baseflow(
-    const double                  * const coeffs_vis_H0,
-    const double                  * const coeffs_vis_rhou,
-    const double                  * const coeffs_vis_u,
-    const int                             inv_stride,
-    const double                  * const coeffs_inv_H0,
-    const double                  * const coeffs_inv_rhou,
-    const double                  * const coeffs_inv_u,
-    suzerain_bl_thicknesses       * const thick,
-    gsl_bspline_workspace         * const w,
-    gsl_bspline_deriv_workspace   * const dw);
+    const double                        code_Ma,
+    const double                * const coeffs_vis_H0,
+    const double                * const coeffs_vis_ke,
+    const double                * const coeffs_vis_rhou,
+    const double                * const coeffs_vis_u,
+    const int                           inv_stride,
+    const double                * const coeffs_inv_H0,
+    const double                * const coeffs_inv_rhou,
+    const double                * const coeffs_inv_u,
+    const double                * const coeffs_inv_v,
+    suzerain_bl_thicknesses     * const thick,
+    gsl_bspline_workspace       * const w,
+    gsl_bspline_deriv_workspace * const dw);
 
 #ifdef __cplusplus
 } /* extern "C" */
