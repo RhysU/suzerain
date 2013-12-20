@@ -226,6 +226,10 @@ suzerain_bl_momentum_thickness(
  * href="http://www.worldcat.org/title/boundary-layer-theory-with-22-tables/oclc/615466700">
  * Boundary Layer Theory</a>.
  *
+ * \warning Beware that many source neglect the contribution from \f$v^2\f$
+ * within the kinetic energy \f$\vec{u}^2/2 = u^2/2 + v^2/2\f$.  Including it
+ * will tend the increase the resulting energy thickness.
+ *
  * \param[in ] coeffs_ke   B-spline coefficients for \f$\vec{u}^2/2\f$.
  * \param[in ] coeffs_rhou B-spline coefficients for \f$\rho u\f$.
  * \param[out] delta3      The computed momentum thickness.
@@ -630,12 +634,12 @@ suzerain_bl_compute_reynolds_baseflow(
  *     \, \mathrm{d}y
  * \\
  *     \int_{\delta_1 + \delta_3}^\infty
- *         \left(\rho u^3\right)_\mbox{inv}
- *       - \left(\rho u^3\right)_\mbox{vis}
+ *         \left(\rho u \vec{u}^2\right)_\mbox{inv}
+ *       - \left(\rho u \vec{u}^2\right)_\mbox{vis}
  *     \, \mathrm{d}y
  *   &=
  *     \int_0^{\delta_1 + \delta_3}
- *         \left(\rho u^3\right)_\mbox{vis}
+ *         \left(\rho u \vec{u}^2\right)_\mbox{vis}
  *     \, \mathrm{d}y
  * \\
  *     \int_{\delta_1 + \delta_h}^\infty
@@ -654,6 +658,10 @@ suzerain_bl_compute_reynolds_baseflow(
  * \frac{\rho E + p}{\rho}\f$, streamwise momentum \f$\rho u\f$, and streamwise
  * velocity \f$u\f$.  The viscous specific kinetic energy \f$\vec{u}^2/2\f$ and
  * inviscid wall-normal velocity \f$v\f$ profile are additionally required.
+ *
+ * \warning Beware that many source neglect the contribution from \f$v^2\f$
+ * within the kinetic energy \f$\vec{u}^2/2 = u^2/2 + v^2/2\f$.  Including it
+ * will tend the increase the resulting energy thickness.
  *
  * \param[in ] code_Ma         Mach number \f$u_0/a_0\f$ used to scale
  *                             nondimensional quantities.  For dimensional
