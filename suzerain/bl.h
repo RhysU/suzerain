@@ -259,18 +259,25 @@ suzerain_bl_energy_thickness(
  * \f$\vec{u}^2/2\f$, and specific total enthalpy \f$H_0\f$.
  * The method computes
  * \f[
- *  \delta_H = \int_0^\infty
+ *  \delta_h = \int_0^\infty
  *  \frac{\rho u}{\rho_\infty u_\infty}
- *  \left(1 - \frac{h}{h_{\infty}}\right)
+ *  \left(\frac{h_\infty - h}{h_\infty - h_\mbox{wall}}\right)
  *  \, \mathrm{d}y
  * \f]
  * where the specific internal enthalpy \f$h = H_0 - \mbox{Ma}^2 \vec{u}^2/2\f$
  * and the value from the final B-spline collocation point is taken to be "at
- * infinity".  Among many other places, this definition appears in equation
- * This definition appears in equation (13.48) on page 324 of Leipmann and
- * Roshko's <a
+ * infinity".
+ *
+ * Among many other places, this definition appears in equation (13.48) on page
+ * 324 of Leipmann and Roshko's <a
  * href="http://www.worldcat.org/title/elements-of-gasdynamics/oclc/636935705">
- * Elements of Gasdynamics</a> but is there called "energy thickness".
+ * Elements of Gasdynamics</a> but is there called "energy thickness".  Page
+ * 258 of Schlichting and Gersten's <a
+ * href="http://www.worldcat.org/title/boundary-layer-theory-with-22-tables/oclc/615466700">
+ * Boundary Layer Theory</a> negates Leipmann and Roshko's definition.  The
+ * differences arises from whether the freestream is hot or cold relative to
+ * the wall.  The form written above works irrespective of that contextual
+ * difference.
  *
  * \param[in ] code_Ma     Mach number \f$u_0/a_0\f$ used to scale
  *                         nondimensional quantities.  For dimensional

@@ -279,6 +279,12 @@ suzerain_bl_enthalpy_thickness(
                        SUZERAIN_ESANITY);
     }
 
+    /* State at wall taken from first B_spline collocation point */
+    /* which happens to be the value of the first coefficient */
+    const double wall_H0 = coeffs_H0[0];
+    const double wall_ke = coeffs_ke[0];
+    const double wall_h  = wall_H0 - code_Ma*code_Ma*wall_ke;
+
     /* State at infinity taken from final B_spline collocation point */
     /* which happens to be the value of the final coefficient */
     const double edge_H0   = coeffs_H0  [w->n - 1];
@@ -317,7 +323,7 @@ suzerain_bl_enthalpy_thickness(
 
             /* Then use integrand scaled by weight to accumulate result */
             const double h = H0 - code_Ma*code_Ma*ke;
-            *deltah += wj * (rhou / edge_rhou) * (1 - h / edge_h);
+            *deltah += wj * (rhou/edge_rhou) * (edge_h - h)/(edge_h - wall_h);
         }
     }
 
