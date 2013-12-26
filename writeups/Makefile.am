@@ -38,6 +38,7 @@ EXTRA_DIST += inhomogeneity1.gz inhomogeneity1.eps
 EXTRA_DIST += inhomogeneity2.gz inhomogeneity2.eps
 EXTRA_DIST += symplanenorm.eps
 EXTRA_DIST += references.bib
+EXTRA_DIST += writeup.sh
 
 # Build and install writeups
 all-local:       pdf-local
