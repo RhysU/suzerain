@@ -1,19 +1,19 @@
 % Seek [Ma0, R0, rho1, u1] producing requested conditions at (R0, delta).
 % Returns struct s with fields s.Ma0, s.R0, s.rho1, s.u1, and s.p1 producing a
-% flow with observed s.Ma_e, s.p_exi, and s.a2_e and s.p1 matching ideal EOS.
+% flow with observed s.Ma_e, s.p_exi, and s.T_e and s.p1 matching ideal EOS.
 % Curried function results noz(Ly) and qoi(Ly) compute the flow on (R0, 0) to
 % (R0, Ly) and quantities of interest at (R0, Ly), respectively.
 %
 % Parameter 'burn_in_iterations' (>0) fixes Ma0 for some number of iterations.
 % Parameter 'opt' may supply additional nonlin_residmin options using optimset.
 % However, options 'MaxIter' and 'fixed' will be ignored.
-function [s noz qoi] = nozzle_baseflow(delta, gam0, Ma_e, p_exi, a2_e,    ...
+function [s noz qoi] = nozzle_baseflow(delta, gam0, Ma_e, p_exi, T_e,     ...
                                        burn_in_iterations = 10,           ...
                                        opt = optimset('Algorithm',        ...
                                                       'lm_svd_feasible'))
 
   % Relative residuals of observations vs targets for [Ma0; R0; rho1; u1]
-  tgt = [Ma_e; p_exi; a2_e];
+  tgt = [Ma_e; p_exi; T_e];
   f   = @(x) (obs_vector(delta, gam0, x(1), x(2), x(3), x(4)) - tgt)./tgt;
 
   % Establish bounds for [Ma0; R0; rho1; u1], a guess, and constraint(s)
@@ -39,7 +39,7 @@ function [s noz qoi] = nozzle_baseflow(delta, gam0, Ma_e, p_exi, a2_e,    ...
     [p, res, cvg, outp] = nonlin_residmin(f, p, phase2); niter += outp.niter;
   catch
     warning('nozzle_baseflow(%g, %g, %g, %g, %g) fails: %s', ...
-            delta, gam0, Ma_e, p_exi, a2_e, lasterror.message);
+            delta, gam0, Ma_e, p_exi, T_e, lasterror.message);
     cvg = 0; p = nan(5,1);
   end
   res2 = norm(res.*optimget(phase2, 'weights', ones(size(tgt))), 2);
@@ -48,7 +48,7 @@ function [s noz qoi] = nozzle_baseflow(delta, gam0, Ma_e, p_exi, a2_e,    ...
   % Package up problem specification, solution, results, and runtime behavior
   s = struct('delta', delta, 'gam0', gam0,
              'Ma0', p(1), 'R0', p(2), 'rho1', p(3), 'u1', p(4),
-             'Ma_e', res(1), 'p_exi', res(2), 'a2_e', res(3),
+             'Ma_e', res(1), 'p_exi', res(2), 'T_e', res(3),
              'res2', res2, 'cvg', cvg, 'niter', niter);
   noz = @(Ly) nozzle    (s.Ma0, s.gam0, s.R0, realsqrt(s.R0**2+Ly**2),
                          s.u1, s.rho1);
@@ -57,8 +57,8 @@ end
 
 % Repackage nozzle_qoi multiple return values into a vector of observations.
 function f = obs_vector(delta, gam0, Ma0, R0, rho1, u1)
-  [Ma_e, p_exi, a2_e, a2_w] = nozzle_qoi(delta, gam0, Ma0, R0, rho1, u1);
-  f = [Ma_e; p_exi; a2_e];  % Ignore a2_w
+  [Ma_e, p_exi, T_e] = nozzle_qoi(delta, gam0, Ma0, R0, rho1, u1);
+  f = [Ma_e; p_exi; T_e];
 end
 
 %!test

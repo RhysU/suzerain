@@ -275,9 +275,10 @@ over some domain $\Omega$ and applying a corollary of Gauss' theorem:
 \section{Reduction to the radially symmetric, two-dimensional case}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-Suppose radial symmetry in which $\vec{u}={u}\!\left(r\right)\hat{r}$.  Then
-the velocity potential $\vec{\nabla}\phi$ is superfluous
-and~\eqref{eq:cpfgibbs_nondim} is nothing but the scalar equation
+Suppose a two-dimensional domain possessing radial symmetry in which
+$\vec{u}={u}\!\left(r\right)\hat{r}$.  Then the velocity potential
+$\vec{\nabla}\phi$ is superfluous and~\eqref{eq:cpfgibbs_nondim} is nothing but
+the scalar equation
 \begin{align}
        2 u^2\!\left(r\right) u^\prime\!\left(r\right)
     &=
@@ -325,12 +326,11 @@ Solving for $u^\prime$,
 \label{eq:cpfradial_nondim_ode}
 ,
 \end{align}
-permits integrating using $u$ via classical ODE techniques whenever a boundary
-condition on either $R_1$ or $R_2$ is supplied.
+permits integrating $u$ given a boundary condition on either $R_1$ or $R_2$.
 
-Given some $u$, computing local thermodynamic state is of interest.
+Given some $u$, computing local thermodynamic state also is of interest.
 Equation~\eqref{eq:stagnation_sound_nondim} fixes~$a$.  The
-$u=u\!\left(r\right)$ assumption causes~\eqref{eq:logrho_nondim} to reduce to
+$u=u\!\left(r\right)$ assumption reduces~\eqref{eq:logrho_nondim} to
 \begin{align}
   \rho\!\left(R_2\right)
   &=
@@ -363,23 +363,21 @@ Likewise~\eqref{eq:p_nondim} simplifies to
 \label{eq:cpfradial_nondim_p}
 .
 \end{align}
-Notice~\eqref{eq:cpfradial_nondim_ode} easily supplies $u'$ for the computation
-of both $\rho$ and $p$.
+Notice~\eqref{eq:cpfradial_nondim_ode} easily supplies pointwise $u'$ for the
+computation of both $\rho$ and $p$.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{The radially symmetric sub- and supersonic nozzle problems}
+\section{The sub- and supersonic radial nozzle problems}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 Equations~\eqref{eq:stagnation_sound_nondim}, \eqref{eq:cpfradial_nondim_ode},
 \eqref{eq:cpfradial_nondim_rho} and~\eqref{eq:cpfradial_nondim_p} may be used
 to find nondimensional solutions to idealized sub- and supersonic radial nozzle
-and diffuser problems.  In particular, obtaining a favorable pressure gradient,
-i.e. one where $\frac{\mathrm{d}p}{\mathrm{d}r} < 0$, requires imposing
-boundary conditions for sub- and supersonic nozzles.  Many texts, e.g.
+and diffuser problems. Many texts, e.g.
 \citet[\textsection{}9.4]{White1999Fluid} and
-\citet[\textsection{}97]{Landau2004Fluid}, cover the simpler case when the area
-changes slowly as one progresses downstream in the device.  In contrast, this
-treatment permits geometries violating that requirement.
+\citet[\textsection{}97]{Landau2004Fluid}, discuss the situation when the
+nozzle area changes slowly as one progresses downstream in the device.  In
+contrast, the treatment here permits geometries violating that assumption.
 
 A subsonic nozzle may be posed on nondimensional~$\left[R_{1}, R_{2}\right]$ by
 setting inflow per
@@ -389,10 +387,10 @@ setting inflow per
     u\!\left(R_{2}\right) \in \left(-\Mach[0]^{-1}, 0\right)
 .
 \end{align}
-With this condition, $-u$ increases and $p$ decreases when traversing the
+With this inflow, $-u$ increases and $p$ decreases when traversing the
 domain from~$R_{2}$ to~$R_{1}$.  However, not surprisingly, the problem becomes
-incredibly stiff as the flow accelerates towards sonic conditions.  A
-workaround is specifying at most a sonic outflow via
+stiff as the flow accelerates towards sonic conditions.  A workaround is
+specifying at most a sonic outflow via
 \begin{align}
     -a_0 < u_0 u\!\left(l_0 R_1\right) < 0
     &\implies
@@ -428,7 +426,7 @@ square root of $u^2$,
 \label{eq:cpfradial_nozzle_supersonic_bc}
 .
 \end{align}
-In this situation, $u$ increases and $p$ decreases when traversing the domain
+With this inflow, $u$ increases and $p$ decreases when traversing the domain
 from~$R_{1}$ to~$R_{2}$.  As above, a supersonic outflow could instead be
 specified at $R_{2}$.
 
@@ -438,12 +436,12 @@ conjunction with~\eqref{eq:cpfradial_nondim_ode} presents initial value
 problems amenable to solution by numerical ODE integrators.  For example,
 \texttt{Octave}\citep{Eaton2008GNU} armed with the \texttt{odepkg} package can
 solve such problems.  One possible implementation appears in
-Listing~\ref{lst:octave_nozzle} with a verification test.  Its demo logic
+Listing~\ref{lst:octave_nozzle} with verification tests.  Its demo logic
 produces the solutions depicted in Figure~\ref{fig:sample_solns}.  Though only
 scalar $u^\prime\!\left(r\right)$ needs to be integrated, this implementation
 integrates the state vector $\left[u, \rho, p\right]^\mathrm{T}$ so that
-\texttt{odepkg}'s automated solution tolerance controls apply to all three
-components.
+\texttt{odepkg}'s automated solution tolerance controls apply equally to all
+three quantities.
 
 \lstinputlisting[language=Octave,
                  caption={\texttt{nozzle.m}: A nondimensional
@@ -469,6 +467,9 @@ components.
 \section{Computing quantities of interest for a Cartesian base flow}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+Suppose a Cartesian flow profile of height $L_y$ is desired from a constant $x$
+line segment within a radially varying solution.
+%
 \begin{figure}[h]
   \centering
   \includegraphics[width=0.38\textwidth]{nozzle_schematic}
@@ -477,13 +478,11 @@ components.
       A Cartesian setting overlaid on the radially symmetric domain
   }
 \end{figure}
-
-The favorable pressure gradient base flow profile of height $L_y$ is taken from
-a constant $x$ line segment obtained from a radially varying solution.
-Referring to Figure~\eqref{fig:mapping_geometry}, the solution
+%
+Referring to Figure~\eqref{fig:mapping_geometry}, assume a solution
 $u\!\left(R\right)$ with accompanying $\rho\!\left(R\right)$,
 $p\!\left(R\right)$, and $a\!\left(R\right)$ is valid for any
-$R\in\left[R_1,R_2\right]$.  For some $\left(x,y\right)$ and corresponding
+$R\in\left[R_1,R_2\right]$.  Then for some $\left(x,y\right)$ and corresponding
 $R=\sqrt{x^2+y^2}$ one may compute the following:
 %
 \begin{align}
@@ -504,7 +503,7 @@ $R=\sqrt{x^2+y^2}$ one may compute the following:
  & \partial_y a                               &= \frac{1-\gamma_0}{2}\frac{y}{R}\frac{\Mach{}\Mach[0]{}\,u\!\left(R\right)}{a\!\left(R\right)} u^\prime\!\left(R\right)
 \end{align}
 %
-The $\Mach/\Mach[0]{}$ factors on $p$ and $a$ prepare them for use within a
+The $\Mach/\Mach[0]{}$ factors on $p$ and $a$ rescale them for use within a
 nondimensionalization possessing a potentially different Mach number, $\Mach$,
 assuming $p_0 = \rho_0 a_0^2$, $\rho_0$, and $u_0$ still hold in that target
 setting.  Such a translation permits using radial nozzle solutions within the
@@ -536,23 +535,20 @@ coordinates:
 Here, the pressure equation uses $\rho{}a^2$ and not $\gamma{}p$ as
 assumptions~\eqref{eq:gradrho_gradp_relationship}
 and~\eqref{eq:stagnation_sound_nondim} do not recover the ideal gas equation of
-state, $\rho{}a^2=\gamma_{0} p$.  However, at sufficiently large radii when
-care is taken in supplying initial conditions, it is possible to achieve
-solutions in which $\rho a^2 \approx \gamma_{0} p$.
+state, $\rho{}a^2=\gamma_{0} p$.  However, at sufficiently large radii, it is
+possible to achieve solutions in which $\rho a^2 \approx \gamma_{0} p$.
 
-More specifically, the Cartesian flow profile should be computed from the
-radial solution on the line segment spanning points $\left(R_0,0\right)$ and
-$\left(R_0,L_y\right)$.  Clearly, selecting
+More concretely, take the desired profile from the line segment
+$\left(R_0,0\right)$ to $\left(R_0,L_y\right)$.  Clearly, selecting
 \begin{align}
   R_1 &= R_0
 &
   R_2 &= \sqrt{R_0^2 + L_y^2}
 \end{align}
-produces the smallest radial domain possessing a solution along this entire
-segment.  When working with both sub- and supersonic profiles, it is convenient
-to abstract away the change in sign of $u_x$.  Let $\xi$ denote the $x$
-direction possibly reflected so that streamwise velocity always has positive
-sign.  That is,
+produces the smallest radial domain possessing a solution along this segment.
+When working with both sub- and supersonic profiles, it is convenient to
+abstract away the change in sign of $u_x$.  Let $\xi$ denote the $x$ direction
+possibly reflected so that streamwise velocity is always positive.  That is,
 \begin{align}
   \xi &= \begin{cases}  x &\mbox{if } u\!\left(R_1\right) \geq 0 \\
                        -x &\mbox{otherwise}
@@ -564,11 +560,11 @@ sign.  That is,
 \end{align}
 Practically, whenever $u\left(R_1\right) < 0$ instead of evaluating $u_x$,
 $\partial_x u_x$, etc. at $\left(x,y\right)$ one evaluates $u_x$, $\partial_x
-u_x$, etc. at $\left(-x,y\right)$ to take advantage of the solution symmetry
-inherent in the second quadrant relative to the first quadrant.
+u_x$, etc. at $\left(-x,y\right)$ to take advantage of the symmetry present the
+second quadrant relative to the first one.
 
-At some height of interest with such a profile, say an edge distance $\delta$
-from the $x$-axis, one may also compute
+At some location of interest with such a profile, say an edge distance
+$\delta$ from the $x$-axis, one may also compute
 \begin{align}
   \Mach[e]{}
   &\equiv
@@ -592,107 +588,237 @@ from the $x$-axis, one may also compute
     \frac{\operatorname{sgn}(u) \, \delta}{\Mach[0]^2 \rho u^2}
       \frac{\partial{}p}{\partial{}x}
   \right|_{\left(R_0,\delta\right)}
-  =
+\\&=
   \left.
     \frac{\operatorname{sgn}(u) R \, \delta \, p'\!\left(R\right)}
          {\Mach[0]^2 R_0 \, \rho\!\left(R\right) u^2\!\left(R\right)}
   \right|_{R=\sqrt{R_0^2 + \delta^2}}
+  =
+  - \left.
+      \frac{R \, \delta \, u'\!\left(R\right)}
+           {R_0 \, \left|u\!\left(R\right)\right|}
+  \right|_{R=\sqrt{R_0^2 + \delta^2}}
 \end{align}
-to interrogate the solution's nature at $\left(R_0, \delta\right)$.  The squared
-sound speed at $y=\delta$ and $y=0$ is
+to interrogate the solution's nature at $\left(R_0, \delta\right)$. When the
+isenthalpic data is used to approximate the behavior of an ideal gas, the
+nondimensional edge temperature
 \begin{align}
-  a^2_e
-  &\equiv
-  a^2\!\left(\sqrt{R_0^2 + \delta^2}\right)
-,
-&
-  a^2_w
-  &\equiv
-  a^2\!\left(R_0\right)
-.
+    T_e &= \left.
+        \gamma_0 \frac{p\!\left(R\right)}{\rho\!\left(R\right)}
+  \right|_{R=\sqrt{R_0^2 + \delta^2}}
 \end{align}
-In the special case of a thermally and calorically perfect gas, these are
-nothing but temperatures $T_e$ and $T_w$ because
-choices~\eqref{eq:nondimensionalization} imply $a^2 = T$ holds in that
-particular context.  A kernel building atop Listing~\ref{lst:octave_nozzle}
-that computes these quantities of interest appears in
-Listing~\ref{lst:octave_nozzle_qoi}.  By solving to boundary $R_2 = \sqrt{R_0^2
-+ \delta^2}$ the kernel both solves the cheapest possible problem and causes
-the ODE integrator to automatically produce full-order accurate results at
-$\left(R_0,\delta\right)$ without requiring dense output capabilities.
+may also be of interest.
 
-\lstinputlisting[language=Octave,float=bp,
+A kernel building atop Listing~\ref{lst:octave_nozzle} that computes these
+quantities appears in Listing~\ref{lst:octave_nozzle_qoi}. By solving to
+boundary $R_2 = \sqrt{R_0^2 + \delta^2}$ the kernel both solves the cheapest
+possible problem and causes the ODE integrator to automatically produce
+full-order accurate results at $\left(R_0,\delta\right)$ without requiring the
+integrator to possess dense output capabilities.
+
+\lstinputlisting[language=Octave,%float=tbp,
                  caption={\texttt{nozzle\_qoi.m}: A kernel computing several
                  nozzle quantities of interest\label{lst:octave_nozzle_qoi}}]
                 {notebooks/nozzle_qoi.m}
 
-\pagebreak[4]{}
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Producing base flows matching given quantities of interest}
+\section{Producing nozzle flows to match boundary layer edge conditions}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-A nonlinear optimization problem may be formulated over $\Mach[0]$, $R_0$,
-$\rho\!\left(R_1\right)$, and $u\!\left(R_1\right)$ to match some target
-$\Mach[e]{}$, $p_{e,\xi}$, and $T_e$ given fixed $\delta$ and $\gamma_0$.
-Parameter $p\!\left(R_1\right)$ may be arbitrarily fixed as it does not impact
-these particular target quantities.  Setting it to match the ideal gas equation
-of state is chosen here.  One possible implementation, written using the
-\texttt{nonlim\_resid} method from \texttt{Octave}'s \texttt{optim} package, is
-given in Listing~\ref{lst:octave_nozzle_baseflow}.
-
-Several details took considerable effort to refine and are therefore worth
-noting:\mynobreakpar
+We wish to produce Cartesian base flows possessing
 \begin{enumerate}
-  \item The relative residuals are minimized rather than the absolute residuals
-    as otherwise the larger magnitudes of $\Mach[e]{}$ swamp $p_{e,\xi}$
-    yielding undesirable results.
-  \item A poor initial guess is taken by selecting $R_0 = 10\delta$ and
-    $\Mach[0]{}=\Mach[e]{}$.  Choosing $\Mach[0]{}=\Mach[e]{}$ appears to be
-    critical for obtaining a range of $a_e^2$ behavior.  This particular value
-    stems from investigating what permits~\eqref{eq:stagnation_sound_nondim} to
-    produce the necessarily positive $\Mach[0]^2$ when the flow is either
-    locally sub- or supersonic.  For subsonic $\Mach[e]{}$ the minimum possible
-    $u_1\!\left(R_1\right)$ according
-    to~\eqref{eq:cpfradial_nozzle_subsonic_bc} is chosen.  For supersonic
-    $\Mach[e]{}$ the mean possible $u_1\!\left(R_1\right)$ according
-    to~\eqref{eq:cpfradial_nozzle_supersonic_bc} is selected.
-  \item To combat the impact of this poor initial guess, optimization proceeds
-    in two phases with the first phase treating only $R_0$ and
-    $u\!\left(R_1\right)$ as free parameters.  This first phase is run only
-    briefly as otherwise the optimizer sometimes finds a woefully suboptimal
-    local minimum.
-  \item As shown, $\rho\!\left(R_1\right)$ is taken fixed because because, for
-    it to have appreciable impact on the optimization results, the parameter
-    often take physically unbecoming values for what should be an order-one
-    nondimensional quantity.
+    \item a unit edge streamwise velocity $u_\xi$ magnitude
+          regardless of sub- or supersonic conditions,
+    \item some prescribed edge Mach number $\Mach[e]{}$, and
+    \item some prescribed edge pressure gradient $p_{e,\xi}$.
 \end{enumerate}
-All of these choices were required to pass test cases A--F appearing at the end
-of Listing~\ref{lst:octave_nozzle_baseflow}.
+%
+Considering first the unit edge velocity requirement,
+\begin{equation}
+    1
+    = u_\xi\!\left(R_0, \delta\right)
+    = \left| u_x\!\left(R_0,\delta\right) \right|
+    = \left| u  \!\left(R\equiv\sqrt{R_0^2+\delta^2}\right) \frac{R_0}{R} \right|
+\implies
+    \left|u\!\left(R\right)\right| = \frac{R}{R_0}
+.
+\end{equation}
+%
+Folding this constraint into the definition of the edge Mach number,
+\begin{equation}
+    \Mach[e]{}
+    =
+    \frac{\Mach[0]{} R_0}{R}
+    \frac{\left|u\!\left(R\right)\right|}
+         {      a\!\left(R\right)       }
+    =
+    \frac{\Mach[0]{} R_0}{R}
+    \frac{R}{R_0 a\!\left(R\right)}
+\implies
+    a\!\left( R \right) = \frac{\Mach[0]}{\Mach[e]}
+.
+\end{equation}
+%
+Linking these two conditions through the equation of state,
+\begin{align}
+    a^2\!\left(R\right)
+    = \frac{\Mach[0]^2}{\Mach[e]^2}
+   &= 1 + \Mach[0]^2\frac{\gamma_0-1}{2}\left(1-u^2\!\left(R\right)\right)
+\\ &= 1 + \Mach[0]^2\frac{\gamma_0-1}{2}\left(1-\frac{R^2}{R_0^2}\right)
+    = 1 - \Mach[0]^2\frac{\gamma_0-1}{2}\frac{\delta^2}{R_0^2}
+\end{align}
+implies
+\begin{align}
+    \Mach[0] &= \left(
+        \frac{1}{\Mach[e]^2} + \frac{\gamma_0-1}{2}\frac{\delta^2}{R_0^2}
+    \right)^{-1/2}
+.
+\end{align}
+%
+Turning to the pressure gradient,
+\begin{align}
+  p_{e,\xi}
+  &=
+  - \frac{R \, \delta \, u'\!\left(R\right)}{R_0 \, \left|u\!\left(R\right)\right|}
+  =
+  - \delta \, u'\!\left(R\right)
+\\&=
+  - \delta
+  \frac{u\!\left(R\right)}{R}
+       \,
+       \frac{
+         \left[
+             2 \Mach[0]{}^{-2} + \left(\gamma_0-1\right) \left(1 - u^2\!\left(R\right)\right)
+         \right]
+       }{
+           2 u^2\!\left(R\right)
+         - \left[
+             2 \Mach[0]{}^{-2} + \left(\gamma_0-1\right) \left(1 - u^2\!\left(R\right)\right)
+           \right]
+       }
+\\&=
+  - \delta
+  \frac{\left|u\!\left(R\right)\right|}{R \, \operatorname{sgn} u\!\left(R\right)}
+       \,
+       \frac{
+           \Mach[e]{}^{-2}
+       }{
+           \frac{R^2}{R_0^2}
+         - \Mach[e]{}^{-2}
+       }
+\\&=
+  -
+  \frac{\delta}{R_0 \, \operatorname{sgn} u\!\left(R\right)}
+       \,
+       \frac{ R_0^2 }{ \Mach[e]^2 R^2 - R_0^2 }
+\\&=
+  -
+  \frac{\delta}{\operatorname{sgn} u\!\left(R\right)}
+       \,
+       \frac{ R_0 }{ R_0^2 \left(\Mach[e]^2 - 1\right) + \Mach[e]^2 \delta^2 }
+\end{align}
+implies one may solve
+\begin{align}
+  0
+  &=
+    R_0^2
+    \left(\Mach[e]^2 - 1\right) p_{e,\xi} \operatorname{sgn} u\!\left(R\right)
+  + R_0
+    \delta
+  + \Mach[e]^2 \delta^2 p_{e,\xi} \operatorname{sgn} u\!\left(R\right)
+\end{align}
+for its positive root to obtain a suitable $R_0$.
 
-Not surprisingly, matching $\Mach[e]{}\approx{}1$ taxes this formulation as
-implemented here.  Though a realizability constraint is implemented, in
-practice it seems not to be encountered by the chosen optimizer with this
-particular initialization procedure.  The second \texttt{nonlin\_residmin}
-invocation permits many iterations as pre-asymptotic convergence has been quite
-slow on one test (not shown).  Generally, fewer than 50 total iterations and a
-few core-seconds of compute time are required for convergence to
-$\sqrt{\epsilon}$-like sum-of-squared mismatch residuals.  After optimization
-completes, the full base flow profile may be computed by supplying the results
-along with $R_2 = \sqrt{R_0^2 + L_y^2}$ to Listing~\ref{lst:octave_nozzle}.
+One knows $\operatorname{sgn} u\!\left(R\right)$ \emph{a priori} in the
+quadratic equation for $R_0$. To obtain a favorable pressure gradient when
+$\Mach[e]<1$, choose $u\!\left(R\right)=-1$ so that  $\operatorname{sgn}
+u\!\left(R\right) = -1$. When $\Mach[e]<1$, select the positive sign. That is,
+\begin{align}
+  0
+  &= \begin{cases}
+    R_0^2
+    \left(1 - \Mach[e]^2\right) p_{e,\xi}
+  + R_0
+    \delta
+  - \Mach[e]^2 \delta^2 p_{e,\xi}
+  &\mbox{when } \Mach[e]<1, p_{e,\xi}<0
+  \\
+    R_0^2
+    \left(\Mach[e]^2 - 1\right) p_{e,\xi}
+  + R_0
+    \delta
+  + \Mach[e]^2 \delta^2 p_{e,\xi}
+  &\mbox{when } \Mach[e]>1, p_{e,\xi}<0
+  \end{cases}
+\end{align}
+gives $\frac{\mathrm{d}p}{\mathrm{d}r} < 0$. The converse may be taken to
+achieve an adverse pressure gradient.
 
-\lstinputlisting[language=Octave,float=p,
-                 caption={\texttt{nozzle\_baseflow.m}: A driver for targeting
-                 quantities of interest\label{lst:octave_nozzle_baseflow}},
-                 lastline=57]
-                {notebooks/nozzle_baseflow.m}
-
-\lstinputlisting[language=Octave,float=p,
-                 caption={\texttt{nozzle\_baseflow.m}: Continued},
-                 firstline=58,firstnumber=58]
-                {notebooks/nozzle_baseflow.m}
-
-\clearpage
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%\section{Producing base flows matching given quantities of interest}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%
+%%%A nonlinear optimization problem may be formulated over $\Mach[0]$, $R_0$,
+%%%$\rho\!\left(R_1\right)$, and $u\!\left(R_1\right)$ to match some target
+%%%$\Mach[e]{}$, $p_{e,\xi}$, and $T_e$ given fixed $\delta$ and $\gamma_0$.
+%%%Parameter $p\!\left(R_1\right)$ may be arbitrarily fixed as it does not impact
+%%%these particular target quantities.  Setting it to match the ideal gas equation
+%%%of state is chosen here.  One possible implementation, written using the
+%%%\texttt{nonlim\_resid} method from \texttt{Octave}'s \texttt{optim} package, is
+%%%given in Listing~\ref{lst:octave_nozzle_baseflow}.
+%%%
+%%%Several details took considerable effort to refine and are therefore worth
+%%%noting:\mynobreakpar
+%%%\begin{enumerate}
+%%%  \item The relative residuals are minimized rather than the absolute residuals
+%%%    as otherwise the larger magnitudes of $\Mach[e]{}$ swamp $p_{e,\xi}$
+%%%    yielding undesirable results.
+%%%  \item A poor initial guess is taken by selecting $R_0 = 10\delta$ and
+%%%    $\Mach[0]{}=\Mach[e]{}$.  Choosing $\Mach[0]{}=\Mach[e]{}$ appears to be
+%%%    critical for obtaining a range of $a_e^2$ behavior.  This particular value
+%%%    stems from investigating what permits~\eqref{eq:stagnation_sound_nondim} to
+%%%    produce the necessarily positive $\Mach[0]^2$ when the flow is either
+%%%    locally sub- or supersonic.  For subsonic $\Mach[e]{}$ the minimum possible
+%%%    $u_1\!\left(R_1\right)$ according
+%%%    to~\eqref{eq:cpfradial_nozzle_subsonic_bc} is chosen.  For supersonic
+%%%    $\Mach[e]{}$ the mean possible $u_1\!\left(R_1\right)$ according
+%%%    to~\eqref{eq:cpfradial_nozzle_supersonic_bc} is selected.
+%%%  \item To combat the impact of this poor initial guess, optimization proceeds
+%%%    in two phases with the first phase treating only $R_0$ and
+%%%    $u\!\left(R_1\right)$ as free parameters.  This first phase is run only
+%%%    briefly as otherwise the optimizer sometimes finds a woefully suboptimal
+%%%    local minimum.
+%%%  \item As shown, $\rho\!\left(R_1\right)$ is taken fixed because because, for
+%%%    it to have appreciable impact on the optimization results, the parameter
+%%%    often take physically unbecoming values for what should be an order-one
+%%%    nondimensional quantity.
+%%%\end{enumerate}
+%%%All of these choices were required to pass test cases A--F appearing at the end
+%%%of Listing~\ref{lst:octave_nozzle_baseflow}.
+%%%
+%%%Not surprisingly, matching $\Mach[e]{}\approx{}1$ taxes this formulation as
+%%%implemented here.  Though a realizability constraint is implemented, in
+%%%practice it seems not to be encountered by the chosen optimizer with this
+%%%particular initialization procedure.  The second \texttt{nonlin\_residmin}
+%%%invocation permits many iterations as pre-asymptotic convergence has been quite
+%%%slow on one test (not shown).  Generally, fewer than 50 total iterations and a
+%%%few core-seconds of compute time are required for convergence to
+%%%$\sqrt{\epsilon}$-like sum-of-squared mismatch residuals.  After optimization
+%%%completes, the full base flow profile may be computed by supplying the results
+%%%along with $R_2 = \sqrt{R_0^2 + L_y^2}$ to Listing~\ref{lst:octave_nozzle}.
+%%%
+%%%\lstinputlisting[language=Octave,float=p,
+%%%                 caption={\texttt{nozzle\_baseflow.m}: A driver for targeting
+%%%                 quantities of interest\label{lst:octave_nozzle_baseflow}},
+%%%                 lastline=57]
+%%%                {notebooks/nozzle_baseflow.m}
+%%%
+%%%\lstinputlisting[language=Octave,float=p,
+%%%                 caption={\texttt{nozzle\_baseflow.m}: Continued},
+%%%                 firstline=58,firstnumber=58]
+%%%                {notebooks/nozzle_baseflow.m}
+%%%
+%%%\clearpage
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Example: Matching laminar CEV heat shield conditions}
