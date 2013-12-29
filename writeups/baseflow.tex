@@ -506,7 +506,7 @@ $R=\sqrt{x^2+y^2}$ one may compute the following:
 The $\Mach/\Mach[0]{}$ factors on $p$ and $a$ rescale them for use within a
 nondimensionalization possessing a potentially different Mach number, $\Mach$,
 assuming $p_0 = \rho_0 a_0^2$, $\rho_0$, and $u_0$ still hold in that target
-setting.  Such a translation permits using radial nozzle solutions within the
+setting.  Such a translation permits using radial solutions within the
 steady, nondimensional, primitive Euler equations written in Cartesian
 coordinates:
 %
@@ -560,8 +560,8 @@ possibly reflected so that streamwise velocity is always positive.  That is,
 \end{align}
 Practically, whenever $u\left(R_1\right) < 0$ instead of evaluating $u_x$,
 $\partial_x u_x$, etc. at $\left(x,y\right)$ one evaluates $u_x$, $\partial_x
-u_x$, etc. at $\left(-x,y\right)$ to take advantage of the symmetry present the
-second quadrant relative to the first one.
+u_x$, etc. at $\left(-x,y\right)$ to take advantage of the solution symmetry
+about the $y$ axis.
 
 At some location of interest with such a profile, say an edge distance
 $\delta$ from the $x$-axis, one may also compute
@@ -603,6 +603,7 @@ to interrogate the solution's nature at $\left(R_0, \delta\right)$. When the
 isenthalpic data is used to approximate the behavior of an ideal gas, the
 nondimensional edge temperature
 \begin{align}
+%FIXME
     T_e &= \left.
         \gamma_0 \frac{p\!\left(R\right)}{\rho\!\left(R\right)}
   \right|_{R=\sqrt{R_0^2 + \delta^2}}
@@ -622,18 +623,18 @@ integrator to possess dense output capabilities.
                 {notebooks/nozzle_qoi.m}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Producing nozzle flows to match boundary layer edge conditions}
+\section{Producing a flow matching given boundary layer edge conditions}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 We wish to produce Cartesian base flows possessing
-\begin{enumerate}
-    \item a unit edge streamwise velocity $u_\xi$ magnitude
-          regardless of sub- or supersonic conditions,
-    \item some prescribed edge Mach number $\Mach[e]{}$, and
-    \item some prescribed edge pressure gradient $p_{e,\xi}$.
-\end{enumerate}
+(a) some prescribed edge Mach number $\Mach[e]{}$,
+(b) some prescribed edge pressure gradient $p_{e,\xi}$, and
+(c) a unit edge streamwise velocity $u_\xi$ magnitude.
 %
-Considering first the unit edge velocity requirement,
+Mandating $\left|u_\xi\right|=1$ is done for convenience rather than to impose
+some physical criterion.
+%
+Considering first the edge velocity magnitude requirement,
 \begin{equation}
     1
     = u_\xi\!\left(R_0, \delta\right)
@@ -644,7 +645,7 @@ Considering first the unit edge velocity requirement,
 .
 \end{equation}
 %
-Folding this constraint into the definition of the edge Mach number,
+Folding this implication into the edge Mach number requirement,
 \begin{equation}
     \Mach[e]{}
     =
@@ -667,7 +668,7 @@ Linking these two conditions through the equation of state,
 \\ &= 1 + \Mach[0]^2\frac{\gamma_0-1}{2}\left(1-\frac{R^2}{R_0^2}\right)
     = 1 - \Mach[0]^2\frac{\gamma_0-1}{2}\frac{\delta^2}{R_0^2}
 \end{align}
-implies
+forces
 \begin{align}
     \Mach[0] &= \left(
         \frac{1}{\Mach[e]^2} + \frac{\gamma_0-1}{2}\frac{\delta^2}{R_0^2}
@@ -675,12 +676,12 @@ implies
 .
 \end{align}
 %
-Turning to the pressure gradient,
+Turning now to the pressure gradient,
 \begin{align}
   p_{e,\xi}
   &=
   - \frac{R \, \delta \, u'\!\left(R\right)}{R_0 \, \left|u\!\left(R\right)\right|}
-  =
+\\&=
   - \delta \, u'\!\left(R\right)
 \\&=
   - \delta
@@ -717,7 +718,7 @@ Turning to the pressure gradient,
        \,
        \frac{ R_0 }{ R_0^2 \left(\Mach[e]^2 - 1\right) + \Mach[e]^2 \delta^2 }
 \end{align}
-implies one may solve
+implies one should solve
 \begin{align}
   0
   &=
@@ -727,32 +728,88 @@ implies one may solve
     \delta
   + \Mach[e]^2 \delta^2 p_{e,\xi} \operatorname{sgn} u\!\left(R\right)
 \end{align}
-for its positive root to obtain a suitable $R_0$.
+for a strictly positive root to obtain a suitable $R_0$.  If two such roots
+exist, the larger should be taken as the isenthalpic assumption improves as
+$R_0$ increases.
 
-One knows $\operatorname{sgn} u\!\left(R\right)$ \emph{a priori} in the
-quadratic equation for $R_0$. To obtain a favorable pressure gradient when
-$\Mach[e]<1$, choose $u\!\left(R\right)=-1$ so that  $\operatorname{sgn}
-u\!\left(R\right) = -1$. When $\Mach[e]<1$, select the positive sign. That is,
+The term $\operatorname{sgn} u\!\left(R\right)$ appearing above may be set
+based on $\operatorname{sgn} p_{e,\xi}$ and $\operatorname{sgn} \left(
+\Mach[e]^2-1 \right)$ to achieve the desired pressure gradient regardless of
+sub- versus supersonic conditions. Thus $R_0$ is ultimately an implicit
+function of only $\Mach[e]$, $p_{e,\xi}$, and $\delta$. To obtain a favorable
+pressure gradient, select
 \begin{align}
+  &\operatorname{sgn} u\!\left(R\right)
+=
+  \operatorname{sgn} \left(\Mach[e]^2 - 1 \right)
+  , & p_{e,\xi}&<0
+\intertext{
+thus modeling a sub- or supersonic nozzle.  In this case $R_0$ is found from
+}
   0
-  &= \begin{cases}
+  &=
     R_0^2
-    \left(1 - \Mach[e]^2\right) p_{e,\xi}
+    \left(\Mach[e]^2 - 1\right) p_{e,\xi} \operatorname{sgn} \left(\Mach[e]^2 - 1\right)
   + R_0
     \delta
-  - \Mach[e]^2 \delta^2 p_{e,\xi}
-  &\mbox{when } \Mach[e]<1, p_{e,\xi}<0
-  \\
+  + \Mach[e]^2 \delta^2 p_{e,\xi} \operatorname{sgn} \left(\Mach[e]^2 - 1\right)
+\\
+  &=
     R_0^2
-    \left(\Mach[e]^2 - 1\right) p_{e,\xi}
+    \left|\Mach[e]^2 - 1\right| p_{e,\xi}
   + R_0
     \delta
-  + \Mach[e]^2 \delta^2 p_{e,\xi}
-  &\mbox{when } \Mach[e]>1, p_{e,\xi}<0
-  \end{cases}
+  + \Mach[e]^2 \delta^2 p_{e,\xi} \operatorname{sgn} \left(\Mach[e]^2 - 1\right)
+  , & p_{e,\xi}&<0
+.
+\intertext{
+To obtain an adverse pressure gradient, select
+}
+  &\operatorname{sgn} u\!\left(R\right)
+=
+  - \operatorname{sgn} \left(\Mach[e]^2 - 1\right)
+  , & p_{e,\xi}&>0
+\intertext{
+thus modeling a sub- or supersonic diffuser.  In this case $R_0$ is fixed by
+}
+  0
+  &=
+    -
+    R_0^2
+    \left(\Mach[e]^2 - 1\right) p_{e,\xi} \operatorname{sgn} \left(\Mach[e]^2 - 1\right)
+  + R_0
+    \delta
+  - \Mach[e]^2 \delta^2 p_{e,\xi} \operatorname{sgn} \left(\Mach[e]^2 - 1\right)
+\\&=
+    -
+    R_0^2
+    \left|\Mach[e]^2 - 1\right| p_{e,\xi}
+  + R_0
+    \delta
+  - \Mach[e]^2 \delta^2 p_{e,\xi} \operatorname{sgn} \left(\Mach[e]^2 - 1\right)
+  , & p_{e,\xi}&>0
+.
 \end{align}
-gives $\frac{\mathrm{d}p}{\mathrm{d}r} < 0$. The converse may be taken to
-achieve an adverse pressure gradient.
+%
+Evidently the preceding two cases may be merged to yield the general result
+\begin{equation}
+  0
+  =
+    -
+    R_0^2
+    \left|\Mach[e]^2 - 1\right|
+    \left|p_{e,\xi}\right|
+  + R_0
+    \delta
+  - \Mach[e]^2 \delta^2 \left|p_{e,\xi}\right|
+    \operatorname{sgn} \left(\Mach[e]^2 - 1\right)
+\end{equation}
+with the edge velocity sign always taken according to
+\begin{equation}
+    \operatorname{sgn} u\!\left(R\right)
+= - \operatorname{sgn} \left[ p_{e,\xi} \left(\Mach[e]^2 - 1\right) \right]
+  .
+\end{equation}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%\section{Producing base flows matching given quantities of interest}
