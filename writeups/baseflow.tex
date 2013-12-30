@@ -849,74 +849,8 @@ flow profile on segment $\left( R_0, 0 \right)$ to $\left( R_0, \delta \right)$
 has the desired properties may then be verified with
 Listing~\ref{lst:octave_nozzle_qoi}.
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%\section{Producing base flows matching given quantities of interest}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%
-%%%A nonlinear optimization problem may be formulated over $\Mach[0]$, $R_0$,
-%%%$\rho\!\left(R_1\right)$, and $u\!\left(R_1\right)$ to match some target
-%%%$\Mach[e]{}$, $p_{e,\xi}$, and $T_e$ given fixed $\delta$ and $\gamma_0$.
-%%%Parameter $p\!\left(R_1\right)$ may be arbitrarily fixed as it does not impact
-%%%these particular target quantities.  Setting it to match the ideal gas equation
-%%%of state is chosen here.  One possible implementation, written using the
-%%%\texttt{nonlim\_resid} method from \texttt{Octave}'s \texttt{optim} package, is
-%%%given in Listing~\ref{lst:octave_nozzle_baseflow}.
-%%%
-%%%Several details took considerable effort to refine and are therefore worth
-%%%noting:\mynobreakpar
-%%%\begin{enumerate}
-%%%  \item The relative residuals are minimized rather than the absolute residuals
-%%%    as otherwise the larger magnitudes of $\Mach[e]{}$ swamp $p_{e,\xi}$
-%%%    yielding undesirable results.
-%%%  \item A poor initial guess is taken by selecting $R_0 = 10\delta$ and
-%%%    $\Mach[0]{}=\Mach[e]{}$.  Choosing $\Mach[0]{}=\Mach[e]{}$ appears to be
-%%%    critical for obtaining a range of $a_e^2$ behavior.  This particular value
-%%%    stems from investigating what permits~\eqref{eq:stagnation_sound_nondim} to
-%%%    produce the necessarily positive $\Mach[0]^2$ when the flow is either
-%%%    locally sub- or supersonic.  For subsonic $\Mach[e]{}$ the minimum possible
-%%%    $u_1\!\left(R_1\right)$ according
-%%%    to~\eqref{eq:cpfradial_nozzle_subsonic_bc} is chosen.  For supersonic
-%%%    $\Mach[e]{}$ the mean possible $u_1\!\left(R_1\right)$ according
-%%%    to~\eqref{eq:cpfradial_nozzle_supersonic_bc} is selected.
-%%%  \item To combat the impact of this poor initial guess, optimization proceeds
-%%%    in two phases with the first phase treating only $R_0$ and
-%%%    $u\!\left(R_1\right)$ as free parameters.  This first phase is run only
-%%%    briefly as otherwise the optimizer sometimes finds a woefully suboptimal
-%%%    local minimum.
-%%%  \item As shown, $\rho\!\left(R_1\right)$ is taken fixed because because, for
-%%%    it to have appreciable impact on the optimization results, the parameter
-%%%    often take physically unbecoming values for what should be an order-one
-%%%    nondimensional quantity.
-%%%\end{enumerate}
-%%%All of these choices were required to pass test cases A--F appearing at the end
-%%%of Listing~\ref{lst:octave_nozzle_baseflow}.
-%%%
-%%%Not surprisingly, matching $\Mach[e]{}\approx{}1$ taxes this formulation as
-%%%implemented here.  Though a realizability constraint is implemented, in
-%%%practice it seems not to be encountered by the chosen optimizer with this
-%%%particular initialization procedure.  The second \texttt{nonlin\_residmin}
-%%%invocation permits many iterations as pre-asymptotic convergence has been quite
-%%%slow on one test (not shown).  Generally, fewer than 50 total iterations and a
-%%%few core-seconds of compute time are required for convergence to
-%%%$\sqrt{\epsilon}$-like sum-of-squared mismatch residuals.  After optimization
-%%%completes, the full base flow profile may be computed by supplying the results
-%%%along with $R_2 = \sqrt{R_0^2 + L_y^2}$ to Listing~\ref{lst:octave_nozzle}.
-%%%
-%%%\lstinputlisting[language=Octave,float=p,
-%%%                 caption={\texttt{nozzle\_baseflow.m}: A driver for targeting
-%%%                 quantities of interest\label{lst:octave_nozzle_baseflow}},
-%%%                 lastline=57]
-%%%                {notebooks/nozzle_baseflow.m}
-%%%
-%%%\lstinputlisting[language=Octave,float=p,
-%%%                 caption={\texttt{nozzle\_baseflow.m}: Continued},
-%%%                 firstline=58,firstnumber=58]
-%%%                {notebooks/nozzle_baseflow.m}
-%%%
-%%%\clearpage
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Example: Matching laminar CEV heat shield conditions}
+\section{Example: Matching CEV heat shield laminar boundary layer conditions}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 A fully laminar Crew Exploration Vehicle (CEV) heat shield problem for peak
