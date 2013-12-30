@@ -646,8 +646,8 @@ by~\eqref{eq:xicoorddef}
 \begin{equation}
     1
     = u_\xi\!\left(R_0, \delta\right)
-    = \left| u_x\!\left(R_0,\delta\right) \right|
-    = \left| u  \!\left(R\equiv\sqrt{R_0^2+\delta^2}\right) \frac{R_0}{R} \right|
+    = \left|u_x\!\left(R_0,\delta\right) \right|
+    = \left|u  \!\left(R\equiv\sqrt{R_0^2+\delta^2}\right) \frac{R_0}{R} \right|
 \implies
     \left|u\!\left(R\right)\right| = \frac{R}{R_0}
     \label{eq:matching_u}
@@ -834,7 +834,7 @@ a matching base flow may be produced by
 \begin{enumerate}
     \item Solving the quadratic equation~\eqref{eq:matching_R0} for 
         its largest strictly positive root, $R_0$.
-    \item Computing $\Mach[0]{}$ from~\eqref{eq:matching_Ma0}
+    \item Computing $\Mach[0]{}$ from~\eqref{eq:matching_Ma0}.
     \item Computing $R = \sqrt{R_0^2 + \delta^2}$.
     \item Setting $u\!\left(R\right)=\pm R / R_0$ per~\eqref{eq:matching_u}
         with the sign governed by~\eqref{eq:matching_usign}.
@@ -843,11 +843,17 @@ a matching base flow may be produced by
         fix $p\!\left(R\right)$ using~\eqref{eq:Tedef}.
         Otherwise, arbitrarily use 1.
 \end{enumerate}
-The obtained parameters and initial conditions may be integrated from $R$ to
-$R_0$ (or any other radius) using Listing~\ref{lst:octave_nozzle}. That the
-flow profile on segment $\left( R_0, 0 \right)$ to $\left( R_0, \delta \right)$
-has the desired properties may then be verified with
-Listing~\ref{lst:octave_nozzle_qoi}.
+Sample logic performing these tasks appears in
+Listing~\ref{lst:octave_nozzle_match}. The obtained parameters and initial
+conditions may be integrated from $R$ to $R_0$ (or any other radius) using
+Listing~\ref{lst:octave_nozzle}. That the flow profile on segment $\left( R_0,
+0 \right)$ to $\left( R_0, \delta \right)$ has the desired properties may then
+be verified with Listing~\ref{lst:octave_nozzle_qoi}.
+
+\lstinputlisting[language=Octave,float=htbp,
+                 caption={\texttt{nozzle\_match.m}: A kernel 
+                 quantities of interest\label{lst:octave_nozzle_match}}]
+                {notebooks/nozzle_match.m}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Example: Matching CEV heat shield laminar boundary layer conditions}
