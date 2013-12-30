@@ -557,6 +557,7 @@ possibly reflected so that streamwise velocity is always positive.  That is,
     \frac{\partial}{\partial\xi}
  &= \operatorname{sgn}(u) \frac{\partial}{\partial{}x}
   = \frac{x \operatorname{sgn}(u)}{R} \frac{\partial}{\partial{}R}
+\label{eq:xicoorddef}
 \end{align}
 Practically, whenever $u\left(R_1\right) < 0$ instead of evaluating $u_x$,
 $\partial_x u_x$, etc. at $\left(x,y\right)$ one evaluates $u_x$, $\partial_x
@@ -603,6 +604,7 @@ and a nondimensional pressure gradient parameter
       \frac{R \, \delta \, u'\!\left(R\right)}
            {R_0 \, \left|u\!\left(R\right)\right|}
   \right|_{R=\sqrt{R_0^2 + \delta^2}}
+\label{eq:qoidef}
 \end{align}
 to interrogate the solution's nature at $\left(R_0, \delta\right)$. When the
 isenthalpic data is used to approximate the behavior of an ideal gas, the
@@ -612,6 +614,7 @@ nondimensional edge temperature
          = \left. \gamma_0 \frac{\Mach^2    p   \!\left(R\right)}
                                 {\Mach[0]^2 \rho\!\left(R\right)}
            \right|_{R=\sqrt{R_0^2 + \delta^2}}
+\label{eq:Tedef}
 \end{align}
 may also be of interest at $\Mach = \Mach[e]$.
 
@@ -631,15 +634,15 @@ without requiring the integrator to possess dense output capabilities.
 \section{Producing a flow matching given boundary layer edge conditions}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-We wish to produce Cartesian base flows possessing
-(a) some prescribed edge Mach number $\Mach[e]{}$,
-(b) some prescribed edge pressure gradient $p_{e,\xi}$, and
-(c) a unit edge streamwise velocity $u_\xi$ magnitude.
+We wish to produce Cartesian base flows possessing some prescribed edge Mach
+number $\Mach[e]{}$, some prescribed edge pressure gradient $p_{e,\xi}$, and a
+unit magnitude edge streamwise velocity $u_\xi$.
 %
-Mandating $\left|u_\xi\right|=1$ is done for convenience rather than to impose
-some physical criterion.
+Mandating $\left|u_\xi\right|=1$ is done for convenience rather than because it
+imposes some physical restriction.
 %
-Considering first the edge velocity magnitude requirement,
+Considering first the edge velocity magnitude,
+by~\eqref{eq:xicoorddef}
 \begin{equation}
     1
     = u_\xi\!\left(R_0, \delta\right)
@@ -647,10 +650,12 @@ Considering first the edge velocity magnitude requirement,
     = \left| u  \!\left(R\equiv\sqrt{R_0^2+\delta^2}\right) \frac{R_0}{R} \right|
 \implies
     \left|u\!\left(R\right)\right| = \frac{R}{R_0}
+    \label{eq:matching_u}
 .
 \end{equation}
 %
-Folding this implication into the edge Mach number requirement,
+Folding that implication into the edge Mach number
+definition~\eqref{eq:qoidef},
 \begin{equation}
     \Mach[e]{}
     =
@@ -665,7 +670,8 @@ Folding this implication into the edge Mach number requirement,
 .
 \end{equation}
 %
-Linking these two conditions through the equation of state,
+Linking these two conditions through the equation of
+state~\eqref{eq:stagnation_sound_nondim},
 \begin{align}
     a^2\!\left(R\right)
     = \frac{\Mach[0]^2}{\Mach[e]^2}
@@ -678,10 +684,11 @@ forces
     \Mach[0] &= \left(
         \frac{1}{\Mach[e]^2} + \frac{\gamma_0-1}{2}\frac{\delta^2}{R_0^2}
     \right)^{-1/2}
+    \label{eq:matching_Ma0}
 .
 \end{align}
 %
-Turning now to the pressure gradient,
+Turning now to the pressure gradient definition~\eqref{eq:qoidef},
 \begin{align}
   p_{e,\xi}
   &=
@@ -735,11 +742,13 @@ implies one should solve
 \end{align}
 for a strictly positive root to obtain a suitable $R_0$.  If two such roots
 exist, the larger should be taken as the isenthalpic assumption improves as
-$R_0$ increases.
+$R_0$ increases.  Notice nothing constrained the magnitude of either
+$\rho\!\left(R\right)$ or $p\!\left(R\right)$ which permits using them to
+control $T_e$ if so desired.
 
 The term $\operatorname{sgn} u\!\left(R\right)$ appearing above may be set
 based on $\operatorname{sgn} p_{e,\xi}$ and $\operatorname{sgn} \left(
-\Mach[e]^2-1 \right)$ to achieve the desired pressure gradient regardless of
+\Mach[e]^2-1 \right)$ to achieve the requested pressure gradient regardless of
 sub- versus supersonic conditions. Thus $R_0$ is ultimately an implicit
 function of only $\Mach[e]$, $p_{e,\xi}$, and $\delta$. To obtain a favorable
 pressure gradient, select
@@ -810,13 +819,35 @@ Evidently the preceding two cases may be merged to yield the general result
     \delta
   - \Mach[e]^2 \delta^2 \left|p_{e,\xi}\right|
     \operatorname{sgn} \left(\Mach[e]^2 - 1\right)
+    \label{eq:matching_R0}
 \end{equation}
 with the edge velocity sign always taken according to
 \begin{equation}
     \operatorname{sgn} u\!\left(R\right)
 = - \operatorname{sgn} \left[ p_{e,\xi} \left(\Mach[e]^2 - 1\right) \right]
+    \label{eq:matching_usign}
   .
 \end{equation}
+
+In summary, given some $\delta$, $\gamma_0$, $\Mach[e]$, and $p_{e,\xi}$ the
+a matching base flow may be produced by
+\begin{enumerate}
+    \item Solving the quadratic equation~\eqref{eq:matching_R0} for 
+        its largest strictly positive root, $R_0$.
+    \item Computing $\Mach[0]{}$ from~\eqref{eq:matching_Ma0}
+    \item Computing $R = \sqrt{R_0^2 + \delta^2}$.
+    \item Setting $u\!\left(R\right)=\pm R / R_0$ per~\eqref{eq:matching_u}
+        with the sign governed by~\eqref{eq:matching_usign}.
+    \item Arbitrarily choosing $\rho\!\left(R\right) = 1$.
+    \item If reproducing some ideal $T_e$ is desired,
+        fix $p\!\left(R\right)$ using~\eqref{eq:Tedef}.
+        Otherwise, arbitrarily use 1.
+\end{enumerate}
+The obtained parameters and initial conditions may be integrated from $R$ to
+$R_0$ (or any other radius) using Listing~\ref{lst:octave_nozzle}. That the
+flow profile on segment $\left( R_0, 0 \right)$ to $\left( R_0, \delta \right)$
+has the desired properties may then be verified with
+Listing~\ref{lst:octave_nozzle_qoi}.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%\section{Producing base flows matching given quantities of interest}
