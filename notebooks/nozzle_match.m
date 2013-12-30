@@ -6,7 +6,7 @@ function [R0 Ma0 u1 rho1 p1] = nozzle_match(delta, gam0, Ma_e, p_exi, T_e=0)
             delta,
           - Ma_e.^2 * delta.^2 * abs(p_exi) * sign(Ma_e.^2 - 1)
          ]));
-  Ma0  = 1 / realsqrt(1/Ma_2.^2 + (gam0 - 1)*delta.^2/R0.^2/2);
+  Ma0  = 1 / realsqrt(1/Ma_e.^2 + (gam0 - 1)*delta.^2/R0.^2/2);
   R    = realsqrt(R0.^2 + delta.^2);
   u1   = - R / R0 * sign(p_exi*(Ma_e.^2 - 1));
   rho1 = 1;
