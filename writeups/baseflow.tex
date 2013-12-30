@@ -538,8 +538,8 @@ and~\eqref{eq:stagnation_sound_nondim} do not recover the ideal gas equation of
 state, $\rho{}a^2=\gamma_{0} p$.  However, at sufficiently large radii, it is
 possible to achieve solutions in which $\rho a^2 \approx \gamma_{0} p$.
 
-More concretely, take the desired profile from the line segment
-$\left(R_0,0\right)$ to $\left(R_0,L_y\right)$.  Clearly, selecting
+More concretely, take the profile from the line segment $\left(R_0,0\right)$ to
+$\left(R_0,L_y\right)$.  Clearly, selecting
 \begin{align}
   R_1 &= R_0
 &
@@ -564,36 +564,41 @@ u_x$, etc. at $\left(-x,y\right)$ to take advantage of the solution symmetry
 about the $y$ axis.
 
 At some location of interest with such a profile, say an edge distance
-$\delta$ from the $x$-axis, one may also compute
+$\delta$ from the $x$-axis, one may also compute the edge Mach number
+and a nondimensional pressure gradient parameter
 \begin{align}
   \Mach[e]{}
   &\equiv
   \left. \frac{u_0 u_\xi}{a_0 a} \right|_{\left(R_0,\delta\right)}
-  =
-  \left.
-    \frac{\Mach[0]{} R_0}{R}
-    \frac{\left|u\!\left(R\right)\right|}
-         {      a\!\left(R\right)       }
-  \right|_{R = \sqrt{R_0^2 + \delta^2}}
-\end{align}
-\begin{align}
+&
   p_{e,\xi}
   &\equiv
   \left.
   \frac{l_0 \delta}{\rho_0 \rho \, u_0^2 u^2}
     \frac{\partial\left(p_0 p\right)}{\partial\left(l_0 \xi\right)}
   \right|_{\left(R_0,\delta\right)}
-  =
+\\&=
+  \left.
+    \frac{\Mach[0]{} R_0}{R}
+    \frac{\left|u\!\left(R\right)\right|}
+         {      a\!\left(R\right)       }
+  \right|_{R = \sqrt{R_0^2 + \delta^2}}
+&
+  &=
   \left.
     \frac{\operatorname{sgn}(u) \, \delta}{\Mach[0]^2 \rho u^2}
       \frac{\partial{}p}{\partial{}x}
   \right|_{\left(R_0,\delta\right)}
-\\&=
+\\
+&&
+  &=
   \left.
     \frac{\operatorname{sgn}(u) R \, \delta \, p'\!\left(R\right)}
          {\Mach[0]^2 R_0 \, \rho\!\left(R\right) u^2\!\left(R\right)}
   \right|_{R=\sqrt{R_0^2 + \delta^2}}
-  =
+\\
+&&
+  &=
   - \left.
       \frac{R \, \delta \, u'\!\left(R\right)}
            {R_0 \, \left|u\!\left(R\right)\right|}
@@ -603,23 +608,23 @@ to interrogate the solution's nature at $\left(R_0, \delta\right)$. When the
 isenthalpic data is used to approximate the behavior of an ideal gas, the
 nondimensional edge temperature
 \begin{align}
-%FIXME
-    T_e &= \left.
-        \gamma_0 \frac{p\!\left(R\right)}{\rho\!\left(R\right)}
-  \right|_{R=\sqrt{R_0^2 + \delta^2}}
+    T_e &= \gamma_0 \frac{p\!\left(x,y;\Mach\right)}{\rho\!\left(x,y\right)}
+         = \left. \gamma_0 \frac{\Mach^2    p   \!\left(R\right)}
+                                {\Mach[0]^2 \rho\!\left(R\right)}
+           \right|_{R=\sqrt{R_0^2 + \delta^2}}
 \end{align}
-may also be of interest.
+may also be of interest at $\Mach = \Mach[e]$.
 
 A kernel building atop Listing~\ref{lst:octave_nozzle} that computes these
 quantities appears in Listing~\ref{lst:octave_nozzle_qoi}. By solving to
-boundary $R_2 = \sqrt{R_0^2 + \delta^2}$ the kernel both solves the cheapest
-possible problem and causes the ODE integrator to automatically produce
-full-order accurate results at $\left(R_0,\delta\right)$ without requiring the
-integrator to possess dense output capabilities.
+boundary $R_2 = \sqrt{R_0^2 + \delta^2}$ the kernel both solves the smallest
+possible problem.  More importantly, it causes the ODE integrator to
+automatically produce full-order accurate results at $\left(R_0,\delta\right)$
+without requiring the integrator to possess dense output capabilities.
 
-\lstinputlisting[language=Octave,%float=tbp,
+\lstinputlisting[language=Octave,%float=htbp,
                  caption={\texttt{nozzle\_qoi.m}: A kernel computing several
-                 nozzle quantities of interest\label{lst:octave_nozzle_qoi}}]
+                 quantities of interest\label{lst:octave_nozzle_qoi}}]
                 {notebooks/nozzle_qoi.m}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -745,6 +750,7 @@ pressure gradient, select
   , & p_{e,\xi}&<0
 \intertext{
 thus modeling a sub- or supersonic nozzle.  In this case $R_0$ is found from
+solving
 }
   0
   &=
@@ -770,7 +776,8 @@ To obtain an adverse pressure gradient, select
   - \operatorname{sgn} \left(\Mach[e]^2 - 1\right)
   , & p_{e,\xi}&>0
 \intertext{
-thus modeling a sub- or supersonic diffuser.  In this case $R_0$ is fixed by
+thus modeling a sub- or supersonic diffuser.  In this case $R_0$ is obtained
+from solving
 }
   0
   &=
