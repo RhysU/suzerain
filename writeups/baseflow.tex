@@ -5,6 +5,7 @@
 \usepackage{accents}
 \usepackage{array}
 \usepackage{booktabs}
+\usepackage{caption}
 \usepackage{enumerate}
 \usepackage{fancyhdr}
 \usepackage[final]{graphicx}
@@ -472,7 +473,7 @@ line segment within a radially varying solution.
 %
 \begin{figure}[h]
   \centering
-  \includegraphics[width=0.38\textwidth]{nozzle_schematic}
+  \includegraphics[width=0.33\textwidth]{nozzle_schematic}
   \caption{
       \label{fig:mapping_geometry}
       A Cartesian setting overlaid on the radially symmetric domain
@@ -829,32 +830,35 @@ with the edge velocity sign always taken according to
     \label{eq:matching_usign}
   .
 \end{equation}
-
-In summary, given some $\delta$, $\gamma_0$, $\Mach[e]$, and $p_{e,\xi}$ the
-a matching base flow may be produced by
-\begin{enumerate}
-    \item Solving the quadratic equation~\eqref{eq:matching_R0} for 
-        its largest strictly positive root, $R_0$.
-    \item Computing $\Mach[0]{}$ from~\eqref{eq:matching_Ma0}.
-    \item Computing $R = \sqrt{R_0^2 + \delta^2}$.
-    \item Setting $u\!\left(R\right)=\pm R / R_0$ per~\eqref{eq:matching_u}
-        with the sign governed by~\eqref{eq:matching_usign}.
-    \item Arbitrarily choosing $\rho\!\left(R\right) = 1$.
-    \item If reproducing some ideal $T_e$ is desired,
-        fix $p\!\left(R\right)$ using~\eqref{eq:Tedef}.
-        Otherwise, arbitrarily use 1.
-\end{enumerate}
-Sample logic performing these tasks appears in
-Listing~\ref{lst:octave_nozzle_match}. The obtained parameters and initial
+Sample logic combining these constraints appears in
+Listing~\ref{lst:octave_nozzle_match}. The resulting parameters and initial
 conditions may be integrated from $R$ to $R_0$ (or any other radius) using
 Listing~\ref{lst:octave_nozzle}. That the flow profile on segment $\left( R_0,
 0 \right)$ to $\left( R_0, \delta \right)$ has the desired properties may then
-be verified with Listing~\ref{lst:octave_nozzle_qoi}.
+be verified with Listing~\ref{lst:octave_nozzle_qoi} as shown in the tests.
 
-\lstinputlisting[language=Octave,float=htbp,
-                 caption={\texttt{nozzle\_match.m}: Match specified boundary
-                 layer edge quantities\label{lst:octave_nozzle_match}}]
-                {notebooks/nozzle_match.m}
+\begin{figure}[p]
+  \lstinputlisting[language=Octave,
+                   caption={\texttt{nozzle\_match.m}: Match specified boundary
+                   layer edge quantities\label{lst:octave_nozzle_match}}]
+                  {notebooks/nozzle_match.m}
+  \caption*{\centering\parbox{0.9\textwidth}{
+    Given $\delta$, $\gamma_0$, $\Mach[e]$, and $p_{e,\xi}$
+    a matching base flow is produced as follows:
+    \begin{enumerate}
+        \item Solving the quadratic equation~\eqref{eq:matching_R0} for 
+            its largest strictly positive root, $R_0$.
+        \item Computing $\Mach[0]{}$ from~\eqref{eq:matching_Ma0}.
+        \item Computing $R = \sqrt{R_0^2 + \delta^2}$.
+        \item Setting $u\!\left(R\right)=\pm R / R_0$ per~\eqref{eq:matching_u}
+            with the sign governed by~\eqref{eq:matching_usign}.
+        \item Arbitrarily choosing $\rho\!\left(R\right) = 1$.
+        \item If reproducing some ideal $T_e$ is desired,
+            fix $p\!\left(R\right)$ using~\eqref{eq:Tedef}.
+            Otherwise, use 1.
+    \end{enumerate}
+  }}
+\end{figure}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Example: Matching CEV heat shield laminar boundary layer conditions}
@@ -870,9 +874,9 @@ Figure~\ref{fig:cev_symplane}.  The laminar boundary layer character was
 quantified as a function of leeward arc length, measured in meters, from the
 stagnation region.
 
-\begin{figure}[htb]
+\begin{figure}[tbp]
   \centering
-  \includegraphics[height=0.40\textheight]{symplanenorm}
+  \includegraphics[height=0.92\textheight]{symplanenorm}
   \caption{
     \label{fig:cev_symplane}
     The velocity magnitude on the symmetry plane for the fully laminar
