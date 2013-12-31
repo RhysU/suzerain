@@ -4,17 +4,15 @@
 pkg load dataframe
 d = dataframe('cev_laminar.in');
 
-% Process problems in parallel solving with delta fixed to be one
-pkg load general
-tic()
-s = parcellfun(max(1, nproc()-1), @nozzle_baseflow,      ...
-               num2cell(ones(rows(d),1)),                ...
-               num2cell(d.gamma_e), num2cell(d.Ma_edge), ...
-               num2cell(d.p_exi), num2cell(d.T_ratio));
-toc()
+% Solve each problems with delta fixed to be one
+[R0 Ma0 u1 rho1 p1] = cellfun(@nozzle_match,                            ...
+                              num2cell(ones(rows(d),1)),                ...
+                              num2cell(d.gamma_e), num2cell(d.Ma_edge), ...
+                              num2cell(d.p_exi), num2cell(d.T_ratio),   ...
+                              'UniformOutput', 1);
 
-% Convert the returned results into a dataframe
-s = dataframe(struct2cell(s).', 'colnames', fieldnames(s));
+% Place the output into a new dataframe
+s = dataframe([], R0, Ma0, u1, rho1, p1);
 
 % Save input with appended results into a new CSV-with-header file
 f = fopen('cev_laminar.out','w');
