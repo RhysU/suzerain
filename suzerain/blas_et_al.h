@@ -4077,15 +4077,15 @@ suzerain_lapackext_zgbsv(
  * \param[in]     kl    Number of subdiagonals in \f$ A \f$.
  * \param[in]     ku    Number of superdiagonals in \f$ A \f$.
  * \param[in]     ab    Double precision matrix in banded storage of
- *                      dimension (<tt>ldab == kl + ku + 1</tt>,<tt>n</tt>)
+ *                      dimension (<tt>ldab == kl + ku + 1</tt>, <tt>n</tt>).
  * \param[in,out] afrob The Frobenius norm of \f$ A \f$.
  *                      If negative on entry and \c tolsc is strictly
  *                      positive, the norm is computed and returned to
  *                      permit caching the result.  Otherwise, \c afrob
  *                      is not modified.
- * \param[in,out] afb   Single or double precision LU factorization
- *                      of \f$ A \f$ of dimension (<tt>ldafb == 2*kl + ku
- *                      + 1</tt>,<tt>n</tt>).  Whether a single or double
+ * \param[in,out] afb   Single or double precision LU factorization of \f$A\f$
+ *                      of dimension (<tt>ldafb == 2*kl + ku + 1</tt>,
+ *                      <tt>n</tt>).  Whether a single or double
  *                      precision result is returned is communicated by
  *                      \c fact on return.
  * \param[in,out] ipiv  LU pivoting information for the factorization
