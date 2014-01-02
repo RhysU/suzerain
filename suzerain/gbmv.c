@@ -1,7 +1,7 @@
 /*--------------------------------------------------------------------------
  *
- * Copyright (C) 2011, 2012, 2013 Rhys Ulerich
- * Copyright (C) 2012, 2013 The PECOS Development Team
+ * Copyright (C) 2011-2014 Rhys Ulerich
+ * Copyright (C) 2012-2014 The PECOS Development Team
  * Please see http://pecos.ices.utexas.edu for more information on PECOS.
  *
  * This file is part of Suzerain.

@@ -23,7 +23,7 @@
 
 /*
  * License identical to gsl_ieee_env_setup() from GSL.
- * Copyright (c) 2012, 2013 Rhys Ulerich
+ * Copyright (c) 2012-2014 Rhys Ulerich
  */
 void
 mpi_gsl_ieee_env_setup(const int rank)

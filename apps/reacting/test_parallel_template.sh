@@ -40,11 +40,11 @@ banner "Equivalence of serial and parallel execution${OPER:+ ($OPER)}"
         # TODO: Why so large?  Does this make sense?
         #differ --delta=2e-6 serial0.h5 a0.h5 $dset
 
-        # Updated on 4/9/2013 to get implicit test to pass.  Above
+        # Updated on 4/9/2013-2014 to get implicit test to pass.  Above
         # still applies.
         # differ --delta=2e-5 serial0.h5 a0.h5 $dset
 
-        # Updated on 4/12/2013 to get implicit test to pass with
+        # Updated on 4/12/2013-2014 to get implicit test to pass with
         # intel/11.1 in optimized mode.  Above still applies.
         differ --delta=4e-5 serial0.h5 a0.h5 $dset
     done

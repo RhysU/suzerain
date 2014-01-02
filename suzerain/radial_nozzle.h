@@ -1,6 +1,6 @@
 /*--------------------------------------------------------------------------
  *
- * Copyright (C) 2013 Rhys Ulerich
+ * Copyright (C) 2013-2014 Rhys Ulerich
  * Please see http://pecos.ices.utexas.edu for more information on PECOS.
  *
  * This file is part of Suzerain.

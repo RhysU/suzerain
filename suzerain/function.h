@@ -3,8 +3,8 @@
  * Copyright (C) 1996, 1997, 1998, 1999, 2000, 2004, 2007 Gerard Jungman, Brian Gough
  * Adapted from the GNU Scientific Library
  *
- * Extensions Copyright (C) 2011, 2012, 2013 Rhys Ulerich
- * Extensions Copyright (C) 2012, 2013 The PECOS Development Team
+ * Extensions Copyright (C) 2011-2014 Rhys Ulerich
+ * Extensions Copyright (C) 2012-2014 The PECOS Development Team
  * Please see http://pecos.ices.utexas.edu for more information on PECOS.
  *
  * This file is part of Suzerain.
