@@ -152,7 +152,7 @@ reference velocity $u_0$.  That is,
       =  H_0
 \end{align}
 holds everywhere.  After a slight rearrangement, our constant stagnation
-condition
+enthaply condition
 \begin{align}
         a^2
      &=   \frac{\gamma-1}{\gamma_0-1} a_0^2
@@ -327,7 +327,8 @@ Solving for $u^\prime$,
 \label{eq:cpfradial_nondim_ode}
 ,
 \end{align}
-permits integrating $u$ given a boundary condition on either $R_1$ or $R_2$.
+permits integrating $u$ across $R\in\left[R_1, R_2\right]$ given a
+boundary condition on either radius $R_1$ or $R_2$.
 
 Given some $u$, computing local thermodynamic state also is of interest.
 Equation~\eqref{eq:stagnation_sound_nondim} fixes~$a$.  The
@@ -437,7 +438,7 @@ conjunction with~\eqref{eq:cpfradial_nondim_ode} presents initial value
 problems amenable to solution by numerical ODE integrators.  For example,
 \texttt{Octave}\citep{Eaton2008GNU} armed with the \texttt{odepkg} package can
 solve such problems.  One possible implementation appears in
-Listing~\ref{lst:octave_nozzle} with verification tests.  Its demo logic
+Listing~\ref{lst:octave_nozzle} along with verification tests.  Its demo logic
 produces the solutions depicted in Figure~\ref{fig:sample_solns}.  Though only
 scalar $u^\prime\!\left(r\right)$ needs to be integrated, this implementation
 integrates the state vector $\left[u, \rho, p\right]^\mathrm{T}$ so that
@@ -503,10 +504,10 @@ $R=\sqrt{x^2+y^2}$ one may compute the following:
  & \partial_y a                               &= \frac{1-\gamma_0}{2}\frac{y}{R}\frac{\Mach{}\Mach[0]{}\,u\!\left(R\right)}{a\!\left(R\right)} u^\prime\!\left(R\right)
 \end{align}
 %
-The $\Mach/\Mach[0]{}$ factors on $p$ and $a$ rescale them for use within a
-nondimensionalization possessing a potentially different Mach number, $\Mach$,
-assuming $p_0 = \rho_0 a_0^2$, $\rho_0$, and $u_0$ still hold in that target
-setting.  Such a translation permits using radial solutions within the
+The $\Mach$ and $\Mach[0]{}$ factors on $p$ and $a$ rescale them for use within
+a nondimensionalization possessing a potentially different Mach number,
+$\Mach$, assuming $p_0 = \rho_0 a_0^2$, $\rho_0$, and $u_0$ still hold in that
+target setting.  Such a translation permits using radial solutions within the
 steady, nondimensional, primitive Euler equations written in Cartesian
 coordinates:
 %
