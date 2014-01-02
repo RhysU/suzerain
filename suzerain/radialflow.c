@@ -202,6 +202,16 @@ suzerain_radialflow_qoi_pexi(
            / (s->state[0].R * fabs(s->state[i].u));
 }
 
+double
+suzerain_radialflow_qoi_Te(
+    const suzerain_radialflow_solution * s,
+    const size_t i,
+    const double Ma)
+{
+    assert(i < s->size);
+    return s->gam0 * gsl_pow_2(Ma / s->Ma0) * (s->state[i].p / s->state[i].rho);
+}
+
 inline // Suggests inlining within suzerain_radialflow_cartesian_conserved
 void
 suzerain_radialflow_cartesian_primitive(
