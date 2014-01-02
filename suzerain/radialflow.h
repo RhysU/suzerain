@@ -209,8 +209,8 @@ suzerain_radialflow_qoi_Mae(
  *    \right|_{R=\sqrt{R_0^2 + \delta^2}}
  * \\&=
  *    - \left.
- *        \frac{R \, \delta \, u'\!\left(R\right)}
- *             {R_0 \, \left|u\!\left(R\right)\right|}
+ *        \frac{R \, \delta \, u'\left(R\right)}
+ *             {R_0 \, \left|u\left(R\right)\right|}
  *    \right|_{R=\sqrt{R_0^2 + \delta^2}}
  * \f}
  * where \f$\xi\f$ is denotes the \f$x\f$ direction possibly reflected so that
@@ -238,12 +238,12 @@ suzerain_radialflow_qoi_pexi(
  * \f{align}{
  *   \mbox{T}_{e}
  *   &\equiv
- *   \gamma_0 \frac{p  \!\left(x,y;\mbox{Ma}\right)}
- *                 {rho\!\left(x,y          \right)}
+ *   \gamma_0 \frac{p  \left(x,y;\mbox{Ma}\right)}
+ *                 {rho\left(x,y          \right)}
  *   =
  *   \left.
- *   \gamma_0 \frac{\mbox{Ma}^2   p  \!\left(R\right)}
- *                 {\mbox{Ma}^2_0 rho\!\left(R\right)}
+ *   \gamma_0 \frac{\mbox{Ma}^2   p  \left(R\right)}
+ *                 {\mbox{Ma}^2_0 rho\left(R\right)}
  *   \right|_{R = \sqrt{R_0^2 + \delta^2}}
  *   .
  * \f}
