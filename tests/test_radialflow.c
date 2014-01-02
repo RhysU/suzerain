@@ -197,7 +197,6 @@ void check_euler_conserved_rel(
 }
 
 // Subsonic verification test from notebooks/nozzle.m
-// Beware the slightly different argument order relative to that code
 static
 void test_subsonic()
 {
@@ -205,10 +204,11 @@ void test_subsonic()
     const size_t N    = sizeof(R)/sizeof(R[0]);
     const double Ma0  = 1.5;
     const double gam0 = 1.4;
-    const double rho1 =  9./10;
     const double u1   = -2./ 7;
+    const double rho1 =  9./10;
+    const double p1   = rho1/gam0*(1+(gam0-1)/2*Ma0*Ma0*(1-u1*u1));
     suzerain_radialflow_solution * s = suzerain_radialflow_solver(
-            Ma0, gam0, rho1, u1, R, N);
+            Ma0, gam0, u1, rho1, p1, R, N);
 
     // Check that the scenario parameters were stored correctly
     gsl_test_abs(s->Ma0,  Ma0,  GSL_DBL_EPSILON, "%s Ma0 ", __func__);
@@ -257,7 +257,6 @@ void test_subsonic()
 }
 
 // Supersonic test from notebooks/nozzle.m
-// Beware the slightly different argument order relative to that code
 static
 void test_supersonic1()
 {
@@ -265,10 +264,11 @@ void test_supersonic1()
     const size_t N    = sizeof(R)/sizeof(R[0]);
     const double Ma0  = 1.0;
     const double gam0 = 1.4;
-    const double rho1 = 1.0;
     const double u1   = 1/Ma0 + GSL_SQRT_DBL_EPSILON;
+    const double rho1 = 1.0;
+    const double p1   = rho1/gam0*(1+(gam0-1)/2*Ma0*Ma0*(1-u1*u1));
     suzerain_radialflow_solution * s = suzerain_radialflow_solver(
-            Ma0, gam0, rho1, u1, R, N);
+            Ma0, gam0, u1, rho1, p1, R, N);
 
     // Check that the scenario parameters were stored correctly
     gsl_test_abs(s->Ma0,  Ma0,  GSL_DBL_EPSILON, "%s Ma0 ", __func__);
@@ -324,10 +324,11 @@ void test_supersonic2()
     const size_t N    = sizeof(R)/sizeof(R[0]);
     const double Ma0  = 1.1;
     const double gam0 = 1.4;
-    const double rho1 = 1.0;
     const double u1   = 1/Ma0 + GSL_SQRT_DBL_EPSILON;
+    const double rho1 = 1.0;
+    const double p1   = rho1/gam0*(1+(gam0-1)/2*Ma0*Ma0*(1-u1*u1));
     suzerain_radialflow_solution * s = suzerain_radialflow_solver(
-            Ma0, gam0, rho1, u1, R, N);
+            Ma0, gam0, u1, rho1, p1, R, N);
 
     // Does the pointwise solution satisfy the governing equations?
     check_radialflow_residual (__func__, s, 100*GSL_DBL_EPSILON);

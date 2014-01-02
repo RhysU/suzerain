@@ -291,11 +291,15 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
                 y[i] = b->collocation_point(i);
             }
             ArrayXr R = (y.abs2() + noz->R1*noz->R1).sqrt();
+            const double p1 // FIXME #3020
+                = noz->rho1/noz->gam0
+                * (1+(noz->gam0-1)/2*noz->Ma0*noz->Ma0*(1-noz->u1*noz->u1));
             shared_ptr<suzerain_radialflow_solution> soln(
                     suzerain_radialflow_solver(noz->Ma0,
                                                noz->gam0,
-                                               noz->rho1,
                                                noz->u1,
+                                               noz->rho1,
+                                               p1, // FIXME #3020
                                                R.data(),
                                                R.size()),
                     free);

@@ -107,14 +107,12 @@ typedef struct suzerain_radialflow_solution {
  *     \frac{2}{\mbox{Ma}_{0}^2\left(\gamma_0-1\right)} + 1
  * .
  * \f}
- * At \f$R_1\f$ the pressure is fixed by \f$p = \rho a^2 / \gamma_0\f$ though
- * this ideal gas equation of state generally will not be satisfied by any
- * returned solution.
  *
- * @param Ma0   Reference Mach number         \f$\mbox{Ma}_0\f$
- * @param gam0  Reference specific heat ratio \f$\gamma_0   \f$
- * @param rho1  Inner density                 \f$\rho\left(R_1\right)\f$
- * @param u1    Inner radial velocity         \f$u   \left(R_1\right)\f$
+ * @param Ma0   Reference Mach number         \f$\mbox{Ma}_0\f$.
+ * @param gam0  Reference specific heat ratio \f$\gamma_0   \f$.
+ * @param u1    Initial radial velocity       \f$u   \left(R_1\right)\f$.
+ * @param rho1  Initial density               \f$\rho\left(R_1\right)\f$.
+ * @param p1    Initial pressure              \f$p   \left(R_1\right)\f$.
  * @param R     Radii of interest with \f$R_1\f$ taken from \c R[0].
  *              Must be a contiguous array of length \c size.
  *              Entries must be strictly increasing.
@@ -131,8 +129,9 @@ suzerain_radialflow_solution *
 suzerain_radialflow_solver(
     const double         Ma0,
     const double         gam0,
-    const double         rho1,
     const double         u1,
+    const double         rho1,
+    const double         p1,
     const double * const R,
     const size_t         size);
 
