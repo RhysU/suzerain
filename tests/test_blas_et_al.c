@@ -3105,7 +3105,7 @@ void test_lapackext_dsgbsvx()
         gsl_test(fact[i][j][n] == 'S',
                 "%s:%d Lotkin matrix %d reports no mixed precision in fact",
                  __func__, __LINE__, n);
-        gsl_test(siter[i][j][n] >= 0,
+        gsl_test(siter[i][j][n] != 0,
                 "%s:%d Lotkin matrix %d reports no mixed precision in siter",
                  __func__, __LINE__, n);
 
@@ -3150,7 +3150,7 @@ void test_lapackext_dsgbsvx()
         gsl_test(fact[i][j][n] == 'D',
                 "%s:%d Lotkin matrix %d reports no double precision in fact",
                  __func__, __LINE__, n);
-        gsl_test(diter[i][j][n] >= 0,
+        gsl_test(diter[i][j][n] != 0,
                 "%s:%d Lotkin matrix %d reports no double precision in diter",
                  __func__, __LINE__, n);
 

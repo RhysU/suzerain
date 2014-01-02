@@ -169,7 +169,7 @@ FUNCTION(
     const int smax = *siter; *siter = -1;
     const int dmax = *diter; *diter = -1;
 
-    if (smax >= 0 && *fact != 'D' && *res > tol) {
+    if (smax >= 0 && *fact != 'D' && *res > tol) {  // Attempt single?
 
         if (*fact != 'S') { // Ensure single precision factorization available
             *fact  = 'S';
@@ -226,11 +226,13 @@ FUNCTION(
 
         }
 
+    } else {                                        // Single not attempted
+        *siter = 0;                                 // Report zero refinements
     }
 
 double_precision_attempt:
 
-    if (dmax >= 0 && *res > tol) {
+    if (dmax >= 0 && *res > tol) {                  // Attempt double?
 
         if (*fact != 'D') {  // Ensure double precision factorization available
             *fact  = 'D';
@@ -272,6 +274,8 @@ double_precision_attempt:
 
         }
 
+    } else {                                        // Double not attempted
+        *diter = 0;                                 // Report zero refinements
     }
 
     // Make tolsc the fraction of the tolerance represented by the solution
