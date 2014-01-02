@@ -21,7 +21,7 @@
  *--------------------------------------------------------------------------
  */
 
-#include <suzerain/radial_nozzle.h>
+#include <suzerain/radialflow.h>
 
 #include <gsl/gsl_ieee_utils.h>
 #include <gsl/gsl_machine.h>
@@ -35,9 +35,9 @@
 // Helper seiing if the solution satisfies the governing equation.
 // If the governing equation is not satisfied, then all bets are off...
 static
-void check_radial_nozzle_residual(
+void check_radialflow_residual(
     const char * who,
-    const suzerain_radial_nozzle_solution * const s,
+    const suzerain_radialflow_solution * const s,
     const double tol)
 {
     const double Ma0  = s->Ma0;
@@ -81,7 +81,7 @@ void check_radial_nozzle_residual(
 static
 void check_ideal_gas_approximation(
     const char * who,
-    const suzerain_radial_nozzle_solution * const s,
+    const suzerain_radialflow_solution * const s,
     const double tol)
 {
     for (size_t i = 0; i < s->size; ++i) {
@@ -98,7 +98,7 @@ void check_ideal_gas_approximation(
 static
 void check_euler_primitive_rel(
     const char * who,
-    const suzerain_radial_nozzle_solution * const s,
+    const suzerain_radialflow_solution * const s,
     const double Ma,
     const double tol)
 {
@@ -108,7 +108,7 @@ void check_euler_primitive_rel(
         double rho,    u,    v,    p,    a;
         double rho_xi, u_xi, v_xi, p_xi, a_xi;
         double rho_y,  u_y,  v_y,  p_y,  a_y;
-        suzerain_radial_nozzle_cartesian_primitive(
+        suzerain_radialflow_cartesian_primitive(
                 s, i, Ma, &rho,    &u,    &v,    &p,    &a,
                           &rho_xi, &u_xi, &v_xi, &p_xi, &a_xi,
                           &rho_y,  &u_y,  &v_y,  &p_y,  &a_y);
@@ -157,7 +157,7 @@ void check_euler_primitive_rel(
 static
 void check_euler_conserved_rel(
     const char * who,
-    const suzerain_radial_nozzle_solution * const s,
+    const suzerain_radialflow_solution * const s,
     const double Ma,
     const double tol)
 {
@@ -167,7 +167,7 @@ void check_euler_conserved_rel(
         double r,    ru,    rv,    rE,    p;
         double r_xi, ru_xi, rv_xi, rE_xi, p_xi;
         double r_y,  ru_y,  rv_y,  rE_y,  p_y;
-        suzerain_radial_nozzle_cartesian_conserved(s, i, Ma, &r, &ru, &rv,
+        suzerain_radialflow_cartesian_conserved(s, i, Ma, &r, &ru, &rv,
                 &rE, &p, &r_xi, &ru_xi, &rv_xi, &rE_xi, &p_xi, &r_y, &ru_y,
                 &rv_y, &rE_y, &p_y);
 
@@ -207,7 +207,7 @@ void test_subsonic()
     const double gam0 = 1.4;
     const double rho1 =  9./10;
     const double u1   = -2./ 7;
-    suzerain_radial_nozzle_solution * s = suzerain_radial_nozzle_solver(
+    suzerain_radialflow_solution * s = suzerain_radialflow_solver(
             Ma0, gam0, rho1, u1, R, N);
 
     // Check that the scenario parameters were stored correctly
@@ -215,14 +215,14 @@ void test_subsonic()
     gsl_test_abs(s->gam0, gam0, GSL_DBL_EPSILON, "%s gam0", __func__);
 
     // Check that the initial conditions were stored correctly
-    suzerain_radial_nozzle_state ini = s->state[0];
+    suzerain_radialflow_state ini = s->state[0];
     gsl_test_abs(ini.R,   R[0], GSL_DBL_EPSILON, "%s init R   ", __func__);
     gsl_test_abs(ini.u,   u1,   GSL_DBL_EPSILON, "%s init u   ", __func__);
     gsl_test_abs(ini.rho, rho1, GSL_DBL_EPSILON, "%s init rho ", __func__);
 
     // Expected results computed by notebooks/nozzle.m using Octave
     double tol = GSL_SQRT_DBL_EPSILON;
-    suzerain_radial_nozzle_state fin = s->state[N-1];
+    suzerain_radialflow_state fin = s->state[N-1];
     gsl_test_rel(fin.R,    R[N-1],             tol, "%s final R   ", __func__);
     gsl_test_rel(fin.u,   -0.270256147749861,  tol, "%s final u   ", __func__);
     gsl_test_rel(fin.a2,   1.41713272657153,   tol, "%s final a2  ", __func__);
@@ -235,12 +235,12 @@ void test_subsonic()
     gsl_test_rel(fin.pp,   0.0160429419457325, tol, "%s final pp  ", __func__);
 
     // Does the pointwise solution satisfy the governing equations?
-    check_radial_nozzle_residual (__func__, s, 100*GSL_DBL_EPSILON);
+    check_radialflow_residual (__func__, s, 100*GSL_DBL_EPSILON);
 
     // Test edge Mach and pressure gradient parameter computations
     // Expected from notebooks/nozzle_qoi.m for delta = sqrt(10.5**2 - 10**2)
-    const double Mae  = suzerain_radial_nozzle_qoi_Mae (s, s->size-1);
-    const double pexi = suzerain_radial_nozzle_qoi_pexi(s, s->size-1);
+    const double Mae  = suzerain_radialflow_qoi_Mae (s, s->size-1);
+    const double pexi = suzerain_radialflow_qoi_pexi(s, s->size-1);
     gsl_test_rel(Mae,   0.324318914847395, tol, "%s qoi_Mae ", __func__);
     gsl_test_rel(pexi, -0.362152908606146, tol, "%s qoi_pexi", __func__);
 
@@ -267,7 +267,7 @@ void test_supersonic1()
     const double gam0 = 1.4;
     const double rho1 = 1.0;
     const double u1   = 1/Ma0 + GSL_SQRT_DBL_EPSILON;
-    suzerain_radial_nozzle_solution * s = suzerain_radial_nozzle_solver(
+    suzerain_radialflow_solution * s = suzerain_radialflow_solver(
             Ma0, gam0, rho1, u1, R, N);
 
     // Check that the scenario parameters were stored correctly
@@ -275,14 +275,14 @@ void test_supersonic1()
     gsl_test_abs(s->gam0, gam0, GSL_DBL_EPSILON, "%s gam0", __func__);
 
     // Check that the initial conditions were stored correctly
-    suzerain_radial_nozzle_state ini = s->state[0];
+    suzerain_radialflow_state ini = s->state[0];
     gsl_test_abs(ini.R,   R[0], GSL_DBL_EPSILON, "%s init R   ", __func__);
     gsl_test_abs(ini.u,   u1,   GSL_DBL_EPSILON, "%s init u   ", __func__);
     gsl_test_abs(ini.rho, rho1, GSL_DBL_EPSILON, "%s init rho ", __func__);
 
     // Expected results computed by notebooks/nozzle.m using Octave
     double tol = GSL_SQRT_DBL_EPSILON;
-    suzerain_radial_nozzle_state fin = s->state[N-1];
+    suzerain_radialflow_state fin = s->state[N-1];
     gsl_test_rel(fin.R,     R[N-1],            tol, "%s final R   ", __func__);
     gsl_test_rel(fin.u,     1.71679859932442,  tol, "%s final u   ", __func__);
     gsl_test_rel(fin.a2,    0.610520513871545, tol, "%s final a2  ", __func__);
@@ -295,12 +295,12 @@ void test_supersonic1()
     gsl_test_rel(fin.pp,   -0.112130507235967, tol, "%s final pp  ", __func__);
 
     // Does the pointwise solution satisfy the governing equations?
-    check_radial_nozzle_residual (__func__, s, 100*GSL_DBL_EPSILON);
+    check_radialflow_residual (__func__, s, 100*GSL_DBL_EPSILON);
 
     // Test edge Mach and pressure gradient parameter computations
     // Expected results by notebooks/nozzle_qoi.m for delta = sqrt(3)
-    const double Mae  = suzerain_radial_nozzle_qoi_Mae (s, s->size-1);
-    const double pexi = suzerain_radial_nozzle_qoi_pexi(s, s->size-1);
+    const double Mae  = suzerain_radialflow_qoi_Mae (s, s->size-1);
+    const double pexi = suzerain_radialflow_qoi_pexi(s, s->size-1);
     gsl_test_rel(Mae,   1.09859906253134,  tol, "%s qoi_Mae ", __func__);
     gsl_test_rel(pexi, -0.452506737297551, tol, "%s qoi_pexi", __func__);
 
@@ -326,11 +326,11 @@ void test_supersonic2()
     const double gam0 = 1.4;
     const double rho1 = 1.0;
     const double u1   = 1/Ma0 + GSL_SQRT_DBL_EPSILON;
-    suzerain_radial_nozzle_solution * s = suzerain_radial_nozzle_solver(
+    suzerain_radialflow_solution * s = suzerain_radialflow_solver(
             Ma0, gam0, rho1, u1, R, N);
 
     // Does the pointwise solution satisfy the governing equations?
-    check_radial_nozzle_residual (__func__, s, 100*GSL_DBL_EPSILON);
+    check_radialflow_residual (__func__, s, 100*GSL_DBL_EPSILON);
 
     // Do results approximately satisfy Cartesian Euler at various Ma?
     // Small radii case the ideal gas EOS to not be quite-so-satisfied.

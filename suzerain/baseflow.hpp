@@ -32,7 +32,7 @@
 #include <suzerain/largo_state.hpp>
 
 // Forward declarations
-struct suzerain_radial_nozzle_solution;
+struct suzerain_radialflow_solution;
 
 namespace suzerain {
 
@@ -160,8 +160,8 @@ public:
 
 /**
  * Provides map-based lookup of arbitrary baseflow profiles established at \e
- * runtime.  This may be used with, e.g., \ref suzerain_radial_nozzle_solver
- * and \ref suzerain_radial_nozzle_cartesian_conserved to compute baseflow
+ * runtime.  This may be used with, e.g., \ref suzerain_radialflow_solver
+ * and \ref suzerain_radialflow_cartesian_conserved to compute baseflow
  * information on the collocation points for a given \ref suzerain::bspline.
  */
 class baseflow_map : public virtual baseflow_interface

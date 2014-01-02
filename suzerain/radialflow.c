@@ -22,14 +22,14 @@
  */
 
 /** @file
- * @copydoc radial_nozzle.h
+ * @copydoc radialflow.h
  */
 
 #ifdef HAVE_CONFIG_H
 #include <suzerain/config.h>
 #endif
 
-#include <suzerain/radial_nozzle.h>
+#include <suzerain/radialflow.h>
 
 #include <gsl/gsl_errno.h>
 #include <gsl/gsl_math.h>
@@ -83,8 +83,8 @@ static int nozzle_rhs(double R,
 }
 
 // Compare nozzle function source within notebooks/nozzle.m
-suzerain_radial_nozzle_solution *
-suzerain_radial_nozzle_solver(
+suzerain_radialflow_solution *
+suzerain_radialflow_solver(
     const double         Ma0,
     const double         gam0,
     const double         rho1,
@@ -109,9 +109,9 @@ suzerain_radial_nozzle_solver(
     }
 
     // Allocate solution storage into which integrator results will be saved
-    suzerain_radial_nozzle_solution * const s = malloc(
-        sizeof(suzerain_radial_nozzle_solution)
-        + size * sizeof(suzerain_radial_nozzle_state));
+    suzerain_radialflow_solution * const s = malloc(
+        sizeof(suzerain_radialflow_solution)
+        + size * sizeof(suzerain_radialflow_state));
     if (!s) SUZERAIN_ERROR_NULL("Solution allocation failed", SUZERAIN_ENOMEM);
     s->state[0].R = s->state[0].u = s->state[0].rho = s->state[0].p = GSL_NAN;
 
@@ -173,8 +173,8 @@ suzerain_radial_nozzle_solver(
 
 inline // Permits inlining by functions appearing later in this file
 double
-suzerain_radial_nozzle_delta(
-    const suzerain_radial_nozzle_solution * s,
+suzerain_radialflow_delta(
+    const suzerain_radialflow_solution * s,
     const size_t i)
 {
     assert(i < s->size);
@@ -182,8 +182,8 @@ suzerain_radial_nozzle_delta(
 }
 
 double
-suzerain_radial_nozzle_qoi_Mae(
-    const suzerain_radial_nozzle_solution * s,
+suzerain_radialflow_qoi_Mae(
+    const suzerain_radialflow_solution * s,
     const size_t i)
 {
     assert(i < s->size);
@@ -192,22 +192,22 @@ suzerain_radial_nozzle_qoi_Mae(
 }
 
 double
-suzerain_radial_nozzle_qoi_pexi(
-    const suzerain_radial_nozzle_solution * s,
+suzerain_radialflow_qoi_pexi(
+    const suzerain_radialflow_solution * s,
     const size_t i)
 {
     assert(i < s->size);
     const double sgn_u = s->state[i].u >= 0 ? 1 : -1;
-    const double delta = suzerain_radial_nozzle_delta(s, i);
+    const double delta = suzerain_radialflow_delta(s, i);
     return (sgn_u * s->state[i].R * delta * s->state[i].pp)
          / (   gsl_pow_2(s->Ma0) * s->state[0].R
              * s->state[i].rho * gsl_pow_2(s->state[i].u));
 }
 
-inline // Suggests inlining within suzerain_radial_nozzle_cartesian_conserved
+inline // Suggests inlining within suzerain_radialflow_cartesian_conserved
 void
-suzerain_radial_nozzle_cartesian_primitive(
-    const suzerain_radial_nozzle_solution * s,
+suzerain_radialflow_cartesian_primitive(
+    const suzerain_radialflow_solution * s,
     const size_t i,
     const double Ma,
     double * const rho,
@@ -233,14 +233,14 @@ suzerain_radial_nozzle_cartesian_primitive(
     const double x       = (s->state[0].u >= 0 ? 1 : -1) * s->state[0].R;
     const double x_inv_R = x / s->state[i].R;
     const double x2      = gsl_pow_2(x);
-    const double y       = suzerain_radial_nozzle_delta(s, i);
+    const double y       = suzerain_radialflow_delta(s, i);
     const double y2      = gsl_pow_2(y);
     const double y_inv_R = y / s->state[i].R;
     const double inv_R   = 1 / s->state[i].R;
     const double inv_R2  = gsl_pow_2(inv_R);
     const double Ma2Ma02 = gsl_pow_2(Ma / s->Ma0);
 
-    const suzerain_radial_nozzle_state * const t = &s->state[i];
+    const suzerain_radialflow_state * const t = &s->state[i];
     *rho    = t->rho;
     *u      = t->u * x_inv_R;
     *v      = t->u * y_inv_R;
@@ -262,8 +262,8 @@ suzerain_radial_nozzle_cartesian_primitive(
 }
 
 void
-suzerain_radial_nozzle_cartesian_conserved(
-    const suzerain_radial_nozzle_solution * s,
+suzerain_radialflow_cartesian_conserved(
+    const suzerain_radialflow_solution * s,
     const size_t i,
     const double Ma,
     double * const r,
@@ -284,7 +284,7 @@ suzerain_radial_nozzle_cartesian_conserved(
 {
     // Delegate to compute local primitive state and {p,a}_{,_xi,_y}
     double rho, u, v, a, rho_xi, u_xi, v_xi, a_xi, rho_y, u_y, v_y, a_y;
-    suzerain_radial_nozzle_cartesian_primitive(
+    suzerain_radialflow_cartesian_primitive(
             s, i, Ma, &rho,    &u,    &v,    p,    &a,
                       &rho_xi, &u_xi, &v_xi, p_xi, &a_xi,
                       &rho_y,  &u_y,  &v_y,  p_y,  &a_y);

@@ -57,7 +57,7 @@ driver::driver(
     , scenario(make_shared<scenario_definition>())
     , isothermal(make_shared<support::isothermal_definition>())
     , sg(make_shared<support::largo_definition>())
-    , noz(make_shared<support::radial_nozzle_definition>())
+    , noz(make_shared<support::radialflow_definition>())
     , who("perfect")
 {
     this->fields = default_fields();

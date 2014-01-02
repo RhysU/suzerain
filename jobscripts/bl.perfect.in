@@ -6,7 +6,7 @@ set -eu
 : ${LAMINAR_ADVANCE:=@bindir@/perfect_advance}
 
 # Parse incoming parameters
-OPTS="k:,htdelta:,alpha:,beta:,gamma:,Ly:,Re:,Ma:,Pr:,Re_x:,largo_formulation:,largo_grdelta:,radial_nozzle:"
+OPTS="k:,htdelta:,alpha:,beta:,gamma:,Ly:,Re:,Ma:,Pr:,Re_x:,largo_formulation:,largo_grdelta:,radialflow:"
 ARGS=$(getopt -n "$(basename -- "$0")" -o "h" -l "$OPTS,help" -- "$@")
 if [ $? -ne 0 ]; then exit 1; fi
 eval set -- "$ARGS"
@@ -24,7 +24,7 @@ Pr=0.7
 Re_x=3000
 largo_formulation=temporal
 largo_grdelta=1e-1
-radial_nozzle=
+radialflow=
 while true;
 do
     case "$1" in
@@ -47,7 +47,7 @@ do
   &--Re_x&Used for any laminar boundary layer initialization&${Re_x:+(Default $Re_x)}
   &--largo_formulation&Largo slow growth formulation to activate&${largo_formulation:+(Default $largo_formulation)}
   &--largo_grdelta&Growth rate to use with any active Largo formulation&${largo_grdelta:+(Default $largo_grdelta)}
-  &--radial_nozzle&Indexed radial nozzle problem using embedded data&${radial_nozzle:+(Default $radial_nozzle)}
+  &--radialflow&Indexed radial nozzle problem using embedded data&${radialflow:+(Default $radialflow)}
 EOF
                     echo
                     echo "GNU parallel is great for managing multiple cases.  For example,"
@@ -56,30 +56,30 @@ EOF
                     echo "--largo_formulation to set different slow growth options."
                     echo "Output stored in a formulation-, grdelta-, and k-specific directory."
                     exit;;
-        --k)                  k="$2";                  shift 2;;
-        --htdelta)            htdelta="$2";            shift 2;;
-        --alpha)              alpha="$2";              shift 2;;
-        --beta)               beta="$2";               shift 2;;
-        --gamma)              gamma="$2";              shift 2;;
-        --Ly)                 Ly="$2";                 shift 2;;
-        --Re)                 Re="$2";                 shift 2;;
-        --Ma)                 Ma="$2";                 shift 2;;
-        --Pr)                 Pr="$2";                 shift 2;;
-        --Re_x)               Re_x="$2";               shift 2;;
-        --largo_formulation)  largo_formulation="$2";  shift 2;;
-        --largo_grdelta)      largo_grdelta="$2";      shift 2;;
-        --radial_nozzle)      radial_nozzle="$2";      shift 2;;
+        --k)                 k="$2";                 shift 2;;
+        --htdelta)           htdelta="$2";           shift 2;;
+        --alpha)             alpha="$2";             shift 2;;
+        --beta)              beta="$2";              shift 2;;
+        --gamma)             gamma="$2";             shift 2;;
+        --Ly)                Ly="$2";                shift 2;;
+        --Re)                Re="$2";                shift 2;;
+        --Ma)                Ma="$2";                shift 2;;
+        --Pr)                Pr="$2";                shift 2;;
+        --Re_x)              Re_x="$2";              shift 2;;
+        --largo_formulation) largo_formulation="$2"; shift 2;;
+        --largo_grdelta)     largo_grdelta="$2";     shift 2;;
+        --radialflow)        radialflow="$2";        shift 2;;
     esac
 done
 
 # Clear largo_grdelta whenever an empty formulation is supplied.
 test -z "${largo_formulation}" && largo_grdelta=""
 
-# Lookup any requested radial_nozzle data in a maximally grotesque manner.
+# Lookup any requested radialflow data in a maximally grotesque manner.
 # Disgusting hoops permit easily updating CSV data embedded at end of file.
-if test -n "${radial_nozzle}"; then
-	echo Looking radial nozzle problem with index "${radial_nozzle}"...
-	read dstag radial_nozzle_{Ma0,gam0,rho1,u1,R1} < <(
+if test -n "${radialflow}"; then
+	echo Looking radial nozzle problem with index "${radialflow}"...
+	read dstag radialflow_{Ma0,gam0,rho1,u1,R1} < <(
 		cat <(sed -e '0,/^exit *# *Embedded/d' $0) | awk -f <(cat - <<-'EOD'
 			# Modified from http://stackoverflow.com/questions/16092167.
 			BEGIN {
@@ -103,25 +103,25 @@ if test -n "${radial_nozzle}"; then
 			  printf RS
 			}
 			EOD
-		) -F, dstag Ma0 gam0 rho1 u1 R0 | sed "${radial_nozzle}!d"
+		) -F, dstag Ma0 gam0 rho1 u1 R0 | sed "${radialflow}!d"
 	)
-	test -n "${radial_nozzle_Ma0}"  || (echo Problem getting Ma0  && false)
-	test -n "${radial_nozzle_gam0}" || (echo Problem getting gam0 && false)
-	test -n "${radial_nozzle_rho1}" || (echo Problem getting rho1 && false)
-	test -n "${radial_nozzle_u1}"   || (echo Problem getting u1   && false)
-	test -n "${radial_nozzle_R1}"   || (echo Problem getting R1   && false)
+	test -n "${radialflow_Ma0}"  || (echo Problem getting Ma0  && false)
+	test -n "${radialflow_gam0}" || (echo Problem getting gam0 && false)
+	test -n "${radialflow_rho1}" || (echo Problem getting rho1 && false)
+	test -n "${radialflow_u1}"   || (echo Problem getting u1   && false)
+	test -n "${radialflow_R1}"   || (echo Problem getting R1   && false)
 	echo Loaded data for distance $dstag leeward of stagnation point
-	gamma=${radial_nozzle_gam0} && echo Forced --gamma=${gamma}
+	gamma=${radialflow_gam0} && echo Forced --gamma=${gamma}
 fi
 
 # Create or overwrite a directory and then change into it
 if test -z "${largo_formulation}"; then
   largo_grdelta=  # No formulation implies no grdelta
   dir=$(printf "bl_k%02d%s" "$k")
-elif test -z "${radial_nozzle}"; then
+elif test -z "${radialflow}"; then
   dir=$(printf "%s_%s_k%02d" "${largo_formulation}" "${largo_grdelta}" "$k")
 else
-  dir=$(printf "%s_%s_k%02d.%02d" "${largo_formulation}" "${largo_grdelta}" "$k" "$radial_nozzle")
+  dir=$(printf "%s_%s_k%02d.%02d" "${largo_formulation}" "${largo_grdelta}" "$k" "$radialflow")
 fi
 rm -rvf $dir
 mkdir -v $dir
@@ -146,11 +146,11 @@ declare -i t=0
 for i in "${!Ny[@]}"
 do
     "$LAMINAR_ADVANCE" restart0.h5 --Ny=${Ny[$i]} --advance_dt=${dt[$i]} \
-        ${radial_nozzle_Ma0:+ --radial_nozzle_Ma0=$radial_nozzle_Ma0  }  \
-        ${radial_nozzle_gam0:+--radial_nozzle_gam0=$radial_nozzle_gam0}  \
-        ${radial_nozzle_rho1:+--radial_nozzle_rho1=$radial_nozzle_rho1}  \
-        ${radial_nozzle_u1:+  --radial_nozzle_u1=$radial_nozzle_u1    }  \
-        ${radial_nozzle_R1:+  --radial_nozzle_R1=$radial_nozzle_R1    }  \
+        ${radialflow_Ma0:+ --radialflow_Ma0=$radialflow_Ma0  }  \
+        ${radialflow_gam0:+--radialflow_gam0=$radialflow_gam0}  \
+        ${radialflow_rho1:+--radialflow_rho1=$radialflow_rho1}  \
+        ${radialflow_u1:+  --radialflow_u1=$radialflow_u1    }  \
+        ${radialflow_R1:+  --radialflow_R1=$radialflow_R1    }  \
         --status_nt=100 --restart_retain=10 "$@"
     t+=${dt[$i]}
     cp -v restart0.h5 t${t}.h5

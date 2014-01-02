@@ -21,8 +21,8 @@
 //
 //--------------------------------------------------------------------------
 
-#ifndef SUZERAIN_RADIAL_NOZZLE_SPECIFICATION_HPP
-#define SUZERAIN_RADIAL_NOZZLE_SPECIFICATION_HPP
+#ifndef SUZERAIN_RADIALFLOW_SPECIFICATION_HPP
+#define SUZERAIN_RADIALFLOW_SPECIFICATION_HPP
 
 /** @file
  * Classes for handling radial nozzle problems.
@@ -34,17 +34,17 @@ namespace suzerain {
 
 /**
  * Encapsulates the scenario parameters necessary when invoking \ref
- * suzerain_radial_nozzle_solver().  See \ref radial_nozzle.h for how to
+ * suzerain_radialflow_solver().  See \ref radialflow.h for how to
  * interpret these settings and baseflow.tex for a writeup on the general
  * problem class.
  */
-class radial_nozzle_specification
+class radialflow_specification
 {
 
 public:
 
     /** Construct an instance with the given default values. */
-    explicit radial_nozzle_specification(
+    explicit radialflow_specification(
             double Ma0  = std::numeric_limits<double>::quiet_NaN(),
             double gam0 = std::numeric_limits<double>::quiet_NaN(),
             double rho1 = std::numeric_limits<double>::quiet_NaN(),
@@ -74,4 +74,4 @@ public:
 
 } // namespace suzerain
 
-#endif // SUZERAIN_RADIAL_NOZZLE_SPECIFICATION_HPP
+#endif // SUZERAIN_RADIALFLOW_SPECIFICATION_HPP

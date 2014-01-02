@@ -21,15 +21,15 @@
 //
 //--------------------------------------------------------------------------
 
-#ifndef SUZERAIN_SUPPORT_RADIAL_NOZZLE_DEFINITION_HPP
-#define SUZERAIN_SUPPORT_RADIAL_NOZZLE_DEFINITION_HPP
+#ifndef SUZERAIN_SUPPORT_RADIALFLOW_DEFINITION_HPP
+#define SUZERAIN_SUPPORT_RADIALFLOW_DEFINITION_HPP
 
 /** @file
  * Routines for adding noise/perturbations to state fields
  */
 
 #include <suzerain/common.hpp>
-#include <suzerain/radial_nozzle_specification.hpp>
+#include <suzerain/radialflow_specification.hpp>
 #include <suzerain/support/definition_base.hpp>
 #include <suzerain/support/esio_fwd.hpp>
 #include <suzerain/support/loadable.hpp>
@@ -42,21 +42,21 @@ namespace suzerain {
 namespace support {
 
 /**
- * Upgrades a \ref radial_nozzle_specification with \ref definition_base behavior.
+ * Upgrades a \ref radialflow_specification with \ref definition_base behavior.
  * This permits using the instance with \ref program_options.
  */
-class radial_nozzle_definition
+class radialflow_definition
     : public virtual definition_base
     , public virtual loadable
-    , public virtual overridable<radial_nozzle_specification>
-    , public virtual populatable<radial_nozzle_specification>
+    , public virtual overridable<radialflow_specification>
+    , public virtual populatable<radialflow_specification>
     , public virtual savable
-    , public radial_nozzle_specification
+    , public radialflow_specification
 {
 public:
 
     /** Construct an instance with the given default values */
-    explicit radial_nozzle_definition(
+    explicit radialflow_definition(
             double Ma0  = std::numeric_limits<double>::quiet_NaN(),
             double gam0 = std::numeric_limits<double>::quiet_NaN(),
             double rho1 = std::numeric_limits<double>::quiet_NaN(),
@@ -65,12 +65,12 @@ public:
 
     /** @copydoc populatable::populate */
     virtual void populate(
-        const radial_nozzle_specification& that,
+        const radialflow_specification& that,
         const bool verbose = false);
 
     /** @copydoc overridable::override */
     virtual void override(
-        const radial_nozzle_specification& that,
+        const radialflow_specification& that,
         const bool verbose = false);
 
     /** @copydoc savable::save */
@@ -91,4 +91,4 @@ public:
 
 } // namespace suzerain
 
-#endif // SUZERAIN_SUPPORT_RADIAL_NOZZLE_DEFINITION_HPP
+#endif // SUZERAIN_SUPPORT_RADIALFLOW_DEFINITION_HPP

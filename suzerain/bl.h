@@ -457,7 +457,7 @@ suzerain_bl_compute_qoi(
  * quasilaminarization."</a> in Physics of Fluids 20 (2008).
  *
  * One notable exception is \f$p_{e,x}^\ast\f$ which is motivated by the radial
- * nozzle problem implemented in \ref radial_nozzle.h and discussed at length
+ * nozzle problem implemented in \ref radialflow.h and discussed at length
  * in <tt>writeups/baseflow.tex</tt>.
  */
 typedef struct suzerain_bl_pg {

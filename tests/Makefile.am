@@ -164,10 +164,10 @@ EXTRA_PROGRAMS         += test_htstretch
 test_htstretch_SOURCES  = test_htstretch.c
 test_htstretch_LDADD    = ../suzerain/libsuzerain.la
 
-TESTS                      += test_radial_nozzle
-EXTRA_PROGRAMS             += test_radial_nozzle
-test_radial_nozzle_SOURCES  = test_radial_nozzle.c
-test_radial_nozzle_LDADD    = ../suzerain/libsuzerain.la
+TESTS                   += test_radialflow
+EXTRA_PROGRAMS          += test_radialflow
+test_radialflow_SOURCES  = test_radialflow.c
+test_radialflow_LDADD    = ../suzerain/libsuzerain.la
 
 TESTS                  += test_rngstream
 EXTRA_PROGRAMS         += test_rngstream

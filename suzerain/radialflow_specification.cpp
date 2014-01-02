@@ -22,18 +22,18 @@
 //--------------------------------------------------------------------------
 
 /** @file
- * @copydoc radial_nozzle_specification.hpp
+ * @copydoc radialflow_specification.hpp
  */
 
 #ifdef HAVE_CONFIG_H
 #include <suzerain/config.h>
 #endif
 
-#include <suzerain/radial_nozzle_specification.hpp>
+#include <suzerain/radialflow_specification.hpp>
 
 namespace suzerain {
 
-radial_nozzle_specification::radial_nozzle_specification(
+radialflow_specification::radialflow_specification(
             double Ma0,
             double gam0,
             double rho1,

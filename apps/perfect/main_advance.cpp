@@ -35,7 +35,7 @@
 #include <suzerain/format.hpp>
 #include <suzerain/isothermal_specification.hpp>
 #include <suzerain/largo_state.hpp>
-#include <suzerain/radial_nozzle.h>
+#include <suzerain/radialflow.h>
 #include <suzerain/rholut.hpp>
 #include <suzerain/state.hpp>
 #include <suzerain/support/logging.hpp>
@@ -283,7 +283,7 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
 
         // If the baseflow is specified by a radial nozzle problem...
         if (sg->formulation.enabled() && !noz->trivial()) {
-            INFO0(who, "Preparing baseflow with suzerain_radial_nozzle_solver");
+            INFO0(who, "Preparing baseflow with suzerain_radialflow_solver");
 
             // ...solve problem at radii fixed by B-spline collocation points
             ArrayXr y(b->n());
@@ -291,20 +291,20 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
                 y[i] = b->collocation_point(i);
             }
             ArrayXr R = (y.abs2() + noz->R1*noz->R1).sqrt();
-            shared_ptr<suzerain_radial_nozzle_solution> soln(
-                    suzerain_radial_nozzle_solver(noz->Ma0,
-                                                  noz->gam0,
-                                                  noz->rho1,
-                                                  noz->u1,
-                                                  R.data(),
-                                                  R.size()),
+            shared_ptr<suzerain_radialflow_solution> soln(
+                    suzerain_radialflow_solver(noz->Ma0,
+                                               noz->gam0,
+                                               noz->rho1,
+                                               noz->u1,
+                                               R.data(),
+                                               R.size()),
                     free);
 
             // ...and tuck solution into a baseflow_map as a function of y
             shared_ptr<baseflow_map> bm(new baseflow_map());
             for (int i = 0; i < y.size(); ++i) {
                 baseflow_map::row& row = bm->table[y[i]];
-                suzerain_radial_nozzle_cartesian_conserved(
+                suzerain_radialflow_cartesian_conserved(
                         soln.get(), i, scenario->Ma,
                         &row.  base.rho,
                         &row.  base.mx ,

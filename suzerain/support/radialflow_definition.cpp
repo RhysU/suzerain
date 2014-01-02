@@ -22,14 +22,14 @@
 //--------------------------------------------------------------------------
 
 /** @file
- * @copydoc radial_nozzle_definition.hpp
+ * @copydoc radialflow_definition.hpp
  */
 
 #ifdef HAVE_CONFIG_H
 #include <suzerain/config.h>
 #endif
 
-#include <suzerain/support/radial_nozzle_definition.hpp>
+#include <suzerain/support/radialflow_definition.hpp>
 
 #include <esio/esio.h>
 #include <esio/error.h>
@@ -68,13 +68,13 @@ static void validate_option(
     *value = t;
 }
 
-radial_nozzle_definition::radial_nozzle_definition(
+radialflow_definition::radialflow_definition(
             double Ma0,
             double gam0,
             double rho1,
             double u1,
             double R1)
-    : radial_nozzle_specification(Ma0,
+    : radialflow_specification(Ma0,
                                   gam0,
                                   rho1,
                                   u1,
@@ -83,12 +83,12 @@ radial_nozzle_definition::radial_nozzle_definition(
 }
 
 // Strings used in options_description and populate/override/save/load.
-static const char location [] = "radial_nozzle";
-static const char name_Ma0 [] = "radial_nozzle_Ma0";
-static const char name_gam0[] = "radial_nozzle_gam0";
-static const char name_rho1[] = "radial_nozzle_rho1";
-static const char name_u1  [] = "radial_nozzle_u1";
-static const char name_R1  [] = "radial_nozzle_R1";
+static const char location [] = "radialflow";
+static const char name_Ma0 [] = "radialflow_Ma0";
+static const char name_gam0[] = "radialflow_gam0";
+static const char name_rho1[] = "radialflow_rho1";
+static const char name_u1  [] = "radialflow_u1";
+static const char name_R1  [] = "radialflow_R1";
 static const char * const attr_Ma0  = name_Ma0  + sizeof(location);
 static const char * const attr_gam0 = name_gam0 + sizeof(location);
 static const char * const attr_rho1 = name_rho1 + sizeof(location);
@@ -103,7 +103,7 @@ static const char desc_u1  [] = "Inner radial velocity, u(R_1)";
 static const char desc_R1  [] = "Inner radius of interest, R_1";
 
 boost::program_options::options_description
-radial_nozzle_definition::options_description()
+radialflow_definition::options_description()
 {
     using boost::bind;
     using boost::lexical_cast;
@@ -169,8 +169,8 @@ radial_nozzle_definition::options_description()
 }
 
 void
-radial_nozzle_definition::populate(
-        const radial_nozzle_specification& that,
+radialflow_definition::populate(
+        const radialflow_specification& that,
         const bool verbose)
 {
     maybe_populate(name_Ma0,  desc_Ma0,  Ma0,  that.Ma0,  verbose);
@@ -181,8 +181,8 @@ radial_nozzle_definition::populate(
 }
 
 void
-radial_nozzle_definition::override(
-        const radial_nozzle_specification& that,
+radialflow_definition::override(
+        const radialflow_specification& that,
         const bool verbose)
 {
     maybe_override(name_Ma0,  desc_Ma0,  Ma0,  that.Ma0,  verbose);
@@ -193,7 +193,7 @@ radial_nozzle_definition::override(
 }
 
 void
-radial_nozzle_definition::save(
+radialflow_definition::save(
     const esio_handle h) const
 {
     // Save nothing if there's nothing interesting to save
@@ -201,7 +201,7 @@ radial_nozzle_definition::save(
         return;
     }
 
-    DEBUG0("Storing radial_nozzle_definition parameters");
+    DEBUG0("Storing radialflow_definition parameters");
 
     // Write out the "container" holding all other settings
     const int one = 1;
@@ -220,11 +220,11 @@ radial_nozzle_definition::save(
 }
 
 void
-radial_nozzle_definition::load(
+radialflow_definition::load(
     const esio_handle h,
     const bool verbose)
 {
-    radial_nozzle_definition t;
+    radialflow_definition t;
 
     // Only proceed if a definition is active in the restart
     int in_use = 0;
@@ -236,7 +236,7 @@ radial_nozzle_definition::load(
         return;
     }
 
-    DEBUG0("Loading radial_nozzle_definition parameters");
+    DEBUG0("Loading radialflow_definition parameters");
 
     // Read in information as attributes within the container
     esio_attribute_read(h, location, attr_Ma0,  &t.Ma0);
