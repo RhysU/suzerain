@@ -197,11 +197,9 @@ suzerain_radialflow_qoi_pexi(
     const size_t i)
 {
     assert(i < s->size);
-    const double sgn_u = s->state[i].u >= 0 ? 1 : -1;
     const double delta = suzerain_radialflow_delta(s, i);
-    return (sgn_u * s->state[i].R * delta * s->state[i].pp)
-         / (   gsl_pow_2(s->Ma0) * s->state[0].R
-             * s->state[i].rho * gsl_pow_2(s->state[i].u));
+    return - (s->state[i].R * delta * s->state[i].up)
+           / (s->state[0].R * fabs(s->state[i].u));
 }
 
 inline // Suggests inlining within suzerain_radialflow_cartesian_conserved

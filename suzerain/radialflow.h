@@ -191,22 +191,27 @@ suzerain_radialflow_qoi_Mae(
  * Compute \f$p^\ast_{e,\xi}\f$, a nondimensional pressure gradient parameter,
  * at location index \c i within solution \c s.  That is,
  * \f{align}{
- *   p^\ast_{e,\xi}
- *   &\equiv
- *   \left.
- *   \frac{l_0 \delta}{\rho_0 \rho \, u_0^2 u^2}
- *     \frac{\partial\left(p_0 p\right)}{\partial\left(l_0 \xi\right)}
- *   \right|_{\left(R_0,\delta\right)}
- *   =
- *   \left.
- *     \frac{\operatorname{sgn}(u) \, \delta}{\mbox{Ma}_{0}^2 \rho u^2}
- *       \frac{\partial{}p}{\partial{}x}
- *   \right|_{\left(R_0,\delta\right)}
- *   =
- *   \left.
- *     \frac{\operatorname{sgn}(u) R \, \delta \, p^\prime\left(R\right)}
- *          {\mbox{Ma}_{0}^2 R_0 \, \rho\left(R\right) u^2\left(R\right)}
- *   \right|_{R=\sqrt{R_0^2 + \delta^2}}
+ *    p^\ast_{e,\xi}
+ *    &\equiv
+ *    \left.
+ *    \frac{l_0 \delta}{\rho_0 \rho \, u_0^2 u^2}
+ *      \frac{\partial\left(p_0 p\right)}{\partial\left(l_0 \xi\right)}
+ *    \right|_{\left(R_0,\delta\right)}
+ * \\&=
+ *    \left.
+ *      \frac{\operatorname{sgn}(u) \, \delta}{\mbox{Ma}_{0}^2 \rho u^2}
+ *        \frac{\partial{}p}{\partial{}x}
+ *    \right|_{\left(R_0,\delta\right)}
+ * \\&=
+ *    \left.
+ *      \frac{\operatorname{sgn}(u) R \, \delta \, p^\prime\left(R\right)}
+ *           {\mbox{Ma}_{0}^2 R_0 \, \rho\left(R\right) u^2\left(R\right)}
+ *    \right|_{R=\sqrt{R_0^2 + \delta^2}}
+ * \\&=
+ *    - \left.
+ *        \frac{R \, \delta \, u'\!\left(R\right)}
+ *             {R_0 \, \left|u\!\left(R\right)\right|}
+ *    \right|_{R=\sqrt{R_0^2 + \delta^2}}
  * \f}
  * where \f$\xi\f$ is denotes the \f$x\f$ direction possibly reflected so that
  * streamwise velocity always has positive sign. \f$\delta\f$ is computed from
