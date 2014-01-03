@@ -265,6 +265,44 @@ suzerain_radialflow_qoi_Te(
     const double Ma);
 
 /**
+ * FIXME Document, improving output names to reflect returned edge state!
+ *
+ * @param[in ] delta Edge distance \f$\delta\f$ above the \f$x\f$-axis.
+ * @param[in ] gam0  Reference specific heat ratio \f$\gamma_0\f$.
+ * @param[in ] Ma_e  Edge Mach number \f$\mbox{Ma}_e\f$ defined
+ *                   per \ref suzerain_radialflow_qoi_Mae.
+ * @param[in ] p_exi Pressure gradient parameter \f$p^\ast_{e,\xi}\f$ defined
+ *                   per \ref suzerain_radialflow_qoi_pexi.
+ * @param[in ] T_e   Edge temperature \f$T_e\f$ defined
+ *                   per \ref suzerain_radialflow_qoi_Te.
+ * @param[out] Ma0   Reference Mach number \f$\mbox{Ma}_0\f$.
+ * @param[out] u1    Radial velocity at edge, \f$u\left(R\right)\f$
+ * @param[out] rho1  Density at edge \f$\rho\left(R\right)\f$
+ * @param[out] p1    Pressure at edge \f$p\left(R\right)\f$
+ * @param[out] R0    Radius causing edge radius \f$R\f$ to be at
+ *                   Cartesian coordinate \f$\left(R_0,\delta\right)\f$.
+ * @param[out] R     Edge radius \f$R\f$.
+ *
+ * @return SUZERAIN_SUCCESS (zero) on success and nonzero on failure.
+ *         On failure, all output values are additionally set to NaN.
+ *
+ * @see Model documentation in <tt>writeups/baseflow.tex</tt> for details.
+ */
+int
+suzerain_radialflow_qoi_match(
+    const double delta,
+    const double gam0,
+    const double Ma_e,
+    const double p_exi,
+    const double T_e,
+    double *Ma0,
+    double *u1,
+    double *rho1,
+    double *p1,
+    double *R0,
+    double *R);
+
+/**
  * Compute Cartesian base flow primitive state at \f$\left(R_0,
  * \delta_i\right)\f$, including streamwise derivatives, given a radial nozzle
  * solution.  Downstream \f$\xi\f$ is oriented to be in the positive \f$x\f$

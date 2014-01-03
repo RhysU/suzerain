@@ -34,6 +34,7 @@
 #include <gsl/gsl_errno.h>
 #include <gsl/gsl_math.h>
 #include <gsl/gsl_odeiv2.h>
+#include <gsl/gsl_poly.h>
 
 #include <suzerain/common.h>
 #include <suzerain/error.h>
@@ -208,6 +209,56 @@ suzerain_radialflow_qoi_Te(
 {
     assert(i < s->size);
     return s->gam0 * gsl_pow_2(Ma / s->Ma0) * (s->state[i].p / s->state[i].rho);
+}
+
+// FIXME Improve output names to reflect returned edge state!
+int
+suzerain_radialflow_qoi_match(
+    const double delta,
+    const double gam0,
+    const double Ma_e,
+    const double p_exi,
+    const double T_e,
+    double *Ma0,
+    double *u1,
+    double *rho1,
+    double *p1,
+    double *R0,
+    double *R)
+{
+
+    // Solve quadratic for R0
+    double x[2];
+    const double Ma_e2  = gsl_pow_2(Ma_e );
+    const double delta2 = gsl_pow_2(delta);
+    const int nreal = gsl_poly_solve_quadratic(
+                          - fabs(Ma_e2 - 1) * fabs(p_exi),
+                          delta,
+                          - Ma_e2 * delta2 * fabs(p_exi) * GSL_SIGN(Ma_e2 - 1),
+                          x+0, x+1);
+
+    // If real roots exist...
+    if (nreal > 0) {
+        // ...take the largest one possible...
+        *R0   = x[nreal - 1];
+        *Ma0  = 1 / sqrt(1/Ma_e2 + (gam0 - 1)*delta2/gsl_pow_2(*R0)/2);
+        *R    = sqrt(gsl_pow_2(*R0) + delta2);
+        *u1   = - (*R / *R0) * GSL_SIGN(p_exi*(Ma_e2 - 1));
+        *rho1 = 1;
+        *p1   = T_e == 0
+              ? 1
+              : T_e * gsl_pow_2(*Ma0) * *rho1/gam0/Ma_e2;
+    } else {
+        // ...otherwise defensive failure...
+        *R0   = GSL_NAN;
+        *Ma0  = GSL_NAN;
+        *R    = GSL_NAN;
+        *u1   = GSL_NAN;
+        *rho1 = GSL_NAN;
+        *p1   = GSL_NAN;
+    }
+    // ...notice success requires a positive R0!
+    return *R0 >= 0 ? SUZERAIN_SUCCESS : SUZERAIN_EFAILED;
 }
 
 inline // Suggests inlining within suzerain_radialflow_cartesian_conserved
