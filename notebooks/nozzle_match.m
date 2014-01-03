@@ -26,9 +26,9 @@ end
 %! [r u rho p]          = nozzle(Ma, gam, R, R0, uR, rhoR, pR);         % R->R0
 %! [R1 u1 rho1 p1]      = deal(r(end), u(end), rho(end), p(end));       % R0
 %! [Ma_e p_exi T_e]     = nozzle_qoi(delta, gam, Ma, R1, u1, rho1, p1); % R0->R
-%! assert(Ma_e,   1.1906,   -0.002);
-%! assert(p_exi, -0.025439, -0.002);
-%! assert(T_e,    4.0040,   -0.002);
+%! assert(Ma_e,   1.1906,   -sqrt(eps));
+%! assert(p_exi, -0.025439, -sqrt(eps));
+%! assert(T_e,    4.0040,   -sqrt(eps));
 
 %!test % Round trip: Subsonic nozzle with hot edge
 %! delta = 1; gam = 1.4088;
@@ -36,9 +36,9 @@ end
 %! [r u rho p]          = nozzle(Ma, gam, R, R0, uR, rhoR, pR);         % R->R0
 %! [R1 u1 rho1 p1]      = deal(r(end), u(end), rho(end), p(end));       % R0
 %! [Ma_e p_exi T_e]     = nozzle_qoi(delta, gam, Ma, R1, u1, rho1, p1); % R0->R
-%! assert(Ma_e,   0.54927,  -0.001);
-%! assert(p_exi, -0.014755, -0.001);
-%! assert(T_e,    4.1541,   -0.001);
+%! assert(Ma_e,   0.54927,  -sqrt(eps));
+%! assert(p_exi, -0.014755, -sqrt(eps));
+%! assert(T_e,    4.1541,   -sqrt(eps));
 
 %!test % Round trip: Supersonic diffuser with cold edge with non-unit delta
 %! delta = 0.5; gam = 1.4;
@@ -46,9 +46,9 @@ end
 %! [r u rho p]          = nozzle(Ma, gam, R, R0, uR, rhoR, pR);         % R->R0
 %! [R1 u1 rho1 p1]      = deal(r(end), u(end), rho(end), p(end));       % R0
 %! [Ma_e p_exi T_e]     = nozzle_qoi(delta, gam, Ma, R1, u1, rho1, p1); % R0->R
-%! assert(Ma_e,   1.5,  -0.0015);
-%! assert(p_exi, +0.02, -0.0015);
-%! assert(T_e,    0.5,  -0.0015);
+%! assert(Ma_e,   1.5,  -sqrt(eps));
+%! assert(p_exi, +0.02, -sqrt(eps));
+%! assert(T_e,    0.5,  -sqrt(eps));
 
 %!test % Round trip: Subsonic diffuser without prescribed edge temperature
 %! delta = 1; gam = 1.4;
@@ -56,6 +56,6 @@ end
 %! [r u rho p]          = nozzle(Ma, gam, R, R0, uR, rhoR, pR);         % R->R0
 %! [R1 u1 rho1 p1]      = deal(r(end), u(end), rho(end), p(end));       % R0
 %! [Ma_e p_exi T_e]     = nozzle_qoi(delta, gam, Ma, R1, u1, rho1, p1); % R0->R
-%! assert(Ma_e,   0.5,   -0.0001);
-%! assert(p_exi, +0.015, -0.0001);
-%! assert(pR,     1.0,   -0.0001);
+%! assert(Ma_e,   0.5,   -sqrt(eps));
+%! assert(p_exi, +0.015, -sqrt(eps));
+%! assert(pR,     1.0,   -sqrt(eps));
