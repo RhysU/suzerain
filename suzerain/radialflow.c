@@ -115,14 +115,18 @@ suzerain_radialflow_solver(
     s->state[0].R = s->state[0].u = s->state[0].rho = s->state[0].p = GSL_NAN;
 
     // Use GNU Scientific Library ODE integrator on [u; rho; p]' system
+    // being careful to account for increasing vs decreasing R[0], R[1], ...
     double current_R = R[0];
     double y[3] = { u1, rho1, p1 };
     params_type params = { Ma0*Ma0, gam0 - 1 };
     gsl_odeiv2_system sys = { &nozzle_rhs, 0, sizeof(y)/sizeof(y[0]), &params};
     const double abstol = 0;
     const double reltol = GSL_SQRT_DBL_EPSILON;
+    const double hstart = (size ==    1) ? +GSL_SQRT_DBL_EPSILON
+                        : (R[0] <= R[1]) ? +GSL_SQRT_DBL_EPSILON
+                        :                  -GSL_SQRT_DBL_EPSILON;
     gsl_odeiv2_driver * driver = gsl_odeiv2_driver_alloc_y_new(
-            &sys, gsl_odeiv2_step_rkf45, GSL_SQRT_DBL_EPSILON, abstol, reltol);
+            &sys, gsl_odeiv2_step_rkf45, hstart, abstol, reltol);
     if (!driver) {
         free(s);
         SUZERAIN_ERROR_NULL("Driver allocation failed", GSL_EFAILED);
@@ -177,7 +181,8 @@ suzerain_radialflow_delta(
     const size_t i)
 {
     assert(i < s->size);
-    return sqrt(gsl_pow_2(s->state[i].R) - gsl_pow_2(s->state[0].R));
+    const double R0 = GSL_MIN(s->state[0].R, s->state[s->size-1].R);
+    return sqrt(gsl_pow_2(s->state[i].R) - gsl_pow_2(R0));
 }
 
 double
@@ -186,7 +191,8 @@ suzerain_radialflow_qoi_Mae(
     const size_t i)
 {
     assert(i < s->size);
-    return  (s->Ma0 * s->state[0].R * fabs(s->state[i].u) )
+    const double R0 = GSL_MIN(s->state[0].R, s->state[s->size-1].R);
+    return  (s->Ma0 * R0            * fabs(s->state[i].u) )
           / (         s->state[i].R * sqrt(s->state[i].a2));
 }
 
@@ -197,8 +203,9 @@ suzerain_radialflow_qoi_pexi(
 {
     assert(i < s->size);
     const double delta = suzerain_radialflow_delta(s, i);
+    const double R0    = GSL_MIN(s->state[0].R, s->state[s->size-1].R);
     return - (s->state[i].R * delta * s->state[i].up)
-           / (s->state[0].R * fabs(s->state[i].u));
+           / (R0            * fabs(s->state[i].u));
 }
 
 double
@@ -211,7 +218,6 @@ suzerain_radialflow_qoi_Te(
     return s->gam0 * gsl_pow_2(Ma / s->Ma0) * (s->state[i].p / s->state[i].rho);
 }
 
-// FIXME Improve output names to reflect returned edge state!
 int
 suzerain_radialflow_qoi_match(
     const double delta,
