@@ -344,6 +344,63 @@ void test_supersonic2()
     free(s);
 }
 
+static
+void test_match()
+{
+    // Various cases that we should be able to round trip:
+    //  (0) Supersonic nozzle with hot edge
+    //  (1) Subsonic nozzle with hot edge
+    //  (2) Supersonic diffuser with cold edge with non-unit delta
+    //  (3) Subsonic diffuser without prescribed edge temperature
+    const double delta   [] = {  1,         1,         0.5,   1      };
+    const double gam0    [] = {  1.4087,    1.4088,    1.4,   1.4    };
+    const double tgt_Mae [] = {  1.1906,    0.54927,   1.5,   0.5    };
+    const double tgt_pexi[] = { -0.025439, -0.014755, +0.02, +0.015  };
+    const double tgt_Te  [] = {  4.0040,    4.1541,    0.50,  0.0    };
+
+    for (size_t i = 0; i < sizeof(delta)/sizeof(delta[0]); ++i) {
+
+        // Compute edge state matching target quantities.
+        double Ma0, R[2], uR, rhoR, pR;
+        suzerain_radialflow_qoi_match(
+                delta[i], gam0[i], tgt_Mae[i], tgt_pexi[i], tgt_Te[i],
+                &Ma0, R+1, R+0, &uR, &rhoR, &pR);
+
+        // Solve from edge to the wall using trick R+1, R+1 order just above
+        suzerain_radialflow_solution * const s = suzerain_radialflow_solver(
+                Ma0, gam0[i], uR, rhoR, pR, R, sizeof(R)/sizeof(R[0]));
+
+        // Solve from the wall back up to the edge
+        R[0] = s->state[1].R;
+        R[1] = s->state[2].R;
+        const double u1   = s->state[1].u;
+        const double rho1 = s->state[1].rho;
+        const double p1   = s->state[1].p;
+        suzerain_radialflow_solution * const r = suzerain_radialflow_solver(
+                Ma0, gam0[i], u1, rho1, p1, R, sizeof(R)/sizeof(R[0]));
+
+        // Compute round-tripped edge quantities
+        const double obs_Mae  = suzerain_radialflow_qoi_Mae (r, 1);
+        const double obs_pexi = suzerain_radialflow_qoi_pexi(r, 1);
+        const double obs_Te   = suzerain_radialflow_qoi_Te  (r, 1, tgt_Mae[i]);
+        const double obs_pe   = r->state[i].p;
+
+        // Check that computed edge quantities match expectations
+        const double tol = GSL_SQRT_DBL_EPSILON;
+        gsl_test_rel(tgt_Mae [i], obs_Mae , tol, "%s: Mae [%d]", __func__, i);
+        gsl_test_rel(tgt_pexi[i], obs_pexi, tol, "%s: pexi[%d]", __func__, i);
+        if (tgt_Te != 0) {
+            gsl_test_rel(tgt_Te[i], obs_Te, tol, "%s: Te[%d]", __func__, i);
+        } else {
+            gsl_test_rel(1,         obs_pe, tol, "%s: pe[%d]", __func__, i);
+        }
+
+        // Free resources from this iteration
+        free(s);
+        free(r);
+    }
+}
+
 int main(int argc, char **argv)
 {
     SUZERAIN_UNUSED(argc);
@@ -357,6 +414,7 @@ int main(int argc, char **argv)
     test_subsonic();
     test_supersonic1();
     test_supersonic2();
+    // FIXME test_match();
 
     exit(gsl_test_summary());
 }
