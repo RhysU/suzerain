@@ -275,13 +275,13 @@ suzerain_radialflow_qoi_Te(
  *                   per \ref suzerain_radialflow_qoi_pexi.
  * @param[in ] T_e   Edge temperature \f$T_e\f$ defined
  *                   per \ref suzerain_radialflow_qoi_Te.
- * @param[out] Ma0   Reference Mach number \f$\mbox{Ma}_0\f$.
- * @param[out] u1    Radial velocity at edge, \f$u\left(R\right)\f$
- * @param[out] rho1  Density at edge \f$\rho\left(R\right)\f$
- * @param[out] p1    Pressure at edge \f$p\left(R\right)\f$
  * @param[out] R0    Radius causing edge radius \f$R\f$ to be at
  *                   Cartesian coordinate \f$\left(R_0,\delta\right)\f$.
+ * @param[out] Ma0   Reference Mach number \f$\mbox{Ma}_0\f$.
  * @param[out] R     Edge radius \f$R\f$.
+ * @param[out] uR    Radial velocity at edge, \f$u\left(R\right)\f$
+ * @param[out] rhoR  Density at edge \f$\rho\left(R\right)\f$
+ * @param[out] pR    Pressure at edge \f$p\left(R\right)\f$
  *
  * @return SUZERAIN_SUCCESS (zero) on success and nonzero on failure.
  *         On failure, all output values are additionally set to NaN.
@@ -295,12 +295,12 @@ suzerain_radialflow_qoi_match(
     const double Ma_e,
     const double p_exi,
     const double T_e,
+    double *R0,
     double *Ma0,
+    double *R,
     double *u1,
     double *rho1,
-    double *p1,
-    double *R0,
-    double *R);
+    double *p1);
 
 /**
  * Compute Cartesian base flow primitive state at \f$\left(R_0,

@@ -219,12 +219,12 @@ suzerain_radialflow_qoi_match(
     const double Ma_e,
     const double p_exi,
     const double T_e,
-    double *Ma0,
-    double *u1,
-    double *rho1,
-    double *p1,
     double *R0,
-    double *R)
+    double *Ma0,
+    double *R,
+    double *uR,
+    double *rhoR,
+    double *pR)
 {
 
     // Solve quadratic for R0
@@ -243,19 +243,19 @@ suzerain_radialflow_qoi_match(
         *R0   = x[nreal - 1];
         *Ma0  = 1 / sqrt(1/Ma_e2 + (gam0 - 1)*delta2/gsl_pow_2(*R0)/2);
         *R    = sqrt(gsl_pow_2(*R0) + delta2);
-        *u1   = - (*R / *R0) * GSL_SIGN(p_exi*(Ma_e2 - 1));
-        *rho1 = 1;
-        *p1   = T_e == 0
+        *uR   = - (*R / *R0) * GSL_SIGN(p_exi*(Ma_e2 - 1));
+        *rhoR = 1;
+        *pR   = T_e == 0
               ? 1
-              : T_e * gsl_pow_2(*Ma0) * *rho1/gam0/Ma_e2;
+              : T_e * gsl_pow_2(*Ma0) * *rhoR/gam0/Ma_e2;
     } else {
         // ...otherwise defensive failure...
         *R0   = GSL_NAN;
         *Ma0  = GSL_NAN;
         *R    = GSL_NAN;
-        *u1   = GSL_NAN;
-        *rho1 = GSL_NAN;
-        *p1   = GSL_NAN;
+        *uR   = GSL_NAN;
+        *rhoR = GSL_NAN;
+        *pR   = GSL_NAN;
     }
     // ...notice success requires a positive R0!
     return *R0 >= 0 ? SUZERAIN_SUCCESS : SUZERAIN_EFAILED;

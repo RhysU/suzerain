@@ -1,5 +1,6 @@
 % Solve radial flow for Ma_e, p_exi and approximately ideal T_e at (R1, delta).
-function [Ma_e p_exi T_e] = nozzle_qoi(delta, gam0, Ma0, R1, u1, rho1=1, p1=1)
+function [Ma_e p_exi T_e] = nozzle_qoi(delta, gam, Ma, R1, u1, rho1, p1)
+
   try
     [r u rho p a2 up rhop pp] = nozzle(Ma, gam, max(R1,eps), ...
                                        realsqrt(R1.^2+delta.^2), u1, rho1, p1);
@@ -11,4 +12,5 @@ function [Ma_e p_exi T_e] = nozzle_qoi(delta, gam0, Ma0, R1, u1, rho1=1, p1=1)
             delta, gam, Ma, R1, u1, rho1, p1, lasterror.message);
     Ma_e = p_exi = T_e = NaN;
   end
+
 end
