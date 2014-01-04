@@ -370,9 +370,12 @@ void test_match()
         suzerain_radialflow_solution * const s = suzerain_radialflow_solver(
                 Ma0, gam0[i], uR, rhoR, pR, R, sizeof(R)/sizeof(R[0]));
 
+        // Check that computed edge quantities match expectations (R -> R0)
+        // FIXME
+
         // Solve from the wall back up to the edge
         R[0] = s->state[1].R;
-        R[1] = s->state[2].R;
+        R[1] = s->state[0].R;
         const double u1   = s->state[1].u;
         const double rho1 = s->state[1].rho;
         const double p1   = s->state[1].p;
@@ -382,17 +385,21 @@ void test_match()
         // Compute round-tripped edge quantities
         const double obs_Mae  = suzerain_radialflow_qoi_Mae (r, 1);
         const double obs_pexi = suzerain_radialflow_qoi_pexi(r, 1);
-        const double obs_Te   = suzerain_radialflow_qoi_Te  (r, 1, tgt_Mae[i]);
-        const double obs_pe   = r->state[i].p;
+        const double obs_Te   = suzerain_radialflow_qoi_Te  (r, 1, obs_Mae);
+        const double obs_pe   = r->state[1].p;
 
-        // Check that computed edge quantities match expectations
+        // Check that computed edge quantities match expectations (R0 -> R)
         const double tol = GSL_SQRT_DBL_EPSILON;
-        gsl_test_rel(tgt_Mae [i], obs_Mae , tol, "%s: Mae [%d]", __func__, i);
-        gsl_test_rel(tgt_pexi[i], obs_pexi, tol, "%s: pexi[%d]", __func__, i);
-        if (tgt_Te != 0) {
-            gsl_test_rel(tgt_Te[i], obs_Te, tol, "%s: Te[%d]", __func__, i);
+        gsl_test_rel(obs_Mae, tgt_Mae [i], tol,
+                     "%s:%d Mae [%d]", __func__, __LINE__, i);
+        gsl_test_rel(obs_pexi, tgt_pexi[i], tol,
+                     "%s:%d pexi[%d]", __func__, __LINE__, i);
+        if (tgt_Te[i] != 0) {
+            gsl_test_rel(obs_Te, tgt_Te[i], tol,
+                         "%s:%d Te[%d]", __func__, __LINE__, i);
         } else {
-            gsl_test_rel(1,         obs_pe, tol, "%s: pe[%d]", __func__, i);
+            gsl_test_rel(obs_pe, 1,         tol,
+                         "%s:%d pe[%d]", __func__, __LINE__, i);
         }
 
         // Free resources from this iteration
@@ -414,7 +421,7 @@ int main(int argc, char **argv)
     test_subsonic();
     test_supersonic1();
     test_supersonic2();
-    // FIXME test_match();
+    test_match();
 
     exit(gsl_test_summary());
 }
