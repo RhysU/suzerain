@@ -371,7 +371,28 @@ void test_match()
                 Ma0, gam0[i], uR, rhoR, pR, R, sizeof(R)/sizeof(R[0]));
 
         // Check that computed edge quantities match expectations (R -> R0)
-        // FIXME
+        // This sanity checks the QoI computations for decreasing R values
+        {
+            // Compute round-tripped edge quantities
+            const double obs_Mae  = suzerain_radialflow_qoi_Mae (s, 0);
+            const double obs_pexi = suzerain_radialflow_qoi_pexi(s, 0);
+            const double obs_Te   = suzerain_radialflow_qoi_Te  (s, 0, obs_Mae);
+            const double obs_pe   = s->state[0].p;
+
+            // Check that computed edge quantities match expectations (R0 -> R)
+            const double tol = GSL_SQRT_DBL_EPSILON;
+            gsl_test_rel(obs_Mae, tgt_Mae [i], tol,
+                        "%s:%d Mae [%d]", __func__, __LINE__, i);
+            gsl_test_rel(obs_pexi, tgt_pexi[i], tol,
+                        "%s:%d pexi[%d]", __func__, __LINE__, i);
+            if (tgt_Te[i] != 0) {
+                gsl_test_rel(obs_Te, tgt_Te[i], tol,
+                            "%s:%d Te[%d]", __func__, __LINE__, i);
+            } else {
+                gsl_test_rel(obs_pe, 1,         tol,
+                            "%s:%d pe[%d]", __func__, __LINE__, i);
+            }
+        }
 
         // Solve from the wall back up to the edge
         R[0] = s->state[1].R;
@@ -382,24 +403,28 @@ void test_match()
         suzerain_radialflow_solution * const r = suzerain_radialflow_solver(
                 Ma0, gam0[i], u1, rho1, p1, R, sizeof(R)/sizeof(R[0]));
 
-        // Compute round-tripped edge quantities
-        const double obs_Mae  = suzerain_radialflow_qoi_Mae (r, 1);
-        const double obs_pexi = suzerain_radialflow_qoi_pexi(r, 1);
-        const double obs_Te   = suzerain_radialflow_qoi_Te  (r, 1, obs_Mae);
-        const double obs_pe   = r->state[1].p;
-
         // Check that computed edge quantities match expectations (R0 -> R)
-        const double tol = GSL_SQRT_DBL_EPSILON;
-        gsl_test_rel(obs_Mae, tgt_Mae [i], tol,
-                     "%s:%d Mae [%d]", __func__, __LINE__, i);
-        gsl_test_rel(obs_pexi, tgt_pexi[i], tol,
-                     "%s:%d pexi[%d]", __func__, __LINE__, i);
-        if (tgt_Te[i] != 0) {
-            gsl_test_rel(obs_Te, tgt_Te[i], tol,
-                         "%s:%d Te[%d]", __func__, __LINE__, i);
-        } else {
-            gsl_test_rel(obs_pe, 1,         tol,
-                         "%s:%d pe[%d]", __func__, __LINE__, i);
+        // This sanity checks the QoI computations for increasing R values
+        {
+            // Compute round-tripped edge quantities
+            const double obs_Mae  = suzerain_radialflow_qoi_Mae (r, 1);
+            const double obs_pexi = suzerain_radialflow_qoi_pexi(r, 1);
+            const double obs_Te   = suzerain_radialflow_qoi_Te  (r, 1, obs_Mae);
+            const double obs_pe   = r->state[1].p;
+
+            // Check that computed edge quantities match expectations (R0 -> R)
+            const double tol = GSL_SQRT_DBL_EPSILON;
+            gsl_test_rel(obs_Mae, tgt_Mae [i], tol,
+                        "%s:%d Mae [%d]", __func__, __LINE__, i);
+            gsl_test_rel(obs_pexi, tgt_pexi[i], tol,
+                        "%s:%d pexi[%d]", __func__, __LINE__, i);
+            if (tgt_Te[i] != 0) {
+                gsl_test_rel(obs_Te, tgt_Te[i], tol,
+                            "%s:%d Te[%d]", __func__, __LINE__, i);
+            } else {
+                gsl_test_rel(obs_pe, 1,         tol,
+                            "%s:%d pe[%d]", __func__, __LINE__, i);
+            }
         }
 
         // Free resources from this iteration
