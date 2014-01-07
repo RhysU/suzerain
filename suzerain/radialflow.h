@@ -267,7 +267,9 @@ suzerain_radialflow_qoi_Te(
     const double Ma);
 
 /**
- * FIXME Document, improving output names to reflect returned edge state!
+ * Find flow state \f$u\left(R\right)$, \f$\rho\left(R\right)$, and
+ * \f$p\left(R\right)$ and radial extents \f$\left[R_0, R\right]$ reproducing
+ * the specified boundary layer edge parameters.
  *
  * @param[in ] delta Edge distance \f$\delta\f$ above the \f$x\f$-axis.
  * @param[in ] gam0  Reference specific heat ratio \f$\gamma_0\f$.
