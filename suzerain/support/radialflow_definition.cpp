@@ -69,38 +69,37 @@ static void validate_option(
 }
 
 radialflow_definition::radialflow_definition(
-            double Ma0,
+            double deltae,
             double gam0,
-            double rho1,
-            double u1,
-            double R1)
-    : radialflow_specification(Ma0,
-                                  gam0,
-                                  rho1,
-                                  u1,
-                                  R1)
+            double Mae,
+            double pexi,
+            double Te)
+    : radialflow_specification(deltae, gam0, Mae, pexi, Te)
 {
 }
 
 // Strings used in options_description and populate/override/save/load.
-static const char location [] = "radialflow";
-static const char name_Ma0 [] = "radialflow_Ma0";
-static const char name_gam0[] = "radialflow_gam0";
-static const char name_rho1[] = "radialflow_rho1";
-static const char name_u1  [] = "radialflow_u1";
-static const char name_R1  [] = "radialflow_R1";
-static const char * const attr_Ma0  = name_Ma0  + sizeof(location);
-static const char * const attr_gam0 = name_gam0 + sizeof(location);
-static const char * const attr_rho1 = name_rho1 + sizeof(location);
-static const char * const attr_u1   = name_u1   + sizeof(location);
-static const char * const attr_R1   = name_R1   + sizeof(location);
+static const char location   [] = "radialflow";
+static const char name_deltae[] = "radialflow_deltae";
+static const char name_gam0  [] = "radialflow_gam0";
+static const char name_Mae   [] = "radialflow_Mae";
+static const char name_pexi  [] = "radialflow_pexi";
+static const char name_Te    [] = "radialflow_Te";
+static const char * const attr_deltae = name_deltae + sizeof(location);
+static const char * const attr_gam0   = name_gam0   + sizeof(location);
+static const char * const attr_Mae    = name_Mae    + sizeof(location);
+static const char * const attr_pexi   = name_pexi   + sizeof(location);
+static const char * const attr_Te     = name_Te     + sizeof(location);
 
 // Descriptions used in options_description and populate/override/save/load.
-static const char desc_Ma0 [] = "Reference Mach number, Ma_0";
-static const char desc_gam0[] = "Reference specific heat ratio, gamma_0";
-static const char desc_rho1[] = "Inner density, rho(R_1)";
-static const char desc_u1  [] = "Inner radial velocity, u(R_1)";
-static const char desc_R1  [] = "Inner radius of interest, R_1";
+static const char desc_deltae[] = "Edge distance above the x-axis.";
+static const char desc_gam0  [] = "Edge specific heat ratio."
+                                  " Zero or NaN indicates an external value should be used.";
+static const char desc_Mae   [] = "Edge Mach number."
+                                  " Zero or NaN indicates an external value should be used.";
+static const char desc_pexi  [] = "Edge pressure gradient parameter."
+                                  " Zero or NaN disables the radial flow.";
+static const char desc_Te    [] = "Edge temperature.";
 
 boost::program_options::options_description
 radialflow_definition::options_description()
@@ -116,19 +115,19 @@ radialflow_definition::options_description()
     using validation::ensure_positive;
 
     options_description retval(
-            "Radial nozzle problem parameters "
+            "Radial flow problem reference parameters"
             " for homogenized boundary layers with baseflow");
 
     auto_ptr<typed_value<string> > p;
 
-    // Ma0
+    // deltae
     p.reset(value<string>());
-    p->notifier(bind(&validate_option<double>, _1, &Ma0,
-                     &ensure_positive<double>, name_Ma0));
-    if (!(boost::math::isnan)(Ma0)) {
-        p->default_value(lexical_cast<string>(Ma0));
+    p->notifier(bind(&validate_option<double>, _1, &deltae,
+                     &ensure_positive<double>, name_deltae));
+    if (!(boost::math::isnan)(deltae)) {
+        p->default_value(lexical_cast<string>(deltae));
     }
-    retval.add_options()(name_Ma0, p.release(), desc_Ma0);
+    retval.add_options()(name_deltae, p.release(), desc_deltae);
 
     // gam0
     p.reset(value<string>());
@@ -139,31 +138,31 @@ radialflow_definition::options_description()
     }
     retval.add_options()(name_gam0, p.release(), desc_gam0);
 
-    // rho1
+    // Mae
     p.reset(value<string>());
-    p->notifier(bind(&validate_option<double>, _1, &rho1,
-                     &ensure_positive<double>, name_rho1));
-    if (!(boost::math::isnan)(rho1)) {
-        p->default_value(lexical_cast<string>(rho1));
+    p->notifier(bind(&validate_option<double>, _1, &Mae,
+                     &ensure_positive<double>, name_Mae));
+    if (!(boost::math::isnan)(Mae)) {
+        p->default_value(lexical_cast<string>(Mae));
     }
-    retval.add_options()(name_rho1, p.release(), desc_rho1);
+    retval.add_options()(name_Mae, p.release(), desc_Mae);
 
-    // u1
+    // pexi
     p.reset(value<string>());
-    p->notifier(bind(&parse_option<double>, _1, &u1, name_u1));
-    if (!(boost::math::isnan)(u1)) {
-        p->default_value(lexical_cast<string>(u1));
+    p->notifier(bind(&parse_option<double>, _1, &pexi, name_pexi));
+    if (!(boost::math::isnan)(pexi)) {
+        p->default_value(lexical_cast<string>(pexi));
     }
-    retval.add_options()(name_u1, p.release(), desc_u1);
+    retval.add_options()(name_pexi, p.release(), desc_pexi);
 
-    // R1
+    // Te
     p.reset(value<string>());
-    p->notifier(bind(&validate_option<double>, _1, &R1,
-                     &ensure_positive<double>, name_R1));
-    if (!(boost::math::isnan)(R1)) {
-        p->default_value(lexical_cast<string>(R1));
+    p->notifier(bind(&validate_option<double>, _1, &Te,
+                     &ensure_positive<double>, name_Te));
+    if (!(boost::math::isnan)(Te)) {
+        p->default_value(lexical_cast<string>(Te));
     }
-    retval.add_options()(name_R1, p.release(), desc_R1);
+    retval.add_options()(name_Te, p.release(), desc_Te);
 
     return retval;
 }
@@ -173,11 +172,11 @@ radialflow_definition::populate(
         const radialflow_specification& that,
         const bool verbose)
 {
-    maybe_populate(name_Ma0,  desc_Ma0,  Ma0,  that.Ma0,  verbose);
-    maybe_populate(name_gam0, desc_gam0, gam0, that.gam0, verbose);
-    maybe_populate(name_rho1, desc_rho1, rho1, that.rho1, verbose);
-    maybe_populate(name_u1,   desc_u1,   u1,   that.u1,   verbose);
-    maybe_populate(name_R1,   desc_R1,   R1,   that.R1,   verbose);
+    maybe_populate(name_deltae, desc_deltae, deltae, that.deltae, verbose);
+    maybe_populate(name_gam0,   desc_gam0,   gam0,   that.gam0,   verbose);
+    maybe_populate(name_Mae,    desc_Mae,    Mae,    that.Mae,    verbose);
+    maybe_populate(name_pexi,   desc_pexi,   pexi,   that.pexi,   verbose);
+    maybe_populate(name_Te,     desc_Te,     Te,     that.Te,     verbose);
 }
 
 void
@@ -185,11 +184,11 @@ radialflow_definition::override(
         const radialflow_specification& that,
         const bool verbose)
 {
-    maybe_override(name_Ma0,  desc_Ma0,  Ma0,  that.Ma0,  verbose);
-    maybe_override(name_gam0, desc_gam0, gam0, that.gam0, verbose);
-    maybe_override(name_rho1, desc_rho1, rho1, that.rho1, verbose);
-    maybe_override(name_u1,   desc_u1,   u1,   that.u1,   verbose);
-    maybe_override(name_R1,   desc_R1,   R1,   that.R1,   verbose);
+    maybe_override(name_deltae, desc_deltae, deltae, that.deltae, verbose);
+    maybe_override(name_gam0,   desc_gam0,   gam0,   that.gam0,   verbose);
+    maybe_override(name_Mae,    desc_Mae,    Mae,    that.Mae,    verbose);
+    maybe_override(name_pexi,   desc_pexi,   pexi,   that.pexi,   verbose);
+    maybe_override(name_Te,     desc_Te,     Te,     that.Te,     verbose);
 }
 
 void
@@ -209,14 +208,14 @@ radialflow_definition::save(
     esio_handle_comm_rank(h, &procid);
     esio_line_establish(h, 1, 0, (procid == 0 ? 1 : 0));
     esio_line_write(h, location, &one, 0,
-                    "Is a radial nozzle definition in use?");
+                    "Is a radial flow definition in use?");
 
     // Write out information as attributes within the container
-    esio_attribute_write(h, location, attr_Ma0,  &Ma0);
-    esio_attribute_write(h, location, attr_gam0, &gam0);
-    esio_attribute_write(h, location, attr_rho1, &rho1);
-    esio_attribute_write(h, location, attr_u1,   &u1);
-    esio_attribute_write(h, location, attr_R1,   &R1);
+    esio_attribute_write(h, location, attr_deltae, &deltae);
+    esio_attribute_write(h, location, attr_gam0,   &gam0);
+    esio_attribute_write(h, location, attr_Mae,    &Mae);
+    esio_attribute_write(h, location, attr_pexi,   &pexi);
+    esio_attribute_write(h, location, attr_Te,     &Te);
 }
 
 void
@@ -239,11 +238,11 @@ radialflow_definition::load(
     DEBUG0("Loading radialflow_definition parameters");
 
     // Read in information as attributes within the container
-    esio_attribute_read(h, location, attr_Ma0,  &t.Ma0);
-    esio_attribute_read(h, location, attr_gam0, &t.gam0);
-    esio_attribute_read(h, location, attr_rho1, &t.rho1);
-    esio_attribute_read(h, location, attr_u1,   &t.u1);
-    esio_attribute_read(h, location, attr_R1,   &t.R1);
+    esio_attribute_read(h, location, attr_deltae, &t.deltae);
+    esio_attribute_read(h, location, attr_gam0,   &t.gam0);
+    esio_attribute_read(h, location, attr_Mae,    &t.Mae);
+    esio_attribute_read(h, location, attr_pexi,   &t.pexi);
+    esio_attribute_read(h, location, attr_Te,     &t.Te);
 
     return this->populate(t, verbose);
 }

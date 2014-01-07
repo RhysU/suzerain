@@ -283,25 +283,63 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
 
         // If the baseflow is specified by a radial nozzle problem...
         if (sg->formulation.enabled() && !noz->trivial()) {
-            INFO0(who, "Preparing baseflow with suzerain_radialflow_solver");
+
+            INFO0(who, "Finding baseflow using suzerain_radialflow_qoi_match...");
+            // ...unpack all information from *noz and *scenario...
+            const double deltae = noz->deltae;
+            const double gam0   = noz->gam0 ? noz->gam0 : scenario->gamma;
+            const double Mae    = noz->Mae  ? noz->Mae  : scenario->Ma;
+            const double pexi   = noz->pexi;
+            const double Te     = noz->Te;
+
+#           define POSSIBLYWARN0(who, prefix, value)                    \
+                if (value) { INFO0(who, prefix << fullprec<>(value)); } \
+                else       { WARN0(who, prefix << fullprec<>(value)); }
+
+            POSSIBLYWARN0(who, "Baseflow requested deltae: ", deltae);
+            POSSIBLYWARN0(who, "Baseflow requested gam0:   ", gam0  );
+            POSSIBLYWARN0(who, "Baseflow requested Mae:    ", Mae   );
+            POSSIBLYWARN0(who, "Baseflow requested pexi:   ", pexi  );
+            POSSIBLYWARN0(who, "Baseflow requested Te:     ", Te    );
+
+            // ...compute edge state matching requested targets...
+            double Ma0, R[2], uR, rhoR, pR;
+            suzerain_radialflow_qoi_match(
+                    deltae, gam0, Mae, pexi, Te,
+                    &Ma0, R+1, R+0, &uR, &rhoR, &pR);
+
+            POSSIBLYWARN0(who, "Matching radial flow has Ma0:  ", Ma0 );
+            POSSIBLYWARN0(who, "Matching radial flow has R:    ", R[0]);
+            POSSIBLYWARN0(who, "Matching radial flow has uR:   ", uR  );
+            POSSIBLYWARN0(who, "Matching radial flow has rhoR: ", rhoR);
+            POSSIBLYWARN0(who, "Matching radial flow has pR:   ", pR  );
+            POSSIBLYWARN0(who, "Matching radial flow has R0:   ", R[1]);
+
+            // ...solve for wall state given edge state...
+            shared_ptr<suzerain_radialflow_solution> r(
+                    suzerain_radialflow_solver(
+                        Ma0, gam0, uR, rhoR, pR, R, sizeof(R)/sizeof(R[0])),
+                    free);
+
+            const double u1   = r->state[1].u;
+            const double rho1 = r->state[1].rho;
+            const double p1   = r->state[1].p;
+            POSSIBLYWARN0(who, "Matching radial flow has u1:   ", u1  );
+            POSSIBLYWARN0(who, "Matching radial flow has rho1: ", rho1);
+            POSSIBLYWARN0(who, "Matching radial flow has p1:   ", p1  );
+
+#           undef POSSIBLYWARN0
 
             // ...solve problem at radii fixed by B-spline collocation points
+            INFO0(who, "Preparing baseflow with suzerain_radialflow_solver");
             ArrayXr y(b->n());
             for (int i = 0; i < y.size(); ++i) {
                 y[i] = b->collocation_point(i);
             }
-            ArrayXr R = (y.abs2() + noz->R1*noz->R1).sqrt();
-            const double p1 // FIXME #3020
-                = noz->rho1/noz->gam0
-                * (1+(noz->gam0-1)/2*noz->Ma0*noz->Ma0*(1-noz->u1*noz->u1));
-            shared_ptr<suzerain_radialflow_solution> soln(
-                    suzerain_radialflow_solver(noz->Ma0,
-                                               noz->gam0,
-                                               noz->u1,
-                                               noz->rho1,
-                                               p1, // FIXME #3020
-                                               R.data(),
-                                               R.size()),
+            ArrayXr S = (y.abs2() + pow(r->state[1].R, 2)).sqrt();
+            shared_ptr<suzerain_radialflow_solution> s(
+                    suzerain_radialflow_solver(
+                        Ma0, gam0, u1, rho1, p1, S.data(), S.size()),
                     free);
 
             // ...and tuck solution into a baseflow_map as a function of y
@@ -309,7 +347,7 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
             for (int i = 0; i < y.size(); ++i) {
                 baseflow_map::row& row = bm->table[y[i]];
                 suzerain_radialflow_cartesian_conserved(
-                        soln.get(), i, scenario->Ma,
+                        s.get(), i, scenario->Ma,
                         &row.  base.rho,
                         &row.  base.mx ,
                         &row.  base.my ,

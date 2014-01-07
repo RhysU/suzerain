@@ -33,10 +33,9 @@
 namespace suzerain {
 
 /**
- * Encapsulates the scenario parameters necessary when invoking \ref
- * suzerain_radialflow_solver().  See \ref radialflow.h for how to
- * interpret these settings and baseflow.tex for a writeup on the general
- * problem class.
+ * Encapsulates the non-scenario parameters necessary when invoking \ref
+ * suzerain_radialflow_qoi_match(). See \ref radialflow.h for how to interpret
+ * these settings and baseflow.tex for a writeup on the general problem class.
  */
 class radialflow_specification
 {
@@ -45,30 +44,52 @@ public:
 
     /** Construct an instance with the given default values. */
     explicit radialflow_specification(
-            double Ma0  = std::numeric_limits<double>::quiet_NaN(),
-            double gam0 = std::numeric_limits<double>::quiet_NaN(),
-            double rho1 = std::numeric_limits<double>::quiet_NaN(),
-            double u1   = std::numeric_limits<double>::quiet_NaN(),
-            double R1   = std::numeric_limits<double>::quiet_NaN());
+            double deltae = std::numeric_limits<double>::quiet_NaN(),
+            double gam0   = std::numeric_limits<double>::quiet_NaN(),
+            double Mae    = std::numeric_limits<double>::quiet_NaN(),
+            double pexi   = std::numeric_limits<double>::quiet_NaN(),
+            double Te     = std::numeric_limits<double>::quiet_NaN());
 
-    double Ma0;   //!< Reference Mach number         \f$\mbox{Ma}_0\f$
-    double gam0;  //!< Reference specific heat ratio \f$\gamma_0   \f$
-    double rho1;  //!< Inner density                 \f$\rho\left(R_1\right)\f$
-    double u1;    //!< Inner radial velocity         \f$u   \left(R_1\right)\f$
-    double R1;    //!< Inner radius of interest      \f$R_1\f$
+    /**
+     * Edge distance \f$\delta_e\f$ above the \f$x\f$-axis.
+     */
+    double deltae;
+
+    /**
+     * Reference specific heat ratio \f$\gamma_0\f$.
+     *
+     * If either 0 or \c NaN, some scenario value should be used.
+     */
+    double gam0;
+
+    /**
+     * Edge Mach number \f$\mbox{Ma}_e\f$ defined per \ref
+     * suzerain_radialflow_qoi_Mae().
+     *
+     * If either 0 or \c NaN, some scenario value should be used.
+     */
+    double Mae;
+
+    /**
+     * Pressure gradient parameter \f$p^\ast_{e,\xi}\f$ defined per \ref
+     * suzerain_radialflow_qoi_pexi().
+     *
+     * If either 0 or \c NaN, the radial flow is considered \ref trivial().
+     */
+    double pexi;
+
+    /**
+     * Edge temperature \f$T_e\f$ defined per \ref
+     * suzerain_radialflow_qoi_Te().
+     */
+    double Te;
 
     /**
      * Is the instance devoid of any interesting data?
-     *
-     * Member #gam0 is not interesting as it will generally match
-     * the constant \f$\gamma\f$ used in some larger context.
      */
     bool trivial() const
     {
-        return (boost::math::isnan)(Ma0 )
-            && (boost::math::isnan)(rho1)
-            && (boost::math::isnan)(u1  )
-            && (boost::math::isnan)(R1  );
+        return (boost::math::isnan)(pexi) || (pexi == 0.0);
     }
 };
 

@@ -77,12 +77,6 @@ driver::initialize(
     // Delegate to superclass initialization
     std::vector<std::string> positional = super::initialize(argc, argv);
 
-    // However, if noz was provided, match its contents to other members
-    if (noz) {
-        if (scenario && (boost::math::isnan)(noz->gam0))
-            noz->gam0 = scenario->gamma;
-    }
-
     // However, if msoln was provided, match its contents to other members
     if (msoln) {
         if (scenario) msoln->match(*scenario);
