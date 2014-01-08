@@ -1017,8 +1017,10 @@ suzerain_bl_compute_reynolds_baseflow(
             &integrand_reynolds_displacement,
             &params
         };
+        gsl_error_handler_t * h = gsl_set_error_handler_off();    // Push
         int tmp = gsl_integration_qagp(&F, pts, npts, epsabs, epsrel,
                                        limit, iw, &reynolds->delta1, &abserr);
+        gsl_set_error_handler(h);                                 // Pop
         reynolds->delta1 *= code_Re / edge->mu;
         if (status == SUZERAIN_SUCCESS) status = tmp;
     }
@@ -1037,8 +1039,10 @@ suzerain_bl_compute_reynolds_baseflow(
             .function = &integrand_reynolds_momentum,
             .params   = &params
         };
+        gsl_error_handler_t * h = gsl_set_error_handler_off();    // Push
         int tmp = gsl_integration_qagp(&F, pts, npts, epsabs, epsrel,
                                        limit, iw, &reynolds->delta2, &abserr);
+        gsl_set_error_handler(h);                                 // Pop
         reynolds->delta2 *= code_Re / edge->mu;
         if (status == SUZERAIN_SUCCESS) status = tmp;
     }
@@ -1058,8 +1062,10 @@ suzerain_bl_compute_reynolds_baseflow(
             .function = &integrand_reynolds_energy,
             .params   = &params
         };
+        gsl_error_handler_t * h = gsl_set_error_handler_off();    // Push
         int tmp = gsl_integration_qagp(&F, pts, npts, epsabs, epsrel,
                                        limit, iw, &reynolds->delta3, &abserr);
+        gsl_set_error_handler(h);                                 // Pop
         reynolds->delta3 *= code_Re / edge->mu;
         if (status == SUZERAIN_SUCCESS) status = tmp;
     }
@@ -1082,8 +1088,10 @@ suzerain_bl_compute_reynolds_baseflow(
             .function = &integrand_reynolds_enthalpy,
             .params   = &params
         };
+        gsl_error_handler_t * h = gsl_set_error_handler_off();    // Push
         int tmp = gsl_integration_qagp(&F, pts, npts, epsabs, epsrel,
                                        limit, iw, &reynolds->deltah, &abserr);
+        gsl_set_error_handler(h);                                 // Pop
         reynolds->deltah *= code_Re / edge->mu;
         if (status == SUZERAIN_SUCCESS) status = tmp;
     }
@@ -1320,7 +1328,7 @@ suzerain_bl_compute_thicknesses_baseflow(
         if (SUZERAIN_UNLIKELY(tmp != SUZERAIN_SUCCESS)) {
             // ...but accept a negative thick->delta2 if observed.  So it goes.
             lower = params.dis[0];
-            upper = thick->delta1;
+            upper = params.dis[params.ndis-1];
             tmp = fsolver_solve(s, &f, maxiter, params.epsabs, params.epsrel,
                                 &lower, &upper, &thick->delta2);
         }
@@ -1354,7 +1362,7 @@ suzerain_bl_compute_thicknesses_baseflow(
         if (SUZERAIN_UNLIKELY(tmp != SUZERAIN_SUCCESS)) {
             // ...but accept a negative thick->delta3 if observed.  So it goes.
             lower = params.dis[0];
-            upper = thick->delta1;
+            upper = params.dis[params.ndis-1];
             tmp = fsolver_solve(s, &f, maxiter, params.epsabs, params.epsrel,
                                 &lower, &upper, &thick->delta3);
         }
@@ -1391,7 +1399,7 @@ suzerain_bl_compute_thicknesses_baseflow(
         if (SUZERAIN_UNLIKELY(tmp != SUZERAIN_SUCCESS)) {
             // ...but accept a negative thick->deltah if observed.  So it goes.
             lower = params.dis[0];
-            upper = thick->delta1;
+            upper = params.dis[params.ndis-1];
             tmp = fsolver_solve(s, &f, maxiter, params.epsabs, params.epsrel,
                                 &lower, &upper, &thick->deltah);
         }

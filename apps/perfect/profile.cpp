@@ -42,6 +42,7 @@
 #include <suzerain/physical_view.hpp>
 #include <suzerain/rholut.hpp>
 #include <suzerain/state.hpp>
+#include <suzerain/support/logging.hpp>
 
 #include "quantities.hpp"
 #include "scenario_definition.hpp"
@@ -257,7 +258,13 @@ void summarize_boundary_layer_nature(
     wall.y     = 0.0;
 
     // Compute viscous quantities based only on wall information
-    suzerain_bl_compute_viscous(scenario.Re, &wall, &viscous);
+    if (const int err = suzerain_bl_compute_viscous(
+                            scenario.Re,
+                            &wall,
+                            &viscous)) {
+        WARN0("profile", "suzerain_bl_compute_viscous(...) returned "
+              << err << " (" << suzerain_strerror(err) << ")");
+    }
 
     // Prepare inviscid baseflow coefficients if necessary
     ArrayX4r coeffs_inviscid; // Columns are H0, rhou, u, v
@@ -287,26 +294,37 @@ void summarize_boundary_layer_nature(
     }
 
     // Compute boundary layer thicknesses, including delta
-    // TODO WARN on non-SUCCESS return
     if (0 == coeffs_inviscid.size()) {
-        suzerain_bl_compute_thicknesses(scenario.Ma,
-                                        prof.H0().data(),
-                                        prof.ke().data(),
-                                        prof.rho_u().col(0).data(),
-                                        prof.u().col(0).data(),
-                                        &thick, b.bw, b.dbw);
+        if (const int err = suzerain_bl_compute_thicknesses(
+                                scenario.Ma,
+                                prof.H0().data(),
+                                prof.ke().data(),
+                                prof.rho_u().col(0).data(),
+                                prof.u().col(0).data(),
+                                &thick,
+                                b.bw,
+                                b.dbw)) {
+            WARN0("profile", "suzerain_bl_compute_thicknesses(...) returned "
+                  << err << " (" << suzerain_strerror(err) << ")");
+        }
     } else {
-        suzerain_bl_compute_thicknesses_baseflow(scenario.Ma,
-                                                 prof.H0().data(),
-                                                 prof.ke().data(),
-                                                 prof.rho_u().col(0).data(),
-                                                 prof.u().col(0).data(),
-                                                 coeffs_inviscid.innerStride(),
-                                                 coeffs_inviscid.col(0).data(),
-                                                 coeffs_inviscid.col(1).data(),
-                                                 coeffs_inviscid.col(2).data(),
-                                                 coeffs_inviscid.col(3).data(),
-                                                 &thick, b.bw, b.dbw);
+        if (const int err = suzerain_bl_compute_thicknesses_baseflow(
+                                scenario.Ma,
+                                prof.H0().data(),
+                                prof.ke().data(),
+                                prof.rho_u().col(0).data(),
+                                prof.u().col(0).data(),
+                                coeffs_inviscid.innerStride(),
+                                coeffs_inviscid.col(0).data(),
+                                coeffs_inviscid.col(1).data(),
+                                coeffs_inviscid.col(2).data(),
+                                coeffs_inviscid.col(3).data(),
+                                &thick,
+                                b.bw,
+                                b.dbw)) {
+            WARN0("profile", "suzerain_bl_compute_thicknesses_baseflow(...) "
+                  "returned " << err << " (" << suzerain_strerror(err) << ")");
+        }
     }
 
     // Evaluate state at the edge (y=thick.delta) from B-spline coefficients
@@ -332,22 +350,34 @@ void summarize_boundary_layer_nature(
     }
 
     // Compute Reynolds numbers
-    // TODO WARN on non-SUCCESS return
     if (0 == coeffs_inviscid.size()) {
-        suzerain_bl_compute_reynolds(scenario.Re, &edge, &thick, &reynolds);
+        if (const int err = suzerain_bl_compute_reynolds(
+                                scenario.Re,
+                                &edge,
+                                &thick,
+                                &reynolds)) {
+            WARN0("profile", "suzerain_bl_compute_reynolds(...) returned "
+                  << err << " (" << suzerain_strerror(err) << ")");
+        }
     } else {
-        suzerain_bl_compute_reynolds_baseflow(scenario.Ma,
-                                              scenario.Re,
-                                              prof.H0().data(),
-                                              prof.ke().data(),
-                                              prof.rho_u().col(0).data(),
-                                              prof.u().col(0).data(),
-                                              1,
-                                              coeffs_inviscid.col(0).data(),
-                                              coeffs_inviscid.col(1).data(),
-                                              coeffs_inviscid.col(2).data(),
-                                              coeffs_inviscid.col(3).data(),
-                                              &edge, &reynolds, b.bw);
+        if (const int err = suzerain_bl_compute_reynolds_baseflow(
+                                scenario.Ma,
+                                scenario.Re,
+                                prof.H0().data(),
+                                prof.ke().data(),
+                                prof.rho_u().col(0).data(),
+                                prof.u().col(0).data(),
+                                1,
+                                coeffs_inviscid.col(0).data(),
+                                coeffs_inviscid.col(1).data(),
+                                coeffs_inviscid.col(2).data(),
+                                coeffs_inviscid.col(3).data(),
+                                &edge,
+                                &reynolds,
+                                b.bw)) {
+            WARN0("profile", "suzerain_bl_compute_reynolds_baseflow(...) "
+                  "returned " << err << " (" << suzerain_strerror(err) << ")");
+        }
     }
 
     // Compute general quantities of interest
@@ -368,8 +398,19 @@ void summarize_boundary_layer_nature(
             edge_u__x = (dx.mx - dx.mx/base.rho*dx.rho) / base.rho; // Chained
         }
     }
-    suzerain_bl_compute_pg(scenario.Ma, scenario.Re, &wall, &viscous, &edge,
-                           edge_p__x, edge_u__x, &thick, &pg);
+    if (const int err = suzerain_bl_compute_pg(
+                            scenario.Ma,
+                            scenario.Re,
+                            &wall,
+                            &viscous,
+                            &edge,
+                            edge_p__x,
+                            edge_u__x,
+                            &thick,
+                            &pg)) {
+        WARN0("profile", "suzerain_bl_compute_pg(...) returned "
+              << err << " (" << suzerain_strerror(err) << ")");
+    }
 }
 
 void summarize_channel_nature(
