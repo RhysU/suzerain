@@ -1070,7 +1070,7 @@ suzerain_bl_compute_reynolds_baseflow(
         if (status == SUZERAIN_SUCCESS) status = tmp;
     }
 
-    // Re_delta3 from integrand_reynolds_enthalpy, edge->mu, code_Re
+    // Re_deltah from integrand_reynolds_enthalpy, edge->mu, code_Re
     {
         params_reynolds_enthalpy params = {
             .code_Ma     = code_Ma,
@@ -1286,14 +1286,25 @@ suzerain_bl_compute_thicknesses_baseflow(
         gsl_function f            = { &integral_thickness_residual, &params };
 
         // Look across the whole domain, usually [0, oo), for the thickness
-        double lower = params.dis[0];
-        double upper = params.dis[params.ndis-1];
-        int tmp = fsolver_solve(s, &f, maxiter, params.epsabs, params.epsrel,
-                                &lower, &upper, &thick->delta1);
+        // (thus increasing our robustness/speed in the common case)
+        double lo = params.dis[0];
+        double up = params.dis[params.ndis-1];
+        int tmp = fsolver_solve(s, &f, maxiter, params.epsabs,
+                                params.epsrel, &lo, &up, &thick->delta1);
+        if (SUZERAIN_UNLIKELY(tmp != SUZERAIN_SUCCESS)) {
+            // gsl_root_fsolver_set gives EINVAL if lo/up don't bracket zero.
+            // So long as we encounter that, perform brutish downwards search.
+            for (size_t i = params.ndis; tmp==SUZERAIN_EINVAL && i --> 1 ;) {
+                lo = params.dis[0];
+                up = params.dis[i];
+                tmp = fsolver_solve(s, &f, maxiter, params.epsabs,
+                                    params.epsrel, &lo, &up, &thick->delta1);
+            }
+        }
         if (status == SUZERAIN_SUCCESS) status = tmp;
     }
 
-    // As \delta_{99} must always be outside \delta_1 and the latter
+    // As \delta_{99} should always be outside \delta_1 and the latter
     // is more robust than the former, use \delta_1 as a lower bound on
     // where we might find \delta_{99}.
     if (!gsl_isnan(thick->delta1)) {
@@ -1321,16 +1332,20 @@ suzerain_bl_compute_thicknesses_baseflow(
 
         // Try interval [delta1, oo) which may yield nonnegative delta2...
         // (thus increasing our robustness/speed in the common delta2>0 case)
-        double lower = thick->delta1;
-        double upper = params.dis[params.ndis-1];
-        int tmp = fsolver_solve(s, &f, maxiter, params.epsabs, params.epsrel,
-                                &lower, &upper, &thick->delta2);
+        double lo = thick->delta1;
+        double up = params.dis[params.ndis-1];
+        int tmp = fsolver_solve(s, &f, maxiter, params.epsabs,
+                                params.epsrel, &lo, &up, &thick->delta2);
         if (SUZERAIN_UNLIKELY(tmp != SUZERAIN_SUCCESS)) {
             // ...but accept a negative thick->delta2 if observed.  So it goes.
-            lower = params.dis[0];
-            upper = params.dis[params.ndis-1];
-            tmp = fsolver_solve(s, &f, maxiter, params.epsabs, params.epsrel,
-                                &lower, &upper, &thick->delta2);
+            // gsl_root_fsolver_set gives EINVAL if lo/up don't bracket zero.
+            // So long as we encounter that, perform brutish downwards search.
+            for (size_t i = params.ndis; tmp==SUZERAIN_EINVAL && i --> 1 ;) {
+                lo = params.dis[0];
+                up = params.dis[i];
+                tmp = fsolver_solve(s, &f, maxiter, params.epsabs,
+                                    params.epsrel, &lo, &up, &thick->delta2);
+            }
         }
         if (status == SUZERAIN_SUCCESS) status = tmp;
     }
@@ -1355,16 +1370,20 @@ suzerain_bl_compute_thicknesses_baseflow(
 
         // Try interval [delta1, oo) which may yield nonnegative delta3...
         // (thus increasing our robustness/speed in the common delta3>0 case)
-        double lower = thick->delta1;
-        double upper = params.dis[params.ndis-1];
-        int tmp = fsolver_solve(s, &f, maxiter, params.epsabs, params.epsrel,
-                                &lower, &upper, &thick->delta3);
+        double lo = thick->delta1;
+        double up = params.dis[params.ndis-1];
+        int tmp = fsolver_solve(s, &f, maxiter, params.epsabs,
+                                params.epsrel, &lo, &up, &thick->delta3);
         if (SUZERAIN_UNLIKELY(tmp != SUZERAIN_SUCCESS)) {
             // ...but accept a negative thick->delta3 if observed.  So it goes.
-            lower = params.dis[0];
-            upper = params.dis[params.ndis-1];
-            tmp = fsolver_solve(s, &f, maxiter, params.epsabs, params.epsrel,
-                                &lower, &upper, &thick->delta3);
+            // gsl_root_fsolver_set gives EINVAL if lo/up don't bracket zero.
+            // So long as we encounter that, perform brutish downwards search.
+            for (size_t i = params.ndis; tmp==SUZERAIN_EINVAL && i --> 1 ;) {
+                lo = params.dis[0];
+                up = params.dis[i];
+                tmp = fsolver_solve(s, &f, maxiter, params.epsabs,
+                                    params.epsrel, &lo, &up, &thick->delta3);
+            }
         }
         if (status == SUZERAIN_SUCCESS) status = tmp;
     }
@@ -1392,16 +1411,20 @@ suzerain_bl_compute_thicknesses_baseflow(
 
         // Try interval [delta1, oo) which may yield nonnegative deltah...
         // (thus increasing our robustness/speed in the common deltah>0 case)
-        double lower = thick->delta1;
-        double upper = params.dis[params.ndis-1];
-        int tmp = fsolver_solve(s, &f, maxiter, params.epsabs, params.epsrel,
-                                &lower, &upper, &thick->deltah);
+        double lo = thick->delta1;
+        double up = params.dis[params.ndis-1];
+        int tmp = fsolver_solve(s, &f, maxiter, params.epsabs,
+                                params.epsrel, &lo, &up, &thick->deltah);
         if (SUZERAIN_UNLIKELY(tmp != SUZERAIN_SUCCESS)) {
             // ...but accept a negative thick->deltah if observed.  So it goes.
-            lower = params.dis[0];
-            upper = params.dis[params.ndis-1];
-            tmp = fsolver_solve(s, &f, maxiter, params.epsabs, params.epsrel,
-                                &lower, &upper, &thick->deltah);
+            // gsl_root_fsolver_set gives EINVAL if lo/up don't bracket zero.
+            // So long as we encounter that, perform brutish downwards search.
+            for (size_t i = params.ndis; tmp==SUZERAIN_EINVAL && i --> 1 ;) {
+                lo = params.dis[0];
+                up = params.dis[i];
+                tmp = fsolver_solve(s, &f, maxiter, params.epsabs,
+                                    params.epsrel, &lo, &up, &thick->deltah);
+            }
         }
         if (status == SUZERAIN_SUCCESS) status = tmp;
     }
