@@ -1,0 +1,12 @@
+/.deps
+/.libs
+/esio_bench
+/esio_rename
+/.license.stamp
+/main
+/Makefile
+/Makefile.dep
+/Makefile.in
+/*.mod
+/p3dfft_like
+/*.o

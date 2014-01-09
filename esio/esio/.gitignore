@@ -1,0 +1,15 @@
+/config.h
+/config.h.in
+/.deps
+/.libs
+/esio-config.h
+/.license.stamp
+/Makefile
+/Makefile.dep
+/Makefile.in
+/*.mod
+/stamp-h1
+/version.h
+/*.o
+/*.lo
+/*.la
