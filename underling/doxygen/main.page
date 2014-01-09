@@ -1,0 +1,76 @@
+/*! \mainpage the underling library
+
+<!-- FIXME Build information disabled   -->
+<!-- <b>Version \version</b>            -->
+<!-- , Build Date: \builddate           -->
+<!-- Built by: \builduser on \buildhost -->
+<!-- <hr> -->
+
+\section overview Overview
+
+The underling library provides simple, scalable means to manipulate
+MPI-parallel, three dimensional pencil decompositions using <a
+href="http://www.fftw.org/"> FFTW</a>.  Pencil decompositions are a natural way
+to distribute O(n^3) data across O(n^2) processors and are well-suited for
+memory-intensive, structured spectral turbulence simulations and postprocessing
+codes.  It may be useful in other domains as well.  The library is written in
+C99 and may be used by C89 or C++ applications.
+
+The underling library provides:
+<ul>
+  <li>In- and out-of-place pencil transposes built using FFTW MPI</li>
+  <li>In- and out-of-place FFTs built atop the pencil transposes using FFTW</li>
+  <li>FFTs allowing for up to two non-Fourier directions and one real-to-complex Fourier direction</li>
+  <li>Documented, usable intermediate data storage allowing computation on partially transposed data</li>
+  <li>Options for both reducing on-node data movement and contiguously packing results in memory</li>
+  <li>Interleaving of multiple complex- or real-valued fields if so desired</li>
+  <li>The ability to concurrently work with multiple pencil decompositions across one or more MPI communicators</li>
+  <li>On-node multithreading for FFTs and data shuffling inherited from FFTW</li>
+  <li>An out-of-the-box benchmarking tool for experimenting with the library</li>
+  <li>Lots of warm fuzzy feelings because of a comprehensive test suite</li>
+</ul>
+
+<!-- TODO Concepts subsection
+  <li> \subpage concepts</li>
+-->
+
+The library's manual is divided into the following subsections:
+<ul>
+  <li> \subpage installation </li>
+  <li> \subpage linkage</li>
+  <li> \ref underling.h "C" and \ref underling.hpp "C++" API
+       for parallel, 3D pencil decompositions</li>
+  <li> \ref underling_fftw.h "C" and \ref underling_fftw.hpp "C++" API
+       for Fast Fourier Transforms atop pencil decompositions</li>
+  <li> \ref error.h "C/C++ error handling API"</li>
+  <li> \subpage benchmark</li>
+  <li> <a href="http://buildbot.ices.utexas.edu/docs/buildbot/underling/docs/html/lcov/">Buildbot test coverage</a> </li>
+</ul>
+
+Thank you for your interest in underling.
+
+\section bugs Reporting Bugs
+
+Bugs in the code and errors or omissions in the documentation can be
+reported to rhys@ices.utexas.edu.  Requests and contributions are
+welcome at the same e-mail address.  All bug reports should include:
+<ul>
+  <li>the version number of the underling library,</li>
+  <li>the hardware and operating system,</li>
+  <li>the local compiler version number,</li>
+  <li>a description of the bug behavior, and ideally, </li>
+  <li>a short program which reproduces the bug.</li>
+</ul>
+
+\section licence License
+Copyright (C) 2010, 2011, 2012, 2013 Rhys Ulerich
+Copyright (C) 2012, 2013 The PECOS Development Team
+\copydoc License
+
+\section acknowledgements Acknowledgments
+\copydoc Acknowledgments
+
+\section pecos-center More Information about PECOS
+\copydoc About
+
+*/

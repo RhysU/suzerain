@@ -1,0 +1,9 @@
+/.deps
+/.license.stamp
+/Makefile
+/Makefile.dep
+/Makefile.in
+/test_error
+/test_fftw_1D
+/test_underling
+/test_underling_fftw

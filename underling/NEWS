@@ -1,0 +1,86 @@
+What's new in underling 0.3.0
+-----------------------------
+
+This release includes breaking underling_fftw.h API changes.
+
+New features for contiguous packing of fields on out-of-place transposes:
+
+     * Feature #1295: Support c2r_backward out-of-place when not stride one
+     * Feature #1296: Support r2c_forward out-of-place when not stride one
+     * Feature #2067: Support contiguous field storage
+     * Feature #2150: Add --packed (or similar) options to undering_bench
+
+Improved testing, usability, and portability:
+
+     * Bug #2147: Used boost::noncopyable within C++ headers
+     * Bug #2148: Improve header ordering wrt portability
+     * Document #1903: Add logical groupings to API Doxygen
+     * Feature #1955: Add --check feature to underling_bench
+     * Feature #2196: Add --check items into unit tests
+     * Support #2074: Move includes to top of implementation files
+
+Miscellaneous items:
+
+     * Bug #2059: c2r_backward plan creation fails on grid with n0 = 1, n1 = 8, n2 = 1
+     * Bug #2198: underling_bench --iir --howmany=4 --check 1e-15 fails
+     * Feature #2054: Add underling_fwd.hpp and underling_fftw_fwd.hpp
+     * Feature #2192: Remove program_options dependency from tests
+     * Feature #2199: Roll underling 0.3.0 release
+     * Support #2201: More gracefully handle MPI_Dims_create failure
+
+Pulled in newest gnulib updates.
+
+
+What's new in underling 0.2.1
+-----------------------------
+
+Updates to support FFTW 3.3's new side-by-side pthread and OpenMP builds:
+
+     * Feature #1924: Allow parallel pthread/openmp build
+
+New underling_bench features for benchmarking transposes plus FFT use cases:
+
+     * Feature #1866: Add forward and backward transpose counts to underling_bench
+     * Feature #1867: Add FFTs to underling_bench
+     * Feature #1869: Ensure underling_bench not overly-linked
+     * Feature #1870: Add lock to wisdom file for underling_bench
+     * Feature #1901: Have a planning timeout for underling_bench
+     * Feature #1902: Start underling_bench from long_n0
+
+Miscellaneous items:
+
+    * Feature #2055: Roll underling 0.2.1 release
+    * Bug #1871: underling_bench -f help message misleading
+    * Bug #1872: Typo in underling_bench: "Unable to malloc 1.91 GB bytes on rank 1"
+    * underling.h did not include visibility.h causing broken builds
+    * underling.hpp and underling_fftw.hpp
+
+Pulled in newest gnulib updates.
+
+
+What's new in underling 0.2.0
+-----------------------------
+
+Updates to support and take advantage of FFTW 3.3-beta1:
+
+    * FFTW_DESTROY_INPUT now used on out-of-place transposes which allows
+      greater plan search space and potentially faster execution.  Was
+      not used in 0.1.0 due to FFTW 3.3alpha1 deadlock problems.
+
+    * Use MPI new array execute interface appearing in 3.3-beta1.
+
+Added new UNDERLING_TRANSPOSE_NONE flag when parallel decomposition is of
+interest but one does not want to plan any transposes.
+
+Static libraries built by default (when possible).
+
+Libtool libraries now contain FFTW prerequisites and utilities are installed
+with appropriate RPATH information.
+
+Pulled in newest gnulib updates.
+
+
+What's new in underling 0.1.0
+-----------------------------
+
+Initial internal release atop FFTW 3.3alpha1
