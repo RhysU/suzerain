@@ -550,8 +550,8 @@ suzerain_bl_compute_pg(
  * \\
  *   \mbox{Re}_{\delta_h} &= \mu_e^{-1} \int_0^\infty
  *     \left(\rho u\right)_\mbox{vis}
- *     \frac{h_\mbox{inv}        - h_\mbox{vis}     }
- *          {h_\mbox{inv,\infty} - h_\mbox{vis,wall}}
+ *     \frac{h_\mbox{inv}          - h_\mbox{vis}     }
+ *          {h_{\mbox{inv},\infty} - h_\mbox{vis,wall}}
  *   \, \mathrm{d}y
  * \f}
  * where the internal specific enthalpy \f$h = H_0 - \mbox{Ma}^2
