@@ -815,6 +815,8 @@ double integrand_thickness_enthalpy(
     double integrand = GSL_NAN;
     if (!gsl_bspline_eval_nonzero(y, p->Bk, &istart, &iend, p->w)) {
 
+        const double viswall_h = p->vis_H0[0] - Ma2*p->vis_ke[0];
+
         double vis_H0 = 0;
         for (size_t i = istart; i <= iend; ++i) {
             vis_H0 += p->vis_H0[i] * gsl_vector_get(p->Bk, i-istart);
@@ -825,44 +827,46 @@ double integrand_thickness_enthalpy(
             vis_ke += p->vis_ke[i] * gsl_vector_get(p->Bk, i-istart);
         }
 
+        const double vis_h = vis_H0 - Ma2*vis_ke;
+
+        double inv_H0 = 0;
+        for (size_t i = istart; i <= iend; ++i) {
+            inv_H0 += p->inv_H0[i*p->inv_stride]
+                    * gsl_vector_get(p->Bk, i-istart);
+        }
+
+        double inv_u = 0;
+        for (size_t i = istart; i <= iend; ++i) {
+            inv_u += p->inv_u[i*p->inv_stride]
+                   * gsl_vector_get(p->Bk, i-istart);
+        }
+
+        double inv_v = 0;
+        for (size_t i = istart; i <= iend; ++i) {
+            inv_v += p->inv_v[i*p->inv_stride]
+                   * gsl_vector_get(p->Bk, i-istart);
+        }
+
+        const double inv_h = inv_H0 - Ma2*(inv_u*inv_u + inv_v*inv_v)/2;
+
         double vis_rhou = 0;
         for (size_t i = istart; i <= iend; ++i) {
             vis_rhou += p->vis_rhou[i] * gsl_vector_get(p->Bk, i-istart);
         }
 
-        const double viswall_h = p->vis_H0[0] - Ma2*p->vis_ke[0];
-        const double vis_h     =    vis_H0    - Ma2*   vis_ke;
-        integrand = - vis_rhou * (vis_h - viswall_h);
+        integrand = - vis_rhou * ((vis_h - viswall_h) / (inv_h - viswall_h));
 
         if (y >= p->inner_cutoff) {
-            const int inv_stride = p->inv_stride;
-
-            double inv_H0 = 0;
-            for (size_t i = istart; i <= iend; ++i) {
-                inv_H0 += p->inv_H0[i*inv_stride]
-                        * gsl_vector_get(p->Bk, i-istart);
-            }
 
             double inv_rhou = 0;
             for (size_t i = istart; i <= iend; ++i) {
-                inv_rhou += p->inv_rhou[i*inv_stride]
+                inv_rhou += p->inv_rhou[i*p->inv_stride]
                           * gsl_vector_get(p->Bk, i-istart);
             }
 
-            double inv_u = 0;
-            for (size_t i = istart; i <= iend; ++i) {
-                inv_u += p->inv_u[i*inv_stride]
-                       * gsl_vector_get(p->Bk, i-istart);
-            }
+            // "Missing" (inv_h - viswall_h) / (inv_h - viswall_h) == 1
+            integrand += inv_rhou;
 
-            double inv_v = 0;
-            for (size_t i = istart; i <= iend; ++i) {
-                inv_v += p->inv_v[i*inv_stride]
-                       * gsl_vector_get(p->Bk, i-istart);
-            }
-
-            const double inv_h = inv_H0 - Ma2*(inv_u*inv_u + inv_v*inv_v)/2;
-            integrand += inv_rhou * (inv_h - viswall_h);
         }
 
     }
@@ -898,6 +902,8 @@ double integrand_reynolds_enthalpy(
     double integrand = GSL_NAN;
     if (!gsl_bspline_eval_nonzero(y, p->Bk, &istart, &iend, p->w)) {
 
+        const double viswall_h = p->vis_H0[0] - Ma2*p->vis_ke[0];
+
         double vis_H0 = 0;
         for (size_t i = istart; i <= iend; ++i) {
             vis_H0 += p->vis_H0[i] * gsl_vector_get(p->Bk, i-istart);
@@ -908,10 +914,7 @@ double integrand_reynolds_enthalpy(
             vis_ke += p->vis_ke[i] * gsl_vector_get(p->Bk, i-istart);
         }
 
-        double vis_rhou = 0;
-        for (size_t i = istart; i <= iend; ++i) {
-            vis_rhou += p->vis_rhou[i] * gsl_vector_get(p->Bk, i-istart);
-        }
+        const double vis_h = vis_H0 - Ma2*vis_ke;
 
         double inv_H0 = 0;
         for (size_t i = istart; i <= iend; ++i) {
@@ -931,16 +934,14 @@ double integrand_reynolds_enthalpy(
                     * gsl_vector_get(p->Bk, i-istart);
         }
 
-        const double inv_h     = inv_H0 - Ma2*(inv_u*inv_u + inv_v*inv_v)/2;
-        const double vis_h     = vis_H0 - Ma2*vis_ke;
-        const size_t invedge   = (p->w->n - 1)*p->inv_stride;
-        const double invedge_h = p->inv_H0[invedge] - Ma2*(
-                                      p->inv_u[invedge]*p->inv_u[invedge]
-                                    + p->inv_v[invedge]*p->inv_v[invedge]
-                                 ) / 2;
-        const double viswall_h = p->vis_H0[0] - Ma2*p->vis_ke[0];
+        const double inv_h = inv_H0 - Ma2*(inv_u*inv_u + inv_v*inv_v)/2;
 
-        integrand = vis_rhou * (inv_h - vis_h) / (invedge_h - viswall_h);
+        double vis_rhou = 0;
+        for (size_t i = istart; i <= iend; ++i) {
+            vis_rhou += p->vis_rhou[i] * gsl_vector_get(p->Bk, i-istart);
+        }
+
+        integrand = vis_rhou * ((inv_h - vis_h) / (inv_h - viswall_h));
     }
 
     return integrand;
@@ -979,7 +980,7 @@ suzerain_bl_compute_reynolds_baseflow(
     double * const pts  = w->knots->data+w->k-1;  // Per gsl_bspline_nbreak
     const size_t npts   = w->nbreak;              // "Singular" at breakpoints
     const size_t limit  = npts * (1+w->k/2);      // Hopefully sufficient for..
-    const double epsabs = GSL_DBL_EPSILON;        // ..either this...
+    const double epsabs = 0;  // DISABLED         // ..either this...
     const double epsrel = GSL_SQRT_DBL_EPSILON;   // ..or this tolerance
     double abserr       = GSL_NAN;                // Repeatedly used in calls
 
@@ -1240,7 +1241,7 @@ suzerain_bl_compute_thicknesses_baseflow(
     params.dis    = w->knots->data + w->k - 1;  // Per gsl_bspline_nbreak
     params.npts   = params.ndis + 1;            // Algorithmic requirement
     params.limit  = params.npts * (1+w->k/2);   // Hopefully sufficient for..
-    params.epsabs = GSL_DBL_EPSILON;            // ..either this...
+    params.epsabs = 0; // DISABLED              // ..either this...
     params.epsrel = GSL_SQRT_DBL_EPSILON;       // ..or this tolerance
     if (NULL == (params.iw = gsl_integration_workspace_alloc(params.limit))) {
         SUZERAIN_ERROR_REPORT("failed to allocate params.iw",
@@ -1286,20 +1287,14 @@ suzerain_bl_compute_thicknesses_baseflow(
         gsl_function f            = { &integral_thickness_residual, &params };
 
         // Look across the whole domain, usually [0, oo), for the thickness
-        // (thus increasing our robustness/speed in the common case)
-        double lo = params.dis[0];
-        double up = params.dis[params.ndis-1];
-        int tmp = fsolver_solve(s, &f, maxiter, params.epsabs,
+        // gsl_root_fsolver_set gives EINVAL if lo/up don't bracket zero.
+        // So long as we encounter that, continue brutish downwards search.
+        int tmp = SUZERAIN_EINVAL;
+        for (size_t i = params.ndis; tmp == SUZERAIN_EINVAL && i --> 1 ;) {
+            double lo = params.dis[0];
+            double up = params.dis[i];
+            tmp = fsolver_solve(s, &f, maxiter, params.epsabs,
                                 params.epsrel, &lo, &up, &thick->delta1);
-        if (SUZERAIN_UNLIKELY(tmp != SUZERAIN_SUCCESS)) {
-            // gsl_root_fsolver_set gives EINVAL if lo/up don't bracket zero.
-            // So long as we encounter that, perform brutish downwards search.
-            for (size_t i = params.ndis; tmp==SUZERAIN_EINVAL && i --> 1 ;) {
-                lo = params.dis[0];
-                up = params.dis[i];
-                tmp = fsolver_solve(s, &f, maxiter, params.epsabs,
-                                    params.epsrel, &lo, &up, &thick->delta1);
-            }
         }
         if (status == SUZERAIN_SUCCESS) status = tmp;
     }
@@ -1339,7 +1334,7 @@ suzerain_bl_compute_thicknesses_baseflow(
         if (SUZERAIN_UNLIKELY(tmp != SUZERAIN_SUCCESS)) {
             // ...but accept a negative thick->delta2 if observed.  So it goes.
             // gsl_root_fsolver_set gives EINVAL if lo/up don't bracket zero.
-            // So long as we encounter that, perform brutish downwards search.
+            // So long as we encounter that, continue brutish downwards search.
             for (size_t i = params.ndis; tmp==SUZERAIN_EINVAL && i --> 1 ;) {
                 lo = params.dis[0];
                 up = params.dis[i];
@@ -1377,7 +1372,7 @@ suzerain_bl_compute_thicknesses_baseflow(
         if (SUZERAIN_UNLIKELY(tmp != SUZERAIN_SUCCESS)) {
             // ...but accept a negative thick->delta3 if observed.  So it goes.
             // gsl_root_fsolver_set gives EINVAL if lo/up don't bracket zero.
-            // So long as we encounter that, perform brutish downwards search.
+            // So long as we encounter that, continue brutish downwards search.
             for (size_t i = params.ndis; tmp==SUZERAIN_EINVAL && i --> 1 ;) {
                 lo = params.dis[0];
                 up = params.dis[i];
@@ -1418,7 +1413,7 @@ suzerain_bl_compute_thicknesses_baseflow(
         if (SUZERAIN_UNLIKELY(tmp != SUZERAIN_SUCCESS)) {
             // ...but accept a negative thick->deltah if observed.  So it goes.
             // gsl_root_fsolver_set gives EINVAL if lo/up don't bracket zero.
-            // So long as we encounter that, perform brutish downwards search.
+            // So long as we encounter that, continue brutish downwards search.
             for (size_t i = params.ndis; tmp==SUZERAIN_EINVAL && i --> 1 ;) {
                 lo = params.dis[0];
                 up = params.dis[i];
@@ -1426,7 +1421,6 @@ suzerain_bl_compute_thicknesses_baseflow(
                                     params.epsrel, &lo, &up, &thick->deltah);
             }
         }
-        if (status == SUZERAIN_SUCCESS) status = tmp;
     }
     // Adjust to obtain enthalpy thickness, thick->deltah
     thick->deltah -= thick->delta1;

@@ -550,8 +550,8 @@ suzerain_bl_compute_pg(
  * \\
  *   \mbox{Re}_{\delta_h} &= \mu_e^{-1} \int_0^\infty
  *     \left(\rho u\right)_\mbox{vis}
- *     \frac{h_\mbox{inv}          - h_\mbox{vis}     }
- *          {h_{\mbox{inv},\infty} - h_\mbox{vis,wall}}
+ *     \frac{h_\mbox{inv} - h_{\mbox{vis}            }}
+ *          {h_\mbox{inv} - h_{\mbox{vis},\mbox{wall}}}
  *   \, \mathrm{d}y
  * \f}
  * where the internal specific enthalpy \f$h = H_0 - \mbox{Ma}^2
@@ -651,14 +651,15 @@ suzerain_bl_compute_reynolds_baseflow(
  * \\
  *     \int_{\delta_1 + \delta_h}^\infty
  *         \left(\rho u\right)_\mbox{inv}
- *         \left(h_\mbox{inv} - h_\mbox{vis,wall}\right)
  *       - \left(\rho u\right)_\mbox{vis}
- *         \left(h_\mbox{vis} - h_\mbox{vis,wall}\right)
+ *         \frac{h_\mbox{vis} - h_{\mbox{vis},\mbox{wall}}}
+ *              {h_\mbox{inv} - h_{\mbox{vis},\mbox{wall}}}
  *     \, \mathrm{d}y
  *   &=
- *     \int_0^{\delta_1 + \delta_h}
+ *     \int_0^{\delta_h}
  *         \left(\rho u\right)_\mbox{vis}
- *         \left(h_\mbox{vis} - h_\mbox{vis,wall}\right)
+ *         \frac{h_\mbox{vis} - h_{\mbox{vis},\mbox{wall}}}
+ *              {h_\mbox{inv} - h_{\mbox{vis},\mbox{wall}}}
  *     \, \mathrm{d}y
  * \\
  * \f}
