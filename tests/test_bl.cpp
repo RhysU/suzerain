@@ -85,7 +85,7 @@ struct BlasiusFixture {
             u[i]  = gsl_spline_eval(blasius_u, b.collocation_point(i), accel);
             v[i]  = gsl_spline_eval(blasius_v, b.collocation_point(i), accel);
             ke[i] = (u[i]*u[i] + v[i]*v[i]) / 2;
-            H0[i] = u[i] + code_Ma*code_Ma*ke[i]; // h = u => delta2 = deltah
+            H0[i] = u[i] + code_Ma*code_Ma*ke[i]; // h = u => delta2 = deltaH0
         }
 
         BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS, lu.solve(1, u .get(), 1, b.n()));
@@ -144,14 +144,6 @@ BOOST_AUTO_TEST_CASE( blasius_delta2 )
     const double tol      = 0.11;
     const double expected = 0.664045493818590;
     BOOST_REQUIRE_CLOSE(delta2, expected, tol);
-
-    // The enthalpy thickness is mathematically identical to the momentum
-    // thickness when one substitutes h for u (as the fixture already has).
-    double deltah        = GSL_NAN;
-    BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS, suzerain_bl_enthalpy_thickness(
-        code_Ma, H0.get(), ke.get(), u.get(), &deltah,
-        Bk.get(), b.bw, tbl.get()));
-    BOOST_CHECK_CLOSE(deltah, expected, tol);
 }
 
 BOOST_AUTO_TEST_CASE( blasius_delta3 )
@@ -175,6 +167,15 @@ BOOST_AUTO_TEST_CASE( blasius_delta3 )
     // notice that this result is considerably thicker.  That is because we
     // included the wall-normal velocity in the kinetic energy computation.
     BOOST_CHECK_CLOSE(delta3, 1.30347780585580, 0.11);
+
+    // The enthalpy thickness is mathematically identical to the energy
+    // thickness when one substitutes u^2 for H0.  This relies on the
+    // fact that u^2 goes to zero at the wall so that the reference
+    // "viscous H0" value is zero there.
+    double deltaH0 = GSL_NAN;
+    BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS, suzerain_bl_enthalpy_thickness(
+        ke.get(), u.get(), &deltaH0, Bk.get(), b.bw, tbl.get()));
+    BOOST_CHECK_CLOSE(deltaH0, delta3, GSL_SQRT_DBL_EPSILON);
 
     // To convince you that the wall-normal velocity makes a difference,
     // lets remove it from the kinetic energy and try again...
@@ -319,17 +320,17 @@ BOOST_FIXTURE_TEST_CASE( blasius_thicknesses_reynolds,
     //                  blasius_y(Re), zeros(size(blasius_eta)))
     // Integrals found using Octave's trapz against this data.
     // Again, this is a very poor test for thick.delta.
-    // Notice on this dataset that delta2 and deltah are the same thing!
+    // Notice on this dataset that delta2 and deltaH0 are the same thing!
     size_t cnt = 0; // Tracks if all quantities were tested
     suzerain_bl_thicknesses thick;
     BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS, suzerain_bl_compute_thicknesses(
-        code_Ma, H0.get(), ke.get(), rhou.get(), u.get(),
+        H0.get(), ke.get(), rhou.get(), u.get(),
         &thick, b.bw, b.dbw));
-    BOOST_CHECK_GT   (thick.delta,  0.12);                        ++cnt;
-    BOOST_CHECK_CLOSE(thick.delta1, 0.0172085683613221,  0.01  ); ++cnt;
-    BOOST_CHECK_CLOSE(thick.delta2, 0.00664045493818580, 0.0105); ++cnt;
-    BOOST_CHECK_CLOSE(thick.delta3, 0.0104435139441593,  0.01  ); ++cnt;
-    BOOST_CHECK_CLOSE(thick.deltah, 0.00664045493818580, 0.0105); ++cnt;
+    BOOST_CHECK_GT   (thick.delta,   0.12);                        ++cnt;
+    BOOST_CHECK_CLOSE(thick.delta1,  0.0172085683613221,  0.01  ); ++cnt;
+    BOOST_CHECK_CLOSE(thick.delta2,  0.00664045493818580, 0.0105); ++cnt;
+    BOOST_CHECK_CLOSE(thick.delta3,  0.0104435139441593,  0.01  ); ++cnt;
+    BOOST_CHECK_GT   (thick.deltaH0, thick.delta2);                ++cnt;
     BOOST_CHECK_EQUAL(cnt, sizeof(thick)/sizeof(thick.delta));
 
     // Compute the same values but now with a baseflow-friendly routine using a
@@ -339,15 +340,15 @@ BOOST_FIXTURE_TEST_CASE( blasius_thicknesses_reynolds,
     suzerain_bl_thicknesses baseflow;
     BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS,
                         suzerain_bl_compute_thicknesses_baseflow(
-        code_Ma, H0.get(),    ke.get(), rhou.get(), u.get(),
+                 H0.get(),    ke.get(), rhou.get(), u.get(),
         0,       &H0[b.n()-1], &rhou[b.n()-1], &u[b.n()-1], &v[b.n()-1],
         &baseflow, b.bw, b.dbw));
     cnt = 0;
-    BOOST_CHECK_EQUAL(thick.delta,  baseflow.delta);       ++cnt;
-    BOOST_CHECK_CLOSE(thick.delta1, baseflow.delta1, tol); ++cnt;
-    BOOST_CHECK_CLOSE(thick.delta2, baseflow.delta2, tol); ++cnt;
-    BOOST_CHECK_CLOSE(thick.delta3, baseflow.delta3, tol); ++cnt;
-    BOOST_CHECK_CLOSE(thick.deltah, baseflow.deltah, tol); ++cnt;
+    BOOST_CHECK_EQUAL(thick.delta,   baseflow.delta);        ++cnt;
+    BOOST_CHECK_CLOSE(thick.delta1,  baseflow.delta1,  tol); ++cnt;
+    BOOST_CHECK_CLOSE(thick.delta2,  baseflow.delta2,  tol); ++cnt;
+    BOOST_CHECK_CLOSE(thick.delta3,  baseflow.delta3,  tol); ++cnt;
+    BOOST_CHECK_CLOSE(thick.deltaH0, baseflow.deltaH0, tol); ++cnt;
     BOOST_CHECK_EQUAL(cnt, sizeof(thick)/sizeof(thick.delta));
 
     // Prepare expected Reynolds number results
@@ -369,15 +370,15 @@ BOOST_FIXTURE_TEST_CASE( blasius_thicknesses_reynolds,
     suzerain_bl_reynolds reynolds;
     BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS,
                         suzerain_bl_compute_reynolds_baseflow(
-           code_Ma, code_Re,
+           code_Re,
            H0.get(), ke.get(), rhou.get(), u.get(),
         0, &H0[b.n()-1], &rhou[b.n()-1], &u[b.n()-1], &v[b.n()-1],
         &edge, &reynolds, b.bw));
-    BOOST_CHECK_CLOSE(expected_Re.delta,  reynolds.delta,  tol); ++cnt;
-    BOOST_CHECK_CLOSE(expected_Re.delta1, reynolds.delta1, tol); ++cnt;
-    BOOST_CHECK_CLOSE(expected_Re.delta2, reynolds.delta2, tol); ++cnt;
-    BOOST_CHECK_CLOSE(expected_Re.delta3, reynolds.delta3, tol); ++cnt;
-    BOOST_CHECK_CLOSE(expected_Re.deltah, reynolds.deltah, tol); ++cnt;
+    BOOST_CHECK_CLOSE(expected_Re.delta,   reynolds.delta,   tol); ++cnt;
+    BOOST_CHECK_CLOSE(expected_Re.delta1,  reynolds.delta1,  tol); ++cnt;
+    BOOST_CHECK_CLOSE(expected_Re.delta2,  reynolds.delta2,  tol); ++cnt;
+    BOOST_CHECK_CLOSE(expected_Re.delta3,  reynolds.delta3,  tol); ++cnt;
+    BOOST_CHECK_CLOSE(expected_Re.deltaH0, reynolds.deltaH0, tol); ++cnt;
     BOOST_CHECK_EQUAL(cnt, sizeof(thick)/sizeof(thick.delta));
 }
 
@@ -482,7 +483,7 @@ BOOST_AUTO_TEST_CASE( compute_qoi_and_pg )
     BOOST_CHECK_CLOSE(reynolds.delta1,   141.95952214875473,   tol); ++cnt;
     BOOST_CHECK_CLOSE(reynolds.delta2,   189.49842591559681,   tol); ++cnt;
     /* Quantity reynolds.delta3 not tested */                        ++cnt;
-    /* Quantity reynolds.deltah not tested */                        ++cnt;
+    /* Quantity reynolds.deltaH0 not tested */                       ++cnt;
     BOOST_CHECK_EQUAL(cnt, sizeof(reynolds)/sizeof(reynolds.delta));
 
     suzerain_bl_qoi qoi;

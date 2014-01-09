@@ -296,7 +296,6 @@ void summarize_boundary_layer_nature(
     // Compute boundary layer thicknesses, including delta
     if (0 == coeffs_inviscid.size()) {
         if (const int err = suzerain_bl_compute_thicknesses(
-                                scenario.Ma,
                                 prof.H0().data(),
                                 prof.ke().data(),
                                 prof.rho_u().col(0).data(),
@@ -309,7 +308,6 @@ void summarize_boundary_layer_nature(
         }
     } else {
         if (const int err = suzerain_bl_compute_thicknesses_baseflow(
-                                scenario.Ma,
                                 prof.H0().data(),
                                 prof.ke().data(),
                                 prof.rho_u().col(0).data(),
@@ -361,7 +359,6 @@ void summarize_boundary_layer_nature(
         }
     } else {
         if (const int err = suzerain_bl_compute_reynolds_baseflow(
-                                scenario.Ma,
                                 scenario.Re,
                                 prof.H0().data(),
                                 prof.ke().data(),

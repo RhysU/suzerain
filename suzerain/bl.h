@@ -253,56 +253,51 @@ suzerain_bl_energy_thickness(
     const gsl_integration_glfixed_table * tbl);
 
 /**
- * Compute the enthalpy thickness \f$\delta_h\f$ (not to be confused with the
- * energy thickness) given the edge location and a B-spline coefficient
- * representation of streamwise momentum \f$\rho u\f$, specific kinetic energy
- * \f$\vec{u}^2/2\f$, and specific total enthalpy \f$H_0\f$.
- * The method computes
+ * Compute the enthalpy thickness \f$\delta_{H_0}\f$ given the edge location
+ * and a B-spline coefficient representation of streamwise momentum \f$\rho
+ * u\f$, specific kinetic energy \f$\vec{u}^2/2\f$, and specific total enthalpy
+ * \f$H_0\f$. The method computes
  * \f[
- *  \delta_h = \int_0^\infty
- *  \frac{\rho u}{\rho_\infty u_\infty}
- *  \left(\frac{h_\infty - h}{h_\infty - h_\mbox{wall}}\right)
+ *  \delta_{H_0} = \int_0^\infty
+ *     \frac{\rho u}{\rho_\infty u_\infty}
+ *     \frac{H_{0,\infty} - H_{0,\mbox{vis}            }}
+ *          {H_{0,\infty} - H_{0,\mbox{vis},\mbox{wall}}}
  *  \, \mathrm{d}y
  * \f]
- * where the specific internal enthalpy \f$h = H_0 - \mbox{Ma}^2 \vec{u}^2/2\f$
- * and the value from the final B-spline collocation point is taken to be "at
+ * where the value from the final B-spline collocation point is taken to be "at
  * infinity".
  *
- * Among many other places, this definition appears in equation (13.48) on page
- * 324 of Leipmann and Roshko's <a
- * href="http://www.worldcat.org/title/elements-of-gasdynamics/oclc/636935705">
- * Elements of Gasdynamics</a> but is there called "energy thickness".  Page
- * 258 of Schlichting and Gersten's <a
- * href="http://www.worldcat.org/title/boundary-layer-theory-with-22-tables/oclc/615466700">
- * Boundary Layer Theory</a> negates Leipmann and Roshko's definition.  The
- * differences arises from whether the freestream is hot or cold relative to
- * the wall.  The form written above works irrespective of that contextual
- * difference.
+ * This definition appears in <a
+ * href="http://www.worldcat.org/isbn/978-0199587438">Atkins and Escudier</a>
+ * where the text comment on the common reduction from this form to the low
+ * speed versions often encountered. A similar definition appears in equation
+ * (13.48) on page 324 of Leipmann and Roshko's <a
+ * href="http://www.worldcat.org/isbn/9780486419633">Elements of
+ * Gasdynamics</a> but is there called "energy thickness".  Page 258 of
+ * Schlichting and Gersten's <a
+ * href="http://www.worldcat.org/isbn/3540662707">Boundary Layer Theory</a>
+ * negates Leipmann and Roshko's definition.  The differences arises from
+ * whether the freestream is hot or cold relative to the wall.  The form
+ * written above works irrespective of that contextual difference.
  *
- * \param[in ] code_Ma     Mach number \f$u_0/a_0\f$ used to scale
- *                         nondimensional quantities.  For dimensional
- *                         calculations, use <code>1</code>.
  * \param[in ] coeffs_H0   B-spline coefficients for \f$H_0\f$.
- * \param[in ] coeffs_ke   B-spline coefficients for \f$\vec{u}^2/2\f$.
  * \param[in ] coeffs_rhou B-spline coefficients for \f$\rho u\f$.
- * \param[out] deltah      The computed enthalpy thickness.
+ * \param[out] deltaH0     The computed enthalpy thickness.
  * \param[in ] Bk          Temporary storage to use of length <tt>w->k</tt>.
  * \param[in ] w           Workspace to use.
  * \param[in ] tbl         Gaussian quadrature table
  *                         of size at least <tt>w->k</tt>.
  *
  * \return ::SUZERAIN_SUCCESS on success and returns the answer in
- * <code>*deltah</code>.  On recoverable error sets <code>*deltah</code> to be
- * <tt>NaN</tt> and returns one of #suzerain_error_status.  On unrecoverable
+ * <code>*deltaH0</code>.  On recoverable error sets <code>*deltaH0</code> to
+ * be <tt>NaN</tt> and returns one of #suzerain_error_status.  On unrecoverable
  * error, additionally calls suzerain_error().
  */
 int
 suzerain_bl_enthalpy_thickness(
-    const double code_Ma,
     const double * coeffs_H0,
-    const double * coeffs_ke,
     const double * coeffs_rhou,
-    double * deltah,
+    double * deltaH0,
     gsl_vector * Bk,
     gsl_bspline_workspace * w,
     const gsl_integration_glfixed_table * tbl);
@@ -320,7 +315,7 @@ typedef struct suzerain_bl_thicknesses {
     double delta2;    /**< Momentum thickness \f$\delta_2\f$
                            (sometimes written \f$\theta\f$).      */
     double delta3;    /**< Energy thickness \f$\delta_3\f$ .      */
-    double deltah;    /**< Enthalpy thickness \f$\delta_h\f$.     */
+    double deltaH0;   /**< Enthalpy thickness \f$\delta_{H_0}\f$. */
 } suzerain_bl_thicknesses;
 
 /**
@@ -333,9 +328,6 @@ typedef struct suzerain_bl_thicknesses {
  * \ref suzerain_bl_enthalpy_thickness packing the results into a \ref
  * suzerain_bl_thicknesses structure.
  *
- * \param[in ] code_Ma     Mach number \f$u_0/a_0\f$ used to scale
- *                         nondimensional quantities.  For dimensional
- *                         calculations, use <code>1</code>.
  * \param[in ] coeffs_H0   Coefficient representation of \f$H_0\f$.
  * \param[in ] coeffs_ke   Coefficient representation of \f$\vec{u}^2/2\f$.
  * \param[in ] coeffs_rhou Coefficient representation of \f$\rho u\f$.
@@ -350,7 +342,6 @@ typedef struct suzerain_bl_thicknesses {
  */
 int
 suzerain_bl_compute_thicknesses(
-    const double code_Ma,
     const double * coeffs_H0,
     const double * coeffs_ke,
     const double * coeffs_rhou,
@@ -372,8 +363,8 @@ typedef struct suzerain_bl_reynolds {
                            thickness \f$\delta_2\f$. */
     double delta3;    /**< Reynolds number based on energy
                            thickness \f$\delta_3\f$. */
-    double deltah;    /**< Reynolds number based on enthalpy
-                           thickness \f$\delta_h\f$. */
+    double deltaH0;   /**< Reynolds number based on enthalpy
+                           thickness \f$\delta_{H_0}\f$. */
 } suzerain_bl_reynolds;
 
 /**
@@ -548,21 +539,16 @@ suzerain_bl_compute_pg(
  *   - \left(\rho u \vec{u}^2\right)_\mbox{vis} \vec{u}^{-2}_\mbox{inv}
  *   \, \mathrm{d}y
  * \\
- *   \mbox{Re}_{\delta_h} &= \mu_e^{-1} \int_0^\infty
+ *   \mbox{Re}_{\delta_{H_0}} &= \mu_e^{-1} \int_0^\infty
  *     \left(\rho u\right)_\mbox{vis}
- *     \frac{h_\mbox{inv} - h_{\mbox{vis}            }}
- *          {h_\mbox{inv} - h_{\mbox{vis},\mbox{wall}}}
+ *     \frac{H_{0,\infty} - H_{0,\mbox{vis}            }}
+ *          {H_{0,\infty} - H_{0,\mbox{vis},\mbox{wall}}}
  *   \, \mathrm{d}y
  * \f}
- * where the internal specific enthalpy \f$h = H_0 - \mbox{Ma}^2
- * \vec{u}^2/2\f$.  The method requires a B-spline coefficient representation
- * of both the viscous and inviscid flow specific total enthalpy \f$H_0\f$,
- * streamwise momentum \f$\rho u\f$, and specific kinetic energy
- * \f$\vec{u}^2/2\f$.
+ * The method requires a B-spline coefficient representation of both the
+ * viscous and inviscid flow specific total enthalpy \f$H_0\f$, streamwise
+ * momentum \f$\rho u\f$, and specific kinetic energy \f$\vec{u}^2/2\f$.
  *
- * \param[in ] code_Ma         Mach number \f$u_0/a_0\f$ used to scale
- *                             nondimensional quantities.  For dimensional
- *                             calculations, use <code>1</code>.
  * \param[in ] code_Re         Reynolds number \f$\rho_0 u_0 l_0/\mu_0\f$ used
  *                             to scale nondimensional quantities.  For
  *                             dimensional calculations, use <code>1</code>.
@@ -597,7 +583,6 @@ suzerain_bl_compute_pg(
  */
 int
 suzerain_bl_compute_reynolds_baseflow(
-    const double                    code_Ma,
     const double                    code_Re,
     const double            * const coeffs_vis_H0,
     const double            * const coeffs_vis_ke,
@@ -649,34 +634,35 @@ suzerain_bl_compute_reynolds_baseflow(
  *         \left(\rho u \vec{u}^2\right)_\mbox{vis}
  *     \, \mathrm{d}y
  * \\
- *     \int_{\delta_1 + \delta_h}^\infty
+ *     \int_{\delta_1 + \delta_{H_0}}^\infty
  *         \left(\rho u\right)_\mbox{inv}
  *       - \left(\rho u\right)_\mbox{vis}
  *         \frac{h_\mbox{vis} - h_{\mbox{vis},\mbox{wall}}}
  *              {h_\mbox{inv} - h_{\mbox{vis},\mbox{wall}}}
  *     \, \mathrm{d}y
  *   &=
- *     \int_0^{\delta_h}
+ *     \int_0^{\delta_{H_0}}
  *         \left(\rho u\right)_\mbox{vis}
  *         \frac{h_\mbox{vis} - h_{\mbox{vis},\mbox{wall}}}
  *              {h_\mbox{inv} - h_{\mbox{vis},\mbox{wall}}}
  *     \, \mathrm{d}y
  * \\
+ *  \delta_{H_0} &= \int_0^\infty
+ *     \frac{{\rho u}_\mbox{vis}}{{\rho u}_\mbox{inv}}
+ *     \frac{H_{0,\mbox{inv}} - H_{0,\mbox{vis}            }}
+ *          {H_{0,\mbox{inv}} - H_{0,\mbox{vis},\mbox{wall}}}
+ *  \, \mathrm{d}y
  * \f}
- * where the internal specific enthalpy \f$h = H_0 - \mbox{Ma}^2
- * \vec{u}^2/2\f$.  The method requires a B-spline coefficient representation
- * of both the viscous and inviscid flow specific total enthalpy \f$H_0 =
- * \frac{\rho E + p}{\rho}\f$, streamwise momentum \f$\rho u\f$, and streamwise
- * velocity \f$u\f$.  The viscous specific kinetic energy \f$\vec{u}^2/2\f$ and
- * inviscid wall-normal velocity \f$v\f$ profile are additionally required.
+ * The method requires a B-spline coefficient representation of both the
+ * viscous and inviscid flow specific total enthalpy \f$H_0 = \frac{\rho E +
+ * p}{\rho}\f$, streamwise momentum \f$\rho u\f$, and streamwise velocity
+ * \f$u\f$.  The viscous specific kinetic energy \f$\vec{u}^2/2\f$ and inviscid
+ * wall-normal velocity \f$v\f$ profile are additionally required.
  *
  * \warning Beware that many source neglect the contribution from \f$v^2\f$
  * within the kinetic energy \f$\vec{u}^2/2 = u^2/2 + v^2/2\f$.  Including it
  * will tend the increase the resulting energy thickness.
  *
- * \param[in ] code_Ma         Mach number \f$u_0/a_0\f$ used to scale
- *                             nondimensional quantities.  For dimensional
- *                             calculations, use <code>1</code>.
  * \param[in ] coeffs_vis_H0   Coefficients for viscous \f$H_0\f$ profile.
  *                             Values must be contiguous in memory.
  * \param[in ] coeffs_vis_ke   Coefficients for viscous \f$\vec{u}^2/2\f$
@@ -708,7 +694,6 @@ suzerain_bl_compute_reynolds_baseflow(
  */
 int
 suzerain_bl_compute_thicknesses_baseflow(
-    const double                        code_Ma,
     const double                * const coeffs_vis_H0,
     const double                * const coeffs_vis_ke,
     const double                * const coeffs_vis_rhou,
