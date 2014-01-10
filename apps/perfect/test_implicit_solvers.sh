@@ -25,8 +25,8 @@ for SPECIFICATION in                                     \
     zgbsvx,equil=false                                   \
     zgbsvx,equil=true                                    \
     zcgbsvx,reuse=false,aiter=1,siter=-1,diter=5,tolsc=0 \
-  # FIXME Ticket #2809 zcgbsvx,reuse=true,aiter=1,siter=-1,diter=5,tolsc=0  \
-  # FIXME Ticket #2809 zcgbsvx,reuse=true,aiter=5,siter=25,diter=5,tolsc=0
+    zcgbsvx,reuse=true,aiter=1,siter=-1,diter=5,tolsc=0  \
+    zcgbsvx,reuse=true,aiter=5,siter=25,diter=5,tolsc=0
 do
 
 banner "Similarity of solver specification ${SPECIFICATION:+ ($SPECIFICATION)}"
