@@ -1,4 +1,0 @@
-#! /bin/sh
-# $Id$
-
-autoreconf -v -i || exit 1
