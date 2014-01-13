@@ -246,11 +246,11 @@ driver_base::log4cxx_config()
 std::vector<std::string>
 driver_base::initialize(int argc, char **argv)
 {
-    // Add problem definitions to options
-    options.add_definition(*restartdef);
-    options.add_definition(*statsdef  );
-    options.add_definition(*timedef   );
-    options.add_definition( signaldef );
+    // Only add groups of options when non-trivial at initialization
+    if (restartdef) options.add_definition(*restartdef)  ;
+    if (statsdef  ) options.add_definition(*statsdef  )  ;
+    if (timedef   ) options.add_definition(*timedef   )  ;
+    /*always true*/ options.add_definition( signaldef )  ;
 
     // Process incoming arguments by invoking superclass method
     std::vector<std::string> positional = super::initialize(argc, argv);

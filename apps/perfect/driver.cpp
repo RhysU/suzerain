@@ -57,7 +57,6 @@ driver::driver(
     , scenario(make_shared<scenario_definition>())
     , isothermal(make_shared<support::isothermal_definition>())
     , sg(make_shared<support::largo_definition>())
-    , noz(make_shared<support::radialflow_definition>())
     , who("perfect")
 {
     this->fields = default_fields();
@@ -68,16 +67,17 @@ driver::initialize(
         int argc,
         char **argv)
 {
-    options.add_definition(*scenario);
-    options.add_definition(*isothermal);
-    options.add_definition(*sg);
-    // noz   not used by all binaries and therefore not added
-    // msoln not used by all binaries and therefore not added
+    // Only add groups of options when non-trivial at initialization
+    if (scenario  ) options.add_definition(*scenario  ) ;
+    if (isothermal) options.add_definition(*isothermal) ;
+    if (sg        ) options.add_definition(*sg        ) ;
+    if (noz       ) options.add_definition(*noz       ) ;
+    if (msoln     ) options.add_definition(*msoln     ) ;
 
     // Delegate to superclass initialization
     std::vector<std::string> positional = super::initialize(argc, argv);
 
-    // However, if msoln was provided, match its contents to other members
+    // If msoln was provided, match its contents to other members
     if (msoln) {
         if (scenario) msoln->match(*scenario);
         if (grid)     msoln->match(*grid);

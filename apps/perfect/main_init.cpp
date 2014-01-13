@@ -138,7 +138,7 @@ suzerain::perfect::driver_init::run(int argc, char **argv)
     msoln = make_shared<manufactured_solution>(
             manufactured_solution::default_caption
             + " (active only when --mms supplied)");
-    options.add_definition(msoln->isothermal_channel());
+    msoln->isothermal_channel();
 
     // Establish binary-specific options
     real_t mms    = numeric_limits<real_t>::quiet_NaN();

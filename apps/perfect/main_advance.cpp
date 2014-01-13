@@ -106,6 +106,7 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
     using boost::math::isnan;
 
     // Storage for binary-specific options
+    noz = make_shared<support::radialflow_definition>(/*deltae*/ 1.0);
     const support::noise_definition noisedef;
     string solver_spec(static_cast<string>(suzerain::zgbsv_specification()));
     string implicit("rhome_xyz");
@@ -113,7 +114,6 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
     string undriven;
 
     // Register binary-specific options
-    options.add_definition(*noz);
     options.add_definition(const_cast<support::noise_definition&>(noisedef));
     options.add_options()
         ("explicit", boost::program_options::bool_switch(),
@@ -211,7 +211,7 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
 
     if (options.variables().count("cevdstag")) {
         INFO0("Mimicking scenario " << cevdstag
-              << " meters leeward from the CEV stagnation point");
+              << " meters leeward of the laminar CEV stagnation point");
         cev_baseflow_laminar(cevdstag,
                              scenario->gamma,
                              scenario->Ma,
