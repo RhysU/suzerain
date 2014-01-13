@@ -21,15 +21,11 @@ excludes="--exclude-path /metadata_generated --exclude-path /bar_ke"
 "$perfect_init" initial.h5 --k=6 --Nx=1 --Ny=36 --Nz=1 --htdelta=-3 --Re=3000 --Ma=1.5 --Pr=0.7 --Ly=1 --Re_x=3000 --largo_formulation=spatiotemporal_consistent --largo_grdelta=1e-1
 h5diff -r -c -v $excludes  "$@" "$SCRIPTDIR/initial.h5" initial.h5
 
-# Overwrite with radial nozzle baseflow conditions about 1 meter leeward of CEV stagnation
+# Overwrite with radial nozzle baseflow conditions 1 meter leeward of laminar CEV stagnation
 "$perfect_advance" $(readlink -f initial.h5)          \
                    --restart_destination=initial\#.h5 \
                    --explicit --advance_nt=0          \
-                   --radialflow_Ma0=3.94774352598265  \
-                   --radialflow_gam0=1.40926817855057 \
-                   --radialflow_rho1=1                \
-                   --radialflow_u1=-0.154983103461198 \
-                   --radialflow_R1=46.1242981386578
+                   --cevdstag 1.0
 h5diff -r -c -v $excludes  "$@" "$SCRIPTDIR/initial0.h5" initial0.h5
 
 # Now advance in time and check the result
