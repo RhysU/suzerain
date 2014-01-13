@@ -309,23 +309,25 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
         // If the baseflow is specified by a radial nozzle problem...
         if (sg->formulation.enabled() && !noz->trivial()) {
 
-            INFO0(who, "Finding baseflow using suzerain_radialflow_qoi_match...");
+            INFO0(who, "Finding baseflow per suzerain_radialflow_qoi_match...");
             // ...unpack all information from *noz and *scenario...
             const double deltae = noz->deltae;
-            const double gam0   = noz->gam0 ? noz->gam0 : scenario->gamma;
-            const double Mae    = noz->Mae  ? noz->Mae  : scenario->Ma;
+            const double gam0   = !(isnan)(noz->gam0) && (noz->gam0 != 0)
+                                ? noz->gam0 : scenario->gamma;
+            const double Mae    = !(isnan)(noz->Mae ) && (noz->Mae  != 0)
+                                ? noz->Mae  : scenario->Ma;
             const double pexi   = noz->pexi;
             const double Te     = noz->Te;
 
-#           define POSSIBLYWARN0(who, prefix, value)                    \
-                if (value) { INFO0(who, prefix << fullprec<>(value)); } \
-                else       { WARN0(who, prefix << fullprec<>(value)); }
+#           define POSSIBLYWARN0(who, pre, val)                             \
+                if ((isnan)(val)) { WARN0(who, pre << fullprec<>(val)); } \
+                else              { INFO0(who, pre << fullprec<>(val)); }
 
-            POSSIBLYWARN0(who, "Baseflow requested deltae: ", deltae);
-            POSSIBLYWARN0(who, "Baseflow requested gam0:   ", gam0  );
-            POSSIBLYWARN0(who, "Baseflow requested Mae:    ", Mae   );
-            POSSIBLYWARN0(who, "Baseflow requested pexi:   ", pexi  );
-            POSSIBLYWARN0(who, "Baseflow requested Te:     ", Te    );
+            POSSIBLYWARN0(who, "Baseflow requested deltae:     ", deltae);
+            POSSIBLYWARN0(who, "Baseflow requested gam0:       ", gam0  );
+            POSSIBLYWARN0(who, "Baseflow requested Mae:        ", Mae   );
+            POSSIBLYWARN0(who, "Baseflow requested pexi:       ", pexi  );
+            POSSIBLYWARN0(who, "Baseflow requested Te:         ", Te    );
 
             // ...compute edge state matching requested targets...
             double Ma0, R[2], uR, rhoR, pR;
