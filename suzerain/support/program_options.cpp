@@ -30,8 +30,11 @@
 #endif
 #include <suzerain/support/program_options.hpp>
 
+#include <cerrno>
+#include <cstdlib>
 #include <boost/test/utils/nullstream.hpp>
 #include <libgen.h>
+#include <limits.h>
 
 #include <suzerain/version.hpp>
 
@@ -194,8 +197,28 @@ std::vector<std::string> program_options::process_internal(
         ("__positional__", po::value< vector<string> >(), "positional args")
     ;
 
+    // Guess at the option width to use (krufty and bash-ish, currently).
+    // FIXME Make terminal-width detection work as expected.
+    // Problem is not in the code below, but in how linewidth is used
+    // by Boost.  See http://lists.boost.org/boost-users/2014/01/81007.php.
+    unsigned linewidth = po::options_description::m_default_line_length;
+    {
+        using namespace std;
+        if (getenv("COLUMNS")) {
+            errno = 0;
+            const long t = strtol(getenv("COLUMNS"), (char **) NULL, 10);
+            if (    !errno
+                && t >= numeric_limits<unsigned>::min()
+                && t <= numeric_limits<unsigned>::max()) {
+                linewidth = t;
+            }
+        }
+    }
+
     // Build the options acceptable on the CLI, in a file, and in help message
-    po::options_description opts_cli, opts_file, opts_visible;
+    po::options_description opts_cli    (linewidth);
+    po::options_description opts_file   (linewidth);
+    po::options_description opts_visible(linewidth);
     opts_cli    .add(options_).add(desc_hidden).add(desc_clionly);
     opts_file   .add(options_).add(desc_hidden)                  ;
     opts_visible.add(options_)                 .add(desc_clionly);
