@@ -18,9 +18,9 @@ defaultargs=--use-system-epsilon
 SCRIPTDIR="$( cd "$( echo "${BASH_SOURCE[0]%/*}" )"; pwd )"
 for script in "$SCRIPTDIR"/*/check.sh
 do
-    ( "$SCRIPTDIR/neno" "$script" "${@-$defaultargs}"        \
-      && echo "$script" "${@-defaultargs}" >> "$SUCCESSES"   \
-      || echo "$script" "${@-defaultargs}" >> "$FAILURES"  ) &
+    ( "$SCRIPTDIR/neno" "$script" "${@-$defaultargs}"         \
+      && echo "$script" "${@-$defaultargs}" >> "$SUCCESSES"   \
+      || echo "$script" "${@-$defaultargs}" >> "$FAILURES"  ) &
 done
 
 # Wait for all tests to finish
