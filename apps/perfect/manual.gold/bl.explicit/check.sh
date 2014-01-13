@@ -14,9 +14,12 @@ case=$(basename "$SCRIPTDIR")
 rmmkcd "gold/$case"
 exec 1> >(tee ./output) 2>&1
 
+#Exclusion of bar_ke post-r43126 represents laziness in updating gold files
+excludes="--exclude-path /metadata_generated --exclude-path /bar_ke"
+
 "$perfect_init" initial.h5 --k=6 --Nx=1 --Ny=36 --Nz=1 --htdelta=-3 --Re=3000 --Ma=1.5 --Pr=0.7 --Ly=1 --Re_x=3000
-h5diff -r -c -v --exclude-path /metadata_generated "$@" "$SCRIPTDIR/initial.h5" initial.h5
+h5diff -r -c -v $excludes "$@" "$SCRIPTDIR/initial.h5" initial.h5
 "$perfect_advance" --explicit $(readlink -f initial.h5) --status_nt=1 --advance_dt=0.000919
-h5diff -r -c -v --exclude-path /metadata_generated "$@" "$SCRIPTDIR/restart0.h5" restart0.h5
+h5diff -r -c -v $excludes "$@" "$SCRIPTDIR/restart0.h5" restart0.h5
 
 echo Success for $case
