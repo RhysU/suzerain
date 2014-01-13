@@ -338,11 +338,11 @@ driver::save_metadata_hook(
         const esio_handle esioh)
 {
     super::save_metadata_hook(esioh);
-    scenario->save(esioh);
-    isothermal->save(esioh);
-    sg->save(esioh);
-    noz->save(esioh);
-    save(esioh, msoln, *scenario, *grid);
+    if (scenario)   scenario->save(esioh);
+    if (isothermal) isothermal->save(esioh);
+    if (sg)         sg->save(esioh);
+    if (noz)        noz->save(esioh);
+    if (msoln)      save(esioh, msoln, *scenario, *grid);
     return;
 }
 
