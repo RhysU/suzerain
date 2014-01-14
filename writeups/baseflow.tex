@@ -149,6 +149,7 @@ reference velocity $u_0$.  That is,
         \frac{a^2  }{\gamma  -1} + \frac{1}{2} \vec{u}^2
       = \frac{a_0^2}{\gamma_0-1} + \frac{1}{2} u_0^2
       =  H_0
+\label{eq:constant_specific_stagnation_enthalpy}
 \end{align}
 holds everywhere.  After a slight rearrangement, our constant stagnation
 enthaply condition
@@ -617,7 +618,19 @@ edge temperature nondimensionalized using $a_0^2=\gamma_{0}RT_0$,
 \label{eq:Tedef}
 ,
 \end{align}
-may also be of interest when evaluated for $\Mach = \Mach[e]$.
+may also be of interest when evaluated for $\Mach = \Mach[e]$.  Preserving a
+strictly positive specific total energy $E$ can be a concern when dictating
+$T_e$ as combining the nondimensional equivalent
+of~\eqref{eq:constant_specific_stagnation_enthalpy} into the
+constant-by-assumption $H = E\!\left(R\right) +
+p\!\left(R\right)/\rho\!\left(R\right)$ shows that realizability requires
+\begin{align}
+    T\!\left(R\right) &< \gamma_0 \Mach^2 \left(
+      \frac{1}{2} + \frac{1}{\Mach[0]{}\left(\gamma_0 - 1\right)}
+         \right)
+\label{eq:Terestrict}
+.
+\end{align}
 
 A kernel building atop Listing~\ref{lst:octave_nozzle} that computes these
 quantities appears in Listing~\ref{lst:octave_nozzle_qoi}. By solving to
@@ -626,7 +639,7 @@ possible problem.  More importantly, it causes the ODE integrator to
 automatically produce full-order accurate results at $\left(R_0,\delta\right)$
 without requiring the integrator to possess dense output capabilities.
 
-\lstinputlisting[language=Octave,label=lst:octave_nozzle_qoi,%float=htbp,
+\lstinputlisting[language=Octave,label=lst:octave_nozzle_qoi,float,
                  caption={\texttt{nozzle\_qoi.m}: A kernel computing several
                  quantities of interest}]
                 {notebooks/nozzle_qoi.m}
@@ -841,8 +854,8 @@ matching base flow may be produced as follows:
         with the sign governed by~\eqref{eq:matching_usign}.
     \item Arbitrarily choose $\rho\!\left(R\right) = 1$.
     \item If reproducing some ideal $T_e$ is desired,
-        fix $p\!\left(R\right)$ using~\eqref{eq:Tedef}.
-        Otherwise, use 1.
+        fix $p\!\left(R\right)$ using~\eqref{eq:Tedef}
+        noting~\eqref{eq:Terestrict}. Otherwise, use 1.
 \end{enumerate}
 Logic performing these steps appears in Listing~\ref{lst:octave_nozzle_match}.
 The resulting parameters and initial conditions may be integrated from $R$ to
@@ -851,10 +864,12 @@ flow profile on segment $\left( R_0, 0 \right)$ to $\left( R_0, \delta \right)$
 has the desired properties may be verified with
 Listings~\ref{lst:octave_nozzle} and~\ref{lst:octave_nozzle_qoi} as shown.
 
-\lstinputlisting[language=Octave,label=lst:octave_nozzle_match,
+\lstinputlisting[language=Octave,label=lst:octave_nozzle_match,float,
                  caption={\texttt{nozzle\_match.m}: Match specified boundary
                  layer edge quantities}]
                 {notebooks/nozzle_match.m}
+
+\clearpage
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Example: Matching CEV heat shield laminar boundary layer conditions}
@@ -870,9 +885,9 @@ Figure~\ref{fig:cev_symplane}.  The laminar boundary layer character was
 quantified as a function of leeward arc length, measured in meters, from the
 stagnation region.
 
-\begin{figure}
+\begin{figure}[p]
   \centering
-  \includegraphics[height=0.70\textheight]{symplanenorm}
+  \includegraphics[height=0.85\textheight]{symplanenorm}
   \caption{
     \label{fig:cev_symplane}
     The velocity magnitude on the symmetry plane for the fully laminar

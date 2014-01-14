@@ -2,7 +2,6 @@
 % via a "coupled" ODE-based approach.  Plot results when no values requested.
 function [r u rho p a2 up rhop pp] = nozzle(Ma, gam, R1, R2, u1, rho1=1, p1=1,
                                             rtol=sqrt(eps), atol=sqrt(eps))
-
   [Ma2 gam1] = deal(Ma.^2, gam-1);
   assert(u1.^2 < 2 / Ma2 / gam1 + 1,
          'Ma=%g, gam=%g, u1=%g imply a.^2 <= 0', Ma, gam, u1);
@@ -19,7 +18,6 @@ function [r u rho p a2 up rhop pp] = nozzle(Ma, gam, R1, R2, u1, rho1=1, p1=1,
            'location', 'north', 'orientation', 'horizontal');
     xlabel('Radius');
   end
-
 end
 
 % ODEs [u; rho; p]' given r, x=[u; rho; p], Ma2=Ma.^2, gamm1=gam-1
