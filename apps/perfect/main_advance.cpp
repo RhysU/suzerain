@@ -163,6 +163,16 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
         implicit = "none";
     }
 
+    if (options.variables().count("cevdstag")) {
+        INFO0("Mimicking scenario " << cevdstag
+              << " meters leeward of the laminar CEV stagnation point");
+        cev_baseflow_laminar(cevdstag,
+                             scenario->gamma,  // Notice modification before...
+                             scenario->Ma,     // ...call to adjust_scenario().
+                             noz->pexi,
+                             noz->Te);
+    }
+
     if (positional.size() != 1) {
         FATAL0(who, "Exactly one restart file name must be specified");
         return EXIT_FAILURE;
@@ -207,16 +217,6 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
             WARN0(who, "Manufactured solution incompatible with bulk_rho_E = "
                   << scenario->bulk_rho_E);
         }
-    }
-
-    if (options.variables().count("cevdstag")) {
-        INFO0("Mimicking scenario " << cevdstag
-              << " meters leeward of the laminar CEV stagnation point");
-        cev_baseflow_laminar(cevdstag,
-                             scenario->gamma,
-                             scenario->Ma,
-                             noz->pexi,
-                             noz->Te);
     }
 
     // If requested, add noise to the momentum fields at startup (expensive).
