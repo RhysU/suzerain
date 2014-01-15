@@ -1,6 +1,7 @@
 % Produce a flow matching the given boundary layer edge conditions.
 % If supplied, T_e specifies an edge temperature for the ideal gas EOS.
 function [Ma R0 R uR rhoR pR] = nozzle_match(delta, gam, Ma_e, p_exi, T_e=0)
+
   R0   = roots([ - abs(Ma_e.^2 - 1)*abs(p_exi),
                    delta,
                  - Ma_e.^2 * delta.^2 * abs(p_exi) * sign(Ma_e.^2 - 1) ]);
@@ -10,15 +11,19 @@ function [Ma R0 R uR rhoR pR] = nozzle_match(delta, gam, Ma_e, p_exi, T_e=0)
   uR   = - R ./ R0 * sign(p_exi.*(Ma_e.^2 - 1));
   rhoR = ones(size(R0));
   pR   = merge(T_e == 0, ones(size(R0)), T_e.*Ma.^2.*rhoR./gam./Ma_e.^2);
+
   if T_e
     ok = T_e < gam.*Ma_e.^2.*(1/2 + 1./Ma.^2./(gam - 1));
     R0 = R0(ok); Ma   = Ma  (ok); R  = R (ok);
     uR = uR(ok); rhoR = rhoR(ok); pR = pR(ok);
   endif
-  if length(R0) == 0
+
+  if isempty(R0)
     warning('nozzle_match(%g, %g, %g, %g, %g) has no realizable solution', ...
             delta, gam, Ma_e, p_exi, T_e);
+    Ma = R0 = R = uR = rhoR = pR = [ NaN ];
   endif
+
 end
 
 %!test % Round trip: Supersonic nozzle with hot edge

@@ -626,7 +626,7 @@ constant-by-assumption $H = E\!\left(R\right) +
 p\!\left(R\right)/\rho\!\left(R\right)$ shows that realizability requires
 \begin{align}
     T\!\left(R\right) &< \gamma_0 \Mach^2 \left(
-      \frac{1}{2} + \frac{1}{\Mach[0]{}\left(\gamma_0 - 1\right)}
+      \frac{1}{2} + \frac{1}{\Mach[0]^2\left(\gamma_0 - 1\right)}
          \right)
 \label{eq:Terestrict}
 .
@@ -864,12 +864,10 @@ flow profile on segment $\left( R_0, 0 \right)$ to $\left( R_0, \delta \right)$
 has the desired properties may be verified with
 Listings~\ref{lst:octave_nozzle} and~\ref{lst:octave_nozzle_qoi} as shown.
 
-\lstinputlisting[language=Octave,label=lst:octave_nozzle_match,float,
+\lstinputlisting[language=Octave,label=lst:octave_nozzle_match,
                  caption={\texttt{nozzle\_match.m}: Match specified boundary
                  layer edge quantities}]
                 {notebooks/nozzle_match.m}
-
-\clearpage
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Example: Matching CEV heat shield laminar boundary layer conditions}
@@ -885,9 +883,9 @@ Figure~\ref{fig:cev_symplane}.  The laminar boundary layer character was
 quantified as a function of leeward arc length, measured in meters, from the
 stagnation region.
 
-\begin{figure}[p]
+\begin{figure}
   \centering
-  \includegraphics[height=0.85\textheight]{symplanenorm}
+  \includegraphics[height=0.60\textheight]{symplanenorm}
   \caption{
     \label{fig:cev_symplane}
     The velocity magnitude on the symmetry plane for the fully laminar
