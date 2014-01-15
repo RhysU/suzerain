@@ -26,7 +26,7 @@ Favorable pressure gradient base \[FlLigature]ow computations\
  CellChangeTimes->{{3.584873423355616*^9, 3.5848734300953836`*^9}}],
 
 Cell["\<\
-See baseflow.tex write up for the background on this notebook.\
+See radialflow.tex write up for the background on this notebook.\
 \>", "Text",
  CellChangeTimes->{{3.584786163600728*^9, 3.5847861640373096`*^9}, {
   3.584800478792963*^9, 3.5848004928363934`*^9}}],

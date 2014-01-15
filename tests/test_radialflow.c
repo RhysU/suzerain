@@ -64,11 +64,11 @@ void check_radialflow_residual(
         gsl_test_rel(rhop / rho, -Ma0*Ma0*u*up/a2,
                      tol, "%s: rhop res[%d] ", who, i);
 
-        // Energy residual from baseflow.tex writeup, nozzle.m
+        // Energy residual from radialflow.tex writeup, radialflow.m
         gsl_test_rel(a2, 1 + Ma0*Ma0*(gam0-1)/2*(1-u*u),
                      tol, "%s: res_energy[%d] ", who, i);
 
-        // Continuity polar residual from baseflow.tex writeup, nozzle.m
+        // Continuity polar residual from radialflow.tex writeup, radialflow.m
         gsl_test_abs(0, rho*up + u*rhop + rho*u/R,
                      tol, "%s: res_mass[%d] ", who, i);
     }
@@ -196,7 +196,7 @@ void check_euler_conserved_rel(
     }
 }
 
-// Subsonic verification test from notebooks/nozzle.m
+// Subsonic verification test from notebooks/radialflow.m
 static
 void test_subsonic()
 {
@@ -220,7 +220,7 @@ void test_subsonic()
     gsl_test_abs(ini.u,   u1,   GSL_DBL_EPSILON, "%s init u   ", __func__);
     gsl_test_abs(ini.rho, rho1, GSL_DBL_EPSILON, "%s init rho ", __func__);
 
-    // Expected results computed by notebooks/nozzle.m using Octave
+    // Expected results computed by notebooks/radialflow.m using Octave
     double tol = GSL_SQRT_DBL_EPSILON;
     suzerain_radialflow_state fin = s->state[N-1];
     gsl_test_rel(fin.R,    R[N-1],             tol, "%s final R   ", __func__);
@@ -238,7 +238,7 @@ void test_subsonic()
     check_radialflow_residual (__func__, s, 100*GSL_DBL_EPSILON);
 
     // Test edge Mach and pressure gradient parameter computations
-    // Expected from notebooks/nozzle_qoi.m for delta = sqrt(10.5**2 - 10**2)
+    // Expected from notebooks/radialflow_qoi.m for delta = sqrt(10.5**2 - 10**2)
     const double Mae  = suzerain_radialflow_qoi_Mae (s, s->size-1);
     const double pexi = suzerain_radialflow_qoi_pexi(s, s->size-1);
     gsl_test_rel(Mae,   0.324318914847395, tol, "%s qoi_Mae ", __func__);
@@ -256,7 +256,7 @@ void test_subsonic()
     free(s);
 }
 
-// Supersonic test from notebooks/nozzle.m
+// Supersonic test from notebooks/radialflow.m
 static
 void test_supersonic1()
 {
@@ -280,7 +280,7 @@ void test_supersonic1()
     gsl_test_abs(ini.u,   u1,   GSL_DBL_EPSILON, "%s init u   ", __func__);
     gsl_test_abs(ini.rho, rho1, GSL_DBL_EPSILON, "%s init rho ", __func__);
 
-    // Expected results computed by notebooks/nozzle.m using Octave
+    // Expected results computed by notebooks/radialflow.m using Octave
     double tol = GSL_SQRT_DBL_EPSILON;
     suzerain_radialflow_state fin = s->state[N-1];
     gsl_test_rel(fin.R,     R[N-1],            tol, "%s final R   ", __func__);
@@ -298,7 +298,7 @@ void test_supersonic1()
     check_radialflow_residual (__func__, s, 100*GSL_DBL_EPSILON);
 
     // Test edge Mach and pressure gradient parameter computations
-    // Expected results by notebooks/nozzle_qoi.m for delta = sqrt(3)
+    // Expected results by notebooks/radialflow_qoi.m for delta = sqrt(3)
     const double Mae  = suzerain_radialflow_qoi_Mae (s, s->size-1);
     const double pexi = suzerain_radialflow_qoi_pexi(s, s->size-1);
     gsl_test_rel(Mae,   1.09859906253134,  tol, "%s qoi_Mae ", __func__);

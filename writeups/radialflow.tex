@@ -62,12 +62,12 @@
 
 \begin{document}
 
-\title{Favorable pressure gradient base flow computations}
+\title{Radial flow computations}
 \author{Rhys Ulerich}
 
 \begin{abstract}
 This document discusses how to obtain a favorable pressure gradient base flow
-for use within temporally homogenized boundary layer simulations.  First, a
+for use within homogenized boundary layer simulations.  First, a
 compressible potential flow problem is formulated for an isenthalpic, radially
 symmetric source or sink flow.  The resulting one-dimensional problem is cast
 into a form commodity ODE integrators can solve to obtain primitive state as a
@@ -446,9 +446,9 @@ integrates the state vector $\left[u, \rho, p\right]^\mathrm{T}$ so that
 three quantities.
 
 \lstinputlisting[language=Octave,label=lst:octave_nozzle,
-                 caption={\texttt{nozzle.m}: A nondimensional
+                 caption={\texttt{radialflow.m}: A nondimensional
                  radial flow solver implementation}]
-                {notebooks/nozzle.m}
+                {notebooks/radialflow.m}
 
 \begin{figure}[p]
   \centering
@@ -457,7 +457,7 @@ three quantities.
   \includegraphics[width=0.80\textwidth]{nozzle_supersonic}
   \caption{
       \label{fig:sample_solns}
-      Sample solutions saved by the demo logic in \texttt{nozzle.m}.  The
+      Sample solutions saved by the demo logic in \texttt{radialflow.m}.  The
       subsonic case flows from right-to-left while the supersonic one flows
       from left-to-right.
   }
@@ -643,7 +643,7 @@ without requiring the integrator to possess dense output capabilities.
 \lstinputlisting[language=Octave,label=lst:octave_nozzle_qoi,float,
                  caption={\texttt{nozzle\_qoi.m}: A kernel computing several
                  quantities of interest}]
-                {notebooks/nozzle_qoi.m}
+                {notebooks/radialflow_qoi.m}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Producing a flow matching given boundary layer edge conditions}
@@ -868,7 +868,7 @@ Listings~\ref{lst:octave_nozzle} and~\ref{lst:octave_nozzle_qoi} as shown.
 \lstinputlisting[language=Octave,label=lst:octave_nozzle_match,
                  caption={\texttt{nozzle\_match.m}: Match specified boundary
                  layer edge quantities}]
-                {notebooks/nozzle_match.m}
+                {notebooks/radialflow_match.m}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Example: Matching CEV heat shield laminar boundary layer conditions}

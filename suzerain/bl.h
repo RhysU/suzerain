@@ -449,7 +449,7 @@ suzerain_bl_compute_qoi(
  *
  * One notable exception is \f$p_{e,x}^\ast\f$ which is motivated by the radial
  * nozzle problem implemented in \ref radialflow.h and discussed at length
- * in <tt>writeups/baseflow.tex</tt>.
+ * in <tt>writeups/radialflow.tex</tt>.
  */
 typedef struct suzerain_bl_pg {
     double Clauser;      /**< The Clauser parameter \f$\beta =

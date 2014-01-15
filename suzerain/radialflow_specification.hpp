@@ -35,7 +35,7 @@ namespace suzerain {
 /**
  * Encapsulates the non-scenario parameters necessary when invoking \ref
  * suzerain_radialflow_qoi_match(). See \ref radialflow.h for how to interpret
- * these settings and baseflow.tex for a writeup on the general problem class.
+ * these settings and radialflow.tex for a writeup on the general problem class.
  */
 class radialflow_specification
 {

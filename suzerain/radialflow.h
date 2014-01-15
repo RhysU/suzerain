@@ -31,7 +31,7 @@
  * isenthalpic flows in nondimensional primitive variables. Use \ref
  * suzerain_radialflow_solver to produce a \ref suzerain_radialflow_solution.
  *
- * @see Model documentation in <tt>writeups/baseflow.tex</tt> for details.
+ * @see Model documentation in <tt>writeups/radialflow.tex</tt> for details.
  */
 
 #ifdef __cplusplus
@@ -124,7 +124,7 @@ typedef struct suzerain_radialflow_solution {
  *         subsequently <tt>free</tt>ing the returned pointer.
  *         On failure calls \ref suzerain_error() and returns \c NULL.
  *
- * @see Model documentation in <tt>writeups/baseflow.tex</tt> for details.
+ * @see Model documentation in <tt>writeups/radialflow.tex</tt> for details.
  */
 suzerain_radialflow_solution *
 suzerain_radialflow_solver(
@@ -149,7 +149,7 @@ suzerain_radialflow_solver(
  *
  * @return\f$\delta=\sqrt{R_i^2 - R_0^2}\f$.
  *
- * @see Model documentation in <tt>writeups/baseflow.tex</tt> for details.
+ * @see Model documentation in <tt>writeups/radialflow.tex</tt> for details.
  */
 double
 suzerain_radialflow_delta(
@@ -181,7 +181,7 @@ suzerain_radialflow_delta(
  *
  * @return \f$\mbox{Ma}_e\f$ computed using described geometric assumptions.
  *
- * @see Model documentation in <tt>writeups/baseflow.tex</tt> for details.
+ * @see Model documentation in <tt>writeups/radialflow.tex</tt> for details.
  */
 double
 suzerain_radialflow_qoi_Mae(
@@ -225,7 +225,7 @@ suzerain_radialflow_qoi_Mae(
  *
  * @return \f$p^\ast_{e,\xi}\f$ computed using described geometric assumptions.
  *
- * @see Model documentation in <tt>writeups/baseflow.tex</tt> for details.
+ * @see Model documentation in <tt>writeups/radialflow.tex</tt> for details.
  *
  */
 double
@@ -258,7 +258,7 @@ suzerain_radialflow_qoi_pexi(
  *
  * @return \f$\mbox{T}_e\f$ computed using described assumptions.
  *
- * @see Model documentation in <tt>writeups/baseflow.tex</tt> for details.
+ * @see Model documentation in <tt>writeups/radialflow.tex</tt> for details.
  */
 double
 suzerain_radialflow_qoi_Te(
@@ -290,7 +290,7 @@ suzerain_radialflow_qoi_Te(
  * @return SUZERAIN_SUCCESS (zero) on success and nonzero on failure.
  *         On failure, all output values are additionally set to NaN.
  *
- * @see Model documentation in <tt>writeups/baseflow.tex</tt> for details.
+ * @see Model documentation in <tt>writeups/radialflow.tex</tt> for details.
  */
 int
 suzerain_radialflow_qoi_match(
@@ -335,7 +335,7 @@ suzerain_radialflow_qoi_match(
  * @param[out] p_y    Result \f$\frac{\partial}{\partial{}y} p    \f$
  * @param[out] a_y    Result \f$\frac{\partial}{\partial{}y} a    \f$
  *
- * @see Model documentation in <tt>writeups/baseflow.tex</tt> for details.
+ * @see Model documentation in <tt>writeups/radialflow.tex</tt> for details.
  */
 void
 suzerain_radialflow_cartesian_primitive(

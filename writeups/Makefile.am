@@ -3,7 +3,7 @@
 # LaTeX and BiBTeX source files
 
 # Standalone LaTeX documents
-TEXSOURCES  = baseflow.tex
+TEXSOURCES  = radialflow.tex
 TEXSOURCES += channel_treatment.tex
 TEXSOURCES += covariance.tex
 TEXSOURCES += L2.tex
@@ -29,7 +29,7 @@ reacting_TEXSOURCES += reacting_inputs/transfer_function.eps
 reacting_main.dvi reacting_main.pdf: $(reacting_TEXSOURCES)
 perfectgas.dvi perfectgas.pdf: perfectgas.tex
 perfectgas.dvi perfectgas.pdf: inhomogeneity1.eps inhomogeneity2.eps
-baseflow.dvi   baseflow.pdf:   nozzle_subsonic.eps nozzle_supersonic.eps
+baseflow.dvi   radialflow.pdf:   nozzle_subsonic.eps nozzle_supersonic.eps
 
 # Images, Source Data, References, etc.
 EXTRA_DIST  = cev_summary1.eps cev_summary2.eps cev_summary_fpg.eps
