@@ -618,14 +618,15 @@ edge temperature nondimensionalized using $a_0^2=\gamma_{0}RT_0$,
 \label{eq:Tedef}
 ,
 \end{align}
-may also be of interest when evaluated for $\Mach = \Mach[e]$.  Preserving a
-strictly positive specific total energy $E$ can be a concern when dictating
-$T_e$ as combining~\eqref{eq:constant_specific_stagnation_enthalpy} when
+may also be of interest when evaluated for $\Mach = \Mach[e]$.  Producing a
+realizable specific total energy $E$ can be a concern when dictating $T_e$ in
+this manner as combining~\eqref{eq:constant_specific_stagnation_enthalpy} when
 nondimensionalized by $a_0^2$ with the constant-by-assumption $H =
 E\!\left(R\right) + p\!\left(R\right)/\rho\!\left(R\right)$ shows that
-realizability requires
 \begin{align}
-    T\!\left(R\right) &< \gamma_0 \Mach^2 \left(
+    E\!\left(R\right)>0
+&\implies
+    T\!\left(R\right) < \gamma_0 \Mach^2 \left(
       \frac{1}{2} + \frac{1}{\Mach[0]^2\left(\gamma_0 - 1\right)}
          \right)
 \label{eq:Terestrict}
@@ -855,7 +856,7 @@ matching base flow may be produced as follows:
     \item Arbitrarily choose $\rho\!\left(R\right) = 1$.
     \item If reproducing some ideal $T_e$ is desired,
         fix $p\!\left(R\right)$ using~\eqref{eq:Tedef}
-        noting~\eqref{eq:Terestrict}. Otherwise, use 1.
+        checking~\eqref{eq:Terestrict}. Otherwise, use 1.
 \end{enumerate}
 Logic performing these steps appears in Listing~\ref{lst:octave_nozzle_match}.
 The resulting parameters and initial conditions may be integrated from $R$ to
