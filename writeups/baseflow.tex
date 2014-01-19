@@ -1,0 +1,78 @@
+\documentclass[letterpaper,11pt,nointlimits,reqno]{amsart}
+\pagestyle{headings}
+
+% Packages
+\usepackage{accents}
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage{caption}
+\usepackage{enumerate}
+\usepackage{fancyhdr}
+\usepackage[final]{graphicx}
+\usepackage{fullpage}
+\usepackage{lastpage}
+\usepackage{listings}
+\usepackage{longtable}
+\usepackage{mathrsfs}
+\usepackage{mathtools}
+\usepackage[numbers,sort&compress]{natbib}
+\usepackage[usenames,dvipsnames,svgnames,table]{xcolor}
+
+% Avoids xcolor options clashes
+\usepackage{pgfplotstable}
+
+% In conjunction with -shell-escape, automatically convert EPS to PDF
+\usepackage{epstopdf}
+\epstopdfsetup{outdir=./,suffix=-generated,update,verbose}
+\epstopdfDeclareGraphicsRule{.eps}{pdf}{.pdf}{%
+    epstopdf --outfile=\OutputFile \space `kpsewhich \space "\SourceFile"`
+}
+
+% Hyperref package must be last otherwise the contents are jumbled
+% hypertexnames disabled to fix links pointing to incorrect locations
+\usepackage[hypertexnames=false,final]{hyperref}
+
+\mathtoolsset{showonlyrefs,showmanualtags}
+% \allowdisplaybreaks[1] % Allow grouped equations to be split across pages
+
+% Document-specific commands
+\newcommand{\Mach}[1][]{\mbox{Ma}_{#1}}
+
+% Configure inline code listings
+\lstset{
+  basicstyle=\footnotesize\sffamily,
+  columns=fixed,
+  commentstyle=\color{blue},
+  firstnumber=1,
+  frame=single,
+  keepspaces=true,
+  numbersep=7pt,
+  numbers=left,
+  numberstyle=\tiny\color{darkgray},
+  showstringspaces=false,
+  showtabs=false,
+  stepnumber=5
+}
+
+\begin{document}
+
+\title{Base flow computations}
+\author{Rhys Ulerich}
+
+\begin{abstract}
+TODO
+\end{abstract}
+
+\maketitle
+
+\tableofcontents
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{The nondimensional, compressible, isenthalpic potential flow equation}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\newcommand*{\doi}[1]{\href{http://dx.doi.org/\detokenize{#1}}{doi: #1}}
+\bibliographystyle{plainnat}
+\bibliography{references}
+
+\end{document}

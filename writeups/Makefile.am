@@ -3,7 +3,7 @@
 # LaTeX and BiBTeX source files
 
 # Standalone LaTeX documents
-TEXSOURCES  = radialflow.tex
+TEXSOURCES  = baseflow.tex
 TEXSOURCES += channel_treatment.tex
 TEXSOURCES += covariance.tex
 TEXSOURCES += L2.tex
@@ -12,6 +12,7 @@ TEXSOURCES += perfectgas.tex
 TEXSOURCES += plate_treatment.tex
 TEXSOURCES += skewadjoint.tex
 TEXSOURCES += smr91.tex
+TEXSOURCES += radialflow.tex
 TEXSOURCES += twopoint.tex
 
 # Reacting doc broken out amongst many srcs.
