@@ -71,6 +71,111 @@ TODO
 \section{The nondimensional, compressible, isenthalpic potential flow equation}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+The nondimensional Euler equations governing a steady ideal gas flow may be written
+\begin{align}
+  \label{eq:continuity}
+  0
+&=
+  - \nabla\cdot\rho{}\vec{u}
+  \\
+  \label{eq:momentum}
+  0
+&=
+  - \nabla\cdot(\vec{u}\otimes\rho{}\vec{u})
+  - \frac{1}{\Mach^{2}} \nabla{} p
+  \\
+  \label{eq:energy}
+  0
+&=
+  - \nabla\cdot\rho{}H\vec{u}
+\end{align}
+by defining $\Mach = \frac{u_{0}}{a_{0}}$ along with the following
+relationships:
+\begin{align}
+  \label{eq:eos}
+  H &= \frac{a^2}{\gamma-1} + \frac{\Mach^2}{2}\vec{u}^2
+     = E + \frac{p}{\rho}
+  &
+  a^2 &= T
+  &
+  \rho &= \frac{\gamma{} p}{T}
+\end{align}
+In a steady, irrotational flow the momentum equation yields
+\begin{align}
+    \vec{\nabla}p
+    &= - \Mach^2 \rho \vec{u}\cdot\vec{\nabla}\vec{u}
+     = - \Mach^2 \rho \left(
+           \frac{1}{2}\vec{\nabla}\left(\vec{u}\cdot\vec{u}\right)
+         - \vec{u}\times\vec{\nabla}\times\vec{u}
+        \right)
+     = - \frac{\Mach^2}{2} \rho \vec{\nabla}\vec{u}^2
+.
+\label{eq:irrot_momentum}
+\end{align}
+The irrotational velocity may be replaced by the gradient of a scalar
+potential, \emph{viz.}
+\begin{align}
+  \vec{u} = \vec{\nabla}\phi + \vec{\nabla}\times\vec{A} = \vec{\nabla}{\phi}
+  .
+\end{align}
+However, velocity potential notation is here suppressed.  Assume an
+isenthalpic flow wherein total specific enthalpy $H$ is constant.  Clearly the
+energy equation degenerates to the continuity equation in this circumstance and
+is of no further interest. Rearranging~\eqref{eq:eos},
+\begin{align}
+  T &= \left(\gamma-1\right)\left(H - \frac{\Mach^2}{2}\vec{u}^2\right),
+  \label{eq:T}
+\end{align}
+followed by differentiating under the assumption $\vec{\nabla}H=0$,
+\begin{align}
+  \vec{\nabla} T &= -\left(\gamma-1\right)\frac{\Mach^2}{2}\vec{\nabla}\vec{u}^2.
+  \label{eq:isen_gradT}
+\end{align}
+Comparing just above with~\eqref{eq:irrot_momentum}, notice
+\begin{align}
+  \vec{\nabla}p &= \frac{\rho}{\gamma-1}\vec{\nabla}T.
+  \label{irrot_momentum_stag}
+\end{align}
+Differentiating $\rho$ from~\eqref{eq:eos},
+substituting~\eqref{irrot_momentum_stag}, simplifying,
+and applying~\eqref{eq:isen_gradT},
+\begin{align}
+  \vec{\nabla}\rho
+  &=
+  \frac{\gamma}{T} \vec{\nabla}p
+  -
+  \frac{\gamma p}{T^2} \vec{\nabla}T
+\\&=
+  \frac{\gamma}{T} \frac{\rho}{\gamma-1} \vec{\nabla}T
+  -
+  \frac{\rho}{T} \vec{\nabla}T
+\\&=
+  \frac{\rho}{T}
+  \frac{1}{\gamma-1}
+  \vec{\nabla}T
+\\&=
+  -
+  \frac{\rho}{T}
+  \frac{\Mach^2}{2}\vec{\nabla}\vec{u}^2.
+\end{align}
+Expanding~\eqref{eq:continuity}, rearranging, and using the prior result,
+\begin{align}
+  \vec{\nabla}\cdot\vec{u}
+  &= -\vec{u}\cdot\frac{1}{\rho}\vec{\nabla}\rho
+\\
+  &= \vec{u}\cdot \frac{\Mach^2}{2T}\vec{\nabla}\vec{u}^2.
+\end{align}
+Applying~\eqref{eq:T}, one finally arrives at a velocity equation depending
+only on constants $\gamma$, $\Mach$, and $H$,
+\begin{align}
+  \vec{\nabla}\cdot\vec{u}
+  &= \frac{\Mach^2 \vec{u}\cdot \vec{\nabla}\vec{u}^2}
+          {\left(\gamma-1\right)\left(2H - \Mach^2 \vec{u}^2\right)}.
+\end{align}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 \newcommand*{\doi}[1]{\href{http://dx.doi.org/\detokenize{#1}}{doi: #1}}
 \bibliographystyle{plainnat}
 \bibliography{references}
