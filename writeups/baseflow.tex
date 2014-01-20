@@ -271,6 +271,56 @@ Likewise~\eqref{eq:p_nondim} simplifies to
 Notice~\eqref{eq:cpfradial_nondim_ode} easily supplies $u'$ for the computation
 of both $\rho$ and $p$.
 
+Any radially symmetric solution may be translated into Cartesian coordinates.
+Assume a solution $u\!\left(r\right)$ with accompanying $\rho\!\left(r\right)$,
+$p\!\left(r\right)$, $a\!\left(r\right)$ and $T\!\left(r\right)$ is valid for
+any $r\in\left[r_1,r_2\right]$.  Then for some $\left(x,y\right)$ and
+corresponding $r=\sqrt{x^2+y^2}$ one may compute the following:
+%
+\begin{align}
+              \rho \!\left(x, y\right) &= \rho\!\left(r\right)
+ & \partial_x \rho                     &= \frac{x}{r} \rho^\prime\!\left(r\right)
+ & \partial_y \rho                     &= \frac{y}{r} \rho^\prime\!\left(r\right)
+\\            u_x  \!\left(x, y\right) &= u   \!\left(r\right) \frac{x}{r}
+ & \partial_x u_x                      &= \frac{1}{r^2}\left[x^2 u^\prime\!\left(r\right) + \frac{y^2}{r} u\!\left(r\right)\right]
+ & \partial_y u_x                      &= \frac{xy}{r^2}\left[u^\prime\!\left(r\right) - \frac{1}{r}u\!\left(r\right)\right]
+\\            u_y  \!\left(x, y\right) &= u   \!\left(r\right) \frac{y}{r}
+ & \partial_x u_y                      &= \frac{xy}{r^2}\left[u^\prime\!\left(r\right) - \frac{1}{r}u\!\left(r\right)\right]
+ & \partial_y u_y                      &= \frac{1}{r^2}\left[y^2 u^\prime\!\left(r\right) + \frac{x^2}{r} u\!\left(r\right)\right]
+\\            p    \!\left(x, y\right) &=  p   \!\left(r\right)
+ & \partial_x p                        &= \frac{x}{r} p^\prime\!\left(r\right)
+ & \partial_y p                        &= \frac{y}{r} p^\prime\!\left(r\right)
+\\            a    \!\left(x, y\right) &=  a   \!\left(r\right)
+ & \partial_x a                        &= \frac{1-\gamma}{2}\frac{x}{r}\frac{\Mach^2\,u\!\left(r\right)}{a\!\left(r\right)} u^\prime\!\left(r\right)
+ & \partial_y a                        &= \frac{1-\gamma}{2}\frac{y}{r}\frac{\Mach^2\,u\!\left(r\right)}{a\!\left(r\right)} u^\prime\!\left(r\right)
+\end{align}
+%
+A solution translated in this manner should produce a zero residual for the
+primitive Euler equations written in Cartesian coordinates:
+%
+\begin{align}
+  \begin{bmatrix} 0 \\ 0 \\ 0 \\ 0 \end{bmatrix}
+&=
+  \begin{bmatrix}
+     u_x  &  \rho      &  0    &  0                    \\
+     0    &  u_x       &  0    &  \rho^{-1}\Mach^{-2}  \\
+     0    &  0         &  u_x  &  0                    \\
+     0    &  \rho{}a^2 &  0    &  u_x
+  \end{bmatrix}
+  \partial_x
+  \begin{bmatrix} \rho \\ u_x \\ u_y \\ p \end{bmatrix}
++
+  \begin{bmatrix}
+     u_y  &  0    &  \rho       &  0                    \\
+     0    &  u_y  &  0          &  0                    \\
+     0    &  0    &  u_y        &  \rho^{-1}\Mach^{-2}  \\
+     0    &  0    &  \rho{}a^2  &  u_y
+  \end{bmatrix}
+  \partial_y
+  \begin{bmatrix} \rho \\ u_x \\ u_y \\ p \end{bmatrix}
+\end{align}
+%
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \newcommand*{\doi}[1]{\href{http://dx.doi.org/\detokenize{#1}}{doi: #1}}
