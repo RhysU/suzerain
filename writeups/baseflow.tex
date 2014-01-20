@@ -72,10 +72,11 @@ TODO
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 A succinct, coordinate-independent derivation of the velocity-potential
-formulation of the compressible potential isenthalpic flow equations appears in
-section II.A of \citet{Saad2011Coordinate}.  Their presentation essentially is
-recounted here with an increase in emphasis on temperature rather than sound
-speed. Wherever necessary, sufficient smoothness is assumed.
+formulation of the compressible, potential isenthalpic flow equations appears
+in section II.A of \citet{Saad2011Coordinate}.  Their presentation essentially
+is recounted here but in a nondimensional setting with a slightly larger
+emphasis on the role of temperature. Wherever necessary, sufficient smoothness
+is assumed.
 
 The nondimensional Euler equations governing a steady ideal gas flow may be written
 \begin{align}
@@ -165,7 +166,8 @@ and applying~\eqref{eq:isen_gradT},
   \frac{\Mach^2}{2}\vec{\nabla}\vec{u}^2.
   \label{eq:rho}
 \end{align}
-Expanding~\eqref{eq:continuity}, rearranging, and using the prior result,
+Expanding~\eqref{eq:continuity}, rearranging, and using the prior statement
+about $\vec{\nabla}\rho$,
 \begin{align}
   \vec{\nabla}\cdot\vec{u}
   &= -\vec{u}\cdot\frac{1}{\rho}\vec{\nabla}\rho
@@ -180,6 +182,8 @@ only on constants $\gamma$, $\Mach$, and $H$,
           {\left(\gamma-1\right)\left(2H - \Mach^2 \vec{u}^2\right)}.
   \label{eq:gibbsresult}
 \end{align}
+This result is a nondimensional analogue of \citeauthor{Saad2011Coordinate}'s
+equation~(17).
 
 With some $\vec{u}=\vec{\nabla}\phi$ satisfying~\eqref{eq:gibbsresult} in hand,
 computing local $T$, $a$, $p$ and $\rho$ is often of interest.  Temperature $T$
@@ -266,7 +270,6 @@ Likewise~\eqref{eq:p_nondim} simplifies to
 \end{align}
 Notice~\eqref{eq:cpfradial_nondim_ode} easily supplies $u'$ for the computation
 of both $\rho$ and $p$.
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
