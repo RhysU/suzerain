@@ -74,7 +74,8 @@ TODO
 A succinct, coordinate-independent derivation of the velocity-potential
 formulation of the compressible potential isenthalpic flow equations appears in
 section II.A of \citet{Saad2011Coordinate}.  Their presentation essentially is
-recounted here.  Wherever necessary, sufficient smoothness is assumed.
+recounted here with an increase in emphasis on temperature rather than sound
+speed. Wherever necessary, sufficient smoothness is assumed.
 
 The nondimensional Euler equations governing a steady ideal gas flow may be written
 \begin{align}
@@ -105,7 +106,7 @@ relationships:
   &
   \rho &= \frac{\gamma{} p}{T}
 \end{align}
-In a steady, irrotational flow the momentum equation yields
+In an irrotational flow the momentum equation yields
 \begin{align}
     \vec{\nabla}p
     &= - \Mach^2 \rho \vec{u}\cdot\vec{\nabla}\vec{u}
@@ -121,10 +122,12 @@ potential, \emph{viz.}
 \begin{align}
   \vec{u} = \vec{\nabla}\phi + \vec{\nabla}\times\vec{A} = \vec{\nabla}{\phi}.
 \end{align}
-However, velocity potential notation is here suppressed. Assume now an
-isenthalpic flow wherein total specific enthalpy $H$ is everywhere constant.
-Clearly the energy equation degenerates to the continuity equation in this
-circumstance and is of no further interest. Rearranging~\eqref{eq:eos},
+However, velocity potential notation is here suppressed.
+
+Assume now an isenthalpic flow wherein total specific enthalpy $H$ is
+everywhere constant. Clearly, in these circumstances, the energy equation
+degenerates to the continuity equation and so it merits no further interest.
+Rearranging~\eqref{eq:eos},
 \begin{align}
   T &= \left(\gamma-1\right)\left(H - \frac{\Mach^2}{2}\vec{u}^2\right),
   \label{eq:T}
@@ -160,6 +163,7 @@ and applying~\eqref{eq:isen_gradT},
   -
   \frac{\rho}{T}
   \frac{\Mach^2}{2}\vec{\nabla}\vec{u}^2.
+  \label{eq:rho}
 \end{align}
 Expanding~\eqref{eq:continuity}, rearranging, and using the prior result,
 \begin{align}
@@ -177,6 +181,35 @@ only on constants $\gamma$, $\Mach$, and $H$,
   \label{eq:gibbsresult}
 \end{align}
 
+With some $\vec{u}=\vec{\nabla}\phi$ satisfying~\eqref{eq:gibbsresult} in hand,
+computing local $T$, $a$, $p$ and $\rho$ is often of interest.  Temperature $T$
+and sound speed $a$ may be computed pointwise from~\eqref{eq:T}
+and~\eqref{eq:eos}. The gradient of pressure is implied
+by~\eqref{eq:irrot_momentum} while reworking~\eqref{eq:rho} shows
+\begin{align}
+  \vec{\nabla}\log\rho
+  &=
+  -\frac{\Mach^2}{2T}\vec{\nabla}\vec{u}^2.
+\end{align}
+Integral statements may be made about $p$ and $\rho$ by investigating some
+domain $\Omega$ and applying a corollary of Gauss' theorem:
+\begin{align}
+  \int_{\partial\Omega} \log\rho \, \mathrm{d}S
+  &=
+  - \frac{\Mach^2}{2}\int_{\Omega}
+    \frac{\vec{\nabla}\vec{u}^2}{T} \, \mathrm{d}x
+  \label{eq:logrho_nondim}
+\\
+  \int_{\partial\Omega} p \, \mathrm{d}S
+  &=
+  - \frac{\Mach^2}{2}\int_{\Omega} \rho \vec{\nabla}\vec{u}^2 \, \mathrm{d}x
+  \label{eq:p_nondim}
+\end{align}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Reduction to the radially symmetric, two-dimensional case}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 Suppose a two-dimensional domain possessing radial symmetry so that
 $\vec{u}={u}\!\left(r\right)\hat{r}$. Then~\eqref{eq:gibbsresult} is nothing
 but the scalar equation
@@ -186,6 +219,53 @@ but the scalar equation
           {\left(\gamma-1\right)\left(2H - \Mach^2 u^2\!\left(r\right)\right)}.
 \end{align}
 Suppressing the dependence of $u$ on $r$ and collecting $u^\prime$ terms,
+\begin{align}
+  u^\prime
+  &=
+  \frac{u}{r}
+  \cdot
+  \frac{\left(\gamma-1\right)2H - \left(\gamma-1\right)\Mach^2 u^2}
+       {\left(\gamma+1\right)\Mach^2 u^2 - \left(\gamma-1\right)2H}
+  \label{eq:cpfradial_nondim_ode}.
+\end{align}
+The univariate ordinary differential equation~\eqref{eq:cpfradial_nondim_ode}
+permits integrating $u$ across $r\in\left[r_1, r_2\right]$ given a boundary
+condition on either radius $r_1$ or $r_2$.  Temperature $T$ and sound speed $a$
+remain pointwise-dependent on $u$ given $\gamma$, $\Mach$, and $H$. The
+symmetry assumption reduces~\eqref{eq:logrho_nondim} to
+\begin{align}
+  \rho\!\left(r_2\right)
+  &=
+  \exp\left[
+    - \frac{\Mach^2}{2} \int_{r_1}^{r_2}
+        \frac{\left(u^2\right)'}{T}
+      \, r \, \mathrm{d}r
+    + \log\rho\!\left(r_1\right)
+  \right]
+   =
+  \rho\!\left(r_1\right) \exp\left[
+    - \Mach^2 \int_{r_1}^{r_2}
+        \frac{u u'}{T}
+      \, r \, \mathrm{d}r
+  \right]
+\label{eq:cpfradial_nondim_rho}
+\end{align}
+where the $2\pi$ factors arising from integrating cancel each other.
+Likewise~\eqref{eq:p_nondim} simplifies to
+\begin{align}
+  p\!\left(r_2\right)
+  &=
+    - \frac{\Mach^2}{2} \int_{r_1}^{r_2}
+        \rho \left(u'\right)^2
+      \, r \, \mathrm{d}r
+    + p\!\left(r_1\right)
+   =
+    -\Mach^2 \int_{r_1}^{r_2} \rho u u' \, r \, \mathrm{d}r
+      + p\!\left(r_1\right)
+\label{eq:cpfradial_nondim_p}.
+\end{align}
+Notice~\eqref{eq:cpfradial_nondim_ode} easily supplies $u'$ for the computation
+of both $\rho$ and $p$.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
