@@ -71,6 +71,12 @@ TODO
 \section{The nondimensional, compressible, isenthalpic potential flow equation}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+A succinct, coordinate-independent derivation of the velocity-potential
+formulation of the compressible potential isenthalpic flow equations appears in
+section II.A of \citet{Saad2011Coordinate}.  Their presentation essentially is
+recounted here but velocity potential notation is suppressed.  Wherever
+necessary, sufficient smoothness is assumed.
+
 The nondimensional Euler equations governing a steady ideal gas flow may be written
 \begin{align}
   \label{eq:continuity}
@@ -116,10 +122,10 @@ potential, \emph{viz.}
 \begin{align}
   \vec{u} = \vec{\nabla}\phi + \vec{\nabla}\times\vec{A} = \vec{\nabla}{\phi}.
 \end{align}
-However, velocity potential notation is here suppressed.  Assume an isenthalpic
-flow wherein total specific enthalpy $H$ is constant.  Clearly the energy
-equation degenerates to the continuity equation in this circumstance and is of
-no further interest. Rearranging~\eqref{eq:eos},
+Assume now an isenthalpic flow wherein total specific enthalpy $H$ is
+everywhere constant. Clearly the energy equation degenerates to the continuity
+equation in this circumstance and is of no further interest.
+Rearranging~\eqref{eq:eos},
 \begin{align}
   T &= \left(\gamma-1\right)\left(H - \frac{\Mach^2}{2}\vec{u}^2\right),
   \label{eq:T}
@@ -172,7 +178,7 @@ only on constants $\gamma$, $\Mach$, and $H$,
   \label{eq:gibbsresult}
 \end{align}
 
-Assume a two-dimensional domain possessing radial symmetry so that
+Suppose a two-dimensional domain possessing radial symmetry so that
 $\vec{u}={u}\!\left(r\right)\hat{r}$. Then the velocity potential
 $\vec{\nabla}\phi$ is superfluous and~\eqref{eq:gibbsresult} is nothing but the
 scalar equation
