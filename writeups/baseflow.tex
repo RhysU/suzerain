@@ -74,8 +74,7 @@ TODO
 A succinct, coordinate-independent derivation of the velocity-potential
 formulation of the compressible potential isenthalpic flow equations appears in
 section II.A of \citet{Saad2011Coordinate}.  Their presentation essentially is
-recounted here but velocity potential notation is suppressed.  Wherever
-necessary, sufficient smoothness is assumed.
+recounted here.  Wherever necessary, sufficient smoothness is assumed.
 
 The nondimensional Euler equations governing a steady ideal gas flow may be written
 \begin{align}
@@ -122,10 +121,10 @@ potential, \emph{viz.}
 \begin{align}
   \vec{u} = \vec{\nabla}\phi + \vec{\nabla}\times\vec{A} = \vec{\nabla}{\phi}.
 \end{align}
-Assume now an isenthalpic flow wherein total specific enthalpy $H$ is
-everywhere constant. Clearly the energy equation degenerates to the continuity
-equation in this circumstance and is of no further interest.
-Rearranging~\eqref{eq:eos},
+However, velocity potential notation is here suppressed. Assume now an
+isenthalpic flow wherein total specific enthalpy $H$ is everywhere constant.
+Clearly the energy equation degenerates to the continuity equation in this
+circumstance and is of no further interest. Rearranging~\eqref{eq:eos},
 \begin{align}
   T &= \left(\gamma-1\right)\left(H - \frac{\Mach^2}{2}\vec{u}^2\right),
   \label{eq:T}
@@ -179,9 +178,14 @@ only on constants $\gamma$, $\Mach$, and $H$,
 \end{align}
 
 Suppose a two-dimensional domain possessing radial symmetry so that
-$\vec{u}={u}\!\left(r\right)\hat{r}$. Then the velocity potential
-$\vec{\nabla}\phi$ is superfluous and~\eqref{eq:gibbsresult} is nothing but the
-scalar equation
+$\vec{u}={u}\!\left(r\right)\hat{r}$. Then~\eqref{eq:gibbsresult} is nothing
+but the scalar equation
+\begin{align}
+  \frac{1}{r}u\!\left(r\right) + u^\prime\!\left(r\right)
+  &= \frac{2 \Mach^2 u^2\!\left(r\right) u^\prime\!\left(r\right)}
+          {\left(\gamma-1\right)\left(2H - \Mach^2 u^2\!\left(r\right)\right)}.
+\end{align}
+Suppressing the dependence of $u$ on $r$ and collecting $u^\prime$ terms,
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
