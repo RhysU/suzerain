@@ -4,15 +4,17 @@
 pkg load dataframe
 d = dataframe('cev_laminar.in');
 
-% Solve each problems with delta fixed to be one
-[R0 Ma0 u1 rho1 p1] = cellfun(@radialflow_match,                        ...
-                              num2cell(ones(rows(d),1)),                ...
-                              num2cell(d.gamma_e), num2cell(d.Ma_edge), ...
-                              num2cell(d.p_exi), num2cell(d.T_ratio),   ...
-                              'UniformOutput', 1);
+% Solve each problem with delta fixed to be one
+[Ma0 R0 R uR rhoR pR] = cellfun(@radialflow_match,
+                                num2cell(ones(rows(d),1)),
+                                num2cell(d.gamma_e),
+                                num2cell(d.Ma_edge),
+                                num2cell(d.p_exi),
+                                num2cell(d.T_ratio),
+                                'UniformOutput', 1);
 
 % Place the output into a new dataframe
-s = dataframe([], R0, Ma0, u1, rho1, p1);
+s = dataframe([], Ma0, R0, R, uR, rhoR, pR);
 
 % Save input with appended results into a new CSV-with-header file
 f = fopen('cev_laminar.out','w');
