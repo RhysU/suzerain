@@ -84,7 +84,7 @@ of laminar CEV heat shield conditions.
 \tableofcontents
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{The nondimensional, compressible, isenthalpic potential flow equation}
+\section{The compressible, isenthalpic potential flow equations}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 A succinct, coordinate-independent derivation of the velocity-potential
@@ -140,28 +140,28 @@ equation may only be satisfied when
 \end{align}
 
 Following \citeauthor{Saad2011Coordinate}, the specific total enthalpy is
-assumed to be invariant through the flow to connect $a$ and $u$ with a
-reference specific enthalpy $h_0 = a_0^2 / \left(\gamma_0-1\right)$ and
-reference velocity $u_0$.  That is,
+assumed to be invariant flow to connect $a$ and $u$ with a reference specific
+enthalpy $h_0 = \frac{\theta a_0^2}{\gamma_0-1}$ given fixed
+$\theta\in\mathbb{R}^{+}$ and a reference velocity $u_0$.  That is,
 \begin{align}
      H
      &=
-        \frac{a^2  }{\gamma  -1} + \frac{1}{2} \vec{u}^2
-      = \frac{a_0^2}{\gamma_0-1} + \frac{1}{2} u_0^2
+        \frac{       a^2  }{\gamma  -1}       + \frac{1}{2} \vec{u}^2
+      = \frac{\theta a_0^2}{\gamma_0-1} + \frac{1}{2} u_0^2
       =  H_0
 \label{eq:constant_specific_stagnation_enthalpy}
 \end{align}
 holds everywhere.  As specific total energy $E$ must be strictly positive, from
 $H = E + p / \rho$ it follows
 \begin{align}
-    \frac{p}{\rho} &< \frac{a_0^2}{\gamma-1} + \frac{1}{2}u_0^2
+    \frac{p}{\rho} &< \frac{\theta a_0^2}{\gamma-1} + \frac{1}{2}u_0^2
 \label{eq:constant_specific_stagnation_enthalpy_realizablity}
 \end{align}
 is necessary for realizability. After a rearrangement, constant
 stagnation enthalpy condition~\eqref{eq:constant_specific_stagnation_enthalpy},
 \begin{align}
         a^2
-     &=   \frac{\gamma-1}{\gamma_0-1} a_0^2
+     &=   \frac{\gamma-1}{\gamma_0-1} \theta a_0^2
         + \frac{\gamma-1}{2} \left(u_0^2 - \vec{u}^2\right)
 \label{eq:stagnation_sound}
 ,
@@ -170,7 +170,7 @@ may be used within equation \eqref{eq:momentum_and_continuity} to obtain
 \begin{align}
        \vec{u}\cdot \vec{\nabla}\vec{u}^2
     &= \left[
-          2 \frac{\gamma-1}{\gamma_0-1} a_0^2
+          2 \frac{\gamma-1}{\gamma_0-1} \theta a_0^2 
         + \left(\gamma-1\right) \left(u_0^2 - \vec{u}^2\right)
        \right]\vec{\nabla}\cdot\vec{u}
 .
@@ -179,12 +179,16 @@ Adding a constant $\gamma=\gamma_0$ assumption, one finds the dimensional result
 \begin{align}
        \vec{u}\cdot \vec{\nabla}\vec{u}^2
     &= \left[
-          2 a_0^2
+          2 \theta a_0^2
         + \left(\gamma_0-1\right) \left(u_0^2 - \vec{u}^2\right)
        \right]\vec{\nabla}\cdot\vec{u}
 \label{eq:cpfgibbs_dim}
 .
 \end{align}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{A nondimensionalization of the governing equations}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 To nondimensionalize, choose some reference length $l_0$ and declare
 \begin{align}
@@ -203,7 +207,7 @@ into~\eqref{eq:cpfgibbs_dim},
        \vec{u}^\ast \cdot \vec{\nabla}^\ast{\vec{u}^\ast}^2
     &=
        \left[
-          2 a_0^2
+          2 \theta a_0^2
         + \Mach[0]{}^2 a_0^2 \left(\gamma_0-1\right) \left(1 - {\vec{u}^\ast}^2\right)
        \right]
        \,
@@ -215,7 +219,7 @@ into~\eqref{eq:cpfgibbs_dim},
        \frac{\Mach[0]{}^3 a_0^3}{l_0}
        \,
        \left[
-          \frac{2}{\Mach[0]{}^2}
+          \frac{2\theta}{\Mach[0]{}^2}
         + \left(\gamma_0-1\right) \left(1 - {\vec{u}^\ast}^2\right)
        \right]
        \vec{\nabla}^\ast\cdot\vec{u}^\ast
@@ -226,7 +230,7 @@ Rescaling and dropping the star notation, one finally arrives at
        \vec{u} \cdot \vec{\nabla}\vec{u}^2
     &=
        \left[
-          2 \Mach[0]{}^{-2}
+          2 \theta \Mach[0]{}^{-2}
         + \left(\gamma_0-1\right) \left(1 - \vec{u}^2\right)
        \right]
        \vec{\nabla}\cdot\vec{u}
@@ -239,19 +243,31 @@ hand, computing local $\rho$ and $p$ is often of interest.
 Nondimensionalizing~\eqref{eq:stagnation_sound} when $\gamma=\gamma_0$ permits
 direct computation of $a$ from
 \begin{align}
-  a^2 &= 1 + \Mach[0]^2\frac{\gamma_0-1}{2}\left(1-\vec{u}^2\right)
+  a^2 &= \theta + \Mach[0]^2\frac{\gamma_0-1}{2}\left(1-\vec{u}^2\right)
 \label{eq:stagnation_sound_nondim}
 \end{align}
 where clearly a realizable $a^2>0$ requires
 \begin{align}
-  u^2 &< \frac{2}{\Mach[0]^2\left(\gamma_0-1\right)} + 1
+  u^2_\text{valid} &< \frac{2\theta}{\Mach[0]^2\left(\gamma_0-1\right)} + 1
 .
 \label{eq:stagnation_sound_realizability_nondim}
 \end{align}
-Condition~\eqref{eq:constant_specific_stagnation_enthalpy_realizablity}
-restricts the relative magnitudes of $p$ and $\rho$,
+By squaring the sonic condition $\frac{u u_0}{a a_0}=1$ and solving, one
+obtains
 \begin{align}
-    \frac{p}{\rho} &< \frac{1}{\gamma_0-1} + \frac{\Mach[0]^2}{2}
+    u^2_\text{sonic}
+    &=
+    \left(\gamma_0+1\right)^{-1}
+    \left(2\theta\Mach[0]^{-2} + \gamma_0 - 1\right)
+    <
+    u^2_\text{valid}
+\label{eq:u_sonic}
+.
+\end{align}
+Condition~\eqref{eq:constant_specific_stagnation_enthalpy_realizablity}
+restricts the relative magnitudes of nondimensional $p$ and $\rho$,
+\begin{align}
+    \frac{p}{\rho} &< \frac{\theta}{\gamma_0-1} + \frac{\Mach[0]^2}{2}
 \label{eq:constant_specific_stagnation_enthalpy_realizablity_nondim}
 .
 \end{align}
@@ -288,7 +304,7 @@ over some domain $\Omega$ and applying a corollary of Gauss' theorem:
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Reduction to the radially symmetric, two-dimensional case}
+\section{Reduction to the radially symmetric, two-dimensional geometry}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 Suppose a two-dimensional domain possessing radial symmetry in which
@@ -299,7 +315,7 @@ the scalar equation
        2 u^2\!\left(r\right) u^\prime\!\left(r\right)
     &=
        \left[
-          2 \Mach[0]{}^{-2}
+          2 \theta \Mach[0]{}^{-2}
         + \left(\gamma_0-1\right) \left(1 - u^2\!\left(r\right)\right)
        \right]
        \left(
@@ -312,13 +328,13 @@ Suppressing the dependence of $u$ on $r$ and collecting $u^\prime$ terms,
        \left(
            2 u^2
          - \left[
-              2 \Mach[0]{}^{-2} + \left(\gamma_0-1\right) \left(1 - u^2\right)
+              2 \theta \Mach[0]{}^{-2} + \left(\gamma_0-1\right) \left(1 - u^2\right)
            \right]
        \right)
        u^\prime
     &=
        \left[
-          2 \Mach[0]{}^{-2} + \left(\gamma_0-1\right) \left(1 - u^2\right)
+          2 \theta \Mach[0]{}^{-2} + \left(\gamma_0-1\right) \left(1 - u^2\right)
        \right]
        r^{-1} u
 .
@@ -331,12 +347,12 @@ Solving for $u^\prime$,
        \,
        \frac{
          \left[
-            2 \Mach[0]{}^{-2} + \left(\gamma_0-1\right) \left(1 - u^2\right)
+            2 \theta \Mach[0]{}^{-2} + \left(\gamma_0-1\right) \left(1 - u^2\right)
          \right]
        }{
            2 u^2
          - \left[
-              2 \Mach[0]{}^{-2} + \left(\gamma_0-1\right) \left(1 - u^2\right)
+              2 \theta \Mach[0]{}^{-2} + \left(\gamma_0-1\right) \left(1 - u^2\right)
            \right]
        }
 \label{eq:cpfradial_nondim_ode}
@@ -396,61 +412,40 @@ and diffuser problems. Many texts, e.g.
 nozzle area changes slowly as one progresses downstream in the device.  In
 contrast, the preceding treatment permits geometries violating that assumption.
 
-A subsonic nozzle may be posed on nondimensional~$\left[R_{1}, R_{2}\right]$ by
-setting inflow per
+A subsonic nozzle may be posed on $\left[R_{1}, R_{2}\right]$ by
+making use of~\eqref{eq:u_sonic} to set either
 \begin{align}
-    -a_0 < u\!\left(l_0 R_{2}\right) u_0 < 0
-    &\implies
-    u\!\left(R_{2}\right) \in \left(-\Mach[0]^{-1}, 0\right)
-.
+    -\left|u_\text{sonic}\right| < &u\!\left(R_2\right) < 0,
+    &
+    &\text{(subsonic nozzle inflow)}
+\\
+    -\left|u_\text{sonic}\right| < &u\!\left(R_1\right) < 0.
+    &
+    &\text{(subsonic nozzle outflow)}
 \end{align}
-With this inflow, $-u$ increases and $p$ decreases when traversing the
-domain from~$R_{2}$ to~$R_{1}$.  However, not surprisingly, the problem becomes
-stiff as the flow accelerates towards sonic conditions.  A workaround is
-specifying at most a sonic outflow via
-\begin{align}
-    -a_0 < u_0 u\!\left(l_0 R_1\right) < 0
-    &\implies
-    u\!\left(R_1\right) \in \left(-\Mach[0]^{-1}, 0\right)
-\end{align}
-in conjunction with taking $R_{2}$ large enough to obtain the desired upstream
-$u\!\left(R_{2}\right)$ condition.  Further incorporating
-realizability~\eqref{eq:stagnation_sound_realizability_nondim} taking care to
-use the negative square root of $u^2$ shows
-\begin{align}
-  \max\left(
-    -\frac{1}{\Mach[0]}, -\sqrt{\frac{2}{\Mach[0]^2\left(\gamma_0-1\right)}+1}
-  \right) < &u\!\left(R_1\right) < 0
-\label{eq:cpfradial_nozzle_subsonic_bc}
-\end{align}
-is required.  Caveat numerical errors, specifying either the inflow or outflow
-condition is equivalent as the physics are frictionless.
+These conditions cause $-u$ to increase and $p$ to decrease when traversing the
+domain from~$R_{2}$ to~$R_{1}$. However, not surprisingly, the inflow problem
+becomes stiff as the flow accelerates towards the sonic condition. Caveat
+numerical errors, specifying the outflow problem with a carefully chosen $R_1$
+produces an equivalent nozzle as the physics are frictionless.
 
-A supersonic nozzle may be posed on nondimensional~$\left[R_{1}, R_{2}\right]$
-by setting inflow
+A supersonic nozzle may be posed on $\left[R_{1}, R_{2}\right]$ by additionally
+making use of~\eqref{eq:stagnation_sound_realizability_nondim} to set either
 \begin{align}
-   u_0 u\!\left(l_0 R_{1}\right) > a_0 > 0
-   &\implies
-   u\!\left(R_{1}\right) \in \left(\Mach[0]^{-1}, \infty\right)
-.
+    \left|u_\text{sonic}\right| < &u\!\left(R_1\right) < u_\text{valid},
+    &
+    &\text{(supersonic nozzle inflow)}
+\\
+    \left|u_\text{sonic}\right| < &u\!\left(R_2\right) < u_\text{valid}.
+    &
+    &\text{(supersonic nozzle outflow)}
 \end{align}
-Again incorporating
-realizability~\eqref{eq:stagnation_sound_realizability_nondim} via the positive
-square root of $u^2$,
-\begin{align}
-  \frac{1}{\Mach[0]} < &u\!\left(R_1\right)
-  < \sqrt{\frac{2}{\Mach[0]^2\left(\gamma_0-1\right)}+1}
-\label{eq:cpfradial_nozzle_supersonic_bc}
-.
-\end{align}
-With this inflow, $u$ increases and $p$ decreases when traversing the domain
-from~$R_{1}$ to~$R_{2}$.  As above, a supersonic outflow could instead be
-specified at $R_{2}$.
+These conditions cause $u$ to increase and $p$ to decrease when traversing the
+domain from~$R_{1}$ to~$R_{2}$.
 
-Working with conditions~\eqref{eq:cpfradial_nozzle_subsonic_bc}
-and~\eqref{eq:cpfradial_nozzle_supersonic_bc} on $\left[R_1, R_2\right]$ in
-conjunction with~\eqref{eq:cpfradial_nondim_ode} presents initial value
-problems amenable to solution by numerical ODE integrators.  For example,
+Working with these conditions in conjunction
+with~\eqref{eq:cpfradial_nondim_ode} presents initial value problems amenable
+to solution by numerical ODE integrators.  For example,
 \texttt{Octave}\citep{Eaton2008GNU} armed with the \texttt{odepkg} package can
 solve such problems.  One possible implementation appears in
 Listing~\ref{lst:octave_nozzle} along with verification tests.  Its demo logic
