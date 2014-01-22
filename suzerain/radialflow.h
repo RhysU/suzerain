@@ -268,7 +268,7 @@ suzerain_radialflow_qoi_Te(
 
 /**
  * Find flow state \f$u\left(R\right)$, \f$\rho\left(R\right)$, and
- * \f$p\left(R\right)$ and radial extents \f$\left[R_0, R\right]$ reproducing
+ * \f$p\left(R\right)$ and radial extents \f$\left[R_0, R\right]\f$ reproducing
  * the specified boundary layer edge parameters.
  *
  * @param[in ] delta Edge distance \f$\delta\f$ above the \f$x\f$-axis.
