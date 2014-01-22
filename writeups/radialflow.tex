@@ -151,13 +151,20 @@ reference velocity $u_0$.  That is,
       =  H_0
 \label{eq:constant_specific_stagnation_enthalpy}
 \end{align}
-holds everywhere.  After a slight rearrangement, our constant stagnation
-enthalpy condition
+holds everywhere.  As specific total energy $E$ must be strictly positive, from
+$H = E + p / \rho$ it follows
+\begin{align}
+    \frac{p}{\rho} &< \frac{a_0^2}{\gamma-1} + \frac{1}{2}u_0^2
+\label{eq:constant_specific_stagnation_enthalpy_realizablity}
+\end{align}
+is necessary for realizability. After a rearrangement, constant
+stagnation enthalpy condition~\eqref{eq:constant_specific_stagnation_enthalpy},
 \begin{align}
         a^2
      &=   \frac{\gamma-1}{\gamma_0-1} a_0^2
         + \frac{\gamma-1}{2} \left(u_0^2 - \vec{u}^2\right)
 \label{eq:stagnation_sound}
+,
 \end{align}
 may be used within equation \eqref{eq:momentum_and_continuity} to obtain
 \begin{align}
@@ -241,6 +248,13 @@ where clearly a realizable $a^2>0$ requires
 .
 \label{eq:stagnation_sound_realizability_nondim}
 \end{align}
+Condition~\eqref{eq:constant_specific_stagnation_enthalpy_realizablity}
+restricts the relative magnitudes of $p$ and $\rho$,
+\begin{align}
+    \frac{p}{\rho} &< \frac{1}{\gamma_0-1} + \frac{\Mach[0]^2}{2}
+\label{eq:constant_specific_stagnation_enthalpy_realizablity_nondim}
+.
+\end{align}
 Employing~\eqref{eq:gradrho_gradp_relationship},
 nondimensionalizing, multiplying by $l_0$, and simplifying,
 \begin{align}
@@ -271,6 +285,7 @@ over some domain $\Omega$ and applying a corollary of Gauss' theorem:
   - \frac{\Mach[0]^2}{2}\int_{\Omega} \rho \vec{\nabla}\vec{u}^2 \, \mathrm{d}x
 \label{eq:p_nondim}
 \end{align}
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Reduction to the radially symmetric, two-dimensional case}
@@ -618,14 +633,11 @@ edge temperature nondimensionalized using $a_0^2=\gamma_{0}RT_0$,
 \label{eq:Tedef}
 ,
 \end{align}
-may also be of interest when evaluated for $\Mach = \Mach[e]$.  Producing a
-realizable specific total energy~$E$ can be a concern when dictating $T_e$ in
-this manner as combining~\eqref{eq:constant_specific_stagnation_enthalpy}
-nondimensionalized by $a_0^2$ with the constant-by-assumption $H =
-E\!\left(R\right) + p\!\left(R\right)/\rho\!\left(R\right)$ shows that
+may also be of interest when evaluated for $\Mach = \Mach[e]$. Producing a
+realizable specific total energy~$E$ can be a concern when dictating $T_e$ as
+constraint~\eqref{eq:constant_specific_stagnation_enthalpy_realizablity_nondim}
+scaled by $\gamma_0 \Mach^2 \Mach[0]^{-2}$, is equivalent to
 \begin{align}
-    E\!\left(R\right)>0
-&\implies
     T\!\left(R\right) < \gamma_0 \Mach^2 \left(
       \frac{1}{2} + \frac{1}{\Mach[0]^2\left(\gamma_0 - 1\right)}
          \right)
