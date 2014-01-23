@@ -37,7 +37,7 @@ end
 
 %!test % Round trip: Subsonic nozzle with less hot edge
 %! d=1; g=1.4088; t=1;
-%! [Ma R0 R uR rhoR pR] = radialflow_match(d, g, 0.54927, -0.014755, 4.1541, t);
+%! [Ma R0 R uR rhoR pR] = radialflow_match(d, g, 0.54927, -0.014755, 3.1541, t);
 %! [r u rho p]          = radialflow(Ma, g, R, R0, uR, rhoR, pR, t);
 %! [R1 u1 rho1 p1]      = deal(r(end), u(end), rho(end), p(end));
 %! [Ma_e p_exi T_e]     = radialflow_qoi(d, g, Ma, R1, u1, rho1, p1, t);
