@@ -57,7 +57,7 @@
   numberstyle=\tiny\color{darkgray},
   showstringspaces=false,
   showtabs=false,
-  stepnumber=5
+  stepnumber=3
 }
 
 \begin{document}
@@ -481,7 +481,7 @@ three quantities.
 
 \begin{figure}[h]
   \centering
-  \includegraphics[width=0.33\textwidth]{nozzle_schematic}
+  \includegraphics[width=0.25\textwidth]{nozzle_schematic}
   \caption{
       \label{fig:mapping_geometry}
       A Cartesian setting overlaid on the radially symmetric domain
@@ -619,7 +619,7 @@ and a nondimensional pressure gradient parameter
 \end{align}
 to interrogate the solution's nature at $\left(R_0, \delta\right)$. When the
 isenthalpic data is used to approximate the behavior of an ideal gas, the
-edge temperature nondimensionalized using $a_0^2=\gamma_{0}RT_0$,
+edge temperature nondimensionalized by $a_0^2=\gamma_{0}RT_0$,
 \begin{align}
     T_e &= \gamma_0 \frac{p\!\left(x,y;\Mach\right)}{\rho\!\left(x,y\right)}
          = \left. \gamma_0 \frac{\Mach^2    p   \!\left(R\right)}
@@ -634,11 +634,16 @@ constraint~\eqref{eq:constant_specific_stagnation_enthalpy_realizablity_nondim}
 scaled by $\gamma_0 \Mach^2 \Mach[0]^{-2}$, is equivalent to
 \begin{align}
     T\!\left(R\right) < \gamma_0 \Mach^2 \left(
-      \frac{1}{2} + \frac{1}{\Mach[0]^2\left(\gamma_0 - 1\right)}
+      \frac{1}{2} + \frac{\theta}{\Mach[0]^2\left(\gamma_0 - 1\right)}
          \right)
 \label{eq:Terestrict}
 .
 \end{align}
+
+\lstinputlisting[language=Octave,label=lst:octave_nozzle_qoi,float,
+                 caption={\texttt{nozzle\_qoi.m}: A kernel computing several
+                 quantities of interest}]
+                {notebooks/radialflow_qoi.m}
 
 A kernel building atop Listing~\ref{lst:octave_nozzle} that computes these
 quantities appears in Listing~\ref{lst:octave_nozzle_qoi}. By solving to
@@ -646,11 +651,6 @@ boundary $R_2 = \sqrt{R_0^2 + \delta^2}$, the kernel solves the smallest
 possible problem.  More importantly, it causes the ODE integrator to
 automatically produce full-order accurate results at $\left(R_0,\delta\right)$
 without requiring the integrator to possess dense output capabilities.
-
-\lstinputlisting[language=Octave,label=lst:octave_nozzle_qoi,float,
-                 caption={\texttt{nozzle\_qoi.m}: A kernel computing several
-                 quantities of interest}]
-                {notebooks/radialflow_qoi.m}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Producing a flow matching given boundary layer edge conditions}
