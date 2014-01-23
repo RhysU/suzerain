@@ -1,5 +1,5 @@
 % Solve radial flow for Ma_e, p_exi and approximately ideal T_e at (R1, delta).
-function [Ma_e p_exi T_e] = radialflow_qoi(delta, gam, Ma, R1, u1, rho1, p1, theta=1)
+function [Ma_e p_exi T_e] = radialflow_qoi(delta, gam, Ma, R1, u1, rho1, p1, theta)
   try
     [r u rho p a2 up rhop pp] = radialflow(Ma, gam, R1, sqrt(R1.^2+delta.^2), ...
                                            u1, rho1, p1, theta);

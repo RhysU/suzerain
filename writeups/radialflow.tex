@@ -20,6 +20,7 @@
 
 % Avoids xcolor options clashes
 \usepackage{pgfplotstable}
+\usepackage{todonotes}
 
 % In conjunction with -shell-escape, automatically convert EPS to PDF
 \usepackage{epstopdf}
@@ -628,8 +629,8 @@ edge temperature nondimensionalized by $a_0^2=\gamma_{0}RT_0$,
 \label{eq:Tedef}
 ,
 \end{align}
-may also be of interest when evaluated for $\Mach = \Mach[e]$. Producing a
-realizable specific total energy~$E$ can be a concern when dictating $T_e$ as
+may also be of interest for $\Mach = \Mach[e]$. Producing a realizable specific
+total energy~$E$ can be a concern when dictating $T_e$ as
 constraint~\eqref{eq:constant_specific_stagnation_enthalpy_realizablity_nondim}
 scaled by $\gamma_0 \Mach^2 \Mach[0]^{-2}$, is equivalent to
 \begin{align}
@@ -697,15 +698,18 @@ state~\eqref{eq:stagnation_sound_nondim},
 \begin{align}
     a^2\!\left(R\right)
     = \frac{\Mach[0]^2}{\Mach[e]^2}
-   &= 1 + \Mach[0]^2\frac{\gamma_0-1}{2}\left(1-u^2\!\left(R\right)\right)
-\\ &= 1 + \Mach[0]^2\frac{\gamma_0-1}{2}\left(1-\frac{R^2}{R_0^2}\right)
-    = 1 - \Mach[0]^2\frac{\gamma_0-1}{2}\frac{\delta^2}{R_0^2}
+   &= \theta + \Mach[0]^2\frac{\gamma_0-1}{2}\left(1-u^2\!\left(R\right)\right)
+\\ &= \theta + \Mach[0]^2\frac{\gamma_0-1}{2}\left(1-\frac{R^2}{R_0^2}\right)
+\\ &= \theta - \Mach[0]^2\frac{\gamma_0-1}{2}\frac{\delta^2}{R_0^2}
 \end{align}
 forces
 \begin{align}
-    \Mach[0] &= \left(
-        \frac{1}{\Mach[e]^2} + \frac{\gamma_0-1}{2}\frac{\delta^2}{R_0^2}
-    \right)^{-1/2}
+    \Mach[0] &= \left[
+        \frac{1}{\theta}
+        \left(
+            \frac{1}{\Mach[e]^2} + \frac{\gamma_0-1}{2}\frac{\delta^2}{R_0^2}
+        \right)
+    \right]^{-1/2}
     \label{eq:matching_Ma0}
 .
 \end{align}
@@ -723,12 +727,14 @@ Turning now to the pressure gradient definition~\eqref{eq:qoidef},
        \,
        \frac{
          \left[
-             2 \Mach[0]{}^{-2} + \left(\gamma_0-1\right) \left(1 - u^2\!\left(R\right)\right)
+               2 \theta \Mach[0]{}^{-2}
+             + \left(\gamma_0-1\right) \left(1 - u^2\!\left(R\right)\right)
          \right]
        }{
            2 u^2\!\left(R\right)
          - \left[
-             2 \Mach[0]{}^{-2} + \left(\gamma_0-1\right) \left(1 - u^2\!\left(R\right)\right)
+               2 \theta \Mach[0]{}^{-2}
+             + \left(\gamma_0-1\right) \left(1 - u^2\!\left(R\right)\right)
            \right]
        }
 \\&=
@@ -764,9 +770,18 @@ implies one should solve
 \end{align}
 for a strictly positive root to obtain a suitable $R_0$.  If two such roots
 exist, the larger should be taken as the isenthalpic assumption improves as
-$R_0$ increases.  Notice nothing constrained the magnitude of either
-$\rho\!\left(R\right)$ or $p\!\left(R\right)$ which permits using them to
-control $T_e$ if so desired.
+$R_0$ increases.
+
+Notice nothing constrains the magnitude of either $\rho\!\left(R\right)$ or
+$p\!\left(R\right)$ individually.  However, their ratio
+$p\!\left(R\right)/\rho\!\left(R\right)$ must
+satisfy~\eqref{eq:constant_specific_stagnation_enthalpy_realizablity_nondim}.
+Evidently, without having introduced $\theta$
+in~\eqref{eq:constant_specific_stagnation_enthalpy}, dictating
+$\left|u_\xi\right|=1$ would have limited the range of accessible $T_e$ due
+to~\eqref{eq:Tedef} in conjunction with~\eqref{eq:Terestrict}.
+
+\todo{FIXME STARTHERE}
 
 The term $\operatorname{sgn} u\!\left(R\right)$ appearing above may be set
 based on $\operatorname{sgn} p_{e,\xi}$ and $\operatorname{sgn} \left(
