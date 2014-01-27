@@ -462,14 +462,14 @@ domain from~$R_{1}$ to~$R_{2}$.
 Working with these conditions in conjunction
 with~\eqref{eq:cpfradial_nondim_ode} presents initial value problems amenable
 to solution by numerical ODE integrators.  For example,
-\texttt{Octave}\citep{Eaton2008GNU} armed with the \texttt{odepkg} package can
+Octave\citep{Eaton2008GNU} armed with the \texttt{odepkg} package can
 solve such problems.  One possible implementation appears in
 Listing~\ref{lst:octave_nozzle} along with verification tests.  Its demo logic
 produces the solutions depicted in Figure~\ref{fig:sample_solns}.  Though only
 scalar $u^\prime\!\left(r\right)$ needs to be integrated, this implementation
 integrates the state vector $\left[u, \rho, p\right]^\mathrm{T}$ so that
 \texttt{odepkg}'s automated solution tolerance controls apply equally to all
-three quantities.
+three scalar quantities.
 
 \lstinputlisting[language=Octave,label=lst:octave_nozzle,
                  caption={\texttt{radialflow.m}: A nondimensional
