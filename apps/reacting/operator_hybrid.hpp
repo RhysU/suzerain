@@ -21,8 +21,8 @@
 //
 //--------------------------------------------------------------------------
 
-#ifndef SUZERAIN_REACTING_HYBRID_OPERATOR_HPP
-#define SUZERAIN_REACTING_HYBRID_OPERATOR_HPP
+#ifndef SUZERAIN_REACTING_OPERATOR_HYBRID_HPP
+#define SUZERAIN_REACTING_OPERATOR_HYBRID_HPP
 
 /** @file
  * Hybrid implicit/explicit Navier--Stokes operators.
@@ -134,4 +134,4 @@ private:
 
 } // namespace suzerain
 
-#endif  /* SUZERAIN_REACTING_HYBRID_OPERATOR_HPP */
+#endif  /* SUZERAIN_REACTING_OPERATOR_HYBRID_HPP */

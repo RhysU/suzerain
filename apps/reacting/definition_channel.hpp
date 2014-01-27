@@ -21,8 +21,8 @@
 //
 //--------------------------------------------------------------------------
 
-#ifndef SUZERAIN_CHANNEL_DEFINITION_HPP
-#define SUZERAIN_CHANNEL_DEFINITION_HPP
+#ifndef SUZERAIN_REACTING_DEFINITION_CHANNEL_HPP
+#define SUZERAIN_REACTING_DEFINITION_CHANNEL_HPP
 
 /** @file
  * Provides classes handling problem definition for channel
@@ -112,4 +112,4 @@ public:
 
 } // namespace suzerain
 
-#endif // SUZERAIN_CHANNEL_DEFINITION_HPP
+#endif // SUZERAIN_REACTING_DEFINITION_CHANNEL_HPP

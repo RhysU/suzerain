@@ -21,8 +21,8 @@
 //
 //--------------------------------------------------------------------------
 
-#ifndef SUZERAIN_SUPPORT_GRID_DEFINITION_HPP
-#define SUZERAIN_SUPPORT_GRID_DEFINITION_HPP
+#ifndef SUZERAIN_SUPPORT_DEFINITION_GRID_HPP
+#define SUZERAIN_SUPPORT_DEFINITION_GRID_HPP
 
 /** @file
  * Provides classes handling problem grid definitions.
@@ -125,4 +125,4 @@ public:
 
 } // namespace suzerain
 
-#endif // SUZERAIN_SUPPORT_GRID_DEFINITION_HPP
+#endif // SUZERAIN_SUPPORT_DEFINITION_GRID_HPP

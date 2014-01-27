@@ -21,8 +21,8 @@
 //
 //--------------------------------------------------------------------------
 
-#ifndef SUZERAIN_MASS_OPERATOR_HPP
-#define SUZERAIN_MASS_OPERATOR_HPP
+#ifndef SUZERAIN_OPERATOR_MASS_HPP
+#define SUZERAIN_OPERATOR_MASS_HPP
 
 /** @file
  * A physics-agnostic, low-storage B-spline mass operator
@@ -83,4 +83,4 @@ public:
 
 } // namespace suzerain
 
-#endif  /* SUZERAIN_MASS_OPERATOR_HPP */
+#endif  /* SUZERAIN_OPERATOR_MASS_HPP */

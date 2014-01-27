@@ -21,8 +21,8 @@
 //
 //--------------------------------------------------------------------------
 
-#ifndef SUZERAIN_SUPPORT_STATISTICS_DEFINITION_HPP
-#define SUZERAIN_SUPPORT_STATISTICS_DEFINITION_HPP
+#ifndef SUZERAIN_SUPPORT_DEFINITION_STATISTICS_HPP
+#define SUZERAIN_SUPPORT_DEFINITION_STATISTICS_HPP
 
 /** @file
  * Classes handling control of statistics file output.
@@ -104,4 +104,4 @@ public:
 
 } // namespace suzerain
 
-#endif // SUZERAIN_SUPPORT_STATISTICS_DEFINITION_HPP
+#endif // SUZERAIN_SUPPORT_DEFINITION_STATISTICS_HPP

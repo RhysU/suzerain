@@ -21,8 +21,8 @@
 //
 //--------------------------------------------------------------------------
 
-#ifndef SUZERAIN_SUPPORT_RESTART_DEFINITION_HPP
-#define SUZERAIN_SUPPORT_RESTART_DEFINITION_HPP
+#ifndef SUZERAIN_SUPPORT_DEFINITION_RESTART_HPP
+#define SUZERAIN_SUPPORT_DEFINITION_RESTART_HPP
 
 /** @file
  * Provides classes handling restart definitions, which are runtime
@@ -128,4 +128,4 @@ public:
 
 } // namespace suzerain
 
-#endif // SUZERAIN_SUPPORT_RESTART_DEFINITION_HPP
+#endif // SUZERAIN_SUPPORT_DEFINITION_RESTART_HPP

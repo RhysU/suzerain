@@ -21,8 +21,8 @@
 //
 //--------------------------------------------------------------------------
 
-#ifndef SUZERAIN_SUPPORT_TIME_DEFINITION_HPP
-#define SUZERAIN_SUPPORT_TIME_DEFINITION_HPP
+#ifndef SUZERAIN_SUPPORT_DEFINITION_TIME_HPP
+#define SUZERAIN_SUPPORT_DEFINITION_TIME_HPP
 
 /** @file
  * Classes handling time advancement settings.
@@ -154,4 +154,4 @@ private:
 
 } // namespace suzerain
 
-#endif // SUZERAIN_SUPPORT_TIME_DEFINITION_HPP
+#endif // SUZERAIN_SUPPORT_DEFINITION_TIME_HPP

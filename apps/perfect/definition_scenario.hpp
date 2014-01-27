@@ -21,8 +21,8 @@
 //
 //--------------------------------------------------------------------------
 
-#ifndef SUZERAIN_PERFECT_SCENARIO_DEFINITION_HPP
-#define SUZERAIN_PERFECT_SCENARIO_DEFINITION_HPP
+#ifndef SUZERAIN_PERFECT_DEFINITION_SCENARIO_HPP
+#define SUZERAIN_PERFECT_DEFINITION_SCENARIO_HPP
 
 #include <suzerain/common.hpp>
 #include <suzerain/support/definition_base.hpp>
@@ -169,4 +169,4 @@ public:
 
 } // namespace suzerain
 
-#endif // SUZERAIN_PERFECT_SCENARIO_DEFINITION_HPP
+#endif // SUZERAIN_PERFECT_DEFINITION_SCENARIO_HPP

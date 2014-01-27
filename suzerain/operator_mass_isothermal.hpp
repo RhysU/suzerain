@@ -21,8 +21,8 @@
 //
 //--------------------------------------------------------------------------
 
-#ifndef SUZERAIN_ISOTHERMAL_MASS_OPERATOR_HPP
-#define SUZERAIN_ISOTHERMAL_MASS_OPERATOR_HPP
+#ifndef SUZERAIN_OPERATOR_MASS_ISOTHERMAL_HPP
+#define SUZERAIN_OPERATOR_MASS_ISOTHERMAL_HPP
 
 /** @file
  * Provides \ref operator_mass_isothermal.
@@ -125,4 +125,4 @@ private:
 
 } // namespace suzerain
 
-#endif  /* SUZERAIN_ISOTHERMAL_MASS_OPERATOR_HPP */
+#endif  /* SUZERAIN_OPERATOR_MASS_ISOTHERMAL_HPP */

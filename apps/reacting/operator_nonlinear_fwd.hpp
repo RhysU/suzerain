@@ -21,8 +21,8 @@
 //
 //--------------------------------------------------------------------------
 
-#ifndef SUZERAIN_REACTING_NONLINEAR_OPERATOR_FWD_HPP
-#define SUZERAIN_REACTING_NONLINEAR_OPERATOR_FWD_HPP
+#ifndef SUZERAIN_REACTING_OPERATOR_NONLINEAR_FWD_HPP
+#define SUZERAIN_REACTING_OPERATOR_NONLINEAR_FWD_HPP
 
 /** @file
  * Declarations of Nonlinear Navier--Stokes spatial operators
@@ -521,4 +521,4 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
 
 } // namespace suzerain
 
-#endif  /* SUZERAIN_REACTING_NONLINEAR_OPERATOR_FWD_HPP */
+#endif  /* SUZERAIN_REACTING_OPERATOR_NONLINEAR_FWD_HPP */

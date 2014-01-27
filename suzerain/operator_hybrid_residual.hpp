@@ -21,8 +21,8 @@
 //
 //--------------------------------------------------------------------------
 
-#ifndef SUZERAIN_HYBRID_RESIDUAL_OPERATOR_HPP
-#define SUZERAIN_HYBRID_RESIDUAL_OPERATOR_HPP
+#ifndef SUZERAIN_OPERATOR_HYBRID_RESIDUAL_HPP
+#define SUZERAIN_OPERATOR_HYBRID_RESIDUAL_HPP
 
 /** @file
  * Provides \ref operator_hybrid_residual.
@@ -136,4 +136,4 @@ private:
 
 } // namespace suzerain
 
-#endif  /* SUZERAIN_HYBRID_RESIDUAL_OPERATOR_HPP */
+#endif  /* SUZERAIN_OPERATOR_HYBRID_RESIDUAL_HPP */

@@ -21,8 +21,8 @@
 //
 //--------------------------------------------------------------------------
 
-#ifndef SUZERAIN_GRID_SPECIFICATION_HPP
-#define SUZERAIN_GRID_SPECIFICATION_HPP
+#ifndef SUZERAIN_SPECIFICATION_GRID_HPP
+#define SUZERAIN_SPECIFICATION_GRID_HPP
 
 // TODO Distinguish between two- versus one-sided stretching in specification_grid
 
@@ -202,4 +202,4 @@ public:
 
 } // namespace suzerain
 
-#endif // SUZERAIN_GRID_SPECIFICATION_HPP
+#endif // SUZERAIN_SPECIFICATION_GRID_HPP

@@ -21,8 +21,8 @@
 //
 //--------------------------------------------------------------------------
 
-#ifndef SUZERAIN_REACTING_NONLINEAR_OPERATOR_HPP
-#define SUZERAIN_REACTING_NONLINEAR_OPERATOR_HPP
+#ifndef SUZERAIN_REACTING_OPERATOR_NONLINEAR_HPP
+#define SUZERAIN_REACTING_OPERATOR_NONLINEAR_HPP
 
 /** @file
  * Implementation of Nonlinear Navier--Stokes spatial operators
@@ -1893,4 +1893,4 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
 
 } /* namespace reacting */ } /* namespace suzerain */
 
-#endif  /* SUZERAIN_REACTING_NONLINEAR_OPERATOR_HPP */
+#endif  /* SUZERAIN_REACTING_OPERATOR_NONLINEAR_HPP */

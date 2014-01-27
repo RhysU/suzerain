@@ -21,8 +21,8 @@
 //
 //--------------------------------------------------------------------------
 
-#ifndef SUZERAIN_ANTIOCH_CONSTITUTIVE_HPP
-#define SUZERAIN_ANTIOCH_CONSTITUTIVE_HPP
+#ifndef SUZERAIN_REACTING_ANTIOCH_CONSTITUTIVE_HPP
+#define SUZERAIN_REACTING_ANTIOCH_CONSTITUTIVE_HPP
 
 /** @file
  * Class wrapping libantioch functionality for chemically reacting
@@ -424,4 +424,4 @@ private:
 
 #endif // HAVE_ANTIOCH
 
-#endif // SUZERAIN_ANTIOCH_CONSTITUTIVE_HPP
+#endif // SUZERAIN_REACTING_ANTIOCH_CONSTITUTIVE_HPP

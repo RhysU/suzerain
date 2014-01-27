@@ -21,8 +21,8 @@
 //
 //--------------------------------------------------------------------------
 
-#ifndef SUZERAIN_SUPPORT_SIGNAL_DEFINITION_HPP
-#define SUZERAIN_SUPPORT_SIGNAL_DEFINITION_HPP
+#ifndef SUZERAIN_SUPPORT_DEFINITION_SIGNAL_HPP
+#define SUZERAIN_SUPPORT_DEFINITION_SIGNAL_HPP
 
 /** @file
  * Classes handling signal processing definitions.
@@ -105,4 +105,4 @@ private:
 
 } // namespace suzerain
 
-#endif // SUZERAIN_SUPPORT_SIGNAL_DEFINITION_HPP
+#endif // SUZERAIN_SUPPORT_DEFINITION_SIGNAL_HPP

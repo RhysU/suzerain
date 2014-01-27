@@ -21,8 +21,8 @@
 //
 //--------------------------------------------------------------------------
 
-#ifndef SUZERAIN_SUPPORT_FFTW_DEFINITION_HPP
-#define SUZERAIN_SUPPORT_FFTW_DEFINITION_HPP
+#ifndef SUZERAIN_SUPPORT_DEFINITION_FFTW_HPP
+#define SUZERAIN_SUPPORT_DEFINITION_FFTW_HPP
 
 /** @file
  * Declarations to configure FFTW operation from the CLI.
@@ -86,4 +86,4 @@ private:
 
 } // namespace suzerain
 
-#endif // SUZERAIN_SUPPORT_FFTW_DEFINITION_HPP
+#endif // SUZERAIN_SUPPORT_DEFINITION_FFTW_HPP

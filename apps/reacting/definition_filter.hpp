@@ -21,8 +21,8 @@
 //
 //--------------------------------------------------------------------------
 
-#ifndef SUZERAIN_FILTER_DEFINITION_HPP
-#define SUZERAIN_FILTER_DEFINITION_HPP
+#ifndef SUZERAIN_REACTING_DEFINITION_FILTER_HPP
+#define SUZERAIN_REACTING_DEFINITION_FILTER_HPP
 
 /** @file
  * Provides classes handling problem definition for filter
@@ -238,4 +238,4 @@ protected:
 
 } // namespace suzerain
 
-#endif // SUZERAIN_FILTER_DEFINITION_HPP
+#endif // SUZERAIN_REACTING_DEFINITION_FILTER_HPP

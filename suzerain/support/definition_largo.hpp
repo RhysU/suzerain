@@ -21,8 +21,8 @@
 //
 //--------------------------------------------------------------------------
 
-#ifndef SUZERAIN_SUPPORT_LARGO_DEFINITION_HPP
-#define SUZERAIN_SUPPORT_LARGO_DEFINITION_HPP
+#ifndef SUZERAIN_SUPPORT_DEFINITION_LARGO_HPP
+#define SUZERAIN_SUPPORT_DEFINITION_LARGO_HPP
 
 /** @file
  * Provides \ref definition_largo.
@@ -90,4 +90,4 @@ public:
 
 } // namespace suzerain
 
-#endif // SUZERAIN_SUPPORT_LARGO_DEFINITION_HPP
+#endif // SUZERAIN_SUPPORT_DEFINITION_LARGO_HPP

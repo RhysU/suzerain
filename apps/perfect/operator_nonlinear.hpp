@@ -21,8 +21,8 @@
 //
 //--------------------------------------------------------------------------
 
-#ifndef SUZERAIN_PERFECT_NONLINEAR_OPERATOR_HPP
-#define SUZERAIN_PERFECT_NONLINEAR_OPERATOR_HPP
+#ifndef SUZERAIN_PERFECT_OPERATOR_NONLINEAR_HPP
+#define SUZERAIN_PERFECT_OPERATOR_NONLINEAR_HPP
 
 /** @file
  * A nonlinear Navier--Stokes spatial operator.
@@ -104,4 +104,4 @@ private:
 
 } // namespace suzerain
 
-#endif  /* SUZERAIN_PERFECT_NONLINEAR_OPERATOR_HPP */
+#endif  /* SUZERAIN_PERFECT_OPERATOR_NONLINEAR_HPP */

@@ -21,8 +21,8 @@
 //
 //--------------------------------------------------------------------------
 
-#ifndef SUZERAIN_SUPPORT_ISOTHERMAL_DEFINITION_HPP
-#define SUZERAIN_SUPPORT_ISOTHERMAL_DEFINITION_HPP
+#ifndef SUZERAIN_SUPPORT_DEFINITION_ISOTHERMAL_HPP
+#define SUZERAIN_SUPPORT_DEFINITION_ISOTHERMAL_HPP
 
 /** @file
  * Provides \ref definition_isothermal.
@@ -144,4 +144,4 @@ public:
 
 } // namespace suzerain
 
-#endif // SUZERAIN_SUPPORT_ISOTHERMAL_DEFINITION_HPP
+#endif // SUZERAIN_SUPPORT_DEFINITION_ISOTHERMAL_HPP

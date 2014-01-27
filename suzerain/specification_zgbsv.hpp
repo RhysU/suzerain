@@ -21,8 +21,8 @@
 //
 //--------------------------------------------------------------------------
 
-#ifndef SUZERAIN_ZGBSV_SPECIFICATION_HPP
-#define SUZERAIN_ZGBSV_SPECIFICATION_HPP
+#ifndef SUZERAIN_SPECIFICATION_ZGBSV_HPP
+#define SUZERAIN_SPECIFICATION_ZGBSV_HPP
 
 /** @file
  * Encapsulates parsing and storing complex-valued banded solve options.
@@ -83,4 +83,4 @@ std::basic_ostream<CharT,Traits>& operator<<(
 
 } // namespace suzerain
 
-#endif // SUZERAIN_ZGBSV_SPECIFICATION_HPP
+#endif // SUZERAIN_SPECIFICATION_ZGBSV_HPP

@@ -21,8 +21,8 @@
 //
 //--------------------------------------------------------------------------
 
-#ifndef SUZERAIN_SUPPORT_NOISE_DEFINITION_HPP
-#define SUZERAIN_SUPPORT_NOISE_DEFINITION_HPP
+#ifndef SUZERAIN_SUPPORT_DEFINITION_NOISE_HPP
+#define SUZERAIN_SUPPORT_DEFINITION_NOISE_HPP
 
 /** @file
  * Routines for adding noise/perturbations to state fields
@@ -64,4 +64,4 @@ public:
 
 } // namespace suzerain
 
-#endif // SUZERAIN_SUPPORT_NOISE_DEFINITION_HPP
+#endif // SUZERAIN_SUPPORT_DEFINITION_NOISE_HPP

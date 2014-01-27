@@ -21,8 +21,8 @@
 //
 //--------------------------------------------------------------------------
 
-#ifndef SUZERAIN_CONSTRAINT_TREATMENT_HPP
-#define SUZERAIN_CONSTRAINT_TREATMENT_HPP
+#ifndef SUZERAIN_TREATMENT_CONSTRAINT_HPP
+#define SUZERAIN_TREATMENT_CONSTRAINT_HPP
 
 /** @file
  * Provides \ref treatment_constraint.
@@ -445,4 +445,4 @@ treatment<CommonBlock>::invert_mass_plus_scaled_operator(
 
 } // namespace suzerain
 
-#endif /* SUZERAIN_CONSTRAINT_TREATMENT_HPP */
+#endif /* SUZERAIN_TREATMENT_CONSTRAINT_HPP */

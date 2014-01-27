@@ -21,8 +21,8 @@
 //
 //--------------------------------------------------------------------------
 
-#ifndef SUZERAIN_RADIALFLOW_SPECIFICATION_HPP
-#define SUZERAIN_RADIALFLOW_SPECIFICATION_HPP
+#ifndef SUZERAIN_SPECIFICATION_RADIALFLOW_HPP
+#define SUZERAIN_SPECIFICATION_RADIALFLOW_HPP
 
 /** @file
  * Classes for handling radial nozzle problems.
@@ -88,4 +88,4 @@ public:
 
 } // namespace suzerain
 
-#endif // SUZERAIN_RADIALFLOW_SPECIFICATION_HPP
+#endif // SUZERAIN_SPECIFICATION_RADIALFLOW_HPP

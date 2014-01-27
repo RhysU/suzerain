@@ -21,8 +21,8 @@
 //
 //--------------------------------------------------------------------------
 
-#ifndef SUZERAIN_NOISE_SPECIFICATION_HPP
-#define SUZERAIN_NOISE_SPECIFICATION_HPP
+#ifndef SUZERAIN_SPECIFICATION_NOISE_HPP
+#define SUZERAIN_SPECIFICATION_NOISE_HPP
 
 /** @file
  * Provides classes handling specifying additive noise
@@ -86,4 +86,4 @@ public:
 
 } // namespace suzerain
 
-#endif // SUZERAIN_NOISE_SPECIFICATION_HPP
+#endif // SUZERAIN_SPECIFICATION_NOISE_HPP
