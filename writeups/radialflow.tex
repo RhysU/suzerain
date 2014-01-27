@@ -99,6 +99,7 @@ Consider a perfect gas in which pressure $p$, density $\rho$, and sound speed
 $a$ are related by a constant ratio of specific heats $\gamma$ according to
 \begin{align}
     \gamma p &= \rho a^2.
+    \label{eq:perfecteos}
 \end{align}
 The relative changes in these three quantities clearly obey
 \begin{align}
@@ -196,7 +197,7 @@ interesting dimensional result,
        \vec{u}\cdot \vec{\nabla}\vec{u}^2
     &= \left[
           2 a_0^2
-        + \left(\gamma_0-1\right) \left(u_0^2 - \vec{u}^2\right)
+        + \left(\gamma-1\right) \left(u_0^2 - \vec{u}^2\right)
        \right]\vec{\nabla}\cdot\vec{u}
 \label{eq:cpfgibbs_dim}
 .
@@ -224,7 +225,9 @@ into~\eqref{eq:cpfgibbs_dim},
     &=
        \left[
           2 a_0^2
-        + \Mach[0]{}^2 a_0^2 \left(\gamma_0-1\right) \left(1 - {\vec{u}^\ast}^2\right)
+        + \Mach[0]{}^2 a_0^2
+          \left(\gamma-1\right)
+          \left(1 - {\vec{u}^\ast}^2\right)
        \right]
        \,
        \frac{\Mach[0]{} a_0}{l_0}
@@ -236,7 +239,7 @@ into~\eqref{eq:cpfgibbs_dim},
        \,
        \left[
           \frac{2}{\Mach[0]{}^2}
-        + \left(\gamma_0-1\right) \left(1 - {\vec{u}^\ast}^2\right)
+        + \left(\gamma-1\right) \left(1 - {\vec{u}^\ast}^2\right)
        \right]
        \vec{\nabla}^\ast\cdot\vec{u}^\ast
 .
@@ -247,7 +250,7 @@ Rescaling and dropping the star notation, one arrives at
     &=
        \left[
           2 \Mach[0]{}^{-2}
-        + \left(\gamma_0-1\right) \left(1 - \vec{u}^2\right)
+        + \left(\gamma-1\right) \left(1 - \vec{u}^2\right)
        \right]
        \vec{\nabla}\cdot\vec{u}
 \label{eq:cpfgibbs_nondim}
@@ -259,12 +262,12 @@ hand, computing local $\rho$ and $p$ is of interest.
 Nondimensionalizing~\eqref{eq:stagnation_sound} permits direct computation of
 $a$ from
 \begin{align}
-  a^2 &= 1 + \Mach[0]^2\frac{\gamma_0-1}{2}\left(1-\vec{u}^2\right)
+  a^2 &= 1 + \Mach[0]^2\frac{\gamma-1}{2}\left(1-\vec{u}^2\right)
 \label{eq:stagnation_sound_nondim}
 \end{align}
 where clearly a realizable $a^2>0$ requires
 \begin{align}
-  u^2_\text{valid} &< \frac{2}{\Mach[0]^2\left(\gamma_0-1\right)} + 1
+  u^2_\text{valid} &< \frac{2}{\Mach[0]^2\left(\gamma-1\right)} + 1
 .
 \label{eq:stagnation_sound_realizability_nondim}
 \end{align}
@@ -273,8 +276,8 @@ obtains
 \begin{align}
     u^2_\text{sonic}
     &=
-    \left(\gamma_0+1\right)^{-1}
-    \left(2\Mach[0]^{-2} + \gamma_0 - 1\right)
+    \left(\gamma+1\right)^{-1}
+    \left(2\Mach[0]^{-2} + \gamma - 1\right)
     <
     u^2_\text{valid}
 \label{eq:u_sonic}
@@ -283,8 +286,16 @@ obtains
 Condition~\eqref{eq:constant_specific_stagnation_enthalpy_realizablity}
 restricts the relative magnitudes of nondimensional $p$ and $\rho$,
 \begin{align}
-    \frac{p}{\rho} &< \frac{1}{\gamma_0-1} + \frac{\Mach[0]^2}{2}
+    \frac{p}{\rho} &< \frac{1}{\gamma-1} + \frac{1}{2}\Mach[0]^2
 \label{eq:constant_specific_stagnation_enthalpy_realizablity_nondim}
+,
+\end{align}
+as well as, incorporating~\eqref{eq:perfecteos}, the maximum attainable
+nondimensional sound speed,
+    \label{eq:perfecteos}
+\begin{align}
+    a^2 = \frac{\gamma p}{\rho}
+    &< \frac{\gamma}{\gamma-1} + \frac{\gamma}{2}\Mach[0]^2
 .
 \end{align}
 Employing~\eqref{eq:gradrho_gradp_relationship},
