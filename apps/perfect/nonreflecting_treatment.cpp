@@ -54,9 +54,9 @@ namespace suzerain {
 namespace perfect {
 
 nonreflecting_treatment::nonreflecting_treatment(
-        const scenario_definition &scenario,
-        const isothermal_specification &isothermal,
-        const grid_specification &grid,
+        const definition_scenario &scenario,
+        const specification_isothermal &isothermal,
+        const specification_grid &grid,
         const pencil_grid &dgrid,
         const bsplineop &cop,
         bspline &b)

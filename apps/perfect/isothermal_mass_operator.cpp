@@ -39,9 +39,9 @@ namespace suzerain {
 namespace perfect {
 
 isothermal_mass_operator::isothermal_mass_operator(
-        const scenario_definition &scenario,
-        const isothermal_specification &spec,
-        const grid_specification &grid,
+        const definition_scenario &scenario,
+        const specification_isothermal &spec,
+        const specification_grid &grid,
         const pencil_grid &dgrid,
         const bsplineop &cop,
         bspline &b,

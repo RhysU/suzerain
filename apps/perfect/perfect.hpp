@@ -45,8 +45,8 @@ namespace suzerain {
 
 // Forward declarations
 namespace support { class field; }
-class grid_specification;
-class noise_specification;
+class specification_grid;
+class specification_noise;
 class pencil_grid;
 
 /**
@@ -55,7 +55,7 @@ class pencil_grid;
 namespace perfect {
 
 // Forward declarations
-class scenario_definition;
+class definition_scenario;
 
 /** Return default nondimensional field information per \ref suzerain::ndx. */
 std::vector<support::field> default_fields();
@@ -68,8 +68,8 @@ std::vector<support::field> default_fields();
  */
 void
 adjust_scenario(contiguous_state<4,complex_t> &swave,
-                const scenario_definition& scenario,
-                const grid_specification& grid,
+                const definition_scenario& scenario,
+                const specification_grid& grid,
                 const pencil_grid& dgrid,
                 const bsplineop& cop,
                 const real_t old_Ma,
@@ -77,13 +77,13 @@ adjust_scenario(contiguous_state<4,complex_t> &swave,
 
 /**
  * Add random momentum field perturbations ("noise") according to
- * the provided noise_definition.
+ * the provided definition_noise.
  */
 void
 add_noise(contiguous_state<4,complex_t> &state,
-          const noise_specification& noise,
-          const scenario_definition& scenario,
-          const grid_specification& grid,
+          const specification_noise& noise,
+          const definition_scenario& scenario,
+          const specification_grid& grid,
           const pencil_grid& dgrid,
           const bsplineop& cop,
           bspline &b);

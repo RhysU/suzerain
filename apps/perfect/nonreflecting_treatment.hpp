@@ -39,13 +39,13 @@ namespace suzerain {
 // Forward declarations
 class bspline;
 class bsplineop;
-class grid_specification;
+class specification_grid;
 class pencil_grid;
 
 namespace perfect {
 
 // Forward declarations
-class scenario_definition;
+class definition_scenario;
 
 /**
  * Provides Giles-like nonreflecting boundary conditions at the upper \f$y =
@@ -66,9 +66,9 @@ public:
      * After construction, #N must be provided.
      */
     nonreflecting_treatment(
-            const scenario_definition& scenario,
-            const isothermal_specification& isothermal,
-            const grid_specification& grid,
+            const definition_scenario& scenario,
+            const specification_isothermal& isothermal,
+            const specification_grid& grid,
             const pencil_grid& dgrid,
             const bsplineop& cop,
             bspline& b);
@@ -119,13 +119,13 @@ public:
 protected:
 
     /** The scenario in which the operator is used. */
-    const scenario_definition &scenario;
+    const definition_scenario &scenario;
 
     /**
      * The lower and upper isothermal boundary specification.
      * Provides the reference values used for nonreflecting treatment.
      */
-    const isothermal_specification &isothermal;
+    const specification_isothermal &isothermal;
 
     /**
      * Wavenumber-independent matrix
@@ -164,7 +164,7 @@ protected:
 
     /**
      * Compute Medida's Giles-like nonreflecting boundary condition matrices
-     * given reference state information and the \ref scenario_definition
+     * given reference state information and the \ref definition_scenario
      * provided at construction time.  Inflow vs outflow and subsonic vs
      * supersonic conditions are determined using \c ref_v and \c normal_sign.
      * Updates all of

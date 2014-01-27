@@ -33,7 +33,7 @@
 
 namespace suzerain {
 
-isothermal_specification::isothermal_specification()
+specification_isothermal::specification_isothermal()
     : lower_T  (std::numeric_limits<real_t>::quiet_NaN())
     , lower_u  (std::numeric_limits<real_t>::quiet_NaN())
     , lower_v  (std::numeric_limits<real_t>::quiet_NaN())
@@ -49,7 +49,7 @@ isothermal_specification::isothermal_specification()
 {
 }
 
-isothermal_specification::isothermal_specification(
+specification_isothermal::specification_isothermal(
         const real_t wall_T)
     : lower_T  (wall_T)
     , lower_u  (0)
@@ -66,7 +66,7 @@ isothermal_specification::isothermal_specification(
 {
 }
 
-isothermal_specification::isothermal_specification(
+specification_isothermal::specification_isothermal(
         const real_t wall_T,
         const std::vector<real_t>& wall_cs)
     : lower_T  (wall_T)
@@ -84,7 +84,7 @@ isothermal_specification::isothermal_specification(
 {
 }
 
-isothermal_specification::isothermal_specification(
+specification_isothermal::specification_isothermal(
         const real_t wall_T,
         const real_t inflow_velocity)
     : lower_T  (wall_T)
@@ -102,7 +102,7 @@ isothermal_specification::isothermal_specification(
 {
 }
 
-isothermal_specification::isothermal_specification(
+specification_isothermal::specification_isothermal(
         const real_t wall_T,
         const real_t inflow_velocity,
         const std::vector<real_t>& wall_cs)
@@ -121,7 +121,7 @@ isothermal_specification::isothermal_specification(
 {
 }
 
-isothermal_specification::isothermal_specification(
+specification_isothermal::specification_isothermal(
         const real_t lower_T,
         const real_t lower_v,
         const real_t upper_T,
@@ -141,7 +141,7 @@ isothermal_specification::isothermal_specification(
 {
 }
 
-isothermal_specification::isothermal_specification(
+specification_isothermal::specification_isothermal(
         const real_t lower_T,
         const real_t lower_v,
         const std::vector<real_t>& lower_cs,
@@ -165,7 +165,7 @@ isothermal_specification::isothermal_specification(
                            std::invalid_argument);
 }
 
-isothermal_specification::isothermal_specification(
+specification_isothermal::specification_isothermal(
         const real_t lower_T,
         const real_t lower_u,
         const real_t lower_v,
@@ -191,7 +191,7 @@ isothermal_specification::isothermal_specification(
                            std::invalid_argument);
 }
 
-isothermal_specification::isothermal_specification(
+specification_isothermal::specification_isothermal(
         const real_t lower_T,
         const real_t lower_u,
         const real_t lower_v,

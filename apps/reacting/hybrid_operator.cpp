@@ -69,11 +69,11 @@ namespace suzerain {
 namespace reacting {
 
 isothermal_hybrid_linear_operator::isothermal_hybrid_linear_operator(
-        const zgbsv_specification& spec,
+        const specification_zgbsv& spec,
         const antioch_constitutive &cmods,
-        const isothermal_specification &isospec,
-        const channel_definition &chdef,
-        const grid_specification &grid,
+        const specification_isothermal &isospec,
+        const definition_channel &chdef,
+        const specification_grid &grid,
         const pencil_grid &dgrid,
         const bsplineop &cop,
         bspline &b,

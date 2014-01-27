@@ -206,7 +206,7 @@ bool quantities::load(const esio_handle h)
 // recommended before reviewing this logic.  This routine is definitely
 // suboptimal but is expected to be invoked relatively infrequently.
 quantities sample_quantities(
-        const scenario_definition &scenario,
+        const definition_scenario &scenario,
         const operator_tools &otool,
         contiguous_state<4,complex_t> &swave,
         const real_t t)

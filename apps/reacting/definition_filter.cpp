@@ -57,12 +57,12 @@ static void parse_nonnegative(const std::string& s, real_t *t, const char *n)
 
 namespace reacting {
 
-filter_definition::filter_definition()
+definition_filter::definition_filter()
     : filter_phi(std::numeric_limits<real_t>::quiet_NaN())
 {
 }
 
-filter_definition::filter_definition(
+definition_filter::definition_filter(
         const real_t filter_phi)
     : filter_phi(filter_phi)
 {
@@ -75,7 +75,7 @@ static const char name_filter_phi[] = "filter_phi";
 static const char desc_filter_phi[] = "Filter source strength";
 
 boost::program_options::options_description
-filter_definition::options_description()
+definition_filter::options_description()
 {
     using boost::bind;
     using boost::lexical_cast;
@@ -105,8 +105,8 @@ filter_definition::options_description()
 }
 
 void
-filter_definition::populate(
-        const filter_definition& that,
+definition_filter::populate(
+        const definition_filter& that,
         const bool verbose)
 {
     using support::maybe_populate;
@@ -117,8 +117,8 @@ filter_definition::populate(
 }
 
 void
-filter_definition::override(
-        const filter_definition& that,
+definition_filter::override(
+        const definition_filter& that,
         const bool verbose)
 {
     using support::maybe_override;
@@ -129,10 +129,10 @@ filter_definition::override(
 }
 
 void
-filter_definition::save(
+definition_filter::save(
         const esio_handle h) const
 {
-    DEBUG0("Storing filter_definition parameters");
+    DEBUG0("Storing definition_filter parameters");
 
     // Only root writes data
     int procid;
@@ -143,16 +143,16 @@ filter_definition::save(
 }
 
 void
-filter_definition::load(
+definition_filter::load(
         const esio_handle h,
         const bool verbose)
 {
-    DEBUG0("Loading filter_definition parameters");
+    DEBUG0("Loading definition_filter parameters");
 
     // All ranks load
     esio_line_establish(h, 1, 0, 1);
 
-    filter_definition t;
+    definition_filter t;
     esio_line_read(h, name_filter_phi, &t.filter_phi, 0);
     this->populate(t, verbose);  // Prefer this to incoming
 }
@@ -179,7 +179,7 @@ static const suzerain_filterop_boundary_treatment b_last
     = SUZERAIN_FILTEROP_BOUNDARY_NOFILTER;
 
 int
-filter_definition::prepare_real(
+definition_filter::prepare_real(
         const int n) const
 {
     r.reset(suzerain_filterop_alloc(n, method, r_method_params,
@@ -189,7 +189,7 @@ filter_definition::prepare_real(
 }
 
 int
-filter_definition::prepare_complex(
+definition_filter::prepare_complex(
         const int n) const
 {
     z.reset(suzerain_filteropz_alloc(n, method, z_method_params,
@@ -199,13 +199,13 @@ filter_definition::prepare_complex(
 }
 
 void
-filter_definition::reset()
+definition_filter::reset()
 {
     r.reset();
     z.reset();
 }
 
-void filter_definition::save_filteropz(const esio_handle h,
+void definition_filter::save_filteropz(const esio_handle h,
                                        const int n,
                                        const char *location)
 {

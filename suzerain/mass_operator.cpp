@@ -38,7 +38,7 @@
 namespace suzerain {
 
 mass_operator::mass_operator(
-        const grid_specification &grid,
+        const specification_grid &grid,
         const pencil_grid &dgrid,
         const bsplineop &cop,
         bspline &b)

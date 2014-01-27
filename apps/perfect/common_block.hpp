@@ -69,7 +69,7 @@ public:
      * Determines the general type of the slow growth treatment by the paired
      * linear and nonlinear operators.  This is insufficient information to
      * nail down the exact treatment in use as it may depend on other settings,
-     * e.g. \ref largo_definition in cases when the Largo library is employed.
+     * e.g. \ref definition_largo in cases when the Largo library is employed.
      */
     slowgrowth::type slow_treatment;
 

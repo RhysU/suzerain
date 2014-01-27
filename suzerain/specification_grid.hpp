@@ -24,7 +24,7 @@
 #ifndef SUZERAIN_GRID_SPECIFICATION_HPP
 #define SUZERAIN_GRID_SPECIFICATION_HPP
 
-// TODO Distinguish between two- versus one-sided stretching in grid_specification
+// TODO Distinguish between two- versus one-sided stretching in specification_grid
 
 /** @file
  * Provides classes handling three-dimensional, dealiased grid specifications.
@@ -40,7 +40,7 @@ namespace suzerain {
  * wall-normal Y direction.  Logical grid sizes should be specified in terms of
  * physical space coefficient counts.
  */
-class grid_specification
+class specification_grid
 {
 public:
     // See http://eigen.tuxfamily.org/dox/TopicStructHavingEigenMembers.html
@@ -51,7 +51,7 @@ public:
      * overwritten.  Integer values will be zeros and floating point
      * values will be NaNs.
      */
-    grid_specification();
+    specification_grid();
 
     /**
      * Construct an instance with the given default values.
@@ -75,7 +75,7 @@ public:
      * @param Nz      Logical grid size in the Z direction.
      * @param DAFz    Dealiasing factor in the Z direction.
      */
-    grid_specification(real_t Lx,
+    specification_grid(real_t Lx,
                        int    Nx,
                        real_t DAFx,
                        real_t Ly,
@@ -103,7 +103,7 @@ public:
      * @param value New, nonnegative value to set
      * @return <tt>*this</tt>
      */
-    grid_specification& Nx(int value);
+    specification_grid& Nx(int value);
 
     /**
      * Set the logical extents in the Y direction.
@@ -111,7 +111,7 @@ public:
      * @param value New, nonnegative value to set
      * @return <tt>*this</tt>
      */
-    grid_specification& Ny(int value);
+    specification_grid& Ny(int value);
 
     /**
      * Set the logical extents in the Z direction.
@@ -119,7 +119,7 @@ public:
      * @param value New, nonnegative value to set
      * @return <tt>*this</tt>
      */
-    grid_specification& Nz(int value);
+    specification_grid& Nz(int value);
 
     /**@}*/
 
@@ -140,7 +140,7 @@ public:
      * @param factor New, nonnegative factor to set.
      * @return <tt>*this</tt>
      */
-    grid_specification& DAFx(real_t factor);
+    specification_grid& DAFx(real_t factor);
 
     /**
      * Set the dealiasing factor in the Z direction.
@@ -148,7 +148,7 @@ public:
      * @param factor New, nonnegative factor to set.
      * @return <tt>*this</tt>
      */
-    grid_specification& DAFz(real_t factor);
+    specification_grid& DAFz(real_t factor);
 
     /**@}*/
 
@@ -185,19 +185,19 @@ public:
     bool one_sided() const { return !two_sided(); }
 
     /** @copydoc Nx(int) */
-    grid_specification& Nx(const std::string& value);
+    specification_grid& Nx(const std::string& value);
 
     /** @copydoc Ny(int) */
-    grid_specification& Ny(const std::string& value);
+    specification_grid& Ny(const std::string& value);
 
     /** @copydoc Nz(int) */
-    grid_specification& Nz(const std::string& value);
+    specification_grid& Nz(const std::string& value);
 
     /** @copydoc DAFx(real_t) */
-    grid_specification& DAFx(const std::string& factor);
+    specification_grid& DAFx(const std::string& factor);
 
     /** @copydoc DAFz(real_t) */
-    grid_specification& DAFz(const std::string& factor);
+    specification_grid& DAFz(const std::string& factor);
 };
 
 } // namespace suzerain

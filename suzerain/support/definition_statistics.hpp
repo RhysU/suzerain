@@ -40,7 +40,7 @@ namespace support {
  * Includes the sampling rate and particulars around writing and archiving
  * statistics files.
  */
-class statistics_definition
+class definition_statistics
     : public virtual definition_base
 {
 public:
@@ -60,7 +60,7 @@ public:
      * @see ESIO's esio_file_close_restart() for the semantics of
      *      \c desttemplate and \c retain.
      */
-    explicit statistics_definition(
+    explicit definition_statistics(
             const std::string& destination            ,
             const std::size_t  retain      = (1 << 15),
             const real_t       dt          = 0        ,

@@ -61,8 +61,8 @@ static void parse_formulation(const std::string& s, largo_formulation* t)
     *t = largo_formulation::lookup(s);
 }
 
-largo_definition::largo_definition()
-    : largo_specification()
+definition_largo::definition_largo()
+    : specification_largo()
 {
 }
 
@@ -75,7 +75,7 @@ static const char desc_formulation[] = "Name of the slow growth formulation";
 static const char desc_grdelta[]     = "Growth rate of reference thickness (Delta)";
 
 boost::program_options::options_description
-largo_definition::options_description()
+definition_largo::options_description()
 {
     using boost::bind;
     using boost::lexical_cast;
@@ -140,8 +140,8 @@ static bool maybe_populate(const char*              name,
 }
 
 void
-largo_definition::populate(
-    const largo_definition& that,
+definition_largo::populate(
+    const definition_largo& that,
     const bool verbose)
 {
     using support::maybe_populate;
@@ -167,8 +167,8 @@ static bool maybe_override(const char*              name,
 }
 
 void
-largo_definition::override(
-    const largo_definition& that,
+definition_largo::override(
+    const definition_largo& that,
     const bool verbose)
 {
     using support::maybe_override;
@@ -189,16 +189,16 @@ static const char location_baseflow_dy[] = "largo_baseflow_dy";
 static const char location_baseflow[]    = "largo_baseflow";
 static const char location[]             = "largo";
 
-// std::strings permit easy comparison for largo_definition::load()
+// std::strings permit easy comparison for definition_largo::load()
 static const std::string type_polynomial("polynomial");
 static const std::string type_uniform   ("uniform");
 static const std::string type_map       ("map");
 
 void
-largo_definition::save(
+definition_largo::save(
     const esio_handle h) const
 {
-    DEBUG0("Storing largo_definition parameters");
+    DEBUG0("Storing definition_largo parameters");
 
     if (!formulation.enabled()) {
         return;    // Shortcircuit on no formulation
@@ -394,13 +394,13 @@ largo_definition::save(
 }
 
 void
-largo_definition::load(
+definition_largo::load(
     const esio_handle h,
     const bool verbose)
 {
     using std::free;
 
-    largo_definition t;
+    definition_largo t;
     assert(t.formulation == largo_formulation::disable);
 
     // Only proceed if a largo definition is active in the restart
@@ -413,7 +413,7 @@ largo_definition::load(
         return;
     }
 
-    DEBUG0("Loading largo_definition parameters");
+    DEBUG0("Loading definition_largo parameters");
 
     // Load formulation name and look it up in the static instance map
     {
@@ -442,7 +442,7 @@ largo_definition::load(
         SUZERAIN_ERROR_VOID_UNIMPLEMENTED();
     }
 
-    // Strategy for loading largo_definition baseflow information:
+    // Strategy for loading definition_largo baseflow information:
     // Load first.  Sort it out second.
     // Otherwise interspersing IO with logic is a gnarly mess.
     int neqns, ncoeffs;

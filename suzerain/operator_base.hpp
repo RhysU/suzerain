@@ -48,7 +48,7 @@ public:
      * @param b B-spline workspace for obtaining necessary details,
      *          e.g. integration coefficients.
      */
-    operator_base(const grid_specification &grid,
+    operator_base(const specification_grid &grid,
                   const pencil_grid &dgrid,
                   const bsplineop &cop,
                   bspline &b);

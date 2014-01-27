@@ -65,7 +65,7 @@ static void parse_option(const std::string& s,
     *value = t;
 }
 
-restart_definition::restart_definition(
+definition_restart::definition_restart(
         const std::string& metadata,
         const std::string& uncommitted,
         const std::string& destination,
@@ -86,7 +86,7 @@ restart_definition::restart_definition(
 }
 
 boost::program_options::options_description
-restart_definition::options_description()
+definition_restart::options_description()
 {
     boost::program_options::options_description retval(
             "Restart-writing parameters");

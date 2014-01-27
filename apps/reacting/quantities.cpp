@@ -283,7 +283,7 @@ bool quantities::load(const esio_handle h)
 // suboptimal but is expected to be invoked relatively infrequently.
 quantities sample_quantities(
         const antioch_constitutive& cmods,
-        const grid_specification &grid,
+        const specification_grid &grid,
         const pencil_grid &dgrid,
         const bsplineop &cop,
         contiguous_state<4,complex_t> &swave,

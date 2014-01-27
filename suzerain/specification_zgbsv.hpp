@@ -35,7 +35,7 @@
 namespace suzerain {
 
 /** Encapsulates parsing and storing complex-valued banded solve options. */
-class zgbsv_specification
+class specification_zgbsv
 {
 public:
 
@@ -43,10 +43,10 @@ public:
     enum method_type { zgbsvx = 1, zgbsv, zcgbsvx };
 
     /** Construct a default solver specification */
-    zgbsv_specification();
+    specification_zgbsv();
 
     /** Construct a solver specification by parsing the given \c spec. */
-    zgbsv_specification(const std::string &spec);
+    specification_zgbsv(const std::string &spec);
 
     method_type  method()   const { return method_; }
     bool         equil()    const { return equil_;  }
@@ -59,7 +59,7 @@ public:
     const char * mname()    const;
 
     operator std::string () const;
-    bool operator==(const zgbsv_specification &that) const;
+    bool operator==(const specification_zgbsv &that) const;
 
 private:
 
@@ -76,7 +76,7 @@ private:
 template< typename CharT, typename Traits >
 std::basic_ostream<CharT,Traits>& operator<<(
         std::basic_ostream<CharT,Traits> &os,
-        const zgbsv_specification& s)
+        const specification_zgbsv& s)
 {
     return os << static_cast<std::string>(s);
 }

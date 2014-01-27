@@ -70,7 +70,7 @@ public:
      * @param Ma     Nondimensional Mach number for kinetic energy computations.
      *               In a dimensional setting, this should be one.  Notice that
      *               it is a \e reference permitting the value to track another
-     *               setting.  For example, one in a \ref scenario_definition.
+     *               setting.  For example, one in a \ref definition_scenario.
      * @param dgrid  Parallel decomposition details used to determine which
      *               rank houses the "zero-zero" Fourier modes.
      * @param common Storage from which mean velocity profiles will be read and

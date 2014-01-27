@@ -67,61 +67,61 @@ static void parse_bounded(const std::string& s,
     *t = v;
 }
 
-isothermal_definition::isothermal_definition()
-    : isothermal_specification()
+definition_isothermal::definition_isothermal()
+    : specification_isothermal()
 {
 }
 
-isothermal_definition::isothermal_definition(
+definition_isothermal::definition_isothermal(
         real_t wall_T)
-    : isothermal_specification(wall_T)
+    : specification_isothermal(wall_T)
 {
 }
 
-isothermal_definition::isothermal_definition(
+definition_isothermal::definition_isothermal(
         real_t wall_T,
         const std::vector<real_t>& wall_cs)
-    : isothermal_specification(wall_T, wall_cs)
+    : specification_isothermal(wall_T, wall_cs)
 {
 }
 
-isothermal_definition::isothermal_definition(
+definition_isothermal::definition_isothermal(
         real_t wall_T,
         real_t inflow_velocity)
-    : isothermal_specification(wall_T, inflow_velocity)
+    : specification_isothermal(wall_T, inflow_velocity)
 {
 }
 
-isothermal_definition::isothermal_definition(
+definition_isothermal::definition_isothermal(
         real_t wall_T,
         real_t inflow_velocity,
         const std::vector<real_t>& wall_cs)
-    : isothermal_specification(wall_T, inflow_velocity, wall_cs)
+    : specification_isothermal(wall_T, inflow_velocity, wall_cs)
 {
 }
 
-isothermal_definition::isothermal_definition(
+definition_isothermal::definition_isothermal(
         real_t lower_T,
         real_t lower_v,
         real_t upper_T,
         real_t upper_v)
-    : isothermal_specification(lower_T, lower_v, upper_T, upper_v)
+    : specification_isothermal(lower_T, lower_v, upper_T, upper_v)
 {
 }
 
-isothermal_definition::isothermal_definition(
+definition_isothermal::definition_isothermal(
         real_t lower_T,
         real_t lower_v,
         const std::vector<real_t>& lower_cs,
         real_t upper_T,
         real_t upper_v,
         const std::vector<real_t>& upper_cs)
-    : isothermal_specification(lower_T, lower_v, lower_cs,
+    : specification_isothermal(lower_T, lower_v, lower_cs,
                                upper_T, upper_v, upper_cs)
 {
 }
 
-isothermal_definition::isothermal_definition(
+definition_isothermal::definition_isothermal(
         real_t lower_T,
         real_t lower_v,
         real_t lower_rho,
@@ -130,7 +130,7 @@ isothermal_definition::isothermal_definition(
         real_t upper_v,
         real_t upper_rho,
         const std::vector<real_t>& upper_cs)
-    : isothermal_specification(lower_T, lower_v, lower_rho, lower_cs,
+    : specification_isothermal(lower_T, lower_v, lower_rho, lower_cs,
                                upper_T, upper_v, upper_rho, upper_cs)
 {
 }
@@ -164,7 +164,7 @@ static const char desc_upper_rho[]  = "Density at upper boundary";
 static const char desc_upper_cs []  = "Species mass fractions at upper boundary";
 
 boost::program_options::options_description
-isothermal_definition::options_description()
+definition_isothermal::options_description()
 {
     using boost::bind;
     using boost::lexical_cast;
@@ -280,8 +280,8 @@ isothermal_definition::options_description()
 }
 
 void
-isothermal_definition::populate(
-        const isothermal_specification& that,
+definition_isothermal::populate(
+        const specification_isothermal& that,
         const bool verbose)
 {
 #define CALL_MAYBE_POPULATE(mem)                                             \
@@ -303,8 +303,8 @@ isothermal_definition::populate(
 }
 
 void
-isothermal_definition::override(
-        const isothermal_specification& that,
+definition_isothermal::override(
+        const specification_isothermal& that,
         const bool verbose)
 {
 #define CALL_MAYBE_OVERRIDE(mem)                                            \
@@ -326,10 +326,10 @@ isothermal_definition::override(
 }
 
 void
-isothermal_definition::save(
+definition_isothermal::save(
         const esio_handle h) const
 {
-    DEBUG0("Storing isothermal_definition parameters");
+    DEBUG0("Storing definition_isothermal parameters");
 
     // Only root writes data
     int procid;
@@ -367,13 +367,13 @@ isothermal_definition::save(
 }
 
 void
-isothermal_definition::load(
+definition_isothermal::load(
         const esio_handle h,
         const bool verbose)
 {
-    DEBUG0("Loading isothermal_definition parameters");
+    DEBUG0("Loading definition_isothermal parameters");
 
-    isothermal_definition t;
+    definition_isothermal t;
 
     // All ranks load
 

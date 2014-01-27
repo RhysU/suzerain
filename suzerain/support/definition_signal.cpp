@@ -95,26 +95,26 @@ static std::vector<int> parse_spec(const std::string& name,
     return retval;
 }
 
-signal_definition::signal_definition(const std::string& specstatus,
+definition_signal::definition_signal(const std::string& specstatus,
                                      const std::string& specrestart,
                                      const std::string& specstatistics,
                                      const std::string& specteardown,
                                      const std::string& spechalt)
-    : status    (parse_spec("signal_definition(specstatus,...)",
+    : status    (parse_spec("definition_signal(specstatus,...)",
                             specstatus))
-    , restart   (parse_spec("signal_definition(...,specrestart,...)",
+    , restart   (parse_spec("definition_signal(...,specrestart,...)",
                             specrestart))
-    , statistics(parse_spec("signal_definition(...,specstatistics,...)",
+    , statistics(parse_spec("definition_signal(...,specstatistics,...)",
                             specstatistics))
-    , teardown  (parse_spec("signal_definition(...,specteardown)",
+    , teardown  (parse_spec("definition_signal(...,specteardown)",
                             specteardown))
-    , halt      (parse_spec("signal_definition(...,spechalt)",
+    , halt      (parse_spec("definition_signal(...,spechalt)",
                             spechalt))
 {
 }
 
 boost::program_options::options_description
-signal_definition::options_description()
+definition_signal::options_description()
 {
     using boost::algorithm::join;
     using boost::program_options::options_description;
@@ -156,58 +156,58 @@ signal_definition::options_description()
     retval.add_options()
     ("signal_status", value<std::string>()
      ->default_value(join(names_status, ","))
-     ->notifier(boost::bind(&signal_definition::parse_status, this, _1)),
+     ->notifier(boost::bind(&definition_signal::parse_status, this, _1)),
      "Show status information on any signal in this comma-separated list")
 
     ("signal_restart", value<std::string>()
      ->default_value(join(names_restart, ","))
-     ->notifier(boost::bind(&signal_definition::parse_restart, this, _1)),
+     ->notifier(boost::bind(&definition_signal::parse_restart, this, _1)),
      "Write restart file on any signal in this comma-separated list")
 
     ("signal_statistics", value<std::string>()
      ->default_value(join(names_statistics, ","))
-     ->notifier(boost::bind(&signal_definition::parse_statistics, this, _1)),
+     ->notifier(boost::bind(&definition_signal::parse_statistics, this, _1)),
      "Write statistics file on any signal in this comma-separated list")
 
     ("signal_teardown", value<std::string>()
      ->default_value(join(names_teardown, ","))
-     ->notifier(boost::bind(&signal_definition::parse_teardown, this, _1)),
+     ->notifier(boost::bind(&definition_signal::parse_teardown, this, _1)),
      "Tear down simulation on any signal in this comma-separated list")
 
     ("signal_halt", value<std::string>()
      ->default_value(join(names_halt, ","))
-     ->notifier(boost::bind(&signal_definition::parse_halt, this, _1)),
+     ->notifier(boost::bind(&definition_signal::parse_halt, this, _1)),
      "Halt simulation on any signal in this comma-separated list")
     ;
 
     return retval;
 }
 
-void signal_definition::parse_status(const std::string& spec)
+void definition_signal::parse_status(const std::string& spec)
 {
     std::vector<int> tmp = parse_spec("--signal_status", spec);
     this->status.swap(tmp);
 }
 
-void signal_definition::parse_restart(const std::string& spec)
+void definition_signal::parse_restart(const std::string& spec)
 {
     std::vector<int> tmp = parse_spec("--signal_restart", spec);
     this->restart.swap(tmp);
 }
 
-void signal_definition::parse_statistics(const std::string& spec)
+void definition_signal::parse_statistics(const std::string& spec)
 {
     std::vector<int> tmp = parse_spec("--signal_statistics", spec);
     this->statistics.swap(tmp);
 }
 
-void signal_definition::parse_teardown(const std::string& spec)
+void definition_signal::parse_teardown(const std::string& spec)
 {
     std::vector<int> tmp = parse_spec("--signal_teardown", spec);
     this->teardown.swap(tmp);
 }
 
-void signal_definition::parse_halt(const std::string& spec)
+void definition_signal::parse_halt(const std::string& spec)
 {
     std::vector<int> tmp = parse_spec("--signal_halt", spec);
     this->halt.swap(tmp);

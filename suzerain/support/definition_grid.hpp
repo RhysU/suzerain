@@ -43,16 +43,16 @@ namespace suzerain {
 namespace support {
 
 /**
- * Upgrades a \ref grid_specification with \ref definition_base behavior.
+ * Upgrades a \ref specification_grid with \ref definition_base behavior.
  * This permits using the instance with \ref program_options.
  */
-class grid_definition
+class definition_grid
     : public virtual definition_base
     , public virtual loadable
-    , public virtual overridable<grid_specification>
-    , public virtual populatable<grid_specification>
+    , public virtual overridable<specification_grid>
+    , public virtual populatable<specification_grid>
     , public virtual savable
-    , public grid_specification
+    , public specification_grid
 {
 public:
 
@@ -61,7 +61,7 @@ public:
      * overwritten.  Integer values will be zeros and floating point
      * values will be NaNs.
      */
-    grid_definition();
+    definition_grid();
 
     /**
      * Construct an instance with the given default values.
@@ -86,7 +86,7 @@ public:
      * @param Nz      Logical grid size in the Z direction.
      * @param DAFz    Dealiasing factor in the Z direction.
      */
-    grid_definition(const real_t Lx,
+    definition_grid(const real_t Lx,
                     const int    Nx,
                     const real_t DAFx,
                     const real_t Ly,
@@ -99,12 +99,12 @@ public:
 
     /** @copydoc populatable::populate */
     virtual void populate(
-            const grid_specification& that,
+            const specification_grid& that,
             const bool verbose = false);
 
     /** @copydoc overridable::override */
     virtual void override(
-            const grid_specification& that,
+            const specification_grid& that,
             const bool verbose = false);
 
     /** @copydoc savable::save */

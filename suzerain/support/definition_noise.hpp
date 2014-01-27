@@ -37,17 +37,17 @@ namespace suzerain {
 namespace support {
 
 /**
- * Upgrades a \ref noise_specification with \ref definition_base behavior.
+ * Upgrades a \ref specification_noise with \ref definition_base behavior.
  * This permits using the instance with \ref program_options.
  */
-class noise_definition
-    : public noise_specification
+class definition_noise
+    : public specification_noise
     , public virtual definition_base
 {
 public:
 
     /** Construct an instance with the given default values */
-    explicit noise_definition(
+    explicit definition_noise(
             real_t fluct_percent     = 0,
             unsigned long fluct_seed = 12345,
             real_t kxfrac_min        = 0,

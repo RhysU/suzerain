@@ -41,7 +41,7 @@ class operator_tools;
 namespace perfect {
 
 // Forward declarations
-class scenario_definition;
+class definition_scenario;
 
 /**
  * Encapsulate the mean quantities detailed in the "Sampling logistics" section
@@ -325,7 +325,7 @@ private:
  * @return Mean quantities as B-spline coefficients.
  */
 quantities sample_quantities(
-        const scenario_definition &scenario,
+        const definition_scenario &scenario,
         const operator_tools& otool,
         contiguous_state<4,complex_t> &swave,
         const real_t t);

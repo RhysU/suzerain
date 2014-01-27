@@ -38,16 +38,16 @@ namespace suzerain {
 
 // Forward declarations
 class bsmbsm_solver;
-class grid_specification;
-class isothermal_specification;
+class specification_grid;
+class specification_isothermal;
 class pencil_grid;
-class zgbsv_specification;
+class specification_zgbsv;
 
 namespace perfect {
 
 // Forward declarations
 class operator_common_block;
-class scenario_definition;
+class definition_scenario;
 
 /**
  * A hybrid implicit operator that provides isothermal wall conditions.
@@ -64,15 +64,15 @@ class isothermal_hybrid_linear_operator
 public:
 
     /**
-     * When grid_specification::two_sided(), both the lower and upper
+     * When specification_grid::two_sided(), both the lower and upper
      * boundaries are constrained to be isothermal.  When
-     * grid_specification::one_sided(), only the lower boundary is constrained.
+     * specification_grid::one_sided(), only the lower boundary is constrained.
      */
     isothermal_hybrid_linear_operator(
-            const zgbsv_specification& spec,
-            const scenario_definition& scenario,
-            const isothermal_specification& isothermal,
-            const grid_specification& grid,
+            const specification_zgbsv& spec,
+            const definition_scenario& scenario,
+            const specification_isothermal& isothermal,
+            const specification_grid& grid,
             const pencil_grid& dgrid,
             const bsplineop& cop,
             bspline& b,
@@ -111,10 +111,10 @@ protected:
     shared_ptr<bsmbsm_solver> solver;
 
     /** The scenario in which the operator is used */
-    const scenario_definition& scenario;
+    const definition_scenario& scenario;
 
     /** The isothermal wall boundary details */
-    const isothermal_specification& isothermal;
+    const specification_isothermal& isothermal;
 
     /** Houses data required for operator application and inversion */
     operator_common_block& common;

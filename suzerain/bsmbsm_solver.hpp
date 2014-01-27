@@ -25,7 +25,7 @@
 #define SUZERAIN_BSMBSM_SOLVER_HPP
 
 /** @file
- * Encapsulates solving BSMBSM problems per a \ref zgbsv_specification.
+ * Encapsulates solving BSMBSM problems per a \ref specification_zgbsv.
  * @see The definition of a BSMBSM problem in \ref bsmbsm.h.
  */
 
@@ -42,7 +42,7 @@ namespace suzerain {
 
 /**
  * An abstract base class for solving BSMBSM problems per a \ref
- * zgbsv_specification.
+ * specification_zgbsv.
  *
  * To use the interface, users
  * <ol>
@@ -77,7 +77,7 @@ protected:
      * Either construct a subclass or use the static build() method.
      */
     bsmbsm_solver(const suzerain_bsmbsm&     bsmbsm,
-                  const zgbsv_specification& spec,
+                  const specification_zgbsv& spec,
                   const int                  nrhs);
 
 public:
@@ -97,14 +97,14 @@ public:
      *        <tt>spec.method()</tt> is unknown.
      */
     static bsmbsm_solver* build(const suzerain_bsmbsm&     bsmbsm,
-                                const zgbsv_specification& spec,
+                                const specification_zgbsv& spec,
                                 const int                  nrhs);
 
     /** Virtual destructor as appropriate for an abstract base class. */
     virtual ~bsmbsm_solver() { /* NOP */ }
 
     /** What solve specification does this instance use? */
-    zgbsv_specification spec;
+    specification_zgbsv spec;
 
     /** What is the storage type for the LU factorization? */
     typedef Matrix<complex_double, Dynamic, Dynamic, ColMajor> LU_type;
@@ -345,10 +345,10 @@ public:
      * @param nrhs   Maximum number of right hand sides per #solve invocation.
      *
      * @throw <tt>std::invalid_argument</tt> if
-     *        <tt>spec.method() != zgbsv_specification::zgbsv</tt>.
+     *        <tt>spec.method() != specification_zgbsv::zgbsv</tt>.
      */
     bsmbsm_solver_zgbsv(const suzerain_bsmbsm&     bsmbsm,
-                        const zgbsv_specification& spec,
+                        const specification_zgbsv& spec,
                         const int                  nrhs);
 
 protected:
@@ -379,10 +379,10 @@ public:
      * @param nrhs   Maximum number of right hand sides per #solve invocation.
      *
      * @throw <tt>std::invalid_argument</tt> if
-     *        <tt>spec.method() != zgbsv_specification::zgbsvx</tt>.
+     *        <tt>spec.method() != specification_zgbsv::zgbsvx</tt>.
      */
     bsmbsm_solver_zgbsvx(const suzerain_bsmbsm&     bsmbsm,
-                         const zgbsv_specification& spec,
+                         const specification_zgbsv& spec,
                          const int                  nrhs);
 
     /** @return \c equed from any prior suzerain_lapack_zgbsvx() usage. */
@@ -478,10 +478,10 @@ public:
      * @param nrhs   Maximum number of right hand sides per #solve usage.
      *
      * @throw <tt>std::invalid_argument</tt> if
-     *        <tt>spec.method() != zgbsv_specification::zcgbsvx</tt>.
+     *        <tt>spec.method() != specification_zgbsv::zcgbsvx</tt>.
      */
     bsmbsm_solver_zcgbsvx(const suzerain_bsmbsm&     bsmbsm,
-                          const zgbsv_specification& spec,
+                          const specification_zgbsv& spec,
                           const int                  nrhs);
 
     virtual bsmbsm_solver& supplied_PAPT();

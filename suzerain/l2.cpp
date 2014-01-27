@@ -42,7 +42,7 @@ namespace suzerain {
 std::vector<field_L2xyz>
 compute_field_L2xyz(
         const contiguous_state<4,complex_t> &state,
-        const grid_specification& grid,
+        const specification_grid& grid,
         const pencil_grid& dgrid,
         const bsplineop& gop)
 {
@@ -162,7 +162,7 @@ compute_field_L2xyz(
 std::vector<field_L2xz>
 compute_field_L2xz(
         const contiguous_state<4,complex_t> &state,
-        const grid_specification& grid,
+        const specification_grid& grid,
         const pencil_grid& dgrid,
         const bsplineop& cop)
 {
@@ -281,7 +281,7 @@ compute_field_L2xz(
 std::vector<field_L2xz>
 compute_field_L2xz(
         const contiguous_state<4,complex_t> &state,
-        const grid_specification& grid,
+        const specification_grid& grid,
         const pencil_grid& dgrid)
 {
     // Ensure state storage meets this routine's assumptions

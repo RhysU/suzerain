@@ -68,12 +68,12 @@ static void validate_option(
     *value = t;
 }
 
-radialflow_definition::radialflow_definition(
+definition_radialflow::definition_radialflow(
             double deltae,
             double gamma,
             double Mae,
             double pexi)
-    : radialflow_specification(deltae, gamma, Mae, pexi)
+    : specification_radialflow(deltae, gamma, Mae, pexi)
 {
 }
 
@@ -98,7 +98,7 @@ static const char desc_pexi  [] = "Edge pressure gradient parameter."
                                   " Zero or NaN disables the radial flow.";
 
 boost::program_options::options_description
-radialflow_definition::options_description()
+definition_radialflow::options_description()
 {
     using boost::bind;
     using boost::lexical_cast;
@@ -155,8 +155,8 @@ radialflow_definition::options_description()
 }
 
 void
-radialflow_definition::populate(
-        const radialflow_specification& that,
+definition_radialflow::populate(
+        const specification_radialflow& that,
         const bool verbose)
 {
     maybe_populate(name_deltae, desc_deltae, deltae, that.deltae, verbose);
@@ -166,8 +166,8 @@ radialflow_definition::populate(
 }
 
 void
-radialflow_definition::override(
-        const radialflow_specification& that,
+definition_radialflow::override(
+        const specification_radialflow& that,
         const bool verbose)
 {
     maybe_override(name_deltae, desc_deltae, deltae, that.deltae, verbose);
@@ -177,7 +177,7 @@ radialflow_definition::override(
 }
 
 void
-radialflow_definition::save(
+definition_radialflow::save(
     const esio_handle h) const
 {
     // Save nothing if there's nothing interesting to save
@@ -185,7 +185,7 @@ radialflow_definition::save(
         return;
     }
 
-    DEBUG0("Storing radialflow_definition parameters");
+    DEBUG0("Storing definition_radialflow parameters");
 
     // Write out the "container" holding all other settings
     const int one = 1;
@@ -203,11 +203,11 @@ radialflow_definition::save(
 }
 
 void
-radialflow_definition::load(
+definition_radialflow::load(
     const esio_handle h,
     const bool verbose)
 {
-    radialflow_definition t;
+    definition_radialflow t;
 
     // Only proceed if a definition is active in the restart
     int in_use = 0;
@@ -219,7 +219,7 @@ radialflow_definition::load(
         return;
     }
 
-    DEBUG0("Loading radialflow_definition parameters");
+    DEBUG0("Loading definition_radialflow parameters");
 
     // Read in information as attributes within the container
     esio_attribute_read(h, location, attr_deltae, &t.deltae);

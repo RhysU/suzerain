@@ -54,9 +54,9 @@ driver::driver(
                   argument_synopsis,
                   description,
                   revstr)
-    , scenario(make_shared<scenario_definition>())
-    , isothermal(make_shared<support::isothermal_definition>())
-    , sg(make_shared<support::largo_definition>())
+    , scenario(make_shared<definition_scenario>())
+    , isothermal(make_shared<support::definition_isothermal>())
+    , sg(make_shared<support::definition_largo>())
     , who("perfect")
 {
     this->fields = default_fields();

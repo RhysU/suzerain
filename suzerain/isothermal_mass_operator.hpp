@@ -38,7 +38,7 @@
 namespace suzerain {
 
 // Forward declarations
-class grid_specification;
+class specification_grid;
 class pencil_grid;
 
 /**
@@ -62,8 +62,8 @@ public:
      * lower boundary.
      */
     isothermal_mass_operator(
-            const isothermal_specification &spec,
-            const grid_specification &grid,
+            const specification_isothermal &spec,
+            const specification_grid &grid,
             const pencil_grid &dgrid,
             const bsplineop &cop,
             bspline &b);
@@ -72,15 +72,15 @@ public:
      * Compute the specific total energy \f$E\f$ on the lower boundary.  The
      * specified condition is provided but subclasses should account for any
      * relevant auxiliary information.  For example, when enforcing \c lower_v
-     * is disabled using \c NaN per \ref isothermal_specification#lower_v for a
+     * is disabled using \c NaN per \ref specification_isothermal#lower_v for a
      * non-reflecting boundary condition, the instantaneous mean velocity
      * should instead be used when computing \f$E\f$.
      *
-     * @param lower_T  Specified per \ref isothermal_specification#lower_T.
-     * @param lower_u  Specified per \ref isothermal_specification#lower_u.
-     * @param lower_v  Specified per \ref isothermal_specification#lower_v.
-     * @param lower_w  Specified per \ref isothermal_specification#lower_w.
-     * @param lower_cs Specified per \ref isothermal_specification#lower_cs.
+     * @param lower_T  Specified per \ref specification_isothermal#lower_T.
+     * @param lower_u  Specified per \ref specification_isothermal#lower_u.
+     * @param lower_v  Specified per \ref specification_isothermal#lower_v.
+     * @param lower_w  Specified per \ref specification_isothermal#lower_w.
+     * @param lower_cs Specified per \ref specification_isothermal#lower_cs.
      *
      * @return the value of \f$E\f$ to use when adjusting the lower boundary.
      */
@@ -94,11 +94,11 @@ public:
      * Compute the specific total energy \f$E\f$ on the upper boundary.
      * See \ref lower_E for additional comments.
      *
-     * @param upper_T  Specified per \ref isothermal_specification#upper_T.
-     * @param upper_u  Specified per \ref isothermal_specification#upper_u.
-     * @param upper_v  Specified per \ref isothermal_specification#upper_v.
-     * @param upper_w  Specified per \ref isothermal_specification#upper_w.
-     * @param upper_cs Specified per \ref isothermal_specification#upper_cs.
+     * @param upper_T  Specified per \ref specification_isothermal#upper_T.
+     * @param upper_u  Specified per \ref specification_isothermal#upper_u.
+     * @param upper_v  Specified per \ref specification_isothermal#upper_v.
+     * @param upper_w  Specified per \ref specification_isothermal#upper_w.
+     * @param upper_cs Specified per \ref specification_isothermal#upper_cs.
      *
      * @return the value of \f$E\f$ to use when adjusting the upper boundary.
      */
@@ -119,7 +119,7 @@ public:
 private:
 
     /** The lower and upper isothermal boundary specification. */
-    const isothermal_specification& spec;
+    const specification_isothermal& spec;
 
 };
 

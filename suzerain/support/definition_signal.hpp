@@ -39,7 +39,7 @@ namespace support {
  * Parses and contains signal processing details to allow a program to take
  * runtime-configurable responses to POSIX signals per \c signal.h.
  */
-class signal_definition
+class definition_signal
     : public virtual definition_base
 {
 public:
@@ -58,7 +58,7 @@ public:
      * @param spechalt       Comma-separated signal names indicating the
      *                       simulation should be halted.
      */
-    explicit signal_definition(
+    explicit definition_signal(
             const std::string& specstatus      = "HUP",
             const std::string& specrestart     = "HUP",
             const std::string& specstatistics  = "",

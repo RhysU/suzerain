@@ -68,8 +68,8 @@ static void validate_option(
     *value = t;
 }
 
-grid_definition::grid_definition()
-    : grid_specification(std::numeric_limits<real_t>::quiet_NaN(),
+definition_grid::definition_grid()
+    : specification_grid(std::numeric_limits<real_t>::quiet_NaN(),
                          0,
                          std::numeric_limits<real_t>::quiet_NaN(),
                          std::numeric_limits<real_t>::quiet_NaN(),
@@ -82,7 +82,7 @@ grid_definition::grid_definition()
 {
 }
 
-grid_definition::grid_definition(const real_t Lx,
+definition_grid::definition_grid(const real_t Lx,
                                  const int    Nx,
                                  const real_t DAFx,
                                  const real_t Ly,
@@ -92,7 +92,7 @@ grid_definition::grid_definition(const real_t Lx,
                                  const real_t Lz,
                                  const int    Nz,
                                  const real_t DAFz)
-    : grid_specification(Lx,
+    : specification_grid(Lx,
                          Nx,
                          DAFx,
                          Ly,
@@ -159,7 +159,7 @@ static const char desc_Pb[]
         = "Processor count in the Pb decomposition direction";
 
 boost::program_options::options_description
-grid_definition::options_description()
+definition_grid::options_description()
 {
     using boost::bind;
     using boost::lexical_cast;
@@ -175,7 +175,7 @@ grid_definition::options_description()
             "Mixed Fourier/B-spline computational grid definition");
 
     // Used to help resolve pointers-to-members taking strings
-    grid_specification& (grid_specification::*f)(const string&) = NULL;
+    specification_grid& (specification_grid::*f)(const string&) = NULL;
 
     auto_ptr<typed_value<string> > p;
 
@@ -190,7 +190,7 @@ grid_definition::options_description()
 
     // Nx
     p.reset(value<string>());
-    f = &grid_specification::Nx;
+    f = &specification_grid::Nx;
     p->notifier(bind(f, this, _1));
     if (N.x()) {
         p->default_value(lexical_cast<string>(N.x()));
@@ -199,7 +199,7 @@ grid_definition::options_description()
 
     // DAFx
     p.reset(value<string>());
-    f = &grid_specification::DAFx;
+    f = &specification_grid::DAFx;
     p->notifier(bind(f, this, _1));
     if (!(boost::math::isnan)(DAF.x())) {
         p->default_value(lexical_cast<string>(DAF.x()));
@@ -217,7 +217,7 @@ grid_definition::options_description()
 
     // Ny
     p.reset(value<string>());
-    f = &grid_specification::Ny;
+    f = &specification_grid::Ny;
     p->notifier(bind(f, this, _1));
     if (N.y()) {
         p->default_value(lexical_cast<string>(N.y()));
@@ -255,7 +255,7 @@ grid_definition::options_description()
 
     // Nz
     p.reset(value<string>());
-    f = &grid_specification::Nz;
+    f = &specification_grid::Nz;
     p->notifier(bind(f, this, _1));
     if (N.z()) {
         p->default_value(lexical_cast<string>(N.z()));
@@ -264,7 +264,7 @@ grid_definition::options_description()
 
     // DAFz
     p.reset(value<string>());
-    f = &grid_specification::DAFz;
+    f = &specification_grid::DAFz;
     p->notifier(bind(f, this, _1));
     if (!(boost::math::isnan)(DAF.z())) {
         p->default_value(lexical_cast<string>(DAF.z()));
@@ -293,8 +293,8 @@ grid_definition::options_description()
 }
 
 void
-grid_definition::populate(
-        const grid_specification& that,
+definition_grid::populate(
+        const specification_grid& that,
         const bool verbose)
 {
     maybe_populate(name_Lx, desc_Lx, L.x(), that.L.x(), verbose);
@@ -332,8 +332,8 @@ grid_definition::populate(
 }
 
 void
-grid_definition::override(
-        const grid_specification& that,
+definition_grid::override(
+        const specification_grid& that,
         const bool verbose)
 {
     maybe_override(name_Lx, desc_Lx, L.x(), that.L.x(), verbose);
@@ -371,14 +371,14 @@ grid_definition::override(
 }
 
 void
-grid_definition::save(
+definition_grid::save(
         const esio_handle h) const
 {
     // Only root writes data
     int procid;
     esio_handle_comm_rank(h, &procid);
 
-    DEBUG0("Saving grid_definition parameters");
+    DEBUG0("Saving definition_grid parameters");
 
     esio_line_establish(h, 1, 0, (procid == 0 ? 1 : 0));
 
@@ -443,15 +443,15 @@ grid_definition::save(
 }
 
 void
-grid_definition::load(
+definition_grid::load(
         const esio_handle h,
         const bool verbose)
 {
-    DEBUG0("Loading grid_definition parameters");
+    DEBUG0("Loading definition_grid parameters");
 
     esio_line_establish(h, 1, 0, 1); // All ranks load
 
-    grid_definition t;
+    definition_grid t;
     esio_line_read(h, name_Lx, &t.L.x(), 0);
     {
         int value;

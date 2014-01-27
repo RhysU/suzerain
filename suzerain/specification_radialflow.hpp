@@ -37,13 +37,13 @@ namespace suzerain {
  * suzerain_radialflow_qoi_match(). See \ref radialflow.h for how to interpret
  * these settings and radialflow.tex for a writeup on the general problem class.
  */
-class radialflow_specification
+class specification_radialflow
 {
 
 public:
 
     /** Construct an instance with the given default values. */
-    explicit radialflow_specification(
+    explicit specification_radialflow(
             double deltae = std::numeric_limits<double>::quiet_NaN(),
             double gamma  = std::numeric_limits<double>::quiet_NaN(),
             double Mae    = std::numeric_limits<double>::quiet_NaN(),

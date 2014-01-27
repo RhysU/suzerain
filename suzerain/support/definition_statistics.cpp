@@ -65,7 +65,7 @@ static void parse_option(const std::string& s,
     *value = t;
 }
 
-statistics_definition::statistics_definition(
+definition_statistics::definition_statistics(
         const std::string& destination,
         const std::size_t  retain,
         const real_t       dt,
@@ -80,7 +80,7 @@ statistics_definition::statistics_definition(
 }
 
 boost::program_options::options_description
-statistics_definition::options_description()
+definition_statistics::options_description()
 {
     using boost::bind;
     using boost::lexical_cast;

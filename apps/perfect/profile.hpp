@@ -47,13 +47,13 @@ namespace suzerain {
 // Forward declarations
 class bspline;
 class bsplineop_lu;
-class largo_specification;
+class specification_largo;
 class operator_tools;
 
 namespace perfect {
 
 // Forward declarations
-class scenario_definition;
+class definition_scenario;
 class quantities;
 
 /**
@@ -203,7 +203,7 @@ public:
  * @return Mean quantity profiles as B-spline coefficients.
  */
 profile sample_profile(
-        const scenario_definition &scenario,
+        const definition_scenario &scenario,
         const operator_tools& otool,
         contiguous_state<4,complex_t> &swave);
 
@@ -229,8 +229,8 @@ profile sample_profile(
  */
 void summarize_boundary_layer_nature(
         const profile &prof,
-        const scenario_definition &scenario,
-        const shared_ptr<largo_specification> &sg,
+        const definition_scenario &scenario,
+        const shared_ptr<specification_largo> &sg,
         const bsplineop_lu &masslu,
         bspline &b,
         suzerain_bl_local       &wall,
@@ -255,7 +255,7 @@ void summarize_boundary_layer_nature(
  */
 void summarize_channel_nature(
         const profile &prof,
-        const scenario_definition &scenario,
+        const definition_scenario &scenario,
         bspline &b,
         suzerain_channel_local   &wall,
         suzerain_channel_viscous &viscous,

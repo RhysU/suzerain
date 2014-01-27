@@ -36,8 +36,8 @@
 namespace suzerain {
 
 // Forward declarations
-class grid_specification;
-class largo_specification;
+class specification_grid;
+class specification_largo;
 class pencil_grid;
 
 namespace perfect {
@@ -45,7 +45,7 @@ namespace perfect {
 // Forward declarations
 class operator_common_block;
 class manufactured_solution;
-class scenario_definition;
+class definition_scenario;
 
 /**
  * A boundary-condition agnostic Navier&ndash;Stokes operator.
@@ -60,13 +60,13 @@ class nonlinear_operator
 public:
 
     nonlinear_operator(
-            const scenario_definition &scenario,
-            const grid_specification &grid,
+            const definition_scenario &scenario,
+            const specification_grid &grid,
             const pencil_grid &dgrid,
             const bsplineop &cop,
             bspline &b,
             operator_common_block &common,
-            largo_specification& sg,
+            specification_largo& sg,
             const shared_ptr<const manufactured_solution>& msoln);
 
     virtual std::vector<real_t> apply_operator(
@@ -78,13 +78,13 @@ public:
 protected:
 
     /** The scenario in which the operator is used */
-    const scenario_definition &scenario;
+    const definition_scenario &scenario;
 
     /** Houses data additionally required for some linear operators */
     operator_common_block &common;
 
     /** Houses data around slow growth forcing computed via Largo */
-    largo_specification& sg;
+    specification_largo& sg;
 
     /** Holds optional manufactured solution forcing details */
     const shared_ptr<const manufactured_solution> msoln;

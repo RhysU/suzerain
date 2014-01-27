@@ -42,9 +42,9 @@ namespace reacting {
 
 isothermal_mass_operator::isothermal_mass_operator(
         const antioch_constitutive& cmods,
-        const isothermal_specification &isospec,
-        const channel_definition &chdef,
-        const grid_specification &grid,
+        const specification_isothermal &isospec,
+        const definition_channel &chdef,
+        const specification_grid &grid,
         const pencil_grid &dgrid,
         const bsplineop &cop,
         bspline &b,
@@ -59,13 +59,13 @@ isothermal_mass_operator::isothermal_mass_operator(
 
 explicit_nonlinear_operator::explicit_nonlinear_operator(
         const antioch_constitutive& cmods,
-        const grid_specification &grid,
+        const specification_grid &grid,
         const pencil_grid &dgrid,
         const bsplineop &cop,
         bspline &b,
         operator_common_block &common,
-        const filter_definition &fsdef,
-        const largo_specification &sgdef,
+        const definition_filter &fsdef,
+        const specification_largo &sgdef,
         const shared_ptr<const manufactured_solution>& msoln)
     : operator_base(grid, dgrid, cop, b)
     , cmods(cmods)

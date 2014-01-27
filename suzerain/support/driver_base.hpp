@@ -167,19 +167,19 @@ public:
     std::vector<support::field> fields;
 
     /** Operational details on saving restart files. */
-    shared_ptr<restart_definition> restartdef;
+    shared_ptr<definition_restart> restartdef;
 
     /** Operational details on saving statistics files. */
-    shared_ptr<statistics_definition> statsdef;
+    shared_ptr<definition_statistics> statsdef;
 
     /** Operational details on advancing simulation time. */
-    shared_ptr<time_definition> timedef;
+    shared_ptr<definition_time> timedef;
 
     /**
      * Controls the OS signals triggering various types of processing.
      * Must be static so that it can be queried within signal handler.
      */
-    static signal_definition signaldef;
+    static definition_signal signaldef;
 
     /** Controls low storage method to be used for time advance. */
     shared_ptr<lowstorage::method_interface<
@@ -871,7 +871,7 @@ public:
     delta_t_allreducer(
             const double& wtime_mpi_init,
             const double& wtime_fftw_planning,
-            const shared_ptr<time_definition>& timedef,
+            const shared_ptr<definition_time>& timedef,
             const double& wtime_load_restart,
             const double& wtime_advance_start,
             const driver_base::step_type& last_status_nt,
@@ -895,7 +895,7 @@ private:
     const double& wtime_fftw_planning;
 
     /** Reference to content maintained by a \ref driver_base instance. */
-    const shared_ptr<time_definition>& timedef;
+    const shared_ptr<definition_time>& timedef;
 
     /** Reference to content maintained by a \ref driver_base instance. */
     const double& wtime_load_restart;

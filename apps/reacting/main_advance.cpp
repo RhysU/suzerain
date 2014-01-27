@@ -86,13 +86,13 @@ suzerain::reacting::driver_advance::run(int argc, char **argv)
     using boost::math::isnan;
 
     // Storage for binary-specific options
-    const support::noise_definition noisedef;
-    string solver_spec(static_cast<string>(suzerain::zgbsv_specification()));
+    const support::definition_noise noisedef;
+    string solver_spec(static_cast<string>(suzerain::specification_zgbsv()));
     string filter_spec("none");
     string undriven;
 
     // Register binary-specific options
-    options.add_definition(const_cast<support::noise_definition&>(noisedef));
+    options.add_definition(const_cast<support::definition_noise&>(noisedef));
     options.add_options()
         ("explicit", boost::program_options::bool_switch(),
                      "Use purely explicit operators")
@@ -157,8 +157,8 @@ suzerain::reacting::driver_advance::run(int argc, char **argv)
     real_t initial_t = numeric_limits<real_t>::quiet_NaN();
     {
         // Preserve exact restart file details via Push/Pop/Merge below
-        shared_ptr<channel_definition> restart_chdef
-                = make_shared<channel_definition>();
+        shared_ptr<definition_channel> restart_chdef
+                = make_shared<definition_channel>();
 
         // Load the restart details with state going into state_linear
         shared_ptr<boost::remove_pointer<esio_handle>::type> h( // RAII

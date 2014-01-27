@@ -134,7 +134,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             const real_t Re,
             const operator_base &o,
             operator_common_block &common,
-            const largo_specification& sg,
+            const specification_largo& sg,
             const shared_ptr<const ManufacturedSolution>& msoln,
             const real_t time,
             contiguous_state<4,complex_t> &swave,

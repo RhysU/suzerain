@@ -91,7 +91,7 @@ int test::run(int argc, char **argv)
 
     // Establish default grid and domain extents
     // Sizes chosen to be both a good test case and satisfy default abstol
-    grid.reset(new support::grid_definition( 5              // Lx
+    grid.reset(new support::definition_grid( 5              // Lx
                                            , 48             // Nx
                                            , 2              // DAFx
                                            , 3              // Ly

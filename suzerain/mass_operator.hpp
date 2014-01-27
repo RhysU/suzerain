@@ -38,7 +38,7 @@
 namespace suzerain {
 
 // Forward declarations
-class grid_specification;
+class specification_grid;
 class pencil_grid;
 
 /** A linear operator which applies or inverts a B-spline mass matrix. */
@@ -52,7 +52,7 @@ class mass_operator
 public:
 
     mass_operator(
-            const grid_specification &grid,
+            const specification_grid &grid,
             const pencil_grid &dgrid,
             const bsplineop &cop,
             bspline &b);

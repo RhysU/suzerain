@@ -70,16 +70,16 @@ public:
             char **argv);
 
     /** Nondimensional scenario parameters used by physics routines. */
-    shared_ptr<scenario_definition> scenario;
+    shared_ptr<definition_scenario> scenario;
 
     /** Nondimensional isothermal boundary condition parameters. */
-    shared_ptr<support::isothermal_definition> isothermal;
+    shared_ptr<support::definition_isothermal> isothermal;
 
     /** Slow growth parameters for use with the Largo library. */
-    shared_ptr<support::largo_definition> sg;
+    shared_ptr<support::definition_largo> sg;
 
     /** Radial nozzle baseflow specification for possible use with Largo. */
-    shared_ptr<support::radialflow_definition> noz;
+    shared_ptr<support::definition_radialflow> noz;
 
     /** Nondimensional manufactured solution optionally used by applications. */
     shared_ptr<manufactured_solution> msoln;

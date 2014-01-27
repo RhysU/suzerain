@@ -35,13 +35,13 @@ namespace suzerain {
 /**
  * Options for adding random noise to momentum fields.
  */
-class noise_specification
+class specification_noise
 {
 
 public:
 
     /** Construct an instance with the given default values */
-    explicit noise_specification(
+    explicit specification_noise(
             real_t        fluct_percent = 0,
             unsigned long fluct_seed    = 12345,
             real_t        kxfrac_min    = 0,

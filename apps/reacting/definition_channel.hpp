@@ -44,11 +44,11 @@ namespace reacting {
 /**
  * Holds parameters defining channel flow case.
  */
-class channel_definition
+class definition_channel
     : public virtual support::definition_base
     , public virtual support::loadable
-    , public virtual support::overridable<channel_definition>
-    , public virtual support::populatable<channel_definition>
+    , public virtual support::overridable<definition_channel>
+    , public virtual support::populatable<definition_channel>
     , public virtual support::savable
 {
 public:
@@ -57,7 +57,7 @@ public:
      * Construct an instance with all parameters set to NaN.
      * Clients can use NaN as a not-yet-specified or use-the-default value.
      */
-    channel_definition();
+    definition_channel();
 
     /**
      * Construct an instance with the given parameter values.
@@ -65,18 +65,18 @@ public:
      * @param bulk_rho   Bulk density target.
      * @param bulk_rho_u Bulk streamwise momentum target.
      */
-    channel_definition(const real_t bulk_rho,
+    definition_channel(const real_t bulk_rho,
                        const real_t bulk_rho_u,
                        const real_t bulk_rho_E);
 
     /** @copydoc support::populatable::populate */
     virtual void populate(
-            const channel_definition& that,
+            const definition_channel& that,
             const bool verbose = false);
 
     /** @copydoc support::overridable::override */
     virtual void override(
-            const channel_definition& that,
+            const definition_channel& that,
             const bool verbose = false);
 
     /** @copydoc support::savable::save */

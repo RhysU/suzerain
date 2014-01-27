@@ -43,13 +43,13 @@ SUZERAIN_GCC_DIAG_ON(unused-parameter);
 namespace suzerain {
 
 // Forward declarations
-class grid_specification;
+class specification_grid;
 class pencil_grid;
 
 namespace perfect {
 
 // Forward declarations
-class scenario_definition;
+class definition_scenario;
 
 /**
  * Manufactured solution employed throughout the perfect gas code.
@@ -60,8 +60,8 @@ class scenario_definition;
  *
  * None of #alpha, #beta, #gamma, #Ma, #Pr, #Re or #Lx, #Ly, #Lz are modified
  * when used in this fashion.  The former group will need to be synced using
- * \ref match(const scenario_definition&) and the later group using \ref
- * match(const grid_specification&).
+ * \ref match(const definition_scenario&) and the later group using \ref
+ * match(const specification_grid&).
  */
 class manufactured_solution
     : public virtual support::definition_base
@@ -83,16 +83,16 @@ public:
     explicit manufactured_solution(const std::string& caption);
 
     /** Set #alpha, #beta, #gamma, #Ma, #Pr, and #Re to match \c scenario. */
-    manufactured_solution& match(const scenario_definition& scenario);
+    manufactured_solution& match(const definition_scenario& scenario);
 
     /** Set #Lx, #Ly, and #Lz to match \c grid. */
-    manufactured_solution& match(const grid_specification& grid);
+    manufactured_solution& match(const specification_grid& grid);
 
     /**
      * Set #rho, #u, #v, #w, and #T per nsctpl_rholut::isothermal_channel.
      *
-     * Afterwards, \ref match(const scenario_definition&) and \ref match(const
-     * grid_specification&) may need to be called.
+     * Afterwards, \ref match(const definition_scenario&) and \ref match(const
+     * specification_grid&) may need to be called.
      */
     manufactured_solution& isothermal_channel();
 
@@ -119,8 +119,8 @@ private:
  */
 void save(const esio_handle h,
           const shared_ptr<manufactured_solution> & msoln,
-          const scenario_definition& scenario,
-          const grid_specification& grid,
+          const definition_scenario& scenario,
+          const specification_grid& grid,
           const char *location = "manufactured_solution");
 
 /**
@@ -133,8 +133,8 @@ void save(const esio_handle h,
  */
 void load(const esio_handle h,
           shared_ptr<manufactured_solution>& msoln,
-          const scenario_definition& scenario,
-          const grid_specification& grid,
+          const definition_scenario& scenario,
+          const specification_grid& grid,
           const char *location = "manufactured_solution");
 
 /**
@@ -150,7 +150,7 @@ void accumulate_manufactured_solution(
         const manufactured_solution &msoln,
         const real_t beta,
         contiguous_state<4,complex_t> &swave,
-        const grid_specification &grid,
+        const specification_grid &grid,
         const pencil_grid &dgrid,
         const bsplineop &cop,
         bspline &b,

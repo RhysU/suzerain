@@ -120,7 +120,7 @@ static void parse_walltime(const std::string& s,
     *value = t;
 }
 
-time_definition::time_definition(const real_t      advance_dt,
+definition_time::definition_time(const real_t      advance_dt,
                                  const std::size_t advance_nt,
                                  const real_t      advance_wt,
                                  const real_t      status_dt,
@@ -141,7 +141,7 @@ time_definition::time_definition(const real_t      advance_dt,
 {
 }
 
-time_definition::time_definition(const real_t evmagfactor)
+definition_time::definition_time(const real_t evmagfactor)
     : advance_dt  (std::numeric_limits<real_t>::quiet_NaN())
     , advance_nt  (0)
     , advance_wt  (std::numeric_limits<real_t>::quiet_NaN())
@@ -184,7 +184,7 @@ static const char description_evmagfactor[]
         = "Safety factor in (0,1] used to adjust time step aggressiveness";
 
 boost::program_options::options_description
-time_definition::options_description()
+definition_time::options_description()
 {
     using boost::bind;
     using boost::lexical_cast;
@@ -258,10 +258,10 @@ time_definition::options_description()
     return retval;
 }
 
-void time_definition::save(
+void definition_time::save(
         const esio_handle h) const
 {
-    DEBUG0("Saving some, but not all, time_definition parameters");
+    DEBUG0("Saving some, but not all, definition_time parameters");
 
     // Only root writes data
     int procid;
@@ -272,11 +272,11 @@ void time_definition::save(
     esio_line_write(h, "evmagfactor", &evmagfactor, 0, description_evmagfactor);
 }
 
-void time_definition::load(
+void definition_time::load(
         const esio_handle h,
         const bool verbose)
 {
-    DEBUG0("Loading some, but not all, time_definition parameters");
+    DEBUG0("Loading some, but not all, definition_time parameters");
 
     esio_line_establish(h, 1, 0, 1); // All ranks load
 

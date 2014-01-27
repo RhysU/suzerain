@@ -69,10 +69,10 @@ namespace suzerain {
 namespace perfect {
 
 isothermal_hybrid_linear_operator::isothermal_hybrid_linear_operator(
-        const zgbsv_specification& spec,
-        const scenario_definition& scenario,
-        const isothermal_specification& isothermal,
-        const grid_specification& grid,
+        const specification_zgbsv& spec,
+        const definition_scenario& scenario,
+        const specification_isothermal& isothermal,
+        const specification_grid& grid,
         const pencil_grid& dgrid,
         const bsplineop& cop,
         bspline& b,
@@ -404,7 +404,7 @@ public:
 
     IsothermalPATPTEnforcer(const suzerain_bsmbsm& A_T,
                             const suzerain_rholut_imexop_scenario& s,
-                            const isothermal_specification& spec,
+                            const specification_isothermal& spec,
                             const bool enforce_lower,
                             const bool enforce_upper)
         : wall_begin(enforce_lower ? 0 : 1)
@@ -430,7 +430,7 @@ public:
             rho[i]    = suzerain_bsmbsm_qinv(A_T.S, A_T.n, rho0 + wall[i]);
         }
 
-        // Compute/store the isothermal_specification details for later usage
+        // Compute/store the specification_isothermal details for later usage
         // These are always computed for both walls even if only one enforced
         E_factor[0] = spec.lower_T / (s.gamma * (s.gamma - 1))
                     + s.Ma * s.Ma / 2 * ( spec.lower_u * spec.lower_u
@@ -449,11 +449,11 @@ public:
 
         // Yell if spec.lower_rho or spec.upper_rho inappropriate
         if (enforce_lower && !(boost::math::isnan)(spec.lower_rho)) {
-            WARN0("Ignoring isothermal_specification lower_rho = "
+            WARN0("Ignoring specification_isothermal lower_rho = "
                   << spec.lower_rho);
         }
         if (enforce_upper && !(boost::math::isnan)(spec.upper_rho)) {
-            WARN0("Ignoring isothermal_specification upper_rho = "
+            WARN0("Ignoring specification_isothermal upper_rho = "
                   << spec.upper_rho);
         }
     }

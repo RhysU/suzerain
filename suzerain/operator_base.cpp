@@ -34,7 +34,7 @@
 namespace suzerain {
 
 operator_base::operator_base(
-        const grid_specification &grid,
+        const specification_grid &grid,
         const pencil_grid &dgrid,
         const bsplineop &cop,
         bspline &b)

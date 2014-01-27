@@ -113,7 +113,7 @@ static void driver_base_process_signal(const int sig)
 } // end extern "C"
 
 // Static member initialization
-signal_definition driver_base::signaldef;
+definition_signal driver_base::signaldef;
 
 driver_base::driver_base(
         const std::string &application_synopsis,
@@ -124,16 +124,16 @@ driver_base::driver_base(
                        argument_synopsis,
                        description,
                        revstr)
-    , restartdef(make_shared<restart_definition>(
+    , restartdef(make_shared<definition_restart>(
                 /* metadata    */ "metadata.h5.XXXXXX",
                 /* uncommitted */ "uncommitted.h5.XXXXXX",
                 /* destination */ "restart#.h5",
                 /* retain      */ 1,
                 /* dt          */ 0,
                 /* nt          */ 0))
-    , statsdef(make_shared<statistics_definition>(
+    , statsdef(make_shared<definition_statistics>(
                 /* destination */ "sample#.h5"))
-    , timedef(make_shared<time_definition>(
+    , timedef(make_shared<definition_time>(
                 /* advance_dt   */ 0,
                 /* advance_nt   */ 0,
                 /* advance_wt   */ 0,
@@ -1699,7 +1699,7 @@ driver_base::default_status_interval(
 delta_t_allreducer::delta_t_allreducer(
         const double& wtime_mpi_init,
         const double& wtime_fftw_planning,
-        const shared_ptr<time_definition>& timedef,
+        const shared_ptr<definition_time>& timedef,
         const double& wtime_load_restart,
         const double& wtime_advance_start,
         const driver_base::step_type& last_status_nt,

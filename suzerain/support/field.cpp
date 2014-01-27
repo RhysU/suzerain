@@ -81,7 +81,7 @@ void save_coefficients(
         const esio_handle h,
         const std::vector<field> &fields,
         const contiguous_state<4,complex_t> &swave,
-        const grid_specification& grid,
+        const specification_grid& grid,
         const pencil_grid& dgrid)
 {
     // Ensure swave meets this routine's assumptions
@@ -152,7 +152,7 @@ void save_coefficients(
 void load_coefficients(const esio_handle h,
                        const std::vector<field> &fields,
                        contiguous_state<4,complex_t> &state,
-                       const grid_specification& grid,
+                       const specification_grid& grid,
                        const pencil_grid& dgrid,
                        const bsplineop& cop,
                        const bspline& b)
@@ -323,7 +323,7 @@ void save_collocation_values(
         const esio_handle h,
         const std::vector<field> &fields,
         contiguous_state<4,complex_t>& swave,
-        const grid_specification& grid,
+        const specification_grid& grid,
         const pencil_grid& dgrid,
         const bsplineop& cop)
 {
@@ -369,7 +369,7 @@ void load_collocation_values(
         const esio_handle h,
         const std::vector<field> &fields,
         contiguous_state<4,complex_t>& state,
-        const grid_specification& grid,
+        const specification_grid& grid,
         const pencil_grid& dgrid,
         const bsplineop& cop,
         const bspline& b)

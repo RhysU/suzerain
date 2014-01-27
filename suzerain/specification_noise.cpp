@@ -33,7 +33,7 @@
 
 namespace suzerain {
 
-noise_specification::noise_specification(
+specification_noise::specification_noise(
         real_t        fluct_percent,
         unsigned long fluct_seed,
         real_t        kxfrac_min,

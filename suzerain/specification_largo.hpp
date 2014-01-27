@@ -25,7 +25,7 @@
 #define SUZERAIN_LARGO_SPECIFICATION_HPP
 
 /** @file
- * Provides \ref largo_specification.
+ * Provides \ref specification_largo.
  */
 
 #include <suzerain/common.hpp>
@@ -39,12 +39,12 @@ namespace suzerain {
 /**
  * Holds parameters defining Largo-based slow growth problems.
  */
-class largo_specification
+class specification_largo
 {
 public:
 
     /** Construct an instance with the given values. */
-    explicit largo_specification(
+    explicit specification_largo(
             largo_formulation formulation = largo_formulation::disable,
             real_t grdelta                = std::numeric_limits<real_t>::quiet_NaN(),
             largo_workspace * workspace   = NULL);

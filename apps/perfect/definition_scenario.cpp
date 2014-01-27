@@ -53,7 +53,7 @@ static void parse_nonnegative(const std::string& s, real_t *t, const char *n)
 
 namespace perfect {
 
-scenario_definition::scenario_definition()
+definition_scenario::definition_scenario()
     : Re        (std::numeric_limits<real_t>::quiet_NaN())
     , Ma        (std::numeric_limits<real_t>::quiet_NaN())
     , Pr        (std::numeric_limits<real_t>::quiet_NaN())
@@ -66,7 +66,7 @@ scenario_definition::scenario_definition()
 {
 }
 
-scenario_definition::scenario_definition(
+definition_scenario::definition_scenario(
         const real_t Re,
         const real_t Ma,
         const real_t Pr,
@@ -88,7 +88,7 @@ scenario_definition::scenario_definition(
 {
 }
 
-scenario_definition::~scenario_definition()
+definition_scenario::~definition_scenario()
 {
 }
 
@@ -115,7 +115,7 @@ static const char desc_beta[]       = "Temperature power law exponent";
 static const char desc_gamma[]      = "Ratio of specific heats";
 
 boost::program_options::options_description
-scenario_definition::options_description()
+definition_scenario::options_description()
 {
     using boost::bind;
     using boost::lexical_cast;
@@ -209,8 +209,8 @@ scenario_definition::options_description()
 }
 
 void
-scenario_definition::populate(
-        const scenario_definition& that,
+definition_scenario::populate(
+        const definition_scenario& that,
         const bool verbose)
 {
     using support::maybe_populate;
@@ -229,8 +229,8 @@ scenario_definition::populate(
 }
 
 void
-scenario_definition::override(
-        const scenario_definition& that,
+definition_scenario::override(
+        const definition_scenario& that,
         const bool verbose)
 {
     using support::maybe_override;
@@ -249,10 +249,10 @@ scenario_definition::override(
 }
 
 void
-scenario_definition::save(
+definition_scenario::save(
         const esio_handle h) const
 {
-    DEBUG0("Storing scenario_definition parameters");
+    DEBUG0("Storing definition_scenario parameters");
 
     // Only root writes data
     int procid;
@@ -271,16 +271,16 @@ scenario_definition::save(
 }
 
 void
-scenario_definition::load(
+definition_scenario::load(
         const esio_handle h,
         const bool verbose)
 {
-    DEBUG0("Loading scenario_definition parameters");
+    DEBUG0("Loading definition_scenario parameters");
 
     // All ranks load
     esio_line_establish(h, 1, 0, 1);
 
-    scenario_definition t;
+    definition_scenario t;
     esio_line_read(h, name_Re,         &t.Re,         0);
     esio_line_read(h, name_Ma,         &t.Ma,         0);
     esio_line_read(h, name_Pr,         &t.Pr,         0);

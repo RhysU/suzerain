@@ -40,7 +40,7 @@ namespace support {
  * Encapsulates flags related to restart file behavior for the simulation.
  * Includes the particulars around writing and archiving restart files.
  */
-class restart_definition
+class definition_restart
     : public virtual definition_base
 {
 public:
@@ -65,7 +65,7 @@ public:
      * @see ESIO's esio_file_close_restart() for the semantics of
      *      \c destination and \c retain.
      */
-    restart_definition(const std::string& metadata                ,
+    definition_restart(const std::string& metadata                ,
                        const std::string& uncommitted             ,
                        const std::string& destination             ,
                        const std::size_t  retain       = (1 << 15),

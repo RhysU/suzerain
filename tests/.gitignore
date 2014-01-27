@@ -66,4 +66,4 @@
 /test_kahan
 /test_gbmv
 /test_rngstream
-/test_zgbsv_specification
+/test_specification_zgbsv

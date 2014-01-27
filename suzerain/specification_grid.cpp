@@ -36,7 +36,7 @@
 
 namespace suzerain {
 
-grid_specification::grid_specification()
+specification_grid::specification_grid()
     : L(std::numeric_limits<real_t>::quiet_NaN(),
         std::numeric_limits<real_t>::quiet_NaN(),
         std::numeric_limits<real_t>::quiet_NaN()),
@@ -51,7 +51,7 @@ grid_specification::grid_specification()
 {
 }
 
-grid_specification::grid_specification(real_t Lx,
+specification_grid::specification_grid(real_t Lx,
                                        int    Nx,
                                        real_t DAFx,
                                        real_t Ly,
@@ -71,7 +71,7 @@ grid_specification::grid_specification(real_t Lx,
 {
 }
 
-grid_specification& grid_specification::Nx(int value)
+specification_grid& specification_grid::Nx(int value)
 {
     if (N.x())
     {
@@ -88,7 +88,7 @@ grid_specification& grid_specification::Nx(int value)
     return *this;
 }
 
-grid_specification& grid_specification::Ny(int value)
+specification_grid& specification_grid::Ny(int value)
 {
     if (N.y())
     {
@@ -105,7 +105,7 @@ grid_specification& grid_specification::Ny(int value)
     return *this;
 }
 
-grid_specification& grid_specification::Nz(int value)
+specification_grid& specification_grid::Nz(int value)
 {
     if (N.z())
     {
@@ -122,7 +122,7 @@ grid_specification& grid_specification::Nz(int value)
     return *this;
 }
 
-grid_specification& grid_specification::DAFx(real_t factor)
+specification_grid& specification_grid::DAFx(real_t factor)
 {
 #pragma warning(push,disable:1572)
     if (DAF.x() != 0)
@@ -141,7 +141,7 @@ grid_specification& grid_specification::DAFx(real_t factor)
     return *this;
 }
 
-grid_specification& grid_specification::DAFz(real_t factor)
+specification_grid& specification_grid::DAFz(real_t factor)
 {
 #pragma warning(push,disable:1572)
     if (DAF.z() != 0)
@@ -160,33 +160,33 @@ grid_specification& grid_specification::DAFz(real_t factor)
     return *this;
 }
 
-grid_specification& grid_specification::Nx(const std::string& value)
+specification_grid& specification_grid::Nx(const std::string& value)
 {
 #pragma warning(push,disable:2259)
     return Nx(static_cast<int>(exprparse<real_t>(value, "Nx")));
 #pragma warning(pop)
 }
 
-grid_specification& grid_specification::Ny(const std::string& value)
+specification_grid& specification_grid::Ny(const std::string& value)
 {
 #pragma warning(push,disable:2259)
     return Ny(static_cast<int>(exprparse<real_t>(value, "Ny")));
 #pragma warning(pop)
 }
 
-grid_specification& grid_specification::Nz(const std::string& value)
+specification_grid& specification_grid::Nz(const std::string& value)
 {
 #pragma warning(push,disable:2259)
     return Nz(static_cast<int>(exprparse<real_t>(value, "Nz")));
 #pragma warning(pop)
 }
 
-grid_specification& grid_specification::DAFx(const std::string& factor)
+specification_grid& specification_grid::DAFx(const std::string& factor)
 {
     return DAFx(exprparse<real_t>(factor, "DAFx"));
 }
 
-grid_specification& grid_specification::DAFz(const std::string& factor)
+specification_grid& specification_grid::DAFz(const std::string& factor)
 {
     return DAFz(exprparse<real_t>(factor, "DAFz"));
 }

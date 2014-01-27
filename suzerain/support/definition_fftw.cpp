@@ -35,17 +35,17 @@ namespace suzerain {
 
 namespace support {
 
-void fftw_definition::normalize_rigor_fft(std::string input)
+void definition_fftw::normalize_rigor_fft(std::string input)
 {
     this->rigor_fft = fftw::rigor_from(input.c_str());
 }
 
-void fftw_definition::normalize_rigor_mpi(std::string input)
+void definition_fftw::normalize_rigor_mpi(std::string input)
 {
     this->rigor_mpi = fftw::rigor_from(input.c_str());
 }
 
-fftw_definition::fftw_definition(
+definition_fftw::definition_fftw(
         const fftw::rigor rigor_fft,
         const fftw::rigor rigor_mpi)
     : rigor_fft(rigor_fft)
@@ -54,7 +54,7 @@ fftw_definition::fftw_definition(
 }
 
 boost::program_options::options_description
-fftw_definition::options_description()
+definition_fftw::options_description()
 {
     namespace po = boost::program_options;
     using std::bind1st;
@@ -84,12 +84,12 @@ fftw_definition::options_description()
     retval.add_options()
     ("rigor_fft",
      po::value<std::string>(NULL)
-     ->notifier(bind1st(mem_fun(&fftw_definition::normalize_rigor_fft), this))
+     ->notifier(bind1st(mem_fun(&definition_fftw::normalize_rigor_fft), this))
      ->default_value(fftw::c_str(rigor_fft)),
      rigor_fft_description.c_str())
     ("rigor_mpi",
      po::value<std::string>(NULL)
-     ->notifier(bind1st(mem_fun(&fftw_definition::normalize_rigor_mpi), this))
+     ->notifier(bind1st(mem_fun(&definition_fftw::normalize_rigor_mpi), this))
      ->default_value(fftw::c_str(rigor_mpi)),
      rigor_mpi_description.c_str())
     ("plan_wisdom",

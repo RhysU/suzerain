@@ -80,7 +80,7 @@ suzerain::reacting::driver_init::run(int argc, char **argv)
     using std::sin;
 
     // Establish default grid and domain extents
-    grid.reset(new support::grid_definition( 4 * pi<real_t>()     // Lx
+    grid.reset(new support::definition_grid( 4 * pi<real_t>()     // Lx
                                            , 1                    // Nx
                                            , real_t(3) / 2        // DAFx
                                            , 2                    // Ly
@@ -95,7 +95,7 @@ suzerain::reacting::driver_init::run(int argc, char **argv)
     // Establish default scenario parameters
     cmods->Le = 0.9;
     cmods->alpha = 0.0;
-    chdef.reset(new channel_definition( 
+    chdef.reset(new definition_channel( 
               1                                        // bulk_rho
             , 1                                        // bulk_rho_u
             , std::numeric_limits<real_t>::quiet_NaN() // bulk_rho_E
@@ -103,10 +103,10 @@ suzerain::reacting::driver_init::run(int argc, char **argv)
 
     // Establish default isothermal boundary conditions
     // TODO Check the correctness of this default behavior
-    isothermal.reset(new support::isothermal_definition(/* wall_T */ 273));
+    isothermal.reset(new support::definition_isothermal(/* wall_T */ 273));
 
     // Establish default time step aggressiveness
-    timedef = make_shared<support::time_definition>(/* per Venugopal */ 0.72);
+    timedef = make_shared<support::definition_time>(/* per Venugopal */ 0.72);
 
     // Establish default MMS parameters and plug into program options
     msoln = make_shared<manufactured_solution>(

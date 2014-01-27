@@ -58,7 +58,7 @@ namespace reacting {
  * None of #alpha, #beta, #gamma, #Ma, #Pr, #Re or #Lx, #Ly, #Lz are modified
  * when used in this fashion.  The former group will need to be synced using
  * \ref match() and the later group using \ref
- * match(const grid_specification&).
+ * match(const specification_grid&).
  */
 class manufactured_solution
     : public virtual support::definition_base
@@ -83,13 +83,13 @@ public:
     manufactured_solution& match(antioch_constitutive& cmods);
 
     /** Set #Lx, #Ly, and #Lz to match \c grid. */
-    manufactured_solution& match(const grid_specification& grid);
+    manufactured_solution& match(const specification_grid& grid);
 
     /**
      * Set #rho, #u, #v, #w, and #T per nsctpl::isothermal_channel.
      *
      * Afterwards, \ref match() and \ref match(const
-     * grid_specification&) may need to be called.
+     * specification_grid&) may need to be called.
      */
     manufactured_solution& isothermal_channel();
 
@@ -117,7 +117,7 @@ private:
 void save(const esio_handle h,
           const shared_ptr<manufactured_solution> & msoln,
           const antioch_constitutive& cmods,
-          const grid_specification& grid,
+          const specification_grid& grid,
           const char *location = "manufactured_solution");
 
 /**
@@ -131,7 +131,7 @@ void save(const esio_handle h,
 void load(const esio_handle h,
           shared_ptr<manufactured_solution>& msoln,
           const antioch_constitutive& cmods,
-          const grid_specification& grid,
+          const specification_grid& grid,
           const char *location = "manufactured_solution");
 
 /**
@@ -147,7 +147,7 @@ void accumulate_manufactured_solution(
         const manufactured_solution &msoln,
         const real_t beta,
         contiguous_state<4,complex_t> &swave,
-        const grid_specification &grid,
+        const specification_grid &grid,
         const pencil_grid &dgrid,
         const bsplineop &cop,
         bspline &b,

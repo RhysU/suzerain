@@ -106,10 +106,10 @@ public:
     program_options options;
 
     /** A global grid extent definition. */
-    shared_ptr<grid_definition> grid;
+    shared_ptr<definition_grid> grid;
 
     /** Details of how FFTs are performed within the application. */
-    shared_ptr<fftw_definition> fftwdef;
+    shared_ptr<definition_fftw> fftwdef;
 
     /** A thread-unsafe, mutable B-spline workspace for building operators. */
     shared_ptr<bspline> b;

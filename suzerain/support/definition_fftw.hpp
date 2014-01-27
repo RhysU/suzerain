@@ -37,13 +37,13 @@ namespace suzerain {
 namespace support {
 
 /** Holds FFTW-usage parameters, e.g. the planning rigor. */
-class fftw_definition
+class definition_fftw
     : public virtual definition_base
 {
 public:
 
     /** Default constructor */
-    explicit fftw_definition(
+    explicit definition_fftw(
             const fftw::rigor rigor_fft = fftw::estimate,
             const fftw::rigor rigor_mpi = fftw::estimate);
 

@@ -53,14 +53,14 @@ static void parse_nonnegative(const std::string& s, real_t *t, const char *n)
 
 namespace reacting {
 
-channel_definition::channel_definition()
+definition_channel::definition_channel()
     : bulk_rho  (std::numeric_limits<real_t>::quiet_NaN())
     , bulk_rho_u(std::numeric_limits<real_t>::quiet_NaN())
     , bulk_rho_E(std::numeric_limits<real_t>::quiet_NaN())
 {
 }
 
-channel_definition::channel_definition(
+definition_channel::definition_channel(
         const real_t bulk_rho,
         const real_t bulk_rho_u,
         const real_t bulk_rho_E)
@@ -81,7 +81,7 @@ static const char desc_bulk_rho_u[]          = "Bulk momentum target";
 static const char desc_bulk_rho_E[]          = "Bulk total energy target";
 
 boost::program_options::options_description
-channel_definition::options_description()
+definition_channel::options_description()
 {
     using boost::bind;
     using boost::lexical_cast;
@@ -127,8 +127,8 @@ channel_definition::options_description()
 }
 
 void
-channel_definition::populate(
-        const channel_definition& that,
+definition_channel::populate(
+        const definition_channel& that,
         const bool verbose)
 {
     using support::maybe_populate;
@@ -141,8 +141,8 @@ channel_definition::populate(
 }
 
 void
-channel_definition::override(
-        const channel_definition& that,
+definition_channel::override(
+        const definition_channel& that,
         const bool verbose)
 {
     using support::maybe_override;
@@ -155,10 +155,10 @@ channel_definition::override(
 }
 
 void
-channel_definition::save(
+definition_channel::save(
         const esio_handle h) const
 {
-    DEBUG0("Storing channel_definition parameters");
+    DEBUG0("Storing definition_channel parameters");
 
     // Only root writes data
     int procid;
@@ -172,13 +172,13 @@ channel_definition::save(
 }
 
 void
-channel_definition::load(
+definition_channel::load(
         const esio_handle h,
         const bool verbose)
 {
-    DEBUG0("Loading channel_definition parameters");
+    DEBUG0("Loading definition_channel parameters");
 
-    channel_definition t;
+    definition_channel t;
 
     // All ranks load
 

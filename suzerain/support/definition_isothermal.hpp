@@ -25,7 +25,7 @@
 #define SUZERAIN_SUPPORT_ISOTHERMAL_DEFINITION_HPP
 
 /** @file
- * Provides \ref isothermal_definition.
+ * Provides \ref definition_isothermal.
  */
 
 #include <suzerain/common.hpp>
@@ -41,18 +41,18 @@ namespace suzerain {
 
 namespace support {
 
-// FIXME: Declare other constructors per isothermal_specification.
+// FIXME: Declare other constructors per specification_isothermal.
 
 /**
  * Holds parameters defining isothermal boundary cases.
  */
-class isothermal_definition
+class definition_isothermal
     : public virtual definition_base
     , public virtual loadable
-    , public virtual overridable<isothermal_specification>
-    , public virtual populatable<isothermal_specification>
+    , public virtual overridable<specification_isothermal>
+    , public virtual populatable<specification_isothermal>
     , public virtual savable
-    , public isothermal_specification
+    , public specification_isothermal
 {
 public:
 
@@ -60,44 +60,44 @@ public:
      * Construct an instance with all parameters set to NaN.
      * Clients can use NaN as a not-yet-specified or use-the-default value.
      */
-    isothermal_definition();
+    definition_isothermal();
 
     /**
-     * @copydoc isothermal_specification(real_t)
+     * @copydoc specification_isothermal(real_t)
      */
-    isothermal_definition(real_t wall_T);
+    definition_isothermal(real_t wall_T);
 
     /**
-     * @copydoc isothermal_specification(real_t,const std::vector<real_t>&)
+     * @copydoc specification_isothermal(real_t,const std::vector<real_t>&)
      */
-    isothermal_definition(real_t wall_T,
+    definition_isothermal(real_t wall_T,
                           const std::vector<real_t>& wall_cs);
 
     /**
-     * @copydoc isothermal_specification(real_t,real_t)
+     * @copydoc specification_isothermal(real_t,real_t)
      */
-    isothermal_definition(real_t wall_T,
+    definition_isothermal(real_t wall_T,
                           real_t inflow_velocity);
 
     /**
-     * @copydoc isothermal_specification(real_t,real_t,const std::vector<real_t>&)
+     * @copydoc specification_isothermal(real_t,real_t,const std::vector<real_t>&)
      */
-    isothermal_definition(real_t wall_T,
+    definition_isothermal(real_t wall_T,
                           real_t inflow_velocity,
                           const std::vector<real_t>& wall_cs);
 
     /**
-     * @copydoc isothermal_specification(real_t,real_t,real_t,real_t)
+     * @copydoc specification_isothermal(real_t,real_t,real_t,real_t)
      */
-    isothermal_definition(real_t lower_T,
+    definition_isothermal(real_t lower_T,
                           real_t lower_v,
                           real_t upper_T,
                           real_t upper_v);
 
     /**
-     * @copydoc isothermal_specification(real_t,real_t,const std::vector<real_t>&,real_t,real_t,const std::vector<real_t>&)
+     * @copydoc specification_isothermal(real_t,real_t,const std::vector<real_t>&,real_t,real_t,const std::vector<real_t>&)
      */
-    isothermal_definition(real_t lower_T,
+    definition_isothermal(real_t lower_T,
                           real_t lower_v,
                           const std::vector<real_t>& lower_cs,
                           real_t upper_T,
@@ -105,9 +105,9 @@ public:
                           const std::vector<real_t>& upper_cs);
 
     /**
-     * @copydoc isothermal_specification(real_t,real_t,real_t,const std::vector<real_t>&,real_t,real_t,real_t,const std::vector<real_t>&)
+     * @copydoc specification_isothermal(real_t,real_t,real_t,const std::vector<real_t>&,real_t,real_t,real_t,const std::vector<real_t>&)
      */
-    isothermal_definition(real_t lower_T,
+    definition_isothermal(real_t lower_T,
                           real_t lower_v,
                           real_t lower_rho,
                           const std::vector<real_t>& lower_cs,
@@ -118,12 +118,12 @@ public:
 
     /** @copydoc populatable::populate */
     virtual void populate(
-            const isothermal_specification& that,
+            const specification_isothermal& that,
             const bool verbose = false);
 
     /** @copydoc overridable::override */
     virtual void override(
-            const isothermal_specification& that,
+            const specification_isothermal& that,
             const bool verbose = false);
 
     /** @copydoc savable::save */

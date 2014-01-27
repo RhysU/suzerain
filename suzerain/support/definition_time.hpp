@@ -43,7 +43,7 @@ namespace support {
  * far the simulation should be advanced as long as how frequently status
  * updates should occur.
  */
-class time_definition
+class definition_time
     : public virtual definition_base
     , public virtual loadable
     , public virtual savable
@@ -69,7 +69,7 @@ public:
      * @param min_dt       Minimum allowable physically-driven time step.
      * @param max_dt       Maximum allowable physically-driven time step.
      */
-    time_definition(const real_t      advance_dt,
+    definition_time(const real_t      advance_dt,
                     const std::size_t advance_nt,
                     const real_t      advance_wt,
                     const real_t      status_dt,
@@ -89,7 +89,7 @@ public:
      *                    magnitudes.  Usually in <tt>(0,1]</tt>, this
      *                    increases the conservativeness of the time stepping.
      */
-    explicit time_definition(const real_t evmagfactor);
+    explicit definition_time(const real_t evmagfactor);
 
     /** @copydoc definition_base::options_description() */
     virtual boost::program_options::options_description options_description();

@@ -53,11 +53,11 @@ using suzerain::bspline;
 using suzerain::bsplineop;
 using suzerain::bsplineop_lu;
 using suzerain::complex_t;
-using suzerain::perfect::scenario_definition;
+using suzerain::perfect::definition_scenario;
 using suzerain::real_t;
 using suzerain::shared_ptr;
-using suzerain::support::grid_definition;
-using suzerain::support::time_definition;
+using suzerain::support::definition_grid;
+using suzerain::support::definition_time;
 namespace logging = suzerain::support::logging;
 namespace perfect = suzerain::perfect;
 namespace support = suzerain::support;
@@ -419,7 +419,7 @@ static suzerain::VectorXr compute_bulk_weights(
  *
  * @param filename   To be loaded.
  * @param i_scenario If <tt>!i_scenario</tt>,
- *                   populated with the scenario_definition from the file.
+ *                   populated with the definition_scenario from the file.
  * @param i_grid     Handled identically to <tt>i_scenario</tt>.
  * @param i_timedef  Handled identically to <tt>i_scenario</tt>.
  * @param i_b        If <tt>!!i_b</tt> on entry, after computation interpolate
@@ -433,9 +433,9 @@ static suzerain::VectorXr compute_bulk_weights(
  */
 static quantity::storage_map_type process(
         const std::string& filename,
-        shared_ptr<scenario_definition>& i_scenario,
-        shared_ptr<grid_definition    >& i_grid,
-        shared_ptr<time_definition    >& i_timedef,
+        shared_ptr<definition_scenario>& i_scenario,
+        shared_ptr<definition_grid    >& i_grid,
+        shared_ptr<definition_time    >& i_timedef,
         shared_ptr<bspline            >& i_b,
         shared_ptr<bsplineop          >& i_bop,
         shared_ptr<bsplineop_lu       >& i_boplu);
@@ -534,9 +534,9 @@ int main(int argc, char **argv)
     }
 
     // Scenario and grid details provided to process(...)
-    shared_ptr<scenario_definition> scenario;
-    shared_ptr<grid_definition    > grid;
-    shared_ptr<time_definition    > timedef;
+    shared_ptr<definition_scenario> scenario;
+    shared_ptr<definition_grid    > grid;
+    shared_ptr<definition_time    > timedef;
     shared_ptr<bspline            > b;
     shared_ptr<bsplineop          > cop;
     shared_ptr<bsplineop_lu       > boplu;
@@ -720,9 +720,9 @@ int main(int argc, char **argv)
 
 static quantity::storage_map_type process(
         const std::string& filename,
-        shared_ptr<scenario_definition>& i_scenario,
-        shared_ptr<grid_definition    >& i_grid,
-        shared_ptr<time_definition    >& i_timedef,
+        shared_ptr<definition_scenario>& i_scenario,
+        shared_ptr<definition_grid    >& i_grid,
+        shared_ptr<definition_time    >& i_timedef,
         shared_ptr<bspline            >& i_b,
         shared_ptr<bsplineop          >& i_bop,
         shared_ptr<bsplineop_lu       >& i_boplu)
@@ -740,12 +740,12 @@ static quantity::storage_map_type process(
     esio_file_open(h.get(), filename.c_str(), 0 /* read-only */);
 
     // Load time, scenario, grid, timedef, and B-spline details from file.
-    // The time_definition defaults are ignored but required as that
+    // The definition_time defaults are ignored but required as that
     // class lacks a default constructor (by design).
     real_t time;
-    scenario_definition scenario;
-    grid_definition grid;
-    time_definition timedef(/* advance_dt   */ 0,
+    definition_scenario scenario;
+    definition_grid grid;
+    definition_time timedef(/* advance_dt   */ 0,
                             /* advance_nt   */ 0,
                             /* advance_wt   */ 0,
                             /* status_dt    */ 0,
@@ -763,9 +763,9 @@ static quantity::storage_map_type process(
     assert(b->n() == grid.N.y());
 
     // Return the scenario, grid, and timedef to the caller if not already set
-    if (!i_scenario) i_scenario.reset(new scenario_definition(scenario));
-    if (!i_grid)     i_grid    .reset(new grid_definition    (grid    ));
-    if (!i_timedef)  i_timedef .reset(new time_definition    (timedef ));
+    if (!i_scenario) i_scenario.reset(new definition_scenario(scenario));
+    if (!i_grid)     i_grid    .reset(new definition_grid    (grid    ));
+    if (!i_timedef)  i_timedef .reset(new definition_time    (timedef ));
 
     // Compute factorized mass matrix for current operators in use
     shared_ptr<suzerain::bsplineop_lu> boplu

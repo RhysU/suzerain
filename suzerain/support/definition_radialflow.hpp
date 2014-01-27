@@ -42,21 +42,21 @@ namespace suzerain {
 namespace support {
 
 /**
- * Upgrades a \ref radialflow_specification with \ref definition_base behavior.
+ * Upgrades a \ref specification_radialflow with \ref definition_base behavior.
  * This permits using the instance with \ref program_options.
  */
-class radialflow_definition
+class definition_radialflow
     : public virtual definition_base
     , public virtual loadable
-    , public virtual overridable<radialflow_specification>
-    , public virtual populatable<radialflow_specification>
+    , public virtual overridable<specification_radialflow>
+    , public virtual populatable<specification_radialflow>
     , public virtual savable
-    , public radialflow_specification
+    , public specification_radialflow
 {
 public:
 
     /** Construct an instance with the given default values */
-    explicit radialflow_definition(
+    explicit definition_radialflow(
             double deltae = std::numeric_limits<double>::quiet_NaN(),
             double gamma  = std::numeric_limits<double>::quiet_NaN(),
             double Mae    = std::numeric_limits<double>::quiet_NaN(),
@@ -64,12 +64,12 @@ public:
 
     /** @copydoc populatable::populate */
     virtual void populate(
-        const radialflow_specification& that,
+        const specification_radialflow& that,
         const bool verbose = false);
 
     /** @copydoc overridable::override */
     virtual void override(
-        const radialflow_specification& that,
+        const specification_radialflow& that,
         const bool verbose = false);
 
     /** @copydoc savable::save */

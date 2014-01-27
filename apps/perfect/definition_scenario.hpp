@@ -47,11 +47,11 @@ namespace perfect {
  * well as nondimensional problem geometry.  See the Suzerain model document's
  * nondimensionalization section for more information.
  */
-class scenario_definition
+class definition_scenario
     : public virtual support::definition_base
     , public virtual support::loadable
-    , public virtual support::overridable<scenario_definition>
-    , public virtual support::populatable<scenario_definition>
+    , public virtual support::overridable<definition_scenario>
+    , public virtual support::populatable<definition_scenario>
     , public virtual support::savable
 {
 public:
@@ -60,7 +60,7 @@ public:
      * Construct an instance with all parameters set to NaN.
      * Clients can use NaN as a not-yet-specified or use-the-default value.
      */
-    scenario_definition();
+    definition_scenario();
 
     /**
      * Construct an instance with the given parameter values.
@@ -75,7 +75,7 @@ public:
      * @param beta       Temperature power law exponent.
      * @param gamma      Ratio of specific heats.
      */
-    scenario_definition(const real_t Re,
+    definition_scenario(const real_t Re,
                         const real_t Ma,
                         const real_t Pr,
                         const real_t bulk_rho,
@@ -86,16 +86,16 @@ public:
                         const real_t gamma);
 
     /** Virtual destructor to permit use as a base class */
-    virtual ~scenario_definition();
+    virtual ~definition_scenario();
 
     /** @copydoc support::populatable::populate */
     virtual void populate(
-            const scenario_definition& that,
+            const definition_scenario& that,
             const bool verbose = false);
 
     /** @copydoc support::overridable::override */
     virtual void override(
-            const scenario_definition& that,
+            const definition_scenario& that,
             const bool verbose = false);
 
     /** @copydoc support::savable::save */

@@ -35,15 +35,15 @@
 namespace suzerain {
 
 // Forward declarations
-class grid_specification;
-class isothermal_specification;
+class specification_grid;
+class specification_isothermal;
 class pencil_grid;
 
 namespace perfect {
 
 // Forward declarations
 class operator_common_block;
-class scenario_definition;
+class definition_scenario;
 
 /**
  * A mass operator that provides various isothermal boundaries.  It requires
@@ -55,9 +55,9 @@ class isothermal_mass_operator : public suzerain::isothermal_mass_operator
 public:
 
     isothermal_mass_operator(
-            const scenario_definition &scenario,
-            const isothermal_specification &spec,
-            const grid_specification &grid,
+            const definition_scenario &scenario,
+            const specification_isothermal &spec,
+            const specification_grid &grid,
             const pencil_grid &dgrid,
             const bsplineop &cop,
             bspline &b,
@@ -85,7 +85,7 @@ public:
 protected:
 
     /** The scenario in which the operator is used */
-    const scenario_definition &scenario;
+    const definition_scenario &scenario;
 
     /** Houses data required for \ref invert_mass_plus_scaled_operator */
     operator_common_block &common;

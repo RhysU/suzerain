@@ -106,15 +106,15 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
     using boost::math::isnan;
 
     // Storage for binary-specific options
-    noz = make_shared<support::radialflow_definition>(/*deltae*/ 1.0);
-    const support::noise_definition noisedef;
-    string solver_spec(static_cast<string>(suzerain::zgbsv_specification()));
+    noz = make_shared<support::definition_radialflow>(/*deltae*/ 1.0);
+    const support::definition_noise noisedef;
+    string solver_spec(static_cast<string>(suzerain::specification_zgbsv()));
     string implicit("rhome_xyz");
     real_t cevisslam = numeric_limits<real_t>::quiet_NaN();
     string undriven;
 
     // Register binary-specific options
-    options.add_definition(const_cast<support::noise_definition&>(noisedef));
+    options.add_definition(const_cast<support::definition_noise&>(noisedef));
     options.add_options()
         ("explicit",  boost::program_options::bool_switch(),
                       "Use purely explicit operators")
@@ -188,8 +188,8 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
     real_t initial_t = numeric_limits<real_t>::quiet_NaN();
     {
         // Preserve exact restart file details via Push/Pop/Merge below
-        shared_ptr<scenario_definition> restart_scenario
-                = make_shared<scenario_definition>();
+        shared_ptr<definition_scenario> restart_scenario
+                = make_shared<definition_scenario>();
 
         // Load the restart details with state going into state_linear
         shared_ptr<boost::remove_pointer<esio_handle>::type> h( // RAII

@@ -40,18 +40,18 @@ namespace suzerain {
 bsmbsm_solver*
 bsmbsm_solver::build(
         const suzerain_bsmbsm&     bsmbsm,
-        const zgbsv_specification& spec,
+        const specification_zgbsv& spec,
         const int                  nrhs)
 {
     switch (spec.method()) {
 
-    case zgbsv_specification::zgbsv:
+    case specification_zgbsv::zgbsv:
         return new bsmbsm_solver_zgbsv(bsmbsm, spec, nrhs);
 
-    case zgbsv_specification::zgbsvx:
+    case specification_zgbsv::zgbsvx:
         return new bsmbsm_solver_zgbsvx(bsmbsm, spec, nrhs);
 
-    case zgbsv_specification::zcgbsvx:
+    case specification_zgbsv::zcgbsvx:
         return new bsmbsm_solver_zcgbsvx(bsmbsm, spec, nrhs);
 
     }
@@ -61,7 +61,7 @@ bsmbsm_solver::build(
 
 bsmbsm_solver::bsmbsm_solver(
         const suzerain_bsmbsm&     bsmbsm,
-        const zgbsv_specification& spec,
+        const specification_zgbsv& spec,
         const int                  nrhs)
     : suzerain_bsmbsm(bsmbsm)
     , spec(spec)
@@ -147,11 +147,11 @@ bsmbsm_solver::solve_internal(const char trans,
 
 bsmbsm_solver_zgbsv::bsmbsm_solver_zgbsv(
         const suzerain_bsmbsm&     bsmbsm,
-        const zgbsv_specification& spec,
+        const specification_zgbsv& spec,
         const int                  nrhs)
     : bsmbsm_solver(bsmbsm, spec, nrhs)
 {
-    if (spec.method() != zgbsv_specification::zgbsv)
+    if (spec.method() != specification_zgbsv::zgbsv)
         throw std::invalid_argument("Invalid spec in bsmbsm_solver_zgbsv");
     assert(spec.in_place() == true);
 }
@@ -187,7 +187,7 @@ bsmbsm_solver_zgbsv::solve_hook(
 
 bsmbsm_solver_zgbsvx::bsmbsm_solver_zgbsvx(
         const suzerain_bsmbsm&     bsmbsm,
-        const zgbsv_specification& spec,
+        const specification_zgbsv& spec,
         const int                  nrhs)
     : bsmbsm_solver(bsmbsm, spec, nrhs)
     , equed_('N')   // Default for non-factorized per zgbsvx
@@ -198,7 +198,7 @@ bsmbsm_solver_zgbsvx::bsmbsm_solver_zgbsvx(
     , PAPT_(LD, N)  // Operator storage for out-of-place factorization
     , PX_(N, nrhs)  // Solution storage for out-of-place solution
 {
-    if (spec.method() != zgbsv_specification::zgbsvx)
+    if (spec.method() != specification_zgbsv::zgbsvx)
         throw std::invalid_argument("Invalid method in bsmbsm_solver_zgbsvx");
 
     // See Eigen "Changing the mapped array" documentation for details
@@ -296,7 +296,7 @@ bsmbsm_solver_zgbsvx::solve_hook(
 
 bsmbsm_solver_zcgbsvx::bsmbsm_solver_zcgbsvx(
         const suzerain_bsmbsm&     bsmbsm,
-        const zgbsv_specification& spec,
+        const specification_zgbsv& spec,
         const int                  nrhs)
     : bsmbsm_solver(bsmbsm, spec, nrhs)
     , afrob_(-1)          // Per zcgbsvx requirements
@@ -306,7 +306,7 @@ bsmbsm_solver_zcgbsvx::bsmbsm_solver_zcgbsvx(
     , PAPT_(LD, N)        // Operator storage for out-of-place factorization
     , PX_(N, nrhs)        // Solution storage for out-of-place solution
 {
-    if (spec.method() != zgbsv_specification::zcgbsvx)
+    if (spec.method() != specification_zgbsv::zcgbsvx)
         throw std::invalid_argument("Invalid method in bsmbsm_solver_zcgbsvx");
 
     // See Eigen "Changing the mapped array" documentation for details

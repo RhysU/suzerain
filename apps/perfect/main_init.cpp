@@ -103,7 +103,7 @@ suzerain::perfect::driver_init::run(int argc, char **argv)
     using std::string;
 
     // Establish default grid and domain extents
-    grid.reset(new support::grid_definition( 4 * pi<real_t>()     // Lx
+    grid.reset(new support::definition_grid( 4 * pi<real_t>()     // Lx
                                            , 1                    // Nx
                                            , real_t(3) / 2        // DAFx
                                            , 2                    // Ly
@@ -116,7 +116,7 @@ suzerain::perfect::driver_init::run(int argc, char **argv)
             ));
 
     // Establish default scenario parameters
-    scenario.reset(new scenario_definition(
+    scenario.reset(new definition_scenario(
                   100                                   // Re
                 , real_t(3) / 2                         // Ma
                 , real_t(7) / 10                        // Pr
@@ -129,10 +129,10 @@ suzerain::perfect::driver_init::run(int argc, char **argv)
             ));
 
     // Establish default isothermal boundary conditions
-    isothermal.reset(new support::isothermal_definition(/* wall_T */ 1));
+    isothermal.reset(new support::definition_isothermal(/* wall_T */ 1));
 
     // Establish default time step aggressiveness
-    timedef = make_shared<support::time_definition>(/* per Venugopal */ 0.72);
+    timedef = make_shared<support::definition_time>(/* per Venugopal */ 0.72);
 
     // Establish default MMS parameters and plug into program options
     msoln = make_shared<manufactured_solution>(

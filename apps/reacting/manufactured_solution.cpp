@@ -182,7 +182,7 @@ manufactured_solution::match(antioch_constitutive& cmods)
 }
 
 manufactured_solution&
-manufactured_solution::match(const grid_specification& grid)
+manufactured_solution::match(const specification_grid& grid)
 {
     this->Lx = grid.L.x();
     this->Ly = grid.L.y();
@@ -271,7 +271,7 @@ attribute_storer(const esio_handle &h,
 void save(const esio_handle h,
           const shared_ptr<manufactured_solution>& msoln,
           const antioch_constitutive& cmods,
-          const grid_specification& grid,
+          const specification_grid& grid,
           const char *location)
 {
     // Only proceed if a manufactured solution is being provided
@@ -301,12 +301,12 @@ void save(const esio_handle h,
 
 #pragma warning(push,disable:1572)
     // Check parameters stored with the scenario not the manufactured solution
-    // because scenario parameters should be loaded from scenario_definition
+    // because scenario parameters should be loaded from definition_scenario
 
     // FIXME: Add this check back!!!
 
     // Check parameters stored with the grid not the manufactured solution
-    // because grid parameters should be loaded from grid_specification
+    // because grid parameters should be loaded from specification_grid
     if (msoln->Lx    != grid.L.x())
         WARN0("Manufactured solution Lx mismatches with grid");
     if (msoln->Ly    != grid.L.y())
@@ -335,7 +335,7 @@ static void NaNer(const std::string&, real_t& value)
 void load(const esio_handle h,
           shared_ptr<manufactured_solution>& msoln,
 	  const antioch_constitutive& cmods,
-          const grid_specification& grid,
+          const specification_grid& grid,
           const char *location)
 {
     // Only proceed if a manufactured solution is active in the restart
@@ -381,7 +381,7 @@ void accumulate_manufactured_solution(
         const manufactured_solution &msoln,
         const real_t beta,
         contiguous_state<4,complex_t> &swave,
-        const grid_specification &grid,
+        const specification_grid &grid,
         const pencil_grid &dgrid,
         const bsplineop &cop,
         bspline &b,

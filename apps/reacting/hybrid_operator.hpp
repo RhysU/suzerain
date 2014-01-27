@@ -38,17 +38,17 @@ namespace suzerain {
 
 // Forward declarations
 class bsmbsm_solver;
-class grid_specification;
+class specification_grid;
 class pencil_grid;
-class isothermal_specification;
-class zgbsv_specification;
+class specification_isothermal;
+class specification_zgbsv;
 
 namespace reacting {
 
 // Forward declarations
 class operator_common_block;
 class antioch_constitutive;
-class channel_definition;
+class definition_channel;
 
 /**
  * A hybrid implicit operator that provides no slip, isothermal walls.  It
@@ -64,11 +64,11 @@ class isothermal_hybrid_linear_operator
 public:
 
     isothermal_hybrid_linear_operator(
-            const zgbsv_specification& spec,
+            const specification_zgbsv& spec,
             const antioch_constitutive &cmods,
-            const isothermal_specification &isospec,
-            const channel_definition &chdef,
-            const grid_specification &grid,
+            const specification_isothermal &isospec,
+            const definition_channel &chdef,
+            const specification_grid &grid,
             const pencil_grid &dgrid,
             const bsplineop &cop,
             bspline &b,
@@ -109,10 +109,10 @@ protected:
     std::vector<shared_ptr<bsmbsm_solver> > species_solver;
 
     /** Provides info about isothermal specifications */
-    const isothermal_specification &isospec;
+    const specification_isothermal &isospec;
 
     /** Provides info about channel case, e.g., T_wall */
-    const channel_definition &chdef;
+    const definition_channel &chdef;
 
     /** Access to constitutive laws */
     const antioch_constitutive &cmods;

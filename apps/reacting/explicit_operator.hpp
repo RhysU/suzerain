@@ -48,7 +48,7 @@
 namespace suzerain {
 
 // Forward declarations
-class largo_specification;
+class specification_largo;
 
 namespace reacting {
 
@@ -65,13 +65,13 @@ public:
 
     explicit_nonlinear_operator(
             const antioch_constitutive& cmods,
-            const grid_specification &grid,
+            const specification_grid &grid,
             const pencil_grid &dgrid,
             const bsplineop &cop,
             bspline &b,
             operator_common_block &common,
-            const filter_definition &fsdef,
-            const largo_specification &sgdef,
+            const definition_filter &fsdef,
+            const specification_largo &sgdef,
             const shared_ptr<const manufactured_solution>& msoln);
 
     virtual std::vector<real_t> apply_operator(
@@ -92,10 +92,10 @@ protected:
     const shared_ptr<const manufactured_solution> msoln;
 
     /** The filter source definition */
-    const filter_definition &fsdef;
+    const definition_filter &fsdef;
 
     /** The slow growth definition */
-    const largo_specification &sgdef;
+    const specification_largo &sgdef;
 
 private:
 
@@ -119,9 +119,9 @@ public:
 
     isothermal_mass_operator(
             const antioch_constitutive& cmods,
-            const isothermal_specification &isospec,
-            const channel_definition &chdef,
-            const grid_specification &grid,
+            const specification_isothermal &isospec,
+            const definition_channel &chdef,
+            const specification_grid &grid,
             const pencil_grid &dgrid,
             const bsplineop &cop,
             bspline &b,
@@ -144,7 +144,7 @@ protected:
     const antioch_constitutive& cmods;
 
     /** The channel flow case for which the operator is used */
-    const channel_definition &chdef;
+    const definition_channel &chdef;
 
     /** Houses data required for \ref invert_mass_plus_scaled_operator */
     operator_common_block &common;

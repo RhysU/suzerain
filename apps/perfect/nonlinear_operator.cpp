@@ -46,13 +46,13 @@ namespace suzerain {
 namespace perfect {
 
 nonlinear_operator::nonlinear_operator(
-        const scenario_definition &scenario,
-        const grid_specification &grid,
+        const definition_scenario &scenario,
+        const specification_grid &grid,
         const pencil_grid &dgrid,
         const bsplineop &cop,
         bspline &b,
         operator_common_block &common,
-        largo_specification& sg,
+        specification_largo& sg,
         const shared_ptr<const manufactured_solution>& msoln)
     : operator_base(grid, dgrid, cop, b)
     , scenario(scenario)

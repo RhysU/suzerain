@@ -38,14 +38,14 @@ namespace suzerain {
 // Forward declarations
 class bspline;
 class bsplineop;
-class grid_specification;
+class specification_grid;
 class pencil_grid;
 
 namespace reacting {
 
 // Forward declarations
 class operator_common_block;
-// class scenario_definition;
+// class definition_scenario;
 
 /**
  * Provides Giles-like nonreflecting boundary conditions at the upper boundary.
@@ -63,8 +63,8 @@ public:
      * After construction, #N must be provided.
      */
     nonreflecting_treatment(
-//             const scenario_definition& scenario,
-            const grid_specification& grid,
+//             const definition_scenario& scenario,
+            const specification_grid& grid,
             const pencil_grid& dgrid,
             const bsplineop& cop,
             bspline& b,

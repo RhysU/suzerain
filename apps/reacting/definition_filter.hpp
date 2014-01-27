@@ -48,11 +48,11 @@ namespace reacting {
 /**
  * Holds parameters defining filter source.
  */
-class filter_definition
+class definition_filter
     : public virtual support::definition_base
     , public virtual support::loadable
-    , public virtual support::overridable<filter_definition>
-    , public virtual support::populatable<filter_definition>
+    , public virtual support::overridable<definition_filter>
+    , public virtual support::populatable<definition_filter>
     , public virtual support::savable
 {
 public:
@@ -61,23 +61,23 @@ public:
      * Construct an instance with all parameters set to NaN.
      * Clients can use NaN as a not-yet-specified or use-the-default value.
      */
-    filter_definition();
+    definition_filter();
 
     /**
      * Construct an instance with the given parameter values.
      *
      * @param filter_phi Filter source strength.
      */
-    explicit filter_definition(const real_t filter_phi);
+    explicit definition_filter(const real_t filter_phi);
 
     /** @copydoc support::populatable::populate */
     virtual void populate(
-            const filter_definition& that,
+            const definition_filter& that,
             const bool verbose = false);
 
     /** @copydoc support::overridable::override */
     virtual void override(
-            const filter_definition& that,
+            const definition_filter& that,
             const bool verbose = false);
 
     /** @copydoc support::savable::save */
@@ -107,10 +107,10 @@ public:
                const int     incx,
                      double* y) const
     {
-        SUZERAIN_TIMER_SCOPED("filter_definition::filter(real)");
+        SUZERAIN_TIMER_SCOPED("definition_filter::filter(real)");
 
         if (SUZERAIN_UNLIKELY(!r || r->n != n)) {
-            SUZERAIN_TIMER_SCOPED("filter_definition::prepare_real");
+            SUZERAIN_TIMER_SCOPED("definition_filter::prepare_real");
             const int err = prepare_real(n);
             if (SUZERAIN_UNLIKELY(err)) return err;
         }
@@ -128,10 +128,10 @@ public:
                const int     incx,
                      complex_double* y) const
     {
-        SUZERAIN_TIMER_SCOPED("filter_definition::filter(complex)");
+        SUZERAIN_TIMER_SCOPED("definition_filter::filter(complex)");
 
         if (SUZERAIN_UNLIKELY(!z || z->n != n)) {
-            SUZERAIN_TIMER_SCOPED("filter_definition::prepare_complex");
+            SUZERAIN_TIMER_SCOPED("definition_filter::prepare_complex");
             const int err = prepare_complex(n);
             if (SUZERAIN_UNLIKELY(err)) return err;
         }
@@ -143,16 +143,16 @@ public:
      * @copydoc suzerain_filteropz_source_apply
      */
     template<typename MultiArrayX, typename MultiArrayY>
-    int source_apply(const grid_specification &grid,
+    int source_apply(const specification_grid &grid,
                      const pencil_grid &dgrid,
                      const typename MultiArrayX::element& alpha,
                      const MultiArrayX &x,
                      int ndx_x) const
     {
-        SUZERAIN_TIMER_SCOPED("filter_definition::source_apply");
+        SUZERAIN_TIMER_SCOPED("definition_filter::source_apply");
 
         if (SUZERAIN_UNLIKELY(!z || z->n != dgrid.global_wave_extent.y())) {
-            SUZERAIN_TIMER_SCOPED("filter_definition::prepare_complex");
+            SUZERAIN_TIMER_SCOPED("definition_filter::prepare_complex");
             const int err = prepare_complex(dgrid.global_wave_extent.y());
             if (SUZERAIN_UNLIKELY(err)) return err;
         }
@@ -175,7 +175,7 @@ public:
      * @copydoc suzerain_filteropz_source_accumulate
      */
     template<typename MultiArrayX, typename MultiArrayY>
-    int source_accumulate(const grid_specification &grid,
+    int source_accumulate(const specification_grid &grid,
                           const pencil_grid &dgrid,
                           const typename MultiArrayX::element& alpha,
                           const MultiArrayX &x,
@@ -184,13 +184,13 @@ public:
                           MultiArrayY &y,
                           int ndx_y) const
     {
-        SUZERAIN_TIMER_SCOPED("filter_definition::source_accumulate");
+        SUZERAIN_TIMER_SCOPED("definition_filter::source_accumulate");
 
         assert(std::equal(x.shape()   + 1, x.shape()   + 4, y.shape()   + 1));
         assert(std::equal(x.strides() + 1, x.strides() + 4, y.strides() + 1));
 
         if (SUZERAIN_UNLIKELY(!z || z->n != dgrid.global_wave_extent.y())) {
-            SUZERAIN_TIMER_SCOPED("filter_definition::prepare_complex");
+            SUZERAIN_TIMER_SCOPED("definition_filter::prepare_complex");
             const int err = prepare_complex(dgrid.global_wave_extent.y());
             if (SUZERAIN_UNLIKELY(err)) return err;
         }

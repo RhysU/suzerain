@@ -56,7 +56,7 @@ public:
      * @param dgrid    Decomposition providing parallel grid details.
      * @param cop      B-spline operators to use.
      */
-    operator_tools(const grid_specification &grid,
+    operator_tools(const specification_grid &grid,
                    const pencil_grid &dgrid,
                    const bsplineop &cop)
         : grid(grid)
@@ -226,7 +226,7 @@ public:
     }
 
     /** The grid in which the operator is used */
-    const grid_specification &grid;
+    const specification_grid &grid;
 
     /** The parallel decomposition grid in which the operator is used */
     const pencil_grid &dgrid;

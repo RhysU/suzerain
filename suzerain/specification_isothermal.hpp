@@ -25,7 +25,7 @@
 #define SUZERAIN_ISOTHERMAL_SPECIFICATION_HPP
 
 /** @file
- * Provides \ref isothermal_specification.
+ * Provides \ref specification_isothermal.
  */
 
 #include <suzerain/common.hpp>
@@ -38,7 +38,7 @@ namespace suzerain {
  * transpiring walls, and constant freestream boundaries.  Code consuming
  * these values may treat <tt>NaN</tt> as a do-not-enforce-constraint flag.
  */
-class isothermal_specification
+class specification_isothermal
 {
 public:
 
@@ -47,7 +47,7 @@ public:
      * #lower_cs and #upper_cs.  Clients can use NaN as a not-yet-specified or
      * use-the-default value.
      */
-    isothermal_specification();
+    specification_isothermal();
 
     /**
      * Specify no-slip walls with given \f$T\f$ at both boundaries
@@ -55,14 +55,14 @@ public:
      *
      * @param wall_T \f$T\f$ for both walls.
      */
-    isothermal_specification(real_t wall_T);
+    specification_isothermal(real_t wall_T);
 
     /**
      * Specify no-slip walls with given \f$T\f$ at both boundaries.
-     * @copydetails isothermal_specification(real_t)
+     * @copydetails specification_isothermal(real_t)
      * @param wall_cs Mass fractions, one per species, at both walls.
      */
-    isothermal_specification(real_t wall_T,
+    specification_isothermal(real_t wall_T,
                              const std::vector<real_t>& wall_cs);
 
     /**
@@ -73,16 +73,16 @@ public:
      * @param inflow_velocity \f$v\f$ for both walls with positive values
      *                        oriented blowing into the domain interior.
      */
-    isothermal_specification(real_t wall_T,
+    specification_isothermal(real_t wall_T,
                              real_t inflow_velocity);
 
     /**
      * Specify a transpiring wall with given inflow velocity \f$v\f$ and
      * temperature \f$T\f$ at both boundaries.
-     * @copydetails isothermal_specification(real_t,real_t)
+     * @copydetails specification_isothermal(real_t,real_t)
      * @param wall_cs Mass fractions, one per species, at both boundaries.
      */
-    isothermal_specification(real_t wall_T,
+    specification_isothermal(real_t wall_T,
                              real_t inflow_velocity,
                              const std::vector<real_t>& wall_cs);
 
@@ -95,19 +95,19 @@ public:
      * @param upper_T \f$T\f$ at \f$y=L_y\f$
      * @param upper_v \f$v\f$ at \f$y=L_y\f$
      */
-    isothermal_specification(real_t lower_T,
+    specification_isothermal(real_t lower_T,
                              real_t lower_v,
                              real_t upper_T,
                              real_t upper_v);
 
     /**
      * Specify two different temperatures and wall blowing velocities.
-     * @copydetails isothermal_specification(real_t,real_t,real_t,real_t)
+     * @copydetails specification_isothermal(real_t,real_t,real_t,real_t)
      * @param lower_cs Mass fractions, one per species, at \f$y=0\f$ boundary.
      * @param upper_cs Mass fractions, one per species, at \f$y=L_y\f$ boundary.
      * @throw invalid_argument if <tt>lower_cs.size() != upper_cs.size()</tt>
      */
-    isothermal_specification(real_t lower_T,
+    specification_isothermal(real_t lower_T,
                              real_t lower_v,
                              const std::vector<real_t>& lower_cs,
                              real_t upper_T,
@@ -131,7 +131,7 @@ public:
      * @param upper_u \f$u\f$ at \f$y=L_y\f$
      * @param upper_v \f$v\f$ at \f$y=L_y\f$
      */
-    isothermal_specification(real_t lower_T,
+    specification_isothermal(real_t lower_T,
                              real_t lower_u,
                              real_t lower_v,
                              real_t upper_T,
@@ -141,12 +141,12 @@ public:
     /**
      * Specify two different temperatures, wall blowing velocities,
      * and associated streamwise velocities.
-     * @copydetails isothermal_specification(real_t,real_t,real_t,real_t,real_t,real_t)
+     * @copydetails specification_isothermal(real_t,real_t,real_t,real_t,real_t,real_t)
      * @param lower_cs Mass fractions, one per species, at \f$y=0\f$ boundary.
      * @param upper_cs Mass fractions, one per species, at \f$y=L_y\f$ boundary.
      * @throw invalid_argument if <tt>lower_cs.size() != upper_cs.size()</tt>
      */
-    isothermal_specification(real_t lower_T,
+    specification_isothermal(real_t lower_T,
                              real_t lower_u,
                              real_t lower_v,
                              const std::vector<real_t>& lower_cs,
@@ -158,12 +158,12 @@ public:
     /**
      * Specify two different temperatures, wall blowing velocities,
      * associated streamwise velocities, and reference densities.
-     * @copydetails isothermal_specification(real_t,real_t,real_t,real_t,real_t,real_t,real_t,real_t)
+     * @copydetails specification_isothermal(real_t,real_t,real_t,real_t,real_t,real_t,real_t,real_t)
      * @param lower_cs Mass fractions, one per species, at \f$y=0\f$ boundary.
      * @param upper_cs Mass fractions, one per species, at \f$y=L_y\f$ boundary.
      * @throw invalid_argument if <tt>lower_cs.size() != upper_cs.size()</tt>
      */
-    isothermal_specification(real_t lower_T,
+    specification_isothermal(real_t lower_T,
                              real_t lower_u,
                              real_t lower_v,
                              real_t lower_rho,

@@ -33,7 +33,7 @@
 
 namespace suzerain {
 
-radialflow_specification::radialflow_specification(
+specification_radialflow::specification_radialflow(
             double deltae,
             double gamma,
             double Mae,

@@ -25,7 +25,7 @@
 #define SUZERAIN_SUPPORT_LARGO_DEFINITION_HPP
 
 /** @file
- * Provides \ref largo_definition.
+ * Provides \ref definition_largo.
  */
 
 #include <suzerain/common.hpp>
@@ -46,13 +46,13 @@ namespace support
 /**
  * Holds parameters defining largo boundary cases.
  */
-class largo_definition
+class definition_largo
     : public virtual definition_base
     , public virtual loadable
-    , public virtual overridable<largo_definition> // Not largo_specification!
-    , public virtual populatable<largo_definition> // Not largo_specification!
+    , public virtual overridable<definition_largo> // Not specification_largo!
+    , public virtual populatable<definition_largo> // Not specification_largo!
     , public virtual savable
-    , public largo_specification
+    , public specification_largo
 {
 public:
 
@@ -60,16 +60,16 @@ public:
      * Construct an instance with all parameters set to NaN.
      * Clients can use NaN as a not-yet-specified or use-the-default value.
      */
-    largo_definition();
+    definition_largo();
 
     /** @copydoc populatable::populate */
     virtual void populate(
-        const largo_definition& that,
+        const definition_largo& that,
         const bool verbose = false);
 
     /** @copydoc overridable::override */
     virtual void override(
-        const largo_definition& that,
+        const definition_largo& that,
         const bool verbose = false);
 
     /** @copydoc savable::save */

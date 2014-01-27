@@ -100,7 +100,7 @@ void add_species_fields( const std::vector<std::string>& species_names,
 
 void
 adjust_scenario(contiguous_state<4,complex_t> &swave,
-                const grid_specification& grid,
+                const specification_grid& grid,
                 const pencil_grid& dgrid,
                 const bsplineop& cop,
                 const real_t old_Ma,
@@ -189,8 +189,8 @@ adjust_scenario(contiguous_state<4,complex_t> &swave,
 
 void
 add_noise(contiguous_state<4,complex_t> &state,
-          const noise_specification& noise,
-          const grid_specification& grid,
+          const specification_noise& noise,
+          const specification_grid& grid,
           const pencil_grid& dgrid,
           const bsplineop& cop,
           bspline &b)

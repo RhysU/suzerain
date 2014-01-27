@@ -59,7 +59,7 @@ namespace suzerain {
 namespace reacting {
 
 nonreflecting_treatment::nonreflecting_treatment(
-        const grid_specification &grid,
+        const specification_grid &grid,
         const pencil_grid &dgrid,
         const bsplineop &cop,
         bspline &b,

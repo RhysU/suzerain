@@ -40,8 +40,8 @@
 namespace suzerain {
 
 isothermal_mass_operator::isothermal_mass_operator(
-        const isothermal_specification &spec,
-        const grid_specification &grid,
+        const specification_isothermal &spec,
+        const specification_grid &grid,
         const pencil_grid &dgrid,
         const bsplineop &cop,
         bspline &b)
@@ -52,7 +52,7 @@ isothermal_mass_operator::isothermal_mass_operator(
 
 /**
  * A helper functor for implementing isothermal boundary conditions
- * per \ref isothermal_specification.
+ * per \ref specification_isothermal.
  */
 class isothermal_enforcer
     : public boost::noncopyable // To defend against expense in for_each
@@ -60,7 +60,7 @@ class isothermal_enforcer
 
     const std::size_t               Ny;       ///< # of points across y
     const std::ptrdiff_t            incf;     ///< Stride between fields
-    const isothermal_specification& spec;     ///< Boundary specification
+    const specification_isothermal& spec;     ///< Boundary specification
     const real_t                    lower_E;  ///< Specific total energy
     const real_t                    upper_E;  ///< Specific total energy
 
@@ -83,9 +83,9 @@ class isothermal_enforcer
 public:
 
     /** Prepare an instance for the given strides and parameters. */
-    isothermal_enforcer(const grid_specification&       grid,
+    isothermal_enforcer(const specification_grid&       grid,
                         const std::ptrdiff_t            incf,
-                        const isothermal_specification& spec,
+                        const specification_isothermal& spec,
                         const real_t                    lower_E,
                         const real_t                    upper_E)
         : Ny(grid.N.y())
