@@ -255,9 +255,9 @@ Rescaling and dropping the star notation, one arrives at
 \end{align}
 
 With some $\vec{u}=\vec{\nabla}\phi$ satisfying~\eqref{eq:cpfgibbs_nondim} in
-hand, computing local $\rho$ and $p$ is often of interest.
-Nondimensionalizing~\eqref{eq:stagnation_sound} permits
-direct computation of $a$ from
+hand, computing local $\rho$ and $p$ is of interest.
+Nondimensionalizing~\eqref{eq:stagnation_sound} permits direct computation of
+$a$ from
 \begin{align}
   a^2 &= 1 + \Mach[0]^2\frac{\gamma_0-1}{2}\left(1-\vec{u}^2\right)
 \label{eq:stagnation_sound_nondim}
@@ -325,13 +325,13 @@ over some domain $\Omega$ and applying a corollary of Gauss' theorem:
 
 Suppose a two-dimensional domain possessing radial symmetry in which
 $\vec{u}={u}\!\left(r\right)\hat{r}$.  Then the velocity potential
-$\vec{\nabla}\phi$ is superfluous and~\eqref{eq:cpfgibbs_nondim} is nothing but
-the scalar equation
+$\vec{\nabla}\phi$ is superfluous because~\eqref{eq:cpfgibbs_nondim} is nothing
+but the scalar equation
 \begin{align}
        2 u^2\!\left(r\right) u^\prime\!\left(r\right)
     &=
        \left[
-          2 \theta \Mach[0]{}^{-2}
+          2 \Mach[0]{}^{-2}
         + \left(\gamma_0-1\right) \left(1 - u^2\!\left(r\right)\right)
        \right]
        \left(
@@ -344,13 +344,13 @@ Suppressing the dependence of $u$ on $r$ and collecting $u^\prime$ terms,
        \left(
            2 u^2
          - \left[
-              2 \theta \Mach[0]{}^{-2} + \left(\gamma_0-1\right) \left(1 - u^2\right)
+              2 \Mach[0]{}^{-2} + \left(\gamma_0-1\right) \left(1 - u^2\right)
            \right]
        \right)
        u^\prime
     &=
        \left[
-          2 \theta \Mach[0]{}^{-2} + \left(\gamma_0-1\right) \left(1 - u^2\right)
+          2 \Mach[0]{}^{-2} + \left(\gamma_0-1\right) \left(1 - u^2\right)
        \right]
        r^{-1} u
 .
@@ -363,21 +363,21 @@ Solving for $u^\prime$,
        \,
        \frac{
          \left[
-            2 \theta \Mach[0]{}^{-2} + \left(\gamma_0-1\right) \left(1 - u^2\right)
+            2 \Mach[0]{}^{-2} + \left(\gamma_0-1\right) \left(1 - u^2\right)
          \right]
        }{
            2 u^2
          - \left[
-              2 \theta \Mach[0]{}^{-2} + \left(\gamma_0-1\right) \left(1 - u^2\right)
+              2 \Mach[0]{}^{-2} + \left(\gamma_0-1\right) \left(1 - u^2\right)
            \right]
        }
 \label{eq:cpfradial_nondim_ode}
 ,
 \end{align}
 permits integrating $u$ across $R\in\left[R_1, R_2\right]$ given a boundary
-condition on either radius $R_1$ or $R_2$.
+condition at either radius $R_1$ or $R_2$.
 
-Given some $u$, computing local thermodynamic state also is of interest.
+Given some $u$, we now turn to computing local thermodynamic state.
 Equation~\eqref{eq:stagnation_sound_nondim} fixes~$a$.  The
 $u=u\!\left(r\right)$ assumption reduces~\eqref{eq:logrho_nondim} to
 \begin{align}
@@ -398,7 +398,7 @@ $u=u\!\left(r\right)$ assumption reduces~\eqref{eq:logrho_nondim} to
 \label{eq:cpfradial_nondim_rho}
 \end{align}
 where the $2\pi$ factors arising from integrating cancel each other.
-Likewise~\eqref{eq:p_nondim} simplifies to
+Likewise~\eqref{eq:p_nondim} becomes
 \begin{align}
   p\!\left(R_2\right)
   &=
