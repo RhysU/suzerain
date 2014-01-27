@@ -47,28 +47,28 @@ void nozzle_details(const double R,
                     const double rho,
                     const double p,
                     const double Ma02,
-                    const double gam0m1,
+                    const double gam1,
                     double *up,
                     double *rhop,
                     double *pp,
                     double *a2)
 {
     const double u2 = u*u;
-    const double C  = (2/Ma02 + gam0m1*(1 - u2));
+    const double C  = (2/Ma02 + gam1*(1 - u2));
     *up   = (u*C) / (R*(2*u2 - C));
     *pp   = -Ma02*rho*u*(*up);
-    *a2   = 1 + Ma02/2*gam0m1*(1 - u2);
+    *a2   = 1 + Ma02/2*gam1*(1 - u2);
     *rhop = *pp / *a2;
     SUZERAIN_UNUSED(p);
 }
 
 // Parameters for \ref nozzle per conventions of gsl_odeiv2_system->function
 typedef struct params_type {
-    double Ma02;   // Ma0^2
-    double gam0m1; // gamma_0 - 1
+    double Ma02; // Ma0^2
+    double gam1; // gamma - 1
 } params_type;
 
-// Find [u; rho; p]' given r, x=[u; rho; p], Ma02=Ma0**2, gam0m1=gam0-1
+// Find [u; rho; p]' given r, x=[u; rho; p], Ma02=Ma0**2, gam1=gamma-1
 // Compare nozzle_rhs function source within notebooks/radialflow.m
 static int nozzle_rhs(double R,
                       const double y[],
@@ -78,7 +78,7 @@ static int nozzle_rhs(double R,
     double a2;
     nozzle_details(R, y[0], y[1], y[2],
                    ((params_type *)params)->Ma02,
-                   ((params_type *)params)->gam0m1,
+                   ((params_type *)params)->gam1,
                    &dydt[0], &dydt[1], &dydt[2], &a2);
     return GSL_SUCCESS;
 }
@@ -87,7 +87,7 @@ static int nozzle_rhs(double R,
 suzerain_radialflow_solution *
 suzerain_radialflow_solver(
     const double         Ma0,
-    const double         gam0,
+    const double         gamma,
     const double         u1,
     const double         rho1,
     const double         p1,
@@ -95,15 +95,15 @@ suzerain_radialflow_solver(
     const size_t         size)
 {
     // Sanity check incoming arguments and realizability
-    if (Ma0  <= 0) SUZERAIN_ERROR_NULL("Ma0 <= 0",  SUZERAIN_EDOM);
-    if (gam0 <= 1) SUZERAIN_ERROR_NULL("gam0 <= 1", SUZERAIN_EDOM);
-    if (rho1 <= 0) SUZERAIN_ERROR_NULL("rho1 <= 0", SUZERAIN_EDOM);
-    if (p1   <= 0) SUZERAIN_ERROR_NULL("p1 <= 0",   SUZERAIN_EDOM);
-    if (size == 0) SUZERAIN_ERROR_NULL("size == 0", SUZERAIN_EINVAL);
-    if (!(u1*u1 < 2 / (Ma0*Ma0 * (gam0-1)) + 1)) {
+    if (Ma0   <= 0) SUZERAIN_ERROR_NULL("Ma0 <= 0",   SUZERAIN_EDOM);
+    if (gamma <= 1) SUZERAIN_ERROR_NULL("gamma <= 1", SUZERAIN_EDOM);
+    if (rho1  <= 0) SUZERAIN_ERROR_NULL("rho1 <= 0",  SUZERAIN_EDOM);
+    if (p1    <= 0) SUZERAIN_ERROR_NULL("p1 <= 0",    SUZERAIN_EDOM);
+    if (size  == 0) SUZERAIN_ERROR_NULL("size == 0",  SUZERAIN_EINVAL);
+    if (!(u1*u1 < 2 / (Ma0*Ma0 * (gamma-1)) + 1)) {
         char msg[128];
         snprintf(msg, sizeof(msg),
-                 "Ma0=%g, gam0=%g, u1=%g imply a*a <= 0", Ma0, gam0, u1);
+                 "Ma0=%g, gamma=%g, u1=%g imply a*a <= 0", Ma0, gamma, u1);
         SUZERAIN_ERROR_NULL(msg, SUZERAIN_EDOM);
     }
 
@@ -118,7 +118,7 @@ suzerain_radialflow_solver(
     // being careful to account for increasing vs decreasing R[0], R[1], ...
     double current_R = R[0];
     double y[3] = { u1, rho1, p1 };
-    params_type params = { Ma0*Ma0, gam0 - 1 };
+    params_type params = { Ma0*Ma0, gamma - 1 };
     gsl_odeiv2_system sys = { &nozzle_rhs, 0, sizeof(y)/sizeof(y[0]), &params};
     const double abstol = 0;
     const double reltol = GSL_SQRT_DBL_EPSILON;
@@ -150,7 +150,7 @@ suzerain_radialflow_solver(
 
     // Save scenario parameters and initial conditions (marking solution valid)
     s->Ma0          = Ma0;
-    s->gam0         = gam0;
+    s->gamma        = gamma;
     s->size         = size;
     s->state[0].R   = R[0];
     s->state[0].u   = u1;
@@ -164,7 +164,7 @@ suzerain_radialflow_solver(
                        s->state[i].rho,
                        s->state[i].p,
                        s->Ma0 * s->Ma0,
-                       s->gam0 - 1,
+                       s->gamma - 1,
                        &s->state[i].up,
                        &s->state[i].rhop,
                        &s->state[i].pp,
@@ -215,16 +215,16 @@ suzerain_radialflow_qoi_Te(
     const double Ma)
 {
     assert(i < s->size);
-    return s->gam0 * gsl_pow_2(Ma / s->Ma0) * (s->state[i].p / s->state[i].rho);
+    return s->gamma * gsl_pow_2(Ma / s->Ma0)
+                    * (s->state[i].p / s->state[i].rho);
 }
 
 int
 suzerain_radialflow_qoi_match(
     const double delta,
-    const double gam0,
+    const double gamma,
     const double Ma_e,
     const double p_exi,
-    const double T_e,
     double *Ma0,
     double *R0,
     double *R,
@@ -247,13 +247,11 @@ suzerain_radialflow_qoi_match(
     if (nreal > 0) {
         // ...take the largest one possible...
         *R0   = x[nreal - 1];
-        *Ma0  = 1 / sqrt(1/Ma_e2 + (gam0 - 1)*delta2/gsl_pow_2(*R0)/2);
+        *Ma0  = 1 / sqrt(1/Ma_e2 + (gamma - 1)*delta2/gsl_pow_2(*R0)/2);
         *R    = sqrt(gsl_pow_2(*R0) + delta2);
         *uR   = - (*R / *R0) * GSL_SIGN(p_exi*(Ma_e2 - 1));
         *rhoR = 1;
-        *pR   = T_e == 0
-              ? 1
-              : T_e * gsl_pow_2(*Ma0) * *rhoR/gam0/Ma_e2;
+        *pR   = *rhoR * gsl_pow_2(*Ma0) / gamma / Ma_e2;
     } else {
         // ...otherwise defensive failure...
         *R0   = GSL_NAN;
@@ -319,7 +317,7 @@ suzerain_radialflow_cartesian_primitive(
 
     // Beware (*a) contains Ma/Ma0*a when computing ap, *a_xi, and *a_y
     *a              = sqrt(t->a2 * Ma2Ma02);
-    const double ap = (1 - s->gam0) / 2 * Ma * Ma * t->u * t->up / (*a);
+    const double ap = (1 - s->gamma) / 2 * Ma * Ma * t->u * t->up / (*a);
     *a_xi           = x_inv_R * ap;
     *a_y            = y_inv_R * ap;
 }
@@ -355,11 +353,11 @@ suzerain_radialflow_cartesian_conserved(
     // Though expected from formulation, method does not assume H = constant
     // This permits both detecting formulation and coding errors as well as
     // correctly propagating any roundoff-ish drift in H from solution.
-    const double invgam0m1 = 1/(s->gam0 - 1);
-    const double Ma22      = Ma*Ma/2;
-    const double H         = a*a*invgam0m1 + Ma22*(u*u + v*v);
-    const double H_xi      = 2*(a*a_xi*invgam0m1 + Ma22*(u*u_xi + v*v_xi));
-    const double H_y       = 2*(a*a_y *invgam0m1 + Ma22*(u*u_y  + v*v_y ));
+    const double invgam1 = 1/(s->gamma - 1);
+    const double Ma22    = Ma*Ma/2;
+    const double H       = a*a*invgam1 + Ma22*(u*u + v*v);
+    const double H_xi    = 2*(a*a_xi*invgam1 + Ma22*(u*u_xi + v*v_xi));
+    const double H_y     = 2*(a*a_y *invgam1 + Ma22*(u*u_y  + v*v_y ));
 
     // Convert to conserved state using \rho H = \rho E + p
     *r  = rho;

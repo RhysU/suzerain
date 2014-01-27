@@ -32,7 +32,7 @@
 #include <suzerain/common.h>
 #include <suzerain/error.h>
 
-// Helper seiing if the solution satisfies the governing equation.
+// Helper seeing if the solution satisfies the governing equation.
 // If the governing equation is not satisfied, then all bets are off...
 static
 void check_radialflow_residual(
@@ -41,7 +41,7 @@ void check_radialflow_residual(
     const double tol)
 {
     const double Ma0  = s->Ma0;
-    const double gam0 = s->gam0;
+    const double gamma = s->gamma;
     for (size_t i = 0; i < s->size; ++i) {
         const double R   = s->state[i].R;
         const double u   = s->state[i].u,   up   = s->state[i].up;
@@ -52,8 +52,8 @@ void check_radialflow_residual(
 
         // Relative test between u' and RHS as (u' - RHS) may be large
         double up_rhs = - (u / R)
-                      * (2 + Ma0*Ma0*(gam0-1) - Ma0*Ma0*(gam0-1)*u*u)
-                      / (2 + Ma0*Ma0*(gam0-1) - Ma0*Ma0*(gam0+1)*u*u);
+                      * (2 + Ma0*Ma0*(gamma-1) - Ma0*Ma0*(gamma-1)*u*u)
+                      / (2 + Ma0*Ma0*(gamma-1) - Ma0*Ma0*(gamma+1)*u*u);
         gsl_test_rel(up, up_rhs, tol, "%s: up res[%d] ", who, i);
 
         // Relative test between p' and RHS (momentum equation)
@@ -65,7 +65,7 @@ void check_radialflow_residual(
                      tol, "%s: rhop res[%d] ", who, i);
 
         // Energy residual from radialflow.tex writeup, radialflow.m
-        gsl_test_rel(a2, 1 + Ma0*Ma0*(gam0-1)/2*(1-u*u),
+        gsl_test_rel(a2, 1 + Ma0*Ma0*(gamma-1)/2*(1-u*u),
                      tol, "%s: res_energy[%d] ", who, i);
 
         // Continuity polar residual from radialflow.tex writeup, radialflow.m
@@ -86,7 +86,7 @@ void check_ideal_gas_approximation(
 {
     for (size_t i = 0; i < s->size; ++i) {
         gsl_test_rel(s->state[i].rho * s->state[i].a2,
-                     s->gam0 * s->state[i].p,
+                     s->gamma * s->state[i].p,
                      tol, "%s: ideal_EOS[%d] at %g", who, i, s->state[i].R);
 
     }
@@ -104,7 +104,7 @@ void check_euler_primitive_rel(
 {
     for (size_t i = 0; i < s->size; ++i) {
 
-        // Compute primitive state and derivatives for Ma, s->gam0
+        // Compute primitive state and derivatives for Ma, s->gamma
         double rho,    u,    v,    p,    a;
         double rho_xi, u_xi, v_xi, p_xi, a_xi;
         double rho_y,  u_y,  v_y,  p_y,  a_y;
@@ -163,7 +163,7 @@ void check_euler_conserved_rel(
 {
     for (size_t i = 0; i < s->size; ++i) {
 
-        // Compute conserved state, pressure, and derivatives for Ma, s->gam0
+        // Compute conserved state, pressure, and derivatives for Ma, s->gamma
         double r,    ru,    rv,    rE,    p;
         double r_xi, ru_xi, rv_xi, rE_xi, p_xi;
         double r_y,  ru_y,  rv_y,  rE_y,  p_y;
@@ -196,23 +196,23 @@ void check_euler_conserved_rel(
     }
 }
 
-// Subsonic verification test from notebooks/radialflow.m
+// Subsonic verification test from old revision of notebooks/radialflow.m
 static
 void test_subsonic()
 {
-    const double R[]  = {10.0, 10.1, 10.2, 10.3, 10.4, 10.5};
-    const size_t N    = sizeof(R)/sizeof(R[0]);
-    const double Ma0  = 1.5;
-    const double gam0 = 1.4;
-    const double u1   = -2./ 7;
-    const double rho1 =  9./10;
-    const double p1   = rho1/gam0*(1+(gam0-1)/2*Ma0*Ma0*(1-u1*u1));
+    const double R[]   = {10.0, 10.1, 10.2, 10.3, 10.4, 10.5};
+    const size_t N     = sizeof(R)/sizeof(R[0]);
+    const double Ma0   = 1.5;
+    const double gamma = 1.4;
+    const double u1    = -2./ 7;
+    const double rho1  =  9./10;
+    const double p1    = rho1/gamma*(1+(gamma-1)/2*Ma0*Ma0*(1-u1*u1));
     suzerain_radialflow_solution * s = suzerain_radialflow_solver(
-            Ma0, gam0, u1, rho1, p1, R, N);
+            Ma0, gamma, u1, rho1, p1, R, N);
 
     // Check that the scenario parameters were stored correctly
-    gsl_test_abs(s->Ma0,  Ma0,  GSL_DBL_EPSILON, "%s Ma0 ", __func__);
-    gsl_test_abs(s->gam0, gam0, GSL_DBL_EPSILON, "%s gam0", __func__);
+    gsl_test_abs(s->Ma0,   Ma0,   GSL_DBL_EPSILON, "%s Ma0 ",  __func__);
+    gsl_test_abs(s->gamma, gamma, GSL_DBL_EPSILON, "%s gamma", __func__);
 
     // Check that the initial conditions were stored correctly
     suzerain_radialflow_state ini = s->state[0];
@@ -256,23 +256,24 @@ void test_subsonic()
     free(s);
 }
 
-// Supersonic test from notebooks/radialflow.m
+// Supersonic test from old revision notebooks/radialflow.m.
+// While the value of u1 is not physically-defined, it's still a valid test.
 static
 void test_supersonic1()
 {
-    const double R[]  = {1., 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.};
-    const size_t N    = sizeof(R)/sizeof(R[0]);
-    const double Ma0  = 1.0;
-    const double gam0 = 1.4;
-    const double u1   = 1/Ma0 + GSL_SQRT_DBL_EPSILON;
-    const double rho1 = 1.0;
-    const double p1   = rho1/gam0*(1+(gam0-1)/2*Ma0*Ma0*(1-u1*u1));
+    const double R[]   = {1., 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.};
+    const size_t N     = sizeof(R)/sizeof(R[0]);
+    const double Ma0   = 1.0;
+    const double gamma = 1.4;
+    const double u1    = 1/Ma0 + GSL_SQRT_DBL_EPSILON; // See function header
+    const double rho1  = 1.0;
+    const double p1    = rho1/gamma*(1+(gamma-1)/2*Ma0*Ma0*(1-u1*u1));
     suzerain_radialflow_solution * s = suzerain_radialflow_solver(
-            Ma0, gam0, u1, rho1, p1, R, N);
+            Ma0, gamma, u1, rho1, p1, R, N);
 
     // Check that the scenario parameters were stored correctly
-    gsl_test_abs(s->Ma0,  Ma0,  GSL_DBL_EPSILON, "%s Ma0 ", __func__);
-    gsl_test_abs(s->gam0, gam0, GSL_DBL_EPSILON, "%s gam0", __func__);
+    gsl_test_abs(s->Ma0,   Ma0,   GSL_DBL_EPSILON, "%s Ma0 ",  __func__);
+    gsl_test_abs(s->gamma, gamma, GSL_DBL_EPSILON, "%s gamma", __func__);
 
     // Check that the initial conditions were stored correctly
     suzerain_radialflow_state ini = s->state[0];
@@ -317,18 +318,19 @@ void test_supersonic1()
 
 // Supersonic with large radius so ideal gas EOS is better approximated
 // relative to test_supersonic1().
+// While the value of u1 is not physically-defined, it's still a valid test.
 static
 void test_supersonic2()
 {
-    const double R[]  = {1000.0, 1000.1, 1000.2, 1000.3, 1000.4, 1000.5};
-    const size_t N    = sizeof(R)/sizeof(R[0]);
-    const double Ma0  = 1.1;
-    const double gam0 = 1.4;
-    const double u1   = 1/Ma0 + GSL_SQRT_DBL_EPSILON;
-    const double rho1 = 1.0;
-    const double p1   = rho1/gam0*(1+(gam0-1)/2*Ma0*Ma0*(1-u1*u1));
+    const double R[]   = {1000.0, 1000.1, 1000.2, 1000.3, 1000.4, 1000.5};
+    const size_t N     = sizeof(R)/sizeof(R[0]);
+    const double Ma0   = 1.1;
+    const double gamma = 1.4;
+    const double u1    = 1/Ma0 + GSL_SQRT_DBL_EPSILON; // See function header
+    const double rho1  = 1.0;
+    const double p1    = rho1/gamma*(1+(gamma-1)/2*Ma0*Ma0*(1-u1*u1));
     suzerain_radialflow_solution * s = suzerain_radialflow_solver(
-            Ma0, gam0, u1, rho1, p1, R, N);
+            Ma0, gamma, u1, rho1, p1, R, N);
 
     // Does the pointwise solution satisfy the governing equations?
     check_radialflow_residual (__func__, s, 100*GSL_DBL_EPSILON);
@@ -353,22 +355,22 @@ void test_match()
     //  (2) Supersonic diffuser with cold edge with non-unit delta
     //  (3) Subsonic diffuser without prescribed edge temperature
     const double delta   [] = {  1,         1,         0.5,   1      };
-    const double gam0    [] = {  1.4087,    1.4088,    1.4,   1.4    };
+    const double gamma   [] = {  1.4087,    1.4088,    1.4,   1.4    };
     const double tgt_Mae [] = {  1.1906,    0.54927,   1.5,   0.5    };
     const double tgt_pexi[] = { -0.025439, -0.014755, +0.02, +0.015  };
-    const double tgt_Te  [] = {  4.0040,    4.1541,    0.50,  0.0    };
+    const double tgt_Te  [] = {  1,         1,         1.0,   1      };
 
     for (size_t i = 0; i < sizeof(delta)/sizeof(delta[0]); ++i) {
 
         // Compute edge state matching target quantities.
         double Ma0, R[2], uR, rhoR, pR;
         suzerain_radialflow_qoi_match(
-                delta[i], gam0[i], tgt_Mae[i], tgt_pexi[i], tgt_Te[i],
+                delta[i], gamma[i], tgt_Mae[i], tgt_pexi[i],
                 &Ma0, R+1, R+0, &uR, &rhoR, &pR);
 
         // Solve from edge to the wall using trick R+1, R+1 order just above
         suzerain_radialflow_solution * const s = suzerain_radialflow_solver(
-                Ma0, gam0[i], uR, rhoR, pR, R, sizeof(R)/sizeof(R[0]));
+                Ma0, gamma[i], uR, rhoR, pR, R, sizeof(R)/sizeof(R[0]));
 
         // Check that computed edge quantities match expectations (R -> R0)
         // This sanity checks the QoI computations for decreasing R values
@@ -377,7 +379,6 @@ void test_match()
             const double obs_Mae  = suzerain_radialflow_qoi_Mae (s, 0);
             const double obs_pexi = suzerain_radialflow_qoi_pexi(s, 0);
             const double obs_Te   = suzerain_radialflow_qoi_Te  (s, 0, obs_Mae);
-            const double obs_pe   = s->state[0].p;
 
             // Check that computed edge quantities match expectations (R0 -> R)
             const double tol = GSL_SQRT_DBL_EPSILON;
@@ -385,13 +386,8 @@ void test_match()
                         "%s:%d Mae [%d]", __func__, __LINE__, i);
             gsl_test_rel(obs_pexi, tgt_pexi[i], tol,
                         "%s:%d pexi[%d]", __func__, __LINE__, i);
-            if (tgt_Te[i] != 0) {
-                gsl_test_rel(obs_Te, tgt_Te[i], tol,
-                            "%s:%d Te[%d]", __func__, __LINE__, i);
-            } else {
-                gsl_test_rel(obs_pe, 1,         tol,
-                            "%s:%d pe[%d]", __func__, __LINE__, i);
-            }
+            gsl_test_rel(obs_Te, tgt_Te[i], tol,
+                        "%s:%d Te[%d]", __func__, __LINE__, i);
         }
 
         // Solve from the wall back up to the edge
@@ -401,7 +397,7 @@ void test_match()
         const double rho1 = s->state[1].rho;
         const double p1   = s->state[1].p;
         suzerain_radialflow_solution * const r = suzerain_radialflow_solver(
-                Ma0, gam0[i], u1, rho1, p1, R, sizeof(R)/sizeof(R[0]));
+                Ma0, gamma[i], u1, rho1, p1, R, sizeof(R)/sizeof(R[0]));
 
         // Check that computed edge quantities match expectations (R0 -> R)
         // This sanity checks the QoI computations for increasing R values
@@ -410,7 +406,6 @@ void test_match()
             const double obs_Mae  = suzerain_radialflow_qoi_Mae (r, 1);
             const double obs_pexi = suzerain_radialflow_qoi_pexi(r, 1);
             const double obs_Te   = suzerain_radialflow_qoi_Te  (r, 1, obs_Mae);
-            const double obs_pe   = r->state[1].p;
 
             // Check that computed edge quantities match expectations (R0 -> R)
             const double tol = GSL_SQRT_DBL_EPSILON;
@@ -418,13 +413,8 @@ void test_match()
                         "%s:%d Mae [%d]", __func__, __LINE__, i);
             gsl_test_rel(obs_pexi, tgt_pexi[i], tol,
                         "%s:%d pexi[%d]", __func__, __LINE__, i);
-            if (tgt_Te[i] != 0) {
-                gsl_test_rel(obs_Te, tgt_Te[i], tol,
-                            "%s:%d Te[%d]", __func__, __LINE__, i);
-            } else {
-                gsl_test_rel(obs_pe, 1,         tol,
-                            "%s:%d pe[%d]", __func__, __LINE__, i);
-            }
+            gsl_test_rel(obs_Te, tgt_Te[i], tol,
+                        "%s:%d Te[%d]", __func__, __LINE__, i);
         }
 
         // Free resources from this iteration

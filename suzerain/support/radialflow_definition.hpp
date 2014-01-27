@@ -58,10 +58,9 @@ public:
     /** Construct an instance with the given default values */
     explicit radialflow_definition(
             double deltae = std::numeric_limits<double>::quiet_NaN(),
-            double gam0   = std::numeric_limits<double>::quiet_NaN(),
+            double gamma  = std::numeric_limits<double>::quiet_NaN(),
             double Mae    = std::numeric_limits<double>::quiet_NaN(),
-            double pexi   = std::numeric_limits<double>::quiet_NaN(),
-            double Te     = std::numeric_limits<double>::quiet_NaN());
+            double pexi   = std::numeric_limits<double>::quiet_NaN());
 
     /** @copydoc populatable::populate */
     virtual void populate(

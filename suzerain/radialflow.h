@@ -60,7 +60,7 @@ typedef struct suzerain_radialflow_state {
  */
 typedef struct suzerain_radialflow_solution {
     double Ma0;     /**< Reference Mach number         \f$\mbox{Ma}_0\f$ */
-    double gam0;    /**< Reference specific heat ratio \f$\gamma_0   \f$ */
+    double gamma;   /**< Reference specific heat ratio \f$\gamma     \f$ */
     size_t size;    /**< Number of entries in flexible member \c state */
 
     /** Pointwise solution details indexable per the struct hack. */
@@ -76,12 +76,12 @@ typedef struct suzerain_radialflow_solution {
  *     \,
  *     \frac{
  *       \left[
- *          2 \mbox{Ma}_0^{-2} + \left(\gamma_0-1\right) \left(1 - u^2\right)
+ *          2 \mbox{Ma}_0^{-2} + \left(\gamma-1\right) \left(1 - u^2\right)
  *       \right]
  *     }{
  *         2 u^2
  *       - \left[
- *            2 \mbox{Ma}0^{-2} + \left(\gamma_0-1\right) \left(1 - u^2\right)
+ *            2 \mbox{Ma}0^{-2} + \left(\gamma-1\right) \left(1 - u^2\right)
  *         \right]
  *     }
  *   \\
@@ -97,7 +97,7 @@ typedef struct suzerain_radialflow_solution {
  * \f{align}{
  *     a^2
  *   &=
- *     1 + \mbox{Ma}_{0}^2\frac{\gamma_0-1}{2}\left(1-u^2\right)
+ *     1 + \mbox{Ma}_{0}^2\frac{\gamma-1}{2}\left(1-u^2\right)
  * \f}
  * to solve for the quantities in \ref suzerain_radialflow_state as a
  * function of \f$R\f$ given initial conditions \f$\rho\left(r_1\right)\f$ and
@@ -105,12 +105,12 @@ typedef struct suzerain_radialflow_solution {
  * \f{align}{
  *     u^2
  *   &<
- *     \frac{2}{\mbox{Ma}_{0}^2\left(\gamma_0-1\right)} + 1
+ *     \frac{2}{\mbox{Ma}_{0}^2\left(\gamma-1\right)} + 1
  * .
  * \f}
  *
  * @param Ma0   Reference Mach number         \f$\mbox{Ma}_0\f$.
- * @param gam0  Reference specific heat ratio \f$\gamma_0   \f$.
+ * @param gamma Reference specific heat ratio \f$\gamma     \f$.
  * @param u1    Initial radial velocity       \f$u   \left(R_1\right)\f$.
  * @param rho1  Initial density               \f$\rho\left(R_1\right)\f$.
  * @param p1    Initial pressure              \f$p   \left(R_1\right)\f$.
@@ -129,7 +129,7 @@ typedef struct suzerain_radialflow_solution {
 suzerain_radialflow_solution *
 suzerain_radialflow_solver(
     const double         Ma0,
-    const double         gam0,
+    const double         gamma,
     const double         u1,
     const double         rho1,
     const double         p1,
@@ -239,12 +239,12 @@ suzerain_radialflow_qoi_pexi(
  * \f{align}{
  *   \mbox{T}_{e}
  *   &\equiv
- *   \gamma_0 \frac{p  \left(x,y;\mbox{Ma}\right)}
- *                 {rho\left(x,y          \right)}
+ *   \gamma \frac{p  \left(x,y;\mbox{Ma}\right)}
+ *               {rho\left(x,y          \right)}
  *   =
  *   \left.
- *   \gamma_0 \frac{\mbox{Ma}^2   p  \left(R\right)}
- *                 {\mbox{Ma}^2_0 rho\left(R\right)}
+ *   \gamma \frac{\mbox{Ma}^2   p  \left(R\right)}
+ *               {\mbox{Ma}^2_0 rho\left(R\right)}
  *   \right|_{R = \sqrt{R_0^2 + \delta^2}}
  *   .
  * \f}
@@ -272,13 +272,11 @@ suzerain_radialflow_qoi_Te(
  * the specified boundary layer edge parameters.
  *
  * @param[in ] delta Edge distance \f$\delta\f$ above the \f$x\f$-axis.
- * @param[in ] gam0  Reference specific heat ratio \f$\gamma_0\f$.
+ * @param[in ] gamma Reference specific heat ratio \f$\gamma\f$.
  * @param[in ] Ma_e  Edge Mach number \f$\mbox{Ma}_e\f$ defined
  *                   per \ref suzerain_radialflow_qoi_Mae.
  * @param[in ] p_exi Pressure gradient parameter \f$p^\ast_{e,\xi}\f$ defined
  *                   per \ref suzerain_radialflow_qoi_pexi.
- * @param[in ] T_e   Edge temperature \f$T_e\f$ defined
- *                   per \ref suzerain_radialflow_qoi_Te.
  * @param[out] Ma0   Reference Mach number \f$\mbox{Ma}_0\f$.
  * @param[out] R0    Radius causing edge radius \f$R\f$ to be at
  *                   Cartesian coordinate \f$\left(R_0,\delta\right)\f$.
@@ -295,10 +293,9 @@ suzerain_radialflow_qoi_Te(
 int
 suzerain_radialflow_qoi_match(
     const double delta,
-    const double gam0,
+    const double gamma,
     const double Ma_e,
     const double p_exi,
-    const double T_e,
     double *Ma0,
     double *R0,
     double *R,

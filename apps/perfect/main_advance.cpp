@@ -63,7 +63,7 @@ int cev_baseflow_laminar(
     double& gammae,
     double& Mae,
     double& pexi,
-    double& Te);
+    double& T_ratio);
 
 /** Application for initializing new restart files. */
 struct driver_advance : public driver
@@ -126,7 +126,7 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
                          ->default_value(solver_spec),
                      "Use the specified algorithm for any --implicit solves")
         ("cevdstag", boost::program_options::value(&cevdstag),
-                     "Take homogenized inviscid baseflow conditions from"
+                     "Take homogenized boundary layer baseflow conditions from"
                      " given leeward arc length from the laminar CEV"
                      " stagnation point as measured in meters.")
         ("undriven", boost::program_options::value(&undriven)
@@ -166,11 +166,15 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
     if (options.variables().count("cevdstag")) {
         INFO0("Mimicking scenario " << cevdstag
               << " meters leeward of the laminar CEV stagnation point");
+        double T_ratio;
         cev_baseflow_laminar(cevdstag,
                              scenario->gamma,  // Notice modification before...
                              scenario->Ma,     // ...call to adjust_scenario().
                              noz->pexi,
-                             noz->Te);
+                             T_ratio);
+        INFO0("Adjusting lower temperature to reproduce CEV T_e / T_w  = "
+              << T_ratio);
+        isothermal->lower_T = 1 / T_ratio;     // Edge temperature is 1.
     }
 
     if (positional.size() != 1) {
@@ -312,27 +316,25 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
             INFO0(who, "Finding baseflow per suzerain_radialflow_qoi_match...");
             // ...unpack all information from *noz and *scenario...
             const double deltae = noz->deltae;
-            const double gam0   = !(isnan)(noz->gam0) && (noz->gam0 != 0)
-                                ? noz->gam0 : scenario->gamma;
+            const double gamma  = !(isnan)(noz->gamma) && (noz->gamma != 0)
+                                ? noz->gamma : scenario->gamma;
             const double Mae    = !(isnan)(noz->Mae ) && (noz->Mae  != 0)
                                 ? noz->Mae  : scenario->Ma;
             const double pexi   = noz->pexi;
-            const double Te     = noz->Te;
 
-#           define POSSIBLYWARN0(who, pre, val)                             \
+#           define POSSIBLYWARN0(who, pre, val)                           \
                 if ((isnan)(val)) { WARN0(who, pre << fullprec<>(val)); } \
                 else              { INFO0(who, pre << fullprec<>(val)); }
 
             POSSIBLYWARN0(who, "Baseflow requested deltae:     ", deltae);
-            POSSIBLYWARN0(who, "Baseflow requested gam0:       ", gam0  );
+            POSSIBLYWARN0(who, "Baseflow requested gamma:      ", gamma );
             POSSIBLYWARN0(who, "Baseflow requested Mae:        ", Mae   );
             POSSIBLYWARN0(who, "Baseflow requested pexi:       ", pexi  );
-            POSSIBLYWARN0(who, "Baseflow requested Te:         ", Te    );
 
             // ...compute edge state matching requested targets...
             double Ma0, R[2], uR, rhoR, pR;
             suzerain_radialflow_qoi_match(
-                    deltae, gam0, Mae, pexi, Te,
+                    deltae, gamma, Mae, pexi,
                     &Ma0, R+1, R+0, &uR, &rhoR, &pR);
 
             POSSIBLYWARN0(who, "Matching radial flow has Ma0:  ", Ma0 );
@@ -345,7 +347,7 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
             // ...solve for wall state given edge state...
             shared_ptr<suzerain_radialflow_solution> r(
                     suzerain_radialflow_solver(
-                        Ma0, gam0, uR, rhoR, pR, R, sizeof(R)/sizeof(R[0])),
+                        Ma0, gamma, uR, rhoR, pR, R, sizeof(R)/sizeof(R[0])),
                     free);
 
             const double u1   = r->state[1].u;
@@ -366,7 +368,7 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
             ArrayXr S = (y.abs2() + pow(r->state[1].R, 2)).sqrt();
             shared_ptr<suzerain_radialflow_solution> s(
                     suzerain_radialflow_solver(
-                        Ma0, gam0, u1, rho1, p1, S.data(), S.size()),
+                        Ma0, gamma, u1, rho1, p1, S.data(), S.size()),
                     free);
 
             // ...and tuck solution into a baseflow_map as a function of y
@@ -599,7 +601,7 @@ int suzerain::perfect::cev_baseflow_laminar(
     double& gammae,
     double& Mae,
     double& pexi,
-    double& Te)
+    double& T_ratio)
 {
     // Data extracted from notebooks/cev_laminar.in which was originally is based upon
     // https://svn.ices.utexas.edu/repos/pecos/turbulence/heatshield_bl/trunk/laminar/scenario.dat
@@ -708,7 +710,7 @@ int suzerain::perfect::cev_baseflow_laminar(
         -0.011066019395791476,   -0.012350269196758374,   -0.014683079037586257,
         -0.018803670726498776,   -0.025438605531063266
     };
-    static const double data_Te[N] = {
+    static const double data_T_ratio[N] = {
         3.4872999452040814,  3.6479923945555432,  3.7199291691044016,
         3.7644092644152076,  3.7999017268666924,  3.8313715997967619,
         3.8602181515453204,  3.8857189776984429,  3.9097235134249479,
@@ -763,8 +765,8 @@ int suzerain::perfect::cev_baseflow_laminar(
     gsl_interp_init(f.get(), data_dstag, data_pexi, N);
     pexi = gsl_interp_eval(f.get(), data_dstag, data_pexi, dstag, a.get());
 
-    gsl_interp_init(f.get(), data_dstag, data_Te, N);
-    Te = gsl_interp_eval(f.get(), data_dstag, data_Te, dstag, a.get());
+    gsl_interp_init(f.get(), data_dstag, data_T_ratio, N);
+    T_ratio = gsl_interp_eval(f.get(), data_dstag, data_T_ratio, dstag, a.get());
 
     return 0;
 }

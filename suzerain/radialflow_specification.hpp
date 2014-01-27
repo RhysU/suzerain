@@ -45,10 +45,9 @@ public:
     /** Construct an instance with the given default values. */
     explicit radialflow_specification(
             double deltae = std::numeric_limits<double>::quiet_NaN(),
-            double gam0   = std::numeric_limits<double>::quiet_NaN(),
+            double gamma  = std::numeric_limits<double>::quiet_NaN(),
             double Mae    = std::numeric_limits<double>::quiet_NaN(),
-            double pexi   = std::numeric_limits<double>::quiet_NaN(),
-            double Te     = std::numeric_limits<double>::quiet_NaN());
+            double pexi   = std::numeric_limits<double>::quiet_NaN());
 
     /**
      * Edge distance \f$\delta_e\f$ above the \f$x\f$-axis.
@@ -56,11 +55,11 @@ public:
     double deltae;
 
     /**
-     * Reference specific heat ratio \f$\gamma_0\f$.
+     * Reference specific heat ratio \f$\gamma\f$.
      *
      * If either 0 or \c NaN, some scenario value should be used.
      */
-    double gam0;
+    double gamma;
 
     /**
      * Edge Mach number \f$\mbox{Ma}_e\f$ defined per \ref
@@ -77,12 +76,6 @@ public:
      * If either 0 or \c NaN, the radial flow is considered \ref trivial().
      */
     double pexi;
-
-    /**
-     * Edge temperature \f$T_e\f$ defined per \ref
-     * suzerain_radialflow_qoi_Te().
-     */
-    double Te;
 
     /**
      * Is the instance devoid of any interesting data?

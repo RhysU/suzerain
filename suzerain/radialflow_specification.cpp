@@ -35,15 +35,13 @@ namespace suzerain {
 
 radialflow_specification::radialflow_specification(
             double deltae,
-            double gam0,
+            double gamma,
             double Mae,
-            double pexi,
-            double Te)
+            double pexi)
     : deltae(deltae)
-    , gam0  (gam0)
+    , gamma (gamma)
     , Mae   (Mae)
     , pexi  (pexi)
-    , Te    (Te)
 {
 }
 
