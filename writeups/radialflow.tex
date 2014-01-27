@@ -13,6 +13,7 @@
 \usepackage{lastpage}
 \usepackage{listings}
 \usepackage{longtable}
+\usepackage{makecell}
 \usepackage{mathrsfs}
 \usepackage{mathtools}
 \usepackage[numbers,sort&compress]{natbib}
@@ -898,7 +899,7 @@ stagnation region.
 
 \begin{figure}
   \centering
-  \includegraphics[height=0.60\textheight]{symplanenorm}
+  \includegraphics[height=0.75\textheight]{symplanenorm}
   \caption{
     \label{fig:cev_symplane}
     The velocity magnitude on the symmetry plane for the fully laminar
@@ -907,14 +908,16 @@ stagnation region.
 \end{figure}
 
 General boundary layer quantities are plotted in Figure~\ref{fig:cev_summary1}.
-Only a few of the plotted quantities are relevant to finding a matching
-inviscid base flow.  The ratio of specific heats $\gamma$ and edge Mach number
+Only a few of the plotted quantities are relevant to finding a matching inviscid
+base flow.  The ratio of specific heats $\gamma$ and edge Mach number
 $\Mach[e]{}$ are taken from the boundary layer edge at distance $\delta$ from
 the heat shield surface. The edge-to-wall temperature ratio $T_e/T_w$ captures
-the coldness of the wall relative to edge conditions.   When nondimensional
-$T_w = 1$ is prescribed as a viscous, isothermal wall condition, the ratio may
-be used to fix $T_e$. Though present in the CEV simulations and depicted here,
-heat shield curvature and wall blowing are neglected.
+the coldness of the wall relative to edge conditions.   When nondimensional $T_e
+= 1$ is prescribed, as is done automatically when choosing $\Mach = \Mach[e]$
+for~\eqref{eq:cartEuler} along with selecting reference $a_0^2 = \gamma R T_0$,
+the ratio may be used to fix the viscous isothermal wall condition $T_w$. Though
+present in the CEV simulations and depicted here, heat shield curvature and wall
+blowing are neglected.
 
 \begin{figure}[p]
   \centering
@@ -927,13 +930,13 @@ heat shield curvature and wall blowing are neglected.
 
 The observed favorable pressure gradient boundary layer nature is quantified in
 Figure~\ref{fig:cev_summary_fpg} in a variety of ways.  Of all of these
-nondimensional results, $p_{e,\xi}$ is the only quantity with a
-directly computable inviscid analog when a target viscous boundary layer
-thickness $\delta$ is supplied.  The other nondimensional pressure gradient
-parameters, discussed by many authors including
-\citet{Sreenivasan1982Laminarescent}, were not adopted for matching purposes as
-they require more-complicated flow descriptors like $\delta^\ast$ and $\tau_w$
-or the numerically noisy $\frac{\partial\delta}{\partial\xi}$.
+nondimensional results, $p_{e,\xi}$ is the only quantity with a directly
+computable inviscid analog when a target viscous boundary layer thickness
+$\delta$ is supplied.  The other nondimensional pressure gradient parameters,
+discussed by many authors including \citet{Sreenivasan1982Laminarescent}, were
+not adopted for matching purposes as they require more-complicated flow
+descriptors like $\delta^\ast$ and $\tau_w$ or the numerically noisy
+$\frac{\partial\delta}{\partial\xi}$.
 
 \begin{figure}[p]
   \centering
@@ -965,16 +968,16 @@ computed output at $R=\sqrt{R_0^2+\delta^2}$ are tabulated below.
  ,end table=\end{longtable}
  ,every head row/.style={before row=\toprule,after row=\midrule\endhead}
  ,every odd row/.style={before row={\rowcolor[gray]{0.95}}}
- ,columns={dstag,gamma_e,Ma_edge,p_exi,T_ratio,Ma0,R0,uR,pR}
- ,columns/dstag/.style=  {fixed,fixed zerofill,precision=3,dec sep align,column name=Arc length}
+ ,columns={dstag,gamma_e,Ma_edge,p_exi,Ma0,R0,uR,pR,T_w}
+ ,columns/dstag/.style=  {fixed,fixed zerofill,precision=3,dec sep align,column name=\makecell{Arc\\length}}
  ,columns/gamma_e/.style={fixed,fixed zerofill,precision=4,dec sep align,column name=$\gamma_e$}
  ,columns/Ma_edge/.style={fixed,fixed zerofill,precision=4,dec sep align,column name=$\Mach[e]{}$}
  ,columns/p_exi/.style=  {fixed,fixed zerofill,precision=6,dec sep align,column name=$p_{e,\xi}$}
- ,columns/T_ratio/.style={fixed,fixed zerofill,precision=4,dec sep align,column name=$T_e$}
- ,columns/Ma0/.style=    {fixed,fixed zerofill,precision=4,dec sep align,column name=$\Mach[0]{}$}
- ,columns/R0/.style=     {fixed,fixed zerofill,precision=2,dec sep align,column name=$R_0$}
- ,columns/uR/.style=     {fixed,fixed zerofill,precision=4,dec sep align,column name=$u\!\left(R\right)$}
+ ,columns/Ma0/.style=    {fixed,fixed zerofill,precision=6,dec sep align,column name=$\Mach[0]{}$}
+ ,columns/R0/.style=     {fixed,fixed zerofill,precision=3,dec sep align,column name=$R_0$}
+ ,columns/uR/.style=     {fixed,fixed zerofill,precision=5,dec sep align,column name=$u\!\left(R\right)$}
  ,columns/pR/.style=     {fixed,fixed zerofill,precision=4,dec sep align,column name=$p\!\left(R\right)$}
+ ,columns/T_w/.style=    {fixed,fixed zerofill,precision=4,dec sep align,column name=\makecell{Viscous\\$T_w$}}
 ]{notebooks/cev_laminar.out}
 \end{centering}
 

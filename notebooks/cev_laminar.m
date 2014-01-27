@@ -10,11 +10,13 @@ d = dataframe('cev_laminar.in');
                                 num2cell(d.gamma_e),
                                 num2cell(d.Ma_edge),
                                 num2cell(d.p_exi),
-                                num2cell(d.T_ratio),
                                 'UniformOutput', 1);
 
+% Compute T_w by knowing T_e is one.
+T_w = 1 ./ d.T_ratio;
+
 % Place the output into a new dataframe
-s = dataframe([], Ma0, R0, R, uR, rhoR, pR);
+s = dataframe([], Ma0, R0, R, uR, rhoR, pR, T_w);
 
 % Save input with appended results into a new CSV-with-header file
 f = fopen('cev_laminar.out','w');
