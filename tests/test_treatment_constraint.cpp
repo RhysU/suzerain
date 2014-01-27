@@ -24,7 +24,7 @@
 #define BOOST_TEST_MAIN
 #include <boost/test/unit_test.hpp>
 
-#include <suzerain/constraint_treatment.hpp>
+#include <suzerain/treatment_constraint.hpp>
 
 // Files performs no strictly useful test work.
 // File just checks that the header logic does not contain syntax errors.

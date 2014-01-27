@@ -16,16 +16,16 @@ AM_CPPFLAGS += $(ANTIOCH_CFLAGS)
 ###
 
 noinst_LTLIBRARIES     += libreacting.la
-libreacting_la_SOURCES  = reacting_ndx.hpp
-libreacting_la_SOURCES += antioch_constitutive.hpp     antioch_constitutive.cpp
+libreacting_la_SOURCES  = antioch_constitutive.hpp     antioch_constitutive.cpp
 libreacting_la_SOURCES += definition_channel.hpp       definition_channel.cpp
 libreacting_la_SOURCES += definition_filter.hpp        definition_filter.cpp
 libreacting_la_SOURCES += driver.hpp                   driver.cpp
 libreacting_la_SOURCES += manufactured_solution.hpp    manufactured_solution.cpp
-libreacting_la_SOURCES += nonreflecting_treatment.hpp  nonreflecting_treatment.cpp
 libreacting_la_SOURCES += nsctpl_fwd.hpp               nsctpl.hpp
 libreacting_la_SOURCES += quantities.hpp               quantities.cpp
 libreacting_la_SOURCES += reacting.hpp                 reacting.cpp
+libreacting_la_SOURCES += reacting_ndx.hpp
+libreacting_la_SOURCES += treatment_nonreflecting.hpp  treatment_nonreflecting.cpp
 libreacting_la_LIBADD   = $(ANTIOCH_LIBS)
 
 ##

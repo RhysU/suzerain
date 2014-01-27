@@ -25,7 +25,7 @@
 #define SUZERAIN_CONSTRAINT_TREATMENT_HPP
 
 /** @file
- * Provides \ref constraint_treatment.
+ * Provides \ref treatment_constraint.
  */
 
 #include <suzerain/bspline.h>
@@ -46,7 +46,7 @@ namespace constraint {
 /**
  * A wrapper applying integral constraint treatment atop any linear operator.
  * During \ref invert_mass_plus_scaled_operator implicit momentum forcing is
- * applied following the section of <tt>writeups/channel_treatment.tex</tt>
+ * applied following the section of <tt>writeups/treatment_channel.tex</tt>
  * titled "Enforcing a target bulk momentum via the linear operator" and using
  * information from \ref operator_common_block via an instance provided at
  * construction time.
@@ -269,7 +269,7 @@ treatment<CommonBlock>::invert_mass_plus_scaled_operator(
     SUZERAIN_ENSURE(state.shape()  [0] >  (unsigned) mx );
     SUZERAIN_ENSURE(state.shape()  [0] >  (unsigned) rho);
 
-    // See channel_treatment writeup (redux) for information on steps below.
+    // See treatment_channel writeup (redux) for information on steps below.
 
     // Have a tantrum if caller expects us to compute any constraints
     SUZERAIN_ENSURE(ic0 == NULL);

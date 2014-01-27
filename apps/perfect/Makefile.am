@@ -18,8 +18,6 @@ libperfect_la_SOURCES += manufactured_solution.cpp
 libperfect_la_SOURCES += manufactured_solution.hpp
 libperfect_la_SOURCES += navier_stokes.cpp
 libperfect_la_SOURCES += navier_stokes.hpp
-libperfect_la_SOURCES += nonreflecting_treatment.cpp
-libperfect_la_SOURCES += nonreflecting_treatment.hpp
 libperfect_la_SOURCES += nsctpl_rholut_fwd.hpp
 libperfect_la_SOURCES += nsctpl_rholut.hpp
 libperfect_la_SOURCES += operator_hybrid.cpp
@@ -35,6 +33,8 @@ libperfect_la_SOURCES += profile.hpp
 libperfect_la_SOURCES += quantities.cpp
 libperfect_la_SOURCES += quantities.hpp
 libperfect_la_SOURCES += slowgrowth_type.hpp
+libperfect_la_SOURCES += treatment_nonreflecting.cpp
+libperfect_la_SOURCES += treatment_nonreflecting.hpp
 
 ##
 ## Applications

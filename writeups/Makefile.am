@@ -3,15 +3,15 @@
 # LaTeX and BiBTeX source files
 
 # Standalone LaTeX documents
-TEXSOURCES  = channel_treatment.tex
-TEXSOURCES += covariance.tex
+TEXSOURCES  = covariance.tex
 TEXSOURCES += L2.tex
 TEXSOURCES += lssdimex.tex
 TEXSOURCES += perfectgas.tex
-TEXSOURCES += plate_treatment.tex
+TEXSOURCES += radialflow.tex
 TEXSOURCES += skewadjoint.tex
 TEXSOURCES += smr91.tex
-TEXSOURCES += radialflow.tex
+TEXSOURCES += treatment_channel.tex
+TEXSOURCES += treatment_plate.tex
 TEXSOURCES += twopoint.tex
 
 # Reacting doc broken out amongst many srcs.

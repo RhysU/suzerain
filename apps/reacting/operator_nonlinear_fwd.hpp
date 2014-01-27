@@ -191,7 +191,7 @@ public:
      * operations across the entire wall-normal profile in a stride one
      * fashion.
      *
-     * @see writeups/channel_treatment.tex and writeups/derivation.tex for
+     * @see writeups/treatment_channel.tex and writeups/derivation.tex for
      * details on the mean quantities.
      * @{
      */

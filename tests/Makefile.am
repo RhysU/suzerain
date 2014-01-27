@@ -541,13 +541,13 @@ test_inorder_LDADD    = ../suzerain/libsuzerain.la
 test_inorder_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
 test_inorder_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
 
-TESTS              += test_constraint_treatment
-EXTRA_PROGRAMS     += test_constraint_treatment
-test_constraint_treatment_SOURCES  = test_constraint_treatment.cpp
-test_constraint_treatment_CPPFLAGS = $(AM_CPPFLAGS) -DBOOST_TEST_DYN_LINK -DBOOST_TEST_NO_LIB
-test_constraint_treatment_LDADD    = ../suzerain/libsuzerain.la
-test_constraint_treatment_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
-test_constraint_treatment_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
+TESTS              += test_treatment_constraint
+EXTRA_PROGRAMS     += test_treatment_constraint
+test_treatment_constraint_SOURCES  = test_treatment_constraint.cpp
+test_treatment_constraint_CPPFLAGS = $(AM_CPPFLAGS) -DBOOST_TEST_DYN_LINK -DBOOST_TEST_NO_LIB
+test_treatment_constraint_LDADD    = ../suzerain/libsuzerain.la
+test_treatment_constraint_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
+test_treatment_constraint_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
 
 TESTS                     += test_largo_state
 EXTRA_PROGRAMS            += test_largo_state

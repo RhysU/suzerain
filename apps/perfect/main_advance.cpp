@@ -32,7 +32,7 @@
 #include <suzerain/baseflow.hpp>
 #include <suzerain/common.hpp>
 #include <suzerain/constraint.hpp>
-#include <suzerain/constraint_treatment.hpp>
+#include <suzerain/treatment_constraint.hpp>
 #include <suzerain/format.hpp>
 #include <suzerain/largo_state.hpp>
 #include <suzerain/radialflow.h>
@@ -47,7 +47,7 @@
 #include "operator_hybrid.hpp"
 #include "operator_mass_isothermal.hpp"
 #include "operator_nonlinear.hpp"
-#include "nonreflecting_treatment.hpp"
+#include "treatment_nonreflecting.hpp"
 #include "perfect.hpp"
 
 #pragma warning(disable:1419)
@@ -258,7 +258,7 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
     shared_ptr<constraint::treatment<operator_common_block> > constrainer(
             new constraint::treatment<operator_common_block>(
                     scenario->Ma, *dgrid, *b, common_block));
-    if        (grid->two_sided()) { // Channel per channel_treatment.tex
+    if        (grid->two_sided()) { // Channel per treatment_channel.tex
 
         INFO0(who, "Establishing driving, channel-like state constraints");
         constrainer->physical[ndx::rho].reset(
@@ -268,7 +268,7 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
         constrainer->physical[ndx::e  ].reset(
                 new constraint::reference_bulk(scenario->bulk_rho_E, *b));
 
-    } else if (grid->one_sided()) { // Flat plate per plate_treatment.tex
+    } else if (grid->one_sided()) { // Flat plate per treatment_plate.tex
                                     // unless complicated baseflow prescribed
 
         if (!(isnan)(scenario->bulk_rho)) {
@@ -511,8 +511,8 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
         INFO0(who, "Initializing fully explicit spatial operators");
         if (grid->one_sided()) {
             INFO0(who, "Preparing nonreflecting upper boundary treatment");
-            shared_ptr<nonreflecting_treatment> nonreflecting(
-                    new nonreflecting_treatment(
+            shared_ptr<treatment_nonreflecting> nonreflecting(
+                    new treatment_nonreflecting(
                         *scenario, *isothermal, *grid, *dgrid, *cop, *b));
             nonreflecting->N = N;
             N = nonreflecting;

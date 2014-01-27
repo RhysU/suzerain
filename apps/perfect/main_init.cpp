@@ -309,7 +309,7 @@ suzerain::perfect::driver_init::run(int argc, char **argv)
                                                gsl_interp_accel_free);
 
             INFO0(who, "Computing mean freestream behavior per plate scenario");
-            // See plate_treatment.tex for origin of T-dependent scaling
+            // See treatment_plate.tex for origin of T-dependent scaling
             // Blasius profile fixes upper_{u,v} for the freestream...
             isothermal->upper_u   = sqrt(isothermal->upper_T); // Eqn (6)
             isothermal->upper_v   = gsl_spline_eval(fit_v.get(),
@@ -354,7 +354,7 @@ suzerain::perfect::driver_init::run(int argc, char **argv)
                                                gsl_interp_accel_free);
 
             INFO(who, "Computing mean freestream behavior per plate scenario");
-            // See plate_treatment.tex for origin of T-dependent scaling
+            // See treatment_plate.tex for origin of T-dependent scaling
             // Blasius profile fixes upper_u for the freestream...
             isothermal->upper_u   = sqrt(isothermal->upper_T); // Eqn (6)
             isothermal->upper_rho = pow(isothermal->upper_T,

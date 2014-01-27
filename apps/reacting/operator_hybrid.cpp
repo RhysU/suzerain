@@ -409,11 +409,11 @@ void isothermal_hybrid_linear_operator::accumulate_mass_plus_scaled_operator(
  * Helps accomplish the following steps:
  * <ul>
  * <li>
- *     channel_treatment step (8) sets no-slip conditions
+ *     treatment_channel step (8) sets no-slip conditions
  *     on wall collocation points.
  * </li><li>
  * </li>
- *     channel_treatment step (9) sets isothermal conditions at walls
+ *     treatment_channel step (9) sets isothermal conditions at walls
  *     using rho_wall = e_wall * gamma * (gamma - 1).
  * </ul>
  */
@@ -738,7 +738,7 @@ void isothermal_hybrid_linear_operator::invert_mass_plus_scaled_operator(
                                                          species_solver.size()));
     }
 
-    // channel_treatment step (3) performs the operator solve which for the
+    // treatment_channel step (3) performs the operator solve which for the
     // implicit treatment must be combined with boundary conditions
 
     // Pack reference details for suzerain_reacting_imexop routines

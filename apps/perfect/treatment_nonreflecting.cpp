@@ -22,10 +22,10 @@
 //--------------------------------------------------------------------------
 
 /** @file
- * @copydoc nonreflecting_treatment.hpp
+ * @copydoc treatment_nonreflecting.hpp
  */
 
-#include "nonreflecting_treatment.hpp"
+#include "treatment_nonreflecting.hpp"
 
 #include <suzerain/bspline.hpp>
 #include <suzerain/inorder.hpp>
@@ -53,7 +53,7 @@ namespace suzerain {
 
 namespace perfect {
 
-nonreflecting_treatment::nonreflecting_treatment(
+treatment_nonreflecting::treatment_nonreflecting(
         const definition_scenario &scenario,
         const specification_isothermal &isothermal,
         const specification_grid &grid,
@@ -63,7 +63,7 @@ nonreflecting_treatment::nonreflecting_treatment(
     : operator_base(grid, dgrid, cop, b)
     , scenario(scenario)
     , isothermal(isothermal)
-    , who("nonreflecting_treatment")
+    , who("treatment_nonreflecting")
 {
 #ifndef NDEBUG
     // Defensively NaN working storage to reduce misuse possibility
@@ -76,7 +76,7 @@ nonreflecting_treatment::nonreflecting_treatment(
 }
 
 std::vector<real_t>
-nonreflecting_treatment::apply_operator(
+treatment_nonreflecting::apply_operator(
             const real_t time,
             contiguous_state<4,complex_t> &swave,
             const lowstorage::method_interface<complex_t> &method,
@@ -120,7 +120,7 @@ nonreflecting_treatment::apply_operator(
     // Prepare the matrices required to implement the boundary condition.
     // The hideous const_cast is required due to timestepping API.
     if (substep_index == 0) {
-        const_cast<nonreflecting_treatment*>(this)
+        const_cast<treatment_nonreflecting*>(this)
                 ->compute_giles_matrices_upper();
     }
 
@@ -177,7 +177,7 @@ nonreflecting_treatment::apply_operator(
 }
 
 void
-nonreflecting_treatment::compute_giles_matrices(
+treatment_nonreflecting::compute_giles_matrices(
     const real_t ref_rho,
     const real_t ref_u,
     const real_t ref_v,

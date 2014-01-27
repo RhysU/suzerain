@@ -368,17 +368,17 @@ void isothermal_hybrid_linear_operator::accumulate_mass_plus_scaled_operator(
  * Helps accomplish the following steps:
  * <ul>
  * <li>
- *     channel_treatment step (8) sets no-slip or transpiring conditions
+ *     treatment_channel step (8) sets no-slip or transpiring conditions
  *     on wall collocation points.
  * </li><li>
  * </li>
- *     channel_treatment step (9) sets isothermal conditions at walls
+ *     treatment_channel step (9) sets isothermal conditions at walls
  *     using rho_wall = e_wall * gamma * (gamma - 1).
  * </ul>
  *
  * Extended to permit disabling one or both boundaries to facilitate
  * reuse for flat plate problems with otherwise-constrained mean free
- * streams per plate_treatment documentation.
+ * streams per treatment_plate documentation.
  */
 class IsothermalPATPTEnforcer
 {
@@ -580,7 +580,7 @@ void isothermal_hybrid_linear_operator::invert_mass_plus_scaled_operator(
         SUZERAIN_ENSURE(ic0->shape()  [0] == (unsigned) solver->S);
     }
 
-    // channel_treatment step (3) performs the operator solve which for the
+    // treatment_channel step (3) performs the operator solve which for the
     // implicit treatment must be combined with boundary conditions
 
     // Pack reference details for suzerain_rholut_imexop routines

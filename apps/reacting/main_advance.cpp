@@ -30,7 +30,7 @@
 
 #include <suzerain/common.hpp>
 #include <suzerain/constraint.hpp>
-#include <suzerain/constraint_treatment.hpp>
+#include <suzerain/treatment_constraint.hpp>
 #include <suzerain/error.h>
 #include <suzerain/operator_hybrid_residual.hpp>
 #include <suzerain/specification_zgbsv.hpp>
@@ -41,7 +41,7 @@
 #include "operator_explicit.hpp"
 
 #include "operator_hybrid.hpp"
-#include "nonreflecting_treatment.hpp"
+#include "treatment_nonreflecting.hpp"
 
 #pragma warning(disable:1419)
 
@@ -217,7 +217,7 @@ suzerain::reacting::driver_advance::run(int argc, char **argv)
     shared_ptr<constraint::treatment<operator_common_block> > constrainer(
             new constraint::treatment<operator_common_block>(
                     1.0, *dgrid, *b, common_block));
-    if        (grid->two_sided()) { // Channel per channel_treatment.tex
+    if        (grid->two_sided()) { // Channel per treatment_channel.tex
 
         INFO0(who, "Establishing driving, channel-like state constraints");
         constrainer->physical[ndx::rho].reset(
@@ -350,8 +350,8 @@ suzerain::reacting::driver_advance::run(int argc, char **argv)
 
         if (grid->one_sided()) {
             INFO0(who, "Preparing nonreflecting upper boundary treatment");
-            shared_ptr<nonreflecting_treatment> nonreflecting(
-                    new nonreflecting_treatment(
+            shared_ptr<treatment_nonreflecting> nonreflecting(
+                    new treatment_nonreflecting(
                         *grid, *dgrid, *cop, *b, common_block));
             nonreflecting->N = N;
             N = nonreflecting;
@@ -383,8 +383,8 @@ suzerain::reacting::driver_advance::run(int argc, char **argv)
             WARN0(who, "Non-reflecting boundary treatment with hybrid"
                        " implicit/explicit time marching is experimental.");
 
-            shared_ptr<nonreflecting_treatment> nonreflecting(
-                new nonreflecting_treatment(
+            shared_ptr<treatment_nonreflecting> nonreflecting(
+                new treatment_nonreflecting(
                     *grid, *dgrid, *cop, *b, common_block));
             nonreflecting->N = this->N;
             this->N = nonreflecting;

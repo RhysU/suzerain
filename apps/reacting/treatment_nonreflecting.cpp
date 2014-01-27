@@ -22,10 +22,10 @@
 //--------------------------------------------------------------------------
 
 /** @file
- * @copydoc nonreflecting_treatment.hpp
+ * @copydoc treatment_nonreflecting.hpp
  */
 
-#include "nonreflecting_treatment.hpp"
+#include "treatment_nonreflecting.hpp"
 
 #include <suzerain/bspline.hpp>
 #include <suzerain/error.h>
@@ -58,7 +58,7 @@ namespace suzerain {
 
 namespace reacting {
 
-nonreflecting_treatment::nonreflecting_treatment(
+treatment_nonreflecting::treatment_nonreflecting(
         const specification_grid &grid,
         const pencil_grid &dgrid,
         const bsplineop &cop,
@@ -66,11 +66,11 @@ nonreflecting_treatment::nonreflecting_treatment(
         operator_common_block &common)
     : operator_base(grid, dgrid, cop, b)
     , common(common)
-    , who("nonreflecting_treatment")
+    , who("treatment_nonreflecting")
 {
 }
 
-std::vector<real_t> nonreflecting_treatment::apply_operator(
+std::vector<real_t> treatment_nonreflecting::apply_operator(
             const real_t time,
             contiguous_state<4,complex_t> &swave,
             const lowstorage::method_interface<complex_t> &method,

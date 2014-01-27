@@ -53,7 +53,7 @@ class definition_scenario;
  * <tt>writeups/perfect_gas.tex</tt> section entitled "Nonreflecting freestream
  * boundary conditions".
  */
-class nonreflecting_treatment
+class treatment_nonreflecting
     : public operator_base
     , public lowstorage::operator_nonlinear< contiguous_state<4,complex_t> >
 {
@@ -65,7 +65,7 @@ public:
      * Constructor.
      * After construction, #N must be provided.
      */
-    nonreflecting_treatment(
+    treatment_nonreflecting(
             const definition_scenario& scenario,
             const specification_isothermal& isothermal,
             const specification_grid& grid,
@@ -228,8 +228,8 @@ private:
     std::string who;
 
     // boost::noncopyable trips Intel non-virtual base destructor warnings.
-    nonreflecting_treatment(const nonreflecting_treatment&);
-    nonreflecting_treatment& operator=(const nonreflecting_treatment&);
+    treatment_nonreflecting(const treatment_nonreflecting&);
+    treatment_nonreflecting& operator=(const treatment_nonreflecting&);
 
 };
 
