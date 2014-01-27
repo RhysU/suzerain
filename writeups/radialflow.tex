@@ -95,9 +95,8 @@ II.A of \citet{Saad2011Coordinate}.  Their presentation essentially is
 recounted here but velocity potential notation is suppressed.  Wherever
 necessary, sufficient smoothness is assumed.
 
-Consider a perfect gas in which pressure $p$, density $\rho$, and sound
-speed $a$ are related through a constant ratio of specific heats $\gamma$
-according to
+Consider a perfect gas in which pressure $p$, density $\rho$, and sound speed
+$a$ are related by a constant ratio of specific heats $\gamma$ according to
 \begin{align}
     \gamma p &= \rho a^2.
 \end{align}
@@ -169,48 +168,34 @@ equation may only be satisfied when
 .
 \label{eq:momentum_and_continuity}
 \end{align}
-
-Following \citeauthor{Saad2011Coordinate}, the specific total enthalpy is
-assumed to be invariant flow to connect $a$ and $u$ with a reference specific
-enthalpy $h_0 = \frac{\theta a_0^2}{\gamma_0-1}$ given fixed
-$\theta\in\mathbb{R}^{+}$ and a reference velocity $u_0$.  That is,
+As suggested by \citeauthor{Saad2011Coordinate}, the constant specific total
+enthalpy assumption, $H = H_0$, is used to connect $a$ and $u$ with a reference
+specific enthalpy $h_0 = \frac{a_0^2}{\gamma-1}$ and a reference velocity $u_0$.
+That is,
 \begin{align}
-     H
-     &=
-        \frac{       a^2  }{\gamma  -1}       + \frac{1}{2} \vec{u}^2
-      = \frac{\theta a_0^2}{\gamma_0-1} + \frac{1}{2} u_0^2
-      =  H_0
+       \frac{a^2  }{\gamma-1} + \frac{1}{2} \vec{u}^2
+    &= \frac{a_0^2}{\gamma-1} + \frac{1}{2} u_0^2
 \label{eq:constant_specific_stagnation_enthalpy}
 \end{align}
 holds everywhere.  As specific total energy $E$ must be strictly positive, from
 $H = E + p / \rho$ it follows
 \begin{align}
-    \frac{p}{\rho} &< \frac{\theta a_0^2}{\gamma-1} + \frac{1}{2}u_0^2
+    \frac{p}{\rho} &< \frac{a_0^2}{\gamma-1} + \frac{1}{2}u_0^2
 \label{eq:constant_specific_stagnation_enthalpy_realizablity}
 \end{align}
-is necessary for realizability. After a rearrangement, constant
-stagnation enthalpy condition~\eqref{eq:constant_specific_stagnation_enthalpy},
+is necessary for realizability. After rearranging, the constant stagnation
+enthalpy condition~\eqref{eq:constant_specific_stagnation_enthalpy},
 \begin{align}
-        a^2
-     &=   \frac{\gamma-1}{\gamma_0-1} \theta a_0^2
-        + \frac{\gamma-1}{2} \left(u_0^2 - \vec{u}^2\right)
+    a^2 &= a_0^2 + \frac{\gamma-1}{2} \left(u_0^2 - \vec{u}^2\right)
 \label{eq:stagnation_sound}
 ,
 \end{align}
-may be used within equation \eqref{eq:momentum_and_continuity} to obtain
+may be used within equation \eqref{eq:momentum_and_continuity} to find the
+interesting dimensional result,
 \begin{align}
        \vec{u}\cdot \vec{\nabla}\vec{u}^2
     &= \left[
-          2 \frac{\gamma-1}{\gamma_0-1} \theta a_0^2 
-        + \left(\gamma-1\right) \left(u_0^2 - \vec{u}^2\right)
-       \right]\vec{\nabla}\cdot\vec{u}
-.
-\end{align}
-Adding a constant $\gamma=\gamma_0$ assumption, one finds the dimensional result
-\begin{align}
-       \vec{u}\cdot \vec{\nabla}\vec{u}^2
-    &= \left[
-          2 \theta a_0^2
+          2 a_0^2
         + \left(\gamma_0-1\right) \left(u_0^2 - \vec{u}^2\right)
        \right]\vec{\nabla}\cdot\vec{u}
 \label{eq:cpfgibbs_dim}
