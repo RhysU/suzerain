@@ -135,7 +135,7 @@ potential, \emph{viz.}
   \vec{u} = \vec{\nabla}\phi + \vec{\nabla}\times\vec{A} = \vec{\nabla}\phi
   .
 \end{align}
-Though commonly employed, $\vec{\nabla}\phi$ plays no role here.
+Though commonly employed, $\vec{\nabla}\phi$ plays little role here.
 Substituting~\eqref{eq:momentum} into~\eqref{eq:isenthalpic} and simplifying,
 \begin{align}
     a^2 \nabla \rho &= \nabla p,
@@ -223,7 +223,7 @@ into~\eqref{eq:cpfgibbs_dim},
        \vec{u}^\ast \cdot \vec{\nabla}^\ast{\vec{u}^\ast}^2
     &=
        \left[
-          2 \theta a_0^2
+          2 a_0^2
         + \Mach[0]{}^2 a_0^2 \left(\gamma_0-1\right) \left(1 - {\vec{u}^\ast}^2\right)
        \right]
        \,
@@ -235,18 +235,18 @@ into~\eqref{eq:cpfgibbs_dim},
        \frac{\Mach[0]{}^3 a_0^3}{l_0}
        \,
        \left[
-          \frac{2\theta}{\Mach[0]{}^2}
+          \frac{2}{\Mach[0]{}^2}
         + \left(\gamma_0-1\right) \left(1 - {\vec{u}^\ast}^2\right)
        \right]
        \vec{\nabla}^\ast\cdot\vec{u}^\ast
 .
 \end{align}
-Rescaling and dropping the star notation, one finally arrives at
+Rescaling and dropping the star notation, one arrives at
 \begin{align}
        \vec{u} \cdot \vec{\nabla}\vec{u}^2
     &=
        \left[
-          2 \theta \Mach[0]{}^{-2}
+          2 \Mach[0]{}^{-2}
         + \left(\gamma_0-1\right) \left(1 - \vec{u}^2\right)
        \right]
        \vec{\nabla}\cdot\vec{u}
@@ -256,15 +256,15 @@ Rescaling and dropping the star notation, one finally arrives at
 
 With some $\vec{u}=\vec{\nabla}\phi$ satisfying~\eqref{eq:cpfgibbs_nondim} in
 hand, computing local $\rho$ and $p$ is often of interest.
-Nondimensionalizing~\eqref{eq:stagnation_sound} when $\gamma=\gamma_0$ permits
+Nondimensionalizing~\eqref{eq:stagnation_sound} permits
 direct computation of $a$ from
 \begin{align}
-  a^2 &= \theta + \Mach[0]^2\frac{\gamma_0-1}{2}\left(1-\vec{u}^2\right)
+  a^2 &= 1 + \Mach[0]^2\frac{\gamma_0-1}{2}\left(1-\vec{u}^2\right)
 \label{eq:stagnation_sound_nondim}
 \end{align}
 where clearly a realizable $a^2>0$ requires
 \begin{align}
-  u^2_\text{valid} &< \frac{2\theta}{\Mach[0]^2\left(\gamma_0-1\right)} + 1
+  u^2_\text{valid} &< \frac{2}{\Mach[0]^2\left(\gamma_0-1\right)} + 1
 .
 \label{eq:stagnation_sound_realizability_nondim}
 \end{align}
@@ -274,7 +274,7 @@ obtains
     u^2_\text{sonic}
     &=
     \left(\gamma_0+1\right)^{-1}
-    \left(2\theta\Mach[0]^{-2} + \gamma_0 - 1\right)
+    \left(2\Mach[0]^{-2} + \gamma_0 - 1\right)
     <
     u^2_\text{valid}
 \label{eq:u_sonic}
@@ -283,7 +283,7 @@ obtains
 Condition~\eqref{eq:constant_specific_stagnation_enthalpy_realizablity}
 restricts the relative magnitudes of nondimensional $p$ and $\rho$,
 \begin{align}
-    \frac{p}{\rho} &< \frac{\theta}{\gamma_0-1} + \frac{\Mach[0]^2}{2}
+    \frac{p}{\rho} &< \frac{1}{\gamma_0-1} + \frac{\Mach[0]^2}{2}
 \label{eq:constant_specific_stagnation_enthalpy_realizablity_nondim}
 .
 \end{align}
@@ -297,8 +297,8 @@ nondimensionalizing, multiplying by $l_0$, and simplifying,
   -\frac{\Mach[0]^2}{2}\frac{\vec{\nabla}\vec{u}^2}{a^2}
 .
 \end{align}
-Nondimensionalizing the momentum result~\eqref{eq:momentum} and then scaling by
-$\frac{l_0}{\rho_0 a_0^2}$,
+Nondimensionalizing~\eqref{eq:momentum} and scaling by $\frac{l_0}{\rho_0
+a_0^2}$,
 \begin{align}
   \vec{\nabla} p &= - \frac{1}{2}\Mach[0]^2 \rho \vec{\nabla}\vec{u}^2
 .
