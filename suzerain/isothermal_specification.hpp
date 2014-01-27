@@ -297,10 +297,10 @@ public:
     /**@}*/
 
     /**
-     * Normalize, for example, \f$T\in\left[T_{\mbox{lower}}, T_{\mbox{upper}}]
-     * \to T\in\left[0, 1\right]\f$ using mapping \f$\frac{T -
-     * T_{\mbox{lower}}}{T_{\mbox{upper}} - T_{\mbox{lower}}}\f$.  When the two
-     * extents are identical, one is returned.
+     * Normalize, for example, \f$T\in\left[T_{\mbox{lower}},
+     * T_{\mbox{upper}}\right] \to T\in\left[0, 1\right]\f$ using mapping
+     * \f$\frac{T - T_{\mbox{lower}}}{T_{\mbox{upper}} - T_{\mbox{lower}}}\f$.
+     * When the two extents are identical, one is returned.
      * @{
      */
     real_t normalize_T  (real_t T)   const
@@ -321,7 +321,7 @@ public:
 
     /**
      * Denormalize, for example, \f$ T\in\left[0, 1\right] \to
-     * T\in\left[T_{\mbox{lower}}, T_{\mbox{upper}}] \f$ using mapping
+     * T\in\left[T_{\mbox{lower}}, T_{\mbox{upper}}\right] \f$ using mapping
      * \f$\frac{T - T_{\mbox{lower}}}{T_{\mbox{upper}} - T_{\mbox{lower}}}\f$.
      * @{
      */
