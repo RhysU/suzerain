@@ -343,7 +343,7 @@ but the scalar equation
     &=
        \left[
           2 \Mach[0]{}^{-2}
-        + \left(\gamma_0-1\right) \left(1 - u^2\!\left(r\right)\right)
+        + \left(\gamma-1\right) \left(1 - u^2\!\left(r\right)\right)
        \right]
        \left(
           r^{-1} u\!\left(r\right) + u^\prime\!\left(r\right)
@@ -355,13 +355,13 @@ Suppressing the dependence of $u$ on $r$ and collecting $u^\prime$ terms,
        \left(
            2 u^2
          - \left[
-              2 \Mach[0]{}^{-2} + \left(\gamma_0-1\right) \left(1 - u^2\right)
+              2 \Mach[0]{}^{-2} + \left(\gamma-1\right) \left(1 - u^2\right)
            \right]
        \right)
        u^\prime
     &=
        \left[
-          2 \Mach[0]{}^{-2} + \left(\gamma_0-1\right) \left(1 - u^2\right)
+          2 \Mach[0]{}^{-2} + \left(\gamma-1\right) \left(1 - u^2\right)
        \right]
        r^{-1} u
 .
@@ -374,12 +374,12 @@ Solving for $u^\prime$,
        \,
        \frac{
          \left[
-            2 \Mach[0]{}^{-2} + \left(\gamma_0-1\right) \left(1 - u^2\right)
+            2 \Mach[0]{}^{-2} + \left(\gamma-1\right) \left(1 - u^2\right)
          \right]
        }{
            2 u^2
          - \left[
-              2 \Mach[0]{}^{-2} + \left(\gamma_0-1\right) \left(1 - u^2\right)
+              2 \Mach[0]{}^{-2} + \left(\gamma-1\right) \left(1 - u^2\right)
            \right]
        }
 \label{eq:cpfradial_nondim_ode}
@@ -537,8 +537,8 @@ $R=\sqrt{x^2+y^2}$ one may compute the following:
  & \partial_x p                               &= \frac{\Mach^2}{\Mach[0]{}^2}\frac{x}{R} p^\prime\!\left(R\right)
  & \partial_y p                               &= \frac{\Mach^2}{\Mach[0]{}^2}\frac{y}{R} p^\prime\!\left(R\right)
 \\            a    \!\left(x, y; \Mach\right) &= \frac{\Mach  }{\Mach[0]{}  } a   \!\left(R\right)
- & \partial_x a                               &= \frac{1-\gamma_0}{2}\frac{x}{R}\frac{\Mach{}\Mach[0]{}\,u\!\left(R\right)}{a\!\left(R\right)} u^\prime\!\left(R\right)
- & \partial_y a                               &= \frac{1-\gamma_0}{2}\frac{y}{R}\frac{\Mach{}\Mach[0]{}\,u\!\left(R\right)}{a\!\left(R\right)} u^\prime\!\left(R\right)
+ & \partial_x a                               &= \frac{1-\gamma}{2}\frac{x}{R}\frac{\Mach{}\Mach[0]{}\,u\!\left(R\right)}{a\!\left(R\right)} u^\prime\!\left(R\right)
+ & \partial_y a                               &= \frac{1-\gamma}{2}\frac{y}{R}\frac{\Mach{}\Mach[0]{}\,u\!\left(R\right)}{a\!\left(R\right)} u^\prime\!\left(R\right)
 \end{align}
 %
 The $\Mach$ and $\Mach[0]{}$ factors on $p$ and $a$ rescale them for use within
@@ -648,8 +648,8 @@ to interrogate the solution's nature at $\left(R_0, \delta\right)$. When the
 isenthalpic data is used to approximate the behavior of an ideal gas, the
 edge temperature nondimensionalized by $a_0^2=\gamma_{0}RT_0$,
 \begin{align}
-    T_e &= \gamma_0 \frac{p\!\left(x,y;\Mach\right)}{\rho\!\left(x,y\right)}
-         = \left. \gamma_0 \frac{\Mach^2    p   \!\left(R\right)}
+    T_e &= \gamma \frac{p\!\left(x,y;\Mach\right)}{\rho\!\left(x,y\right)}
+         = \left. \gamma \frac{\Mach^2    p   \!\left(R\right)}
                                 {\Mach[0]^2 \rho\!\left(R\right)}
            \right|_{R=\sqrt{R_0^2 + \delta^2}}
 \label{eq:Tedef}
@@ -658,10 +658,10 @@ edge temperature nondimensionalized by $a_0^2=\gamma_{0}RT_0$,
 may also be of interest for $\Mach = \Mach[e]$. Producing a realizable specific
 total energy~$E$ can be a concern when dictating $T_e$ as
 constraint~\eqref{eq:constant_specific_stagnation_enthalpy_realizablity_nondim}
-scaled by $\gamma_0 \Mach^2 \Mach[0]^{-2}$, is equivalent to
+scaled by $\gamma \Mach^2 \Mach[0]^{-2}$, is equivalent to
 \begin{align}
-    T\!\left(R\right) < \gamma_0 \Mach^2 \left(
-      \frac{1}{2} + \frac{\theta}{\Mach[0]^2\left(\gamma_0 - 1\right)}
+    T\!\left(R\right) < \gamma \Mach^2 \left(
+      \frac{1}{2} + \frac{\theta}{\Mach[0]^2\left(\gamma - 1\right)}
          \right)
 \label{eq:Terestrict}
 .
@@ -724,16 +724,16 @@ state~\eqref{eq:stagnation_sound_nondim},
 \begin{align}
     a^2\!\left(R\right)
     = \frac{\Mach[0]^2}{\Mach[e]^2}
-   &= \theta + \Mach[0]^2\frac{\gamma_0-1}{2}\left(1-u^2\!\left(R\right)\right)
-\\ &= \theta + \Mach[0]^2\frac{\gamma_0-1}{2}\left(1-\frac{R^2}{R_0^2}\right)
-\\ &= \theta - \Mach[0]^2\frac{\gamma_0-1}{2}\frac{\delta^2}{R_0^2}
+   &= \theta + \Mach[0]^2\frac{\gamma-1}{2}\left(1-u^2\!\left(R\right)\right)
+\\ &= \theta + \Mach[0]^2\frac{\gamma-1}{2}\left(1-\frac{R^2}{R_0^2}\right)
+\\ &= \theta - \Mach[0]^2\frac{\gamma-1}{2}\frac{\delta^2}{R_0^2}
 \end{align}
 forces
 \begin{align}
     \Mach[0] &= \left[
         \frac{1}{\theta}
         \left(
-            \frac{1}{\Mach[e]^2} + \frac{\gamma_0-1}{2}\frac{\delta^2}{R_0^2}
+            \frac{1}{\Mach[e]^2} + \frac{\gamma-1}{2}\frac{\delta^2}{R_0^2}
         \right)
     \right]^{-1/2}
     \label{eq:matching_Ma0}
@@ -754,13 +754,13 @@ Turning now to the pressure gradient definition~\eqref{eq:qoidef},
        \frac{
          \left[
                2 \theta \Mach[0]{}^{-2}
-             + \left(\gamma_0-1\right) \left(1 - u^2\!\left(R\right)\right)
+             + \left(\gamma-1\right) \left(1 - u^2\!\left(R\right)\right)
          \right]
        }{
            2 u^2\!\left(R\right)
          - \left[
                2 \theta \Mach[0]{}^{-2}
-             + \left(\gamma_0-1\right) \left(1 - u^2\!\left(R\right)\right)
+             + \left(\gamma-1\right) \left(1 - u^2\!\left(R\right)\right)
            \right]
        }
 \\&=
@@ -896,7 +896,7 @@ with the edge velocity sign always taken according to
   .
 \end{equation}
 
-In summary, given some $\delta$, $\gamma_0$, $\Mach[e]$, and $p_{e,\xi}$ a
+In summary, given some $\delta$, $\gamma$, $\Mach[e]$, and $p_{e,\xi}$ a
 matching base flow may be produced as follows:
 \begin{enumerate}
     \item Solve the quadratic equation~\eqref{eq:matching_R0} for 
