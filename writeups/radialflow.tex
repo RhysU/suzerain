@@ -292,10 +292,10 @@ restricts the relative magnitudes of nondimensional $p$ and $\rho$,
 \end{align}
 as well as, incorporating~\eqref{eq:perfecteos}, the maximum attainable
 nondimensional sound speed,
-    \label{eq:perfecteos}
 \begin{align}
     a^2 = \frac{\gamma p}{\rho}
     &< \frac{\gamma}{\gamma-1} + \frac{\gamma}{2}\Mach[0]^2
+    \label{eq:nondima2}
 .
 \end{align}
 Employing~\eqref{eq:gradrho_gradp_relationship},
@@ -508,7 +508,7 @@ three scalar quantities.
 
 \begin{figure}[h]
   \centering
-  \includegraphics[width=0.25\textwidth]{nozzle_schematic}
+  \includegraphics[width=0.30\textwidth]{nozzle_schematic}
   \caption{
       \label{fig:mapping_geometry}
       A Cartesian setting overlaid on the radially symmetric domain
@@ -542,11 +542,10 @@ $R=\sqrt{x^2+y^2}$ one may compute the following:
 \end{align}
 %
 The $\Mach$ and $\Mach[0]{}$ factors on $p$ and $a$ rescale them for use within
-a nondimensionalization possessing a potentially different Mach number,
-$\Mach$, assuming $p_0 = \rho_0 a_0^2$, $\rho_0$, and $u_0$ still hold in that
-target setting.  Such a translation permits using radial solutions within the
-steady, nondimensional, primitive Euler equations written in Cartesian
-coordinates:
+a nondimensionalization possessing a potentially different Mach number, $\Mach$,
+assuming $p_0 = \rho_0 a_0^2$, $\rho_0$, and $u_0$ still hold in the target
+setting.  Such a translation permits using radial solutions within the steady,
+nondimensional, primitive Euler equations written in Cartesian coordinates:
 %
 \begin{align}
   \begin{bmatrix} 0 \\ 0 \\ 0 \\ 0 \end{bmatrix}
@@ -568,13 +567,8 @@ coordinates:
   \end{bmatrix}
   \partial_y
   \begin{bmatrix} \rho \\ u_x \\ u_y \\ p \end{bmatrix}
+  \label{eq:cartEuler}
 \end{align}
-%
-Here, the pressure equation uses $\rho{}a^2$ and not $\gamma{}p$ as
-assumptions~\eqref{eq:gradrho_gradp_relationship}
-and~\eqref{eq:stagnation_sound_nondim} do not recover the ideal gas equation of
-state, $\rho{}a^2=\gamma_{0} p$.  However, at sufficiently large radii, it is
-possible to achieve solutions in which $\rho a^2 \approx \gamma_{0} p$.
 
 More concretely, take the profile from the line segment $\left(R_0,0\right)$ to
 $\left(R_0,L_y\right)$.  Clearly, selecting
@@ -644,32 +638,11 @@ and a nondimensional pressure gradient parameter
   \right|_{R=\sqrt{R_0^2 + \delta^2}}
 \label{eq:qoidef}
 \end{align}
-to interrogate the solution's nature at $\left(R_0, \delta\right)$. When the
-isenthalpic data is used to approximate the behavior of an ideal gas, the
-edge temperature nondimensionalized by $a_0^2=\gamma_{0}RT_0$,
-\begin{align}
-    T_e &= \gamma \frac{p\!\left(x,y;\Mach\right)}{\rho\!\left(x,y\right)}
-         = \left. \gamma \frac{\Mach^2    p   \!\left(R\right)}
-                                {\Mach[0]^2 \rho\!\left(R\right)}
-           \right|_{R=\sqrt{R_0^2 + \delta^2}}
-\label{eq:Tedef}
-,
-\end{align}
-may also be of interest for $\Mach = \Mach[e]$. Producing a realizable specific
-total energy~$E$ can be a concern when dictating $T_e$ as
-constraint~\eqref{eq:constant_specific_stagnation_enthalpy_realizablity_nondim}
-scaled by $\gamma \Mach^2 \Mach[0]^{-2}$, is equivalent to
-\begin{align}
-    T\!\left(R\right) < \gamma \Mach^2 \left(
-      \frac{1}{2} + \frac{\theta}{\Mach[0]^2\left(\gamma - 1\right)}
-         \right)
-\label{eq:Terestrict}
-.
-\end{align}
+to interrogate the solution's nature at $\left(R_0, \delta\right)$.
 
 \lstinputlisting[language=Octave,label=lst:octave_nozzle_qoi,float,
-                 caption={\texttt{nozzle\_qoi.m}: A kernel computing several
-                 quantities of interest}]
+                 caption={\texttt{radialflow\_qoi.m}: A kernel computing
+                 several quantities of interest}]
                 {notebooks/radialflow_qoi.m}
 
 A kernel building atop Listing~\ref{lst:octave_nozzle} that computes these
@@ -683,15 +656,13 @@ without requiring the integrator to possess dense output capabilities.
 \section{Producing a flow matching given boundary layer edge conditions}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-We wish to produce Cartesian base flows possessing some prescribed edge Mach
-number $\Mach[e]{}$, some prescribed edge pressure gradient $p_{e,\xi}$, and a
-unit magnitude edge streamwise velocity $u_\xi$.
-%
-Mandating $\left|u_\xi\right|=1$ is done for convenience rather than because it
-imposes some physical restriction.
-%
-Considering first the edge velocity magnitude,
-by~\eqref{eq:xicoorddef}
+We wish to produce Cartesian base flows satisfying~\eqref{eq:cartEuler}
+possessing some prescribed edge Mach number $\Mach[e]{}$, some prescribed edge
+pressure gradient $p_{e,\xi}$, a unit magnitude edge streamwise velocity
+$u_\xi$, and a unit edge density $\rho$. The final two conditions are mandated
+for convenience rather than from some physical concern.
+
+Considering first the edge velocity magnitude, by~\eqref{eq:xicoorddef}
 \begin{equation}
     1
     = u_\xi\!\left(R_0, \delta\right)
@@ -724,22 +695,26 @@ state~\eqref{eq:stagnation_sound_nondim},
 \begin{align}
     a^2\!\left(R\right)
     = \frac{\Mach[0]^2}{\Mach[e]^2}
-   &= \theta + \Mach[0]^2\frac{\gamma-1}{2}\left(1-u^2\!\left(R\right)\right)
-\\ &= \theta + \Mach[0]^2\frac{\gamma-1}{2}\left(1-\frac{R^2}{R_0^2}\right)
-\\ &= \theta - \Mach[0]^2\frac{\gamma-1}{2}\frac{\delta^2}{R_0^2}
+   &= 1 + \Mach[0]^2\frac{\gamma-1}{2}\left(1-u^2\!\left(R\right)\right)
+\\ &= 1 + \Mach[0]^2\frac{\gamma-1}{2}\left(1-\frac{R^2}{R_0^2}\right)
+\\ &= 1 - \Mach[0]^2\frac{\gamma-1}{2}\frac{\delta^2}{R_0^2}
 \end{align}
 forces
 \begin{align}
-    \Mach[0] &= \left[
-        \frac{1}{\theta}
-        \left(
+    \Mach[0] &= \left(
             \frac{1}{\Mach[e]^2} + \frac{\gamma-1}{2}\frac{\delta^2}{R_0^2}
-        \right)
-    \right]^{-1/2}
+    \right)^{-1/2}
     \label{eq:matching_Ma0}
 .
 \end{align}
-%
+Honoring~\eqref{eq:nondima2} in conjunction with the required behavior of
+$a\!\left(R\right)$ shows
+\begin{align}
+    1 = \rho\!\left(R\right)
+    \implies
+    p\!\left(R\right) = \frac{\Mach[0]^2}{\gamma \Mach[e]^2}.
+    \label{eq:matching_p}
+\end{align}
 Turning now to the pressure gradient definition~\eqref{eq:qoidef},
 \begin{align}
   p_{e,\xi}
@@ -753,13 +728,13 @@ Turning now to the pressure gradient definition~\eqref{eq:qoidef},
        \,
        \frac{
          \left[
-               2 \theta \Mach[0]{}^{-2}
+               2 \Mach[0]{}^{-2}
              + \left(\gamma-1\right) \left(1 - u^2\!\left(R\right)\right)
          \right]
        }{
            2 u^2\!\left(R\right)
          - \left[
-               2 \theta \Mach[0]{}^{-2}
+               2 \Mach[0]{}^{-2}
              + \left(\gamma-1\right) \left(1 - u^2\!\left(R\right)\right)
            \right]
        }
@@ -797,21 +772,6 @@ implies one should solve
 for a strictly positive root to obtain a suitable $R_0$.  If two such roots
 exist, the larger should be taken as the isenthalpic assumption improves as
 $R_0$ increases.
-
-Notice nothing constrains the magnitude of either $\rho\!\left(R\right)$ or
-$p\!\left(R\right)$ individually.  However, their ratio
-$p\!\left(R\right)/\rho\!\left(R\right)$ must
-satisfy~\eqref{eq:constant_specific_stagnation_enthalpy_realizablity_nondim}.
-Evidently, without having introduced $\theta$
-in~\eqref{eq:constant_specific_stagnation_enthalpy}, dictating
-$\left|u_\xi\right|=1$ would have limited the range of accessible $T_e$ due
-to~\eqref{eq:Tedef} in conjunction with~\eqref{eq:Terestrict}.
-
-\todo{
-FIXME:
-Stuff~\eqref{eq:matching_Ma0}
-into~\eqref{eq:Terestrict}.  Boom.
-}
 
 The term $\operatorname{sgn} u\!\left(R\right)$ appearing above may be set
 based on $\operatorname{sgn} p_{e,\xi}$ and $\operatorname{sgn} \left(
@@ -899,26 +859,24 @@ with the edge velocity sign always taken according to
 In summary, given some $\delta$, $\gamma$, $\Mach[e]$, and $p_{e,\xi}$ a
 matching base flow may be produced as follows:
 \begin{enumerate}
-    \item Solve the quadratic equation~\eqref{eq:matching_R0} for 
-        its largest strictly positive root, $R_0$.
+    \item Solve the quadratic equation~\eqref{eq:matching_R0} for
+          its largest strictly positive root, $R_0$.
     \item Compute $\Mach[0]{}$ from~\eqref{eq:matching_Ma0}.
     \item Compute $R = \sqrt{R_0^2 + \delta^2}$.
     \item Set $u\!\left(R\right)=\pm R / R_0$ per~\eqref{eq:matching_u}
-        with the sign governed by~\eqref{eq:matching_usign}.
-    \item Arbitrarily choose $\rho\!\left(R\right) = 1$.
-    \item If reproducing some ideal $T_e$ is desired,
-        fix $p\!\left(R\right)$ using~\eqref{eq:Tedef}
-        checking~\eqref{eq:Terestrict}. Otherwise, use 1.
+          with the sign governed by~\eqref{eq:matching_usign}.
+    \item Set $\rho\!\left(R\right) = 1$ and compute $p\!\left(R\right)$
+          from~\eqref{eq:matching_p}.
 \end{enumerate}
 Logic performing these steps appears in Listing~\ref{lst:octave_nozzle_match}.
 The resulting parameters and initial conditions may be integrated from $R$ to
-$R_0$ (or any other radius) using Listing~\ref{lst:octave_nozzle}. That the
-flow profile on segment $\left( R_0, 0 \right)$ to $\left( R_0, \delta \right)$
-has the desired properties may be verified with
-Listings~\ref{lst:octave_nozzle} and~\ref{lst:octave_nozzle_qoi} as shown.
+$R_0$ (or any other radius) using Listing~\ref{lst:octave_nozzle}. That the flow
+profile on segment $\left( R_0, 0 \right)$ to $\left( R_0, \delta \right)$ has
+the desired properties may be verified with Listings~\ref{lst:octave_nozzle}
+and~\ref{lst:octave_nozzle_qoi} as shown.
 
 \lstinputlisting[language=Octave,label=lst:octave_nozzle_match,
-                 caption={\texttt{nozzle\_match.m}: Match specified boundary
+                 caption={\texttt{radialflow\_match.m}: Match specified boundary
                  layer edge quantities}]
                 {notebooks/radialflow_match.m}
 
