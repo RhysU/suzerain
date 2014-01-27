@@ -110,29 +110,30 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
     const support::noise_definition noisedef;
     string solver_spec(static_cast<string>(suzerain::zgbsv_specification()));
     string implicit("rhome_xyz");
-    real_t cevdstag = numeric_limits<real_t>::quiet_NaN();
+    real_t cevisslam = numeric_limits<real_t>::quiet_NaN();
     string undriven;
 
     // Register binary-specific options
     options.add_definition(const_cast<support::noise_definition&>(noisedef));
     options.add_options()
-        ("explicit", boost::program_options::bool_switch(),
-                     "Use purely explicit operators")
-        ("implicit", boost::program_options::value(&implicit)
-                         ->implicit_value(implicit),
-                     "Use hybrid implicit/explicit operators, optionally"
-                     " choosing 'rhome_xyz' or 'rhome_y' linearized treatment")
-        ("solver",   boost::program_options::value(&solver_spec)
-                         ->default_value(solver_spec),
-                     "Use the specified algorithm for any --implicit solves")
-        ("cevdstag", boost::program_options::value(&cevdstag),
-                     "Take homogenized boundary layer baseflow conditions from"
-                     " given leeward arc length from the laminar CEV"
-                     " stagnation point as measured in meters.")
-        ("undriven", boost::program_options::value(&undriven)
-                         ->implicit_value("all"),
-                     "Disable all or some physics-related driving forces"
-                     " by specifying 'all' or 'rho', 'rho_u', etc.")
+        ("explicit",  boost::program_options::bool_switch(),
+                      "Use purely explicit operators")
+        ("implicit",  boost::program_options::value(&implicit)
+                          ->implicit_value(implicit),
+                      "Use hybrid implicit/explicit operators, optionally"
+                      " choosing 'rhome_xyz' or 'rhome_y' linearized treatment")
+        ("solver",    boost::program_options::value(&solver_spec)
+                          ->default_value(solver_spec),
+                      "Use the specified algorithm for any --implicit solves")
+        ("cevisslam", boost::program_options::value(&cevisslam),
+                      "Take homogenized boundary layer baseflow conditions from"
+                      " given leeward arc length from the laminar CEV"
+                      " international space station return peak heating regime"
+                      " stagnation point as measured in meters.")
+        ("undriven",  boost::program_options::value(&undriven)
+                          ->implicit_value("all"),
+                      "Disable all or some physics-related driving forces"
+                      " by specifying 'all' or 'rho', 'rho_u', etc.")
     ;
 
     // Initialize application and then process binary-specific options
@@ -163,11 +164,11 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
         implicit = "none";
     }
 
-    if (options.variables().count("cevdstag")) {
-        INFO0("Mimicking scenario " << cevdstag
+    if (options.variables().count("cevisslam")) {
+        INFO0("Mimicking scenario " << cevisslam
               << " meters leeward of the laminar CEV stagnation point");
         double T_ratio;
-        cev_baseflow_laminar(cevdstag,
+        cev_baseflow_laminar(cevisslam,
                              scenario->gamma,  // Notice modification before...
                              scenario->Ma,     // ...call to adjust_scenario().
                              noz->pexi,

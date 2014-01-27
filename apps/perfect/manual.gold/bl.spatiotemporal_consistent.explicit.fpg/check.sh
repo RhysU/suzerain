@@ -25,7 +25,7 @@ h5diff -r -c -v $excludes  "$@" "$SCRIPTDIR/initial.h5" initial.h5
 "$perfect_advance" $(readlink -f initial.h5)          \
                    --restart_destination=initial\#.h5 \
                    --explicit --advance_nt=0          \
-                   --cevdstag 1.0
+                   --cevisslam 1.0
 h5diff -r -c -v $excludes  "$@" "$SCRIPTDIR/initial0.h5" initial0.h5
 
 # Now advance in time and check the result

@@ -6,7 +6,7 @@ set -eu
 : ${LAMINAR_ADVANCE:=@bindir@/perfect_advance}
 
 # Parse incoming parameters
-OPTS="k:,htdelta:,alpha:,beta:,gamma:,Ly:,Re:,Ma:,Pr:,Re_x:,largo_formulation:,largo_grdelta:,cevdstag:"
+OPTS="k:,htdelta:,alpha:,beta:,gamma:,Ly:,Re:,Ma:,Pr:,Re_x:,largo_formulation:,largo_grdelta:,cevisslam:"
 ARGS=$(getopt -n "$(basename -- "$0")" -o "h" -l "$OPTS,help" -- "$@")
 if [ $? -ne 0 ]; then exit 1; fi
 eval set -- "$ARGS"
@@ -24,7 +24,7 @@ Pr=0.7
 Re_x=3000
 largo_formulation=temporal
 largo_grdelta=1e-1
-cevdstag=
+cevisslam=
 while true;
 do
     case "$1" in
@@ -47,7 +47,7 @@ do
   &--Re_x&Used for any laminar boundary layer initialization&${Re_x:+(Default $Re_x)}
   &--largo_formulation&Largo slow growth formulation to activate&${largo_formulation:+(Default $largo_formulation)}
   &--largo_grdelta&Growth rate to use with any active Largo formulation&${largo_grdelta:+(Default $largo_grdelta)}
-  &--cevdstag&Baseflow location from CEV laminar CEV conditions&${cevdstag:+(Default $cevdstag)}
+  &--cevisslam&Baseflow location from CEV ISS return laminar peak heating conditions&${cevisslam:+(Default $cevisslam)}
 EOF
                     echo
                     echo "GNU parallel is great for managing multiple cases.  For example,"
@@ -68,7 +68,7 @@ EOF
         --Re_x)              Re_x="$2";              shift 2;;
         --largo_formulation) largo_formulation="$2"; shift 2;;
         --largo_grdelta)     largo_grdelta="$2";     shift 2;;
-        --cevdstag)          cevdstag="$2";          shift 2;;
+        --cevisslam)         cevisslam="$2";         shift 2;;
     esac
 done
 
@@ -79,10 +79,10 @@ test -z "${largo_formulation}" && largo_grdelta=""
 if test -z "${largo_formulation}"; then
   largo_grdelta=  # No formulation implies no grdelta
   dir=$(printf "bl_k%02d%s" "$k")
-elif test -z "${cevdstag}"; then
+elif test -z "${cevisslam}"; then
   dir=$(printf "%s_%s_k%02d" "${largo_formulation}" "${largo_grdelta}" "$k")
 else
-  dir=$(printf "%s_%s_k%02d.%04d" "${largo_formulation}" "${largo_grdelta}" "$k" "$cevdstag")
+  dir=$(printf "%s_%s_k%02d.cevisslam%04d" "${largo_formulation}" "${largo_grdelta}" "$k" "$cevisslam")
 fi
 rm -rvf $dir
 mkdir -v $dir
@@ -107,7 +107,7 @@ declare -i t=0
 for i in "${!Ny[@]}"
 do
     "$LAMINAR_ADVANCE" restart0.h5 --Ny=${Ny[$i]} --advance_dt=${dt[$i]} \
-        ${cevdstag:+ --cevdstag=$cevdstag}  \
+        ${cevisslam:+ --cevisslam=$cevisslam}  \
         --status_nt=100 --restart_retain=10 "$@"
     t+=${dt[$i]}
     cp -v restart0.h5 t${t}.h5
