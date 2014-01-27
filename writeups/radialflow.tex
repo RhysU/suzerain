@@ -642,7 +642,7 @@ to interrogate the solution's nature at $\left(R_0, \delta\right)$.
 
 \lstinputlisting[language=Octave,label=lst:octave_nozzle_qoi,float,
                  caption={\texttt{radialflow\_qoi.m}: A kernel computing
-                 several quantities of interest}]
+                 Cartesian base flow quantities}]
                 {notebooks/radialflow_qoi.m}
 
 A kernel building atop Listing~\ref{lst:octave_nozzle} that computes these
@@ -860,13 +860,15 @@ In summary, given some $\delta$, $\gamma$, $\Mach[e]$, and $p_{e,\xi}$ a
 matching base flow may be produced as follows:
 \begin{enumerate}
     \item Solve the quadratic equation~\eqref{eq:matching_R0} for
-          its largest strictly positive root, $R_0$.
+          for all real, strictly positive roots $R_0$.
     \item Compute $\Mach[0]{}$ from~\eqref{eq:matching_Ma0}.
     \item Compute $R = \sqrt{R_0^2 + \delta^2}$.
     \item Set $u\!\left(R\right)=\pm R / R_0$ per~\eqref{eq:matching_u}
           with the sign governed by~\eqref{eq:matching_usign}.
     \item Set $\rho\!\left(R\right) = 1$ and compute $p\!\left(R\right)$
           from~\eqref{eq:matching_p}.
+    \item Choose the largest $R_0$ satisfying realizability
+          condition~\eqref{eq:constant_specific_stagnation_enthalpy_realizablity_nondim}.
 \end{enumerate}
 Logic performing these steps appears in Listing~\ref{lst:octave_nozzle_match}.
 The resulting parameters and initial conditions may be integrated from $R$ to
