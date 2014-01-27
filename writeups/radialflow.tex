@@ -65,21 +65,23 @@
 
 \begin{document}
 
-\title{Radial flow computations}
+\title{Designing inviscid, perfect gas flow fields with prescribed
+       pressure gradients and edge Mach numbers}
 \author{Rhys Ulerich}
 
 \begin{abstract}
-This document discusses how to obtain a favorable pressure gradient base flow
-for use within homogenized boundary layer simulations.  First, a
-compressible potential flow problem is formulated for an isenthalpic, radially
-symmetric source or sink flow.  The resulting one-dimensional problem is cast
-into a form commodity ODE integrators can solve to obtain primitive state as a
-function of radius.  The solution is then mapped from $\left(r,\theta\right)$
-into $\left(x,y\right)$ coordinates and a base flow profile extracted from some
-constant $x$ line segment.  The segment chosen, as well as the radial problem
-boundary conditions used, are taken to match some boundary layer edge state of
-interest.  Finally, this procedure is used to produce base flows in the spirit
-of laminar CEV heat shield conditions.
+A procedure is derived for obtaining inviscid, perfect gas flow fields with
+either favorable or adverse pressure gradients and varying Mach numbers for use
+within homogenized boundary layer simulations. First, a compressible potential
+flow problem is formulated for an isenthalpic, radially symmetric source or sink
+flow.  The resulting one-dimensional problem is cast into a form commodity ODE
+integrators can solve to obtain primitive state as a function of radius.  The
+solution is then mapped from $\left(r,\theta\right)$ into $\left(x,y\right)$
+coordinates and a base flow profile extracted from some constant $x$ line
+segment.  Finally, the segment chosen, as well as the radial problem boundary
+conditions used, are taken to match some edge state of interest based on simple
+algebraic relationships. This procedure is applied to produce base flows in the
+spirit of laminar Crew Exploration Vehicle heat shield conditions.
 \end{abstract}
 
 \maketitle
