@@ -2,7 +2,7 @@
 
 % Load a collection of problems from disk using Octave-Forge dataframe
 pkg load dataframe
-d = dataframe('cev_laminar.in');
+d = dataframe('cev_iss_lam.in');
 
 % Solve each problem with delta fixed to be one
 [Ma0 R0 R uR rhoR pR] = cellfun(@radialflow_match,
@@ -19,7 +19,7 @@ T_w = 1 ./ d.T_ratio;
 s = dataframe([], Ma0, R0, R, uR, rhoR, pR, T_w);
 
 % Save input with appended results into a new CSV-with-header file
-f = fopen('cev_laminar.out','w');
+f = fopen('cev_iss_lam.out','w');
 dcols = columns(d);
 for j = 1:dcols
   fprintf(f, '%s,', d.colnames(j))
