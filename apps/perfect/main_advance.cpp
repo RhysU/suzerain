@@ -44,9 +44,9 @@
 #include <suzerain/support/logging.hpp>
 
 #include "driver.hpp"
-#include "hybrid_operator.hpp"
-#include "isothermal_mass_operator.hpp"
-#include "nonlinear_operator.hpp"
+#include "operator_hybrid.hpp"
+#include "operator_mass_isothermal.hpp"
+#include "operator_nonlinear.hpp"
 #include "nonreflecting_treatment.hpp"
 #include "perfect.hpp"
 
@@ -502,9 +502,9 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
 
     // Prepare spatial operators depending on requested advancement type.
     // Notice constrainer always wraps the implicit operator
-    // and that the same nonlinear_operator is used pervasively.
+    // and that the same operator_nonlinear is used pervasively.
     L = constrainer;
-    N.reset(new nonlinear_operator(
+    N.reset(new operator_nonlinear(
                 *scenario, *grid, *dgrid, *cop, *b, common_block, *sg, msoln));
     if (use_explicit) {
 
@@ -517,7 +517,7 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
             nonreflecting->N = N;
             N = nonreflecting;
         }
-        constrainer->L.reset(new isothermal_mass_operator(
+        constrainer->L.reset(new operator_mass_isothermal(
                     *scenario, *isothermal,
                     *grid, *dgrid, *cop, *b, common_block));
 

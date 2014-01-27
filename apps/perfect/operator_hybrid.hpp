@@ -51,7 +51,7 @@ class definition_scenario;
 
 /**
  * A hybrid implicit operator that provides isothermal wall conditions.
- * It requires interoperation with nonlinear_operator via
+ * It requires interoperation with operator_nonlinear via
  * operator_common_block.
  */
 class isothermal_hybrid_linear_operator

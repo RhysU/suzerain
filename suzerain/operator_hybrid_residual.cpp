@@ -22,26 +22,26 @@
 //--------------------------------------------------------------------------
 
 /** @file
- * @copydoc hybrid_residual_operator.hpp
+ * @copydoc operator_hybrid_residual.hpp
  */
 
 #ifdef HAVE_CONFIG_H
 #include <suzerain/config.h>
 #endif
 
-#include <suzerain/hybrid_residual_operator.hpp>
+#include <suzerain/operator_hybrid_residual.hpp>
 #include <suzerain/multi_array.hpp>
 #include <suzerain/state.hpp>
 
 namespace suzerain {
 
-hybrid_residual_operator::hybrid_residual_operator(
+operator_hybrid_residual::operator_hybrid_residual(
         const real_t chi)
     : chi(chi)
 {
 }
 
-std::vector<real_t> hybrid_residual_operator::apply_operator(
+std::vector<real_t> operator_hybrid_residual::apply_operator(
             const real_t time,
             contiguous_state<4,complex_t> &state,
             const lowstorage::method_interface<element>& method,

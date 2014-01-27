@@ -35,7 +35,7 @@
 
 #include "manufactured_solution.hpp"
 #include "quantities.hpp"
-#include "nonlinear_operator_fwd.hpp"
+#include "operator_nonlinear_fwd.hpp"
 #include "definition_channel.hpp"
 #include "antioch_constitutive.hpp"
 #include "definition_filter.hpp"

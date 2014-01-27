@@ -22,14 +22,14 @@
 //--------------------------------------------------------------------------
 
 /** @file
- * @copydoc isothermal_mass_operator.hpp
+ * @copydoc operator_mass_isothermal.hpp
  */
 
 #ifdef HAVE_CONFIG_H
 #include <suzerain/config.h>
 #endif
 
-#include <suzerain/isothermal_mass_operator.hpp>
+#include <suzerain/operator_mass_isothermal.hpp>
 
 #include <suzerain/inorder.hpp>
 #include <suzerain/ndx.hpp>
@@ -39,13 +39,13 @@
 
 namespace suzerain {
 
-isothermal_mass_operator::isothermal_mass_operator(
+operator_mass_isothermal::operator_mass_isothermal(
         const specification_isothermal &spec,
         const specification_grid &grid,
         const pencil_grid &dgrid,
         const bsplineop &cop,
         bspline &b)
-    : mass_operator(grid, dgrid, cop, b)
+    : operator_mass(grid, dgrid, cop, b)
     , spec(spec)
 {
 }
@@ -168,7 +168,7 @@ public:
 
 };
 
-void isothermal_mass_operator::invert_mass_plus_scaled_operator(
+void operator_mass_isothermal::invert_mass_plus_scaled_operator(
         const complex_t &phi,
         multi_array::ref<complex_t,4> &state,
         const lowstorage::method_interface<complex_t> &method,
@@ -213,7 +213,7 @@ void isothermal_mass_operator::invert_mass_plus_scaled_operator(
                               boost::bind<void>(boost::cref(enforcer), _1));
     }
 
-    // Perform the usual mass_operator solve across all equations
+    // Perform the usual operator_mass solve across all equations
     base::invert_mass_plus_scaled_operator(
             phi, state, method, delta_t, substep_index, ic0);
 

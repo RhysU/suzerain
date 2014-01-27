@@ -200,7 +200,7 @@ public:
      * #state_nonlinear.  This is the interface to which nonlinear operators
      * should be coded.
      */
-    shared_ptr<lowstorage::nonlinear_operator<
+    shared_ptr<lowstorage::operator_nonlinear<
                 state_nonlinear_type
             > > N;
 

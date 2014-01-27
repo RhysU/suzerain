@@ -26,10 +26,10 @@
 
 /** @file
  * Implementation of Nonlinear Navier--Stokes spatial operators
- * declared within nonlinear_operator_fwd.hpp.
+ * declared within operator_nonlinear_fwd.hpp.
  */
 
-#include "nonlinear_operator_fwd.hpp"
+#include "operator_nonlinear_fwd.hpp"
 
 #include <largo/largo.h>
 

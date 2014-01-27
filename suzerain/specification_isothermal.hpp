@@ -122,7 +122,7 @@ public:
      * that the boundary-normal velocity should be determined by some other
      * means.  Such usage requires auxiliary information (e.g. an instantaneous
      * mean velocity at the boundary) in conjunction with a boundary condition
-     * implementation (e.g. \ref isothermal_mass_operator).
+     * implementation (e.g. \ref operator_mass_isothermal).
      *
      * @param lower_T \f$T\f$ at \f$y=0\f$
      * @param lower_u \f$u\f$ at \f$y=0\f$

@@ -22,14 +22,14 @@
 //--------------------------------------------------------------------------
 
 /** @file
- * @copydoc mass_operator.hpp
+ * @copydoc operator_mass.hpp
  */
 
 #ifdef HAVE_CONFIG_H
 #include <suzerain/config.h>
 #endif
 
-#include <suzerain/mass_operator.hpp>
+#include <suzerain/operator_mass.hpp>
 
 #include <suzerain/pencil_grid.hpp>
 #include <suzerain/specification_grid.hpp>
@@ -37,7 +37,7 @@
 
 namespace suzerain {
 
-mass_operator::mass_operator(
+operator_mass::operator_mass(
         const specification_grid &grid,
         const pencil_grid &dgrid,
         const bsplineop &cop,
@@ -53,11 +53,11 @@ mass_operator::mass_operator(
     this->massluz();
 }
 
-mass_operator::~mass_operator()
+operator_mass::~operator_mass()
 {
 }
 
-void mass_operator::apply_mass_plus_scaled_operator(
+void operator_mass::apply_mass_plus_scaled_operator(
         const complex_t &phi,
         multi_array::ref<complex_t,4> &state,
         const std::size_t substep_index) const
@@ -76,7 +76,7 @@ void mass_operator::apply_mass_plus_scaled_operator(
     cop.apply(0, nrhs, 1, state.data(), 1, state.shape()[1]);
 }
 
-void mass_operator::accumulate_mass_plus_scaled_operator(
+void operator_mass::accumulate_mass_plus_scaled_operator(
         const complex_t &phi,
         const multi_array::ref<complex_t,4> &input,
         const complex_t &beta,
@@ -117,7 +117,7 @@ void mass_operator::accumulate_mass_plus_scaled_operator(
     }
 }
 
-void mass_operator::invert_mass_plus_scaled_operator(
+void operator_mass::invert_mass_plus_scaled_operator(
         const complex_t &phi,
         multi_array::ref<complex_t,4> &state,
         const lowstorage::method_interface<complex_t> &method,

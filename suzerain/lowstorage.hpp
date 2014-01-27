@@ -115,7 +115,7 @@ namespace lowstorage {
  * <tt>mean += iota_beta_i * (sample - mean)</tt>.
  *
  * @see linear_operator for the interface that \f$L\f$ must implement.
- * @see nonlinear_operator for the interface that \f$N\f$ must implement.
+ * @see operator_nonlinear for the interface that \f$N\f$ must implement.
  * @see \ref smr91 and \ref yang11 for examples of essential information for a
  *      concrete scheme.
  * @see step() or substep() for methods that can advance state variables
@@ -265,7 +265,7 @@ std::basic_ostream<charT,traits>& operator<<(
  *                   containing its real- or complex-valued scalar type.
  */
 template<typename State>
-class nonlinear_operator
+class operator_nonlinear
 {
 public:
 
@@ -302,7 +302,7 @@ public:
             const std::size_t substep_index) const = 0;
 
     /** Virtual destructor for peace of mind. */
-    virtual ~nonlinear_operator() {}
+    virtual ~operator_nonlinear() {}
 };
 
 /**
@@ -695,7 +695,7 @@ public:
 template< typename StateA, typename StateB = StateA >
 class multiplicative_operator
     : public linear_operator<StateA,StateB>,
-      public nonlinear_operator<StateB>
+      public operator_nonlinear<StateB>
 {
 public:
 
@@ -1404,7 +1404,7 @@ const typename traits::component<Element>::type substep(
     const method_interface<Element>& m,
     const linear_operator<LinearState>& L,
     const typename traits::component<Element>::type chi,
-    const nonlinear_operator<NonlinearState>& N,
+    const operator_nonlinear<NonlinearState>& N,
     const typename traits::component<Element>::type time,
     State& a,
     State& b,
@@ -1473,7 +1473,7 @@ const typename traits::component<Element>::type step(
     Reducer& reducer,
     const linear_operator<LinearA,LinearB>& L,
     const typename traits::component<Element>::type chi,
-    const nonlinear_operator<NonlinearB>& N,
+    const operator_nonlinear<NonlinearB>& N,
     const typename traits::component<Element>::type time,
     StateA& a,
     StateB& b,
@@ -1553,7 +1553,7 @@ const typename traits::component<Element>::type step(
     const method_interface<Element>& m,
     const linear_operator<LinearA,LinearB>& L,
     const typename traits::component<Element>::type chi,
-    const nonlinear_operator<NonlinearB>& N,
+    const operator_nonlinear<NonlinearB>& N,
     const typename traits::component<Element>::type time,
     StateA& a,
     StateB& b,
@@ -1648,7 +1648,7 @@ public:
             Reducer& reducer,
             const linear_operator<LinearA,LinearB>& L,
             const typename traits::component<element>::type chi,
-            const nonlinear_operator<NonlinearB>& N,
+            const operator_nonlinear<NonlinearB>& N,
             StateA& a,
             StateB& b,
             typename super::time_type initial_t = 0,
@@ -1666,7 +1666,7 @@ private:
     Reducer &reducer;
     const linear_operator<LinearA,LinearB>& L;
     const typename traits::component<element>::type chi;
-    const nonlinear_operator<NonlinearB>& N;
+    const operator_nonlinear<NonlinearB>& N;
     StateA& a;
     StateB& b;
 
@@ -1740,7 +1740,7 @@ public:
             const method_interface<element>& m,
             const linear_operator<LinearA,LinearB>& L,
             const typename traits::component<element>::type chi,
-            const nonlinear_operator<NonlinearB>& N,
+            const operator_nonlinear<NonlinearB>& N,
             StateA& a,
             StateB& b,
             typename super::time_type initial_t = 0,
@@ -1774,7 +1774,7 @@ make_controller(
         Reducer &reducer,
         const linear_operator<LinearA,LinearB>& L,
         const ChiType chi,
-        const nonlinear_operator<NonlinearB>& N,
+        const operator_nonlinear<NonlinearB>& N,
         StateA& a,
         StateB& b,
         typename controller<
@@ -1809,7 +1809,7 @@ make_controller(
         const method_interface<typename StateA::element>& m,
         const linear_operator<LinearA,LinearB>& L,
         const ChiType chi,
-        const nonlinear_operator<NonlinearB>& N,
+        const operator_nonlinear<NonlinearB>& N,
         StateA& a,
         StateB& b,
         typename controller<

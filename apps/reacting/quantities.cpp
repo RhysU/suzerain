@@ -277,7 +277,7 @@ bool quantities::load(const esio_handle h)
 }
 
 
-// This looks like logic from nonlinear_operator.hpp but does not belong there.
+// This looks like logic from operator_nonlinear.hpp but does not belong there.
 // Reading through that file, especially the apply_operator implementation, is
 // recommended before reviewing this logic.  This routine is definitely
 // suboptimal but is expected to be invoked relatively infrequently.

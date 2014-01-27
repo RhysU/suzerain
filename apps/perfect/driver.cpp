@@ -151,7 +151,7 @@ driver::log_linearization_error(
     //       \left(M+\varphi\mathscr{L}\right)u.
     //   iv) At the beginning of this process, state_linear contains
     //       valid information and adheres to boundary conditions.
-    //    v) The explicit_nonlinear_operator application requires an auxiliary
+    //    v) The explicit_operator_nonlinear application requires an auxiliary
     //       scaling factor "chi" to account for Fourier transform
     //       normalization needs.
     //   vi) Using diffwave::apply zeros wavenumbers used only for dealiasing

@@ -22,10 +22,10 @@
 //--------------------------------------------------------------------------
 
 /** @file
- * @copydoc hybrid_operator.hpp
+ * @copydoc operator_hybrid.hpp
  */
 
-#include "hybrid_operator.hpp"
+#include "operator_hybrid.hpp"
 
 #include <suzerain/blas_et_al.hpp>
 #include <suzerain/bsmbsm.h>

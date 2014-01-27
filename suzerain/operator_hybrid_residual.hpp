@@ -25,7 +25,7 @@
 #define SUZERAIN_HYBRID_RESIDUAL_OPERATOR_HPP
 
 /** @file
- * Provides \ref hybrid_residual_operator.
+ * Provides \ref operator_hybrid_residual.
  */
 
 #include <suzerain/common.hpp>
@@ -35,8 +35,8 @@
 namespace suzerain {
 
 /**
- * Builds a hybrid implicit/explicit-ready \ref nonlinear_operator from an
- * implicit-agnostic \ref nonlinear_operator and a compatible \ref
+ * Builds a hybrid implicit/explicit-ready \ref operator_nonlinear from an
+ * implicit-agnostic \ref operator_nonlinear and a compatible \ref
  * linear_operator.
  *
  * More concretely, suppose one wants to use the hybrid implicit/explicit
@@ -68,8 +68,8 @@ namespace suzerain {
  * to encode the corresponding \f$N\f$ directly rather than to continue using
  * this adaptor.
  */
-class hybrid_residual_operator
-    : public lowstorage::nonlinear_operator< contiguous_state<4,complex_t> >
+class operator_hybrid_residual
+    : public lowstorage::operator_nonlinear< contiguous_state<4,complex_t> >
 {
 public:
 
@@ -82,7 +82,7 @@ public:
      * @param chi   Scaling factor \f$\chi\f used to form
      *              \f$ N(u) = R(u) - \frac{1}{\chi} L(u) f$.
      */
-    explicit hybrid_residual_operator(const real_t chi);
+    explicit operator_hybrid_residual(const real_t chi);
 
     /** State type associated with the linear operator #L. */
     typedef interleaved_state<4, complex_t> state_linear_type;
@@ -109,7 +109,7 @@ public:
      * The fully-explicit nonlinear operator which operates on
      * #state_nonlinear.
      */
-    shared_ptr<lowstorage::nonlinear_operator<
+    shared_ptr<lowstorage::operator_nonlinear<
                 state_nonlinear_type
             > > R;
 
@@ -129,8 +129,8 @@ private:
     const real_t chi;
 
     // boost::noncopyable trips Intel non-virtual base destructor warnings.
-    hybrid_residual_operator(const hybrid_residual_operator&);
-    hybrid_residual_operator& operator=(const hybrid_residual_operator&);
+    operator_hybrid_residual(const operator_hybrid_residual&);
+    operator_hybrid_residual& operator=(const operator_hybrid_residual&);
 
 };
 

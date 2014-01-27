@@ -42,7 +42,7 @@ class specification_grid;
 class pencil_grid;
 
 /** A linear operator which applies or inverts a B-spline mass matrix. */
-class mass_operator
+class operator_mass
   : public operator_base,
     public lowstorage::linear_operator<
         multi_array::ref<complex_t,4>,
@@ -51,13 +51,13 @@ class mass_operator
 {
 public:
 
-    mass_operator(
+    operator_mass(
             const specification_grid &grid,
             const pencil_grid &dgrid,
             const bsplineop &cop,
             bspline &b);
 
-    virtual ~mass_operator();
+    virtual ~operator_mass();
 
     virtual void apply_mass_plus_scaled_operator(
              const complex_t &phi,

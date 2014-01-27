@@ -52,7 +52,7 @@ class definition_channel;
 
 /**
  * A hybrid implicit operator that provides no slip, isothermal walls.  It
- * requires interoperation with nonlinear_operator via operator_common_block.
+ * requires interoperation with operator_nonlinear via operator_common_block.
  */
 class isothermal_hybrid_linear_operator
   : public operator_base,

@@ -22,10 +22,10 @@
 //--------------------------------------------------------------------------
 
 /** @file
- * @copydoc isothermal_mass_operator.hpp
+ * @copydoc operator_mass_isothermal.hpp
  */
 
-#include "isothermal_mass_operator.hpp"
+#include "operator_mass_isothermal.hpp"
 
 #include <suzerain/common.hpp>
 
@@ -38,7 +38,7 @@ namespace suzerain {
 
 namespace perfect {
 
-isothermal_mass_operator::isothermal_mass_operator(
+operator_mass_isothermal::operator_mass_isothermal(
         const definition_scenario &scenario,
         const specification_isothermal &spec,
         const specification_grid &grid,
@@ -46,14 +46,14 @@ isothermal_mass_operator::isothermal_mass_operator(
         const bsplineop &cop,
         bspline &b,
         operator_common_block &common)
-    : suzerain::isothermal_mass_operator(spec, grid, dgrid, cop, b)
+    : suzerain::operator_mass_isothermal(spec, grid, dgrid, cop, b)
     , scenario(scenario)
     , common(common)
     , who("operator.L")
 {
 }
 
-void isothermal_mass_operator::invert_mass_plus_scaled_operator(
+void operator_mass_isothermal::invert_mass_plus_scaled_operator(
         const complex_t &phi,
         multi_array::ref<complex_t,4> &state,
         const lowstorage::method_interface<complex_t> &method,
@@ -62,11 +62,11 @@ void isothermal_mass_operator::invert_mass_plus_scaled_operator(
         multi_array::ref<complex_t,4> *ic0) const
 {
     SUZERAIN_ENSURE(common.linearization == linearize::none);
-    return suzerain::isothermal_mass_operator::invert_mass_plus_scaled_operator(
+    return suzerain::operator_mass_isothermal::invert_mass_plus_scaled_operator(
             phi, state, method, delta_t, substep_index, ic0);
 }
 
-real_t isothermal_mass_operator::lower_E(
+real_t operator_mass_isothermal::lower_E(
         const real_t lower_T,
         const real_t lower_u,
         const real_t lower_v,
@@ -83,7 +83,7 @@ real_t isothermal_mass_operator::lower_E(
     return E_internal + E_kinetic;
 }
 
-real_t isothermal_mass_operator::upper_E(
+real_t operator_mass_isothermal::upper_E(
         const real_t upper_T,
         const real_t upper_u,
         const real_t upper_v,

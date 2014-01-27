@@ -22,10 +22,10 @@
 //--------------------------------------------------------------------------
 
 /** @file
- * @copydoc nonlinear_operator.hpp
+ * @copydoc operator_nonlinear.hpp
  */
 
-#include "nonlinear_operator.hpp"
+#include "operator_nonlinear.hpp"
 
 #include <suzerain/common.hpp>
 #include <suzerain/ndx.hpp>
@@ -45,7 +45,7 @@ namespace suzerain {
 
 namespace perfect {
 
-nonlinear_operator::nonlinear_operator(
+operator_nonlinear::operator_nonlinear(
         const definition_scenario &scenario,
         const specification_grid &grid,
         const pencil_grid &dgrid,
@@ -63,7 +63,7 @@ nonlinear_operator::nonlinear_operator(
 {
 }
 
-std::vector<real_t> nonlinear_operator::apply_operator(
+std::vector<real_t> operator_nonlinear::apply_operator(
             const real_t time,
             contiguous_state<4,complex_t> &swave,
             const lowstorage::method_interface<complex_t> &method,

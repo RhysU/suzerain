@@ -35,7 +35,7 @@ namespace suzerain {
 
 /**
  * Provides potentially heavyweight B-spline and parallel FFT infrastructure.
- * Intended as a base class for nonlinear_operator implementations and other
+ * Intended as a base class for operator_nonlinear implementations and other
  * logic requiring physical space coordinate information.
  */
 class operator_base : public operator_tools

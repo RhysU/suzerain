@@ -32,15 +32,15 @@
 #include <suzerain/constraint.hpp>
 #include <suzerain/constraint_treatment.hpp>
 #include <suzerain/error.h>
-#include <suzerain/hybrid_residual_operator.hpp>
+#include <suzerain/operator_hybrid_residual.hpp>
 #include <suzerain/specification_zgbsv.hpp>
 #include <suzerain/support/definition_noise.hpp>
 #include <suzerain/support/logging.hpp>
 
 #include "driver.hpp"
-#include "explicit_operator.hpp"
+#include "operator_explicit.hpp"
 
-#include "hybrid_operator.hpp"
+#include "operator_hybrid.hpp"
 #include "nonreflecting_treatment.hpp"
 
 #pragma warning(disable:1419)
@@ -339,12 +339,12 @@ suzerain::reacting::driver_advance::run(int argc, char **argv)
 
     // Prepare spatial operators depending on requested advance type
     // Notice constrainer always wraps the implicit operator
-    // and that the same nonlinear_operator is used pervasively.
+    // and that the same operator_nonlinear is used pervasively.
     L = constrainer;
     if (use_explicit) {
         INFO0(who, "Initializing fully explicit spatial operators");
 
-        N.reset(new explicit_nonlinear_operator(
+        N.reset(new explicit_operator_nonlinear(
                     *cmods, *grid, *dgrid, *cop, *b, common_block, *fsdef,
                     *sgdef, msoln));
 
@@ -357,7 +357,7 @@ suzerain::reacting::driver_advance::run(int argc, char **argv)
             N = nonreflecting;
         }
 
-        constrainer->L.reset(new isothermal_mass_operator(
+        constrainer->L.reset(new operator_mass_isothermal(
                     *cmods, *isothermal,
                     *chdef, *grid, *dgrid, *cop, *b, common_block));
 
@@ -368,10 +368,10 @@ suzerain::reacting::driver_advance::run(int argc, char **argv)
                     solver_spec, *cmods, *isothermal, *chdef, *grid, *dgrid,
                     *cop, *b, common_block));
 
-        shared_ptr<suzerain::hybrid_residual_operator>
-            tmp_hybrid( new hybrid_residual_operator(dgrid->chi()) );
+        shared_ptr<suzerain::operator_hybrid_residual>
+            tmp_hybrid( new operator_hybrid_residual(dgrid->chi()) );
 
-        tmp_hybrid->R.reset(new explicit_nonlinear_operator(
+        tmp_hybrid->R.reset(new explicit_operator_nonlinear(
                                 *cmods, *grid, *dgrid, *cop, *b,
                                 common_block, *fsdef, *sgdef, msoln));
 

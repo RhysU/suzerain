@@ -37,7 +37,7 @@
 #include <suzerain/specification_grid.hpp>
 #include <suzerain/support/logging.hpp>
 
-#include "nonlinear_operator_fwd.hpp"
+#include "operator_nonlinear_fwd.hpp"
 #include "reacting.hpp"
 
 #pragma float_control(precise, on)

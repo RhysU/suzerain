@@ -22,17 +22,17 @@
 //--------------------------------------------------------------------------
 
 /** @file
- * @copydoc explicit_operator.hpp
+ * @copydoc operator_explicit.hpp
  */
 
-#include "explicit_operator.hpp"
+#include "operator_explicit.hpp"
 
 #include <suzerain/common.hpp>
 #include <suzerain/ndx.hpp>
 #include <suzerain/specification_largo.hpp>
 #include <suzerain/state.hpp>
 
-#include "nonlinear_operator.hpp"
+#include "operator_nonlinear.hpp"
 
 #pragma warning(disable:383 1572)
 
@@ -40,7 +40,7 @@ namespace suzerain {
 
 namespace reacting {
 
-isothermal_mass_operator::isothermal_mass_operator(
+operator_mass_isothermal::operator_mass_isothermal(
         const antioch_constitutive& cmods,
         const specification_isothermal &isospec,
         const definition_channel &chdef,
@@ -49,7 +49,7 @@ isothermal_mass_operator::isothermal_mass_operator(
         const bsplineop &cop,
         bspline &b,
         operator_common_block &common)
-    : suzerain::isothermal_mass_operator(isospec, grid, dgrid, cop, b)
+    : suzerain::operator_mass_isothermal(isospec, grid, dgrid, cop, b)
     , cmods(cmods)
     , chdef(chdef)
     , common(common)
@@ -57,7 +57,7 @@ isothermal_mass_operator::isothermal_mass_operator(
 {
 }
 
-explicit_nonlinear_operator::explicit_nonlinear_operator(
+explicit_operator_nonlinear::explicit_operator_nonlinear(
         const antioch_constitutive& cmods,
         const specification_grid &grid,
         const pencil_grid &dgrid,
@@ -81,7 +81,7 @@ explicit_nonlinear_operator::explicit_nonlinear_operator(
     this->massluz();
 }
 
-std::vector<real_t> explicit_nonlinear_operator::apply_operator(
+std::vector<real_t> explicit_operator_nonlinear::apply_operator(
             const real_t time,
             contiguous_state<4,complex_t> &swave,
             const lowstorage::method_interface<complex_t> &method,
@@ -173,7 +173,7 @@ std::vector<real_t> explicit_nonlinear_operator::apply_operator(
 #undef ARGUMENTS
 }
 
-real_t isothermal_mass_operator::lower_E(
+real_t operator_mass_isothermal::lower_E(
         const real_t lower_T,
         const real_t lower_u,
         const real_t lower_v,
@@ -191,7 +191,7 @@ real_t isothermal_mass_operator::lower_E(
     return E_internal + E_kinetic;
 }
 
-real_t isothermal_mass_operator::upper_E(
+real_t operator_mass_isothermal::upper_E(
         const real_t upper_T,
         const real_t upper_u,
         const real_t upper_v,

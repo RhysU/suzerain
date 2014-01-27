@@ -21,77 +21,82 @@
 //
 //--------------------------------------------------------------------------
 
-#ifndef SUZERAIN_PERFECT_ISOTHERMAL_MASS_OPERATOR_HPP
-#define SUZERAIN_PERFECT_ISOTHERMAL_MASS_OPERATOR_HPP
+#ifndef SUZERAIN_PERFECT_NONLINEAR_OPERATOR_HPP
+#define SUZERAIN_PERFECT_NONLINEAR_OPERATOR_HPP
 
 /** @file
- * Provides \ref isothermal_mass_operator
+ * A nonlinear Navier--Stokes spatial operator.
  */
 
-#include <suzerain/isothermal_mass_operator.hpp>
-
-#pragma warning(disable:383 1572)
+#include <suzerain/operator_mass.hpp>
+#include <suzerain/multi_array.hpp>
+#include <suzerain/operator_base.hpp>
+#include <suzerain/state_fwd.hpp>
 
 namespace suzerain {
 
 // Forward declarations
 class specification_grid;
-class specification_isothermal;
+class specification_largo;
 class pencil_grid;
 
 namespace perfect {
 
 // Forward declarations
 class operator_common_block;
+class manufactured_solution;
 class definition_scenario;
 
 /**
- * A mass operator that provides various isothermal boundaries.  It requires
- * interoperation with nonlinear_operator via operator_common_block.
+ * A boundary-condition agnostic Navier&ndash;Stokes operator.
+ * The operator can be used in fully explicit or hybrid explicit/implicit mode.
+ *
+ * @see apply_navier_stokes_spatial_operator for the guts of the implementation.
  */
-class isothermal_mass_operator : public suzerain::isothermal_mass_operator
+class operator_nonlinear
+    : public operator_base,
+      public lowstorage::operator_nonlinear< contiguous_state<4,complex_t> >
 {
-
 public:
 
-    isothermal_mass_operator(
+    operator_nonlinear(
             const definition_scenario &scenario,
-            const specification_isothermal &spec,
             const specification_grid &grid,
             const pencil_grid &dgrid,
             const bsplineop &cop,
             bspline &b,
-            operator_common_block &common);
+            operator_common_block &common,
+            specification_largo& sg,
+            const shared_ptr<const manufactured_solution>& msoln);
 
-    virtual void invert_mass_plus_scaled_operator(
-            const complex_t &phi,
-            multi_array::ref<complex_t,4> &state,
+    virtual std::vector<real_t> apply_operator(
+            const real_t time,
+            contiguous_state<4,complex_t> &swave,
             const lowstorage::method_interface<complex_t> &method,
-            const component delta_t,
-            const std::size_t substep_index,
-            multi_array::ref<complex_t,4> *ic0 = NULL) const;
+            const std::size_t substep_index) const;
 
-    virtual real_t lower_E(const real_t lower_T,
-                           const real_t lower_u,
-                           const real_t lower_v,
-                           const real_t lower_w,
-                           const std::vector<real_t> lower_cs) const;
-
-    virtual real_t upper_E(const real_t upper_T,
-                           const real_t upper_u,
-                           const real_t upper_v,
-                           const real_t upper_w,
-                           const std::vector<real_t> upper_cs) const;
 protected:
 
     /** The scenario in which the operator is used */
     const definition_scenario &scenario;
 
-    /** Houses data required for \ref invert_mass_plus_scaled_operator */
+    /** Houses data additionally required for some linear operators */
     operator_common_block &common;
+
+    /** Houses data around slow growth forcing computed via Largo */
+    specification_largo& sg;
+
+    /** Holds optional manufactured solution forcing details */
+    const shared_ptr<const manufactured_solution> msoln;
+
+private:
 
     /** Helps to identify from whom logging messages are being emitted. */
     std::string who;
+
+    // boost::noncopyable trips Intel non-virtual base destructor warnings.
+    operator_nonlinear(const operator_nonlinear&);
+    operator_nonlinear& operator=(const operator_nonlinear&);
 
 };
 
@@ -99,4 +104,4 @@ protected:
 
 } // namespace suzerain
 
-#endif  /* SUZERAIN_PERFECT_ISOTHERMAL_MASS_OPERATOR_HPP */
+#endif  /* SUZERAIN_PERFECT_NONLINEAR_OPERATOR_HPP */

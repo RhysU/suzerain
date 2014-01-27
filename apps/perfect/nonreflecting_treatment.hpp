@@ -55,7 +55,7 @@ class definition_scenario;
  */
 class nonreflecting_treatment
     : public operator_base
-    , public lowstorage::nonlinear_operator< contiguous_state<4,complex_t> >
+    , public lowstorage::operator_nonlinear< contiguous_state<4,complex_t> >
 {
 public:
     // See http://eigen.tuxfamily.org/dox/TopicStructHavingEigenMembers.html
@@ -112,7 +112,7 @@ public:
             const std::size_t substep_index) const;
 
     /** The operator whose behavior is modified by this instance. */
-    shared_ptr<lowstorage::nonlinear_operator<
+    shared_ptr<lowstorage::operator_nonlinear<
                 contiguous_state<4,complex_t>
             > > N;
 

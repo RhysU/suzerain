@@ -28,9 +28,9 @@
  * Fully explicit, linearization-ready Navier--Stokes operators.
  */
 
-#include "nonlinear_operator_fwd.hpp"
+#include "operator_nonlinear_fwd.hpp"
 
-#include <suzerain/isothermal_mass_operator.hpp>
+#include <suzerain/operator_mass_isothermal.hpp>
 #include <suzerain/multi_array.hpp>
 #include <suzerain/operator_base.hpp>
 #include <suzerain/pencil_grid.hpp>
@@ -57,13 +57,13 @@ namespace reacting {
  *
  * @see apply_navier_stokes_spatial_operator for the guts of the implementation.
  */
-class explicit_nonlinear_operator
+class explicit_operator_nonlinear
     : public operator_base,
-      public lowstorage::nonlinear_operator< contiguous_state<4,complex_t> >
+      public lowstorage::operator_nonlinear< contiguous_state<4,complex_t> >
 {
 public:
 
-    explicit_nonlinear_operator(
+    explicit_operator_nonlinear(
             const antioch_constitutive& cmods,
             const specification_grid &grid,
             const pencil_grid &dgrid,
@@ -103,21 +103,21 @@ private:
     std::string who;
 
     // boost::noncopyable trips Intel non-virtual base destructor warnings.
-    explicit_nonlinear_operator(const explicit_nonlinear_operator&);
-    explicit_nonlinear_operator& operator=(const explicit_nonlinear_operator&);
+    explicit_operator_nonlinear(const explicit_operator_nonlinear&);
+    explicit_operator_nonlinear& operator=(const explicit_operator_nonlinear&);
 
 };
 
 /**
  * A mass operator that provides no slip, isothermal walls.  It requires
- * interoperation with explicit_nonlinear_operator via operator_common_block.
+ * interoperation with explicit_operator_nonlinear via operator_common_block.
  */
-class isothermal_mass_operator : public suzerain::isothermal_mass_operator
+class operator_mass_isothermal : public suzerain::operator_mass_isothermal
 {
 
 public:
 
-    isothermal_mass_operator(
+    operator_mass_isothermal(
             const antioch_constitutive& cmods,
             const specification_isothermal &isospec,
             const definition_channel &chdef,

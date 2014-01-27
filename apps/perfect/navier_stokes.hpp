@@ -63,7 +63,7 @@ namespace perfect {
 /**
  * A complete Navier&ndash;Stokes \c apply_operator implementation.  The
  * implementation is provided as a common building block for
- * <tt>lowstorage::nonlinear_operator< contiguous_state<4,complex_t> ></tt>
+ * <tt>lowstorage::operator_nonlinear< contiguous_state<4,complex_t> ></tt>
  * subclasses allowing varying numbers of passive scalars or varying hybrid
  * implicit/explicit treatment.  Such subclasses feature an overwhelming amount
  * of redundancy and are error prone to create.  This implementation allows
@@ -116,9 +116,9 @@ namespace perfect {
  *         provide additional forcing (when enabled)?
  *
  * @return A vector of stable timestep sizes according to different criteria
- *         per lowstorage::nonlinear_operator::apply_operator.
+ *         per lowstorage::operator_nonlinear::apply_operator.
  *
- * @see lowstorage::nonlinear_operator for the (slightly different)
+ * @see lowstorage::operator_nonlinear for the (slightly different)
  *      interface that an actual operator would provide.
  */
 template <bool ZerothSubstep,

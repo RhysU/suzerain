@@ -25,11 +25,11 @@
 #define SUZERAIN_ISOTHERMAL_MASS_OPERATOR_HPP
 
 /** @file
- * Provides \ref isothermal_mass_operator.
+ * Provides \ref operator_mass_isothermal.
  */
 
 #include <suzerain/common.hpp>
-#include <suzerain/mass_operator.hpp>
+#include <suzerain/operator_mass.hpp>
 #include <suzerain/multi_array.hpp>
 #include <suzerain/operator_base.hpp>
 #include <suzerain/specification_isothermal.hpp>
@@ -47,10 +47,10 @@ class pencil_grid;
  * compute specific total energy given local state information.  In this way,
  * different equations of state may be accommodated.
  */
-class isothermal_mass_operator : public mass_operator
+class operator_mass_isothermal : public operator_mass
 {
 
-    typedef mass_operator base;
+    typedef operator_mass base;
 
 public:
 
@@ -61,7 +61,7 @@ public:
      * and upper boundaries.  Otherwise, conditions may only be enforced at the
      * lower boundary.
      */
-    isothermal_mass_operator(
+    operator_mass_isothermal(
             const specification_isothermal &spec,
             const specification_grid &grid,
             const pencil_grid &dgrid,

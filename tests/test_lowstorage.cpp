@@ -50,7 +50,7 @@ using suzerain::lowstorage::linear_operator;
 using suzerain::lowstorage::method;
 using suzerain::lowstorage::method_interface;
 using suzerain::lowstorage::multiplicative_operator;
-using suzerain::lowstorage::nonlinear_operator;
+using suzerain::lowstorage::operator_nonlinear;
 using suzerain::lowstorage::smr91;
 using suzerain::lowstorage::yang11;
 
@@ -85,8 +85,8 @@ static const double double_NaN = std::numeric_limits<double>::quiet_NaN();
 
 // Nonlinear portion of a hybrid implicit/explicit Riccati operator is the
 // right hand side of (d/dt) y = y^2 + b y - a^2 -a b minus the b y portion.
-class riccati_nonlinear_operator
-    : public nonlinear_operator<ref<double,3> >
+class riccati_operator_nonlinear
+    : public operator_nonlinear<ref<double,3> >
 {
 private:
     const double a;
@@ -94,7 +94,7 @@ private:
     const double delta_t;
 
 public:
-    riccati_nonlinear_operator(
+    riccati_operator_nonlinear(
             const double a,
             const double b,
             const double delta_t = std::numeric_limits<double>::infinity())
@@ -165,14 +165,14 @@ struct ExponentialSolution
 };
 
 // Purely explicit, time-dependent operator for (d/dt) y = cos(t);
-class cosine_explicit_operator
-    : public nonlinear_operator<ref<double,3> >
+class cosine_operator_explicit
+    : public operator_nonlinear<ref<double,3> >
 {
 private:
     const double delta_t;
 
 public:
-    cosine_explicit_operator(const double delta_t = double_NaN)
+    cosine_operator_explicit(const double delta_t = double_NaN)
         : delta_t(delta_t) { };
 
     virtual std::vector<double> apply_operator(
@@ -507,14 +507,14 @@ BOOST_AUTO_TEST_SUITE( substep_suite )
 
 // Purely explicit Riccati equation nonlinear operator
 // is the right hand side of (d/dt) y = y^2 + b y - a^2 -a b
-class riccati_explicit_operator
-    : public nonlinear_operator<ref<double,3> >
+class riccati_operator_explicit
+    : public operator_nonlinear<ref<double,3> >
 {
 private:
     const double a, b, delta_t;
 
 public:
-    riccati_explicit_operator(const double a,
+    riccati_operator_explicit(const double a,
                             const double b,
                             const double delta_t = double_NaN)
         : a(a), b(b), delta_t(delta_t) { };
@@ -552,7 +552,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( substep_explicit_time_independent,
     const double close_enough = std::numeric_limits<double>::epsilon()*100;
     const method<smr91,double> m;
     const multiplicative_operator<State> trivial_linop(0);
-    const riccati_explicit_operator riccati_op(2, 3);
+    const riccati_operator_explicit riccati_op(2, 3);
     State a(size3(2,1,1)), b(size3(2,1,1));
 
     {
@@ -618,7 +618,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE ( substep_hybrid_time_independent,
     const double delta_t = 17.0;
     const double close_enough = std::numeric_limits<double>::epsilon()*500;
     const method<smr91,double> m;
-    const riccati_nonlinear_operator nonlinear_op(2, 3);
+    const riccati_operator_nonlinear nonlinear_op(2, 3);
     const riccati_linear_operator<State> linear_op(2, 3);
     State a(size3(2,1,1)), b(size3(2,1,1));
 
@@ -688,7 +688,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( substep_explicit_time_dependent,
     const double time = pi / 3.0;
     const method<smr91,double> m;
     const multiplicative_operator<State> trivial_linop(0);
-    const cosine_explicit_operator cosine_op;
+    const cosine_operator_explicit cosine_op;
     State a(size3(2,1,1)), b(size3(2,1,1));
 
     {
@@ -881,7 +881,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( step_explicit_time_dependent,
     const double delta_t_coarse = (t_final - t_initial)/coarse_nsteps;
     a[0][0][0] = soln(t_initial);
     {
-        const cosine_explicit_operator nonlinear_op(t_final - t_initial);
+        const cosine_operator_explicit nonlinear_op(t_final - t_initial);
         double t = t_initial;
         for (std::size_t i = 0; i < coarse_nsteps; ++i) {
             const double delta_t_used = suzerain::lowstorage::step(
@@ -901,7 +901,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( step_explicit_time_dependent,
     const double delta_t_finer = (t_final - t_initial)/finer_nsteps;
     a[0][0][0] = soln(t_initial);
     {
-        const cosine_explicit_operator nonlinear_op(t_final - t_initial);
+        const cosine_operator_explicit nonlinear_op(t_final - t_initial);
         double t = t_initial;
         for (std::size_t i = 0; i < finer_nsteps; ++i) {
             const double delta_t_used = suzerain::lowstorage::step(
@@ -972,7 +972,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( step_hybrid, StatePair, state_type_pairs )
 
     // Fix method, operators, and storage space
     const method<smr91,double> m;
-    const riccati_nonlinear_operator nonlinear_op(soln.a, soln.b);
+    const riccati_operator_nonlinear nonlinear_op(soln.a, soln.b);
     const riccati_linear_operator<
                 state_a_type, state_b_type
             > linear_op(soln.a, soln.b);
@@ -1102,7 +1102,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE ( invoke_make_controller, StatePair, state_type_pa
 
     const method<smr91,double> m;
     const multiplicative_operator<state_a_type, state_b_type> trivial_linop(0);
-    const riccati_nonlinear_operator riccati_op(2, 3);
+    const riccati_operator_nonlinear riccati_op(2, 3);
     state_a_type a(size3(2,1,1));
     state_b_type b(size3(2,1,1));
 

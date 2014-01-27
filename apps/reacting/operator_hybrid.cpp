@@ -22,10 +22,10 @@
 //--------------------------------------------------------------------------
 
 /** @file
- * @copydoc hybrid_operator.hpp
+ * @copydoc operator_hybrid.hpp
  */
 
-#include "hybrid_operator.hpp"
+#include "operator_hybrid.hpp"
 
 #include <suzerain/blas_et_al.hpp>
 #include <suzerain/bsmbsm.h>
@@ -43,7 +43,7 @@
 #include <suzerain/support/logging.hpp>
 #include <suzerain/timers.h>
 
-#include "nonlinear_operator_fwd.hpp"
+#include "operator_nonlinear_fwd.hpp"
 #include "antioch_constitutive.hpp"
 #include "definition_channel.hpp"
 #include "reacting_ndx.hpp"

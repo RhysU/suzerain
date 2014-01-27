@@ -42,9 +42,9 @@ main_init_svnrev.h: $(reacting_init_SOURCES) $(libreacting_la_SOURCES)
 
 bin_PROGRAMS             += reacting_advance
 reacting_advance_SOURCES  = main_advance.cpp
-reacting_advance_SOURCES += nonlinear_operator_fwd.hpp nonlinear_operator.hpp
-reacting_advance_SOURCES += explicit_operator.cpp explicit_operator.hpp
-reacting_advance_SOURCES += hybrid_operator.cpp hybrid_operator.hpp
+reacting_advance_SOURCES += operator_explicit.cpp       operator_explicit.hpp
+reacting_advance_SOURCES += operator_hybrid.cpp         operator_hybrid.hpp
+reacting_advance_SOURCES += operator_nonlinear_fwd.hpp  operator_nonlinear.hpp
 reacting_advance_SOURCES += main_advance_svnrev.c
 BUILT_SOURCES            += main_advance_svnrev.h
 reacting_advance_LDADD    = ./libreacting.la ../../suzerain/libsuzerain.la
