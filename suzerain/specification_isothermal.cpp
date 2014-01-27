@@ -22,14 +22,14 @@
 //--------------------------------------------------------------------------
 
 /** @file
- * @copydoc isothermal_specification.hpp
+ * @copydoc specification_isothermal.hpp
  */
 
 #ifdef HAVE_CONFIG_H
 #include <suzerain/config.h>
 #endif
 
-#include <suzerain/isothermal_specification.hpp>
+#include <suzerain/specification_isothermal.hpp>
 
 namespace suzerain {
 

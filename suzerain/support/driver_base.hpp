@@ -31,11 +31,11 @@
 #include <suzerain/common.hpp>
 #include <suzerain/lowstorage.hpp>
 #include <suzerain/support/application_base.hpp>
+#include <suzerain/support/definition_restart.hpp>
+#include <suzerain/support/definition_signal.hpp>
+#include <suzerain/support/definition_statistics.hpp>
+#include <suzerain/support/definition_time.hpp>
 #include <suzerain/support/field.hpp>
-#include <suzerain/support/restart_definition.hpp>
-#include <suzerain/support/signal_definition.hpp>
-#include <suzerain/support/statistics_definition.hpp>
-#include <suzerain/support/time_definition.hpp>
 #include <suzerain/timecontroller.hpp>
 
 // Forward declarations

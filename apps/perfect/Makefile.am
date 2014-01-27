@@ -9,6 +9,8 @@ include ../Common.am
 noinst_LTLIBRARIES    += libperfect.la
 libperfect_la_SOURCES  = common_block.cpp
 libperfect_la_SOURCES += common_block.hpp
+libperfect_la_SOURCES += definition_scenario.cpp
+libperfect_la_SOURCES += definition_scenario.hpp
 libperfect_la_SOURCES += driver.cpp
 libperfect_la_SOURCES += driver.hpp
 libperfect_la_SOURCES += hybrid_operator.cpp
@@ -32,8 +34,6 @@ libperfect_la_SOURCES += profile.cpp
 libperfect_la_SOURCES += profile.hpp
 libperfect_la_SOURCES += quantities.cpp
 libperfect_la_SOURCES += quantities.hpp
-libperfect_la_SOURCES += scenario_definition.cpp
-libperfect_la_SOURCES += scenario_definition.hpp
 libperfect_la_SOURCES += slowgrowth_type.hpp
 
 ##

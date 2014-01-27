@@ -34,8 +34,8 @@
 #include <suzerain/ndx.hpp>
 #include <suzerain/physical_view.hpp>
 #include <suzerain/rholut.hpp>
-#include <suzerain/support/grid_definition.hpp>
-#include <suzerain/support/isothermal_definition.hpp>
+#include <suzerain/support/definition_grid.hpp>
+#include <suzerain/support/definition_isothermal.hpp>
 #include <suzerain/support/logging.hpp>
 #include <suzerain/validation.hpp>
 

@@ -28,12 +28,12 @@
 #include "nonreflecting_treatment.hpp"
 
 #include <suzerain/bspline.hpp>
-#include <suzerain/grid_specification.hpp>
 #include <suzerain/inorder.hpp>
 #include <suzerain/ndx.hpp>
 #include <suzerain/pencil_grid.hpp>
+#include <suzerain/specification_grid.hpp>
 
-#include "scenario_definition.hpp"
+#include "definition_scenario.hpp"
 
 #pragma float_control(precise, on)
 #pragma fenv_access(on)

@@ -30,8 +30,8 @@
 
 #include <suzerain/common.hpp>
 #include <suzerain/bspline.hpp>
-#include <suzerain/grid_specification.hpp>
 #include <suzerain/pencil_grid.hpp>
+#include <suzerain/specification_grid.hpp>
 #include <suzerain/state.hpp>
 #include <suzerain/support/esio_fwd.hpp>
 

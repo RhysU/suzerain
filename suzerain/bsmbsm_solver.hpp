@@ -32,8 +32,8 @@
 #include <suzerain/common.hpp>
 #include <suzerain/bsmbsm.h>
 #include <suzerain/running_statistics.hpp>
+#include <suzerain/specification_zgbsv.hpp>
 #include <suzerain/timers.h>
-#include <suzerain/zgbsv_specification.hpp>
 
 namespace suzerain {
 

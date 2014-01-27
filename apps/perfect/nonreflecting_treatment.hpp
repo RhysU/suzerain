@@ -29,9 +29,9 @@
  */
 
 #include <suzerain/common.hpp>
-#include <suzerain/isothermal_specification.hpp>
 #include <suzerain/lowstorage.hpp>
 #include <suzerain/operator_base.hpp>
+#include <suzerain/specification_isothermal.hpp>
 #include <suzerain/state_fwd.hpp>
 
 namespace suzerain {

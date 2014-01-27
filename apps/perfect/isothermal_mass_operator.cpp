@@ -30,7 +30,7 @@
 #include <suzerain/common.hpp>
 
 #include "common_block.hpp"
-#include "scenario_definition.hpp"
+#include "definition_scenario.hpp"
 
 #pragma warning(disable:383 1572)
 

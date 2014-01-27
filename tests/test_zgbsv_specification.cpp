@@ -21,7 +21,7 @@
 //
 //--------------------------------------------------------------------------
 
-#include <suzerain/zgbsv_specification.hpp>
+#include <suzerain/specification_zgbsv.hpp>
 
 #define BOOST_TEST_MAIN
 #include <boost/test/unit_test.hpp>

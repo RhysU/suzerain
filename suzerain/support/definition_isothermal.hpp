@@ -29,7 +29,7 @@
  */
 
 #include <suzerain/common.hpp>
-#include <suzerain/isothermal_specification.hpp>
+#include <suzerain/specification_isothermal.hpp>
 #include <suzerain/support/definition_base.hpp>
 #include <suzerain/support/esio_fwd.hpp>
 #include <suzerain/support/loadable.hpp>

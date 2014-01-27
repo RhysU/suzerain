@@ -28,15 +28,15 @@
  * A driver for nondimensional perfect gas simulations.
  */
 
+#include <suzerain/support/definition_isothermal.hpp>
+#include <suzerain/support/definition_largo.hpp>
+#include <suzerain/support/definition_radialflow.hpp>
 #include <suzerain/support/driver_base.hpp>
-#include <suzerain/support/isothermal_definition.hpp>
-#include <suzerain/support/largo_definition.hpp>
-#include <suzerain/support/radialflow_definition.hpp>
 
 #include "common_block.hpp"
 #include "manufactured_solution.hpp"
 #include "quantities.hpp"
-#include "scenario_definition.hpp"
+#include "definition_scenario.hpp"
 
 namespace suzerain {
 

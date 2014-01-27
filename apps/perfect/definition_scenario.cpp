@@ -22,10 +22,10 @@
 //--------------------------------------------------------------------------
 
 /** @file
- * @copydoc channel_definition.hpp
+ * @copydoc definition_scenario.hpp
  */
 
-#include "channel_definition.hpp"
+#include "definition_scenario.hpp"
 
 #include <esio/esio.h>
 #include <esio/error.h>
@@ -51,37 +51,71 @@ static void parse_nonnegative(const std::string& s, real_t *t, const char *n)
     *t = v;
 }
 
-namespace reacting {
+namespace perfect {
 
-channel_definition::channel_definition()
-    : bulk_rho  (std::numeric_limits<real_t>::quiet_NaN())
+scenario_definition::scenario_definition()
+    : Re        (std::numeric_limits<real_t>::quiet_NaN())
+    , Ma        (std::numeric_limits<real_t>::quiet_NaN())
+    , Pr        (std::numeric_limits<real_t>::quiet_NaN())
+    , bulk_rho  (std::numeric_limits<real_t>::quiet_NaN())
     , bulk_rho_u(std::numeric_limits<real_t>::quiet_NaN())
     , bulk_rho_E(std::numeric_limits<real_t>::quiet_NaN())
+    , alpha     (std::numeric_limits<real_t>::quiet_NaN())
+    , beta      (std::numeric_limits<real_t>::quiet_NaN())
+    , gamma     (std::numeric_limits<real_t>::quiet_NaN())
 {
 }
 
-channel_definition::channel_definition(
+scenario_definition::scenario_definition(
+        const real_t Re,
+        const real_t Ma,
+        const real_t Pr,
         const real_t bulk_rho,
         const real_t bulk_rho_u,
-        const real_t bulk_rho_E)
-    : bulk_rho  (bulk_rho  )
+        const real_t bulk_rho_E,
+        const real_t alpha,
+        const real_t beta,
+        const real_t gamma)
+    : Re        (Re        )
+    , Ma        (Ma        )
+    , Pr        (Pr        )
+    , bulk_rho  (bulk_rho  )
     , bulk_rho_u(bulk_rho_u)
     , bulk_rho_E(bulk_rho_E)
+    , alpha     (alpha     )
+    , beta      (beta      )
+    , gamma     (gamma     )
+{
+}
+
+scenario_definition::~scenario_definition()
 {
 }
 
 // Strings used in options_description and populate/override/save/load.
-static const char name_bulk_rho[]            = "bulk_rho";
-static const char name_bulk_rho_u[]          = "bulk_rho_u";
-static const char name_bulk_rho_E[]          = "bulk_rho_E";
+static const char name_Re[]         = "Re";
+static const char name_Ma[]         = "Ma";
+static const char name_Pr[]         = "Pr";
+static const char name_bulk_rho[]   = "bulk_rho";
+static const char name_bulk_rho_u[] = "bulk_rho_u";
+static const char name_bulk_rho_E[] = "bulk_rho_E";
+static const char name_alpha[]      = "alpha";
+static const char name_beta[]       = "beta";
+static const char name_gamma[]      = "gamma";
 
 // Descriptions used in options_description and populate/override/save/load.
-static const char desc_bulk_rho[]            = "Bulk density target";
-static const char desc_bulk_rho_u[]          = "Bulk momentum target";
-static const char desc_bulk_rho_E[]          = "Bulk total energy target";
+static const char desc_Re[]         = "Reynolds number";
+static const char desc_Ma[]         = "Mach number";
+static const char desc_Pr[]         = "Prandtl number";
+static const char desc_bulk_rho[]   = "Bulk density target";
+static const char desc_bulk_rho_u[] = "Bulk streamwise momentum target";
+static const char desc_bulk_rho_E[] = "Bulk total energy target";
+static const char desc_alpha[]      = "Ratio of bulk to dynamic viscosity";
+static const char desc_beta[]       = "Temperature power law exponent";
+static const char desc_gamma[]      = "Ratio of specific heats";
 
 boost::program_options::options_description
-channel_definition::options_description()
+scenario_definition::options_description()
 {
     using boost::bind;
     using boost::lexical_cast;
@@ -91,13 +125,37 @@ channel_definition::options_description()
     using std::auto_ptr;
     using std::string;
 
-    options_description retval("Channel flow scenario parameters");
+    options_description retval("Nondimensional scenario parameters");
 
     // Complicated add_options() calls done to allow changing the default value
     // displayed when the default is NaN.  NaN is used as a NOP value by client
     // code.  Validation routines used below all silently allow NaNs.
 
     auto_ptr<typed_value<string> > p;
+
+    // Re
+    p.reset(value<string>());
+    p->notifier(bind(&parse_positive, _1, &Re, name_Re));
+    if (!(boost::math::isnan)(Re)) {
+        p->default_value(lexical_cast<string>(Re));
+    }
+    retval.add_options()(name_Re, p.release(), desc_Re);
+
+    // Ma
+    p.reset(value<string>());
+    p->notifier(bind(&parse_positive, _1, &Ma, name_Ma));
+    if (!(boost::math::isnan)(Ma)) {
+        p->default_value(lexical_cast<string>(Ma));
+    }
+    retval.add_options()(name_Ma, p.release(), desc_Ma);
+
+    // Pr
+    p.reset(value<string>());
+    p->notifier(bind(&parse_positive, _1, &Pr, name_Pr));
+    if (!(boost::math::isnan)(Pr)) {
+        p->default_value(lexical_cast<string>(Pr));
+    }
+    retval.add_options()(name_Pr, p.release(), desc_Pr);
 
     // bulk_rho
     p.reset(value<string>());
@@ -123,67 +181,109 @@ channel_definition::options_description()
     }
     retval.add_options()(name_bulk_rho_E, p.release(), desc_bulk_rho_E);
 
+    // alpha
+    p.reset(value<string>());
+    p->notifier(bind(&parse_nonnegative, _1, &alpha, name_alpha));
+    if (!(boost::math::isnan)(alpha)) {
+        p->default_value(lexical_cast<string>(alpha));
+    }
+    retval.add_options()(name_alpha, p.release(), desc_alpha);
+
+    // beta
+    p.reset(value<string>());
+    p->notifier(bind(&parse_nonnegative, _1, &beta, name_beta));
+    if (!(boost::math::isnan)(beta)) {
+        p->default_value(lexical_cast<string>(beta));
+    }
+    retval.add_options()(name_beta, p.release(), desc_beta);
+
+    // gamma
+    p.reset(value<string>());
+    p->notifier(bind(&parse_positive, _1, &gamma, name_gamma));
+    if (!(boost::math::isnan)(gamma)) {
+        p->default_value(lexical_cast<string>(gamma));
+    }
+    retval.add_options()(name_gamma, p.release(), desc_gamma);
+
     return retval;
 }
 
 void
-channel_definition::populate(
-        const channel_definition& that,
+scenario_definition::populate(
+        const scenario_definition& that,
         const bool verbose)
 {
     using support::maybe_populate;
 #define CALL_MAYBE_POPULATE(mem)                                             \
     maybe_populate(name_ ## mem, desc_ ## mem, this->mem, that.mem, verbose)
+    CALL_MAYBE_POPULATE(Re);
+    CALL_MAYBE_POPULATE(Ma);
+    CALL_MAYBE_POPULATE(Pr);
     CALL_MAYBE_POPULATE(bulk_rho);
     CALL_MAYBE_POPULATE(bulk_rho_u);
     CALL_MAYBE_POPULATE(bulk_rho_E);
+    CALL_MAYBE_POPULATE(alpha);
+    CALL_MAYBE_POPULATE(beta);
+    CALL_MAYBE_POPULATE(gamma);
 #undef CALL_MAYBE_POPULATE
 }
 
 void
-channel_definition::override(
-        const channel_definition& that,
+scenario_definition::override(
+        const scenario_definition& that,
         const bool verbose)
 {
     using support::maybe_override;
 #define CALL_MAYBE_OVERRIDE(mem)                                            \
     maybe_override(name_ ## mem, desc_ ## mem, this->mem, that.mem, verbose)
+    CALL_MAYBE_OVERRIDE(Re);
+    CALL_MAYBE_OVERRIDE(Ma);
+    CALL_MAYBE_OVERRIDE(Pr);
     CALL_MAYBE_OVERRIDE(bulk_rho);
     CALL_MAYBE_OVERRIDE(bulk_rho_u);
     CALL_MAYBE_OVERRIDE(bulk_rho_E);
+    CALL_MAYBE_OVERRIDE(alpha);
+    CALL_MAYBE_OVERRIDE(beta);
+    CALL_MAYBE_OVERRIDE(gamma);
 #undef CALL_MAYBE_OVERRIDE
 }
 
 void
-channel_definition::save(
+scenario_definition::save(
         const esio_handle h) const
 {
-    DEBUG0("Storing channel_definition parameters");
+    DEBUG0("Storing scenario_definition parameters");
 
     // Only root writes data
     int procid;
     esio_handle_comm_rank(h, &procid);
-
-    // scalars
     esio_line_establish(h, 1, 0, (procid == 0 ? 1 : 0));
+
+    esio_line_write(h, name_Re,         &this->Re,         0, desc_Re);
+    esio_line_write(h, name_Ma,         &this->Ma,         0, desc_Ma);
+    esio_line_write(h, name_Pr,         &this->Pr,         0, desc_Pr);
     esio_line_write(h, name_bulk_rho,   &this->bulk_rho,   0, desc_bulk_rho);
     esio_line_write(h, name_bulk_rho_u, &this->bulk_rho_u, 0, desc_bulk_rho_u);
     esio_line_write(h, name_bulk_rho_E, &this->bulk_rho_E, 0, desc_bulk_rho_E);
+    esio_line_write(h, name_alpha,      &this->alpha,      0, desc_alpha);
+    esio_line_write(h, name_beta,       &this->beta,       0, desc_beta);
+    esio_line_write(h, name_gamma,      &this->gamma,      0, desc_gamma);
 }
 
 void
-channel_definition::load(
+scenario_definition::load(
         const esio_handle h,
         const bool verbose)
 {
-    DEBUG0("Loading channel_definition parameters");
-
-    channel_definition t;
+    DEBUG0("Loading scenario_definition parameters");
 
     // All ranks load
-
-    // Scalars
     esio_line_establish(h, 1, 0, 1);
+
+    scenario_definition t;
+    esio_line_read(h, name_Re,         &t.Re,         0);
+    esio_line_read(h, name_Ma,         &t.Ma,         0);
+    esio_line_read(h, name_Pr,         &t.Pr,         0);
     esio_line_read(h, name_bulk_rho,   &t.bulk_rho,   0);
     esio_line_read(h, name_bulk_rho_u, &t.bulk_rho_u, 0);
     if (ESIO_NOTFOUND != esio_line_size(h, name_bulk_rho_E, NULL)) {
@@ -192,10 +292,12 @@ channel_definition::load(
         INFO0(desc_bulk_rho_E << " not found; defaulting to disabled");
         t.bulk_rho_E = std::numeric_limits<real_t>::quiet_NaN();
     }
-
+    esio_line_read(h, name_alpha,      &t.alpha,      0);
+    esio_line_read(h, name_beta,       &t.beta,       0);
+    esio_line_read(h, name_gamma,      &t.gamma,      0);
     this->populate(t, verbose);  // Prefer this to incoming
 }
 
-} // namespace reacting
+} // namespace perfect
 
 } // namespace suzerain

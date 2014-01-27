@@ -31,8 +31,8 @@
 #include <suzerain/common.hpp>
 #include <suzerain/bspline.hpp>
 #include <suzerain/diffwave.hpp>
-#include <suzerain/grid_specification.hpp>
 #include <suzerain/pencil_grid.hpp>
+#include <suzerain/specification_grid.hpp>
 #include <suzerain/timers.h>
 
 namespace suzerain {

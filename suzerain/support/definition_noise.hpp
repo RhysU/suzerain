@@ -29,7 +29,7 @@
  */
 
 #include <suzerain/common.hpp>
-#include <suzerain/noise_specification.hpp>
+#include <suzerain/specification_noise.hpp>
 #include <suzerain/support/definition_base.hpp>
 
 namespace suzerain {

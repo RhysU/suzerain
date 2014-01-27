@@ -38,10 +38,10 @@
 
 #include <suzerain/common.hpp>
 #include <suzerain/bspline.hpp>
-#include <suzerain/grid_specification.hpp>
 #include <suzerain/lowstorage.hpp>
-#include <suzerain/noise_specification.hpp>
 #include <suzerain/pencil_grid.hpp>
+#include <suzerain/specification_grid.hpp>
+#include <suzerain/specification_noise.hpp>
 #include <suzerain/state_fwd.hpp>
 
 namespace suzerain {

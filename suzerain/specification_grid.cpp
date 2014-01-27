@@ -22,14 +22,14 @@
 //--------------------------------------------------------------------------
 
 /** @file
- * @copydoc grid_specification.hpp
+ * @copydoc specification_grid.hpp
  */
 
 #ifdef HAVE_CONFIG_H
 #include <suzerain/config.h>
 #endif
 
-#include <suzerain/grid_specification.hpp>
+#include <suzerain/specification_grid.hpp>
 
 #include <suzerain/exprparse.hpp>
 #include <suzerain/validation.hpp>

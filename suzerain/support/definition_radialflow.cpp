@@ -22,14 +22,14 @@
 //--------------------------------------------------------------------------
 
 /** @file
- * @copydoc radialflow_definition.hpp
+ * @copydoc definition_radialflow.hpp
  */
 
 #ifdef HAVE_CONFIG_H
 #include <suzerain/config.h>
 #endif
 
-#include <suzerain/support/radialflow_definition.hpp>
+#include <suzerain/support/definition_radialflow.hpp>
 
 #include <esio/esio.h>
 #include <esio/error.h>

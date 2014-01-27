@@ -22,14 +22,14 @@
 //--------------------------------------------------------------------------
 
 /** @file
- * @copydoc largo_definition.hpp
+ * @copydoc definition_largo.hpp
  */
 
 #ifdef HAVE_CONFIG_H
 #include <suzerain/config.h>
 #endif
 
-#include <suzerain/support/largo_definition.hpp>
+#include <suzerain/support/definition_largo.hpp>
 
 #include <esio/error.h>
 #include <esio/esio.h>

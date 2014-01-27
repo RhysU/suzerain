@@ -28,16 +28,16 @@
 #include "nonlinear_operator.hpp"
 
 #include <suzerain/common.hpp>
-#include <suzerain/grid_specification.hpp>
-#include <suzerain/largo_specification.hpp>
 #include <suzerain/ndx.hpp>
 #include <suzerain/pencil_grid.hpp>
+#include <suzerain/specification_grid.hpp>
+#include <suzerain/specification_largo.hpp>
 #include <suzerain/state.hpp>
 
 #include "common_block.hpp"
 #include "manufactured_solution.hpp"
 #include "navier_stokes.hpp"
-#include "scenario_definition.hpp"
+#include "definition_scenario.hpp"
 
 #pragma warning(disable:383 1572)
 

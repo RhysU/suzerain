@@ -30,7 +30,7 @@
 
 #include <suzerain/common.hpp>
 #include <suzerain/bspline.hpp>
-#include <suzerain/grid_specification.hpp>
+#include <suzerain/specification_grid.hpp>
 #include <suzerain/support/definition_base.hpp>
 #include <suzerain/support/esio_fwd.hpp>
 #include <suzerain/support/loadable.hpp>

@@ -36,7 +36,7 @@
 #include <suzerain/timers.h>
 
 #include "reacting.hpp"
-#include "filter_definition.hpp"
+#include "definition_filter.hpp"
 
 namespace suzerain {
 

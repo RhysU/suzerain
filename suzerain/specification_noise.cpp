@@ -22,25 +22,30 @@
 //--------------------------------------------------------------------------
 
 /** @file
- * @copydoc largo_specification.hpp
+ * @copydoc specification_noise.hpp
  */
 
 #ifdef HAVE_CONFIG_H
 #include <suzerain/config.h>
 #endif
 
-#include <suzerain/largo_specification.hpp>
+#include <suzerain/specification_noise.hpp>
 
 namespace suzerain {
 
-largo_specification::largo_specification(
-         largo_formulation formulation,
-         real_t grdelta,
-         largo_workspace *workspace)
-    : formulation(formulation)
-    , grdelta(grdelta)
-    , workspace(workspace)
-    , baseflow()
+noise_specification::noise_specification(
+        real_t        fluct_percent,
+        unsigned long fluct_seed,
+        real_t        kxfrac_min,
+        real_t        kxfrac_max,
+        real_t        kzfrac_min,
+        real_t        kzfrac_max)
+    : percent   (fluct_percent)
+    , seed      (fluct_seed)
+    , kxfrac_min(kxfrac_min)
+    , kxfrac_max(kxfrac_max)
+    , kzfrac_min(kzfrac_min)
+    , kzfrac_max(kzfrac_max)
 {
 }
 

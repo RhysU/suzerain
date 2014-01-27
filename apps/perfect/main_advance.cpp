@@ -34,14 +34,14 @@
 #include <suzerain/constraint.hpp>
 #include <suzerain/constraint_treatment.hpp>
 #include <suzerain/format.hpp>
-#include <suzerain/isothermal_specification.hpp>
 #include <suzerain/largo_state.hpp>
 #include <suzerain/radialflow.h>
 #include <suzerain/rholut.hpp>
+#include <suzerain/specification_isothermal.hpp>
+#include <suzerain/specification_zgbsv.hpp>
 #include <suzerain/state.hpp>
+#include <suzerain/support/definition_noise.hpp>
 #include <suzerain/support/logging.hpp>
-#include <suzerain/support/noise_definition.hpp>
-#include <suzerain/zgbsv_specification.hpp>
 
 #include "driver.hpp"
 #include "hybrid_operator.hpp"

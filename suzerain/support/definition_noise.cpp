@@ -22,14 +22,14 @@
 //--------------------------------------------------------------------------
 
 /** @file
- * @copydoc noise_definition.hpp
+ * @copydoc definition_noise.hpp
  */
 
 #ifdef HAVE_CONFIG_H
 #include <suzerain/config.h>
 #endif
 
-#include <suzerain/support/noise_definition.hpp>
+#include <suzerain/support/definition_noise.hpp>
 
 #include <suzerain/exprparse.hpp>
 #include <suzerain/validation.hpp>

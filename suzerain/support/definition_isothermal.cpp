@@ -22,14 +22,14 @@
 //--------------------------------------------------------------------------
 
 /** @file
- * @copydoc isothermal_definition.hpp
+ * @copydoc definition_isothermal.hpp
  */
 
 #ifdef HAVE_CONFIG_H
 #include <suzerain/config.h>
 #endif
 
-#include <suzerain/support/isothermal_definition.hpp>
+#include <suzerain/support/definition_isothermal.hpp>
 
 #include <esio/esio.h>
 #include <esio/error.h>

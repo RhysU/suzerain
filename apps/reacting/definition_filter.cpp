@@ -22,10 +22,10 @@
 //--------------------------------------------------------------------------
 
 /** @file
- * @copydoc filter_definition.hpp
+ * @copydoc definition_filter.hpp
  */
 
-#include "filter_definition.hpp"
+#include "definition_filter.hpp"
 
 #include <esio/esio.h>
 

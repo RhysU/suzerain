@@ -32,16 +32,16 @@
 
 #include <suzerain/blas_et_al.hpp>
 #include <suzerain/error.h>
-#include <suzerain/grid_specification.hpp>
 #include <suzerain/ndx.hpp>
 #include <suzerain/operator_base.hpp>
 #include <suzerain/pencil_grid.hpp>
 #include <suzerain/physical_view.hpp>
+#include <suzerain/specification_grid.hpp>
 #include <suzerain/state.hpp>
 #include <suzerain/support/logging.hpp>
 #include <suzerain/support/support.hpp>
 
-#include "scenario_definition.hpp"
+#include "definition_scenario.hpp"
 
 namespace suzerain {
 

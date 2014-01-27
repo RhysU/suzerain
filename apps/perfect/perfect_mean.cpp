@@ -34,15 +34,15 @@
 #include <suzerain/math.hpp>
 #include <suzerain/mpi.hpp>
 #include <suzerain/pre_gsl.h>
-#include <suzerain/support/grid_definition.hpp>
+#include <suzerain/support/definition_grid.hpp>
+#include <suzerain/support/definition_time.hpp>
 #include <suzerain/support/logging.hpp>
 #include <suzerain/support/program_options.hpp>
 #include <suzerain/support/support.hpp>
-#include <suzerain/support/time_definition.hpp>
 
 #include "perfect.hpp"
 #include "quantities.hpp"
-#include "scenario_definition.hpp"
+#include "definition_scenario.hpp"
 
 // Introduce shorthand for common names
 using boost::math::constants::pi;

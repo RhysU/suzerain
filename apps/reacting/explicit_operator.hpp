@@ -30,18 +30,18 @@
 
 #include "nonlinear_operator_fwd.hpp"
 
-#include <suzerain/grid_specification.hpp>
 #include <suzerain/isothermal_mass_operator.hpp>
 #include <suzerain/multi_array.hpp>
 #include <suzerain/operator_base.hpp>
 #include <suzerain/pencil_grid.hpp>
+#include <suzerain/specification_grid.hpp>
 #include <suzerain/state_fwd.hpp>
 
 #include "reacting.hpp"
 #include "manufactured_solution.hpp"
-#include "channel_definition.hpp"
+#include "definition_channel.hpp"
 #include "antioch_constitutive.hpp"
-#include "filter_definition.hpp"
+#include "definition_filter.hpp"
 
 #pragma warning(disable:383 1572)
 

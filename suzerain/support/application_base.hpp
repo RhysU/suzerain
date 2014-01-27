@@ -34,8 +34,8 @@
 #include <suzerain/pencil_grid.hpp>
 #include <suzerain/state_fwd.hpp>
 #include <suzerain/support/esio_fwd.hpp>
-#include <suzerain/support/fftw_definition.hpp>
-#include <suzerain/support/grid_definition.hpp>
+#include <suzerain/support/definition_fftw.hpp>
+#include <suzerain/support/definition_grid.hpp>
 #include <suzerain/support/program_options.hpp>
 
 namespace suzerain {

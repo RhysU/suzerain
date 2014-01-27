@@ -29,7 +29,7 @@
  */
 
 #include <suzerain/common.hpp>
-#include <suzerain/largo_specification.hpp>
+#include <suzerain/specification_largo.hpp>
 #include <suzerain/support/definition_base.hpp>
 #include <suzerain/support/esio_fwd.hpp>
 #include <suzerain/support/loadable.hpp>

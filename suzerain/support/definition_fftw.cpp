@@ -22,14 +22,14 @@
 //--------------------------------------------------------------------------
 
 /** @file
- * @copydoc fftw_definition.hpp
+ * @copydoc definition_fftw.hpp
  */
 
 #ifdef HAVE_CONFIG_H
 #include <suzerain/config.h>
 #endif
 
-#include <suzerain/support/fftw_definition.hpp>
+#include <suzerain/support/definition_fftw.hpp>
 
 namespace suzerain {
 

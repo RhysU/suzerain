@@ -32,10 +32,10 @@
 #include <suzerain/constraint.hpp>
 #include <suzerain/constraint_treatment.hpp>
 #include <suzerain/error.h>
-#include <suzerain/support/logging.hpp>
-#include <suzerain/support/noise_definition.hpp>
-#include <suzerain/zgbsv_specification.hpp>
 #include <suzerain/hybrid_residual_operator.hpp>
+#include <suzerain/specification_zgbsv.hpp>
+#include <suzerain/support/definition_noise.hpp>
+#include <suzerain/support/logging.hpp>
 
 #include "driver.hpp"
 #include "explicit_operator.hpp"

@@ -22,14 +22,14 @@
 //--------------------------------------------------------------------------
 
 /** @file
- * @copydoc restart_definition.hpp
+ * @copydoc definition_statistics.hpp
  */
 
 #ifdef HAVE_CONFIG_H
 #include <suzerain/config.h>
 #endif
 
-#include <suzerain/support/restart_definition.hpp>
+#include <suzerain/support/definition_statistics.hpp>
 
 #include <suzerain/exprparse.hpp>
 #include <suzerain/validation.hpp>
@@ -65,77 +65,60 @@ static void parse_option(const std::string& s,
     *value = t;
 }
 
-restart_definition::restart_definition(
-        const std::string& metadata,
-        const std::string& uncommitted,
+statistics_definition::statistics_definition(
         const std::string& destination,
         const std::size_t  retain,
         const real_t       dt,
         const std::size_t  nt,
-        const bool         final,
-        const bool         physical)
-    : metadata(metadata)
-    , uncommitted(uncommitted)
-    , destination(destination)
+        const bool         final)
+    : destination(destination)
     , retain(retain)
     , dt(dt)
     , nt(nt)
     , final(final)
-    , physical(physical)
 {
 }
 
 boost::program_options::options_description
-restart_definition::options_description()
+statistics_definition::options_description()
 {
-    boost::program_options::options_description retval(
-            "Restart-writing parameters");
-
     using boost::bind;
     using boost::lexical_cast;
     using boost::program_options::bool_switch;
+    using boost::program_options::options_description;
     using boost::program_options::value;
     using std::string;
     using validation::ensure_nonnegative;
 
+    options_description retval("Statistics sampling parameters");
+
     retval.add_options()
-    ("metadata", value(&metadata)
-     ->default_value(metadata),
-     "Path to use when saving common metadata for output files.  "
-     "Any trailing \"XXXXXX\" will be used to generate a unique name.")
-    ("uncommitted", value(&uncommitted)
-     ->default_value(uncommitted),
-     "Path to use when saving uncommitted output files.  "
-     "Any trailing \"XXXXXX\" will be used to generate a unique name.")
-    ("restart_destination", value(&destination)
+    ("statistics_destination", value(&destination)
      ->default_value(destination),
-     "Archiving destination to use when committing restart files.  "
+     "Archiving destination to use when committing statistics files.  "
      "One or more #'s must be present and will be replaced by a sequence number.  "
      "Any trailing \"XXXXXX\" will be used to generate a unique template.")
-    ("restart_retain", value<string>(NULL)
-     ->notifier(bind(&parse_size_t, _1, &retain, "restart_retain"))
+    ("statistics_retain", value<string>(NULL)
+     ->notifier(bind(&parse_size_t, _1, &retain, "statistics_retain"))
      ->default_value(lexical_cast<string>(retain)),
-     "Maximum number of committed restart files to retain")
-    ("restart_dt", value<string>(NULL)
+     "Maximum number of committed statistics files to retain")
+    ("statistics_dt", value<string>(NULL)
      ->notifier(bind(&parse_option<real_t>, _1, &dt,
-                     &ensure_nonnegative<real_t>, "restart_dt"))
+                     &ensure_nonnegative<real_t>, "statistics_dt"))
      ->default_value(lexical_cast<string>(dt)),
-     "Maximum amount of simulation time between restart files")
-    ("restart_nt", value<string>(NULL)
-     ->notifier(bind(&parse_size_t, _1, &nt, "restart_nt"))
+     "Maximum amount of simulation time between statistical samples")
+    ("statistics_nt", value<string>(NULL)
+     ->notifier(bind(&parse_size_t, _1, &nt, "statistics_nt"))
      ->default_value(lexical_cast<string>(nt)),
-     "Maximum number of time steps between restart files")
-    ("restart_final", value<bool>(&final)
+     "Maximum number of time steps between statistical samples")
+    ("statistics_final", value<bool>(&final)
      ->default_value(final),
-     "Should a final restart be written after advance successfully completes?")
-    ("restart_physical", bool_switch(&physical),
-     "Specify flag to save restart fields as primitive variables "
-     "stored at collocation points in physical space")
+     "Should a final sample be taken after advance successfully completes?")
     ;
 
     return retval;
 }
 
-} // end namespace support
+} // namespace support
 
-} // end namespace suzerain
+} // namespace suzerain

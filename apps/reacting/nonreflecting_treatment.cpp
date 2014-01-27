@@ -29,12 +29,12 @@
 
 #include <suzerain/bspline.hpp>
 #include <suzerain/error.h>
-#include <suzerain/grid_specification.hpp>
 #include <suzerain/inorder.hpp>
 #include <suzerain/mpi_datatype.hpp>
 #include <suzerain/mpi.hpp>
 #include <suzerain/ndx.hpp>
 #include <suzerain/pencil_grid.hpp>
+#include <suzerain/specification_grid.hpp>
 #include <suzerain/support/logging.hpp>
 
 #include "nonlinear_operator_fwd.hpp"

@@ -38,18 +38,18 @@
 #include <suzerain/physical_view.hpp>
 #include <suzerain/pre_gsl.h>
 #include <suzerain/rholut.hpp>
-#include <suzerain/support/grid_definition.hpp>
-#include <suzerain/support/isothermal_definition.hpp>
+#include <suzerain/support/definition_grid.hpp>
+#include <suzerain/support/definition_isothermal.hpp>
+#include <suzerain/support/definition_time.hpp>
 #include <suzerain/support/logging.hpp>
 #include <suzerain/support/program_options.hpp>
 #include <suzerain/support/support.hpp>
-#include <suzerain/support/time_definition.hpp>
 #include <suzerain/validation.hpp>
 
 #include "driver.hpp"
 #include "perfect.hpp"
 #include "quantities.hpp"
-#include "scenario_definition.hpp"
+#include "definition_scenario.hpp"
 
 #pragma warning(disable:1419)
 

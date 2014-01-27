@@ -34,19 +34,19 @@
 #include <largo/largo.h>
 
 #include <suzerain/error.h>
-#include <suzerain/largo_specification.hpp>
 #include <suzerain/mpi_datatype.hpp>
 #include <suzerain/mpi.hpp>
 #include <suzerain/multi_array.hpp>
 #include <suzerain/ndx.hpp>
 #include <suzerain/physical_view.hpp>
 #include <suzerain/rholut.hpp>
+#include <suzerain/specification_largo.hpp>
 #include <suzerain/state.hpp>
 #include <suzerain/support/logging.hpp>
 #include <suzerain/support/support.hpp>
 
 #include "reacting.hpp"
-#include "filter_definition.hpp"
+#include "definition_filter.hpp"
 #include "reacting_ndx.hpp"
 
 #pragma warning(disable:280 383 1572)

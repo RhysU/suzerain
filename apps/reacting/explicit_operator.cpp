@@ -28,8 +28,8 @@
 #include "explicit_operator.hpp"
 
 #include <suzerain/common.hpp>
-#include <suzerain/largo_specification.hpp>
 #include <suzerain/ndx.hpp>
+#include <suzerain/specification_largo.hpp>
 #include <suzerain/state.hpp>
 
 #include "nonlinear_operator.hpp"

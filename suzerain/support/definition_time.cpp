@@ -22,14 +22,14 @@
 //--------------------------------------------------------------------------
 
 /** @file
- * @copydoc time_definition.hpp
+ * @copydoc definition_time.hpp
  */
 
 #ifdef HAVE_CONFIG_H
 #include <suzerain/config.h>
 #endif
 
-#include <suzerain/support/time_definition.hpp>
+#include <suzerain/support/definition_time.hpp>
 
 #include <esio/esio.h>
 #include <esio/error.h>

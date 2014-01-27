@@ -29,10 +29,10 @@
  */
 
 #include <suzerain/common.hpp>
-#include <suzerain/isothermal_specification.hpp>
 #include <suzerain/mass_operator.hpp>
 #include <suzerain/multi_array.hpp>
 #include <suzerain/operator_base.hpp>
+#include <suzerain/specification_isothermal.hpp>
 #include <suzerain/state_fwd.hpp>
 
 namespace suzerain {

@@ -22,10 +22,10 @@
 //--------------------------------------------------------------------------
 
 /** @file
- * @copydoc zgbsv_specification.hpp
+ * @copydoc specification_zgbsv.hpp
  */
 
-#include <suzerain/zgbsv_specification.hpp>
+#include <suzerain/specification_zgbsv.hpp>
 
 #include <algorithm>
 #include <cctype>

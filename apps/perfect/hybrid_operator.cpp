@@ -33,20 +33,20 @@
 #include <suzerain/complex.hpp>
 #include <suzerain/error.h>
 #include <suzerain/gbmatrix.h>
-#include <suzerain/grid_specification.hpp>
 #include <suzerain/inorder.hpp>
-#include <suzerain/isothermal_specification.hpp>
 #include <suzerain/multi_array.hpp>
 #include <suzerain/ndx.hpp>
 #include <suzerain/pencil_grid.hpp>
+#include <suzerain/specification_grid.hpp>
+#include <suzerain/specification_isothermal.hpp>
+#include <suzerain/specification_zgbsv.hpp>
 #include <suzerain/state.hpp>
 #include <suzerain/support/logging.hpp>
 #include <suzerain/timers.h>
-#include <suzerain/zgbsv_specification.hpp>
 
 #include "common_block.hpp"
 #include "navier_stokes.hpp"
-#include "scenario_definition.hpp"
+#include "definition_scenario.hpp"
 
 #pragma warning(disable:383 1572)
 

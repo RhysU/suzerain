@@ -34,7 +34,6 @@
 
 #include <suzerain/error.h>
 #include <suzerain/l2.hpp>
-#include <suzerain/largo_specification.hpp>
 #include <suzerain/largo_state.hpp>
 #include <suzerain/lowstorage.hpp>
 #include <suzerain/math.hpp>
@@ -45,6 +44,7 @@
 #include <suzerain/operator_base.hpp>
 #include <suzerain/physical_view.hpp>
 #include <suzerain/rholut.hpp>
+#include <suzerain/specification_largo.hpp>
 #include <suzerain/state.hpp>
 #include <suzerain/support/support.hpp>
 #include <suzerain/timers.h>

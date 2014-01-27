@@ -32,8 +32,6 @@
 #include <suzerain/bspline.hpp>
 #include <suzerain/channel.h>
 #include <suzerain/error.h>
-#include <suzerain/grid_specification.hpp>
-#include <suzerain/largo_specification.hpp>
 #include <suzerain/largo_state.hpp>
 #include <suzerain/mpi_datatype.hpp>
 #include <suzerain/ndx.hpp>
@@ -41,11 +39,13 @@
 #include <suzerain/pencil_grid.hpp>
 #include <suzerain/physical_view.hpp>
 #include <suzerain/rholut.hpp>
+#include <suzerain/specification_grid.hpp>
+#include <suzerain/specification_largo.hpp>
 #include <suzerain/state.hpp>
 #include <suzerain/support/logging.hpp>
 
 #include "quantities.hpp"
-#include "scenario_definition.hpp"
+#include "definition_scenario.hpp"
 
 using boost::numeric_cast;
 
