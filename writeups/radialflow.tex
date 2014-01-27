@@ -95,7 +95,31 @@ II.A of \citet{Saad2011Coordinate}.  Their presentation essentially is
 recounted here but velocity potential notation is suppressed.  Wherever
 necessary, sufficient smoothness is assumed.
 
-The steady, inviscid momentum equation in an irrotational flow yields
+Consider a perfect gas in which pressure $p$, density $\rho$, and sound
+speed $a$ are related through a constant ratio of specific heats $\gamma$
+according to
+\begin{align}
+    \gamma p &= \rho a^2.
+\end{align}
+The relative changes in these three quantities clearly obey
+\begin{align}
+    \rho \nabla a^2 &= \gamma \nabla p - a^2 \nabla \rho.
+\end{align}
+In such a fluid, the total specific enthalpy $H$ additionally relates the
+kinetic energy $\frac{1}{2}\vec{u}^2$,
+\begin{align}
+    H &= \frac{a^2}{\gamma-1} + \frac{1}{2} \vec{u}^2.
+\end{align}
+By assuming an isenthalpic flow with $H$ everywhere constant, it holds that
+\begin{align}
+    \nabla a^2 &= - \frac{\gamma-1}{2} \nabla \vec{u}^2
+\intertext{implying}
+    \gamma \nabla p - a^2 \nabla \rho
+    &= - \frac{\gamma-1}{2} \rho \nabla \vec{u}^2.
+    \label{eq:isenthalpic}
+\end{align}
+If the flow is steady, inviscid, and irrotational, the unforced momentum
+equation yields
 \begin{align}
     \vec{\nabla}p
     &= -\rho \vec{u}\cdot\vec{\nabla}\vec{u}
@@ -109,20 +133,25 @@ The steady, inviscid momentum equation in an irrotational flow yields
 The irrotational velocity may be replaced by the gradient of a scalar
 potential, \emph{viz.}
 \begin{align}
-  \vec{u} = \vec{\nabla}\phi + \vec{\nabla}\times\vec{A} = \vec{\nabla}{\phi}
+  \vec{u} = \vec{\nabla}\phi + \vec{\nabla}\times\vec{A} = \vec{\nabla}\phi
   .
 \end{align}
-Combining the definition of the speed of sound~$a$
-and equation~\eqref{eq:momentum},
+Though commonly employed, $\vec{\nabla}\phi$ plays no role here.
+Substituting~\eqref{eq:momentum} into~\eqref{eq:isenthalpic} and simplifying,
 \begin{align}
-    \left(\frac{\partial p}{\partial \rho}\right)_{s} = a^2
-    \implies
-    \vec{\nabla}\rho = \frac{1}{a^2} \vec{\nabla} p
+    a^2 \nabla \rho &= \nabla p,
+    \label{eq:isentropy}
+\end{align}
+shows isentropy holds since, since, by definition, $\left(\frac{\partial
+p}{\partial \rho}\right)_{s} = a^2$. Rearranging~\eqref{eq:isentropy} and
+invoking~\eqref{eq:momentum},
+\begin{align}
+    \vec{\nabla}\rho &= \frac{1}{a^2} \vec{\nabla} p
                      = - \frac{\rho}{2a^2} \vec{\nabla}\vec{u}^2
 \label{eq:gradrho_gradp_relationship}
 .
 \end{align}
-Expanding the steady continuity equation and
+Examining the steady continuity equation and
 applying~\eqref{eq:gradrho_gradp_relationship},
 \begin{align}
   0 &= \vec{\nabla}\cdot\rho\vec{u}
