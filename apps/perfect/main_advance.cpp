@@ -549,6 +549,9 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
                        << undriven);
             fill(constrainer->physical.begin(), constrainer->physical.end(),
                  constrainer->none);
+        } else if (undriven == "none") { // NOP, specifies the inverse of "all"
+            INFO0(who, "Enabling all physical constraints per --undriven="
+                       << undriven);
         } else {
             FATAL0("Unknown --undriven argument:  " << undriven);
             return EXIT_FAILURE;
