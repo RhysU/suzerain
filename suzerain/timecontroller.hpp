@@ -349,7 +349,10 @@ public:
      * @return The current simulation discrete time step.
      */
     StepType current_nt() const {
-        return boost::accumulators::extract::count(dt_stats);
+        // To avoid a NaN from clobbering useful statistics (Redmine #3034),
+        // dt_stats will be short the final NaN sample.  Adjust appropriately.
+        return boost::accumulators::extract::count(dt_stats)
+             + SUZERAIN_UNLIKELY(!(boost::math::isfinite)(current_t_));
     }
 
     //@}
@@ -578,15 +581,15 @@ StopType timecontroller<TimeType,StepType,StopType>::advance(
         SUZERAIN_ENSURE(possible_dt  > 0);
 #pragma warning(pop)
 
-        // Take a single step, record new step and time, and update statistics
+        // Take a single step, record new step and time, check the step was
+        // finite, and only then update statistics. (see Redmine #3034).
+        // By design, !isfinite(current_dt_) propagates into current_t_.
         current_dt_ = stepper_(possible_dt);
         current_t_ += current_dt_;
-        dt_stats(current_dt_);
-
-        // Sanity check the time step we just took
-        if (SUZERAIN_UNLIKELY(!(boost::math::isfinite)(current_dt_))) {
-            return false; // By design !isfinite(current_t_)
+        if (SUZERAIN_UNLIKELY(!(boost::math::isfinite)(current_t_))) {
+            return false;
         }
+        dt_stats(current_dt_);
         SUZERAIN_ENSURE(current_dt_ <= possible_dt);
 
         // Check callbacks and determine next callback simulation time

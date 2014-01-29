@@ -651,14 +651,14 @@ driver_base::advance_controller(
         INFO0(who, msg.str());
         msg.str("");
         msg.precision(static_cast<int>(numeric_limits<real_t>::digits10*0.50));
-        msg << "Min/avg/max/std of delta_t: "
+        msg << "Min/avg/max/std of finite delta_t: "
             << controller->taken_min()  << ", "
             << controller->taken_mean() << ", "
             << controller->taken_max()  << ", "
             << controller->taken_stddev();
         INFO0(who, msg.str());
         msg.str("");
-        msg << "Mean delta_t criteria versus minimum criterion: ";
+        msg << "Mean finite delta_t criteria versus minimum criterion: ";
         const size_t n = delta_t_ratios.size();
         for (size_t i = 0; i < n; ++i) {
             namespace acc = boost::accumulators;
