@@ -400,15 +400,21 @@ typedef struct suzerain_bl_reynolds {
                            thickness \f$\delta_3\f$. */
     double deltaH0;   /**< Reynolds number based on enthalpy
                            thickness \f$\delta_{H_0}\f$. */
+    double delta99;   /**< Reynolds number per velocity-based
+                           thickness \f$delta_{99}\f$. */
 } suzerain_bl_reynolds;
 
 /**
- * Compute boundary layer Reynolds numbers.
+ * Compute boundary layer Reynolds numbers. Edge information is taken from \c
+ * edge for every Reynolds number save the one defined using \f$\delta_{99}\f$.
  *
  * \param[in ] code_Re  Reynolds number \f$\rho_0 u_0 l_0/\mu_0\f$ used to
  *                      scale nondimensional quantities.  For dimensional
  *                      calculations, use <code>1</code>.
- * \param[in ] edge     Local state information from the boundary layer edge.
+ * \param[in ] edge     Local state information from \f$\delta\f$
+ *                      per \ref suzerain_bl_find_edge.
+ * \param[in ] edge99   Local state information from \f$\delta_{99}\f$
+ *                      per \ref suzerain_bl_find_edge99.
  * \param[in ] thick    Thickness information for the boundary layer.
  * \param[out] reynolds Populated on success.
  *                      See type documentation for contents.
@@ -420,6 +426,7 @@ int
 suzerain_bl_compute_reynolds(
     double code_Re,
     const suzerain_bl_local       * edge,
+    const suzerain_bl_local       * edge99,
     const suzerain_bl_thicknesses * thick,
           suzerain_bl_reynolds    * reynolds);
 
@@ -553,7 +560,9 @@ suzerain_bl_compute_pg(
  * are analogous to the nondimensional parameters computed by \ref
  * suzerain_bl_compute_reynolds.  However, unlike that method, the quantities
  * are correct for integral quantities numbers in the presence of a known,
- * potentially nonuniform, inviscid background flow.
+ * potentially nonuniform, inviscid background flow. Edge information is taken
+ * from \c edge for every Reynolds number save the one defined using
+ * \f$\delta_{99}\f$.
  *
  * The following definitions, derived in writeups/thicknesses.pdf, are used:
  * \f{align}{
@@ -605,7 +614,10 @@ suzerain_bl_compute_pg(
  *                             Values strided per \c inv_stride.
  * \param[in ] coeffs_inv_v    Coefficients for inviscid \f$v\f$ profile.
  *                             Values strided per \c inv_stride.
- * \param[in ] edge            Local information from the boundary layer edge.
+ * \param[in ] edge            Local state information from \f$\delta\f$
+ *                             per \ref suzerain_bl_find_edge.
+ * \param[in ] edge99          Local state information from \f$\delta_{99}\f$
+ *                             per \ref suzerain_bl_find_edge99.
  * \param[out] reynolds        Populated on success.
  *                             See type documentation for contents.
  * \param[in ] w               Workspace to use.
@@ -629,6 +641,7 @@ suzerain_bl_compute_reynolds_baseflow(
     const double            * const coeffs_inv_u,
     const double            * const coeffs_inv_v,
     const suzerain_bl_local * const edge,
+    const suzerain_bl_local * const edge99,
     suzerain_bl_reynolds    * const reynolds,
     gsl_bspline_workspace   * const w);
 

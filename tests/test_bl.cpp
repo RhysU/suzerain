@@ -382,9 +382,11 @@ BOOST_FIXTURE_TEST_CASE( blasius_thicknesses_reynolds,
         edge.u    = u[b.n()-1];
         edge.y    = thick.delta;
     }
+    suzerain_bl_local edge99 = edge; // Pretend edge and edge99
+    thick.delta99 = thick.delta;     // are the same location.
     suzerain_bl_reynolds expected_Re;
     BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS, suzerain_bl_compute_reynolds(
-                code_Re, &edge, &thick, &expected_Re));
+                code_Re, &edge, &edge99, &thick, &expected_Re));
 
     // Test the baseflow-based Reynolds number computations using
     // the simpler, uniform inviscid flow as a sanity check.
@@ -395,13 +397,13 @@ BOOST_FIXTURE_TEST_CASE( blasius_thicknesses_reynolds,
            code_Re,
            H0.get(), ke.get(), rhou.get(), u.get(),
         0, &H0[b.n()-1], &rhou[b.n()-1], &u[b.n()-1], &v[b.n()-1],
-        &edge, &reynolds, b.bw));
+        &edge, &edge99, &reynolds, b.bw));
     BOOST_CHECK_CLOSE(expected_Re.delta,   reynolds.delta,   tol); ++cnt;
     BOOST_CHECK_CLOSE(expected_Re.delta1,  reynolds.delta1,  tol); ++cnt;
     BOOST_CHECK_CLOSE(expected_Re.delta2,  reynolds.delta2,  tol); ++cnt;
     BOOST_CHECK_CLOSE(expected_Re.delta3,  reynolds.delta3,  tol); ++cnt;
     BOOST_CHECK_CLOSE(expected_Re.deltaH0, reynolds.deltaH0, tol); ++cnt;
-    /* Quantity delta99 not tested */                              ++cnt;
+    BOOST_CHECK_CLOSE(expected_Re.delta99, reynolds.delta99, tol); ++cnt;
     BOOST_CHECK_EQUAL(cnt, sizeof(thick)/sizeof(thick.delta));
 }
 
@@ -488,16 +490,20 @@ BOOST_AUTO_TEST_CASE( compute_qoi_and_pg )
     std::fill_n(reinterpret_cast<double *>(&thick),
                 sizeof(thick)/sizeof(double),
                 std::numeric_limits<double>::quiet_NaN());
-    thick.delta  = 0.046525678647201738;
-    thick.delta1 = 0.0044202837563584669;
-    thick.delta2 = 0.0059005327804110153;
+    thick.delta   = const_cast<double&>(edge.y) = 0.046525678647201738;
+    thick.delta1  = 0.0044202837563584669;
+    thick.delta2  = 0.0059005327804110153;
 
     const double code_Ma = 1;               // Data from a dimensional code
     const double code_Re = 1;               // Ditto
 
+    // Pretend edge and edge99 are the same location for testing convenience
+    suzerain_bl_local edge99 = edge;
+    thick.delta99 = thick.delta;
+
     suzerain_bl_reynolds reynolds;
     BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS, suzerain_bl_compute_reynolds(
-            code_Re, &edge, &thick, &reynolds));
+            code_Re, &edge, &edge99, &thick, &reynolds));
 
     size_t cnt = 0; // Tracks if all quantities were tested
     const double tol = GSL_SQRT_DBL_EPSILON;
@@ -507,6 +513,7 @@ BOOST_AUTO_TEST_CASE( compute_qoi_and_pg )
     BOOST_CHECK_CLOSE(reynolds.delta2,   189.49842591559681,   tol); ++cnt;
     /* Quantity reynolds.delta3 not tested */                        ++cnt;
     /* Quantity reynolds.deltaH0 not tested */                       ++cnt;
+    BOOST_CHECK_CLOSE(reynolds.delta99,  1494.1943713234461,   tol); ++cnt;
     BOOST_CHECK_EQUAL(cnt, sizeof(reynolds)/sizeof(reynolds.delta));
 
     suzerain_bl_qoi qoi;

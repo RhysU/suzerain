@@ -232,6 +232,7 @@ void summarize_boundary_layer_nature(
         suzerain_bl_viscous     &viscous,
         suzerain_bl_thicknesses &thick,
         suzerain_bl_local       &edge,
+        suzerain_bl_local       &edge99,
         suzerain_bl_reynolds    &reynolds,
         suzerain_bl_qoi         &qoi,
         suzerain_bl_pg          &pg)
@@ -325,26 +326,34 @@ void summarize_boundary_layer_nature(
         }
     }
 
-    // Evaluate state at the edge (y=thick.delta) from B-spline coefficients
-    std::fill_n(reinterpret_cast<double *>(&edge),
-                sizeof(edge)/sizeof(double),
-                std::numeric_limits<double>::quiet_NaN());
-    edge.gamma = scenario.gamma;
-    edge.Pr    = scenario.Pr;
-    edge.y     = thick.delta;
-    if (SUZERAIN_UNLIKELY((isnan)(edge.y))) {
-        // NOP as fill_n above ensured NaN propagated correctly
-    } else {
-        // Later, could more quickly evaluate basis once and then re-use that
-        // result to repeatedly form the necessary linear combinations.
-        b.linear_combination(0, prof.a().data(),        edge.y, &(edge.a));
-        b.linear_combination(0, prof.mu().data(),       edge.y, &(edge.mu));
-        b.linear_combination(0, prof.rho().data(),      edge.y, &(edge.rho));
-        assert(&(edge.T) + 1 == &(edge.T__y)); // Next, compute both T and T__y
-        b.linear_combination(1, prof.T().col(0).data(), edge.y, &(edge.T), 1);
-        assert(&(edge.u) + 1 == &(edge.u__y)); // Next, compute both u and u__y
-        b.linear_combination(1, prof.u().col(0).data(), edge.y, &(edge.u), 1);
-        b.linear_combination(0, prof.u().col(1).data(), edge.y, &(edge.v));
+    // Evaluate state at the edge   (y=thick.delta  ) from B-spline coefficients
+    // Evaluate state at the edge99 (y=thick.delta99) from B-spline coefficients
+    // As this is futzy, use a loop to repeat the computations for each target
+    {
+        const double       y[2] = { thick.delta, thick.delta99 };
+        suzerain_bl_local *e[2] = { &edge,       &edge99       };
+        for (size_t i = 0; i < sizeof(y)/sizeof(y[0]); ++i) {
+            std::fill_n(reinterpret_cast<double *>(e[i]),
+                        sizeof(*e[i])/sizeof(double),
+                        std::numeric_limits<double>::quiet_NaN());
+            e[i]->gamma = scenario.gamma;
+            e[i]->Pr    = scenario.Pr;
+            e[i]->y     = y[i];
+            if (SUZERAIN_UNLIKELY((isnan)(y[i]))) {
+                // NOP as fill_n above ensured NaN propagated correctly
+            } else {
+                // Later, could more quickly evaluate basis once and then re-use that
+                // result to repeatedly form the necessary linear combinations.
+                b.linear_combination(0, prof.a().data(),        y[i], &e[i]->a);
+                b.linear_combination(0, prof.mu().data(),       y[i], &e[i]->mu);
+                b.linear_combination(0, prof.rho().data(),      y[i], &e[i]->rho);
+                assert(&e[i]->T + 1 == &e[i]->T__y); // Next, both T and T__y
+                b.linear_combination(1, prof.T().col(0).data(), y[i], &e[i]->T, 1);
+                assert(&e[i]->u + 1 == &e[i]->u__y); // Next, both u and u__y
+                b.linear_combination(1, prof.u().col(0).data(), y[i], &e[i]->u, 1);
+                b.linear_combination(0, prof.u().col(1).data(), y[i], &e[i]->v);
+            }
+        }
     }
 
     // Compute Reynolds numbers
@@ -352,6 +361,7 @@ void summarize_boundary_layer_nature(
         if (const int err = suzerain_bl_compute_reynolds(
                                 scenario.Re,
                                 &edge,
+                                &edge99,
                                 &thick,
                                 &reynolds)) {
             WARN0("profile", "suzerain_bl_compute_reynolds(...) returned "
@@ -370,6 +380,7 @@ void summarize_boundary_layer_nature(
                                 coeffs_inviscid.col(2).data(),
                                 coeffs_inviscid.col(3).data(),
                                 &edge,
+                                &edge99,
                                 &reynolds,
                                 b.bw)) {
             WARN0("profile", "suzerain_bl_compute_reynolds_baseflow(...) "

@@ -223,6 +223,7 @@ profile sample_profile(
  * @param[out] viscous  Populated on return.
  * @param[out] thick    Populated on return.
  * @param[out] edge     Populated on return.
+ * @param[out] edge99   Populated on return.
  * @param[out] reynolds Populated on return.
  * @param[out] qoi      Populated on return.
  * @param[out] pg       Populated on return.
@@ -237,6 +238,7 @@ void summarize_boundary_layer_nature(
         suzerain_bl_viscous     &viscous,
         suzerain_bl_thicknesses &thick,
         suzerain_bl_local       &edge,
+        suzerain_bl_local       &edge99,
         suzerain_bl_reynolds    &reynolds,
         suzerain_bl_qoi         &qoi,
         suzerain_bl_pg          &pg);

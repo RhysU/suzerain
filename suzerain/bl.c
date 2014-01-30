@@ -410,24 +410,41 @@ int
 suzerain_bl_compute_reynolds(
     const double code_Re,
     const suzerain_bl_local       * const edge,
+    const suzerain_bl_local       * const edge99,
     const suzerain_bl_thicknesses * const thick,
           suzerain_bl_reynolds    * const reynolds)
 {
     FILL_WITH_NANS(reynolds);
 
+#pragma warning(push,disable:1572)
+    if (SUZERAIN_UNLIKELY(thick->delta != edge->y)) {
+#pragma warning(pop)
+        SUZERAIN_ERROR("Value thick->delta inconsistent with edge->y",
+                SUZERAIN_EINVAL);
+    }
+
+#pragma warning(push,disable:1572)
+    if (SUZERAIN_UNLIKELY(thick->delta99 != edge99->y)) {
+#pragma warning(pop)
+        SUZERAIN_ERROR("Value thick->delta99 inconsistent with edge99->y",
+                SUZERAIN_EINVAL);
+    }
+
     // Nondimensional quantities are computed with the first line being the
     // quantity and the final line being any needed "code unit" correction.
     // Notice viscous->tau_w and viscous->u_tau already account for code_Re;
     // see the suzerain_bl_viscous struct declaration to check their scaling.
-    reynolds->delta   = edge->rho * edge->u * thick->delta   / edge->mu
+    reynolds->delta   = edge->rho   * edge->u   * thick->delta   / edge->mu
                       * code_Re;
-    reynolds->delta1  = edge->rho * edge->u * thick->delta1  / edge->mu
+    reynolds->delta1  = edge->rho   * edge->u   * thick->delta1  / edge->mu
                       * code_Re;
-    reynolds->delta2  = edge->rho * edge->u * thick->delta2  / edge->mu
+    reynolds->delta2  = edge->rho   * edge->u   * thick->delta2  / edge->mu
                       * code_Re;
-    reynolds->delta3  = edge->rho * edge->u * thick->delta3  / edge->mu
+    reynolds->delta3  = edge->rho   * edge->u   * thick->delta3  / edge->mu
                       * code_Re;
-    reynolds->deltaH0 = edge->rho * edge->u * thick->deltaH0 / edge->mu
+    reynolds->deltaH0 = edge->rho   * edge->u   * thick->deltaH0 / edge->mu
+                      * code_Re;
+    reynolds->delta99 = edge99->rho * edge99->u * thick->delta99 / edge99->mu
                       * code_Re;
 
     return SUZERAIN_SUCCESS;
@@ -920,6 +937,7 @@ suzerain_bl_compute_reynolds_baseflow(
     const double            * const coeffs_inv_u,
     const double            * const coeffs_inv_v,
     const suzerain_bl_local * const edge,
+    const suzerain_bl_local * const edge99,
     suzerain_bl_reynolds    * const reynolds,
     gsl_bspline_workspace   * const w)
 {
@@ -956,9 +974,12 @@ suzerain_bl_compute_reynolds_baseflow(
     if (SUZERAIN_UNLIKELY(status != SUZERAIN_SUCCESS)) goto done;
 
     // Re_delta from edge->rho, edge->u, thick->delta, edge->mu, and code_Re
+    // Re_delta99 as above, but using edge99 and thick->delta99
     {
-        reynolds->delta = edge->rho * edge->u * edge->y / edge->mu
-                        * code_Re;
+        reynolds->delta   = edge->rho   * edge->u   * edge->y   / edge->mu
+                          * code_Re;
+        reynolds->delta99 = edge99->rho * edge99->u * edge99->y / edge99->mu
+                          * code_Re;
     }
 
     // Nondimensional quantities are computed with the first line being the

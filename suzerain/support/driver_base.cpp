@@ -154,6 +154,7 @@ driver_base::driver_base(
     , log_boundary_layer_quantities_visc_header_shown(false)
     , log_boundary_layer_quantities_thick_header_shown(false)
     , log_boundary_layer_quantities_edge_header_shown(false)
+    , log_boundary_layer_quantities_edge99_header_shown(false)
     , log_boundary_layer_quantities_Re_header_shown(false)
     , log_boundary_layer_quantities_qoi_header_shown(false)
     , log_boundary_layer_quantities_pg_header_shown(false)
@@ -1014,6 +1015,7 @@ void driver_base::log_boundary_layer_quantities(
         const suzerain_bl_viscous     * const viscous,
         const suzerain_bl_thicknesses * const thick,
         const suzerain_bl_local       * const edge,
+        const suzerain_bl_local       * const edge99,
         const suzerain_bl_reynolds    * const reynolds,
         const suzerain_bl_qoi         * const qoi,
         const suzerain_bl_pg          * const pg,
@@ -1021,6 +1023,7 @@ void driver_base::log_boundary_layer_quantities(
         const char * const name_visc,
         const char * const name_thick,
         const char * const name_edge,
+        const char * const name_edge99,
         const char * const name_Re,
         const char * const name_qoi,
         const char * const name_pg)
@@ -1069,7 +1072,8 @@ void driver_base::log_boundary_layer_quantities(
                 << ' ' << setw(fullprec<>::width) << "delta1"
                 << ' ' << setw(fullprec<>::width) << "delta2"
                 << ' ' << setw(fullprec<>::width) << "delta3"
-                << ' ' << setw(fullprec<>::width) << "deltaH0";
+                << ' ' << setw(fullprec<>::width) << "deltaH0"
+                << ' ' << setw(fullprec<>::width) << "delta99";
             INFO0(log, msg.str());
         }
         msg.str("");
@@ -1078,12 +1082,17 @@ void driver_base::log_boundary_layer_quantities(
             << ' ' << fullprec<>(thick->delta1)
             << ' ' << fullprec<>(thick->delta2)
             << ' ' << fullprec<>(thick->delta3)
-            << ' ' << fullprec<>(thick->deltaH0);
+            << ' ' << fullprec<>(thick->deltaH0)
+            << ' ' << fullprec<>(thick->delta99);
         INFO0(log, msg.str());
     }
 
     log_quantities_local_helper(*this, timeprefix, edge, name_edge,
                                 log_boundary_layer_quantities_edge_header_shown,
+                                msg);
+
+    log_quantities_local_helper(*this, timeprefix, edge99, name_edge99,
+                                log_boundary_layer_quantities_edge99_header_shown,
                                 msg);
 
     log = logging::get_logger(name_Re);
@@ -1096,7 +1105,8 @@ void driver_base::log_boundary_layer_quantities(
                 << ' ' << setw(fullprec<>::width) << "Re_delta1"
                 << ' ' << setw(fullprec<>::width) << "Re_delta2"
                 << ' ' << setw(fullprec<>::width) << "Re_delta3"
-                << ' ' << setw(fullprec<>::width) << "Re_deltaH0";
+                << ' ' << setw(fullprec<>::width) << "Re_deltaH0"
+                << ' ' << setw(fullprec<>::width) << "Re_delta99";
             INFO0(log, msg.str());
         }
         msg.str("");
@@ -1105,7 +1115,8 @@ void driver_base::log_boundary_layer_quantities(
             << ' ' << fullprec<>(reynolds->delta1)
             << ' ' << fullprec<>(reynolds->delta2)
             << ' ' << fullprec<>(reynolds->delta3)
-            << ' ' << fullprec<>(reynolds->deltaH0);
+            << ' ' << fullprec<>(reynolds->deltaH0)
+            << ' ' << fullprec<>(reynolds->delta99);
         INFO0(log, msg.str());
     }
 
