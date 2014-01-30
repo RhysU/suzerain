@@ -368,13 +368,20 @@ suzerain_bl_compute_thicknesses(
     }
     if (SUZERAIN_UNLIKELY(status != SUZERAIN_SUCCESS)) goto done;
 
+    // As \delta_{99} is brutish but computationally robust, just do it.
+    status = suzerain_bl_find_edge99(
+            coeffs_u, gsl_bspline_breakpoint(0, w),
+            gsl_bspline_breakpoint(w->nbreak-1, w),
+            &thick->delta99, dB, w, dw);
+    if (SUZERAIN_UNLIKELY(status != SUZERAIN_SUCCESS)) goto done;
+
     status = suzerain_bl_displacement_thickness(
             coeffs_rhou, &thick->delta1, &Bk.vector, w, tbl);
     if (SUZERAIN_UNLIKELY(status != SUZERAIN_SUCCESS)) goto done;
 
-    // As \delta_{99} should always be outside \delta_1 and the latter
+    // As \delta should always be outside \delta_1 and the latter
     // is more robust than the former, use \delta_1 as a lower bound on
-    // where we might find \delta_{99}.
+    // where we might find \delta.
     status = suzerain_bl_find_edge(
             coeffs_H0, thick->delta1, gsl_bspline_breakpoint(w->nbreak-1, w),
             &thick->delta, dB, w, dw);
@@ -1218,6 +1225,16 @@ suzerain_bl_compute_thicknesses_baseflow(
     // these quantities.  See writeups/thicknesses.pdf for how the integrals in
     // this function are defined and used.
 
+    // As \delta_{99} is brutish but computationally robust, just do it.
+    // Notice \delta_{99} knows absolutely nothing about the baseflow.
+    {
+        const int tmp = suzerain_bl_find_edge99(
+            coeffs_vis_u, gsl_bspline_breakpoint(0, w),
+            gsl_bspline_breakpoint(w->nbreak-1, w),
+            &thick->delta99, dB, w, dw);
+        if (status == SUZERAIN_SUCCESS) status = tmp;
+    }
+
     // Find implicitly-defined displacement thickness: thick->delta1
     // Displacement thickness more robust than delta99 or delta{2,3,H}
     {
@@ -1245,9 +1262,9 @@ suzerain_bl_compute_thicknesses_baseflow(
         if (status == SUZERAIN_SUCCESS) status = tmp;
     }
 
-    // As \delta_{99} should always be outside \delta_1 and the latter
+    // As \delta should always be outside \delta_1 and the latter
     // is more robust than the former, use \delta_1 as a lower bound on
-    // where we might find \delta_{99}.
+    // where we might find \delta.
     if (!gsl_isnan(thick->delta1)) {
         int tmp = suzerain_bl_find_edge(
                 coeffs_vis_H0, thick->delta1,

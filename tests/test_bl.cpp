@@ -351,6 +351,7 @@ BOOST_FIXTURE_TEST_CASE( blasius_thicknesses_reynolds,
     BOOST_CHECK_CLOSE(thick.delta2,  0.00664045493818580, 0.0105); ++cnt;
     BOOST_CHECK_CLOSE(thick.delta3,  0.0104435139441593,  0.01  ); ++cnt;
     BOOST_CHECK_GT   (thick.deltaH0, thick.delta2);                ++cnt;
+    /* Quantity delta99 not tested */                              ++cnt;
     BOOST_CHECK_EQUAL(cnt, sizeof(thick)/sizeof(thick.delta));
 
     // Compute the same values but now with a baseflow-friendly routine using a
@@ -369,6 +370,7 @@ BOOST_FIXTURE_TEST_CASE( blasius_thicknesses_reynolds,
     BOOST_CHECK_CLOSE(thick.delta2,  baseflow.delta2,  tol); ++cnt;
     BOOST_CHECK_CLOSE(thick.delta3,  baseflow.delta3,  tol); ++cnt;
     BOOST_CHECK_CLOSE(thick.deltaH0, baseflow.deltaH0, tol); ++cnt;
+    BOOST_CHECK_CLOSE(thick.delta99, baseflow.delta99, tol); ++cnt;
     BOOST_CHECK_EQUAL(cnt, sizeof(thick)/sizeof(thick.delta));
 
     // Prepare expected Reynolds number results
@@ -399,6 +401,7 @@ BOOST_FIXTURE_TEST_CASE( blasius_thicknesses_reynolds,
     BOOST_CHECK_CLOSE(expected_Re.delta2,  reynolds.delta2,  tol); ++cnt;
     BOOST_CHECK_CLOSE(expected_Re.delta3,  reynolds.delta3,  tol); ++cnt;
     BOOST_CHECK_CLOSE(expected_Re.deltaH0, reynolds.deltaH0, tol); ++cnt;
+    /* Quantity delta99 not tested */                              ++cnt;
     BOOST_CHECK_EQUAL(cnt, sizeof(thick)/sizeof(thick.delta));
 }
 

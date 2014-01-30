@@ -343,24 +343,25 @@ suzerain_bl_enthalpy_thickness(
  * data.
  */
 typedef struct suzerain_bl_thicknesses {
-    double delta;     /**< Boundary layer thickness \f$\delta\f$. */
+    double delta;     /**< Boundary layer thickness \f$\delta\f$.     */
     double delta1;    /**< Displacement thickness \f$\delta_1\f$
-                           (sometimes written \f$\delta^\ast\f$). */
+                           (sometimes written \f$\delta^\ast\f$).     */
     double delta2;    /**< Momentum thickness \f$\delta_2\f$
-                           (sometimes written \f$\theta\f$).      */
-    double delta3;    /**< Energy thickness \f$\delta_3\f$ .      */
-    double deltaH0;   /**< Enthalpy thickness \f$\delta_{H_0}\f$. */
+                           (sometimes written \f$\theta\f$).          */
+    double delta3;    /**< Energy thickness \f$\delta_3\f$ .          */
+    double deltaH0;   /**< Enthalpy thickness \f$\delta_{H_0}\f$.     */
+    double delta99;   /**< Velocity-based thickness \f$delta_{99}\f$. */
 } suzerain_bl_thicknesses;
 
 /**
- * Compute boundary layer thickness parameters.  Requires a B-spline
- * coefficient representation of specific total enthalpy \f$H_0 = \frac{\rho E
- * + p}{\rho}\f$, specific kinetic energy \f$\vec{u}^2/2\f$, streamwise
- * momentum \f$\rho u\f$, and velocity \f$u\f$.  This is a convenience method
- * around \ref suzerain_bl_find_edge, \ref suzerain_bl_displacement_thickness,
- * \ref suzerain_bl_momentum_thickness, \ref suzerain_bl_energy_thickness, and
- * \ref suzerain_bl_enthalpy_thickness packing the results into a \ref
- * suzerain_bl_thicknesses structure.
+ * Compute boundary layer thickness parameters.  Requires a B-spline coefficient
+ * representation of specific total enthalpy \f$H_0 = \frac{\rho E +
+ * p}{\rho}\f$, specific kinetic energy \f$\vec{u}^2/2\f$, streamwise momentum
+ * \f$\rho u\f$, and velocity \f$u\f$.  This is a convenience method around \ref
+ * suzerain_bl_find_edge, \ref suzerain_bl_find_edge99, \ref
+ * suzerain_bl_displacement_thickness, \ref suzerain_bl_momentum_thickness, \ref
+ * suzerain_bl_energy_thickness, and \ref suzerain_bl_enthalpy_thickness
+ * packing the results into a \ref suzerain_bl_thicknesses structure.
  *
  * \param[in ] coeffs_H0   Coefficient representation of \f$H_0\f$.
  * \param[in ] coeffs_ke   Coefficient representation of \f$\vec{u}^2/2\f$.
