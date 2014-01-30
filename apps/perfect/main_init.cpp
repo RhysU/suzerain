@@ -430,6 +430,15 @@ suzerain::perfect::driver_init::run(int argc, char **argv)
 
         }
 
+        // Shout, as appropriate, if non-trivial radial flow without slow growth
+        if (noz->trivial()) {
+            DEBUG("Trivial radial flow problem parameters ignored");
+        } else if (sg->formulation.enabled()) {
+            INFO("Non-trivial radial flow active");
+        } else {
+            WARN("Non-trivial radial flow active but without Largo formulation");
+        }
+
         if (options.variables().count("acoustic_strength")) {
             const real_t left  = (Ly / 2) * (1 - acoustic_support);
             const real_t right = (Ly / 2) * (1 + acoustic_support);

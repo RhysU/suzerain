@@ -97,7 +97,6 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
     using boost::math::isnan;
 
     // Storage for binary-specific options
-    noz = make_shared<support::definition_radialflow>(/*deltae*/ 1.0);
     const support::definition_noise noisedef;
     string solver_spec(static_cast<string>(suzerain::specification_zgbsv()));
     string implicit("rhome_xyz");
