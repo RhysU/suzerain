@@ -130,8 +130,42 @@ suzerain_bl_compute_viscous(
 int
 suzerain_bl_find_edge(
     const double * coeffs_H0,
-    const double lowerbnd,
-    const double upperbnd,
+    double lowerbnd,
+    double upperbnd,
+    double * location,
+    gsl_matrix * dB,
+    gsl_bspline_workspace * w,
+    gsl_bspline_deriv_workspace * dw);
+
+/**
+ * Find the boundary layer edge within <tt>[lowerbnd, upperbnd]</tt> given a
+ * B-spline coefficient representation of the velocity \f$u\f$ using the common
+ * $\delta_{99}$ criterion.  Specifically, the edge is defined to be where the
+ * streamwise velocity reaches 99% of the velocity from the final B-spline
+ * collocation point. This determination is computationally robust but
+ * physically ill-defined, particularly when an inviscid baseflow is employed.
+ *
+ * \param[in ] coeffs_u  Coefficient representation of \f$u\f$
+ *                       using the basis provided in \c w and \c dw.
+ * \param[in]  lowerbnd  Lower bound (inclusive) for the search.
+ * \param[in]  upperbnd  Upper bound (inclusive) for the search.
+ * \param[out] location  Location at which edge is detected.
+ * \param[in]  dB        Temporary storage to use of size <tt>w->k</tt> by
+ *                       no less than <tt>1</tt>.
+ * \param[in]  w         Workspace to use.
+ * \param[in]  dw        Workspace to use.
+ *
+ * \return ::SUZERAIN_SUCCESS on success and returns the answer in
+ * <code>*location</code>.  On recoverable error (e.g., no edge detected) sets
+ * <code>*location</code> to be <tt>NaN</tt> and returns one of
+ * #suzerain_error_status.  On unrecoverable error, additionally calls
+ * suzerain_error().
+ */
+int
+suzerain_bl_find_edge99(
+    const double * coeffs_u,
+    double lowerbnd,
+    double upperbnd,
     double * location,
     gsl_matrix * dB,
     gsl_bspline_workspace * w,

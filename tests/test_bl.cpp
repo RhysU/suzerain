@@ -106,6 +106,26 @@ struct BlasiusFixture {
 typedef BlasiusFixture<2,1> linear_fixture;
 BOOST_FIXTURE_TEST_SUITE(bl_compute_thick_linear, linear_fixture)
 
+BOOST_AUTO_TEST_CASE( blasius_find_edge99 )
+{
+    // Prepare working storage
+    shared_ptr<gsl_matrix> dB(gsl_matrix_alloc(b.k(), 1), gsl_matrix_free);
+
+    // Find edge using kinetic energy profile
+    double location = GSL_NAN;
+    BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS, suzerain_bl_find_edge99(
+        u.get(),
+        gsl_bspline_breakpoint(0,              b.bw),
+        gsl_bspline_breakpoint(b.bw->nbreak-1, b.bw),
+        &location, dB.get(), b.bw, b.dbw));
+
+    // For the classical Blasius layer truncated in the usual fashion,
+    // we should see something around 4.91 when x = Re_x = 1 per
+    // https://en.wikipedia.org/wiki/Boundary-layer_thickness.
+    BOOST_REQUIRE_GT(location, 4.90);
+    BOOST_REQUIRE_LT(location, 4.92);
+}
+
 BOOST_AUTO_TEST_CASE( blasius_delta1 )
 {
     // Prepare integration working storage

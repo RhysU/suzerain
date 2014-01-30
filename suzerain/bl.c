@@ -138,6 +138,25 @@ suzerain_bl_find_edge(
 }
 
 int
+suzerain_bl_find_edge99(
+    const double * coeffs_u,
+    double lowerbnd,
+    double upperbnd,
+    double * location,
+    gsl_matrix *dB,
+    gsl_bspline_workspace *w,
+    gsl_bspline_deriv_workspace *dw)
+{
+    /* Velocity at infinity taken from final B_spline collocation point */
+    /* which happens to be the value of the final coefficient. */
+    /* If never found, location remains NAN and status reflects failure. */
+    *location  = GSL_NAN;
+    return suzerain_bspline_crossing(
+            0, coeffs_u, 0.99*coeffs_u[w->n - 1], &lowerbnd, &upperbnd, 255,
+            10*GSL_DBL_EPSILON, /*not relative*/ 0, location, dB, w, dw);
+}
+
+int
 suzerain_bl_displacement_thickness(
     const double * coeffs_rhou,
     double * delta1,
