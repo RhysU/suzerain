@@ -932,6 +932,13 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                                       ddy_mean_rqq.rescale(inv_Ma2));
         }
 
+        // Precompute additive slow growth velocity for wall-normal convective
+        // stability criterion (notebooks/Euler_Eigensystem_3D_Temporal.nb)
+        // assuming not one bit of slow growth is handled implicitly.
+        const real_t y_grdelta = SlowTreatment == slowgrowth::largo
+                               ? o.y(j) * sg.grdelta
+                               : 0;
+
         // Wall-normal operator eigenvalue estimates depend on location
         const real_t lambda1_y    = o.lambda1_y(j);
         const real_t md_lambda2_y = maxdiffconst * o.lambda2_y(j);
@@ -1321,8 +1328,6 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             // This logic used to call some canned routines, but additional
             // monitoring requirements forced inlining many of these details.
             // See delta_t_candidates declaration (above) for descriptions.
-            //
-            // details on these computations in the three-directional case.
             if (ZerothSubstep) {
 
                 // minnan(...) calls only required on *_xyz_delta_t as the
@@ -1335,7 +1340,8 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                 using math::maxnan;
 
                 // See lowstorage::convective_stability_criterion
-                const real_t a = sqrt(T) / Ma;  // Because a/u_0 = sqrt(T*)/Ma
+                const real_t a   = sqrt(T) / Ma;      // As a/u_0 = sqrt(T*)/Ma
+                const real_t u_y = u.y() + y_grdelta; // Slow growth adjustment
                 real_t       ua_l1_x,       ua_l1_y,       ua_l1_z;
                 real_t fluct_ua_l1_x, fluct_ua_l1_y, fluct_ua_l1_z;
                 switch (Linearize) {
@@ -1344,10 +1350,10 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                 // Fluctuating velocity is taken relative to references.
                 case linearize::rhome_xyz:
                     ua_l1_x       = abs(u.x()            ) * lambda1_x;
-                    ua_l1_y       = abs(u.y()            ) * lambda1_y;
+                    ua_l1_y       = abs(u_y              ) * lambda1_y;
                     ua_l1_z       = abs(u.z()            ) * lambda1_z;
                     fluct_ua_l1_x = abs(u.x() - ref_u.x()) * lambda1_x;
-                    fluct_ua_l1_y = abs(u.y() - ref_u.y()) * lambda1_y;
+                    fluct_ua_l1_y = abs(u_y   - ref_u.y()) * lambda1_y;
                     fluct_ua_l1_z = abs(u.z() - ref_u.z()) * lambda1_z;
                     break;
 
@@ -1355,7 +1361,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                 // in stability and has a zero reference velocity.
                 case linearize::none:
                     ua_l1_x       = (abs(u.x()) + a) * lambda1_x;
-                    ua_l1_y       = (abs(u.y()) + a) * lambda1_y;
+                    ua_l1_y       = (abs(u_y  ) + a) * lambda1_y;
                     ua_l1_z       = (abs(u.z()) + a) * lambda1_z;
                     fluct_ua_l1_x = ua_l1_x;
                     fluct_ua_l1_y = ua_l1_y;
@@ -1366,10 +1372,10 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                 // is nothing but a hybrid of the above two cases.
                 case linearize::rhome_y:
                     ua_l1_x       = (abs(u.x()) + a) * lambda1_x;
-                    ua_l1_y       = (abs(u.y())    ) * lambda1_y;
+                    ua_l1_y       = (abs(u_y  )    ) * lambda1_y;
                     ua_l1_z       = (abs(u.z()) + a) * lambda1_z;
                     fluct_ua_l1_x = ua_l1_x;
-                    fluct_ua_l1_y = abs(u.y() - ref_u.y()) * lambda1_y;
+                    fluct_ua_l1_y = abs(u_y   - ref_u.y()) * lambda1_y;
                     fluct_ua_l1_z = ua_l1_z;
                     break;
 
