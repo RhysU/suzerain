@@ -932,8 +932,8 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                                       ddy_mean_rqq.rescale(inv_Ma2));
         }
 
-        // Precompute additive slow growth velocity for wall-normal convective
-        // stability criterion (notebooks/Euler_Eigensystem_3D_Temporal.nb)
+        // Precompute subtractive slow growth velocity for wall-normal
+        // convective stability criterion (see Euler_Eigensystem_3D_Temporal.nb)
         // assuming not one bit of slow growth is handled implicitly.
         const real_t y_grdelta = SlowTreatment == slowgrowth::largo
                                ? o.y(j) * sg.grdelta
@@ -1341,7 +1341,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
 
                 // See lowstorage::convective_stability_criterion
                 const real_t a   = sqrt(T) / Ma;      // As a/u_0 = sqrt(T*)/Ma
-                const real_t u_y = u.y() + y_grdelta; // Slow growth adjustment
+                const real_t u_y = u.y() - y_grdelta; // Slow growth adjustment
                 real_t       ua_l1_x,       ua_l1_y,       ua_l1_z;
                 real_t fluct_ua_l1_x, fluct_ua_l1_y, fluct_ua_l1_z;
                 switch (Linearize) {
