@@ -239,13 +239,11 @@ protected:
 
 private:
 
-#if defined(SUZERAIN_HAVE_P3DFFT) && defined(SUZERAIN_HAVE_UNDERLING)
     /** Use P3DFFT for parallel FFT operations */
     bool use_p3dfft;
 
     /** Use underling for parallel FFT operations */
     bool use_underling;
-#endif
 
     /** Helps to identify from whom logging messages are being emitted. */
     std::string who;

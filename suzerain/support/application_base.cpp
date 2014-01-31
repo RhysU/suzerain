@@ -79,10 +79,8 @@ application_base::application_base(
     , state_nonlinear()
     , wtime_mpi_init(std::numeric_limits<double>::quiet_NaN())
     , wtime_fftw_planning(std::numeric_limits<double>::quiet_NaN())
-#if defined(SUZERAIN_HAVE_P3DFFT) && defined(SUZERAIN_HAVE_UNDERLING)
     , use_p3dfft(false)
     , use_underling(false)
-#endif
     , who("application")
 {
 }
@@ -95,7 +93,7 @@ std::vector<std::string>
 application_base::initialize(int argc, char **argv)
 {
 #ifdef SUZERAIN_HAVE_GRVY
-    grvy_timer_init(argv[0] ? argv[0] : "NULL");  // Initialize GRVY Timers
+    grvy_timer_init(argv[0] ? argv[0] : "NULL");     // Initialize GRVY Timers
 #endif
     MPI_Init(&argc, &argv);                          // Initialize MPI...
     wtime_mpi_init = MPI_Wtime();                    // Record MPI_Init time
@@ -122,10 +120,12 @@ application_base::initialize(int argc, char **argv)
     if (fftwdef) {
         options.add_definition(*fftwdef);
         options.add_options()
-#if defined(SUZERAIN_HAVE_P3DFFT) && defined(SUZERAIN_HAVE_UNDERLING)
-            ("p3dfft",    boost::program_options::bool_switch(),
+#if defined(SUZERAIN_HAVE_P3DFFT)
+            ("p3dfft",    boost::program_options::bool_switch(&use_p3dfft),
                         "Use P3DFFT for MPI-parallel FFTs")
-            ("underling", boost::program_options::bool_switch(),
+#endif
+#if defined(SUZERAIN_HAVE_UNDERLING)
+            ("underling", boost::program_options::bool_switch(&use_underling),
                         "Use underling for MPI-parallel FFTs")
 #endif
             ;
@@ -144,12 +144,11 @@ application_base::initialize(int argc, char **argv)
     INFO0(who, "Build:      " << suzerain::version("", revstr));
 
     // Select pencil decomposition and FFT library to use
-#if defined(SUZERAIN_HAVE_P3DFFT) && defined(SUZERAIN_HAVE_UNDERLING)
     options.conflicting_options("p3dfft", "underling");
-    use_underling = options.variables()["underling"].as<bool>();
-    use_p3dfft    = options.variables()["p3dfft"   ].as<bool>()
-                  || !use_underling; // Default p3dfft
-#endif
+    if (!use_underling && !use_p3dfft) {
+        DEBUG0("Defaulted to using P3DFFT for parallel FFTs");
+        use_p3dfft = true;
+    }
 
     switch (options.verbose()) {
         case 0:                   break;
