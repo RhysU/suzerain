@@ -250,7 +250,7 @@ std::vector<std::string> program_options::process_internal(
 
     // Process --help
     if (variables_.count("help")) {
-        info << "\nUsage: " << program_name
+        info << "Usage: " << program_name
              << " [OPTION]... " << argument_synopsis_
              << '\n';
 
