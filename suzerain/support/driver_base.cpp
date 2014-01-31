@@ -260,49 +260,66 @@ driver_base::initialize(int argc, char **argv)
 
     // Generating unique file names as needed using mkstemp(3)
     // See Redmine ticket #2385 towards a nicer long-term solution
+    //
+    // Awful, awful checks permit empty {restart,stats}def
+    // while maintaining a single broadcast operation.
     {
         // Pack a temporary buffer with the four file name templates
-        array<size_t,5> pos = {{ 0,
-                                 restartdef->metadata.length()    + 1,
-                                 restartdef->uncommitted.length() + 1,
-                                 restartdef->destination.length() + 1,
-                                 statsdef  ->destination.length() + 1 }};
+        array<size_t,5> pos = {{
+            0,
+            restartdef ? restartdef->metadata.length()    + 1 : 1,
+            restartdef ? restartdef->uncommitted.length() + 1 : 1,
+            restartdef ? restartdef->destination.length() + 1 : 1,
+            statsdef   ? statsdef  ->destination.length() + 1 : 1
+        }};
         std::partial_sum(pos.begin(), pos.end(), pos.begin());
-        scoped_array<char> buf(new char[pos[4]]);
-        strcpy(&buf[pos[0]], restartdef->metadata.c_str());
-        strcpy(&buf[pos[1]], restartdef->uncommitted.c_str());
-        strcpy(&buf[pos[2]], restartdef->destination.c_str());
-        strcpy(&buf[pos[3]], statsdef  ->destination.c_str());
+        std::vector<char> buf(pos[4], '\0');
+        if (restartdef) {
+            strcpy(&buf[pos[0]], restartdef->metadata.c_str());
+            strcpy(&buf[pos[1]], restartdef->uncommitted.c_str());
+            strcpy(&buf[pos[2]], restartdef->destination.c_str());
+        }
+        if (statsdef) {
+            strcpy(&buf[pos[3]], statsdef  ->destination.c_str());
+        }
 
         // Generate unique files to be overwritten and/or just file names.
         // File generation relies on template semantics of mkstemp(3).
         // Error checking kept minimal as failures here should not be fatal.
         // This is not particularly robust but it should serve our needs.
         if (suzerain::mpi::comm_rank(MPI_COMM_WORLD) == 0) {
-            if (boost::ends_with(restartdef->metadata, "XXXXXX")) {
-                close(mkstemp(&buf[pos[0]]));  // Clobbered later...
+            if (restartdef) {
+                if (boost::ends_with(restartdef->metadata, "XXXXXX")) {
+                    close(mkstemp(&buf[pos[0]]));  // Clobbered later...
+                }
+                if (boost::ends_with(restartdef->uncommitted, "XXXXXX")) {
+                    close(mkstemp(&buf[pos[1]]));  // Possibly clobbered later.
+                    unlink(&buf[pos[1]]);          // ...so remove any evidence
+                }
+                if (boost::ends_with(restartdef->destination, "XXXXXX")) {
+                    close(mkstemp(&buf[pos[2]]));  // Not clobbered later...
+                    unlink(&buf[pos[2]]);          // ...so remove any evidence
+                }
             }
-            if (boost::ends_with(restartdef->uncommitted, "XXXXXX")) {
-                close(mkstemp(&buf[pos[1]]));  // Possibly clobbered later...
-                unlink(&buf[pos[1]]);          // ...so remove any evidence
-            }
-            if (boost::ends_with(restartdef->destination, "XXXXXX")) {
-                close(mkstemp(&buf[pos[2]]));  // Not clobbered later...
-                unlink(&buf[pos[2]]);          // ...so remove any evidence
-            }
-            if (boost::ends_with(statsdef->destination, "XXXXXX")) {
-                close(mkstemp(&buf[pos[3]]));  // Not clobbered later...
-                unlink(&buf[pos[3]]);          // ...so remove any evidence
+            if (statsdef) {
+                if (boost::ends_with(statsdef->destination, "XXXXXX")) {
+                    close(mkstemp(&buf[pos[3]]));  // Not clobbered later...
+                    unlink(&buf[pos[3]]);          // ...so remove any evidence
+                }
             }
         }
 
         // Broadcast any generated names to all ranks and unpack values
-        SUZERAIN_MPICHKR(MPI_Bcast(buf.get(), pos[4],
+        SUZERAIN_MPICHKR(MPI_Bcast(&buf[0], pos[4],
                          mpi::datatype<char>(), 0, MPI_COMM_WORLD));
-        restartdef->metadata    = &buf[pos[0]];
-        restartdef->uncommitted = &buf[pos[1]];
-        restartdef->destination = &buf[pos[2]];
-        statsdef  ->destination = &buf[pos[3]];
+        if (restartdef) {
+            restartdef->metadata    = &buf[pos[0]];
+            restartdef->uncommitted = &buf[pos[1]];
+            restartdef->destination = &buf[pos[2]];
+        }
+        if (statsdef) {
+            statsdef  ->destination = &buf[pos[3]];
+        }
     }
 
     return positional;
