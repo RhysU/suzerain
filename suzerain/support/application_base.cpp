@@ -115,19 +115,21 @@ application_base::initialize(int argc, char **argv)
     underling_set_error_handler(&mpi_abort_on_error_handler_underling);
 #endif
 
-    // Add problem definitions to options
-    options.add_definition(*grid   );
-    options.add_definition(*fftwdef);
-
-    // Add additional standalone options
-    options.add_options()
+    // Only add groups of options when non-trivial at initialization
+    if (grid) {
+        options.add_definition(*grid   );
+    }
+    if (fftwdef) {
+        options.add_definition(*fftwdef);
+        options.add_options()
 #if defined(SUZERAIN_HAVE_P3DFFT) && defined(SUZERAIN_HAVE_UNDERLING)
-        ("p3dfft",    boost::program_options::bool_switch(),
-                      "Use P3DFFT for MPI-parallel FFTs")
-        ("underling", boost::program_options::bool_switch(),
-                      "Use underling for MPI-parallel FFTs")
+            ("p3dfft",    boost::program_options::bool_switch(),
+                        "Use P3DFFT for MPI-parallel FFTs")
+            ("underling", boost::program_options::bool_switch(),
+                        "Use underling for MPI-parallel FFTs")
 #endif
-        ;
+            ;
+    }
 
     // Process incoming arguments
     std::vector<std::string> positional = options.process(argc, argv);
