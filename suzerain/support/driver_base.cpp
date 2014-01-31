@@ -261,7 +261,7 @@ driver_base::initialize(int argc, char **argv)
     // Generating unique file names as needed using mkstemp(3)
     // See Redmine ticket #2385 towards a nicer long-term solution
     {
-        // Pack a temporary buffer with the three file name templates
+        // Pack a temporary buffer with the four file name templates
         array<size_t,5> pos = {{ 0,
                                  restartdef->metadata.length()    + 1,
                                  restartdef->uncommitted.length() + 1,
