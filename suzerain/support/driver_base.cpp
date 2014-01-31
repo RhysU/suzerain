@@ -248,10 +248,12 @@ std::vector<std::string>
 driver_base::initialize(int argc, char **argv)
 {
     // Only add groups of options when non-trivial at initialization
-    if (restartdef) options.add_definition(*restartdef)  ;
-    if (statsdef  ) options.add_definition(*statsdef  )  ;
-    if (timedef   ) options.add_definition(*timedef   )  ;
-    /*always true*/ options.add_definition( signaldef )  ;
+    if (restartdef) options.add_definition(*restartdef);
+    if (statsdef  ) options.add_definition(*statsdef  );
+    if (timedef   ) {
+        options.add_definition(*timedef   ); // Only care about signals,
+        options.add_definition( signaldef ); // when we will advance time
+    }
 
     // Process incoming arguments by invoking superclass method
     std::vector<std::string> positional = super::initialize(argc, argv);
