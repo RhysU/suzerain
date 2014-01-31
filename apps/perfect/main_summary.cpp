@@ -78,7 +78,19 @@ struct driver_summary : public driver
 "-o may be specified simultaneously.\n",
                  revstr)
         , who("summary")
-    {}
+        , boplu()
+    {
+        // Almost none of the common application/driver infrastructure is used:
+        fftwdef.reset();     // No FFTs
+        grid.reset();        // Grid taken from input files only
+        isothermal.reset();  // No monkeying with boundary conditions...
+        noz.reset();         // ...or inviscid baseflow parameters
+        restartdef.reset();  // ...or writing restart files
+        scenario.reset();    // Scenario taken from input files only
+        sg.reset();          // No monkeying with slow growth...
+        statsdef.reset();    // ...or writing statistics files
+        timedef.reset();     // ...or advancing time
+    }
 
     /** Implementation below in this file */
     int run(int argc, char **argv);
