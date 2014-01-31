@@ -39,8 +39,6 @@
 #include <suzerain/pre_gsl.h>
 #include <suzerain/rholut.hpp>
 #include <suzerain/support/definition_grid.hpp>
-#include <suzerain/support/definition_isothermal.hpp>
-#include <suzerain/support/definition_time.hpp>
 #include <suzerain/support/logging.hpp>
 #include <suzerain/support/program_options.hpp>
 #include <suzerain/support/support.hpp>
@@ -57,7 +55,7 @@ namespace suzerain {
 
 namespace perfect {
 
-/** Summarize mean statistics for one or more channel restart files. */
+/** Summarize mean statistics for one or more restart files. */
 struct driver_summary : public driver
 {
     driver_summary(const std::string& revstr)
@@ -89,6 +87,9 @@ private:
 
     /** Helps to identify from whom logging messages are being emitted. */
     std::string who;
+
+    /** Discrete operators controlling the grid used for output. */
+    shared_ptr<bsplineop_lu> boplu;
 };
 
 /**
@@ -213,10 +214,10 @@ namespace sample {
 
 // Building a Boost.Preprocessor sequence of all data of interest
 //   #define SEQ_ALL
-//       SEQ_GRID SEQ_SAMPLED    SEQ_DERIVED    SEQ_LOCALS SEQ_RESIDUAL
+//       SEQ_GRID SEQ_SAMPLED    SEQ_DERIVED
 //                SEQ_SAMPLED_Y  SEQ_DERIVED_Y
 //                SEQ_SAMPLED_YY SEQ_DERIVED_YY
-// appears to be possible as the sequence has more than 256 elements.
+// appears to be impossible as the sequence has more than 256 elements.
 // Instead, we have to invoke on each component sequence in turn.
 
     /** Number of scalar quantities processed as a wall-normal function */
@@ -230,7 +231,6 @@ namespace sample {
     enum index {
         BOOST_PP_SEQ_ENUM(BOOST_PP_SEQ_TRANSFORM(OP, , SEQ_GRID))      ,
         BOOST_PP_SEQ_ENUM(BOOST_PP_SEQ_TRANSFORM(OP, , SEQ_SAMPLED))   ,
-        BOOST_PP_SEQ_ENUM(BOOST_PP_SEQ_TRANSFORM(OP, , SEQ_RESIDUAL))  ,
         BOOST_PP_SEQ_ENUM(BOOST_PP_SEQ_TRANSFORM(OP, , SEQ_SAMPLED_Y)) ,
         BOOST_PP_SEQ_ENUM(BOOST_PP_SEQ_TRANSFORM(OP, , SEQ_SAMPLED_YY)),
     };
@@ -279,15 +279,37 @@ namespace sample {
     static const Eigen::IOFormat iofmt(
             Eigen::FullPrecision, 0, "     ", "\n", "    ");
 
-} // namespace sample
+    /**
+     * Compute all quantities from namespace \ref sample using the sample
+     * collections present in \c filename using the wall-normal discretization
+     * from \c filename.
+     *
+     * @param filename   To be loaded.
+     * @param i_scenario If <tt>!i_scenario</tt>,
+     *                   populated with the definition_scenario from the file.
+     * @param i_grid     Handled identically to <tt>i_scenario</tt>.
+     * @param i_b        If <tt>!!i_b</tt> on entry, after computation interpolate
+     *                   the results onto the collocation points given by \c i_b.
+     *                   Otherwise, perform no additional interpolation and
+     *                   update \c i_b with the basis in \c filename.
+     * @param i_bop      Handled identically to \c i_b.
+     * @param i_boplu    Handled identically to \c i_b.
+     *
+     * @return A map of quantities keyed on the nondimensional simulation time.
+     */
+    storage_map_type process(
+            const std::string& filename,
+            shared_ptr<definition_scenario     >& i_scenario,
+            shared_ptr<support::definition_grid>& i_grid,
+            shared_ptr<bspline                 >& i_b,
+            shared_ptr<bsplineop               >& i_bop,
+            shared_ptr<bsplineop_lu            >& i_boplu);
 
-// Provided by main_summary_svnrev.{c,h} to speed recompilation
-#pragma warning(push,disable:1419)
-extern "C" const char revstr[];
-#pragma warning(pop)
+} // namespace sample
 
 #pragma warning(disable:383 1572)
 
+// TODO Move into libsuzerain
 /**
  * Compute the integration weights necessary to compute a bulk quantity from
  * the quantity's value at collocation points using a dot product.
@@ -319,99 +341,42 @@ static VectorXr compute_bulk_weights(
 
 } // namespace suzerain
 
-/**
- * Compute all quantities from namespace \ref sample using the sample
- * collections present in \c filename using the wall-normal discretization from
- * \c filename.
- *
- * @param filename   To be loaded.
- * @param i_scenario If <tt>!i_scenario</tt>,
- *                   populated with the definition_scenario from the file.
- * @param i_grid     Handled identically to <tt>i_scenario</tt>.
- * @param i_timedef  Handled identically to <tt>i_scenario</tt>.
- * @param i_b        If <tt>!!i_b</tt> on entry, after computation interpolate
- *                   the results onto the collocation points given by \c i_b.
- *                   Otherwise, perform no additional interpolation and
- *                   update \c i_b with the basis in \c filename.
- * @param i_bop      Handled identically to \c i_b.
- * @param i_boplu    Handled identically to \c i_b.
- *
- * @return A map of quantities keyed on the nondimensional simulation time.
- */
-static sample::storage_map_type process(
-        const std::string& filename,
-        shared_ptr<definition_scenario>& i_scenario,
-        shared_ptr<definition_grid    >& i_grid,
-        shared_ptr<definition_time    >& i_timedef,
-        shared_ptr<bspline            >& i_b,
-        shared_ptr<bsplineop          >& i_bop,
-        shared_ptr<bsplineop_lu       >& i_boplu);
+// Provided by main_summary_svnrev.{c,h} to speed recompilation
+extern "C" const char revstr[];
 
+/** Instantiate and invoke the application. */
 int main(int argc, char **argv)
 {
-    MPI_Init(&argc, &argv);                         // Initialize MPI
-    atexit((void (*) ()) MPI_Finalize);             // Finalize MPI at exit
-    logging::initialize(MPI_COMM_WORLD,             // Initialize logging
-                        support::log4cxx_config_console);
+    suzerain::perfect::driver_summary app(revstr);
+    return app.run(argc, argv);
+}
 
-    DEBUG0("Establishing floating point environment from GSL_IEEE_MODE");
-    mpi_gsl_ieee_env_setup(suzerain::mpi::comm_rank(MPI_COMM_WORLD));
-
-    // Process incoming arguments
-    std::vector<std::string> restart_files;
+/** The logic executed by main(). */
+int
+suzerain::perfect::driver_summary::run(int argc, char **argv)
+{
+    // Establish binary-specific options
     std::string datfile;
     std::string hdffile;
-    bool use_stdout = false;
-    bool use_dat    = false;
-    bool use_hdf5   = false;
-    bool describe   = false;
-    {
-        suzerain::support::program_options options(
-                "Suzerain-based channel mean quantity computations",
-                "RESTART-OR-SAMPLE-HDF5-FILE...",
-"Invocable in four distinct ways:\n"
-"\t1) perfect_summary                INFILE.h5 ...\n"
-"\t2) perfect_summary -s             INFILE.h5 ...\n"
-"\t3) perfect_summary -f OUTFILE.dat INFILE.h5 ...\n"
-"\t4) perfect_summary -o OUTFILE.h5  INFILE.h5 ...\n"
-"\n"
-"The first way processes each INFILE.h5 in turn outputting a corresponding\n"
-"INFILE.mean containing a comma-separated table of means from the first\n"
-"sample collection in the file.  The second way (-s) sends the data from all\n "
-"sample collections to standard output sorted according to the simulation\n "
-"time with a blank line separating adjacent times.  The third way (-f)\n"
-"is identical to the second except the output is automatically sent to the\n"
-"file named OUTFILE.dat.  The fourth way (-o) outputs a single HDF5 file\n"
-"called OUTFILE.h5 containing all sample collections. Options -s, -f,  and\n"
-"-o may be specified simultaneously.\n"
-                , revstr);
-        options.add_options()
-            ("stdout,s",   "Write results to standard output?")
-            ("datfile,f",   boost::program_options::value(&datfile),
-                           "Write results to a textual output file")
-            ("hdffile,o",   boost::program_options::value(&hdffile),
-                           "Write results to an HDF5 output file")
-            ("describe,d", "Dump all sample details to standard output")
-            ;
-        restart_files = options.process(argc, argv);
-        switch (options.verbose()) {
-            case 0:                   break;
-            case 1:  DEBUG0_ENABLE(); break;
-            default: TRACE0_ENABLE(); break;
-        }
-        switch (options.verbose_all()) {
-            case 0:                   break;
-            case 1:  DEBUG_ENABLE();  break;
-            default: TRACE_ENABLE();  break;
-        }
-        use_stdout = options.variables().count("stdout");
-        use_dat    = options.variables().count("datfile");
-        use_hdf5   = options.variables().count("hdffile");
-        describe   = options.variables().count("describe");
-    }
+    options.add_options()
+        ("stdout,s",   "Write results to standard output?")
+        ("datfile,f",   boost::program_options::value(&datfile),
+                        "Write results to a textual output file")
+        ("hdffile,o",   boost::program_options::value(&hdffile),
+                        "Write results to an HDF5 output file")
+        ("describe,d", "Dump all sample details to standard output")
+        ;
+
+    // Initialize application and then process binary-specific options
+    // (henceforth suzerain::support::logging macros become usable)
+    const std::vector<std::string> restart_files = initialize(argc, argv);
+    const bool use_stdout = options.variables().count("stdout");
+    const bool use_dat    = options.variables().count("datfile");
+    const bool use_hdf5   = options.variables().count("hdffile");
+    const bool describe   = options.variables().count("describe");
 
     // Ensure that we're running in a single processor environment
-    if (suzerain::mpi::comm_size(MPI_COMM_WORLD) > 1) {
+    if (mpi::comm_size(MPI_COMM_WORLD) > 1) {
         FATAL(argv[0] << " only intended to run on single rank");
         return EXIT_FAILURE;
     }
@@ -440,14 +405,6 @@ int main(int argc, char **argv)
         std::cout << std::flush;
     }
 
-    // Scenario and grid details provided to process(...)
-    shared_ptr<definition_scenario> scenario;
-    shared_ptr<definition_grid    > grid;
-    shared_ptr<definition_time    > timedef;
-    shared_ptr<bspline            > b;
-    shared_ptr<bsplineop          > cop;
-    shared_ptr<bsplineop_lu       > boplu;
-
     // Processing differs slightly when done file-by-file versus
     // aggregated across multiple files...
     if (!use_stdout && !use_dat && !use_hdf5) {
@@ -455,8 +412,8 @@ int main(int argc, char **argv)
         BOOST_FOREACH(const std::string& filename, restart_files) {
 
             // Load data from filename
-            sample::storage_map_type data = process(
-                    filename, scenario, grid, timedef, b, cop, boplu);
+            sample::storage_map_type data = sample::process(
+                    filename, scenario, grid, b, cop, boplu);
 
             // Save quantities to `basename filename .h5`.mean
             static const char suffix[] = ".h5";
@@ -482,7 +439,6 @@ int main(int argc, char **argv)
             // Numerics details reset to avoid carrying grid across files.
             scenario.reset();
             grid.reset();
-            timedef.reset();
             b.reset();
             cop.reset();
             boplu.reset();
@@ -503,11 +459,10 @@ int main(int argc, char **argv)
 
             if (!scenario) INFO0 ("Output file has scenario per " << filename);
             if (!grid)     DEBUG0("Output file has grid per "     << filename);
-            if (!timedef)  DEBUG0("Output file has timedef per "  << filename);
 
             // Load data from filename
-            sample::storage_map_type data = process(
-                    filename, scenario, grid, timedef, b, cop, boplu);
+            sample::storage_map_type data = sample::process(
+                    filename, scenario, grid, b, cop, boplu);
 
             // Output status to the user so they don't thing we're hung.
             BOOST_FOREACH(sample::storage_map_type::value_type i, data) {
@@ -558,11 +513,10 @@ int main(int argc, char **argv)
             // Store the scenario and numerics metadata
             scenario->save(h.get());
             grid->save(h.get());
-            shared_ptr<suzerain::bsplineop> gop(new suzerain::bsplineop(
+            shared_ptr<bsplineop> gop(new bsplineop(
                         *b, 0, SUZERAIN_BSPLINEOP_GALERKIN_L2));
             support::save(h.get(), b, cop, gop);
             gop.reset();
-            timedef->save(h.get());
 
             // Determine how many time indices and collocation points we have.
             // We'll build a vector of time values to write after iteration.
@@ -612,7 +566,7 @@ int main(int argc, char **argv)
                             0, sample::desc[sample::y]);
 
             // (Re-) compute the bulk weights and then output those as well.
-            const suzerain::VectorXr bulk_weights
+            const VectorXr bulk_weights
                     = compute_bulk_weights(grid->L.y(), *b, *boplu);
             esio_line_establish(h.get(), bulk_weights.size(),
                                 0, bulk_weights.size());
@@ -625,14 +579,14 @@ int main(int argc, char **argv)
     return EXIT_SUCCESS;
 }
 
-static sample::storage_map_type process(
+suzerain::perfect::sample::storage_map_type
+suzerain::perfect::sample::process(
         const std::string& filename,
-        shared_ptr<definition_scenario>& i_scenario,
-        shared_ptr<definition_grid    >& i_grid,
-        shared_ptr<definition_time    >& i_timedef,
-        shared_ptr<bspline            >& i_b,
-        shared_ptr<bsplineop          >& i_bop,
-        shared_ptr<bsplineop_lu       >& i_boplu)
+        shared_ptr<definition_scenario     >& i_scenario,
+        shared_ptr<support::definition_grid>& i_grid,
+        shared_ptr<bspline                 >& i_b,
+        shared_ptr<bsplineop               >& i_bop,
+        shared_ptr<bsplineop_lu            >& i_boplu)
 {
     using sample::storage_type;
     using sample::storage_map_type;
@@ -646,32 +600,21 @@ static sample::storage_map_type process(
     DEBUG("Loading file " << filename);
     esio_file_open(h.get(), filename.c_str(), 0 /* read-only */);
 
-    // Load time, scenario, grid, timedef, and B-spline details from file.
-    // The definition_time defaults are ignored but required as that
-    // class lacks a default constructor (by design).
+    // Load time, scenario, grid, time, and B-spline details from file.
     real_t time;
     definition_scenario scenario;
-    definition_grid grid;
-    definition_time timedef(/* advance_dt */ 0,
-                 /* advance_nt */ 0,
-                 /* advance_wt */ 0,
-                 /* status_dt  */ 0,
-                 /* status_nt  */ 0,
-                 /* min_dt     */ 0,
-                 /* max_dt     */ 0);
+    support::definition_grid grid;
     shared_ptr<bspline> b;
     shared_ptr<bsplineop> cop;
     support::load_time(h.get(), time);
     scenario.load(h.get());
     grid.load(h.get());
-    timedef.load(h.get());
     support::load(h.get(), b, cop);
     assert(b->n() == grid.N.y());
 
-    // Return the scenario, grid, and timedef to the caller if not already set
-    if (!i_scenario) i_scenario.reset(new definition_scenario(scenario));
-    if (!i_grid)     i_grid    .reset(new definition_grid    (grid    ));
-    if (!i_timedef)  i_timedef .reset(new definition_time    (timedef ));
+    // Return the scenario and grid to the caller if not already set
+    if (!i_scenario) i_scenario.reset(new definition_scenario     (scenario));
+    if (!i_grid)     i_grid    .reset(new support::definition_grid(grid    ));
 
     // Compute factorized mass matrix for current operators in use
     shared_ptr<suzerain::bsplineop_lu> boplu
@@ -806,150 +749,8 @@ static sample::storage_map_type process(
     // Free coefficient-related resources
     q.reset();
 
-    // Introduce shorthand for constants
-    const real_t Ma    = scenario.Ma;
-    const real_t Re    = scenario.Re;
-    const real_t Pr    = scenario.Pr;
-    const real_t gamma = scenario.gamma;
-
     // Shorthand for referring to a particular column
 #define C(name) s->col(sample::name)
-
-    // Shorthand for computing derivatives within a particular __y, __yy
-#define D(name)                                      \
-    C(name##__y) = C(name);                          \
-    boplu->solve(1, C(name##__y).data(), 1, b->n()); \
-    C(name##__yy) = C(name##__y);                    \
-    cop->apply(1, 1.0, C(name##__y).data(),  1);     \
-    cop->apply(2, 1.0, C(name##__yy).data(), 1)
-
-    // Computations following "Sampling logistics" in writeups
-    C(tilde_u) = C(bar_rho_u)/C(bar_rho);
-    C(tilde_v) = C(bar_rho_v)/C(bar_rho);
-    C(tilde_w) = C(bar_rho_w)/C(bar_rho);
-    C(tilde_E) = C(bar_rho_E)/C(bar_rho);
-    C(tilde_u_u) = C(bar_rho_u_u)/C(bar_rho);
-    C(tilde_u_v) = C(bar_rho_u_v)/C(bar_rho);
-    C(tilde_u_w) = C(bar_rho_u_w)/C(bar_rho);
-    C(tilde_v_v) = C(bar_rho_v_v)/C(bar_rho);
-    C(tilde_v_w) = C(bar_rho_v_w)/C(bar_rho);
-    C(tilde_w_w) = C(bar_rho_w_w)/C(bar_rho);
-    C(tilde_upp_upp) = C(tilde_u_u) - C(tilde_u).square();
-    C(tilde_upp_vpp) = C(tilde_u_v) - C(tilde_u)*C(tilde_v);
-    C(tilde_upp_wpp) = C(tilde_u_w) - C(tilde_u)*C(tilde_w);
-    C(tilde_vpp_vpp) = C(tilde_v_v) - C(tilde_v).square();
-    C(tilde_vpp_wpp) = C(tilde_v_w) - C(tilde_v)*C(tilde_w);
-    C(tilde_wpp_wpp) = C(tilde_w_w) - C(tilde_w).square();
-    C(tilde_k) = (C(tilde_upp_upp) + C(tilde_vpp_vpp) + C(tilde_wpp_wpp)) / 2;
-    C(tilde_T) = (gamma*(gamma-1))*(C(tilde_E) - Ma*Ma*(
-                  (  C(tilde_u).square()
-                   + C(tilde_v).square()
-                   + C(tilde_w).square() ) / 2
-               +  C(tilde_k)
-               ));
-    C(tilde_H) = C(tilde_E) + C(tilde_T)/gamma;
-    C(bar_p)   = C(bar_rho) * C(tilde_T)/gamma;
-    D(tilde_u);  // Form derivatives
-    D(tilde_v);  // Form derivatives
-    D(tilde_w);  // Form derivatives
-    C(bar_tau_colon_grad_upp) = C(bar_tau_colon_grad_u)
-                              - C(bar_tauxy)*C(tilde_u__y)
-                              - C(bar_tauyy)*C(tilde_v__y)
-                              - C(bar_tauyz)*C(tilde_w__y);
-    C(tilde_epsilon) = C(bar_tau_colon_grad_upp)/C(bar_rho);
-    C(bar_rhop_up) = C(bar_rho_u) - C(bar_rho)*C(bar_u);
-    C(bar_rhop_vp) = C(bar_rho_v) - C(bar_rho)*C(bar_v);
-    C(bar_rhop_wp) = C(bar_rho_w) - C(bar_rho)*C(bar_w);
-    C(bar_upp) = C(bar_u) - C(tilde_u);
-    C(bar_vpp) = C(bar_v) - C(tilde_v);
-    C(bar_wpp) = C(bar_w) - C(tilde_w);
-    C(bar_f_dot_upp) = C(bar_f_dot_u)
-                     - C(bar_fx) * C(tilde_u)
-                     - C(bar_fy) * C(tilde_v)
-                     - C(bar_fz) * C(tilde_w);
-    C(bar_Srhou_dot_upp) = C(bar_Srhou_dot_u)
-                         - C(bar_Srhou) * C(tilde_u)
-                         - C(bar_Srhov) * C(tilde_v)
-                         - C(bar_Srhow) * C(tilde_w);
-    C(bar_Crhou_dot_upp) = C(bar_Crhou_dot_u)
-                         - C(bar_Crhou) * C(tilde_u)
-                         - C(bar_Crhov) * C(tilde_v)
-                         - C(bar_Crhow) * C(tilde_w);
-    C(bar_tauuppx) = C(bar_tauux)
-                   - C(bar_tauxx)*C(tilde_u)
-                   - C(bar_tauxy)*C(tilde_v)
-                   - C(bar_tauxz)*C(tilde_w);
-    C(bar_tauuppy) = C(bar_tauuy)
-                   - C(bar_tauxy)*C(tilde_u)
-                   - C(bar_tauyy)*C(tilde_v)
-                   - C(bar_tauyz)*C(tilde_w);
-    C(bar_tauuppz) = C(bar_tauuz)
-                   - C(bar_tauxz)*C(tilde_u)
-                   - C(bar_tauyz)*C(tilde_v)
-                   - C(bar_tauzz)*C(tilde_w);
-    D(bar_v);  // Form derivatives
-    C(bar_pp_div_upp) = C(bar_p_div_u) - C(bar_p)*C(bar_v__y);
-    C(tilde_u_u_u) = C(bar_rho_u_u_u)/C(bar_rho);
-    C(tilde_u_u_v) = C(bar_rho_u_u_v)/C(bar_rho);
-    C(tilde_u_u_w) = C(bar_rho_u_u_w)/C(bar_rho);
-    C(tilde_u_v_v) = C(bar_rho_u_v_v)/C(bar_rho);
-    C(tilde_u_v_w) = C(bar_rho_u_v_w)/C(bar_rho);
-    C(tilde_u_w_w) = C(bar_rho_u_w_w)/C(bar_rho);
-    C(tilde_v_v_v) = C(bar_rho_v_v_v)/C(bar_rho);
-    C(tilde_v_v_w) = C(bar_rho_v_v_w)/C(bar_rho);
-    C(tilde_v_w_w) = C(bar_rho_v_w_w)/C(bar_rho);
-    C(tilde_w_w_w) = C(bar_rho_w_w_w)/C(bar_rho);
-    C(tilde_u2u) = C(tilde_u_u_u) + C(tilde_u_v_v) + C(tilde_u_w_w);
-    C(tilde_u2v) = C(tilde_u_u_v) + C(tilde_v_v_v) + C(tilde_v_w_w);
-    C(tilde_u2w) = C(tilde_u_u_w) + C(tilde_v_v_w) + C(tilde_w_w_w);
-    C(tilde_upp2upp) = C(tilde_u2u)
-                     - (C(tilde_u_u) + C(tilde_v_v) + C(tilde_w_w))*C(tilde_u)
-                     - 2*(C(tilde_u_u)*C(tilde_u) + C(tilde_u_v)*C(tilde_v) + C(tilde_u_w)*C(tilde_w))
-                     + 2*(C(tilde_u).square() + C(tilde_v).square() + C(tilde_w).square())*C(tilde_u);
-    C(tilde_upp2vpp) = C(tilde_u2v)
-                     - (C(tilde_u_u) + C(tilde_v_v) + C(tilde_w_w))*C(tilde_v)
-                     - 2*(C(tilde_u_v)*C(tilde_u) + C(tilde_v_v)*C(tilde_v) + C(tilde_v_w)*C(tilde_w))
-                     + 2*(C(tilde_u).square() + C(tilde_v).square() + C(tilde_w).square())*C(tilde_v);
-    C(tilde_upp2wpp) = C(tilde_u2w)
-                     - (C(tilde_u_u) + C(tilde_v_v) + C(tilde_w_w))*C(tilde_w)
-                     - 2*(C(tilde_u_w)*C(tilde_u) + C(tilde_v_w)*C(tilde_v) + C(tilde_w_w)*C(tilde_w))
-                     + 2*(C(tilde_u).square() + C(tilde_v).square() + C(tilde_w).square())*C(tilde_w);
-    C(tilde_T_u) = C(bar_rho_T_u)/C(bar_rho);
-    C(tilde_T_v) = C(bar_rho_T_v)/C(bar_rho);
-    C(tilde_T_w) = C(bar_rho_T_w)/C(bar_rho);
-    C(tilde_Tpp_upp) = C(tilde_T_u) - C(tilde_T)*C(tilde_u);
-    C(tilde_Tpp_vpp) = C(tilde_T_v) - C(tilde_T)*C(tilde_v);
-    C(tilde_Tpp_wpp) = C(tilde_T_w) - C(tilde_T)*C(tilde_w);
-    C(tilde_mu) = C(bar_rho_mu)/C(bar_rho);
-    C(bar_mupp) = C(bar_mu) - C(tilde_mu);
-    C(tilde_nu) = C(bar_mu)/C(bar_rho);
-    C(bar_nupp) = C(bar_nu) - C(tilde_nu);
-    C(tilde_symxx_grad_u) = C(bar_symxx_rho_grad_u)/C(bar_rho);
-    C(tilde_symxy_grad_u) = C(bar_symxy_rho_grad_u)/C(bar_rho);
-    C(tilde_symxz_grad_u) = C(bar_symxz_rho_grad_u)/C(bar_rho);
-    C(tilde_symyy_grad_u) = C(bar_symyy_rho_grad_u)/C(bar_rho);
-    C(tilde_symyz_grad_u) = C(bar_symyz_rho_grad_u)/C(bar_rho);
-    C(tilde_symzz_grad_u) = C(bar_symzz_rho_grad_u)/C(bar_rho);
-    C(tilde_Sxx) = C(tilde_symxx_grad_u)
-                 - (C(tilde_symxx_grad_u) + C(tilde_symyy_grad_u) + C(tilde_symzz_grad_u)) / 3;
-    C(tilde_Sxy) = C(tilde_symxy_grad_u);
-    C(tilde_Sxz) = C(tilde_symxz_grad_u);
-    C(tilde_Syy) = C(tilde_symyy_grad_u)
-                 - (C(tilde_symxx_grad_u) + C(tilde_symyy_grad_u) + C(tilde_symzz_grad_u)) / 3;
-    C(tilde_Syz) = C(tilde_symyz_grad_u);
-    C(tilde_Szz) = C(tilde_symzz_grad_u)
-                 - (C(tilde_symxx_grad_u) + C(tilde_symyy_grad_u) + C(tilde_symzz_grad_u)) / 3;
-    C(tilde_nupp_Sppxx) = C(bar_mu_Sxx)/C(bar_rho) - C(tilde_nu)*C(tilde_Sxx);
-    C(tilde_nupp_Sppxy) = C(bar_mu_Sxy)/C(bar_rho) - C(tilde_nu)*C(tilde_Sxy);
-    C(tilde_nupp_Sppxz) = C(bar_mu_Sxz)/C(bar_rho) - C(tilde_nu)*C(tilde_Sxz);
-    C(tilde_nupp_Sppyy) = C(bar_mu_Syy)/C(bar_rho) - C(tilde_nu)*C(tilde_Syy);
-    C(tilde_nupp_Sppyz) = C(bar_mu_Syz)/C(bar_rho) - C(tilde_nu)*C(tilde_Syz);
-    C(tilde_nupp_Sppzz) = C(bar_mu_Szz)/C(bar_rho) - C(tilde_nu)*C(tilde_Szz);
-    C(tilde_nupp_div_upp) = C(bar_mu_div_u)/C(bar_rho)
-                          - C(tilde_nu)*(C(tilde_symxx_grad_u) + C(tilde_symyy_grad_u) + C(tilde_symzz_grad_u));
-    C(tilde_nupp_gradxTpp) = (C(bar_mu_gradx_T) - C(tilde_nu)*C(bar_rho_gradx_T))/C(bar_rho);
-    C(tilde_nupp_gradyTpp) = (C(bar_mu_grady_T) - C(tilde_nu)*C(bar_rho_grady_T))/C(bar_rho);
-    C(tilde_nupp_gradzTpp) = (C(bar_mu_gradz_T) - C(tilde_nu)*C(bar_rho_gradz_T))/C(bar_rho);
 
     // Differentiate SAMPLED
     // Uses that bar_rho{,__y,__yy} is the first entry in SAMPLED{,_Y,_YY}
@@ -966,183 +767,6 @@ static sample::storage_map_type process(
     cop->apply(2, BOOST_PP_SEQ_SIZE(SEQ_SAMPLED_Y), 1.0,
             s->middleCols<BOOST_PP_SEQ_SIZE(SEQ_SAMPLED_YY)>(sample::bar_rho__yy).data(),
             1, b->n());
-
-    // Differentiate DERIVED
-    // Uses that tilde_u{,__y,__yy} is the first entry in DERIVED{,_Y,_YY}
-    s->middleCols<BOOST_PP_SEQ_SIZE(SEQ_DERIVED_Y)>(sample::tilde_u__y)
-        = s->middleCols<BOOST_PP_SEQ_SIZE(SEQ_DERIVED)>(sample::tilde_u);
-    boplu->solve(BOOST_PP_SEQ_SIZE(SEQ_DERIVED_Y),
-            s->middleCols<BOOST_PP_SEQ_SIZE(SEQ_DERIVED_Y)>(sample::tilde_u__y).data(),
-            1, b->n());
-    s->middleCols<BOOST_PP_SEQ_SIZE(SEQ_DERIVED_YY)>(sample::tilde_u__yy)
-        = s->middleCols<BOOST_PP_SEQ_SIZE(SEQ_DERIVED_Y)>(sample::tilde_u__y);
-    cop->apply(1, BOOST_PP_SEQ_SIZE(SEQ_DERIVED_Y), 1.0,
-            s->middleCols<BOOST_PP_SEQ_SIZE(SEQ_DERIVED_Y)>(sample::tilde_u__y).data(),
-            1, b->n());
-    cop->apply(2, BOOST_PP_SEQ_SIZE(SEQ_DERIVED_Y), 1.0,
-            s->middleCols<BOOST_PP_SEQ_SIZE(SEQ_DERIVED_YY)>(sample::tilde_u__yy).data(),
-            1, b->n());
-
-    // Computations of local quantities (see descriptions for definitions).
-    // This must occur after differentiation of SAMPLED and DERIVED.
-    // Note the following:
-    //
-    // 1)  In local_Mat computation, ".abs()" is present to avoid taking the
-    // square root of very small, negative tilde_k arising from negative
-    // tilde_{upp_upp,vpp_vpp_vpp} in laminar situations due to round off
-    // errors (i.e. tilde_u_u - tilde_u**2 ~= -eps).
-    //
-    // 2)  In local_Re computation, the coefficient scenario.Re arises because
-    // (bar_rho_u * L / bar_mu) are already nondimensional.  Multiplying by Re
-    // re-incorporates the reference quantities rho_0, u_0, L_0, and mu_0 to
-    // cause the nondimensional local_Re to be correctly formed from
-    // dimensional quantities.  Ditto for Re in the eddy viscosity. Ditto for
-    // Ma in local_Ma and local_Mat.
-    C(local_Ma)  = Ma * C(bar_u) / C(bar_a);
-    C(local_Mat) = Ma * (std::sqrt(real_t(2))*C(tilde_k).abs().sqrt()) / C(bar_a);
-    C(local_Prt) = (C(tilde_upp_vpp) * C(tilde_T__y)) / (C(tilde_Tpp_vpp) * C(tilde_u__y));
-    C(local_nut) = - Re * C(tilde_upp_vpp) / C(tilde_u__y);
-    C(local_Re)  = Re * C(bar_rho_u) /* L = 1 */ / C(bar_mu);
-
-    // Computation of Favre-averaged density equation residual following writeup
-    C(bar_rho__t) =
-        // - \nabla\cdot\bar{\rho}\tilde{u}
-           - C(bar_rho_v__y)
-        // + \overline{\mathscr{S}_{\rho}}
-           + C(bar_Srho)
-        // + \overline{\mathscr{C}_{\rho}}
-           + C(bar_Crho)
-        ;
-
-    // Computation of Favre-averaged streamwise momentum residual following writeup
-    C(bar_rho_u__t) =
-        // - \nabla\cdot(\tilde{u}\otimes\bar{\rho}\tilde{u})
-           - C(tilde_v)*C(bar_rho_u__y) - C(bar_rho_u)*C(tilde_v__y)
-        // - \frac{1}{\Mach^2}\nabla{}\bar{p}
-           - 0
-        // + \nabla\cdot\left( \frac{\bar{\tau}}{\Reynolds} \right)
-           + C(bar_tauxy__y) / Re
-        // - \nabla\cdot\left( \bar{\rho} \widetilde{u''\otimes{}u''} \right)
-           - C(bar_rho)*C(tilde_upp_vpp__y) - C(tilde_upp_vpp)*C(bar_rho__y)
-        // + \bar{f}
-           + C(bar_fx)
-        // + \overline{\mathscr{S}_{\rho{}u}}
-           + C(bar_Srhou)
-        // + \overline{\mathscr{C}_{\rho{}u}}
-           + C(bar_Crhou)
-        ;
-
-    // Computation of Favre-averaged wall-normal momentum residual following writeup
-    C(bar_rho_v__t) =
-        // - \nabla\cdot(\tilde{u}\otimes\bar{\rho}\tilde{u})
-           - C(tilde_v)*C(bar_rho_v__y) - C(bar_rho_v)*C(tilde_v__y)
-        // - \frac{1}{\Mach^2}\nabla{}\bar{p}
-           - C(bar_p__y)
-        // + \nabla\cdot\left( \frac{\bar{\tau}}{\Reynolds} \right)
-           + C(bar_tauyy__y) / Re
-        // - \nabla\cdot\left( \bar{\rho} \widetilde{u''\otimes{}u''} \right)
-           - C(bar_rho)*C(tilde_vpp_vpp__y) - C(tilde_vpp_vpp)*C(bar_rho__y)
-        // + \bar{f}
-           + C(bar_fy)
-        // + \overline{\mathscr{S}_{\rho{}u}}
-           + C(bar_Srhov)
-        // + \overline{\mathscr{C}_{\rho{}u}}
-           + C(bar_Crhov)
-        ;
-
-    // Computation of Favre-averaged spanwise momentum residual following writeup
-    C(bar_rho_w__t) =
-        // - \nabla\cdot(\tilde{u}\otimes\bar{\rho}\tilde{u})
-           - C(tilde_v)*C(bar_rho_w__y) - C(bar_rho_w)*C(tilde_v__y)
-        // - \frac{1}{\Mach^2}\nabla{}\bar{p}
-           - 0
-        // + \nabla\cdot\left( \frac{\bar{\tau}}{\Reynolds} \right)
-           + C(bar_tauyz__y) / Re
-        // - \nabla\cdot\left( \bar{\rho} \widetilde{u''\otimes{}u''} \right)
-           - C(bar_rho)*C(tilde_vpp_wpp__y) - C(tilde_vpp_wpp)*C(bar_rho__y)
-        // + \bar{f}
-           + C(bar_fz)
-        // + \overline{\mathscr{S}_{\rho{}u}}
-           + C(bar_Srhow)
-        // + \overline{\mathscr{C}_{\rho{}u}}
-           + C(bar_Crhow)
-        ;
-
-    // Computation of Favre-averaged total energy residual following writeup
-    C(bar_rho_E__t) =
-    // - \nabla\cdot\bar{\rho}\tilde{H}\tilde{u}
-       - C(bar_rho_v)*C(tilde_H__y) - C(tilde_H)*C(bar_rho_v__y)
-    // + \Mach^{2} \nabla\cdot\left( \frac{\bar{\tau}}{\Reynolds} \right) \tilde{u}
-       + (Ma*Ma/Re)*( C(tilde_u)*C(bar_tauxy__y) + C(bar_tauxy)*C(tilde_u__y)
-                    + C(tilde_v)*C(bar_tauyy__y) + C(bar_tauyy)*C(tilde_v__y)
-                    + C(tilde_w)*C(bar_tauyz__y) + C(bar_tauyz)*C(tilde_w__y) )
-    // - \Mach^{2} \nabla\cdot\left( \bar{\rho} \widetilde{u''\otimes{}u''} \right) \tilde{u}
-       - (Ma*Ma)*( C(bar_rho_u)*C(tilde_upp_vpp__y) + C(tilde_upp_vpp)*C(bar_rho_u__y)
-                 + C(bar_rho_v)*C(tilde_vpp_vpp__y) + C(tilde_vpp_vpp)*C(bar_rho_v__y)
-                 + C(bar_rho_w)*C(tilde_vpp_wpp__y) + C(tilde_vpp_wpp)*C(bar_rho_w__y) )
-    // - \frac{1}{2}\Mach^{2} \nabla\cdot\left( \bar{\rho}\widetilde{{u''}^{2}u''} \right)
-       - (Ma*Ma/2)*( C(bar_rho)*C(tilde_upp2vpp__y) + C(tilde_upp2vpp)*C(bar_rho__y) )
-    // + \Mach^{2} \nabla\cdot\left( \frac{\overline{\tau{}u''}}{\Reynolds} \right)
-       + (Ma*Ma/Re)*( C(bar_tauuppy__y) )
-
-    // + \frac{1}{\gamma-1} \nabla\cdot\left(
-    //     \frac{ \bar{\mu} \widetilde{\nabla{}T} }{\Reynolds\Prandtl}
-    //   \right)
-       + (
-            C(tilde_nu)*C(bar_rho_grady_T__y) + C(bar_rho_grady_T)*C(tilde_nu__y)
-         ) / ((gamma-1)*Re*Pr)
-    // + \frac{1}{\gamma-1} \nabla\cdot\left(
-    //     \frac{ \bar{\rho} \widetilde{\nu'' \left(\nabla{}T\right)''} }{\Reynolds\Prandtl}
-    //   \right)
-       + (
-            C(bar_rho)*C(tilde_nupp_gradyTpp) + C(tilde_nupp_gradyTpp)*C(bar_rho__y)
-         ) / ((gamma-1)*Re*Pr)
-    // - \frac{1}{\gamma-1} \nabla\cdot\left( \bar{\rho} \widetilde{T''u''} \right)
-       - (
-            C(bar_rho)*C(tilde_Tpp_vpp__y) + C(tilde_Tpp_vpp)*C(bar_rho__y)
-         ) / (gamma-1)
-    // + \Mach^{2} \bar{f}\cdot\tilde{u}
-       + Ma*Ma*(C(bar_fx)*C(tilde_u) + C(bar_fy)*C(tilde_v) + C(bar_fz)*C(tilde_w))
-    // + \Mach^{2} \overline{f\cdot{}u''}
-       + Ma*Ma*C(bar_f_dot_upp)
-    // + \bar{q}_b
-       + C(bar_qb)
-    // + \overline{\mathscr{S}_{\rho{}E}}
-       + C(bar_SrhoE)
-    // + \overline{\mathscr{C}_{\rho{}E}}
-       + C(bar_CrhoE)
-        ;
-
-    // Computation of Favre-averaged turbulent kinetic energy residual following writeup
-    C(bar_rho_k__t) =
-    // - \nabla\cdot\bar{\rho}k\tilde{u}
-       - C(bar_rho_v)*C(tilde_k__y) - C(tilde_k)*C(bar_rho_v__y)
-    // - \bar{\rho} \widetilde{u''\otimes{}u''} : \nabla\tilde{u}
-       - C(bar_rho)*( C(tilde_upp_vpp)*C(tilde_u__y)
-                    + C(tilde_vpp_vpp)*C(tilde_v__y)
-                    + C(tilde_vpp_wpp)*C(tilde_w__y) )
-    // - \frac{\bar{\rho} \epsilon}{\Reynolds}
-       - C(bar_rho)*C(tilde_epsilon) / Re
-    // - \frac{1}{2}\nabla\cdot\left( \bar{\rho} \widetilde{{u''}^{2}u''} \right)
-       - C(bar_rho)*C(tilde_upp2vpp__y)/2 - C(tilde_upp2vpp)*C(bar_rho__y)/2
-    // + \nabla\cdot\left( \frac{\overline{\tau{}u''}}{\Reynolds} \right)
-       + C(bar_tauuppy__y)/Re
-    // + \frac{1}{\Mach^2} \left(
-    //       \bar{p}\nabla\cdot\overline{u''}
-    //     + \overline{p' \nabla\cdot{}u''}
-    //     - \frac{1}{\gamma} \nabla\cdot\bar{\rho} \widetilde{T''u''}
-    //   \right)
-       + 1/(Ma*Ma)*( C(bar_p)*C(bar_vpp__y)
-                   + C(bar_pp_div_upp)
-                   - C(bar_rho)*C(tilde_Tpp_vpp__y)/gamma
-                   - C(tilde_Tpp_vpp)*C(bar_rho__y)/gamma )
-    // + \overline{f\cdot{}u''}
-       + C(bar_f_dot_upp)
-    // + \overline{\mathscr{S}_{\rho{}u}\cot{}upp}
-       + C(bar_Srhou_dot_upp)
-    // + \overline{\mathscr{C}_{\rho{}u}\cot{}upp}
-       + C(bar_Crhou_dot_upp)
-        ;
 
 #undef C
 
