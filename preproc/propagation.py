@@ -156,48 +156,45 @@ def statements_by_semicolon(files=None):
                 yield (f.filename(), f.filelineno(), ' '.join(stmt))
                 del stmt[:]
 
-def parser(filenames):
+def parser(statement_tuples):
     r'''
-    Parse the provided filenames (or stdin if empty) into a
-    collections.OrderedDict of symbol -> SymPy expression entries.
-    See doctests for an example of the accepted syntax.
+    Parse statements from (filename, lineno, statement) tuples into
+    a collections.OrderedDict of symbol -> SymPy expression entries.
+    When absent, a symbol name will be generated from the line number.
+    Either statements_by_newline() or statements_by_semicolon() may be
+    used to generate tuples from input files.
 
-    >>> with tempfile.NamedTemporaryFile() as f:
-    ...     print("""a=1       # Trailing comments
-    ...              b =  a+1  # Reuse earlier definition
-    ...              c  = d+e  # Purely symbolic computations possible
-    ...              f         # Nameless result given 'line' prefix
-    ...           """, file=f)
-    ...     f.flush()
-    ...     parser(f.name)
+    >>> parser([ ("test", 1, "a=1"     )    # Simple assignment
+    ...        , ("test", 2, "b  = a+1")    # Reuse earlier definition
+    ...        , ("test", 3, "c =  d+e")    # Purely symbolic okay
+    ...        , ("test", 4, "f"       ) ]) # Nameless expression
     OrderedDict([('a', 1), ('b', 2), ('c', d + e), ('line4', f)])
     '''
     # Accumulate symbol definitions maintaining declaration order
     symbol_table = collections.OrderedDict()
 
     # Process each trimmed, comment-less statement...
-    for (filename, lineno, stmt) in statements_by_newline(filenames):
+    for (filename, lineno, stmt) in statement_tuples:
 
         # ...split lines into "token = rhs" or just "rhs" with the
         # latter implicitly naming the result like "line1234".
         symbol, sep, expr = stmt.partition('=')
-        expr = expr.lstrip()
+        expr = expr.strip()
         if not expr:
             symbol, expr = 'line' + `lineno`, symbol
-        symbol = symbol.rstrip()
+        symbol = symbol.strip()
         if symbol in symbol_table:
             raise LookupError("Duplicate symbol '%s' detected at %s:%d" % (
                                 symbol, filename, lineno))
 
         # ...parse and save the result into the known symbol table
         # augmenting any parsing errors with location information
-        if expr:
-            try:
-                symbol_table[symbol] = parse(expr, symbol_table)
-            except SyntaxError as e:
-                e.filename = filename
-                e.lineno   = lineno
-                raise
+        try:
+            symbol_table[symbol] = parse(expr, symbol_table)
+        except SyntaxError as e:
+            e.filename = filename
+            e.lineno   = lineno
+            raise
 
     return symbol_table
 
