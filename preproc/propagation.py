@@ -117,6 +117,7 @@ def statements_by_newline(files=None):
         if line:
             yield (f.filename(), f.filelineno(), line)
 
+# TODO Behavior on lingering statement content without semicolon
 def statements_by_semicolon(files=None):
     r'''
     Generate (filename, lineno, statement) tuples by parsing the provided
@@ -146,7 +147,7 @@ def statements_by_semicolon(files=None):
         head, sep, tail = line.partition('//')
         line = head if (line.startswith('//') or head) else tail
 
-        # ...and yield any statements separated by semis into stmts
+        # ...and yield any statements separated by semicolons
         # being careful to permit continuation from prior lines.
         while line:
             head, sep, tail = line.partition(';')
@@ -197,8 +198,8 @@ def parser(filenames):
             try:
                 symbol_table[symbol] = parse(expr, symbol_table)
             except SyntaxError as e:
-                e.filename = fileinput.filename()
-                e.lineno   = fileinput.lineno()
+                e.filename = filename
+                e.lineno   = lineno
                 raise
 
     return symbol_table
