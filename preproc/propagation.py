@@ -15,9 +15,9 @@ where
   \vec{\beta} is a bias error which is small relative to \vec{\epsilon}
 
 Additionally, \vec{\beta} is assumed to be independent of \vec{\epsilon}.
-Assume also \vec{\epsilon} is a zero-mean, normally-distributed random variable
-with some known covariance matrix \Sigma containing scalar components
-\sigma_{ij}.
+Assume also \vec{\epsilon} is a zero-mean, normally-distributed random
+variable with some known covariance matrix \Sigma containing scalar
+components \sigma_{ij}.
 
 Applying TSM to the underlying model yields
 
@@ -50,8 +50,6 @@ import fileinput
 import itertools
 import sympy
 import sympy.parsing.sympy_parser
-import sys
-import tempfile
 from sympy.physics.units import Unit
 
 # TODO How to handle uncertainty in derivatives of measured quantities?
@@ -61,13 +59,14 @@ from sympy.physics.units import Unit
 "Symbolic constants known at parse time to have zero derivatives."
 constants = {
     'alpha': Unit('Ratio of bulk to dynamic viscosity', 'alpha'),
-    'beta':  Unit('Temperature power law exponent',     'beta' ),
+    'beta':  Unit('Temperature power law exponent',     'beta'),
     'gamma': Unit('Ratio of specific heats',            'gamma'),
-    'Kn':    Unit('Knudsen number',                     'Kn'   ),
-    'Ma':    Unit('Mach number',                        'Ma'   ),
-    'Pr':    Unit('Prandtl number',                     'Pr'   ),
-    'Re':    Unit('Reynolds number',                    'Re'   ),
+    'Kn':    Unit('Knudsen number',                     'Kn'),
+    'Ma':    Unit('Mach number',                        'Ma'),
+    'Pr':    Unit('Prandtl number',                     'Pr'),
+    'Re':    Unit('Reynolds number',                    'Re'),
 }
+
 
 def parse(f, symbol_table=None):
     r'''
@@ -79,21 +78,24 @@ def parse(f, symbol_table=None):
     '''
     if isinstance(f, basestring):
         if symbol_table is None:
-          t = constants
+            t = constants
         else:
-          t = constants.copy()
-          t.update(symbol_table)
+            t = constants.copy()
+            t.update(symbol_table)
         f = sympy.parsing.sympy_parser.parse_expr(f, t)
     return f
 
 # TODO Line continuation via trailing backslash
+
+
 def statements_by_newline(files=None):
     r'''
     Generate (filename, lineno, statement) tuples by parsing the provided
     filenames with newline-separated, whitespace-trimmed statements.
     Comments are introduced by a '#' and extend until the end of line.
 
-    >>> with tempfile.NamedTemporaryFile() as f:
+    >>> import tempfile
+    ... with tempfile.NamedTemporaryFile() as f:
     ...     print("""a=1       # Trailing comments
     ...                        # Not every line must have a statement
     ...              f         # Nor every line involve assignment
@@ -117,13 +119,16 @@ def statements_by_newline(files=None):
             yield (f.filename(), f.filelineno(), line)
 
 # TODO Behavior on lingering statement content without semicolon
+
+
 def statements_by_semicolon(files=None):
     r'''
     Generate (filename, lineno, statement) tuples by parsing the provided
     filenames with semicolon-separated, whitespace-trimmed statements.
     Comments are introduced by a '//' and extend until the end of line.
 
-    >>> with tempfile.NamedTemporaryFile() as f:
+    >>> import tempfile
+    ... with tempfile.NamedTemporaryFile() as f:
     ...     print("""a=1;      // Trailing comments may include ';'
     ...              b =       // Statements may span lines
     ...                  c;
@@ -155,6 +160,7 @@ def statements_by_semicolon(files=None):
             if sep and stmt:
                 yield (f.filename(), f.filelineno(), ' '.join(stmt))
                 del stmt[:]
+
 
 def parser(statement_tuples):
     r'''
@@ -192,7 +198,7 @@ def parser(statement_tuples):
         symbol, sep, expr = stmt.partition('=')
         expr = expr.strip()
         if not expr:
-            symbol, expr = 'line' + `lineno`, symbol
+            symbol, expr = 'line' + repr(lineno), symbol
         symbol = symbol.strip()
         if symbol in symbol_table:
             raise LookupError("Symbol '%s' redefined at %s:%d"
@@ -204,7 +210,7 @@ def parser(statement_tuples):
             symbol_table[symbol] = parse(expr, symbol_table)
         except SyntaxError as e:
             e.filename = filename
-            e.lineno   = lineno
+            e.lineno = lineno
             raise
 
     return symbol_table
@@ -252,14 +258,14 @@ def mixed_partials(f, df=None):
     (0, 0, 0)
     '''
     ddf = collections.defaultdict(
-            lambda: collections.defaultdict(lambda: sympy.Integer(0))
-        )
+        lambda: collections.defaultdict(lambda: sympy.Integer(0)))
     if df is None:
         df = partials(f)
     for (x, dfdx) in df.iteritems():
         ddf[x] = partials(dfdx)
 
     return ddf
+
 
 def prerequisites(f, df=None, ddf=None):
     r'''
@@ -292,13 +298,13 @@ def prerequisites(f, df=None, ddf=None):
     # Quantities necessary to compute first-order Var[f(x)]
     if df is None:
         df = partials(f)
-    ## Term:          \sum_{ i } \sigma_{ii} f_{,i}^2(d)
+    # Term:          \sum_{ i } \sigma_{ii} f_{,i}^2(d)
     for i in df.keys():
         if not df[i].is_zero:
             for s in df[i].free_symbols:
                 m.add((s,))
             m.add((i, i))                    # Canonical
-    ## Term: +    2   \sum_{i<j} \sigma_{ij} f_{,i}(d) f_{,j}(d)
+    # Term: +    2   \sum_{i<j} \sigma_{ij} f_{,i}(d) f_{,j}(d)
     for (i, j) in itertools.combinations(df.keys(), 2):
         fifj = (df[i] * df[j]).simplify()
         if not fifj.is_zero:
@@ -309,16 +315,16 @@ def prerequisites(f, df=None, ddf=None):
     # Quantities necessary to compute second-order E[f(x)]
     if ddf is None:
         ddf = mixed_partials(f, df)
-    ## Term:    f(d)
+    # Term:    f(d)
     for s in f.free_symbols:
         m.add((s,))
-    ## Term: + (1/2) \sum_{ i } \sigma_{ii} f_{,ii}(d)
+    # Term: + (1/2) \sum_{ i } \sigma_{ii} f_{,ii}(d)
     for i in ddf.keys():
         if not ddf[i][i].is_zero:
             for s in ddf[i][i].free_symbols:
                 m.add((s,))
             m.add((i, i))                    # Canonical
-    ## Term: +       \sum_{i<j} \sigma_{ij} f_{,ij}(d)
+    # Term: +       \sum_{i<j} \sigma_{ij} f_{,ij}(d)
     for (i, j) in itertools.combinations(ddf.keys(), 2):
         if not ddf[i][j].is_zero:
             for s in ddf[i][j].free_symbols:
@@ -326,6 +332,7 @@ def prerequisites(f, df=None, ddf=None):
             m.add(tuple(sorted([i, j])))     # Canonicalize
 
     return sorted(m)
+
 
 def expectation(f, ddf=None):
     r'''
@@ -351,18 +358,19 @@ def expectation(f, ddf=None):
     # Accumulate terms necessary to compute second-order E[f(x)]
     E = collections.defaultdict(lambda: sympy.Integer(0))
 
-    ## Term:    f(d)
+    # Term:    f(d)
     E[1] = f
-    ## Term: + (1/2) \sum_{ i } \sigma_{ii} f_{,ii}(d)
+    # Term: + (1/2) \sum_{ i } \sigma_{ii} f_{,ii}(d)
     for i in ddf.keys():
         if not ddf[i][i].is_zero:
-            E[(i,i)] += (ddf[i][i]/2).simplify()   # Canonical
-    ## Term: +       \sum_{i<j} \sigma_{ij} f_{,ij}(d)
+            E[(i, i)] += (ddf[i][i] / 2).simplify()  # Canonical
+    # Term: +       \sum_{i<j} \sigma_{ij} f_{,ij}(d)
     for (i, j) in itertools.combinations(ddf.keys(), 2):
         if not ddf[i][j].is_zero:
-            E[tuple(sorted([i, j]))] += ddf[i][j]  # Canonicalize
+            E[tuple(sorted([i, j]))] += ddf[i][j]    # Canonicalize
 
     return E
+
 
 def variance(f, df=None):
     r'''
@@ -393,15 +401,15 @@ def variance(f, df=None):
     # Accumulate terms necessary to compute first-order Var[f(x)]
     Var = collections.defaultdict(lambda: sympy.Integer(0))
 
-    ## Term:          \sum_{ i } \sigma_{ii} f_{,i}^2(d)
+    # Term:          \sum_{ i } \sigma_{ii} f_{,i}^2(d)
     for i in df.keys():
         if not df[i].is_zero:
-            Var[(i, i)] += (df[i]**2).simplify()   # Canonical
-    ## Term: +    2   \sum_{i<j} \sigma_{ij} f_{,i}(d) f_{,j}(d)
+            Var[(i, i)] += (df[i] ** 2).simplify()  # Canonical
+    # Term: +    2   \sum_{i<j} \sigma_{ij} f_{,i}(d) f_{,j}(d)
     for (i, j) in itertools.combinations(df.keys(), 2):
-        twofifj = (2*df[i]*df[j]).simplify()
+        twofifj = (2 * df[i] * df[j]).simplify()
         if not twofifj.is_zero:
-            Var[tuple(sorted([i, j]))] += twofifj  # Canonicalize
+            Var[tuple(sorted([i, j]))] += twofifj   # Canonicalize
 
     return Var
 
@@ -410,6 +418,7 @@ def variance(f, df=None):
 #     return 0
 #
 # if __name__=='__main__':
+#     import sys
 #     sys.exit(main(*sys.argv[1:]))
 
 if __name__ == "__main__":
