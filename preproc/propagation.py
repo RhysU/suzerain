@@ -91,6 +91,17 @@ def statements_by_newline(filenames=[sys.stdin]):
     Generate (filename, lineno, statement) tuples by parsing the provided
     filenames with newline-separated, whitespace-trimmed statements.  Comments
     are introduced by a '#' and extend until the end of line.
+
+    >>> with tempfile.NamedTemporaryFile() as f:
+    ...     print("""a=1       # Trailing comments
+    ...                        # Not every line must have a statement
+    ...              f         # Nameless result given 'line' prefix
+    ...           """, file=f)
+    ...     f.flush()
+    ...     for (filename, lineno, stmt) in statements_by_newline(f.name):
+    ...         print(lineno, stmt)
+    1 a=1
+    3 f
     '''
     # Process input line-by-line...
     try:
@@ -130,12 +141,11 @@ def parser(filenames):
     ...     print("""a=1       # Trailing comments
     ...              b =  a+1  # Reuse earlier definition
     ...              c  = d+e  # Purely symbolic computations possible
-    ...                        # Not every line must have a statement
     ...              f         # Nameless result given 'line' prefix
     ...           """, file=f)
     ...     f.flush()
     ...     parser(f.name)
-    OrderedDict([('a', 1), ('b', 2), ('c', d + e), ('line5', f)])
+    OrderedDict([('a', 1), ('b', 2), ('c', d + e), ('line4', f)])
     '''
     # Accumulate symbol definitions maintaining declaration order
     symbol_table = collections.OrderedDict()
