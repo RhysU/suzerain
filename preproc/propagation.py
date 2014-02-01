@@ -86,6 +86,7 @@ def parse(f, symbol_table=None):
         f = sympy.parsing.sympy_parser.parse_expr(f, t)
     return f
 
+# TODO Line continuation via trailing backslash
 def statements_by_newline(filenames=[sys.stdin]):
     r'''
     Generate (filename, lineno, statement) tuples by parsing the provided
@@ -98,7 +99,7 @@ def statements_by_newline(filenames=[sys.stdin]):
     ...              f         # Nameless result given 'line' prefix
     ...           """, file=f)
     ...     f.flush()
-    ...     for (filename, lineno, stmt) in statements_by_newline(f.name):
+    ...     for (_, lineno, stmt) in statements_by_newline(f.name):
     ...         print(lineno, stmt)
     1 a=1
     3 f
@@ -128,8 +129,32 @@ def statements_by_semicolon(filenames):
     filenames with semicolon-separated, whitespace-trimmed statements.  Comments
     are introduced by a '//' and extend until the end of line.
     '''
-    # TODO Implement
-    pass
+    # Process input line-by-line maintaining any active statement...
+    try:
+        stmt = []
+        for line in fileinput.input(filenames):
+
+            # ...remove comments defined as the first '//' observed
+            head, sep, tail = line.partition('//')
+            line = head if (line.startswith('//') or head) else tail
+
+            # ...and yield any statements separated by semis into stmts
+            # being careful to permit continuation from prior lines.
+            while line:
+                head, sep, tail = line.partition(';')
+                head = head.strip()
+                if head:
+                    stmt.append(head)
+                if sep and stmt:
+                    yield (fileinput.filename(),
+                           fileinput.filelineno(),
+                           ' '.join(stmt))
+                    del stmt[:]
+                line = tail
+
+    # ...being sure to clean up after our use of fileinput
+    finally:
+        fileinput.close()
 
 def parser(filenames):
     r'''
