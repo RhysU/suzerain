@@ -109,8 +109,7 @@ def statements_by_newline(files=None):
     for line in f:
 
         # ...remove comments occurring after the first '#' character
-        head, sep, tail = line.partition('#')
-        line = head if (line.startswith('#') or head) else tail
+        line, _, _ = line.partition('#')
 
         # ...trim then yield statement only on nontrivial line
         line = line.strip()
@@ -144,20 +143,18 @@ def statements_by_semicolon(files=None):
     for line in f:
 
         # ...remove comments defined as the first '//' observed
-        head, sep, tail = line.partition('//')
-        line = head if (line.startswith('//') or head) else tail
+        line, _, _ = line.partition('//')
 
         # ...and yield any statements separated by semicolons
         # being careful to permit continuation from prior lines.
         while line:
-            head, sep, tail = line.partition(';')
+            head, sep, line = line.partition(';')
             head = head.strip()
             if head:
                 stmt.append(head)
             if sep and stmt:
                 yield (f.filename(), f.filelineno(), ' '.join(stmt))
                 del stmt[:]
-            line = tail
 
 def parser(filenames):
     r'''
