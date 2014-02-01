@@ -160,16 +160,26 @@ def parser(statement_tuples):
     r'''
     Parse statements from (filename, lineno, statement) tuples into
     a collections.OrderedDict of symbol -> SymPy expression entries.
-    When absent, a symbol name will be generated from the line number.
-    Duplicate symbol definitions will result in LookupErrors.  Either
-    statements_by_newline() or statements_by_semicolon() may be used
-    to generate tuples from input files.
+    Either statements_by_newline() or statements_by_semicolon() may be used to
+    generate tuples from input files.
 
     >>> parser([ ("test", 1, "a=1"     )    # Simple assignment
     ...        , ("test", 2, "b  = a+1")    # Reuse earlier definition
-    ...        , ("test", 3, "c =  d+e")    # Purely symbolic okay
-    ...        , ("test", 4, "f"       ) ]) # Nameless expression
-    OrderedDict([('a', 1), ('b', 2), ('c', d + e), ('line4', f)])
+    ...        , ("test", 3, "c =  d+e") ]) # Purely symbolic result okay
+    OrderedDict([('a', 1), ('b', 2), ('c', d + e)])
+
+    Lacking assignment, a target name will be generated from the line number:
+
+    >>> parser([ ("test", 4, "f") ])
+    OrderedDict([('line4', f)])
+
+    Symbol re-definitions cause LookupErrors identifying the location:
+
+    >>> parser([ ('somefile', 1, 'a=b')
+    ...        , ('somefile', 2, 'a=c') ])
+    Traceback (most recent call last):
+        ...
+    LookupError: Symbol 'a' redefined at somefile:2
     '''
     # Accumulate symbol definitions maintaining declaration order
     symbol_table = collections.OrderedDict()
@@ -185,8 +195,8 @@ def parser(statement_tuples):
             symbol, expr = 'line' + `lineno`, symbol
         symbol = symbol.strip()
         if symbol in symbol_table:
-            raise LookupError("Duplicate symbol '%s' detected at %s:%d" % (
-                                symbol, filename, lineno))
+            raise LookupError("Symbol '%s' redefined at %s:%d"
+                              % (symbol, filename, lineno))
 
         # ...parse and save the result into the known symbol table
         # augmenting any parsing errors with location information
