@@ -109,7 +109,7 @@ def parser(filenames):
         for line in fileinput.input(filenames):
 
             # ...remove comments which occur after the first '#' character
-            head, sep, tail = line.partition('#')
+            head, sep, tail = line.lstrip().partition('#')
             line = head if head else tail
 
             # ...split lines into "token = rhs" or just "rhs" with the
@@ -142,8 +142,8 @@ def parser(filenames):
 
 def preprocessor(filenames):
     r'''
-    Accumulate semicolon-separated statements with C++-style comments.
-    TODO Output is a temporary file suitable for input to parser.
+    Accumulate semicolon-separated statements with C++-style comments
+    TODO returning a temporary file suitable for input to parser().
     '''
     stmts  = [ [] ]
     # Process input line-by-line...
@@ -151,7 +151,7 @@ def preprocessor(filenames):
         for line in fileinput.input(filenames):
 
             # ...remove comments defined as the first '//' observed
-            head, sep, tail = line.partition('//')
+            head, sep, tail = line.lstrip().partition('//')
             line = head if head else tail
 
             # ...and add any statements separated by semis into stmts
