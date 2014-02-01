@@ -93,13 +93,15 @@ def parser(filenames):
     See doctests for an example of the accepted syntax.
 
     >>> with tempfile.NamedTemporaryFile() as f:
-    ...     f.write("a=1       # Comments       \n")
-    ...     f.write(" b =  a+1 # Reuse earlier  \n")
-    ...     f.write("c  = d+e  # Purely symbolic\n")
-    ...     f.write("   f      # Nameless result\n")
+    ...     print("""a=1       # Trailing comments
+    ...              b =  a+1  # Reuse earlier definition
+    ...              c  = d+e  # Purely symbolic computations possible
+    ...                        # Not every line must have a statement
+    ...              f         # Nameless result given 'line' prefix
+    ...           """, file=f)
     ...     f.flush()
     ...     parser(f.name)
-    OrderedDict([('a', 1), ('b', 2), ('c', d + e), ('line4', f)])
+    OrderedDict([('a', 1), ('b', 2), ('c', d + e), ('line5', f)])
     '''
     # Accumulate symbol definitions maintaining declaration order
     symbol_table = collections.OrderedDict()
@@ -109,16 +111,22 @@ def parser(filenames):
         for line in fileinput.input(filenames):
 
             # ...remove comments which occur after the first '#' character
-            head, sep, tail = line.lstrip().partition('#')
-            line = head if head else tail
+            head, sep, tail = line.partition('#')
+            line = head if (line.startswith('#') or head) else tail
+
+            # ...trim and skip processing if whitespace-only input
+            line = line.strip()
+            if not line:
+                continue
 
             # ...split lines into "token = rhs" or just "rhs" with the
-            # latter implicitly naming the result like "line1234"
+            # latter implicitly naming the result like "line1234".
+            # Notice proper stripping depends upon line.strip() above.
             symbol, sep, expr = line.partition('=')
-            expr = expr.strip()
+            expr = expr.lstrip()
             if not expr:
                 symbol, expr = 'line' + `fileinput.lineno()`, symbol
-            symbol = symbol.strip()
+            symbol = symbol.rstrip()
             if symbol in symbol_table:
                 raise LookupError("Duplicate symbol '%s' detected at %s:%d" % (
                                     symbol, fileinput.filename(),
@@ -151,8 +159,13 @@ def preprocessor(filenames):
         for line in fileinput.input(filenames):
 
             # ...remove comments defined as the first '//' observed
-            head, sep, tail = line.lstrip().partition('//')
-            line = head if head else tail
+            head, sep, tail = line.partition('//')
+            line = head if (line.startswith('//') or head) else tail
+
+            # ...trim and skip processing if whitespace-only input
+            line = line.strip()
+            if not line:
+                continue
 
             # ...and add any statements separated by semis into stmts
             # being careful to permit continuation from prior lines.
