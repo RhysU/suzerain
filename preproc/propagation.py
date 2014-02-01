@@ -117,40 +117,40 @@ def statements_by_newline(files=None):
         if line:
             yield (f.filename(), f.filelineno(), line)
 
-##def statements_by_semicolon(files=None):
-##    r'''
-##    Generate (filename, lineno, statement) tuples by parsing the provided
-##    filenames with semicolon-separated, whitespace-trimmed statements.
-##    Comments are introduced by a '//' and extend until the end of line.
-##
-##    >>> with tempfile.NamedTemporaryFile() as f:
-##    ...     print("""a=1;      // Trailing comments
-##    ...           """, file=f)
-##    ...     f.flush()
-##    ...     for (_, lineno, stmt) in statements_by_newline(f.name):
-##    ...         print(lineno, stmt)
-##    1 a=1
-##    '''
-##    # Process input line-by-line maintaining any active statement...
-##    f = fileinput.FileInput(files)
-##    stmt = []
-##    for line in f:
-##
-##        # ...remove comments defined as the first '//' observed
-##        head, sep, tail = line.partition('//')
-##        line = head if (line.startswith('//') or head) else tail
-##
-##        # ...and yield any statements separated by semis into stmts
-##        # being careful to permit continuation from prior lines.
-##        while line:
-##            head, sep, tail = line.partition(';')
-##            head = head.strip()
-##            if head:
-##                stmt.append(head)
-##            if sep and stmt:
-##                yield (f.filename(), f.filelineno(), ' '.join(stmt))
-##                del stmt[:]
-##            line = tail
+def statements_by_semicolon(files=None):
+    r'''
+    Generate (filename, lineno, statement) tuples by parsing the provided
+    filenames with semicolon-separated, whitespace-trimmed statements.
+    Comments are introduced by a '//' and extend until the end of line.
+
+    >>> with tempfile.NamedTemporaryFile() as f:
+    ...     print("""a=1;      // Trailing comments
+    ...           """, file=f)
+    ...     f.flush()
+    ...     for (_, lineno, stmt) in statements_by_newline(f.name):
+    ...         print(lineno, stmt)
+    1 a=1
+    '''
+    # Process input line-by-line maintaining any active statement...
+    f = fileinput.FileInput(files)
+    stmt = []
+    for line in f:
+
+        # ...remove comments defined as the first '//' observed
+        head, sep, tail = line.partition('//')
+        line = head if (line.startswith('//') or head) else tail
+
+        # ...and yield any statements separated by semis into stmts
+        # being careful to permit continuation from prior lines.
+        while line:
+            head, sep, tail = line.partition(';')
+            head = head.strip()
+            if head:
+                stmt.append(head)
+            if sep and stmt:
+                yield (f.filename(), f.filelineno(), ' '.join(stmt))
+                del stmt[:]
+            line = tail
 
 def parser(filenames):
     r'''
