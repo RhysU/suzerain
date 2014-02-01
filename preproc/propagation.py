@@ -161,8 +161,9 @@ def parser(statement_tuples):
     Parse statements from (filename, lineno, statement) tuples into
     a collections.OrderedDict of symbol -> SymPy expression entries.
     When absent, a symbol name will be generated from the line number.
-    Either statements_by_newline() or statements_by_semicolon() may be
-    used to generate tuples from input files.
+    Duplicate symbol definitions will result in LookupErrors.  Either
+    statements_by_newline() or statements_by_semicolon() may be used
+    to generate tuples from input files.
 
     >>> parser([ ("test", 1, "a=1"     )    # Simple assignment
     ...        , ("test", 2, "b  = a+1")    # Reuse earlier definition
