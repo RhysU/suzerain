@@ -244,7 +244,7 @@ def prerequisites(f, df=None, ddf=None):
     # Implementation heavily relies on set addition semantics combined
     # with the fact that all derivatives have been precomputed prior
     # to iteration.  Because the caller might know something we do not
-    # about he or she wants to compute a subexpression (hinted via
+    # about how he or she wants to compute a subexpression (hinted via
     # df or ddf arguments), we look at all possible terms rather than
     # removing those which can be eliminated by smoothness or symmetry.
     m = set()
