@@ -86,6 +86,40 @@ def parse(f, symbol_table=None):
         f = sympy.parsing.sympy_parser.parse_expr(f, t)
     return f
 
+def statements_by_newline(filenames=[sys.stdin]):
+    r'''
+    Generate (filename, lineno, statement) tuples by parsing the provided
+    filenames with newline-separated, whitespace-trimmed statements.  Comments
+    are introduced by a '#' and extend until the end of line.
+    '''
+    # Process input line-by-line...
+    try:
+        for line in fileinput.input(filenames):
+
+            # ...remove comments which occur after the first '#' character
+            head, sep, tail = line.partition('#')
+            line = head if (line.startswith('#') or head) else tail
+
+            # ...trim and skip processing if whitespace-only input
+            line = line.strip()
+            if not line:
+                continue
+
+            yield (fileinput.filename(), fileinput.filelineno(), line)
+
+    # ...being sure to clean up after our use of fileinput
+    finally:
+        fileinput.close()
+
+def statements_by_semicolon(filenames):
+    r'''
+    Generate (filename, lineno, statement) tuples by parsing the provided
+    filenames with semicolon-separated, whitespace-trimmed statements.  Comments
+    are introduced by a '//' and extend until the end of line.
+    '''
+    # TODO Implement
+    pass
+
 def parser(filenames):
     r'''
     Parse the provided filenames (or stdin if empty) into a
@@ -106,45 +140,29 @@ def parser(filenames):
     # Accumulate symbol definitions maintaining declaration order
     symbol_table = collections.OrderedDict()
 
-    # Process input line-by-line...
-    try:
-        for line in fileinput.input(filenames):
+    # Process each trimmed, comment-less statement...
+    for (filename, lineno, stmt) in statements_by_newline(filenames):
 
-            # ...remove comments which occur after the first '#' character
-            head, sep, tail = line.partition('#')
-            line = head if (line.startswith('#') or head) else tail
+        # ...split lines into "token = rhs" or just "rhs" with the
+        # latter implicitly naming the result like "line1234".
+        symbol, sep, expr = stmt.partition('=')
+        expr = expr.lstrip()
+        if not expr:
+            symbol, expr = 'line' + `lineno`, symbol
+        symbol = symbol.rstrip()
+        if symbol in symbol_table:
+            raise LookupError("Duplicate symbol '%s' detected at %s:%d" % (
+                                symbol, filename, lineno))
 
-            # ...trim and skip processing if whitespace-only input
-            line = line.strip()
-            if not line:
-                continue
-
-            # ...split lines into "token = rhs" or just "rhs" with the
-            # latter implicitly naming the result like "line1234".
-            # Notice proper stripping depends upon line.strip() above.
-            symbol, sep, expr = line.partition('=')
-            expr = expr.lstrip()
-            if not expr:
-                symbol, expr = 'line' + `fileinput.lineno()`, symbol
-            symbol = symbol.rstrip()
-            if symbol in symbol_table:
-                raise LookupError("Duplicate symbol '%s' detected at %s:%d" % (
-                                    symbol, fileinput.filename(),
-                                    fileinput.filelineno()))
-
-            # ...parse and save the result into the known symbol table
-            # augmenting any parsing errors with location information
-            if expr:
-                try:
-                    symbol_table[symbol] = parse(expr, symbol_table)
-                except SyntaxError as e:
-                    e.filename = fileinput.filename()
-                    e.lineno   = fileinput.lineno()
-                    raise
-
-    # ...being sure to clean up after our use of fileinput
-    finally:
-        fileinput.close()
+        # ...parse and save the result into the known symbol table
+        # augmenting any parsing errors with location information
+        if expr:
+            try:
+                symbol_table[symbol] = parse(expr, symbol_table)
+            except SyntaxError as e:
+                e.filename = fileinput.filename()
+                e.lineno   = fileinput.lineno()
+                raise
 
     return symbol_table
 
