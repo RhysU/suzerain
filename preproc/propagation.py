@@ -124,12 +124,18 @@ def statements_by_semicolon(files=None):
     Comments are introduced by a '//' and extend until the end of line.
 
     >>> with tempfile.NamedTemporaryFile() as f:
-    ...     print("""a=1;      // Trailing comments
+    ...     print("""a=1;      // Trailing comments may include ';'
+    ...              b =       // Statements may span lines
+    ...                  c;
+    ...              1;2;;     // Multiple may appear with empty ignored
     ...           """, file=f)
     ...     f.flush()
-    ...     for (_, lineno, stmt) in statements_by_newline(f.name):
+    ...     for (_, lineno, stmt) in statements_by_semicolon(f.name):
     ...         print(lineno, stmt)
     1 a=1
+    3 b = c
+    4 1
+    4 2
     '''
     # Process input line-by-line maintaining any active statement...
     f = fileinput.FileInput(files)
