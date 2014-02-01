@@ -60,13 +60,13 @@ from sympy.physics.units import Unit
 
 "Symbolic constants known at parse time to have zero derivatives."
 constants = {
-    'alpha': Unit('Ratio of specific heats',        'alpha'),
-    'beta':  Unit('Temperature power law exponent', 'beta' ),
-    'gamma': Unit('Ratio of specific heats',        'gamma'),
-    'Kn':    Unit('Knudsen number',                 'Kn'   ),
-    'Ma':    Unit('Mach number',                    'Ma'   ),
-    'Pr':    Unit('Prandtl number',                 'Pr'   ),
-    'Re':    Unit('Reynolds number',                'Re'   ),
+    'alpha': Unit('Ratio of bulk to dynamic viscosity', 'alpha'),
+    'beta':  Unit('Temperature power law exponent',     'beta' ),
+    'gamma': Unit('Ratio of specific heats',            'gamma'),
+    'Kn':    Unit('Knudsen number',                     'Kn'   ),
+    'Ma':    Unit('Mach number',                        'Ma'   ),
+    'Pr':    Unit('Prandtl number',                     'Pr'   ),
+    'Re':    Unit('Reynolds number',                    'Re'   ),
 }
 
 def parse(f, symbol_table=None):
