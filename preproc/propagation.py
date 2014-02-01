@@ -209,40 +209,6 @@ def parser(statement_tuples):
 
     return symbol_table
 
-def preprocessor(filenames):
-    r'''
-    Accumulate semicolon-separated statements with C++-style comments
-    TODO returning a temporary file suitable for input to parser().
-    '''
-    stmts  = [ [] ]
-    # Process input line-by-line...
-    try:
-        for line in fileinput.input(filenames):
-
-            # ...remove comments defined as the first '//' observed
-            head, sep, tail = line.partition('//')
-            line = head if (line.startswith('//') or head) else tail
-
-            # ...trim and skip processing if whitespace-only input
-            line = line.strip()
-            if not line:
-                continue
-
-            # ...and add any statements separated by semis into stmts
-            # being careful to permit continuation from prior lines.
-            for (i, s) in enumerate(line.split(';')):
-                if not i:
-                    stmts[-1].append(s.strip())
-                else:
-                    stmts.append([s.strip()])
-
-    # ...being sure to clean up after our use of fileinput
-    finally:
-        fileinput.close()
-
-    # Join stmts into list
-    return filter(len, [' '.join(s).strip() for s in stmts])
-
 
 def partials(f):
     r'''
