@@ -85,17 +85,16 @@ def parse(f, symbol_table=None):
         f = sympy.parsing.sympy_parser.parse_expr(f, t)
     return f
 
+
 # TODO Line continuation via trailing backslash
-
-
 def statements_by_newline(files=None):
     r'''
     Generate (filename, lineno, statement) tuples by parsing the provided
     filenames with newline-separated, whitespace-trimmed statements.
     Comments are introduced by a '#' and extend until the end of line.
 
-    >>> import tempfile
-    ... with tempfile.NamedTemporaryFile() as f:
+    >>> from tempfile import NamedTemporaryFile
+    >>> with NamedTemporaryFile() as f:
     ...     print("""a=1       # Trailing comments
     ...                        # Not every line must have a statement
     ...              f         # Nor every line involve assignment
@@ -118,17 +117,16 @@ def statements_by_newline(files=None):
         if line:
             yield (f.filename(), f.filelineno(), line)
 
+
 # TODO Behavior on lingering statement content without semicolon
-
-
 def statements_by_semicolon(files=None):
     r'''
     Generate (filename, lineno, statement) tuples by parsing the provided
     filenames with semicolon-separated, whitespace-trimmed statements.
     Comments are introduced by a '//' and extend until the end of line.
 
-    >>> import tempfile
-    ... with tempfile.NamedTemporaryFile() as f:
+    >>> from tempfile import NamedTemporaryFile
+    >>> with NamedTemporaryFile() as f:
     ...     print("""a=1;      // Trailing comments may include ';'
     ...              b =       // Statements may span lines
     ...                  c;
@@ -418,9 +416,11 @@ def variance(f, df=None):
 #     return 0
 #
 # if __name__=='__main__':
-#     import sys
 #     sys.exit(main(*sys.argv[1:]))
 
 if __name__ == "__main__":
-    import doctest
-    doctest.testmod()
+    from doctest import testmod
+    failure_count, test_count = testmod()
+    if failure_count > 0 or test_count < 1:
+        from sys import exit
+        exit(1)
