@@ -424,6 +424,11 @@ def command_chk(args, syms):
 
 def command_pre(args, syms):
     r'''Process the 'pre' command on behalf of main()'''
+    prereqs = set()
+    for qoi in args.f:
+        prereqs.update(prerequisites(syms[qoi]))
+    for prereq in sorted(prereqs):
+        print(prereq)
     return 0 # TODO Implement
 
 
