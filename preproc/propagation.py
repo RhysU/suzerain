@@ -411,8 +411,41 @@ def variance(f, df=None):
 
     return Var
 
-if __name__ == "__main__":
 
+def command_chk(a):
+    r'''Process the 'chk' command on behalf of main()'''
+    from doctest import testmod
+    failure_count, test_count = testmod(verbose=(a.verbosity > 1))
+    if failure_count > 0 or test_count < 1:
+        from sys import exit
+        exit(1)
+
+
+def command_pre(a):
+    r'''Process the 'pre' command on behalf of main()'''
+    # Parse all requested files into one unified symbol dictionary
+    syms = parser(a.statements(a.decl))
+
+    pass # TODO Implement
+
+
+def command_exp(a):
+    r'''Process the 'exp' command on behalf of main()'''
+    # Parse all requested files into one unified symbol dictionary
+    syms = parser(a.statements(a.decl))
+
+    pass # TODO Implement
+
+
+def command_var(a):
+    r'''Process the 'var' command on behalf of main()'''
+    # Parse all requested files into one unified symbol dictionary
+    syms = parser(a.statements(a.decl))
+
+    pass # TODO Implement
+
+
+def main(argv):
     # Define and parse arguments applicable to all commands
     import argparse
     p = argparse.ArgumentParser(
@@ -429,25 +462,23 @@ if __name__ == "__main__":
                         ' declarations; if absent, process standard input')
 
     # Add command-specific subparsers
-    sp = p.add_subparsers(title='Information to retrieve from declarations',
-                          help='Exactly one subcommand must be supplied')
-    sp_pre = sp.add_parser('pre',
-                           help='Prerequisite data for E[f(x)], Var[f(x)]')
-    sp_exp = sp.add_parser('exp',
-                           help='Tabulate terms in E[f(x)]')
-    sp_var = sp.add_parser('var',
-                           help='Tabulate terms in Var[f(x)]')
+    sp = p.add_subparsers(title='Operations to perform on declarations',
+                          help='Exactly one operation must be supplied')
+    sp_chk = sp.add_parser('chk', help='Run verification sanity checks')
+    sp_pre = sp.add_parser('pre', help='Prerequisites for E[f(x)], Var[f(x)]')
+    sp_exp = sp.add_parser('exp', help='Tabulate terms in E[f(x)]')
+    sp_var = sp.add_parser('var', help='Tabulate terms in Var[f(x)]')
 
-    # Parse the command line
+    # Each command dispatches to the following methods
+    sp_chk.set_defaults(func=command_chk)
+    sp_pre.set_defaults(func=command_pre)
+    sp_exp.set_defaults(func=command_exp)
+    sp_var.set_defaults(func=command_var)
+
+    # Parse the command line and dispatch
     a = p.parse_args()
 
-    # Ensure all regression tests always pass on every invocation
-    # The overhead is small and trusting results paramount
-    from doctest import testmod
-    failure_count, test_count = testmod(verbose=(a.verbosity > 1))
-    if failure_count > 0 or test_count < 1:
-        from sys import exit
-        exit(1)
 
-    # Parse all requested files into one unified symbol dictionary
-    syms = parser(a.statements(a.decl))
+if __name__ == "__main__":
+    from sys import argv, exit
+    exit(main(argv))
