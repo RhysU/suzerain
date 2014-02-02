@@ -411,16 +411,20 @@ def variance(f, df=None):
 
     return Var
 
-# def main(args):
-#     symbol_table = parser([])
-#     return 0
-#
-# if __name__=='__main__':
-#     sys.exit(main(*sys.argv[1:]))
-
 if __name__ == "__main__":
+
+    # Define and process command line arguments
+    import argparse
+    args = argparse.ArgumentParser()
+    args.add_argument("-v", "--verbosity", action="count",
+                      help="increase output verbosity")
+    args.add_argument('args', nargs=argparse.REMAINDER)
+    args = args.parse_args()
+
+    # Ensure all regression tests always pass on every invocation
+    # The overhead is small and trusting results paramount
     from doctest import testmod
-    failure_count, test_count = testmod()
+    failure_count, test_count = testmod(verbose=(args.verbosity > 1))
     if failure_count > 0 or test_count < 1:
         from sys import exit
         exit(1)
