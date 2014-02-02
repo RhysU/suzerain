@@ -415,7 +415,9 @@ if __name__ == "__main__":
 
     # Define and parse arguments applicable to all commands
     import argparse
-    p = argparse.ArgumentParser()
+    p = argparse.ArgumentParser(
+        description=__doc__,
+        formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument('-v', action='count',
                    help='increase verbosity; may be supplied repeatedly')
     p.add_argument('-n', action='store_const', dest='statements',
@@ -430,14 +432,11 @@ if __name__ == "__main__":
     sp = p.add_subparsers(title='Information to retrieve from declarations',
                           help='Exactly one subcommand must be supplied')
     sp_pre = sp.add_parser('pre',
-                           help='List of prerequisite quantities'
-                                ' necessary for TSM approach')
+                           help='Prerequisite data for E[f(x)], Var[f(x)]')
     sp_exp = sp.add_parser('exp',
-                           help='Show the 2nd-order, TSM-derived'
-                                ' approximate expectation')
+                           help='Tabulate terms in E[f(x)]')
     sp_var = sp.add_parser('var',
-                           help='Show the 1st-order, TSM-derived'
-                                ' approximate variance')
+                           help='Tabulate terms in Var[f(x)]')
 
     # Parse the command line
     a = p.parse_args()
