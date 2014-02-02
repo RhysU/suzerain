@@ -373,7 +373,7 @@ def expectation(f, ddf=None):
 def variance(f, df=None):
     r'''
     Prepare a map detailing how to compute a first-order approximation
-    of var[f(x)].  Keys in the map are either 1 or tuples representing
+    of Var[f(x)].  Keys in the map are either 1 or tuples representing
     covariance scaling factors pre-multiplying the maps' values.
     The maps' values should be evaluated using sample means.
 
