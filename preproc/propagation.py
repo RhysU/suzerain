@@ -343,13 +343,26 @@ class momentdict(collections.defaultdict):
         super(momentdict, self).__init__(lambda: sympy.Integer(0))
 
     def __str__(self, sym=str):
+        r'''
+        Produce string representation using sym to format Sympy expressions
+        '''
         s = []
+        p = '  '
         if 1 in self:
             if len(self) > 1:
                 s.append('  ')
-            s.extend(('(', sym(self[1]), ')\n'))
+                p = '+ '
+            s.append('(')
+            s.append(sym(self[1]))
+            s.append(')\n')
         for term in sorted(k for k in self.keys() if k != 1):
-            s.extend(('+ E', str(list(term)), ' * (', sym(self[term]), ')\n'))
+            s.append(p)
+            s.append('E')
+            s.append(str(list(term)))
+            s.append(' * (')
+            s.append(sym(self[term]))
+            s.append(')\n')
+            p = '+ '
         return ''.join(s)
 
 def expectation(f, ddf=None):
