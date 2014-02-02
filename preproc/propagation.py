@@ -448,7 +448,8 @@ def main(argv):
     p.add_argument('-n', '--newline', action='store_const', dest='statements',
                    const=statements_by_newline,
                    default=statements_by_semicolon,
-                   help='expect newline-delimited input with "#" comments')
+                   help='expect newline-delimited input with "#" comments;'
+                        ' otherwise semicolons delimit with "//" comments')
     p.add_argument('-d', '--decl', type=str,
                    help='zero or more files containing SymPy-based '
                         ' declarations; if absent, process standard input')
