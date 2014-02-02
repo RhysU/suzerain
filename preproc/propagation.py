@@ -413,31 +413,42 @@ def variance(f, df=None):
 
 if __name__ == "__main__":
 
-    # Define and parse arguments with parser definition deliberately clobbered
+    # Define and parse arguments applicable to all commands
     import argparse
-    args = argparse.ArgumentParser()
-    args.add_argument('-v', '--verbosity',
-                      action='count',
-                      help='increase verbosity; may be supplied repeatedly')
-    args.add_argument('-n', '--newline',
-                      dest='statements',
-                      action='store_const',
-                      const=statements_by_newline,
-                      default=statements_by_semicolon,
-                      help='expect newline-delimited input with "#" comments')
-    args.add_argument('files',
-                      nargs=argparse.REMAINDER,
-                      help='zero or more files containing definitions;'
-                           ' if absent, process standard input')
-    args = args.parse_args()
+    p = argparse.ArgumentParser()
+    p.add_argument('-v', action='count',
+                   help='increase verbosity; may be supplied repeatedly')
+    p.add_argument('-n', action='store_const', dest='statements',
+                   const=statements_by_newline,
+                   default=statements_by_semicolon,
+                   help='expect newline-delimited input with "#" comments')
+    p.add_argument('-d', nargs='*', type=str, default=None,
+                   help='zero or more files containing SymPy-based '
+                        ' declarations; if absent, process standard input')
+
+    # Add command-specific subparsers
+    sp = p.add_subparsers(title='Information to retrieve from declarations',
+                          help='Exactly one subcommand must be supplied')
+    sp_pre = sp.add_parser('pre',
+                           help='List of prerequisite quantities'
+                                ' necessary for TSM approach')
+    sp_exp = sp.add_parser('exp',
+                           help='Show the 2nd-order, TSM-derived'
+                                ' approximate expectation')
+    sp_var = sp.add_parser('var',
+                           help='Show the 1st-order, TSM-derived'
+                                ' approximate variance')
+
+    # Parse the command line
+    a = p.parse_args()
 
     # Ensure all regression tests always pass on every invocation
     # The overhead is small and trusting results paramount
     from doctest import testmod
-    failure_count, test_count = testmod(verbose=(args.verbosity > 1))
+    failure_count, test_count = testmod(verbose=(a.verbosity > 1))
     if failure_count > 0 or test_count < 1:
         from sys import exit
         exit(1)
 
     # Parse all requested files into one unified symbol dictionary
-    syms = parser(args.statements(args.files))
+    syms = parser(a.statements(a.decl))
