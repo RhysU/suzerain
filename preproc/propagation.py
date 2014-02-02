@@ -411,6 +411,7 @@ def variance(f, df=None):
 
     return Var
 
+
 def main(argv):
     # Define arguments applicable to all commands
     from argparse import ArgumentParser, RawDescriptionHelpFormatter
@@ -492,15 +493,23 @@ def command_pre(args, syms):
     for qoi in args.f:
         prereqs.update(prerequisites(syms[qoi]))
     for prereq in sorted(prereqs):
-        print(prereq)
+        print('E', list(prereq), sep='')
 
 
-def command_exp(args):
+def command_exp(args, syms):
     r'''Process the 'exp' command on behalf of main()'''
-    pass # TODO Implement
+    for qoi in args.f:
+        e = expectation(syms[qoi])
+        print('E[', qoi, '] = (', sep='')
+        one = e.pop(1, None)
+        if one:
+            print('\t  (', one, ')', sep='')
+        for factor in sorted(e):
+            print('\t+ E', list(factor), ' * (', e[factor], ')', sep='')
+        print(')')
 
 
-def command_var(args):
+def command_var(args, syms):
     r'''Process the 'var' command on behalf of main()'''
     pass # TODO Implement
 
