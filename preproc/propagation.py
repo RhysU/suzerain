@@ -268,19 +268,19 @@ def mixed_partials(f, df=None):
 def prerequisites(f, df=None, ddf=None):
     r'''
     Given a SymPy expression f or any string parsable as such by parse(),
-    return a list wherein unique tuples represents moments necessary
+    return a set wherein unique tuples represents moments necessary
     for computing an estimate of E[f(x)] and Var[f(x)].
 
-    >>> prerequisites('1')
+    >>> sorted(prerequisites('1'))
     []
 
-    >>> prerequisites('log(x)')
+    >>> sorted(prerequisites('log(x)'))
     [(x,), (x, x)]
 
-    >>> prerequisites('x*y')
+    >>> sorted(prerequisites('x*y'))
     [(x,), (x, x), (x, y), (y,), (y, y)]
 
-    >>> prerequisites('a + x*y')
+    >>> sorted(prerequisites('a + x*y'))
     [(a,), (a, a), (a, x), (a, y), (x,), (x, x), (x, y), (y,), (y, y)]
     '''
     f = parse(f)
@@ -329,7 +329,7 @@ def prerequisites(f, df=None, ddf=None):
                 m.add((s,))
             m.add(tuple(sorted([i, j])))     # Canonicalize
 
-    return sorted(m)
+    return m
 
 
 def expectation(f, ddf=None):
@@ -485,6 +485,10 @@ def main(argv):
 
     # Parse any requested files into one unified symbol dictionary
     syms = parser(args.statements(args.decl) if args.decl else [])
+
+    # Supply "all known declarations" behavior for any f arguments
+    if ('f' in args) and (not args.f):
+        args.f = syms.keys()
 
     # Dispatch to the chosen command passing the symbol dictionary
     return args.command(args, syms)
