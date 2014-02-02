@@ -41,8 +41,8 @@ derived quantities" within Suzerain's perfect gas model document.
 Results for Var[f(x)] should be consistent with Table 1 of the article "Notes
 on the use of propagation of error formulas." by H. H. Ku appearing in Journal
 of Research of the National Bureau of Standards. Section C: Engineering and
-Instrumentation, 70C(4):263-273, October 1966.  ISSN 0022-4316.  That article
-discusses only the first-order approximation to E[f(x)].
+Instrumentation, 70C(4):263-273, October 1966.  ISSN 0022-4316.  Beware,
+however, that article discusses only the first-order approximation to E[f(x)].
 '''
 from __future__ import division, print_function
 import collections
@@ -439,10 +439,9 @@ def command_var(args):
 
 def main(argv):
     # Define arguments applicable to all commands
-    import argparse
-    p = argparse.ArgumentParser(
-        description=__doc__,
-        formatter_class=argparse.RawDescriptionHelpFormatter)
+    from argparse import ArgumentParser, RawDescriptionHelpFormatter
+    p = ArgumentParser(description=__doc__,
+                       formatter_class=RawDescriptionHelpFormatter)
     p.add_argument('-v', '--verbosity', action='count',
                    help='increase verbosity; may be supplied repeatedly')
     p.add_argument('-n', '--newline', action='store_const', dest='statements',
@@ -451,16 +450,29 @@ def main(argv):
                    help='expect newline-delimited input with "#" comments;'
                         ' otherwise semicolons delimit with "//" comments')
     p.add_argument('-d', '--decl', type=str,
-                   help='zero or more files containing SymPy-based '
-                        ' declarations; if absent, process standard input')
+                   help='file containing SymPy-based declarations;'
+                        ' process standard input when "-" supplied')
 
     # Add command-specific subparsers
     sp = p.add_subparsers(title='Operations to perform on declarations',
                           help='Exactly one operation must be supplied')
-    sp_chk = sp.add_parser('chk', help='Run verification sanity checks')
-    sp_pre = sp.add_parser('pre', help='Prerequisites for E[f(x)], Var[f(x)]')
-    sp_exp = sp.add_parser('exp', help='Tabulate terms in E[f(x)]')
-    sp_var = sp.add_parser('var', help='Tabulate terms in Var[f(x)]')
+    sp_chk = sp.add_parser('chk', help='Run verification sanity checks',
+                           description='Run verification sanity checks')
+    sp_pre = sp.add_parser('pre', help='Prerequisites for E[f(x)], Var[f(x)]',
+                           description=prerequisites.__doc__,
+                           formatter_class=RawDescriptionHelpFormatter)
+    sp_exp = sp.add_parser('exp', help='Tabulate terms in E[f(x)]',
+                           description=expectation.__doc__,
+                           formatter_class=RawDescriptionHelpFormatter)
+    sp_var = sp.add_parser('var', help='Tabulate terms in Var[f(x)]',
+                           description=variance.__doc__,
+                           formatter_class=RawDescriptionHelpFormatter)
+
+    # Some of the subparsers take one or more symbols to process
+    f_help='quantities of interest; if empty, process all declarations'
+    sp_pre.add_argument('f', nargs='*', help=f_help)
+    sp_exp.add_argument('f', nargs='*', help=f_help)
+    sp_var.add_argument('f', nargs='*', help=f_help)
 
     # Each command dispatches to one of the following methods
     sp_chk.set_defaults(command=command_chk)
