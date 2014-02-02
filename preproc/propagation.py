@@ -342,14 +342,14 @@ class momentdict(collections.defaultdict):
     def __init__(self):
         super(momentdict, self).__init__(lambda: sympy.Integer(0))
 
-    def __str__(self):
+    def __str__(self, sym=str):
         s = []
         if 1 in self:
             if len(self) > 1:
                 s.append('  ')
-            s.extend(('(', str(self[1]), ')\n'))
+            s.extend(('(', sym(self[1]), ')\n'))
         for term in sorted(k for k in self.keys() if k != 1):
-            s.extend(('+ E', str(list(term)), ' * (', str(self[term]), ')\n'))
+            s.extend(('+ E', str(list(term)), ' * (', sym(self[term]), ')\n'))
         return ''.join(s)
 
 def expectation(f, ddf=None):
@@ -428,7 +428,7 @@ def variance(f, df=None):
 
 def main(argv):
     # Define arguments applicable to all commands
-    from argparse import ArgumentParser, RawDescriptionHelpFormatter
+    from argparse import ArgumentParser, RawDescriptionHelpFormatter, SUPPRESS
     p = ArgumentParser(description=__doc__,
                        formatter_class=RawDescriptionHelpFormatter)
     p.add_argument('-v', '--verbosity', action='count',
@@ -441,6 +441,13 @@ def main(argv):
     p.add_argument('-d', '--decl', type=str,
                    help='file containing SymPy-based declarations;'
                         ' process standard input when "-" supplied')
+    g = p.add_mutually_exclusive_group()
+    g.add_argument('-c', '--ccode', dest='repr', default=str,
+                   help='output symbolic expressions as C code',
+                   action='store_const', const=sympy.ccode)
+    g.add_argument('-f', '--fcode', dest='repr', default=SUPPRESS,
+                   help='output symbolic expressions as Fortran code',
+                   action='store_const', const=sympy.fcode)
 
     # Add command-specific subparsers
     sp = p.add_subparsers(title='Operations to perform on declarations',
@@ -513,14 +520,15 @@ def command_pre(args, syms):
 def command_exp(args, syms):
     r'''Process the 'exp' command on behalf of main()'''
     for qoi in args.f:
-        print('E[', qoi, '] = (\n',
-              str(expectation(syms[qoi])),
-              ')\n', sep='')
+        m = expectation(syms[qoi])
+        print('E[', qoi, '] = (\n', m.__str__(args.repr), ')\n', sep='')
 
 
 def command_var(args, syms):
     r'''Process the 'var' command on behalf of main()'''
-    pass # TODO Implement
+    for qoi in args.f:
+        m = variance(syms[qoi])
+        print('Var[', qoi, '] = (\n', m.__str__(args.repr), ')\n', sep='')
 
 
 if __name__ == "__main__":
