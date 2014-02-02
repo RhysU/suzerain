@@ -342,6 +342,15 @@ class momentdict(collections.defaultdict):
     def __init__(self):
         super(momentdict, self).__init__(lambda: sympy.Integer(0))
 
+    def __str__(self):
+        s = []
+        if 1 in self:
+            if len(self) > 1:
+                s.append('  ')
+            s.extend(('(', str(self[1]), ')\n'))
+        for term in sorted(k for k in self.keys() if k != 1):
+            s.extend(('+ E', str(list(term)), ' * (', str(self[term]), ')\n'))
+        return ''.join(s)
 
 def expectation(f, ddf=None):
     r'''
@@ -504,14 +513,9 @@ def command_pre(args, syms):
 def command_exp(args, syms):
     r'''Process the 'exp' command on behalf of main()'''
     for qoi in args.f:
-        e = expectation(syms[qoi])
-        print('E[', qoi, '] = (', sep='')
-        one = e.pop(1, None)
-        if one:
-            print('\t  (', one, ')', sep='')
-        for factor in sorted(e):
-            print('\t+ E', list(factor), ' * (', e[factor], ')', sep='')
-        print(')')
+        print('E[', qoi, '] = (\n',
+              str(expectation(syms[qoi])),
+              ')\n', sep='')
 
 
 def command_var(args, syms):
