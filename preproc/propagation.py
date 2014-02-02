@@ -332,12 +332,20 @@ def prerequisites(f, df=None, ddf=None):
     return m
 
 
-def expectation(f, ddf=None):
+class momentdict(collections.defaultdict):
     r'''
-    Prepare a map detailing how to compute a second-order approximation
-    of E[f(x)].  Keys in the map are either 1 or tuples representing
+    A map detailing how to compute some approximate moment like E[f(x)]
+    or Var[f(x)].  Keys in the map are either 1 or tuples representing
     covariance scaling factors pre-multiplying the maps' values.
     The maps' values should be evaluated using sample means.
+    '''
+    def __init__(self):
+        super(momentdict, self).__init__(lambda: sympy.Integer(0))
+
+
+def expectation(f, ddf=None):
+    r'''
+    Prepare momentdict detailing the second-order approximation to E[f(x)].
 
     >>> x = sympy.symbols('x')
     >>> E = expectation(x**2)
@@ -354,7 +362,7 @@ def expectation(f, ddf=None):
         ddf = mixed_partials(f)
 
     # Accumulate terms necessary to compute second-order E[f(x)]
-    E = collections.defaultdict(lambda: sympy.Integer(0))
+    E = momentdict()
 
     # Term:    f(d)
     E[1] = f
@@ -372,10 +380,7 @@ def expectation(f, ddf=None):
 
 def variance(f, df=None):
     r'''
-    Prepare a map detailing how to compute a first-order approximation
-    of Var[f(x)].  Keys in the map are either 1 or tuples representing
-    covariance scaling factors pre-multiplying the maps' values.
-    The maps' values should be evaluated using sample means.
+    Prepare momentdict detailing the first-order approximation to Var[f(x)].
 
     >>> x, y = sympy.symbols('x, y')
     >>> Var = variance(2*x + 3*y)
@@ -397,7 +402,7 @@ def variance(f, df=None):
         df = partials(f)
 
     # Accumulate terms necessary to compute first-order Var[f(x)]
-    Var = collections.defaultdict(lambda: sympy.Integer(0))
+    Var = momentdict()
 
     # Term:          \sum_{ i } \sigma_{ii} f_{,i}^2(d)
     for i in df.keys():
