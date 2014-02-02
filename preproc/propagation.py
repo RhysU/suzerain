@@ -412,52 +412,44 @@ def variance(f, df=None):
     return Var
 
 
-def command_chk(a):
+def command_chk(args, syms):
     r'''Process the 'chk' command on behalf of main()'''
     from doctest import testmod
-    failure_count, test_count = testmod(verbose=(a.verbosity > 1))
-    if failure_count > 0 or test_count < 1:
-        from sys import exit
-        exit(1)
+    failure_count, test_count = testmod(verbose=args.verbosity)
+    if failure_count > 0:
+        return 1
+    if test_count < 1:
+        return 2
 
 
-def command_pre(a):
+def command_pre(args, syms):
     r'''Process the 'pre' command on behalf of main()'''
-    # Parse all requested files into one unified symbol dictionary
-    syms = parser(a.statements(a.decl))
-
-    pass # TODO Implement
+    return 0 # TODO Implement
 
 
-def command_exp(a):
+def command_exp(args):
     r'''Process the 'exp' command on behalf of main()'''
-    # Parse all requested files into one unified symbol dictionary
-    syms = parser(a.statements(a.decl))
-
-    pass # TODO Implement
+    return 0 # TODO Implement
 
 
-def command_var(a):
+def command_var(args):
     r'''Process the 'var' command on behalf of main()'''
-    # Parse all requested files into one unified symbol dictionary
-    syms = parser(a.statements(a.decl))
-
-    pass # TODO Implement
+    return 0 # TODO Implement
 
 
 def main(argv):
-    # Define and parse arguments applicable to all commands
+    # Define arguments applicable to all commands
     import argparse
     p = argparse.ArgumentParser(
         description=__doc__,
         formatter_class=argparse.RawDescriptionHelpFormatter)
-    p.add_argument('-v', action='count',
+    p.add_argument('-v', '--verbosity', action='count',
                    help='increase verbosity; may be supplied repeatedly')
-    p.add_argument('-n', action='store_const', dest='statements',
+    p.add_argument('-n', '--newline', action='store_const', dest='statements',
                    const=statements_by_newline,
                    default=statements_by_semicolon,
                    help='expect newline-delimited input with "#" comments')
-    p.add_argument('-d', nargs='*', type=str, default=None,
+    p.add_argument('-d', '--decl', type=str,
                    help='zero or more files containing SymPy-based '
                         ' declarations; if absent, process standard input')
 
@@ -469,14 +461,20 @@ def main(argv):
     sp_exp = sp.add_parser('exp', help='Tabulate terms in E[f(x)]')
     sp_var = sp.add_parser('var', help='Tabulate terms in Var[f(x)]')
 
-    # Each command dispatches to the following methods
-    sp_chk.set_defaults(func=command_chk)
-    sp_pre.set_defaults(func=command_pre)
-    sp_exp.set_defaults(func=command_exp)
-    sp_var.set_defaults(func=command_var)
+    # Each command dispatches to one of the following methods
+    sp_chk.set_defaults(command=command_chk)
+    sp_pre.set_defaults(command=command_pre)
+    sp_exp.set_defaults(command=command_exp)
+    sp_var.set_defaults(command=command_var)
 
-    # Parse the command line and dispatch
-    a = p.parse_args()
+    # Parse the incoming command line
+    args = p.parse_args()
+
+    # Parse any requested files into one unified symbol dictionary
+    syms = parser(args.statements(args.decl) if args.decl else [])
+
+    # Dispatch to the chosen command passing the symbol dictionary
+    return args.command(args, syms)
 
 
 if __name__ == "__main__":
