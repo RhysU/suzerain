@@ -365,6 +365,7 @@ class momentdict(collections.defaultdict):
             p = '+ '
         return ''.join(s)
 
+
 def expectation(f, ddf=None):
     r'''
     Prepare momentdict detailing the second-order approximation to E[f(x)].
@@ -480,7 +481,7 @@ def main(argv):
                            formatter_class=RawDescriptionHelpFormatter)
 
     # Some of the subparsers take one or more symbols to process
-    f_help='quantities of interest; if empty, process all declarations'
+    f_help = 'quantities of interest; if empty, process all declarations'
     sp_dec.add_argument('f', nargs='*', help=f_help)
     sp_pre.add_argument('f', nargs='*', help=f_help)
     sp_exp.add_argument('f', nargs='*', help=f_help)
