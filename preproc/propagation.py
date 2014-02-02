@@ -411,44 +411,6 @@ def variance(f, df=None):
 
     return Var
 
-
-def command_chk(args, syms):
-    r'''Process the 'chk' command on behalf of main()'''
-    from doctest import testmod
-    failure_count, test_count = testmod(verbose=args.verbosity)
-    if failure_count > 0:
-        return 1
-    if test_count < 1:
-        return 2
-
-
-def command_dec(args, syms):
-    r'''Process the 'dec' command on behalf of main()'''
-    for qoi in args.f:
-        print(qoi, '=', syms[qoi])
-    return 0 # TODO Implement
-
-
-def command_pre(args, syms):
-    r'''Process the 'pre' command on behalf of main()'''
-    prereqs = set()
-    for qoi in args.f:
-        prereqs.update(prerequisites(syms[qoi]))
-    for prereq in sorted(prereqs):
-        print(prereq)
-    return 0 # TODO Implement
-
-
-def command_exp(args):
-    r'''Process the 'exp' command on behalf of main()'''
-    return 0 # TODO Implement
-
-
-def command_var(args):
-    r'''Process the 'var' command on behalf of main()'''
-    return 0 # TODO Implement
-
-
 def main(argv):
     # Define arguments applicable to all commands
     from argparse import ArgumentParser, RawDescriptionHelpFormatter
@@ -506,8 +468,41 @@ def main(argv):
     if ('f' in args) and (not args.f):
         args.f = syms.keys()
 
-    # Dispatch to the chosen command passing the symbol dictionary
+    # Dispatch to the chosen command passing arguments and symbols
     return args.command(args, syms)
+
+
+def command_chk(args, syms):
+    r'''Process the 'chk' command on behalf of main()'''
+    from doctest import testmod
+    failure_count, test_count = testmod(verbose=args.verbosity)
+    return failure_count
+
+
+def command_dec(args, syms):
+    r'''Process the 'dec' command on behalf of main()'''
+    for qoi in args.f:
+        print(qoi, '=', syms[qoi])
+    return 0
+
+
+def command_pre(args, syms):
+    r'''Process the 'pre' command on behalf of main()'''
+    prereqs = set()
+    for qoi in args.f:
+        prereqs.update(prerequisites(syms[qoi]))
+    for prereq in sorted(prereqs):
+        print(prereq)
+
+
+def command_exp(args):
+    r'''Process the 'exp' command on behalf of main()'''
+    pass # TODO Implement
+
+
+def command_var(args):
+    r'''Process the 'var' command on behalf of main()'''
+    pass # TODO Implement
 
 
 if __name__ == "__main__":
