@@ -422,6 +422,13 @@ def command_chk(args, syms):
         return 2
 
 
+def command_dec(args, syms):
+    r'''Process the 'dec' command on behalf of main()'''
+    for qoi in args.f:
+        print(qoi, '=', syms[qoi])
+    return 0 # TODO Implement
+
+
 def command_pre(args, syms):
     r'''Process the 'pre' command on behalf of main()'''
     prereqs = set()
@@ -463,6 +470,8 @@ def main(argv):
                           help='Exactly one operation must be supplied')
     sp_chk = sp.add_parser('chk', help='Run verification sanity checks',
                            description='Run verification sanity checks')
+    sp_dec = sp.add_parser('dec', help='Output known declarations',
+                           description='Output known declarations')
     sp_pre = sp.add_parser('pre', help='Prerequisites for E[f(x)], Var[f(x)]',
                            description=prerequisites.__doc__,
                            formatter_class=RawDescriptionHelpFormatter)
@@ -475,12 +484,14 @@ def main(argv):
 
     # Some of the subparsers take one or more symbols to process
     f_help='quantities of interest; if empty, process all declarations'
+    sp_dec.add_argument('f', nargs='*', help=f_help)
     sp_pre.add_argument('f', nargs='*', help=f_help)
     sp_exp.add_argument('f', nargs='*', help=f_help)
     sp_var.add_argument('f', nargs='*', help=f_help)
 
     # Each command dispatches to one of the following methods
     sp_chk.set_defaults(command=command_chk)
+    sp_dec.set_defaults(command=command_dec)
     sp_pre.set_defaults(command=command_pre)
     sp_exp.set_defaults(command=command_exp)
     sp_var.set_defaults(command=command_var)
