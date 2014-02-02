@@ -413,12 +413,22 @@ def variance(f, df=None):
 
 if __name__ == "__main__":
 
-    # Define and process command line arguments
+    # Define and parse arguments with parser definition deliberately clobbered
     import argparse
     args = argparse.ArgumentParser()
-    args.add_argument("-v", "--verbosity", action="count",
-                      help="increase output verbosity")
-    args.add_argument('args', nargs=argparse.REMAINDER)
+    args.add_argument('-v', '--verbosity',
+                      action='count',
+                      help='increase verbosity; may be supplied repeatedly')
+    args.add_argument('-n', '--newline',
+                      dest='statements',
+                      action='store_const',
+                      const=statements_by_newline,
+                      default=statements_by_semicolon,
+                      help='expect newline-delimited input with "#" comments')
+    args.add_argument('files',
+                      nargs=argparse.REMAINDER,
+                      help='zero or more files containing definitions;'
+                           ' if absent, process standard input')
     args = args.parse_args()
 
     # Ensure all regression tests always pass on every invocation
@@ -428,3 +438,6 @@ if __name__ == "__main__":
     if failure_count > 0 or test_count < 1:
         from sys import exit
         exit(1)
+
+    # Parse all requested files into one unified symbol dictionary
+    syms = parser(args.statements(args.files))
