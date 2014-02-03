@@ -106,7 +106,6 @@ namespace quantity {
     ((tilde_k,                "Turbulent kinetic energy density"))                                                                                                  \
     ((tilde_T,                "Favre-averaged temperature"))                                                                                                        \
     ((tilde_H,                "Favre-averaged total enthalpy"))                                                                                                     \
-    ((bar_p,                  "Reynolds-averaged pressure"))                                                                                                        \
     ((bar_tau_colon_grad_upp, "Reynolds-averaged contraction of the viscous stress tensor against the fluctuating velocity gradient"))                              \
     ((tilde_epsilon,          "Turbulent kinetic energy dissipation rate density"))                                                                                 \
     ((bar_rhop_up,            "Reynolds-averaged Reynolds-fluctuating density times the Reynolds-fluctuating streamwise velocity"))                                 \
@@ -767,7 +766,6 @@ static quantity::storage_map_type process(
                +  C(tilde_k)
                ));
     C(tilde_H) = C(tilde_E) + C(tilde_T)/gamma;
-    C(bar_p)   = C(bar_rho) * C(tilde_T)/gamma;
     D(tilde_u);  // Form derivatives
     D(tilde_v);  // Form derivatives
     D(tilde_w);  // Form derivatives
