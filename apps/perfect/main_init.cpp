@@ -37,6 +37,7 @@
 #include <suzerain/support/definition_grid.hpp>
 #include <suzerain/support/definition_isothermal.hpp>
 #include <suzerain/support/logging.hpp>
+#include <suzerain/support/support.hpp>
 #include <suzerain/validation.hpp>
 
 #include "driver.hpp"
@@ -59,6 +60,9 @@ struct driver_init : public driver
                  revstr)
         , who("init")
     {}
+
+    /** Logging requirements are simpler than what superclass provides. */
+    virtual std::string log4cxx_config() { return support::log4cxx_config; }
 
     /** Implementation below in this file */
     int run(int argc, char **argv);

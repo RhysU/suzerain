@@ -92,6 +92,9 @@ struct driver_summary : public driver
         timedef.reset();     // ...or advancing time
     }
 
+    /** Logging requirements are simpler than what superclass provides. */
+    virtual std::string log4cxx_config() { return support::log4cxx_config; }
+
     /** Implementation below in this file */
     int run(int argc, char **argv);
 
