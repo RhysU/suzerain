@@ -57,7 +57,7 @@ driver::driver(
     , scenario(make_shared<definition_scenario>())
     , isothermal(make_shared<support::definition_isothermal>())
     , sg(make_shared<support::definition_largo>())
-    , noz(make_shared<support::definition_radialflow>(/*deltae*/ 1.0))
+    , rad(make_shared<support::definition_radialflow>(/*deltae*/ 1.0))
     , who("perfect")
 {
     this->fields = default_fields();
@@ -72,7 +72,7 @@ driver::initialize(
     if (scenario  ) options.add_definition(*scenario  ) ;
     if (isothermal) options.add_definition(*isothermal) ;
     if (sg        ) options.add_definition(*sg        ) ;
-    if (noz       ) options.add_definition(*noz       ) ;
+    if (rad       ) options.add_definition(*rad       ) ;
     if (msoln     ) options.add_definition(*msoln     ) ;
 
     // Delegate to superclass initialization
@@ -345,7 +345,7 @@ driver::save_metadata_hook(
     if (scenario)   scenario->save(esioh);
     if (isothermal) isothermal->save(esioh);
     if (sg)         sg->save(esioh);
-    if (noz)        noz->save(esioh);
+    if (rad)        rad->save(esioh);
     if (msoln)      save(esioh, msoln, *scenario, *grid);
     return;
 }
@@ -358,7 +358,7 @@ driver::load_metadata_hook(
     scenario->load(esioh);
     isothermal->load(esioh);
     sg->load(esioh);
-    noz->load(esioh);
+    rad->load(esioh);
     load(esioh, msoln, *scenario, *grid);
     return;
 }

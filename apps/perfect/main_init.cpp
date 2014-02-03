@@ -431,7 +431,7 @@ suzerain::perfect::driver_init::run(int argc, char **argv)
         }
 
         // Shout, as appropriate, if non-trivial radial flow without slow growth
-        if (noz->trivial()) {
+        if (rad->trivial()) {
             DEBUG("Trivial radial flow problem parameters ignored");
         } else if (sg->formulation.enabled()) {
             INFO("Non-trivial radial flow active");

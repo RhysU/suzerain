@@ -161,7 +161,7 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
         cev::iss_laminar(cevisslam,
                          scenario->gamma,  // Notice modification before...
                          scenario->Ma,     // ...call to adjust_scenario().
-                         noz->pexi,
+                         rad->pexi,
                          T_ratio);
         INFO0("Adjusting lower temperature to reproduce CEV T_e / T_w  = "
               << T_ratio);
@@ -301,17 +301,17 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
             freestream.p   = p_inf;
         }
 
-        // If the baseflow is specified by a radial nozzle problem...
-        if (sg->formulation.enabled() && !noz->trivial()) {
+        // If the baseflow is specified by a radial flow problem...
+        if (sg->formulation.enabled() && !rad->trivial()) {
 
             INFO0(who, "Finding baseflow per suzerain_radialflow_qoi_match...");
-            // ...unpack all information from *noz and *scenario...
-            const double deltae = noz->deltae;
-            const double gamma  = !(isnan)(noz->gamma) && (noz->gamma != 0)
-                                ? noz->gamma : scenario->gamma;
-            const double Mae    = !(isnan)(noz->Mae ) && (noz->Mae  != 0)
-                                ? noz->Mae  : scenario->Ma;
-            const double pexi   = noz->pexi;
+            // ...unpack all information from *rad and *scenario...
+            const double deltae = rad->deltae;
+            const double gamma  = !(isnan)(rad->gamma) && (rad->gamma != 0)
+                                ? rad->gamma : scenario->gamma;
+            const double Mae    = !(isnan)(rad->Mae ) && (rad->Mae  != 0)
+                                ? rad->Mae  : scenario->Ma;
+            const double pexi   = rad->pexi;
 
 #           define POSSIBLYWARN0(who, pre, val)                           \
                 if ((isnan)(val)) { WARN0(who, pre << fullprec<>(val)); } \

@@ -84,7 +84,7 @@ struct driver_summary : public driver
         fftwdef.reset();     // No FFTs
         grid.reset();        // Grid taken from input files only
         isothermal.reset();  // No monkeying with boundary conditions...
-        noz.reset();         // ...or inviscid baseflow parameters
+        rad.reset();         // ...or inviscid radial flow parameters
         restartdef.reset();  // ...or writing restart files
         scenario.reset();    // Scenario taken from input files only
         sg.reset();          // No monkeying with slow growth...

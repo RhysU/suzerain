@@ -78,8 +78,8 @@ public:
     /** Slow growth parameters for use with the Largo library. */
     shared_ptr<support::definition_largo> sg;
 
-    /** Radial nozzle baseflow specification for possible use with Largo. */
-    shared_ptr<support::definition_radialflow> noz;
+    /** Radial flow baseflow specification for possible use with Largo. */
+    shared_ptr<support::definition_radialflow> rad;
 
     /** Nondimensional manufactured solution optionally used by applications. */
     shared_ptr<manufactured_solution> msoln;
