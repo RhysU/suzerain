@@ -29,39 +29,12 @@
  */
 
 #include <suzerain/common.hpp>
+#include <suzerain/profile.h>
 
 namespace suzerain {
 
 // Forward declarations
 class samples;
-
-/**
- * A Boost.Preprocessor sequence of tuples of quantities generally sampled in
- * wave space.  These are part of the data found in \ref profile.
- */
-#define SUZERAIN_PROFILE_WAVE \
-    ((rho,   1)) /* scalar */ \
-    ((rho_u, 2)) /* vector */
-
-/**
- * A Boost.Preprocessor sequence of tuples of quantities generally sampled  in
- * physical space.  These are part of the data found in \ref profile.
- */
-#define SUZERAIN_PROFILE_PHYSICAL \
-    ((a,     1))  /* scalar */    \
-    ((H0,    1))  /* scalar */    \
-    ((ke,    1))  /* scalar */    \
-    ((mu,    1))  /* scalar */    \
-    ((T,     1))  /* scalar */    \
-    ((u,     2))  /* vector */
-
-/**
- * A Boost.Preprocessor sequence of tuples of all profile quantities.
- * These are nothing but the data found in \ref profile.
- */
-#define SUZERAIN_PROFILE      \
-    SUZERAIN_PROFILE_WAVE     \
-    SUZERAIN_PROFILE_PHYSICAL
 
 /**
  * Encapsulates solution profiles necessary for using \ref bl.h
