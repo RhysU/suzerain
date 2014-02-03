@@ -56,6 +56,12 @@ from sympy.physics.units import Unit
 # Likely verdict: Chain out derivatives
 #                 Deal with correlation between state and derivatives
 
+# TODO I don't like how the declaration files are handled with -d
+# Rework CLI interface to always snarf stdin unless 'chk' active
+
+# TODO Permit user-defined constants from parsing
+# Supply the following set only on a given command line option
+
 "Symbolic constants known at parse time to have zero derivatives."
 constants = {
     'alpha': Unit('Ratio of bulk to dynamic viscosity', 'alpha'),
