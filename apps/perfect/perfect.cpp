@@ -64,7 +64,8 @@ namespace suzerain {
 
 namespace perfect {
 
-std::vector<support::field> default_fields()
+std::vector<support::field>
+default_fields()
 {
     std::vector<support::field> retval(ndx::identifier.static_size);
     for (size_t i = 0; i < ndx::identifier.static_size; ++i) {
@@ -517,6 +518,15 @@ add_noise(contiguous_state<4,complex_t> &state,
     state[ndx::mx] = s[ndx::mx];
     state[ndx::my] = s[ndx::my];
     state[ndx::mz] = s[ndx::mz];
+}
+
+std::auto_ptr<samples>
+take_samples(const definition_scenario &scenario,
+             const operator_tools& otool,
+             contiguous_state<4,complex_t> &swave,
+             const real_t t)
+{
+    return std::auto_ptr<samples>(0); // FIXME Implement
 }
 
 } // namespace perfect

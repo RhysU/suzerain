@@ -45,9 +45,11 @@ namespace suzerain {
 
 // Forward declarations
 namespace support { class field; }
+class operator_tools;
+class pencil_grid;
+class samples;
 class specification_grid;
 class specification_noise;
-class pencil_grid;
 
 /**
  * Functionality used throughout the Suzerain perfect gas application.
@@ -58,7 +60,8 @@ namespace perfect {
 class definition_scenario;
 
 /** Return default nondimensional field information per \ref suzerain::ndx. */
-std::vector<support::field> default_fields();
+std::vector<support::field>
+default_fields();
 
 /**
  * Hold temperature and density constant while changing the Mach number and
@@ -87,6 +90,24 @@ add_noise(contiguous_state<4,complex_t> &state,
           const pencil_grid& dgrid,
           const bsplineop& cop,
           bspline &b);
+
+/**
+ * Using the provided state, sample the quantities declared in \ref samples
+ * with the notable exceptions of those listed in \ref
+ * SUZERAIN_SAMPLES_IMPLICIT.  This is an expensive, collective method.
+ *
+ * @param[in]     scenario Scenario parameters.
+ * @param[in]     otool    Operator definitions in use.
+ * @param[in,out] swave    Destroyed in the computation
+ * @param[in]     t        Current simulation time
+ *
+ * @return Mean quantities as B-spline coefficients.
+ */
+std::auto_ptr<samples>
+take_samples(const definition_scenario &scenario,
+             const operator_tools& otool,
+             contiguous_state<4,complex_t> &swave,
+             const real_t t);
 
 } // end namespace perfect
 
