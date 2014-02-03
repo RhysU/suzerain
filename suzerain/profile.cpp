@@ -1,7 +1,7 @@
 //--------------------------------------------------------------------------
 //
-// Copyright (C) 2008-2014 Rhys Ulerich
-// Copyright (C) 2012-2014 The PECOS Development Team
+// Copyright (C) 2013-2014 Rhys Ulerich
+// Copyright (C) 2013-2014 The PECOS Development Team
 // Please see http://pecos.ices.utexas.edu for more information on PECOS.
 //
 // This file is part of Suzerain.
@@ -22,32 +22,48 @@
 //--------------------------------------------------------------------------
 
 /** @file
- * @copydoc samples.hpp
+ * @copydoc profile.hpp
  */
 
 #ifdef HAVE_CONFIG_H
 #include <suzerain/config.h>
 #endif
 
+#include <suzerain/profile.hpp>
+
 #include <suzerain/samples.hpp>
 
 namespace suzerain {
 
-samples::samples()
-    : t(std::numeric_limits<real_t>::quiet_NaN())
+profile::profile()
 {
 }
 
-samples::samples(real_t)
-    : t(t)
+profile::profile(profile::storage_type::Index Ny)
+    : storage(storage_type::Zero(Ny, storage_type::ColsAtCompileTime))
 {
 }
 
-samples::samples(real_t t,
-                 samples::storage_type::Index Ny)
-    : t(t)
-    , storage(storage_type::Zero(Ny, storage_type::ColsAtCompileTime))
+profile& profile::operator=(const samples &q)
 {
+    // Resize our storage and defensively NaN in case we miss something
+    this->storage.setConstant(q.storage.rows(),
+            storage_type::ColsAtCompileTime,
+            std::numeric_limits<storage_type::Scalar>::quiet_NaN());
+
+    // Copy boundary layer profiles of interest from q
+    this->rho()          = q.rho();
+    this->rho_u().col(0) = q.rho_u().col(0);
+    this->rho_u().col(1) = q.rho_u().col(1);
+    this->a()            = q.a();
+    this->H0()           = q.H0();
+    this->ke()           = q.ke();
+    this->T()            = q.T();
+    this->mu()           = q.mu();
+    this->u().col(0)     = q.u().col(0);
+    this->u().col(1)     = q.u().col(1);
+
+    return *this;
 }
 
 } // namespace suzerain
