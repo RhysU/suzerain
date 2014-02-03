@@ -158,4 +158,15 @@
     SUZERAIN_SAMPLES_PHYSICAL \
     SUZERAIN_SAMPLES_IMPLICIT
 
+/** A helper towards implementing SUZERAIN_SAMPLES_COMPONENTS. */
+#define SUZERAIN_SAMPLES_COMPONENTS_HELPER(r, data, elem) \
+    BOOST_PP_TUPLE_ELEM(2, 1, elem)
+
+/**
+ * A Boost.Preprocessor sequence of (name, description) tuples
+ * for all scalar components comprising SUZERAIN_SAMPLES.
+ */
+#define SUZERAIN_SAMPLES_COMPONENTS \
+    BOOST_PP_SEQ_FOR_EACH(SUZERAIN_SAMPLES_COMPONENTS_HELPER,,SUZERAIN_SAMPLES)
+
 #endif // SUZERAIN_SAMPLES_H
