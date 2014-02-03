@@ -78,99 +78,12 @@ namespace quantity {
     ((y,            "Wall-normal collocation point locations"))                                       \
     ((bulk_weights, "Take dot product of these weights against any quantity to find the bulk value"))
 
-/** A Boost.Preprocessor sequence of tuples of directly sampled quantities.  */
-#define SEQ_SAMPLED                                                                                                       \
-    ((bar_rho,              "Reynolds-averaged density"))                                                                 \
-    ((bar_rho_u,            "Reynolds-averaged streamwise momentum"))                                                     \
-    ((bar_rho_v,            "Reynolds-averaged wall-normal momentum"))                                                    \
-    ((bar_rho_w,            "Reynolds-averaged spanwise momentum"))                                                       \
-    ((bar_rho_E,            "Reynolds-averaged total (intrinsic plus kinetic) energy"))                                   \
-    ((bar_E,                "Reynolds-averaged total (intrinsic plus kinetic) energy per unit mass"))                     \
-    ((bar_T,                "Reynolds-averaged temperature"))                                                             \
-    ((bar_a,                "Reynolds-averaged speed of sound"))                                                          \
-    ((bar_h0,               "Reynolds-averaged stagnation enthalpy"))                                                     \
-    ((bar_H0,               "Reynolds-averaged stagnation enthalpy per unit mass"))                                       \
-    ((bar_mu,               "Reynolds-averaged dynamic viscosity"))                                                       \
-    ((bar_nu,               "Reynolds-averaged kinematic viscosity"))                                                     \
-    ((bar_u,                "Reynolds-averaged streamwise velocity"))                                                     \
-    ((bar_v,                "Reynolds-averaged wall-normal velocity"))                                                    \
-    ((bar_w,                "Reynolds-averaged spanwise velocity"))                                                       \
-    ((bar_symxx_grad_u,     "Symmetric part (x,x)-component of Reynolds-averaged velocity gradient"))                     \
-    ((bar_symxy_grad_u,     "Symmetric part (x,y)-component of Reynolds-averaged velocity gradient"))                     \
-    ((bar_symxz_grad_u,     "Symmetric part (x,z)-component of Reynolds-averaged velocity gradient"))                     \
-    ((bar_symyy_grad_u,     "Symmetric part (y,y)-component of Reynolds-averaged velocity gradient"))                     \
-    ((bar_symyz_grad_u,     "Symmetric part (y,z)-component of Reynolds-averaged velocity gradient"))                     \
-    ((bar_symzz_grad_u,     "Symmetric part (z,z)-component of Reynolds-averaged velocity gradient"))                     \
-    ((bar_symxx_rho_grad_u, "Symmetric part (x,x)-component of Reynolds-averaged density times velocity gradient"))       \
-    ((bar_symxy_rho_grad_u, "Symmetric part (x,y)-component of Reynolds-averaged density times velocity gradient"))       \
-    ((bar_symxz_rho_grad_u, "Symmetric part (x,z)-component of Reynolds-averaged density times velocity gradient"))       \
-    ((bar_symyy_rho_grad_u, "Symmetric part (y,y)-component of Reynolds-averaged density times velocity gradient"))       \
-    ((bar_symyz_rho_grad_u, "Symmetric part (y,z)-component of Reynolds-averaged density times velocity gradient"))       \
-    ((bar_symzz_rho_grad_u, "Symmetric part (z,z)-component of Reynolds-averaged density times velocity gradient"))       \
-    ((bar_gradx_T,          "Reynolds-averaged x-component of temperature gradient"))                                     \
-    ((bar_grady_T,          "Reynolds-averaged y-component of temperature gradient"))                                     \
-    ((bar_gradz_T,          "Reynolds-averaged z-component of temperature gradient"))                                     \
-    ((bar_rho_gradx_T,      "Reynolds-averaged x-component of density times temperature gradient"))                       \
-    ((bar_rho_grady_T,      "Reynolds-averaged y-component of density times temperature gradient"))                       \
-    ((bar_rho_gradz_T,      "Reynolds-averaged z-component of density times temperature gradient"))                       \
-    ((bar_tau_colon_grad_u, "Reynolds-averaged contraction of the viscous stress tensor against the velocity gradient"))  \
-    ((bar_tauxx,            "Reynolds-averaged (x,x)-component of the viscous stress tensor"))                            \
-    ((bar_tauxy,            "Reynolds-averaged (x,y)-component of the viscous stress tensor"))                            \
-    ((bar_tauxz,            "Reynolds-averaged (x,z)-component of the viscous stress tensor"))                            \
-    ((bar_tauyy,            "Reynolds-averaged (y,y)-component of the viscous stress tensor"))                            \
-    ((bar_tauyz,            "Reynolds-averaged (y,z)-component of the viscous stress tensor"))                            \
-    ((bar_tauzz,            "Reynolds-averaged (z,z)-component of the viscous stress tensor"))                            \
-    ((bar_tauux,            "Reynolds-averaged x-component of the viscous stress tensor applied to the velocity"))        \
-    ((bar_tauuy,            "Reynolds-averaged y-component of the viscous stress tensor applied to the velocity"))        \
-    ((bar_tauuz,            "Reynolds-averaged z-component of the viscous stress tensor applied to the velocity"))        \
-    ((bar_p_div_u,          "Reynolds-averaged pressure times divergence of the velocity"))                               \
-    ((bar_rho_u_u,          "Reynolds-averaged (x,x)-component of the momentum times the velocity"))                      \
-    ((bar_rho_u_v,          "Reynolds-averaged (x,y)-component of the momentum times the velocity"))                      \
-    ((bar_rho_u_w,          "Reynolds-averaged (x,z)-component of the momentum times the velocity"))                      \
-    ((bar_rho_v_v,          "Reynolds-averaged (y,y)-component of the momentum times the velocity"))                      \
-    ((bar_rho_v_w,          "Reynolds-averaged (y,z)-component of the momentum times the velocity"))                      \
-    ((bar_rho_w_w,          "Reynolds-averaged (z,z)-component of the momentum times the velocity"))                      \
-    ((bar_rho_u_u_u,        "Reynolds-averaged (x,x,x)-component of the momentum times the velocity times the velocity")) \
-    ((bar_rho_u_u_v,        "Reynolds-averaged (x,x,y)-component of the momentum times the velocity times the velocity")) \
-    ((bar_rho_u_u_w,        "Reynolds-averaged (x,x,z)-component of the momentum times the velocity times the velocity")) \
-    ((bar_rho_u_v_v,        "Reynolds-averaged (x,y,y)-component of the momentum times the velocity times the velocity")) \
-    ((bar_rho_u_v_w,        "Reynolds-averaged (x,y,z)-component of the momentum times the velocity times the velocity")) \
-    ((bar_rho_u_w_w,        "Reynolds-averaged (x,z,z)-component of the momentum times the velocity times the velocity")) \
-    ((bar_rho_v_v_v,        "Reynolds-averaged (y,y,y)-component of the momentum times the velocity times the velocity")) \
-    ((bar_rho_v_v_w,        "Reynolds-averaged (y,y,z)-component of the momentum times the velocity times the velocity")) \
-    ((bar_rho_v_w_w,        "Reynolds-averaged (y,z,z)-component of the momentum times the velocity times the velocity")) \
-    ((bar_rho_w_w_w,        "Reynolds-averaged (z,z,z)-component of the momentum times the velocity times the velocity")) \
-    ((bar_rho_T_u,          "Reynolds-averaged x-component of the temperature times the velocity"))                       \
-    ((bar_rho_T_v,          "Reynolds-averaged y-component of the temperature times the velocity"))                       \
-    ((bar_rho_T_w,          "Reynolds-averaged z-component of the temperature times the velocity"))                       \
-    ((bar_rho_mu,           "Reynolds-averaged dynamic viscosity times the density"))                                     \
-    ((bar_mu_Sxx,           "Reynolds-averaged (x,x)-component of the deviatoric portion of the strain rate"))            \
-    ((bar_mu_Sxy,           "Reynolds-averaged (x,y)-component of the deviatoric portion of the strain rate"))            \
-    ((bar_mu_Sxz,           "Reynolds-averaged (x,z)-component of the deviatoric portion of the strain rate"))            \
-    ((bar_mu_Syy,           "Reynolds-averaged (y,y)-component of the deviatoric portion of the strain rate"))            \
-    ((bar_mu_Syz,           "Reynolds-averaged (y,z)-component of the deviatoric portion of the strain rate"))            \
-    ((bar_mu_Szz,           "Reynolds-averaged (z,z)-component of the deviatoric portion of the strain rate"))            \
-    ((bar_mu_div_u,         "Reynolds-averaged dynamic viscosity times divergence of the velocity"))                      \
-    ((bar_mu_gradx_T,       "Reynolds-averaged x-component of dynamic viscosity times the temperature gradient"))         \
-    ((bar_mu_grady_T,       "Reynolds-averaged y-component of dynamic viscosity times the temperature gradient"))         \
-    ((bar_mu_gradz_T,       "Reynolds-averaged z-component of dynamic viscosity times the temperature gradient"))         \
-    ((bar_fx,               "Reynolds-averaged x-component of the momentum forcing"))                                     \
-    ((bar_fy,               "Reynolds-averaged y-component of the momentum forcing"))                                     \
-    ((bar_fz,               "Reynolds-averaged z-component of the momentum forcing"))                                     \
-    ((bar_qb,               "Reynolds-averaged volumetric energy forcing"))                                               \
-    ((bar_f_dot_u,          "Reynolds-averaged energy contribution due to momentum forcing work"))                        \
-    ((bar_Srho,             "Reynolds-averaged mass contributions due to slow growth forcing"))                           \
-    ((bar_Srhou,            "Reynolds-averaged streamwise momentum contributions due to slow growth forcing"))            \
-    ((bar_Srhov,            "Reynolds-averaged wall-normal momentum contributions due to slow growth forcing"))           \
-    ((bar_Srhow,            "Reynolds-averaged spanwise momentum contributions due to slow growth forcing"))              \
-    ((bar_SrhoE,            "Reynolds-averaged total energy contributions due to slow growth forcing"))                   \
-    ((bar_Srhou_dot_u,      "Reynolds-averaged energy contribution due to slow growth forcing work"))                     \
-    ((bar_Crho,             "Reynolds-averaged mass contributions due to various integral constraints"))                  \
-    ((bar_Crhou,            "Reynolds-averaged streamwise momentum contributions due to various integral constraints"))   \
-    ((bar_Crhov,            "Reynolds-averaged wall-normal momentum contributions due to various integral constraints"))  \
-    ((bar_Crhow,            "Reynolds-averaged spanwise momentum contributions due to various integral constraints"))     \
-    ((bar_CrhoE,            "Reynolds-averaged total energy contributions due to various integral constraints"))          \
-    ((bar_Crhou_dot_u,      "Reynolds-averaged energy contribution due to work by various integral constraints"))
+/**
+ * A Boost.Preprocessor sequence of tuples of directly sampled quantities.
+ * Automatically synchronized with \ref SUZERAIN_SAMPLES in \ref samples.h.
+ */
+#define SEQ_SAMPLED \
+    SUZERAIN_SAMPLES_COMPONENTS(bar_)
 
 /** A Boost.Preprocessor sequence of tuples of indirectly sampled (i.e. derived) quantities.  */
 #define SEQ_DERIVED                                                                                                                                                 \
