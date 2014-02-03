@@ -51,6 +51,7 @@
 #include <suzerain/pencil_grid.hpp>
 #include <suzerain/rholut.hpp>
 #include <suzerain/rngstream.hpp>
+#include <suzerain/samples.hpp>
 #include <suzerain/shared_range.hpp>
 #include <suzerain/state.hpp>
 #include <suzerain/support/logging.hpp>
@@ -513,6 +514,134 @@ void load_time(const esio_handle h,
 
     DEBUG0(who, "Loaded simulation time " << time);
 }
+
+// Helper for the save_samples(...) implementation
+class samples_saver
+{
+public:
+
+    samples_saver(const std::string& who,
+                  const esio_handle  esioh,
+                  const std::string& prefix)
+        : who(who), esioh(esioh), prefix(prefix) {}
+
+    template< typename EigenArray >
+    bool operator()(const std::string& name, const EigenArray& dat) const
+    {
+        int procid;
+        esio_handle_comm_rank(esioh, &procid);
+        esio_field_establish(esioh,
+                             1,          0, (procid == 0 ? 1          : 0),
+                             dat.cols(), 0, (procid == 0 ? dat.cols() : 0),
+                             dat.rows(), 0, (procid == 0 ? dat.rows() : 0));
+
+        std::string key(prefix);
+        key.append(name);
+        return ESIO_SUCCESS == esio_field_write(
+            esioh, key.c_str(), dat.data(), 0, 0, 0,
+            "Sampled quantity stored using row-major indices (B-spline"
+            " coefficient, tensor component, sample number) where the"
+            " B-spline basis is defined by /Ny, /breakpoints_y, and /knots");
+    }
+
+private:
+
+    std::string who;
+    esio_handle esioh;
+    std::string prefix;
+
+};
+
+// Helper for the load_samples(...) implementation
+class samples_loader
+{
+public:
+
+    samples_loader(const std::string& who,
+                   const esio_handle esioh,
+                   const std::string& prefix)
+        : who(who), esioh(esioh), prefix(prefix) {}
+
+    template< typename EigenArray >
+    bool operator()(const std::string& name, const EigenArray& dat_) const {
+
+        // http://eigen.tuxfamily.org/dox/TopicFunctionTakingEigenTypes.html
+        EigenArray& dat = const_cast<EigenArray&>(dat_);
+
+        int procid;
+        esio_handle_comm_rank(esioh, &procid);
+
+        std::string key(prefix);
+        key.append(name);
+
+        int cglobal, bglobal, aglobal;
+        if (   ESIO_SUCCESS == esio_field_size(esioh, key.c_str(),
+                                               &cglobal, &bglobal, &aglobal)
+            && (   EigenArray::ColsAtCompileTime == Dynamic
+                || dat.cols() == bglobal)) {
+            dat.resize(aglobal, bglobal);
+            esio_field_establish(esioh,
+                                 1,          0, (procid == 0 ? 1          : 0),
+                                 dat.cols(), 0, (procid == 0 ? dat.cols() : 0),
+                                 dat.rows(), 0, (procid == 0 ? dat.rows() : 0));
+            return ESIO_SUCCESS == esio_field_read(
+                    esioh, key.c_str(), dat.data(), 0, 0, 0);
+        } else {
+            WARN0(who, "Unable to load " << key
+                  << " for nscalar = " << dat.cols());
+            dat.fill(std::numeric_limits<
+                     typename EigenArray::Scalar>::quiet_NaN());
+            return false;
+        }
+    }
+
+private:
+
+    std::string who;
+    esio_handle esioh;
+    std::string prefix;
+
+};
+
+bool save_samples(const esio_handle h,
+                  const samples& s,
+                  const char * const prefix)
+{
+    if (s.storage.size()) {
+        samples_saver f(who, h, prefix);
+        return s.foreach(f);
+    } else {
+        WARN0(who, "No sampled quantities saved--"
+                   " trivial storage needs detected");
+        return true; // Warning occurs but behavior was "successful".
+    }
+}
+
+bool load_samples(const esio_handle h,
+                  samples& s,
+                  const char * const prefix,
+                  const char * const sizeper)
+{
+    // Were any samples loaded from file?
+    bool success = false;
+
+    // Defensively NaN out all storage in the instance prior to load.
+    s.storage.fill(std::numeric_limits<real_t>::quiet_NaN());
+
+    int cglobal, bglobal, aglobal;
+    if (ESIO_SUCCESS == esio_field_size(h, sizeper,
+                                        &cglobal, &bglobal, &aglobal)) {
+        s.storage.resize(aglobal, NoChange);
+        samples_loader f(who, h, prefix);
+        success = s.foreach(f);
+    } else {
+        WARN0(who, "No sampled quantities loaded--"
+                   " unable to anticipate storage needs");
+    }
+
+    return success;
+}
+
 
 // Pooling employed in allocate_padded_state implementations
 typedef boost::ptr_map<

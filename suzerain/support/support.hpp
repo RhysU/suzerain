@@ -48,6 +48,7 @@ namespace suzerain {
 class bspline;
 class bsplineop;
 class pencil_grid;
+class samples;
 
 /**
  * Contains cross-cutting functionality used within various Suzerain
@@ -149,6 +150,27 @@ void save_time(const esio_handle h,
 /** Load the current simulation time information */
 void load_time(const esio_handle h,
                real_t &time);
+
+/**
+ * Save sampled quantities in a file using name \c prefix.
+ *
+ * @return True if all sampled quantities could be saved.  False otherwise.
+ */
+bool save_samples(const esio_handle h,
+                  const samples& s,
+                  const char * const prefix = "bar_");
+
+/**
+ * Load sampled quantities from a file using name \c prefix. Statistics not
+ * present in the file are considered to be all NaNs.  Member #t, which is not
+ * modified by this routine, is presumably set in some other fashion.
+ *
+ * @return True if all sampled quantities could be loaded.  False otherwise.
+ */
+bool load_samples(const esio_handle h,
+                  samples& s,
+                  const char * const prefix  = "bar_",
+                  const char * const sizeper = "bar_rho");
 
 /**
  * Forward declaration to allocate state padded for transformation to/from
