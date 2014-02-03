@@ -507,8 +507,16 @@ def main(argv):
     syms = parser(args.statements(args.decl) if args.decl else [])
 
     # Supply "all known declarations" behavior for any f arguments
-    if ('f' in args) and (not args.f):
-        args.f = syms.keys()
+    # Additionally, provide nicer error messages on unknown symbols
+    # (otherwise a messy stacktrace appears and folks doubt the code)
+    if ('f' in args):
+        if not args.f:
+            args.f = syms.keys()
+        else:
+            unknown = set(args.f).difference(syms.keys())
+            if unknown:
+                raise LookupError("Requested but not in declarations: %s"
+                                  % ', '.join(unknown))
 
     # Dispatch to the chosen command passing arguments and symbols
     return args.command(args, syms)
