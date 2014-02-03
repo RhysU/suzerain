@@ -37,22 +37,36 @@
 #endif
 
 #include <suzerain/common.hpp>
-#include <suzerain/bspline.hpp>
-#include <suzerain/lowstorage.hpp>
 #include <suzerain/state_fwd.hpp>
+
+// Forward declarations
+struct suzerain_bl_local;
+struct suzerain_bl_pg;
+struct suzerain_bl_qoi;
+struct suzerain_bl_reynolds;
+struct suzerain_bl_thicknesses;
+struct suzerain_bl_viscous;
+struct suzerain_channel_local;
+struct suzerain_channel_qoi;
+struct suzerain_channel_viscous;
 
 namespace suzerain {
 
 // Forward declarations
-namespace support { class field; }
+class bspline;
+class bsplineop;
+class bsplineop_lu;
 class operator_tools;
 class pencil_grid;
+class profile;
 class samples;
 class specification_grid;
+class specification_largo;
 class specification_noise;
+namespace support { class field; }
 
 /**
- * Functionality used throughout the Suzerain perfect gas application.
+ * Functionality for Suzerain perfect gas applications.
  */
 namespace perfect {
 
@@ -108,6 +122,78 @@ take_samples(const definition_scenario &scenario,
              const operator_tools& otool,
              contiguous_state<4,complex_t> &swave,
              const real_t t);
+
+/**
+ * Using the provided state, sample the mean solution profiles declared
+ * in \ref profile.  This is a mildly expensive, collective method.
+ *
+ * @param[in]     scenario Scenario parameters.
+ * @param[in]     otool    Operator definitions in use.
+ * @param[in,out] swave    Destroyed in the computation
+ *
+ * @return Mean quantity profiles as B-spline coefficients.
+ */
+std::auto_ptr<profile>
+take_profile(const definition_scenario &scenario,
+             const operator_tools& otool,
+             contiguous_state<4,complex_t> &swave);
+
+/**
+ * Use the boundary layer information in \c prof and possibly base flow
+ * information in \c sg to compute many quantities of interest.  This is
+ * a purely local computation requiring no communication.
+ *
+ * @param[in]  prof     Profile information from \ref sample_profile().
+ * @param[in]  scenario Scenario of interest.
+ * @param[in]  sg       Slow growth definition optionally in use
+ *                      which provides base flow details for
+ *                      streamwise pressure and velocity gradients.
+ * @param[in]  masslu   A factored mass matrix corresponding to \c b.
+ * @param[in]  b        The B-spline basis in use.
+ * @param[out] wall     Populated on return.
+ * @param[out] viscous  Populated on return.
+ * @param[out] thick    Populated on return.
+ * @param[out] edge     Populated on return.
+ * @param[out] edge99   Populated on return.
+ * @param[out] reynolds Populated on return.
+ * @param[out] qoi      Populated on return.
+ * @param[out] pg       Populated on return.
+ */
+void summarize_boundary_layer_nature(
+        const profile &prof,
+        const definition_scenario &scenario,
+        const shared_ptr<specification_largo> &sg,
+        const bsplineop_lu &masslu,
+        bspline &b,
+        suzerain_bl_local       &wall,
+        suzerain_bl_viscous     &viscous,
+        suzerain_bl_thicknesses &thick,
+        suzerain_bl_local       &edge,
+        suzerain_bl_local       &edge99,
+        suzerain_bl_reynolds    &reynolds,
+        suzerain_bl_qoi         &qoi,
+        suzerain_bl_pg          &pg);
+
+/**
+ * Use the boundary layer information in \c prof to compute many quantities of
+ * interest.  This is a purely local computation requiring no communication.
+ *
+ * @param[in]  prof     Profile information from \ref sample_profile().
+ * @param[in]  scenario Scenario of interest.
+ * @param[in]  b        The B-spline basis in use.
+ * @param[out] wall     Populated on return.
+ * @param[out] viscous  Populated on return.
+ * @param[out] center   Populated on return.
+ * @param[out] qoi      Populated on return.
+ */
+void summarize_channel_nature(
+        const profile &prof,
+        const definition_scenario &scenario,
+        bspline &b,
+        suzerain_channel_local   &wall,
+        suzerain_channel_viscous &viscous,
+        suzerain_channel_local   &center,
+        suzerain_channel_qoi     &qoi);
 
 } // end namespace perfect
 

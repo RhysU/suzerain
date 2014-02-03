@@ -35,11 +35,11 @@
 #include <suzerain/l2.hpp>
 #include <suzerain/ndx.hpp>
 #include <suzerain/operator_tools.hpp>
+#include <suzerain/profile.hpp>
 #include <suzerain/samples.hpp>
 #include <suzerain/support/logging.hpp>
 #include <suzerain/support/support.hpp>
 
-#include "profile.hpp"
 #include "perfect.hpp"
 
 namespace suzerain {
@@ -227,7 +227,7 @@ void driver::log_quantities_of_interest(
         prof = *mean;
     } else {
         state_nonlinear->assign_from(*state_linear);
-        prof = sample_profile(*scenario, *otool, *state_nonlinear);
+        prof = *take_profile(*scenario, *otool, *state_nonlinear);
     }
 
     if (grid->one_sided()) {
