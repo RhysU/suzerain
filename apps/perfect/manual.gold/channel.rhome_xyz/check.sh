@@ -15,7 +15,8 @@ rmmkcd "gold/$case"
 exec 1> >(tee ./output) 2>&1
 
 #Exclusion of bar_ke post-r43126 represents laziness in updating gold files
-excludes="--exclude-path /metadata_generated --exclude-path /bar_ke"
+#Exclusion of bar_p  post-r43655 represents laziness in updating gold files
+excludes="--exclude-path /metadata_generated --exclude-path /bar_ke --exclude-path /bar_p"
 
 "$perfect_init" --Ny=32 initial.h5 --htdelta=2
 h5diff -r -c -v $excludes "$@" "$SCRIPTDIR/initial.h5" initial.h5

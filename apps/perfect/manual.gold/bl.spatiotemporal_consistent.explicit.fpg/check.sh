@@ -14,8 +14,7 @@ case=$(basename "$SCRIPTDIR")
 rmmkcd "gold/$case"
 exec 1> >(tee ./output) 2>&1
 
-#Exclusion of bar_ke post-r43126 represents laziness in updating gold files
-excludes="--exclude-path /metadata_generated --exclude-path /bar_ke"
+excludes="--exclude-path /metadata_generated"
 
 # Initialize the appropriate boundary layer grid lacking the radial flow settings
 "$perfect_init" initial.h5 --k=6 --Nx=1 --Ny=36 --Nz=1 --htdelta=-3 --Re=3000 --Ma=1.5 --Pr=0.7 --Ly=1 --Re_x=3000 --largo_formulation=spatiotemporal_consistent --largo_grdelta=1e-1
