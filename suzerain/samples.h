@@ -158,16 +158,6 @@
     SUZERAIN_SAMPLES_PHYSICAL \
     SUZERAIN_SAMPLES_IMPLICIT
 
-#ifndef SUZERAIN_PARSED_BY_DOXYGEN
-
-#define SUZERAIN_SAMPLES_COMPONENTS_HELPER1(r, pre, elem) \
-    BOOST_PP_TUPLE_ELEM(2, 1, elem)
-
-#define SUZERAIN_SAMPLES_COMPONENTS_HELPER2(r, pre, tuple) \
-    ((BOOST_PP_CAT(pre, BOOST_PP_TUPLE_ELEM(2, 0, tuple)), BOOST_PP_TUPLE_ELEM(2, 1, tuple)))
-
-#endif
-
 
 /**
  * A Boost.Preprocessor sequence of (name, description) tuples for all scalar
@@ -178,5 +168,43 @@
 #define SUZERAIN_SAMPLES_COMPONENTS(pre)                                              \
     BOOST_PP_SEQ_FOR_EACH(SUZERAIN_SAMPLES_COMPONENTS_HELPER2,pre,                    \
         BOOST_PP_SEQ_FOR_EACH(SUZERAIN_SAMPLES_COMPONENTS_HELPER1,,SUZERAIN_SAMPLES))
+
+#ifndef SUZERAIN_PARSED_BY_DOXYGEN
+
+#define SUZERAIN_SAMPLES_COMPONENTS_HELPER1(r, pre, elem) \
+    BOOST_PP_TUPLE_ELEM(2, 1, elem)
+
+#define SUZERAIN_SAMPLES_COMPONENTS_HELPER2(r, pre, tuple) \
+    ((BOOST_PP_CAT(pre, BOOST_PP_TUPLE_ELEM(2, 0, tuple)), BOOST_PP_TUPLE_ELEM(2, 1, tuple)))
+
+#endif /* SUZERAIN_PARSED_BY_DOXYGEN */
+
+
+/**
+ * An Boost.Preprocessor-like iteration construct invoking <code>
+ *     macro(quantity, component, offset, description)
+ * </code> for each component present in \c collection
+ * (e.g. \ref SUZERAIN_SAMPLES_PHYSICAL).
+ */
+#define SUZERAIN_SAMPLES_COMPONENTS_FOR_EACH(macro, collection) \
+    BOOST_PP_SEQ_FOR_EACH(SUZERAIN_SAMPLES_COMPONENTS_FOR_EACH_HELPER1, macro, collection)
+
+#ifndef SUZERAIN_PARSED_BY_DOXYGEN
+
+#define SUZERAIN_SAMPLES_COMPONENTS_FOR_EACH_HELPER1(s, macro, quantity_components)  \
+    BOOST_PP_SEQ_FOR_EACH_I(SUZERAIN_SAMPLES_COMPONENTS_FOR_EACH_HELPER2,            \
+                            (macro, BOOST_PP_TUPLE_ELEM(2, 0, quantity_components)), \
+                            BOOST_PP_TUPLE_ELEM(2, 1, quantity_components))
+
+#define SUZERAIN_SAMPLES_COMPONENTS_FOR_EACH_HELPER2(r, macro_quantity, i, component_description) \
+        BOOST_PP_TUPLE_ELEM(2, 0, macro_quantity)(                                                \
+            BOOST_PP_TUPLE_ELEM(2, 1, macro_quantity),                                            \
+            BOOST_PP_TUPLE_ELEM(2, 0, component_description),                                     \
+            i,                                                                                    \
+            BOOST_PP_TUPLE_ELEM(2, 1, component_description)                                      \
+        )                                                                                         \
+
+#endif /* SUZERAIN_PARSED_BY_DOXYGEN */
+
 
 #endif // SUZERAIN_SAMPLES_H
