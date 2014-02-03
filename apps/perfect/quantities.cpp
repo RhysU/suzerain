@@ -356,7 +356,7 @@ quantities sample_quantities(
         // Declared within Y loop so they are reset on each Y iteration.
 #define DECLARE(r, data, tuple)                                              \
         accumulator_type BOOST_PP_CAT(sum_,BOOST_PP_TUPLE_ELEM(2, 0, tuple)) \
-                [BOOST_PP_TUPLE_ELEM(2, 1, tuple)];
+                [BOOST_PP_SEQ_SIZE(BOOST_PP_TUPLE_ELEM(2, 1, tuple))];
         BOOST_PP_SEQ_FOR_EACH(DECLARE,,
                 SUZERAIN_PERFECT_QUANTITIES_PHYSICAL)
 #undef DECLARE
@@ -517,9 +517,9 @@ quantities sample_quantities(
         // Move y-specific sums into MPI-reduction-ready storage for y(j) using
         // Eigen comma initialization syntax.  Yes, this is not stride 1.
 #define EXTRACT_SUM(z, n, q) acc::sum(sum_##q[n])
-#define MOVE_SUM_INTO_TMP(r, data, tuple)                                 \
-        ret.BOOST_PP_TUPLE_ELEM(2, 0, tuple)().row(j) <<                  \
-            BOOST_PP_ENUM(BOOST_PP_TUPLE_ELEM(2, 1, tuple),               \
+#define MOVE_SUM_INTO_TMP(r, data, tuple)                                      \
+        ret.BOOST_PP_TUPLE_ELEM(2, 0, tuple)().row(j) <<                       \
+            BOOST_PP_ENUM(BOOST_PP_SEQ_SIZE(BOOST_PP_TUPLE_ELEM(2, 1, tuple)), \
                           EXTRACT_SUM, BOOST_PP_TUPLE_ELEM(2, 0, tuple));
         BOOST_PP_SEQ_FOR_EACH(MOVE_SUM_INTO_TMP,,
                 SUZERAIN_PERFECT_QUANTITIES_PHYSICAL)

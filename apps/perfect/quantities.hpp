@@ -69,85 +69,150 @@ class quantities
 public:
 
 /**
- * A Boost.Preprocessor sequence of tuples of quantities computed in wave
- * space.
+ * A Boost.Preprocessor sequence of tuples of scalar and vector quantities
+ * computed in wave space.  The second element of the tuple is a
+ * Boost.Preprocessor sequence of tuples naming and describing each scalar
+ * component.  The number of scalar components is the length of that sequence.
  */
-#define SUZERAIN_PERFECT_QUANTITIES_WAVE                   \
-    ((rho,                      1)) /* scalar           */ \
-    ((rho_u,                    3)) /* vector           */ \
-    ((rho_E,                    1)) /* scalar           */
+#define SUZERAIN_PERFECT_QUANTITIES_WAVE                                               \
+      (( rho,   (( rho,    "Reynolds-averaged density"                               ))\
+    ))(( rho_u, (( rho_u,  "Reynolds-averaged streamwise momentum"                   ))\
+                (( rho_v,  "Reynolds-averaged wall-normal momentum"                  ))\
+                (( rho_w,  "Reynolds-averaged spanwise momentum"                     ))\
+    ))(( rho_E, (( rho_E,  "Reynolds-averaged total (intrinsic plus kinetic) energy" ))\
+    ))
 
 /**
- * A Boost.Preprocessor sequence of tuples of quantities computed in physical
- * space.
+ * A Boost.Preprocessor sequence of tuples of scalar, vector, and tensor
+ * quantities computed in physical space.
+ * \copydetails SUZERAIN_PERFECT_QUANTITIES_WAVE
  */
-#define SUZERAIN_PERFECT_QUANTITIES_PHYSICAL         \
-    ((E,                 1))  /* scalar           */ \
-    ((T,                 1))  /* scalar           */ \
-    ((a,                 1))  /* scalar           */ \
-    ((h0,                1))  /* scalar           */ \
-    ((H0,                1))  /* scalar           */ \
-    ((ke,                1))  /* scalar           */ \
-    ((mu,                1))  /* scalar           */ \
-    ((nu,                1))  /* scalar           */ \
-    ((u,                 3))  /* vector           */ \
-    ((sym_grad_u,        6))  /* symmetric tensor */ \
-    ((sym_rho_grad_u,    6))  /* symmetric tensor */ \
-    ((grad_T,            3))  /* vector           */ \
-    ((rho_grad_T,        3))  /* vector           */ \
-    ((tau_colon_grad_u,  1))  /* scalar           */ \
-    ((tau,               6))  /* symmetric tensor */ \
-    ((tau_u,             3))  /* vector           */ \
-    ((p_div_u,           1))  /* scalar           */ \
-    ((rho_u_u,           6))  /* symmetric tensor */ \
-    ((rho_u_u_u,        10))  /* symmetric tensor */ \
-    ((rho_T_u,           3))  /* vector           */ \
-    ((rho_mu,            1))  /* scalar           */ \
-    ((mu_S,              6))  /* symmetric tensor */ \
-    ((mu_div_u,          1))  /* scalar           */ \
-    ((mu_grad_T,         3))  /* vector           */
+#define SUZERAIN_PERFECT_QUANTITIES_PHYSICAL                                                                                                  \
+      (( E,                (( E,                "Reynolds-averaged total (intrinsic plus kinetic) energy per unit mass"                     ))\
+    ))(( T,                (( T,                "Reynolds-averaged temperature"                                                             ))\
+    ))(( a,                (( a,                "Reynolds-averaged speed of sound"                                                          ))\
+    ))(( h0,               (( h0,               "Reynolds-averaged stagnation enthalpy"                                                     ))\
+    ))(( H0,               (( H0,               "Reynolds-averaged stagnation enthalpy per unit mass"                                       ))\
+    ))(( ke,               (( ke,               "Reynolds-averaged kinetic energy per unit mass"                                            ))\
+    ))(( mu,               (( mu,               "Reynolds-averaged dynamic viscosity"                                                       ))\
+    ))(( nu,               (( nu,               "Reynolds-averaged kinematic viscosity"                                                     ))\
+    ))(( u,                (( u,                "Reynolds-averaged streamwise velocity"                                                     ))\
+                           (( v,                "Reynolds-averaged wall-normal velocity"                                                    ))\
+                           (( w,                "Reynolds-averaged spanwise velocity"                                                       ))\
+    ))(( sym_grad_u,       (( symxx_grad_u,     "Symmetric part (x,x)-component of Reynolds-averaged velocity gradient"                     ))\
+                           (( symxy_grad_u,     "Symmetric part (x,y)-component of Reynolds-averaged velocity gradient"                     ))\
+                           (( symxz_grad_u,     "Symmetric part (x,z)-component of Reynolds-averaged velocity gradient"                     ))\
+                           (( symyy_grad_u,     "Symmetric part (y,y)-component of Reynolds-averaged velocity gradient"                     ))\
+                           (( symyz_grad_u,     "Symmetric part (y,z)-component of Reynolds-averaged velocity gradient"                     ))\
+                           (( symzz_grad_u,     "Symmetric part (z,z)-component of Reynolds-averaged velocity gradient"                     ))\
+    ))(( sym_rho_grad_u,   (( symxx_rho_grad_u, "Symmetric part (x,x)-component of Reynolds-averaged density times velocity gradient"       ))\
+                           (( symxy_rho_grad_u, "Symmetric part (x,y)-component of Reynolds-averaged density times velocity gradient"       ))\
+                           (( symxz_rho_grad_u, "Symmetric part (x,z)-component of Reynolds-averaged density times velocity gradient"       ))\
+                           (( symyy_rho_grad_u, "Symmetric part (y,y)-component of Reynolds-averaged density times velocity gradient"       ))\
+                           (( symyz_rho_grad_u, "Symmetric part (y,z)-component of Reynolds-averaged density times velocity gradient"       ))\
+                           (( symzz_rho_grad_u, "Symmetric part (z,z)-component of Reynolds-averaged density times velocity gradient"       ))\
+    ))(( grad_T,           (( gradx_T,          "Reynolds-averaged x-component of temperature gradient"                                     ))\
+                           (( grady_T,          "Reynolds-averaged y-component of temperature gradient"                                     ))\
+                           (( gradz_T,          "Reynolds-averaged z-component of temperature gradient"                                     ))\
+    ))(( rho_grad_T,       (( rho_gradx_T,      "Reynolds-averaged x-component of density times temperature gradient"                       ))\
+                           (( rho_grady_T,      "Reynolds-averaged y-component of density times temperature gradient"                       ))\
+                           (( rho_gradz_T,      "Reynolds-averaged z-component of density times temperature gradient"                       ))\
+    ))(( tau_colon_grad_u, (( tau_colon_grad_u, "Reynolds-averaged contraction of the viscous stress tensor against the velocity gradient"  ))\
+    ))(( tau,              (( tauxx,            "Reynolds-averaged (x,x)-component of the viscous stress tensor"                            ))\
+                           (( tauxy,            "Reynolds-averaged (x,y)-component of the viscous stress tensor"                            ))\
+                           (( tauxz,            "Reynolds-averaged (x,z)-component of the viscous stress tensor"                            ))\
+                           (( tauyy,            "Reynolds-averaged (y,y)-component of the viscous stress tensor"                            ))\
+                           (( tauyz,            "Reynolds-averaged (y,z)-component of the viscous stress tensor"                            ))\
+                           (( tauzz,            "Reynolds-averaged (z,z)-component of the viscous stress tensor"                            ))\
+    ))(( tau_u,            (( tauux,            "Reynolds-averaged x-component of the viscous stress tensor applied to the velocity"        ))\
+                           (( tauuy,            "Reynolds-averaged y-component of the viscous stress tensor applied to the velocity"        ))\
+                           (( tauuz,            "Reynolds-averaged z-component of the viscous stress tensor applied to the velocity"        ))\
+    ))(( p_div_u,          (( p_div_u,          "Reynolds-averaged pressure times divergence of the velocity"                               ))\
+    ))(( rho_u_u,          (( rho_u_u,          "Reynolds-averaged (x,x)-component of the momentum times the velocity"                      ))\
+                           (( rho_u_v,          "Reynolds-averaged (x,y)-component of the momentum times the velocity"                      ))\
+                           (( rho_u_w,          "Reynolds-averaged (x,z)-component of the momentum times the velocity"                      ))\
+                           (( rho_v_v,          "Reynolds-averaged (y,y)-component of the momentum times the velocity"                      ))\
+                           (( rho_v_w,          "Reynolds-averaged (y,z)-component of the momentum times the velocity"                      ))\
+                           (( rho_w_w,          "Reynolds-averaged (z,z)-component of the momentum times the velocity"                      ))\
+    ))(( rho_u_u_u,        (( rho_u_u_u,        "Reynolds-averaged (x,x,x)-component of the momentum times the velocity times the velocity" ))\
+                           (( rho_u_u_v,        "Reynolds-averaged (x,x,y)-component of the momentum times the velocity times the velocity" ))\
+                           (( rho_u_u_w,        "Reynolds-averaged (x,x,z)-component of the momentum times the velocity times the velocity" ))\
+                           (( rho_u_v_v,        "Reynolds-averaged (x,y,y)-component of the momentum times the velocity times the velocity" ))\
+                           (( rho_u_v_w,        "Reynolds-averaged (x,y,z)-component of the momentum times the velocity times the velocity" ))\
+                           (( rho_u_w_w,        "Reynolds-averaged (x,z,z)-component of the momentum times the velocity times the velocity" ))\
+                           (( rho_v_v_v,        "Reynolds-averaged (y,y,y)-component of the momentum times the velocity times the velocity" ))\
+                           (( rho_v_v_w,        "Reynolds-averaged (y,y,z)-component of the momentum times the velocity times the velocity" ))\
+                           (( rho_v_w_w,        "Reynolds-averaged (y,z,z)-component of the momentum times the velocity times the velocity" ))\
+                           (( rho_w_w_w,        "Reynolds-averaged (z,z,z)-component of the momentum times the velocity times the velocity" ))\
+    ))(( rho_T_u,          (( rho_T_u,          "Reynolds-averaged x-component of the temperature times the velocity"                       ))\
+                           (( rho_T_v,          "Reynolds-averaged y-component of the temperature times the velocity"                       ))\
+                           (( rho_T_w,          "Reynolds-averaged z-component of the temperature times the velocity"                       ))\
+    ))(( rho_mu,           (( rho_mu,           "Reynolds-averaged dynamic viscosity times the density"                                     ))\
+    ))(( mu_S,             (( mu_Sxx,           "Reynolds-averaged (x,x)-component of the deviatoric portion of the strain rate"            ))\
+                           (( mu_Sxy,           "Reynolds-averaged (x,y)-component of the deviatoric portion of the strain rate"            ))\
+                           (( mu_Sxz,           "Reynolds-averaged (x,z)-component of the deviatoric portion of the strain rate"            ))\
+                           (( mu_Syy,           "Reynolds-averaged (y,y)-component of the deviatoric portion of the strain rate"            ))\
+                           (( mu_Syz,           "Reynolds-averaged (y,z)-component of the deviatoric portion of the strain rate"            ))\
+                           (( mu_Szz,           "Reynolds-averaged (z,z)-component of the deviatoric portion of the strain rate"            ))\
+    ))(( mu_div_u,         (( mu_div_u,         "Reynolds-averaged dynamic viscosity times divergence of the velocity"                      ))\
+    ))(( mu_grad_T,        (( mu_gradx_T,       "Reynolds-averaged x-component of dynamic viscosity times the temperature gradient"         ))\
+                           (( mu_grady_T,       "Reynolds-averaged y-component of dynamic viscosity times the temperature gradient"         ))\
+                           (( mu_gradz_T,       "Reynolds-averaged z-component of dynamic viscosity times the temperature gradient"         ))\
+    ))
 
 /**
- * A Boost.Preprocessor sequence of tuples of quantities computed
- * through implicit forcing.
+ * A Boost.Preprocessor sequence of tuples of scalar and vector quantities
+ * computed through implicit forcing.
+ * \copydetails SUZERAIN_PERFECT_QUANTITIES_WAVE
  */
-#define SUZERAIN_PERFECT_QUANTITIES_IMPLICIT         \
-    ((SrhoE,             1))  /* scalar           */ \
-    ((Srhou,             3))  /* vector           */ \
-    ((Srho,              1))  /* scalar           */ \
-    ((Srhou_dot_u,       1))  /* scalar           */ \
-    ((f,                 3))  /* vector           */ \
-    ((f_dot_u,           1))  /* scalar           */ \
-    ((qb,                1))  /* scalar           */ \
-    ((CrhoE,             1))  /* scalar           */ \
-    ((Crhou,             3))  /* vector           */ \
-    ((Crho,              1))  /* scalar           */ \
-    ((Crhou_dot_u,       1))  /* scalar           */
+#define SUZERAIN_PERFECT_QUANTITIES_IMPLICIT                                                                                                        \
+      (( SrhoE,       (( SrhoE,       "Reynolds-averaged total energy contributions due to slow growth forcing"                  ))\
+    ))(( Srhou,       (( Srhou,       "Reynolds-averaged streamwise momentum contributions due to slow growth forcing"           ))\
+                      (( Srhov,       "Reynolds-averaged wall-normal momentum contributions due to slow growth forcing"          ))\
+                      (( Srhow,       "Reynolds-averaged spanwise momentum contributions due to slow growth forcing"             ))\
+    ))(( Srho,        (( Srho,        "Reynolds-averaged mass contributions due to slow growth forcing"                          ))\
+    ))(( Srhou_dot_u, (( Srhou_dot_u, "Reynolds-averaged energy contribution due to slow growth forcing work"                    ))\
+    ))(( f,           (( fx,          "Reynolds-averaged x-component of the momentum forcing"                                    ))\
+                      (( fy,          "Reynolds-averaged y-component of the momentum forcing"                                    ))\
+                      (( fz,          "Reynolds-averaged z-component of the momentum forcing"                                    ))\
+    ))(( f_dot_u,     (( f_dot_u,     "Reynolds-averaged energy contribution due to momentum forcing work"                       ))\
+    ))(( qb,          (( qb,          "Reynolds-averaged volumetric energy forcing"                                              ))\
+    ))(( CrhoE,       (( CrhoE,       "Reynolds-averaged total energy contributions due to various integral constraints"         ))\
+    ))(( Crhou,       (( Crhou,       "Reynolds-averaged streamwise momentum contributions due to various integral constraints"  ))\
+                      (( Crhov,       "Reynolds-averaged wall-normal momentum contributions due to various integral constraints" ))\
+                      (( Crhow,       "Reynolds-averaged spanwise momentum contributions due to various integral constraints"    ))\
+    ))(( Crho,        (( Crho,        "Reynolds-averaged mass contributions due to various integral constraints"                 ))\
+    ))(( Crhou_dot_u, (( Crhou_dot_u, "Reynolds-averaged energy contribution due to work by various integral constraints"        ))\
+    ))
 
-/** A Boost.Preprocessor sequence of tuples of all sampled quantities. */
+/**
+ * A Boost.Preprocessor sequence of tuples of all sampled quantities.
+ * \copydetails SUZERAIN_PERFECT_QUANTITIES_WAVE
+ */
 #define SUZERAIN_PERFECT_QUANTITIES      \
     SUZERAIN_PERFECT_QUANTITIES_WAVE     \
     SUZERAIN_PERFECT_QUANTITIES_PHYSICAL \
     SUZERAIN_PERFECT_QUANTITIES_IMPLICIT
 
+#define NCOMPONENTS(r, data, tuple)                         \
+        BOOST_PP_SEQ_SIZE(BOOST_PP_TUPLE_ELEM(2, 1, tuple))
+
     /* Compile-time totals of the number of scalars sampled at each point */
     struct nscalars { enum {
-#define EXTRACT(r, data, tuple) BOOST_PP_TUPLE_ELEM(2, 1, tuple)
 #define SUM(s, state, x) BOOST_PP_ADD(state, x)
 
         wave = BOOST_PP_SEQ_FOLD_LEFT(SUM, 0, BOOST_PP_SEQ_TRANSFORM(
-                    EXTRACT,,SUZERAIN_PERFECT_QUANTITIES_WAVE)),
+                    NCOMPONENTS,,SUZERAIN_PERFECT_QUANTITIES_WAVE)),
 
         physical = BOOST_PP_SEQ_FOLD_LEFT(SUM, 0, BOOST_PP_SEQ_TRANSFORM(
-                    EXTRACT,,SUZERAIN_PERFECT_QUANTITIES_PHYSICAL)),
+                    NCOMPONENTS,,SUZERAIN_PERFECT_QUANTITIES_PHYSICAL)),
 
         implicit = BOOST_PP_SEQ_FOLD_LEFT(SUM, 0, BOOST_PP_SEQ_TRANSFORM(
-                    EXTRACT,,SUZERAIN_PERFECT_QUANTITIES_IMPLICIT)),
+                    NCOMPONENTS,,SUZERAIN_PERFECT_QUANTITIES_IMPLICIT)),
 
         total = BOOST_PP_SEQ_FOLD_LEFT(SUM, 0, BOOST_PP_SEQ_TRANSFORM(
-                    EXTRACT,,SUZERAIN_PERFECT_QUANTITIES))
+                    NCOMPONENTS,,SUZERAIN_PERFECT_QUANTITIES))
 
-#undef EXTRACT
 #undef SUM
     }; };
 
@@ -194,8 +259,11 @@ public:
      */
     bool load(const esio_handle h);
 
-#define OP(r, data, tuple)                                              \
-    BOOST_PP_TUPLE_ELEM(2, 0, tuple) = BOOST_PP_TUPLE_ELEM(2, 1, tuple)
+#define ASSIGN(r, data, tuple)                                              \
+        BOOST_PP_TUPLE_ELEM(2, 0, tuple) = BOOST_PP_TUPLE_ELEM(2, 1, tuple)
+
+#define QUANTITIES_NCOMPONENTS(r, data, tuple)                                          \
+        (BOOST_PP_TUPLE_ELEM(2, 0, tuple) BOOST_PP_COMMA() NCOMPONENTS(r, data, tuple))
 
     /** Compile-time offsets for each quantity within \c storage */
     struct start { enum {
@@ -203,7 +271,8 @@ public:
         physical = wave     + nscalars::wave,      // Start of physical block
         implicit = physical + nscalars::physical,  // Start of implicit block
         BOOST_PP_SEQ_ENUM(BOOST_PP_SEQ_TRANSFORM(
-                OP,,SUZERAIN_SHIFTED_SUM(SUZERAIN_PERFECT_QUANTITIES)))
+                ASSIGN,,SUZERAIN_SHIFTED_SUM(BOOST_PP_SEQ_TRANSFORM(
+                        QUANTITIES_NCOMPONENTS,,SUZERAIN_PERFECT_QUANTITIES))))
     }; };
 
     /**
@@ -231,11 +300,15 @@ public:
 
     /** Compile-time sizes for each quantity within \c storage */
     struct size { enum {
-        BOOST_PP_SEQ_ENUM(BOOST_PP_SEQ_TRANSFORM(OP,,
-                    SUZERAIN_PERFECT_QUANTITIES))
+        BOOST_PP_SEQ_ENUM(BOOST_PP_SEQ_TRANSFORM(ASSIGN,, BOOST_PP_SEQ_TRANSFORM(
+                QUANTITIES_NCOMPONENTS,,SUZERAIN_PERFECT_QUANTITIES)))
     }; };
 
-#undef OP
+#undef QUANTITIES_NCOMPONENTS
+
+#undef ASSIGN
+
+#undef NCOMPONENTS
 
     // Declare a named, mutable "view" into storage for each quantity
 #define DECLARE(r, data, tuple)                                               \
