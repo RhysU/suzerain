@@ -37,6 +37,7 @@
 
 #include <suzerain/common.hpp>
 #include <suzerain/blas_et_al.hpp>
+#include <suzerain/bspline.hpp>
 #include <suzerain/coalescing_pool.hpp>
 #include <suzerain/countof.h>
 #include <suzerain/diffwave.hpp>
@@ -47,6 +48,7 @@
 #include <suzerain/mpi_datatype.hpp>
 #include <suzerain/mpi.hpp>
 #include <suzerain/operator_base.hpp>
+#include <suzerain/pencil_grid.hpp>
 #include <suzerain/rholut.hpp>
 #include <suzerain/rngstream.hpp>
 #include <suzerain/shared_range.hpp>

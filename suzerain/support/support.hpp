@@ -38,13 +38,16 @@
 #endif
 
 #include <suzerain/common.hpp>
-#include <suzerain/bspline.hpp>
 #include <suzerain/exprparse.hpp>
-#include <suzerain/pencil_grid.hpp>
 #include <suzerain/state_fwd.hpp>
 #include <suzerain/support/esio_fwd.hpp>
 
 namespace suzerain {
+
+// Forward declarations
+class bspline;
+class bsplineop;
+class pencil_grid;
 
 /**
  * Contains cross-cutting functionality used within various Suzerain
