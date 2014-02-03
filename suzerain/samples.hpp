@@ -33,35 +33,11 @@
 namespace suzerain {
 
 /**
- * Encapsulates sample quantities like those detailed in the "Sampling
- * logistics" section of <tt>writeups/perfectgas.tex</tt>.
- *
- * Samples of each quantity are made available through two-dimensional,
- * column-major arrays.  The row index iterates over wall-normal B-spline
- * coefficients and the column index iterates over tensor indices.  Scalars
- * have only a single tensor index.  Vector quantities have three indices
- * corresponding to the streamwise x, wall-normal y, and spanwise z directions.
- * Symmetric tensors (for example, \f$\overline{\mu{}S}\f$}) have six entries
- * corresponding to the <tt>xx</tt>, <tt>xy</tt>, <tt>xz</tt>, <tt>yy</tt>,
- * <tt>yz</tt>, and <tt>zz</tt> indices.  Rank one triple products (for example
- * \f$\overline{\rho{}u\otimes{}u\otimes{}u}\f$) have ten entries corresponding
- * to the <tt>xxx</tt>, <tt>xxy</tt>, <tt>xxz</tt>, <tt>xyy</tt>, <tt>xyz</tt>,
- * <tt>xzz</tt>, <tt>yyy</tt>, <tt>yyz</tt>, <tt>yzz</tt>, and <tt>zzz</tt>
- * indices.
- *
- * \internal Many memory overhead and implementation consistency issues have
- * been traded for the headache of reading Boost.Preprocessor-based logic.  So
- * it goes.
- */
-class samples
-{
-public:
-
-/**
  * A Boost.Preprocessor sequence of tuples of scalar and vector quantities
  * generally sampled in wave space.  The second element of the tuple is a
  * Boost.Preprocessor sequence of tuples naming and describing each scalar
  * component.  The number of scalar components is the length of that sequence.
+ * These are part of the data found in \ref profile.
  */
 #define SUZERAIN_SAMPLES_WAVE                                                           \
       (( rho,   (( rho,    "Reynolds-averaged density"                               )) \
@@ -182,6 +158,31 @@ public:
     SUZERAIN_SAMPLES_WAVE     \
     SUZERAIN_SAMPLES_PHYSICAL \
     SUZERAIN_SAMPLES_IMPLICIT
+
+/**
+ * Encapsulates sample quantities like those detailed in the "Sampling
+ * logistics" section of <tt>writeups/perfectgas.tex</tt>.
+ *
+ * Samples of each quantity are made available through two-dimensional,
+ * column-major arrays.  The row index iterates over wall-normal B-spline
+ * coefficients and the column index iterates over tensor indices.  Scalars
+ * have only a single tensor index.  Vector quantities have three indices
+ * corresponding to the streamwise x, wall-normal y, and spanwise z directions.
+ * Symmetric tensors (for example, \f$\overline{\mu{}S}\f$}) have six entries
+ * corresponding to the <tt>xx</tt>, <tt>xy</tt>, <tt>xz</tt>, <tt>yy</tt>,
+ * <tt>yz</tt>, and <tt>zz</tt> indices.  Rank one triple products (for example
+ * \f$\overline{\rho{}u\otimes{}u\otimes{}u}\f$) have ten entries corresponding
+ * to the <tt>xxx</tt>, <tt>xxy</tt>, <tt>xxz</tt>, <tt>xyy</tt>, <tt>xyz</tt>,
+ * <tt>xzz</tt>, <tt>yyy</tt>, <tt>yyz</tt>, <tt>yzz</tt>, and <tt>zzz</tt>
+ * indices.
+ *
+ * \internal Many memory overhead and implementation consistency issues have
+ * been traded for the headache of reading Boost.Preprocessor-based logic.  So
+ * it goes.
+ */
+class samples
+{
+public:
 
 #define NCOMPONENTS(r, data, tuple)                         \
         BOOST_PP_SEQ_SIZE(BOOST_PP_TUPLE_ELEM(2, 1, tuple))
