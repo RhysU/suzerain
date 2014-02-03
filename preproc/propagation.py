@@ -456,12 +456,13 @@ def main(argv):
                    help='file containing SymPy-based declarations;'
                         ' process standard input when "-" supplied')
     g = p.add_mutually_exclusive_group()
-    g.add_argument('-c', '--ccode', dest='repr', default=str,
+    g.add_argument('-c', '--ccode', dest='fmt', default=str,
                    help='output symbolic expressions as C code',
                    action='store_const', const=sympy.ccode)
-    g.add_argument('-f', '--fcode', dest='repr', default=SUPPRESS,
+    g.add_argument('-f', '--fcode', dest='fmt', default=SUPPRESS,
                    help='output symbolic expressions as Fortran code',
-                   action='store_const', const=sympy.fcode)
+                   action='store_const',
+                   const=lambda x: sympy.fcode(x, source_format='free'))
 
     # Add command-specific subparsers
     sp = p.add_subparsers(title='Operations to perform on declarations',
@@ -518,7 +519,7 @@ def command_chk(args, syms):
 def command_dec(args, syms):
     r'''Process the 'dec' command on behalf of main()'''
     for qoi in args.f:
-        print(qoi, '=', syms[qoi])
+        print(qoi, '=', args.fmt(syms[qoi]))
     return 0
 
 
@@ -535,14 +536,14 @@ def command_exp(args, syms):
     r'''Process the 'exp' command on behalf of main()'''
     for qoi in args.f:
         m = expectation(syms[qoi])
-        print('E[', qoi, '] = (\n', m.__str__(args.repr), ')\n', sep='')
+        print('E[', qoi, '] = (\n', m.__str__(args.fmt), ')\n', sep='')
 
 
 def command_var(args, syms):
     r'''Process the 'var' command on behalf of main()'''
     for qoi in args.f:
         m = variance(syms[qoi])
-        print('Var[', qoi, '] = (\n', m.__str__(args.repr), ')\n', sep='')
+        print('Var[', qoi, '] = (\n', m.__str__(args.fmt), ')\n', sep='')
 
 
 if __name__ == "__main__":
