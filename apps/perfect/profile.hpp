@@ -47,14 +47,14 @@ namespace suzerain {
 // Forward declarations
 class bspline;
 class bsplineop_lu;
-class specification_largo;
 class operator_tools;
+class samples;
+class specification_largo;
 
 namespace perfect {
 
 // Forward declarations
 class definition_scenario;
-class quantities;
 
 /**
  * Encapsulates solution profiles necessary for using \ref bl.h
@@ -185,10 +185,10 @@ public:
 #undef DECLARE
 
     /**
-     * Copy information from a \ref quantities instance.
+     * Copy information from a \ref samples instance.
      * May permit avoiding \ref sample_profile calls in some circumstances.
      */
-    profile& operator=(const quantities &q);
+    profile& operator=(const samples &q);
 
 };
 

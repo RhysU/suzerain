@@ -39,12 +39,12 @@
 #include <suzerain/pencil_grid.hpp>
 #include <suzerain/physical_view.hpp>
 #include <suzerain/rholut.hpp>
+#include <suzerain/samples.hpp>
 #include <suzerain/specification_grid.hpp>
 #include <suzerain/specification_largo.hpp>
 #include <suzerain/state.hpp>
 #include <suzerain/support/logging.hpp>
 
-#include "quantities.hpp"
 #include "definition_scenario.hpp"
 
 using boost::numeric_cast;
@@ -63,7 +63,7 @@ profile::profile(
 {
 }
 
-profile& profile::operator=(const quantities &q)
+profile& profile::operator=(const samples &q)
 {
     // Resize our storage and defensively NaN in case we miss something
     this->storage.setConstant(q.storage.rows(),

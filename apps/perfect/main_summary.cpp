@@ -38,6 +38,7 @@
 #include <suzerain/physical_view.hpp>
 #include <suzerain/pre_gsl.h>
 #include <suzerain/rholut.hpp>
+#include <suzerain/samples.hpp>
 #include <suzerain/support/definition_grid.hpp>
 #include <suzerain/support/logging.hpp>
 #include <suzerain/support/program_options.hpp>
@@ -46,7 +47,6 @@
 
 #include "driver.hpp"
 #include "perfect.hpp"
-#include "quantities.hpp"
 #include "definition_scenario.hpp"
 
 #pragma warning(disable:1419)
@@ -641,8 +641,8 @@ suzerain::perfect::sample::process(
     }
 
     // Load samples as coefficients
-    std::auto_ptr<perfect::quantities> q(new perfect::quantities(time, b->n()));
-    q->load(h.get());
+    std::auto_ptr<samples> q(new samples(time, b->n()));
+    support::load_samples(h.get(), *q);
     if (q->t >= 0) {
         DEBUG0("Successfully loaded sample collection from " << filename);
     } else {

@@ -35,10 +35,12 @@
 
 #include "common_block.hpp"
 #include "manufactured_solution.hpp"
-#include "quantities.hpp"
 #include "definition_scenario.hpp"
 
 namespace suzerain {
+
+// Forward declarations
+class samples;
 
 namespace perfect {
 
@@ -97,7 +99,7 @@ public:
      * mechanism to avoid expensive recomputations.  Implicitly computed mean
      * quantities are tracked via \ref common_block.
      */
-    quantities mean;
+    shared_ptr<samples> mean;
 
     /**
      * When \c msoln is true, log messages containing the absolute

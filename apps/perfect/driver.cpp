@@ -35,6 +35,7 @@
 #include <suzerain/l2.hpp>
 #include <suzerain/ndx.hpp>
 #include <suzerain/operator_tools.hpp>
+#include <suzerain/samples.hpp>
 #include <suzerain/support/logging.hpp>
 #include <suzerain/support/support.hpp>
 
@@ -212,7 +213,7 @@ void driver::log_quantities_of_interest(
     SUZERAIN_TIMER_SCOPED("driver::log_quantities_of_interest");
 
     // When possible, any operator_tools superclass of N is reused so that
-    // sample_quantities may benefit from any cached factorizations.
+    // take_samples may benefit from any cached factorizations.
     shared_ptr<operator_tools> otool
             = dynamic_pointer_cast<operator_tools>(N);
     if (!otool) {
@@ -222,8 +223,8 @@ void driver::log_quantities_of_interest(
     // If possible, use existing information from mean quantities
     // Otherwise compute from instantaneous fields stored in state_linear
     profile prof;
-    if (controller && t == mean.t) {
-        prof = mean;
+    if (controller && mean && mean->t == t) {
+        prof = *mean;
     } else {
         state_nonlinear->assign_from(*state_linear);
         prof = sample_profile(*scenario, *otool, *state_nonlinear);
@@ -282,33 +283,33 @@ driver::compute_statistics(
     // Obtain mean samples from instantaneous fields stored in state_linear
     state_nonlinear->assign_from(*state_linear);
     // When possible, any operator_tools superclass of N is reused so that
-    // sample_quantities may benefit from any cached factorizations.
+    // take_samples may benefit from any cached factorizations.
     shared_ptr<operator_tools> otool
             = dynamic_pointer_cast<operator_tools>(N);
     if (!otool) {
         otool = make_shared<operator_tools>(*grid, *dgrid, *cop);
     }
-    mean = sample_quantities(*scenario, *otool, *state_nonlinear, t);
+    mean = take_samples(*scenario, *otool, *state_nonlinear, t);
 
     // Obtain mean quantities computed via implicit forcing (when possible)
-    if (common_block.implicits.rows() == mean.storage.rows()) {
-        mean.SrhoE()        = common_block.SrhoE();
-        mean.Srhou().col(0) = common_block.Srhou();
-        mean.Srhou().col(1) = common_block.Srhov();
-        mean.Srhou().col(2) = common_block.Srhow();
-        mean.Srho()         = common_block.Srho();
-        mean.Srhou_dot_u()  = common_block.Srhou_dot_u();
-        mean.f().col(0)     = common_block.fx();
-        mean.f().col(1)     = common_block.fy();
-        mean.f().col(2)     = common_block.fz();
-        mean.f_dot_u()      = common_block.f_dot_u();
-        mean.qb()           = common_block.qb();
-        mean.CrhoE()        = common_block.CrhoE();
-        mean.Crhou().col(0) = common_block.Crhou();
-        mean.Crhou().col(1) = common_block.Crhov();
-        mean.Crhou().col(2) = common_block.Crhow();
-        mean.Crho()         = common_block.Crho();
-        mean.Crhou_dot_u()  = common_block.Crhou_dot_u();
+    if (common_block.implicits.rows() == mean->storage.rows()) {
+        mean->SrhoE()        = common_block.SrhoE();
+        mean->Srhou().col(0) = common_block.Srhou();
+        mean->Srhou().col(1) = common_block.Srhov();
+        mean->Srhou().col(2) = common_block.Srhow();
+        mean->Srho()         = common_block.Srho();
+        mean->Srhou_dot_u()  = common_block.Srhou_dot_u();
+        mean->f().col(0)     = common_block.fx();
+        mean->f().col(1)     = common_block.fy();
+        mean->f().col(2)     = common_block.fz();
+        mean->f_dot_u()      = common_block.f_dot_u();
+        mean->qb()           = common_block.qb();
+        mean->CrhoE()        = common_block.CrhoE();
+        mean->Crhou().col(0) = common_block.Crhou();
+        mean->Crhou().col(1) = common_block.Crhov();
+        mean->Crhou().col(2) = common_block.Crhow();
+        mean->Crho()         = common_block.Crho();
+        mean->Crhou_dot_u()  = common_block.Crhou_dot_u();
     } else {
         WARN0(who, "Could not obtain mean quantities set by implicit forcing");
         common_block.implicits.setConstant(
@@ -319,10 +320,10 @@ driver::compute_statistics(
     bsplineop_lu mass(*cop);
     mass.opform_mass(*cop);
     mass.factor();
-    mass.solve(quantities::nscalars::implicit,
-               mean.storage.middleCols<quantities::nscalars::implicit>(
-                   quantities::start::implicit).data(),
-               mean.storage.innerStride(), mean.storage.outerStride());
+    mass.solve(samples::nscalars::implicit,
+               mean->storage.middleCols<samples::nscalars::implicit>(
+                   samples::start::implicit).data(),
+               mean->storage.innerStride(), mean->storage.outerStride());
 }
 
 bool
@@ -370,7 +371,7 @@ driver::save_statistics_hook(
 {
     // Should we compute fresh statistics or re-use cached values?
 #pragma warning(push,disable:1572)
-    const bool use_cached = controller && (t == mean.t);
+    const bool use_cached = controller && mean && (mean->t == t);
 #pragma warning(pop)
 
     // Compute a prefix for logging purposes, including a trailing space
@@ -393,7 +394,7 @@ driver::save_statistics_hook(
 
     // Save statistics and invoke superclass hook
     // FIXME Also save boundary layer quantities of interest when one-sided?
-    if (!mean.save(esioh)) {
+    if (!support::save_samples(esioh, *mean)) {
         WARN0(who, "Incomplete statistics saved at time " << t);
     }
     return super::save_statistics_hook(esioh, t);
@@ -403,11 +404,15 @@ void
 driver::load_statistics_hook(
         const esio_handle esioh)
 {
-    support::load_time(esioh, mean.t);
-    if (!mean.load(esioh)) {
+    if (!mean) {
+        mean.reset(new samples());
+    }
+    support::load_time(esioh, mean->t);
+
+    if (!support::load_samples(esioh, *mean)) {
         // Notice this forces use_cached == false in save_statistics_hook
-        WARN0(who, "Incomplete statistics loaded from time " << mean.t);
-        mean.t = std::numeric_limits<real_t>::quiet_NaN();
+        WARN0(who, "Incomplete statistics loaded from time " << mean->t);
+        mean->t = std::numeric_limits<real_t>::quiet_NaN();
     }
     return super::load_statistics_hook(esioh);
 }

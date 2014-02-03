@@ -34,6 +34,7 @@
 #include <suzerain/math.hpp>
 #include <suzerain/mpi.hpp>
 #include <suzerain/pre_gsl.h>
+#include <suzerain/samples.hpp>
 #include <suzerain/support/definition_grid.hpp>
 #include <suzerain/support/definition_time.hpp>
 #include <suzerain/support/logging.hpp>
@@ -41,7 +42,6 @@
 #include <suzerain/support/support.hpp>
 
 #include "perfect.hpp"
-#include "quantities.hpp"
 #include "definition_scenario.hpp"
 
 // Introduce shorthand for common names
@@ -780,8 +780,8 @@ static quantity::storage_map_type process(
     }
 
     // Load samples as coefficients
-    auto_ptr<perfect::quantities> q(new perfect::quantities(time, b->n()));
-    q->load(h.get());
+    auto_ptr<suzerain::samples> q(new suzerain::samples(time, b->n()));
+    support::load_samples(h.get(), *q);
     if (q->t >= 0) {
         DEBUG0("Successfully loaded sample collection from " << filename);
     } else {
