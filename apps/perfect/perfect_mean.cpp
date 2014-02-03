@@ -707,100 +707,12 @@ static quantity::storage_map_type process(
                 (storage_type::Index) storage_type::ColsAtCompileTime));
     s->fill(numeric_limits<real_t>::quiet_NaN());  // ++paranoia
 
-#define ACCUMULATE(coeff_name, coeff_col, point_name)                 \
-    cop->accumulate(0, 1.0, q->coeff_name().col(coeff_col).data(), 1, \
-                    0.0, s->col(quantity::point_name).data(),   1)
-    ACCUMULATE(rho,              0, bar_rho               );
-    ACCUMULATE(rho_u,            0, bar_rho_u             );
-    ACCUMULATE(rho_u,            1, bar_rho_v             );
-    ACCUMULATE(rho_u,            2, bar_rho_w             );
-    ACCUMULATE(rho_E,            0, bar_rho_E             );
-    ACCUMULATE(E,                0, bar_E                 );
-    ACCUMULATE(T,                0, bar_T                 );
-    ACCUMULATE(a,                0, bar_a                 );
-    ACCUMULATE(h0,               0, bar_h0                );
-    ACCUMULATE(H0,               0, bar_H0                );
-    ACCUMULATE(mu,               0, bar_mu                );
-    ACCUMULATE(nu,               0, bar_nu                );
-    ACCUMULATE(u,                0, bar_u                 );
-    ACCUMULATE(u,                1, bar_v                 );
-    ACCUMULATE(u,                2, bar_w                 );
-    ACCUMULATE(sym_grad_u,       0, bar_symxx_grad_u      );
-    ACCUMULATE(sym_grad_u,       1, bar_symxy_grad_u      );
-    ACCUMULATE(sym_grad_u,       2, bar_symxz_grad_u      );
-    ACCUMULATE(sym_grad_u,       3, bar_symyy_grad_u      );
-    ACCUMULATE(sym_grad_u,       4, bar_symyz_grad_u      );
-    ACCUMULATE(sym_grad_u,       5, bar_symzz_grad_u      );
-    ACCUMULATE(sym_rho_grad_u,   0, bar_symxx_rho_grad_u  );
-    ACCUMULATE(sym_rho_grad_u,   1, bar_symxy_rho_grad_u  );
-    ACCUMULATE(sym_rho_grad_u,   2, bar_symxz_rho_grad_u  );
-    ACCUMULATE(sym_rho_grad_u,   3, bar_symyy_rho_grad_u  );
-    ACCUMULATE(sym_rho_grad_u,   4, bar_symyz_rho_grad_u  );
-    ACCUMULATE(sym_rho_grad_u,   5, bar_symzz_rho_grad_u  );
-    ACCUMULATE(grad_T,           0, bar_gradx_T           );
-    ACCUMULATE(grad_T,           1, bar_grady_T           );
-    ACCUMULATE(grad_T,           2, bar_gradz_T           );
-    ACCUMULATE(rho_grad_T,       0, bar_rho_gradx_T       );
-    ACCUMULATE(rho_grad_T,       1, bar_rho_grady_T       );
-    ACCUMULATE(rho_grad_T,       2, bar_rho_gradz_T       );
-    ACCUMULATE(tau_colon_grad_u, 0, bar_tau_colon_grad_u  );
-    ACCUMULATE(tau,              0, bar_tauxx             );
-    ACCUMULATE(tau,              1, bar_tauxy             );
-    ACCUMULATE(tau,              2, bar_tauxz             );
-    ACCUMULATE(tau,              3, bar_tauyy             );
-    ACCUMULATE(tau,              4, bar_tauyz             );
-    ACCUMULATE(tau,              5, bar_tauzz             );
-    ACCUMULATE(tau_u,            0, bar_tauux             );
-    ACCUMULATE(tau_u,            1, bar_tauuy             );
-    ACCUMULATE(tau_u,            2, bar_tauuz             );
-    ACCUMULATE(p_div_u,          0, bar_p_div_u           );
-    ACCUMULATE(rho_u_u,          0, bar_rho_u_u           );
-    ACCUMULATE(rho_u_u,          1, bar_rho_u_v           );
-    ACCUMULATE(rho_u_u,          2, bar_rho_u_w           );
-    ACCUMULATE(rho_u_u,          3, bar_rho_v_v           );
-    ACCUMULATE(rho_u_u,          4, bar_rho_v_w           );
-    ACCUMULATE(rho_u_u,          5, bar_rho_w_w           );
-    ACCUMULATE(rho_u_u_u,        0, bar_rho_u_u_u         );
-    ACCUMULATE(rho_u_u_u,        1, bar_rho_u_u_v         );
-    ACCUMULATE(rho_u_u_u,        2, bar_rho_u_u_w         );
-    ACCUMULATE(rho_u_u_u,        3, bar_rho_u_v_v         );
-    ACCUMULATE(rho_u_u_u,        4, bar_rho_u_v_w         );
-    ACCUMULATE(rho_u_u_u,        5, bar_rho_u_w_w         );
-    ACCUMULATE(rho_u_u_u,        6, bar_rho_v_v_v         );
-    ACCUMULATE(rho_u_u_u,        7, bar_rho_v_v_w         );
-    ACCUMULATE(rho_u_u_u,        8, bar_rho_v_w_w         );
-    ACCUMULATE(rho_u_u_u,        9, bar_rho_w_w_w         );
-    ACCUMULATE(rho_T_u,          0, bar_rho_T_u           );
-    ACCUMULATE(rho_T_u,          1, bar_rho_T_v           );
-    ACCUMULATE(rho_T_u,          2, bar_rho_T_w           );
-    ACCUMULATE(rho_mu,           0, bar_rho_mu            );
-    ACCUMULATE(mu_S,             0, bar_mu_Sxx            );
-    ACCUMULATE(mu_S,             1, bar_mu_Sxy            );
-    ACCUMULATE(mu_S,             2, bar_mu_Sxz            );
-    ACCUMULATE(mu_S,             3, bar_mu_Syy            );
-    ACCUMULATE(mu_S,             4, bar_mu_Syz            );
-    ACCUMULATE(mu_S,             5, bar_mu_Szz            );
-    ACCUMULATE(mu_div_u,         0, bar_mu_div_u          );
-    ACCUMULATE(mu_grad_T,        0, bar_mu_gradx_T        );
-    ACCUMULATE(mu_grad_T,        1, bar_mu_grady_T        );
-    ACCUMULATE(mu_grad_T,        2, bar_mu_gradz_T        );
-    ACCUMULATE(f,                0, bar_fx                );
-    ACCUMULATE(f,                1, bar_fy                );
-    ACCUMULATE(f,                2, bar_fz                );
-    ACCUMULATE(qb,               0, bar_qb                );
-    ACCUMULATE(f_dot_u,          0, bar_f_dot_u           );
-    ACCUMULATE(Srho,             0, bar_Srho              );
-    ACCUMULATE(Srhou,            0, bar_Srhou             );
-    ACCUMULATE(Srhou,            1, bar_Srhov             );
-    ACCUMULATE(Srhou,            2, bar_Srhow             );
-    ACCUMULATE(SrhoE,            0, bar_SrhoE             );
-    ACCUMULATE(Srhou_dot_u,      0, bar_Srhou_dot_u       );
-    ACCUMULATE(Crho,             0, bar_Crho              );
-    ACCUMULATE(Crhou,            0, bar_Crhou             );
-    ACCUMULATE(Crhou,            1, bar_Crhov             );
-    ACCUMULATE(Crhou,            2, bar_Crhow             );
-    ACCUMULATE(CrhoE,            0, bar_CrhoE             );
-    ACCUMULATE(Crhou_dot_u,      0, bar_Crhou_dot_u       );
+#define ACCUMULATE(coeff_name, component, offset, description)                         \
+    cop->accumulate(0, 1.0, q->coeff_name().col(offset).data(),                    1,  \
+                       0.0, s->col(quantity::BOOST_PP_CAT(bar_,component)).data(), 1);
+
+    SUZERAIN_SAMPLES_COMPONENTS_FOR_EACH(ACCUMULATE, SUZERAIN_SAMPLES)
+
 #undef ACCUMULATE
 
     // Store time and collocation points into s.
