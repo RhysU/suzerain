@@ -53,6 +53,7 @@
  */
 #define SUZERAIN_SAMPLES_PHYSICAL                                                                                                              \
       (( E,                (( E,                "Reynolds-averaged total (intrinsic plus kinetic) energy per unit mass"                     )) \
+    ))(( p,                (( p,                "Reynolds-averaged pressure"                                                                )) \
     ))(( T,                (( T,                "Reynolds-averaged temperature"                                                             )) \
     ))(( a,                (( a,                "Reynolds-averaged speed of sound"                                                          )) \
     ))(( h0,               (( h0,               "Reynolds-averaged stagnation enthalpy"                                                     )) \

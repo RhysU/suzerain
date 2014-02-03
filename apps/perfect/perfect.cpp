@@ -747,6 +747,8 @@ take_samples(const definition_scenario &scenario,
             // Accumulate quantities into sum_XXX using function syntax.
             sum_E[0](e / rho);
 
+            sum_p[0](p);
+
             sum_T[0](T);
 
             sum_a[0](std::sqrt(T));
