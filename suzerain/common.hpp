@@ -58,6 +58,7 @@
 #include <vector>
 
 // If possible, begin suppressing warnings from Eigen and Boost headers
+SUZERAIN_GCC_DIAG_OFF(extra);
 SUZERAIN_GCC_DIAG_OFF(ignored-qualifiers);
 SUZERAIN_GCC_DIAG_OFF(suggest-attribute=const);
 SUZERAIN_GCC_DIAG_OFF(suggest-attribute=noreturn);
@@ -119,6 +120,7 @@ SUZERAIN_GCC_DIAG_OFF(unused-variable);
 #include <boost/utility.hpp>
 
 // If possible, stop suppressing warnings from Eigen and Boost headers
+SUZERAIN_GCC_DIAG_ON(extra);
 SUZERAIN_GCC_DIAG_ON(unused-variable);
 SUZERAIN_GCC_DIAG_ON(unused-parameter);
 SUZERAIN_GCC_DIAG_ON(suggest-attribute=pure);
