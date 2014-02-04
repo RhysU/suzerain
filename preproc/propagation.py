@@ -50,27 +50,32 @@ import fileinput
 import itertools
 import sympy
 import sympy.parsing.sympy_parser
-from sympy.physics.units import Unit
+import sympy.physics.units
 
 # TODO How to handle uncertainty in derivatives of measured quantities?
 # Likely verdict: Chain out derivatives
 #                 Deal with correlation between state and derivatives
 
-# TODO I don't like how the declaration files are handled with -d
-# Rework CLI interface to always snarf stdin unless 'chk' active
+
+def constant(abbrev, name=None):
+    r'''
+    Define a constant with only trivial derivatives.
+    '''
+    return sympy.physics.units.Unit(name if name else abbrev, abbrev)
+
 
 # TODO Permit user-defined constants from parsing
 # Supply the following set only on a given command line option
 
 "Symbolic constants known at parse time to have zero derivatives."
 constants = {
-    'alpha': Unit('Ratio of bulk to dynamic viscosity', 'alpha'),
-    'beta':  Unit('Temperature power law exponent',     'beta'),
-    'gamma': Unit('Ratio of specific heats',            'gamma'),
-    'Kn':    Unit('Knudsen number',                     'Kn'),
-    'Ma':    Unit('Mach number',                        'Ma'),
-    'Pr':    Unit('Prandtl number',                     'Pr'),
-    'Re':    Unit('Reynolds number',                    'Re'),
+    'alpha': constant('alpha', 'Constant ratio of bulk to dynamic viscosity'),
+    'beta':  constant('beta',  'Constant temperature power law exponent'),
+    'gamma': constant('gamma', 'Constant ratio of specific heats'),
+    'Kn':    constant('Kn',    'Constant Knudsen number'),
+    'Ma':    constant('Ma',    'Constant Mach number'),
+    'Pr':    constant('Pr',    'Constant Prandtl number'),
+    'Re':    constant('Re',    'Constant Reynolds number'),
 }
 
 
