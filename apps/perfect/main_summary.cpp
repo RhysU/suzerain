@@ -45,6 +45,7 @@
 #include <suzerain/support/support.hpp>
 #include <suzerain/validation.hpp>
 
+#include "ar.hpp"
 #include "driver.hpp"
 #include "perfect.hpp"
 #include "definition_scenario.hpp"
@@ -62,20 +63,34 @@ struct driver_summary : public driver
         : driver("Compressible, perfect gas simulation summarization",
                  "RESTART-OR-SAMPLE-HDF5-FILE...",
 "Invocable in four distinct ways:\n"
-"\t1) perfect_summary                INFILE.h5 ...\n"
-"\t2) perfect_summary -s             INFILE.h5 ...\n"
-"\t3) perfect_summary -f OUTFILE.dat INFILE.h5 ...\n"
-"\t4) perfect_summary -o OUTFILE.h5  INFILE.h5 ...\n"
 "\n"
-"The first way processes each INFILE.h5 in turn outputting a corresponding\n"
-"INFILE.mean containing a whitespace-separated table of means from the first\n"
-"samples in the file.  The second way (-s) sends the data from all\n "
-"samples to standard output sorted according to the simulation\n "
-"time with a blank line separating adjacent times.  The third way (-f)\n"
-"is identical to the second except the output is automatically sent to the\n"
-"file named OUTFILE.dat.  The fourth way (-o) outputs a single HDF5 file\n"
-"called OUTFILE.h5 containing all samples. Options -s, -f,  and\n"
-"-o may be specified simultaneously.\n",
+"  1) perfect_summary                INFILE.h5 ...\n"
+"\n"
+"     This first way processes each INFILE.h5 in turn outputting a\n"
+"     corresponding INFILE.mean containing a whitespace-separated table\n"
+"     of means from the first samples in the file.  Useful primarily for\n"
+"     quick plotting of a single snapshot.\n"
+"\n"
+"  2) perfect_summary -s             INFILE.h5 ...\n"
+"\n"
+"     This second way (-s) sends the data from all samples to standard\n"
+"     output sorted according to the simulation time with a blank line\n"
+"     separating adjacent times.  Useful primarily for quick plotting of\n"
+"     multiple snapshots.\n"
+"\n"
+"  3) perfect_summary -f OUTFILE.dat INFILE.h5 ...\n"
+"\n"
+"     This third way (-f) is identical to the second except the output is\n"
+"     automatically sent to the file named OUTFILE.dat.\n"
+"\n"
+"  4) perfect_summary -o OUTFILE.h5  INFILE.h5 ...\n"
+"\n"
+"     This fourth way (-o) outputs a single HDF5 file called OUTFILE.h5\n"
+"     combining all samples.  Additionally, automatic autocorrelation\n"
+"     analysis using autoregresive modeling techniques is run on the\n"
+"     combined samples and output as HDF5 attributes.\n"
+"\n"
+"Options -s, -f, and -o may be specified simultaneously.\n",
                  revstr)
         , who("summary")
         , boplu()
@@ -282,21 +297,51 @@ int main(int argc, char **argv)
 int
 suzerain::perfect::driver_summary::run(int argc, char **argv)
 {
-    // Establish binary-specific options
+    namespace po = boost::program_options;
+
+    // Establish general, binary-specific options
     bool clobber;
     std::string datfile;
     std::string hdffile;
     options.add_options()
-        ("clobber",    boost::program_options::bool_switch(&clobber)
-                       ->default_value(false),
+        ("clobber",    po::bool_switch(&clobber)->default_value(false),
          "Overwrite any existing HDF5 output files?")
-        ("stdout,s",   "Write results to standard output?")
-        ("datfile,f",  boost::program_options::value(&datfile),
-                       "Write results to a textual output file")
-        ("hdffile,o",  boost::program_options::value(&hdffile),
-                       "Write results to an HDF5 output file")
-        ("describe,d", "Dump all sample descriptions to standard output")
+        ("stdout,s",
+         "Write results to standard output?")
+        ("datfile,f",  po::value(&datfile),
+         "Write results to a textual output file")
+        ("hdffile,o",  po::value(&hdffile),
+         "Write results to an HDF5 output file")
+        ("describe,d",
+         "Dump all sample descriptions to standard output")
         ;
+
+    // Establish options related to autoregressive model processing
+    po::options_description ar_options(
+        "Automatic autocorrelation analysis by AR(p) models");
+    std::string ar_criterion = "CIC";
+    std::size_t ar_minorder  = 0;
+    std::size_t ar_maxorder  = 512;
+    bool        ar_absrho    = false;
+    double      ar_wlenT0    = 7;
+    ar_options.add_options()
+        ("criterion",
+         po::value(&ar_criterion)->default_value(ar_criterion),
+         "Use the specified model selection criterion")
+        ("minorder",
+         po::value(&ar_minorder)->default_value(ar_minorder)->value_name("MIN"),
+         "Consider only models of at least order AR(p=MIN)")
+        ("maxorder",
+         po::value(&ar_maxorder)->default_value(ar_maxorder)->value_name("MAX"),
+         "Consider only models of at most order AR(p=MAX)")
+        ("absolute_rho",
+         po::bool_switch(&ar_absrho)->default_value(ar_absrho),
+         "Use absolute autocorrelation when integrating for T0")
+        ("window_T0",
+         po::value(&ar_wlenT0)->default_value(ar_wlenT0)->value_name("WLEN"),
+         "Integrate for T0 until WLEN times the input length")
+        ;
+    options.options().add(ar_options);  // Yeeeech
 
     // Initialize application and then process binary-specific options
     // (henceforth suzerain::support::logging macros become usable)
