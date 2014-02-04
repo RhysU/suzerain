@@ -284,15 +284,19 @@ int
 suzerain::perfect::driver_summary::run(int argc, char **argv)
 {
     // Establish binary-specific options
+    bool clobber;
     std::string datfile;
     std::string hdffile;
     options.add_options()
+        ("clobber",    boost::program_options::bool_switch(&clobber)
+                       ->default_value(false),
+         "Overwrite any existing HDF5 output files?")
         ("stdout,s",   "Write results to standard output?")
-        ("datfile,f",   boost::program_options::value(&datfile),
-                        "Write results to a textual output file")
-        ("hdffile,o",   boost::program_options::value(&hdffile),
-                        "Write results to an HDF5 output file")
-        ("describe,d", "Dump all sample details to standard output")
+        ("datfile,f",  boost::program_options::value(&datfile),
+                       "Write results to a textual output file")
+        ("hdffile,o",  boost::program_options::value(&hdffile),
+                       "Write results to an HDF5 output file")
+        ("describe,d", "Dump all sample descriptions to standard output")
         ;
 
     // Initialize application and then process binary-specific options
@@ -306,6 +310,13 @@ suzerain::perfect::driver_summary::run(int argc, char **argv)
     // Ensure that we're running in a single processor environment
     if (mpi::comm_size(MPI_COMM_WORLD) > 1) {
         FATAL(argv[0] << " only intended to run on single rank");
+        return EXIT_FAILURE;
+    }
+
+    // Die if the non-HDF5 datfile argument ended with '.h5' like an HDF5 file
+    // Defends (somewhat) against clobbering potentially valuable results
+    if (use_dat && boost::algorithm::ends_with(datfile, ".h5")) {
+        FATAL("Cowardly refusing to output a 'datfile' ending in '.h5'");
         return EXIT_FAILURE;
     }
 
@@ -434,16 +445,10 @@ suzerain::perfect::driver_summary::run(int argc, char **argv)
                     esio_handle_initialize(MPI_COMM_WORLD),
                     esio_handle_finalize);
 
-            // Create output file
+            // Create output file and store metadata
             DEBUG("Creating file " << hdffile);
-            esio_file_create(h.get(), hdffile.c_str(), 1 /* overwrite */);
-
-            // Store the scenario and numerics metadata
-            // TODO Usage driver_base and application_base infrastructure
-            scenario->save(h.get());
-            grid->save(h.get());
-            support::save_bsplines(h.get(), *b, *cop);
-            gop.reset();
+            esio_file_create(h.get(), hdffile.c_str(), clobber);
+            save_metadata(h.get());
 
             // Determine how many time indices and collocation points we have.
             // We'll build a vector of time values to write after iteration.
@@ -527,8 +532,8 @@ suzerain::perfect::sample::process(
     DEBUG("Loading file " << filename);
     esio_file_open(h.get(), filename.c_str(), 0 /* read-only */);
 
-    // Load time, scenario, grid, time, and B-spline details from file.
-    // TODO Usage driver_base and application_base infrastructure
+    // Load time, scenario, grid, time, and B-spline details from file
+    // (cannot use driver_base::load_metadata as method is freestanding)
     real_t time;
     definition_scenario scenario;
     support::definition_grid grid;
