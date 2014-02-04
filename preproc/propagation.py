@@ -37,12 +37,6 @@ in "Experimentation, validation, and uncertainty analysis for
 engineers." John Wiley & Sons, 3rd edition, 2009. ISBN 0470168889.
 The results above are derived in section "Estimating uncertainty in
 derived quantities" within Suzerain's perfect gas model document.
-
-Results for Var[f(x)] should be consistent with Table 1 of the article "Notes
-on the use of propagation of error formulas." by H. H. Ku appearing in Journal
-of Research of the National Bureau of Standards. Section C: Engineering and
-Instrumentation, 70C(4):263-273, October 1966.  ISSN 0022-4316.  Beware,
-however, that article discusses only the first-order approximation to E[f(x)].
 '''
 from __future__ import division, print_function
 import collections
@@ -69,13 +63,13 @@ def constant(abbrev, name=None):
 
 "Symbolic constants known at parse time to have zero derivatives."
 constants = {
-    'alpha': constant('alpha', 'Constant ratio of bulk to dynamic viscosity'),
-    'beta':  constant('beta',  'Constant temperature power law exponent'),
-    'gamma': constant('gamma', 'Constant ratio of specific heats'),
-    'Kn':    constant('Kn',    'Constant Knudsen number'),
-    'Ma':    constant('Ma',    'Constant Mach number'),
-    'Pr':    constant('Pr',    'Constant Prandtl number'),
-    'Re':    constant('Re',    'Constant Reynolds number'),
+    'alpha': constant('alpha', 'Ratio of bulk to dynamic viscosity'),
+    'beta':  constant('beta',  'Temperature power law exponent'),
+    'gamma': constant('gamma', 'Ratio of specific heats'),
+    'Kn':    constant('Kn',    'Knudsen number'),
+    'Ma':    constant('Ma',    'Mach number'),
+    'Pr':    constant('Pr',    'Prandtl number'),
+    'Re':    constant('Re',    'Reynolds number'),
 }
 
 
@@ -416,6 +410,13 @@ def variance(f, df=None):
     r'''
     Prepare momentdict detailing the first-order approximation to Var[f(x)].
 
+    Results for Var[f(x)] should be consistent with Table 1 of the
+    article "Notes on the use of propagation of error formulas." by
+    H. H. Ku appearing in Journal of Research of the National Bureau of
+    Standards. Section C: Engineering and Instrumentation, 70C(4):263-273,
+    October 1966.  ISSN 0022-4316.  Beware, however, that article discusses
+    only the first-order approximation to E[f(x)].
+
     >>> x, y = sympy.symbols('x, y')
     >>> Var = variance(2*x + 3*y)
     >>> len(Var), Var[(x, x)], Var[(y, y)], Var[(x, y)]
@@ -452,9 +453,19 @@ def variance(f, df=None):
 
 
 def main(argv):
+
+    # Prepare a description of what's happening to later be joined as lines
+    description = [
+        __doc__,
+        '',
+        'Constants predefined to have trivial derivatives:'
+    ]
+    for k in sorted(constants):
+        description.append("    %-8s: %s" % (k, constants[k].name))
+
     # Define arguments applicable to all commands
     from argparse import ArgumentParser, RawDescriptionHelpFormatter, SUPPRESS
-    p = ArgumentParser(description=__doc__,
+    p = ArgumentParser(description='\n'.join(description),
                        formatter_class=RawDescriptionHelpFormatter)
     p.add_argument('-v', '--verbosity', action='count',
                    help='increase verbosity; may be supplied repeatedly')
