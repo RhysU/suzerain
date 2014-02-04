@@ -375,6 +375,11 @@ suzerain::perfect::driver_summary::run(int argc, char **argv)
         FATAL("Unknown model selection criterion: " << ar_criterion);
         return EXIT_FAILURE;
     }
+    if (ar_minorder > ar_maxorder) {
+        FATAL("Minimum order " << ar_minorder
+              << " must be less than maximum order " << ar_maxorder);
+        return EXIT_FAILURE;
+    }
 
     // Die if the non-HDF5 datfile argument ended with '.h5' like an HDF5 file
     // Defends (somewhat) against clobbering potentially valuable results
@@ -574,6 +579,7 @@ suzerain::perfect::driver_summary::run(int argc, char **argv)
 
     // Autocorrelation analysis occurs after data is safely aggregated on disk
     if (use_hdf5) {
+
         INFO("Beginning autocorrelation analysis on aggregated data");
 
         // Open the prior HDF5 file in read-only mode via ESIO handle
@@ -584,29 +590,32 @@ suzerain::perfect::driver_summary::run(int argc, char **argv)
         esio_file_open(h.get(), hdffile.c_str(), /*read-write*/1);
 
         // Load the sequence of sample times and compute dt statistics
-        int Nt = 0;
-        esio_line_size(h.get(), summary::name[summary::t], &Nt);
-        VectorXr t(Nt);
+        VectorXr t;
+        {
+            int Nt = 0;
+            esio_line_size(h.get(), summary::name[summary::t], &Nt);
+            t.resize(Nt);
+        }
         esio_line_establish(h.get(), t.size(), 0, t.size());
         esio_line_read(h.get(), summary::name[summary::t],
                        t.data(), t.innerStride());
         running_statistics<real_t,1> dtstats;
-        for (int i = 0; i < Nt-1; ++i) {
+        for (int i = 0; i < t.size()-1; ++i) {
             const real_t diff = t[i+1] - t[i];
             dtstats(&diff);
         }
 
         // Summarize the temporal content of the data iff nontrivial
-        if (Nt == 1) {
+        if (t.size() == 1) {
             INFO("Collection contains a single sample at time " << t[0]);
-        } else if (Nt > 1) {
+        } else if (t.size() > 1) {
             using std::numeric_limits;
             std::ostringstream msg;
             msg.precision(static_cast<int>(
                     numeric_limits<real_t>::digits10*0.75));
             msg << "Collection contains " << t.size()
                 << " samples spanning times ["
-                << t[0] << " ," << t[Nt - 1] << "]";
+                << t[0] << " ," << t[t.size() - 1] << "]";
             INFO(who, msg.str());
             msg.str("");
             msg.precision(static_cast<int>(
@@ -619,6 +628,105 @@ suzerain::perfect::driver_summary::run(int argc, char **argv)
             INFO(who, msg.str());
         }
 
+
+        // Prepare vectors to capture burg_method() output
+        VectorXr eff_N, eff_var, mu, mu_sigma, p, T, T0;
+        std::vector<real_t> params, sigma2e, gain, autocor;
+        params .reserve(ar_maxorder*(ar_maxorder + 1)/2);
+        sigma2e.reserve(ar_maxorder + 1);
+        gain   .reserve(ar_maxorder + 1);
+        autocor.reserve(ar_maxorder + 1);
+
+        // Prepare repeatedly-used working storage for burg_method().
+        // Given relative ease of working in extended precision, do so.
+        std::vector<long double> f, b, Ak, ac;
+
+        // Reuse one buffer to hold each component's spatiotemporal trace...
+        ArrayXXr data;
+        for (std::size_t c = 0; c < summary::count; ++c) {
+            INFO("Processing quantity " << summary::name[c]);
+
+            // ...resizing the buffer to load the *TRANSPOSE* into memory...
+            int Nt, Ny;
+            esio_plane_size(h.get(), summary::name[c], &Nt, &Ny);
+            esio_plane_establish(h.get(), Nt, 0, t.size(), Ny, 0, Ny);
+            data    .resize(Nt, Ny);
+            eff_N   .resize(    Ny);
+            eff_var .resize(    Ny);
+            mu      .resize(    Ny);
+            mu_sigma.resize(    Ny);
+            p       .resize(    Ny);
+            T       .resize(    Ny);
+            T0      .resize(    Ny);
+            esio_plane_read(h.get(), summary::name[c], data.data(),
+                            data.innerStride(), data.outerStride());
+
+            DEBUG("Iterating over wall-normal points for " << summary::name[c]);
+            // ...now, with the temporal traces contiguous at given y(j)...
+            // ...use autoregressive tools to fit model and compute results
+            for (int j = 0; j < Ny; ++j) {
+
+                TRACE("Enumerating candidate models at point y(" << j << ')');
+                std::size_t maxorder = ar_maxorder;
+                params .clear();
+                sigma2e.clear();
+                gain   .clear();
+                autocor.clear();
+                ar::burg_method(data.col(j).data(),
+                                data.col(j).data() + Ny,
+                                mu[j],
+                                maxorder,
+                                std::back_inserter(params),
+                                std::back_inserter(sigma2e),
+                                std::back_inserter(gain),
+                                std::back_inserter(autocor),
+                                true /* submean */,
+                                true /* output hierarchy? */,
+                                f, b, Ak, ac);
+
+                TRACE("Trimming results to best model");
+                best_model(Nt, ar_minorder, params, sigma2e, gain, autocor);
+
+                TRACE("Deriving values from selected model [Trenberth1984]");
+                T0[j]       = ar::decorrelation_time(
+                                  static_cast<std::size_t>(ar_wlenT0*Nt),
+                                  ar::autocorrelation(params.begin(),
+                                                      params.end(),
+                                                      gain[0],
+                                                      autocor.begin()),
+                                  ar_absrho);
+                eff_var[j]  = (Nt*gain[0]*sigma2e[0]) / (Nt - T0[j]);
+                eff_N[j]    = Nt / T0[j];
+                mu_sigma[j] = std::sqrt(eff_var[j] / eff_N[j]);
+                p[j]        = params.size();
+                T[j]        = T0[j] * dtstats.avg(0); // Separation to time scale
+
+            }
+
+            DEBUG("Writing autocorrelation analysis for " << summary::name[c]);
+            const char * const n = summary::name[c];
+            // Procedural arsel metadata, coerced to ints if necessary
+            {
+                const int absrho   = ar_absrho;
+                const int minorder = ar_minorder;
+                const int maxorder = ar_maxorder;
+                esio_attribute_write(h.get(), n, "absrho",    &absrho);
+                esio_attribute_write(h.get(), n, "minorder",  &minorder);
+                esio_attribute_write(h.get(), n, "maxorder",  &maxorder);
+                esio_attribute_write(h.get(), n, "wlenT0",    &ar_wlenT0);
+                esio_string_set(h.get(), n, "criterion", ar_criterion.c_str());
+            }
+            // Followed by results versus wall-normal position
+            esio_attribute_writev(h.get(), n, "eff_N",     &eff_N[0],    Ny);
+            esio_attribute_writev(h.get(), n, "eff_var",   &eff_var[0],  Ny);
+            esio_attribute_writev(h.get(), n, "mu",        &mu[0],       Ny);
+            esio_attribute_writev(h.get(), n, "mu_sigma",  &mu_sigma[0], Ny);
+            esio_attribute_writev(h.get(), n, "p",         &p[0],        Ny);
+            esio_attribute_writev(h.get(), n, "T0",        &T0[0],       Ny);
+            esio_attribute_writev(h.get(), n, "T",         &T[0],        Ny);
+        }
+
+        INFO("Finished autocorrelation analysis on aggregated data");
 
     }
 
