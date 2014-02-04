@@ -442,9 +442,7 @@ suzerain::perfect::driver_summary::run(int argc, char **argv)
             // TODO Usage driver_base and application_base infrastructure
             scenario->save(h.get());
             grid->save(h.get());
-            shared_ptr<bsplineop> gop(new bsplineop(
-                        *b, 0, SUZERAIN_BSPLINEOP_GALERKIN_L2));
-            support::save(h.get(), b, cop, gop);
+            support::save_bsplines(h.get(), *b, *cop);
             gop.reset();
 
             // Determine how many time indices and collocation points we have.
@@ -539,7 +537,7 @@ suzerain::perfect::sample::process(
     support::load_time(h.get(), time);
     scenario.load(h.get());
     grid.load(h.get());
-    support::load(h.get(), b, cop);
+    support::load_bsplines(h.get(), b, cop);
     assert(b->n() == grid.N.y());
 
     // Return the scenario and grid to the caller if not already set

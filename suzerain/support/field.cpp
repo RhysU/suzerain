@@ -173,7 +173,7 @@ void load_coefficients(const esio_handle h,
     // Prepare a file-specific B-spline basis
     shared_ptr<bspline> Fb;
     shared_ptr<bsplineop> Fbop;
-    load(h, Fb, Fbop);
+    load_bsplines(h, Fb, Fbop);
     SUZERAIN_ENSURE(Fy == Fb->n());
 
     // Check if the B-spline basis in the file differs from ours.
@@ -403,7 +403,7 @@ void load_collocation_values(
         // TODO Too restrictive?  Any floating point differences kill us.
         shared_ptr<bspline> Fb;
         shared_ptr<bsplineop> Fbop;
-        support::load(h, Fb, Fbop);
+        load_bsplines(h, Fb, Fbop);
         const double bsp_dist = b.distance_to(*Fb);
         const bool   bsp_same = bsp_dist < suzerain_bspline_distance_distinct;
         if (!bsp_same) {

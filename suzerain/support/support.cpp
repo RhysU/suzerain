@@ -222,13 +222,13 @@ bool wisdom_gather(const std::string& wisdom_file)
     return success;
 }
 
-real_t create(const int ndof,
-              const int k,
-              const double left,
-              const double right,
-              const double htdelta,
-              shared_ptr<bspline>& b,
-              shared_ptr<bsplineop>& cop)
+real_t create_bsplines(const int ndof,
+                       const int k,
+                       const double left,
+                       const double right,
+                       const double htdelta,
+                       shared_ptr<bspline>& b,
+                       shared_ptr<bsplineop>& cop)
 {
     INFO0(who, "Creating B-spline basis of order " << k
           << " on [" << left << ", " << right << "] with "
@@ -283,14 +283,25 @@ real_t create(const int ndof,
     return 0;
 }
 
-void save(const esio_handle h,
-          const shared_ptr<bspline>& b,
-          const shared_ptr<bsplineop>& cop,
-          const shared_ptr<bsplineop>& gop)
+void save_bsplines(const esio_handle h,
+                         bspline&    b,
+                   const bsplineop&  cop)
+{
+    DEBUG0(who, "Generating B-spline Galerkin L2 mass matrix so it may be saved");
+    scoped_ptr<bsplineop> gop(
+            new bsplineop(b, 0, SUZERAIN_BSPLINEOP_GALERKIN_L2));
+
+    return save_bsplines(h, b, cop, *gop);
+}
+
+void save_bsplines(const esio_handle h,
+                         bspline&    b,
+                   const bsplineop&  cop,
+                   const bsplineop&  gop)
 {
     // Ensure we were handed the appropriate discrete operators
-    SUZERAIN_ENSURE(cop->get()->method == SUZERAIN_BSPLINEOP_COLLOCATION_GREVILLE);
-    SUZERAIN_ENSURE(gop->get()->method == SUZERAIN_BSPLINEOP_GALERKIN_L2);
+    SUZERAIN_ENSURE(cop.get()->method == SUZERAIN_BSPLINEOP_COLLOCATION_GREVILLE);
+    SUZERAIN_ENSURE(gop.get()->method == SUZERAIN_BSPLINEOP_GALERKIN_L2);
 
     // Only root writes data
     int procid;
@@ -298,63 +309,63 @@ void save(const esio_handle h,
 
     DEBUG0(who, "Saving B-spline knot details");
 
-    ArrayXr buf(b->nknot());
+    ArrayXr buf(b.nknot());
 
-    for (int i = 0; i < b->nknot(); ++i) buf[i] = b->knot(i);
-    esio_line_establish(h, b->nknot(), 0, (procid == 0 ? b->nknot() : 0));
+    for (int i = 0; i < b.nknot(); ++i) buf[i] = b.knot(i);
+    esio_line_establish(h, b.nknot(), 0, (procid == 0 ? b.nknot() : 0));
     esio_line_write(h, "knots", buf.data(), 0,
             "Knots used to build B-spline basis");
 
-    for (int i = 0; i < b->nbreak(); ++i) buf[i] = b->breakpoint(i);
-    esio_line_establish(h, b->nbreak(), 0, (procid == 0 ? b->nbreak() : 0));
+    for (int i = 0; i < b.nbreak(); ++i) buf[i] = b.breakpoint(i);
+    esio_line_establish(h, b.nbreak(), 0, (procid == 0 ? b.nbreak() : 0));
     esio_line_write(h, "breakpoints_y", buf.data(), 0,
             "Breakpoint locations used to build wall-normal B-spline basis");
 
-    for (int i = 0; i < b->n(); ++i) buf[i] = b->collocation_point(i);
-    esio_line_establish(h, b->n(), 0, (procid == 0 ? b->n() : 0));
+    for (int i = 0; i < b.n(); ++i) buf[i] = b.collocation_point(i);
+    esio_line_establish(h, b.n(), 0, (procid == 0 ? b.n() : 0));
     esio_line_write(h, "collocation_points_y", buf.data(), 0,
             "Collocation points used to build wall-normal discrete operators");
 
-    b->integration_coefficients(0, buf.data());
-    esio_line_establish(h, b->n(), 0, (procid == 0 ? b->n() : 0));
+    b.integration_coefficients(0, buf.data());
+    esio_line_establish(h, b.n(), 0, (procid == 0 ? b.n() : 0));
     esio_line_write(h, "integration_weights", buf.data(), 0,
             "Integrate by dotting B-spline coefficients against weights");
 
     char name[8]      = {};
     char comment[127] = {};
 
-    for (int k = 0; k <= cop->nderiv(); ++k) {
+    for (int k = 0; k <= cop.nderiv(); ++k) {
         snprintf(name, sizeof(name), "Dy%dT", k);
         snprintf(comment, sizeof(comment),
                 "Wall-normal derivative trans(Dy%d(i,j)) = D%dT[j,ku+i-j] for"
                 " 0 <= j < n, max(0,j-ku-1) <= i < min(m,j+kl)", k, k);
-        const int lda = cop->ku(k) + 1 + cop->kl(k);
+        const int lda = cop.ku(k) + 1 + cop.kl(k);
         esio_plane_establish(h,
-                cop->n(), 0, (procid == 0 ? cop->n() : 0),
-                lda,      0, (procid == 0 ? lda          : 0));
-        esio_plane_write(h, name, cop->D_T(k), 0, 0, comment);
-        esio_attribute_write(h, name, "kl", cop->kl(k));
-        esio_attribute_write(h, name, "ku", cop->ku(k));
-        esio_attribute_write(h, name, "m",  cop->n());
-        esio_attribute_write(h, name, "n",  cop->n());
+                cop.n(), 0, (procid == 0 ? cop.n() : 0),
+                lda,     0, (procid == 0 ? lda     : 0));
+        esio_plane_write(h, name, cop.D_T(k), 0, 0, comment);
+        esio_attribute_write(h, name, "kl", cop.kl(k));
+        esio_attribute_write(h, name, "ku", cop.ku(k));
+        esio_attribute_write(h, name, "m",  cop.n());
+        esio_attribute_write(h, name, "n",  cop.n());
     }
 
     DEBUG0(who, "Saving B-spline Galerkin L2 derivative operators");
 
-    for (int k = 0; k <= gop->nderiv(); ++k) {
+    for (int k = 0; k <= gop.nderiv(); ++k) {
         snprintf(name, sizeof(name), "Gy%dT", k);
         snprintf(comment, sizeof(comment),
                 "Wall-normal Galerkin L2 trans(Gy%d(i,j)) = G%dT[j,ku+i-j] for"
                 " 0 <= j < n, max(0,j-ku-1) <= i < min(m,j+kl)", k, k);
-        const int lda = gop->ku(k) + 1 + gop->kl(k);
+        const int lda = gop.ku(k) + 1 + gop.kl(k);
         esio_plane_establish(h,
-                gop->n(), 0, (procid == 0 ? gop->n() : 0),
-                lda,      0, (procid == 0 ? lda          : 0));
-        esio_plane_write(h, name, gop->D_T(k), 0, 0, comment);
-        esio_attribute_write(h, name, "kl", gop->kl(k));
-        esio_attribute_write(h, name, "ku", gop->ku(k));
-        esio_attribute_write(h, name, "m",  gop->n());
-        esio_attribute_write(h, name, "n",  gop->n());
+                gop.n(), 0, (procid == 0 ? gop.n() : 0),
+                lda,     0, (procid == 0 ? lda     : 0));
+        esio_plane_write(h, name, gop.D_T(k), 0, 0, comment);
+        esio_attribute_write(h, name, "kl", gop.kl(k));
+        esio_attribute_write(h, name, "ku", gop.ku(k));
+        esio_attribute_write(h, name, "m",  gop.n());
+        esio_attribute_write(h, name, "n",  gop.n());
     }
 }
 
@@ -408,9 +419,9 @@ static void load_line(
 }
 
 
-real_t load(const esio_handle h,
-            shared_ptr<bspline>& b,
-            shared_ptr<bsplineop>& cop)
+real_t load_bsplines(const esio_handle      h,
+                     shared_ptr<bspline>&   b,
+                     shared_ptr<bsplineop>& cop)
 {
     using std::abs;
     using std::max;

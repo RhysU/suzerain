@@ -182,7 +182,7 @@ application_base::load_grid_and_operators(
     }
 
     // Create the discrete B-spline operators
-    create(grid->N.y(), grid->k, 0.0, grid->L.y(), grid->htdelta, b, cop);
+    create_bsplines(grid->N.y(), grid->k, 0.0, grid->L.y(), grid->htdelta, b, cop);
     gop.reset(new bsplineop(*b, grid->k, SUZERAIN_BSPLINEOP_GALERKIN_L2));
 }
 
@@ -190,13 +190,20 @@ void
 application_base::save_grid_and_operators(
         const esio_handle esioh)
 {
-    SUZERAIN_ENSURE(grid);
-    SUZERAIN_ENSURE(b);
-    SUZERAIN_ENSURE(cop);
-    SUZERAIN_ENSURE(gop);
+    // Only save grid if available
+    if (grid) {
+        grid->save(esioh);
+    }
 
-    grid->save(esioh);
-    save(esioh, b, cop, gop);
+    // Expect b and cop to simultaneously be valid
+    if (b) {
+        SUZERAIN_ENSURE(cop);
+        if (gop) {
+            save_bsplines(esioh, *b, *cop, *gop);
+        } else {
+            save_bsplines(esioh, *b, *cop);
+        }
+    }
 }
 
 void

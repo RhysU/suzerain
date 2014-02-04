@@ -114,34 +114,36 @@ bool wisdom_broadcast(const std::string& wisdom_file);
  */
 bool wisdom_gather(const std::string& wisdom_file);
 
-// TODO Name something more descriptive
 /**
  * Create a B-spline workspace on [left,right] per ndof, k, and htdelta.
  * @return the absolute error in reproducing prescribed abscissae.
  */
-real_t create(const int ndof,
-              const int k,
-              const double left,
-              const double right,
-              const double htdelta,
-              shared_ptr<bspline>& b,
-              shared_ptr<bsplineop>& cop);
+real_t create_bsplines(const int ndof,
+                       const int k,
+                       const double left,
+                       const double right,
+                       const double htdelta,
+                       shared_ptr<bspline>& b,
+                       shared_ptr<bsplineop>& cop);
 
-// TODO Name something more descriptive
-/** Save a \ref bspline workspace in a file. */
-void save(const esio_handle h,
-          const shared_ptr<bspline>& b,
-          const shared_ptr<bsplineop>& cop,
-          const shared_ptr<bsplineop>& gop);
+/** Save a \ref bspline workspace and associated operators in a file. */
+void save_bsplines(const esio_handle h,
+                         bspline&    b,
+                   const bsplineop&  cop);
 
-// TODO Name something more descriptive
+/** Save a \ref bspline workspace and associated operators in a file. */
+void save_bsplines(const esio_handle h,
+                         bspline&    b,
+                   const bsplineop&  cop,
+                   const bsplineop&  gop);
+
 /**
  * Load a \ref bspline workspace from a file.
  * @return the absolute error in reproducing prescribed abscissae.
  */
-real_t load(const esio_handle h,
-            shared_ptr<bspline>& b,
-            shared_ptr<bsplineop>& cop);
+real_t load_bsplines(const esio_handle      h,
+                     shared_ptr<bspline>&   b,
+                     shared_ptr<bsplineop>& cop);
 
 /** Save the current simulation time information */
 void save_time(const esio_handle h,
