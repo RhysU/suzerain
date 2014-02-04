@@ -7,7 +7,7 @@ set -eu
 
 SCRIPTDIR="$( cd "$( echo "${BASH_SOURCE[0]%/*}" )"; pwd )"
 rmmkcd() { rm -rf "$1" && mkdir -vp "$1" && cd "$1"; }
-perfect_init=$(readlink -f perfect_init)
+perfect_initial=$(readlink -f perfect_initial)
 perfect_advance=$(readlink -f perfect_advance)
 
 case=$(basename "$SCRIPTDIR")
@@ -17,7 +17,7 @@ exec 1> >(tee ./output) 2>&1
 excludes="--exclude-path /metadata_generated"
 
 # Initialize the appropriate boundary layer grid lacking the radial flow settings
-"$perfect_init" initial.h5 --k=6 --Nx=1 --Ny=36 --Nz=1 --htdelta=-3 --Re=3000 --Ma=1.5 --Pr=0.7 --Ly=1 --Re_x=3000 --largo_formulation=spatiotemporal_consistent --largo_grdelta=1e-1
+"$perfect_initial" initial.h5 --k=6 --Nx=1 --Ny=36 --Nz=1 --htdelta=-3 --Re=3000 --Ma=1.5 --Pr=0.7 --Ly=1 --Re_x=3000 --largo_formulation=spatiotemporal_consistent --largo_grdelta=1e-1
 h5diff -r -c -v $excludes  "$@" "$SCRIPTDIR/initial.h5" initial.h5
 
 # Overwrite with radial nozzle baseflow conditions 1 meter leeward of laminar CEV stagnation

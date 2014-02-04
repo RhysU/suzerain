@@ -36,12 +36,12 @@ libperfect_la_SOURCES += treatment_nonreflecting.hpp
 ## Applications
 ##
 
-bin_PROGRAMS         += perfect_init
-perfect_init_SOURCES  = main_init.cpp
-perfect_init_SOURCES += main_init_svnrev.c
-BUILT_SOURCES        += main_init_svnrev.h
-perfect_init_LDADD    = ./libperfect.la ../../suzerain/libsuzerain.la
-main_init_svnrev.h: $(perfect_init_SOURCES) $(libperfect_la_SOURCES)
+bin_PROGRAMS            += perfect_initial
+perfect_initial_SOURCES  = main_initial.cpp
+perfect_initial_SOURCES += main_initial_svnrev.c
+BUILT_SOURCES           += main_initial_svnrev.h
+perfect_initial_LDADD    = ./libperfect.la ../../suzerain/libsuzerain.la
+main_initial_svnrev.h: $(perfect_initial_SOURCES) $(libperfect_la_SOURCES)
 	$(top_builddir)/build-aux/svnrev -n -o$@ "-f$(PACKAGE_VERSION).#" -i $?
 
 bin_PROGRAMS            += perfect_advance

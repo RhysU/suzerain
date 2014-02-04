@@ -1,2 +1,2 @@
-#include "main_init_svnrev.h"
+#include "main_initial_svnrev.h"
 const char revstr[] = SVN_REVSTR;

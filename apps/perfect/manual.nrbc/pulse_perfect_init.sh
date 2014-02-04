@@ -12,7 +12,7 @@ bulk_rho=NaN
 
 # Generate a restart file and then modify it with an initial pulse
 filename="pulse_perfect_physical.h5"
-../perfect_init --clobber ${filename}                                \
+../perfect_initial --clobber ${filename}                             \
                 --Nx=$Nx --Ny=$Ny --k=$k --htdelta=$htdelta --Nz=$Nz \
                 --restart_physical --bulk_rho=${bulk_rho}
 ./pulse_perfect.py "$filename"

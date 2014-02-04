@@ -6,7 +6,7 @@ source "`dirname $0`/../test_infrastructure.sh"
 
 # Check prerequisites and die loudly if the tools we need aren't available
 prereq_status=
-for binary in ./perfect_init ./perfect_advance
+for binary in ./perfect_initial ./perfect_advance
 do
     if [ ! -x $binary ]; then
         echo "ERROR: $binary not found or not executable" 1>&2
@@ -30,9 +30,9 @@ declare -ir Ny=12
 declare -ir k=6
 declare -ir htdelta=1
 declare -ir Nz=6
-runq ./perfect_init "$testdir/mms0.h5" --mms=0 --Re=$Re --Ma=$Ma         \
-                    --Nx=$Nx --Ny=$Ny --k=$k --htdelta=$htdelta --Nz=$Nz \
-                    ${DECOMP:-} "--plan_wisdom=$testdir/wisdom.init"
+runq ./perfect_initial "$testdir/mms0.h5" --mms=0 --Re=$Re --Ma=$Ma         \
+                       --Nx=$Nx --Ny=$Ny --k=$k --htdelta=$htdelta --Nz=$Nz \
+                       ${DECOMP:-} "--plan_wisdom=$testdir/wisdom.init"
 chmod +r "$testdir/mms0.h5"
 
 

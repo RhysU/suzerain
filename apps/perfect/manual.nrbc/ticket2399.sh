@@ -14,8 +14,8 @@ set -eu
 #
 #    2) What about for v_inflow > 0, v_outflow > 0?
 #    3) What about for v_inflow < 0, v_outflow < 0?
-#    4) Does my acoustic pulse in perfect_init do what I expect in 1D with the
-#       upper NRBC?
+#    4) Does my acoustic pulse in perfect_initial do what I expect in 1D with
+#       the upper NRBC?
 #
 #       (Yes, yes, and yes.)
 #
@@ -46,8 +46,8 @@ set -eu
 rmmkcd() {
     rm -rfv "$1" && mkdir -vp "$1" && cd "$1";
 }
-perfect_init=(
-    $(readlink -f perfect_init)
+perfect_initial=(
+    $(readlink -f perfect_initial)
     initial.h5
     -v
     --restart_physical     # Simplifies any required IC debugging
@@ -130,7 +130,8 @@ echo '######################################################'
     case="quiet_pos_v"
     rmmkcd "ticket2399/$case"
     (
-        ${perfect_init[*]} --lower_v=0.1 --lower_w=0 --upper_v=0.1 --upper_w=0
+        ${perfect_initial[*]} --lower_v=0.1 --lower_w=0 \
+                              --upper_v=0.1 --upper_w=0
         run_case
     ) || echo "$case" >> $FAILURES
     run_postproc
@@ -140,7 +141,8 @@ echo '######################################################'
     case="quiet_pos_vw"
     rmmkcd "ticket2399/$case"
     (
-        ${perfect_init[*]} --lower_v=0.1 --lower_w=0.05 --upper_v=0.1 --upper_w=0.05
+        ${perfect_initial[*]} --lower_v=0.1 --lower_w=0.05 \
+                              --upper_v=0.1 --upper_w=0.05
         run_case
     ) || echo "$case" >> $FAILURES
     run_postproc
@@ -153,7 +155,8 @@ echo '######################################################'
     case="quiet_neg_v"
     rmmkcd "ticket2399/$case"
     (
-        ${perfect_init[*]} --lower_v=-0.1 --lower_w=0 --upper_v=-0.1 --upper_w=0
+        ${perfect_initial[*]} --lower_v=-0.1 --lower_w=0 \
+                              --upper_v=-0.1 --upper_w=0
         run_case
     ) || echo "$case" >> $FAILURES
     run_postproc
@@ -163,7 +166,8 @@ echo '######################################################'
     case="quiet_neg_vw"
     rmmkcd "ticket2399/$case"
     (
-        ${perfect_init[*]} --lower_v=-0.1 --lower_w=-0.05 --upper_v=-0.1 --upper_w=-0.05
+        ${perfect_initial[*]} --lower_v=-0.1 --lower_w=-0.05 \
+                              --upper_v=-0.1 --upper_w=-0.05
         run_case
     ) || echo "$case" >> $FAILURES
     run_postproc
@@ -175,8 +179,9 @@ echo '######################################################'
     case="acoustic_pos_v"
     rmmkcd "ticket2399/$case"
     (
-        ${perfect_init[*]} --lower_v=0.01 --lower_w=0 --upper_v=0.01 --upper_w=0 \
-                           --acoustic_strength=0.1
+        ${perfect_initial[*]} --lower_v=0.01 --lower_w=0 \
+                              --upper_v=0.01 --upper_w=0 \
+                              --acoustic_strength=0.1
         run_case
     ) || echo "$case" >> $FAILURES
     run_postproc
@@ -186,8 +191,9 @@ echo '######################################################'
     case="acoustic_pos_vw"
     rmmkcd "ticket2399/$case"
     (
-        ${perfect_init[*]} --lower_v=0.1 --lower_w=0.05 --upper_v=0.1 --upper_w=0.05 \
-                           --acoustic_strength=0.1
+        ${perfect_initial[*]} --lower_v=0.1 --lower_w=0.05 \
+                              --upper_v=0.1 --upper_w=0.05 \
+                              --acoustic_strength=0.1
         run_case
     ) || echo "$case" >> $FAILURES
     run_postproc
@@ -199,8 +205,9 @@ echo '######################################################'
     case="acoustic_neg_v"
     rmmkcd "ticket2399/$case"
     (
-        ${perfect_init[*]} --lower_v=-0.01 --lower_w=0 --upper_v=-0.01 --upper_w=0 \
-                           --acoustic_strength=0.1
+        ${perfect_initial[*]} --lower_v=-0.01 --lower_w=0 \
+                              --upper_v=-0.01 --upper_w=0 \
+                              --acoustic_strength=0.1
         run_case
     ) || echo "$case" >> $FAILURES
     run_postproc
@@ -210,8 +217,9 @@ echo '######################################################'
     case="acoustic_neg_vw"
     rmmkcd "ticket2399/$case"
     (
-        ${perfect_init[*]} --lower_v=-0.1 --lower_w=-0.05 --upper_v=-0.1 --upper_w=-0.05 \
-                           --acoustic_strength=0.1
+        ${perfect_initial[*]} --lower_v=-0.1 --lower_w=-0.05 \
+                              --upper_v=-0.1 --upper_w=-0.05 \
+                              --acoustic_strength=0.1
         run_case
     ) || echo "$case" >> $FAILURES
     run_postproc

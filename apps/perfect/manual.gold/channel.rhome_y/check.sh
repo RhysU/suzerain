@@ -7,7 +7,7 @@ set -eu
 
 SCRIPTDIR="$( cd "$( echo "${BASH_SOURCE[0]%/*}" )"; pwd )"
 rmmkcd() { rm -rf "$1" && mkdir -vp "$1" && cd "$1"; }
-perfect_init=$(readlink -f perfect_init)
+perfect_initial=$(readlink -f perfect_initial)
 perfect_advance=$(readlink -f perfect_advance)
 
 case=$(basename "$SCRIPTDIR")
@@ -18,7 +18,7 @@ exec 1> >(tee ./output) 2>&1
 #Exclusion of bar_p  post-r43655 represents laziness in updating gold files
 excludes="--exclude-path /metadata_generated --exclude-path /bar_ke --exclude-path /bar_p"
 
-"$perfect_init" --Ny=32 initial.h5 --htdelta=2
+"$perfect_initial" --Ny=32 initial.h5 --htdelta=2
 h5diff -r -c -v $excludes "$@" "$SCRIPTDIR/initial.h5" initial.h5
 "$perfect_advance" --implicit=rhome_y $(readlink -f initial.h5) --status_nt=1 --advance_dt=0.000919
 h5diff -r -c -v $excludes "$@" "$SCRIPTDIR/restart0.h5" restart0.h5

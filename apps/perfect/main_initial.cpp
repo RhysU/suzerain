@@ -75,7 +75,7 @@ private:
 
 } /* namespace perfect */ } /* namespace suzerain */
 
-// Provided by main_init_svnrev.{c,h} so revstr updates are merely relinking
+// Provided by main_initial_svnrev.{c,h} so revstr updates are merely relinking
 extern "C" const char revstr[];
 
 /** Provides parsing and validation of several options. */
