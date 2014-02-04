@@ -57,7 +57,7 @@ perfect_summary_SOURCES  = main_summary.cpp
 perfect_summary_SOURCES += main_summary_svnrev.c
 BUILT_SOURCES           += main_summary_svnrev.h
 perfect_summary_LDADD = ./libperfect.la ../../suzerain/libsuzerain.la
-main_summary_svnrev.h: $(main_summary_SOURCES) $(libmain_la_SOURCES)
+main_summary_svnrev.h: $(main_summary_SOURCES) $(libperfect_la_SOURCES)
 	$(top_builddir)/build-aux/svnrev -n -o$@ "-f$(PACKAGE_VERSION).#" -i $?
 
 ##
