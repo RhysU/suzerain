@@ -73,6 +73,23 @@ namespace perfect {
 // Forward declarations
 class definition_scenario;
 
+/**
+ * Type of Boost.Accumulator to use for summation processes.
+ *
+ * Kahan summation preferred when available as incremental cost is small and we
+ * may add many small numbers to a large magnitude sum. During debugging, the
+ * number of samples collected is also available.
+ */
+typedef boost::accumulators::accumulator_set<
+            real_t,
+            boost::accumulators::stats<
+                boost::accumulators::tag::sum_kahan
+#ifndef NDEBUG
+                , boost::accumulators::tag::count
+#endif
+            >
+        > summing_accumulator_type;
+
 /** Return default nondimensional field information per \ref suzerain::ndx. */
 std::vector<support::field>
 default_fields();

@@ -52,6 +52,7 @@
 
 #include "common_block.hpp"
 #include "linearize_type.hpp"
+#include "perfect.hpp"
 #include "slowgrowth_type.hpp"
 
 #pragma warning(push, disable:280 383 1572)
@@ -415,20 +416,6 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                                  src     .rescale(inv_Ma2));
     }
 
-    // Type of Boost.Accumulator to use for summation processes.
-    // Kahan summation preferred when available as incremental cost is small
-    // and we will add many small numbers to a large magnitude sum.
-    // During debugging, also make the number of samples available.
-    typedef boost::accumulators::accumulator_set<
-                real_t,
-                boost::accumulators::stats<
-                    boost::accumulators::tag::sum_kahan
-#ifndef NDEBUG
-                    , boost::accumulators::tag::count
-#endif
-                >
-            > summing_accumulator_type;
-
     // Physical space is traversed linearly using a single offset 'offset'.
     // The three loop structure is present to provide the global absolute
     // positions x(i), y(j), and z(k) where necessary.
@@ -473,8 +460,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                                 count // Sentry
             }; };
 
-            // An array of summing_accumulator_type holds all running sums.
-            // This gives nicer construction and allows looping over results.
+            // An array of summing_accumulator_type holds all running sums
             array<summing_accumulator_type, ref::count> acc;
 
             const int last_zxoffset = offset
