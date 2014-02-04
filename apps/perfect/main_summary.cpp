@@ -25,7 +25,7 @@
  * Application executing \ref suzerain::perfect::driver_summary::run.
  */
 
-// FIXME Support loading multiple sample collections per file
+// FIXME Support loading multiple samples per file
 // FIXME Allow excluding particular time ranges in the output
 
 #include <esio/esio.h>
@@ -69,12 +69,12 @@ struct driver_summary : public driver
 "\n"
 "The first way processes each INFILE.h5 in turn outputting a corresponding\n"
 "INFILE.mean containing a whitespace-separated table of means from the first\n"
-"sample collection in the file.  The second way (-s) sends the data from all\n "
-"sample collections to standard output sorted according to the simulation\n "
+"samples in the file.  The second way (-s) sends the data from all\n "
+"samples to standard output sorted according to the simulation\n "
 "time with a blank line separating adjacent times.  The third way (-f)\n"
 "is identical to the second except the output is automatically sent to the\n"
 "file named OUTFILE.dat.  The fourth way (-o) outputs a single HDF5 file\n"
-"called OUTFILE.h5 containing all sample collections. Options -s, -f,  and\n"
+"called OUTFILE.h5 containing all samples. Options -s, -f,  and\n"
 "-o may be specified simultaneously.\n",
                  revstr)
         , who("summary")
@@ -110,7 +110,7 @@ private:
 /**
  * Details on the sampled and computed quantities
  */
-namespace sample {
+namespace summary {
 
 /** A Boost.Preprocessor sequence of tuples of grid-related details */
 #define SEQ_GRID                                                                                      \
@@ -195,20 +195,20 @@ namespace sample {
     /** Output names in a manner suitable for columns output by \ref iofmt */
     static void write_names(std::ostream &out)
     {
-        for (size_t i = 0; i < sample::count; ++i) {  // Headings
+        for (size_t i = 0; i < summary::count; ++i) {  // Headings
             out << std::setw(std::numeric_limits<real_t>::digits10 + 11)
-                << sample::name[i];
-            if (i < sample::count - 1) out << " ";
+                << summary::name[i];
+            if (i < summary::count - 1) out << " ";
         }
         out << std::endl;
     }
 
-    /** Used for formatting output data to match \ref sample::write_names. */
+    /** Used for formatting output data to match \ref summary::write_names. */
     static const Eigen::IOFormat iofmt(
             Eigen::FullPrecision, 0, "     ", "\n", "    ");
 
     /**
-     * Compute all quantities from namespace \ref sample using the sample
+     * Compute all quantities from namespace \ref summary using the sample
      * collections present in \c filename using the wall-normal discretization
      * from \c filename.
      *
@@ -233,7 +233,7 @@ namespace sample {
             shared_ptr<bsplineop               >& i_bop,
             shared_ptr<bsplineop_lu            >& i_boplu);
 
-} // namespace sample
+} // namespace summary
 
 #pragma warning(disable:383 1572)
 
@@ -324,20 +324,20 @@ suzerain::perfect::driver_summary::run(int argc, char **argv)
         boost::io::ios_all_saver ias(std::cout);
 
         const std::size_t ndxwidth = 1 + static_cast<std::size_t>(
-                std::floor(std::log10(static_cast<real_t>(sample::count))));
+                std::floor(std::log10(static_cast<real_t>(summary::count))));
 
         std::size_t namewidth = 0;
-        for (std::size_t i = 0; i < sample::count; ++i) {
-            namewidth = std::max(namewidth, strlen(sample::name[i]));
+        for (std::size_t i = 0; i < summary::count; ++i) {
+            namewidth = std::max(namewidth, strlen(summary::name[i]));
         }
 
-        for (size_t i = 0; i < sample::count; ++i) {
+        for (size_t i = 0; i < summary::count; ++i) {
             std::cout << "# "
                       << std::setw(ndxwidth) << std::right << i
                       << "  "
-                      << std::setw(namewidth) << std::left << sample::name[i]
+                      << std::setw(namewidth) << std::left << summary::name[i]
                       << "  "
-                      << std::left << sample::desc[i]
+                      << std::left << summary::desc[i]
                       << '\n';
         }
         std::cout << std::flush;
@@ -350,7 +350,7 @@ suzerain::perfect::driver_summary::run(int argc, char **argv)
         BOOST_FOREACH(const std::string& filename, restart_files) {
 
             // Load data from filename
-            sample::storage_map_type data = sample::process(
+            summary::storage_map_type data = summary::process(
                     filename, scenario, grid, b, cop, boplu);
 
             // Save quantities to `basename filename .h5`.mean
@@ -367,9 +367,9 @@ suzerain::perfect::driver_summary::run(int argc, char **argv)
 
             // Write header followed by data values separated by blanks
             std::ofstream ofs(outname.c_str());
-            sample::write_names(ofs);
-            BOOST_FOREACH(sample::storage_map_type::value_type i, data) {
-                ofs << i->second->format(sample::iofmt) << std::endl
+            summary::write_names(ofs);
+            BOOST_FOREACH(summary::storage_map_type::value_type i, data) {
+                ofs << i->second->format(summary::iofmt) << std::endl
                     << std::endl;
             }
             ofs.close();
@@ -387,7 +387,7 @@ suzerain::perfect::driver_summary::run(int argc, char **argv)
         // A single map of data is stored across all files.  Because the map
         // key is the simulation time, we automatically get a well-ordered,
         // unique set of data across all files.
-        sample::storage_map_type pool;
+        summary::storage_map_type pool;
 
         // Scenario and grid details preserved across multiple files!
         // The last file on the command line determines the projection target
@@ -399,11 +399,11 @@ suzerain::perfect::driver_summary::run(int argc, char **argv)
             if (!grid)     DEBUG0("Output file has grid per "     << filename);
 
             // Load data from filename
-            sample::storage_map_type data = sample::process(
+            summary::storage_map_type data = summary::process(
                     filename, scenario, grid, b, cop, boplu);
 
             // Output status to the user so they don't think we're hung.
-            BOOST_FOREACH(sample::storage_map_type::value_type i, data) {
+            BOOST_FOREACH(summary::storage_map_type::value_type i, data) {
                 INFO0("Read sample for t = " << i->first
                        << " from " << filename);
             }
@@ -412,7 +412,7 @@ suzerain::perfect::driver_summary::run(int argc, char **argv)
             pool.transfer(data);
 
             // Warn on any duplicate values which were not transfered
-            BOOST_FOREACH(sample::storage_map_type::value_type i, data) {
+            BOOST_FOREACH(summary::storage_map_type::value_type i, data) {
                 WARN0("Duplicate sample time "
                       << i->first << " from " << filename << " ignored");
             }
@@ -421,9 +421,9 @@ suzerain::perfect::driver_summary::run(int argc, char **argv)
 
         if (use_stdout) {
             // Write header followed by data values separated by blanks
-            sample::write_names(std::cout);
-            BOOST_FOREACH(sample::storage_map_type::value_type i, pool) {
-                std::cout << i->second->format(sample::iofmt) << std::endl
+            summary::write_names(std::cout);
+            BOOST_FOREACH(summary::storage_map_type::value_type i, pool) {
+                std::cout << i->second->format(summary::iofmt) << std::endl
                           << std::endl;
             }
         }
@@ -431,9 +431,9 @@ suzerain::perfect::driver_summary::run(int argc, char **argv)
         if (use_dat) {
             INFO0("Writing file " << datfile);
             std::ofstream outf(datfile.c_str());
-            sample::write_names(outf);
-            BOOST_FOREACH(sample::storage_map_type::value_type i, pool) {
-                outf << i->second->format(sample::iofmt) << std::endl
+            summary::write_names(outf);
+            BOOST_FOREACH(summary::storage_map_type::value_type i, pool) {
+                outf << i->second->format(summary::iofmt) << std::endl
                      << std::endl;
             }
         }
@@ -457,20 +457,20 @@ suzerain::perfect::driver_summary::run(int argc, char **argv)
             t.reserve(Nt);
 
             // Loop over each entry in pool...
-            BOOST_FOREACH(sample::storage_map_type::value_type i, pool) {
+            BOOST_FOREACH(summary::storage_map_type::value_type i, pool) {
 
                 // ...writing every wall-normal pencil of data to file...
                 esio_plane_establish(h.get(), Nt, t.size(), 1, Ny, 0, Ny);
-                for (std::size_t j = 0; j < sample::count; ++j) {
+                for (std::size_t j = 0; j < summary::count; ++j) {
                     // ...skipping those which do not vary in time...
-                    if (    j == sample::t
-                         || j == sample::y
-                         || j == sample::bulk_weights) {
+                    if (    j == summary::t
+                         || j == summary::y
+                         || j == summary::bulk_weights) {
                         continue;
                     }
-                    esio_plane_write(h.get(), sample::name[j],
+                    esio_plane_write(h.get(), summary::name[j],
                                      i->second->col(j).data(), 0, 0,
-                                     sample::desc[j]);
+                                     summary::desc[j]);
                 }
 
                 // ...and adding the time value to the running vector of times.
@@ -484,34 +484,34 @@ suzerain::perfect::driver_summary::run(int argc, char **argv)
 
             // Set "/t" to be the one-dimensional vector containing all times.
             esio_line_establish(h.get(), Nt, 0, t.size());
-            esio_line_write(h.get(), sample::name[sample::t],
+            esio_line_write(h.get(), summary::name[summary::t],
                             t.size() ? &t.front() : NULL,
-                            0, sample::desc[sample::t]);
+                            0, summary::desc[summary::t]);
 
             // Set "/y" to be the one-dimensional vector of collocation points.
             // Strictly speaking unnecessary, but useful shorthand for scripts.
             t.resize(Ny);
             esio_line_establish(h.get(), t.size(), 0, t.size());
             for (int i = 0; i < Ny; ++i) t[i] = b->collocation_point(i);
-            esio_line_write(h.get(), sample::name[sample::y], &t.front(),
-                            0, sample::desc[sample::y]);
+            esio_line_write(h.get(), summary::name[summary::y], &t.front(),
+                            0, summary::desc[summary::y]);
 
             // (Re-) compute the bulk weights and then output those as well.
             const VectorXr bulk_weights
                     = compute_bulk_weights(grid->L.y(), *b, *boplu);
             esio_line_establish(h.get(), bulk_weights.size(),
                                 0, bulk_weights.size());
-            esio_line_write(h.get(), sample::name[sample::bulk_weights],
+            esio_line_write(h.get(), summary::name[summary::bulk_weights],
                             bulk_weights.data(), 0,
-                            sample::desc[sample::bulk_weights]);
+                            summary::desc[summary::bulk_weights]);
         }
     }
 
     return EXIT_SUCCESS;
 }
 
-suzerain::perfect::sample::storage_map_type
-suzerain::perfect::sample::process(
+suzerain::perfect::summary::storage_map_type
+suzerain::perfect::summary::process(
         const std::string& filename,
         shared_ptr<definition_scenario     >& i_scenario,
         shared_ptr<support::definition_grid>& i_grid,
@@ -519,10 +519,7 @@ suzerain::perfect::sample::process(
         shared_ptr<bsplineop               >& i_bop,
         shared_ptr<bsplineop_lu            >& i_boplu)
 {
-    using sample::storage_type;
-    using sample::storage_map_type;
-
-    sample::storage_map_type retval;
+    storage_map_type retval;
 
     // Create a file-specific ESIO handle using RAII
     shared_ptr<boost::remove_pointer<esio_handle>::type> h(
@@ -564,9 +561,9 @@ suzerain::perfect::sample::process(
     std::auto_ptr<samples> q(new samples(time, b->n()));
     support::load_samples(h.get(), *q);
     if (q->t >= 0) {
-        DEBUG0("Successfully loaded sample collection from " << filename);
+        DEBUG0("Successfully loaded samples from " << filename);
     } else {
-        WARN0("No valid sample collection found in " << filename);
+        WARN0("No valid samples found in " << filename);
         return retval;
     }
 
@@ -575,9 +572,9 @@ suzerain::perfect::sample::process(
                 (storage_type::Index) storage_type::ColsAtCompileTime));
     s->fill(std::numeric_limits<real_t>::quiet_NaN());  // ++paranoia
 
-#define ACCUMULATE(quantity, component, offset, description)                         \
-    cop->accumulate(0, 1.0, q->quantity().col(offset).data(),                    1,  \
-                       0.0, s->col(sample::BOOST_PP_CAT(bar_,component)).data(), 1);
+#define ACCUMULATE(quantity, component, offset, description)                          \
+    cop->accumulate(0, 1.0, q->quantity().col(offset).data(),                     1,  \
+                       0.0, s->col(summary::BOOST_PP_CAT(bar_,component)).data(), 1);
 
     SUZERAIN_SAMPLES_COMPONENTS_FOR_EACH(ACCUMULATE, SUZERAIN_SAMPLES)
 
@@ -586,30 +583,30 @@ suzerain::perfect::sample::process(
     // Store time and collocation points into s.
     // Not strictly necessary, but very useful for textual output
     // and as a sanity check of any later grid projection.
-    s->col(sample::t).fill(q->t);
+    s->col(summary::t).fill(q->t);
     for (int i = 0; i < b->n(); ++i)
-        s->col(sample::y)[i] = b->collocation_point(i);
+        s->col(summary::y)[i] = b->collocation_point(i);
 
     // Free coefficient-related resources
     q.reset();
 
     // Shorthand for referring to a particular column
-#define C(name) s->col(sample::name)
+#define C(name) s->col(summary::name)
 
     // Differentiate SAMPLED
     // Uses that bar_rho{,__y,__yy} is the first entry in SAMPLED{,_Y,_YY}
-    s->middleCols<BOOST_PP_SEQ_SIZE(SEQ_SAMPLED_Y)>(sample::bar_rho__y)
-        = s->middleCols<BOOST_PP_SEQ_SIZE(SEQ_SAMPLED)>(sample::bar_rho);
+    s->middleCols<BOOST_PP_SEQ_SIZE(SEQ_SAMPLED_Y)>(summary::bar_rho__y)
+        = s->middleCols<BOOST_PP_SEQ_SIZE(SEQ_SAMPLED)>(summary::bar_rho);
     boplu->solve(BOOST_PP_SEQ_SIZE(SEQ_SAMPLED_Y),
-            s->middleCols<BOOST_PP_SEQ_SIZE(SEQ_SAMPLED_Y)>(sample::bar_rho__y).data(),
+            s->middleCols<BOOST_PP_SEQ_SIZE(SEQ_SAMPLED_Y)>(summary::bar_rho__y).data(),
             1, b->n());
-    s->middleCols<BOOST_PP_SEQ_SIZE(SEQ_SAMPLED_YY)>(sample::bar_rho__yy)
-        = s->middleCols<BOOST_PP_SEQ_SIZE(SEQ_SAMPLED_Y)>(sample::bar_rho__y);
+    s->middleCols<BOOST_PP_SEQ_SIZE(SEQ_SAMPLED_YY)>(summary::bar_rho__yy)
+        = s->middleCols<BOOST_PP_SEQ_SIZE(SEQ_SAMPLED_Y)>(summary::bar_rho__y);
     cop->apply(1, BOOST_PP_SEQ_SIZE(SEQ_SAMPLED_Y), 1.0,
-            s->middleCols<BOOST_PP_SEQ_SIZE(SEQ_SAMPLED_Y)>(sample::bar_rho__y).data(),
+            s->middleCols<BOOST_PP_SEQ_SIZE(SEQ_SAMPLED_Y)>(summary::bar_rho__y).data(),
             1, b->n());
     cop->apply(2, BOOST_PP_SEQ_SIZE(SEQ_SAMPLED_Y), 1.0,
-            s->middleCols<BOOST_PP_SEQ_SIZE(SEQ_SAMPLED_YY)>(sample::bar_rho__yy).data(),
+            s->middleCols<BOOST_PP_SEQ_SIZE(SEQ_SAMPLED_YY)>(summary::bar_rho__yy).data(),
             1, b->n());
 
 #undef C
@@ -618,7 +615,7 @@ suzerain::perfect::sample::process(
     if (bsplines_dist <= suzerain_bspline_distance_distinct) {
 
         // Compute bulk integration weights
-        s->col(sample::bulk_weights)
+        s->col(summary::bulk_weights)
                 = compute_bulk_weights(grid.L.y(), *b, *boplu);
 
         // Results match target numerics to within acceptable tolerance.
@@ -630,7 +627,7 @@ suzerain::perfect::sample::process(
         // Must project onto target collocation points.
 
         // Convert all results in s to coefficients
-        boplu->solve(sample::count, s->data(), 1, b->n());
+        boplu->solve(summary::count, s->data(), 1, b->n());
 
         // Obtain target collocation points
         suzerain::ArrayXr buf(i_b->n());
@@ -639,17 +636,17 @@ suzerain::perfect::sample::process(
         // Evaluate coefficients onto the target collocation points
         std::auto_ptr<storage_type> r(new storage_type(i_b->n(),
                     (storage_type::Index) storage_type::ColsAtCompileTime));
-        for (std::size_t i = 0; i < sample::count; ++i) {
+        for (std::size_t i = 0; i < summary::count; ++i) {
             b->linear_combination(0, s->col(i).data(),
                                   buf.size(), buf.data(), r->col(i).data());
         }
 
-        // Notice that sample::t, being a constant, and sample::y, being a
+        // Notice that summary::t, being a constant, and summary::y, being a
         // linear, should have been converted to the target collocation points
         // without more than epsilon-like floating point loss.
 
         // Compute bulk integration weights (which will not translate directly)
-        r->col(sample::bulk_weights)
+        r->col(summary::bulk_weights)
                 = compute_bulk_weights(grid.L.y(), *b, *boplu);
 
         retval.insert(time, r);
