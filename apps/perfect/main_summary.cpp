@@ -38,12 +38,19 @@
 #include <suzerain/physical_view.hpp>
 #include <suzerain/pre_gsl.h>
 #include <suzerain/rholut.hpp>
+#include <suzerain/running_statistics.hpp>
 #include <suzerain/samples.hpp>
 #include <suzerain/support/definition_grid.hpp>
 #include <suzerain/support/logging.hpp>
 #include <suzerain/support/program_options.hpp>
 #include <suzerain/support/support.hpp>
 #include <suzerain/validation.hpp>
+
+//// TODO After AR(p) stuff is working, try out the GSL-enabled version
+//#include <gsl/gsl_sf_psi.h>
+//#include <gsl/gsl_sf_gamma.h>
+//#define AR_DIGAMMA(x)      gsl_sf_psi(x)
+//#define AR_POCHHAMMER(a,x) gsl_sf_poch(a,x)
 
 #include "ar.hpp"
 #include "driver.hpp"
@@ -323,7 +330,7 @@ suzerain::perfect::driver_summary::run(int argc, char **argv)
     std::size_t ar_minorder  = 0;
     std::size_t ar_maxorder  = 512;
     bool        ar_absrho    = false;
-    double      ar_wlenT0    = 7;
+    real_t      ar_wlenT0    = 7;
     ar_options.add_options()
         ("criterion",
          po::value(&ar_criterion)->default_value(ar_criterion),
@@ -354,6 +361,18 @@ suzerain::perfect::driver_summary::run(int argc, char **argv)
     // Ensure that we're running in a single processor environment
     if (mpi::comm_size(MPI_COMM_WORLD) > 1) {
         FATAL(argv[0] << " only intended to run on single rank");
+        return EXIT_FAILURE;
+    }
+
+    // Look up desired model selection criterion using ar::best_model_function
+    // best_model_function template parameters fit ar::burg_method usage below
+    typedef ar::best_model_function<
+                ar::Burg, std::size_t, std::size_t, std::vector<real_t>
+            > best_model_function;
+    const best_model_function::type best_model
+            = best_model_function::lookup(ar_criterion, false);
+    if (!best_model) {
+        FATAL("Unknown model selection criterion: " << ar_criterion);
         return EXIT_FAILURE;
     }
 
@@ -550,6 +569,57 @@ suzerain::perfect::driver_summary::run(int argc, char **argv)
                             bulk_weights.data(), 0,
                             summary::desc[summary::bulk_weights]);
         }
+
+    }
+
+    // Autocorrelation analysis occurs after data is safely aggregated on disk
+    if (use_hdf5) {
+        INFO("Beginning autocorrelation analysis on aggregated data");
+
+        // Open the prior HDF5 file in read-only mode via ESIO handle
+        DEBUG("Reopening file " << hdffile);
+        shared_ptr<boost::remove_pointer<esio_handle>::type> h(
+                esio_handle_initialize(MPI_COMM_WORLD),
+                esio_handle_finalize);
+        esio_file_open(h.get(), hdffile.c_str(), /*read-write*/1);
+
+        // Load the sequence of sample times and compute dt statistics
+        int Nt = 0;
+        esio_line_size(h.get(), summary::name[summary::t], &Nt);
+        VectorXr t(Nt);
+        esio_line_establish(h.get(), t.size(), 0, t.size());
+        esio_line_read(h.get(), summary::name[summary::t],
+                       t.data(), t.innerStride());
+        running_statistics<real_t,1> dtstats;
+        for (int i = 0; i < Nt-1; ++i) {
+            const real_t diff = t[i+1] - t[i];
+            dtstats(&diff);
+        }
+
+        // Summarize the temporal content of the data iff nontrivial
+        if (Nt == 1) {
+            INFO("Collection contains a single sample at time " << t[0]);
+        } else if (Nt > 1) {
+            using std::numeric_limits;
+            std::ostringstream msg;
+            msg.precision(static_cast<int>(
+                    numeric_limits<real_t>::digits10*0.75));
+            msg << "Collection contains " << t.size()
+                << " samples spanning times ["
+                << t[0] << " ," << t[Nt - 1] << "]";
+            INFO(who, msg.str());
+            msg.str("");
+            msg.precision(static_cast<int>(
+                    numeric_limits<real_t>::digits10*0.50));
+            msg << "Min/avg/max/std of time between samples: "
+                << dtstats.min(0) << ", "
+                << dtstats.avg(0) << ", "
+                << dtstats.max(0) << ", "
+                << dtstats.std(0);
+            INFO(who, msg.str());
+        }
+
+
     }
 
     return EXIT_SUCCESS;
