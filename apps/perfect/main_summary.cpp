@@ -473,7 +473,7 @@ suzerain::perfect::driver_summary::run(int argc, char **argv)
                 // ...and adding the time value to the running vector of times.
                 t.push_back(i->first);
 
-                // Output status to the user so they don't thing we're hung.
+                // Output status to the user so they don't think we're hung.
                 INFO0("Wrote sample " << t.size() << " of " << Nt
                       << " for t = " << t.back());
 
