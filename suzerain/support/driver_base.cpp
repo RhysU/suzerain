@@ -1275,6 +1275,18 @@ driver_base::save_metadata()
     esio_handle esioh = esio_handle_initialize(MPI_COMM_WORLD);
     esio_file_create(esioh, restartdef->metadata.c_str(), 1 /* overwrite */);
 
+    save_metadata(esioh);
+
+    esio_file_close(esioh);
+    esio_handle_finalize(esioh);
+
+    metadata_saved = true;
+}
+
+void
+driver_base::save_metadata(
+        const esio_handle esioh)
+{
     // Per Ticket #2595 we cannot ignore string-based attributes set on "/" in
     // version 1.8.x of h5diff.  This makes ignoring version information
     // problematic for regression tests.  As a workaround, we write a dataset
@@ -1296,15 +1308,12 @@ driver_base::save_metadata()
     // TODO Broadcast who from rank zero and save
     // TODO Broadcast uname details from rank zero and save
 
-    // Save known metadata and then invoke subclass extension point
+    // Save metadata known by us
     save_grid_and_operators(esioh);
     if (timedef) timedef->save(esioh);
-    save_metadata_hook(esioh);
 
-    esio_file_close(esioh);
-    esio_handle_finalize(esioh);
-
-    metadata_saved = true;
+    // Invoke subclass extension point
+    return save_metadata_hook(esioh);
 }
 
 void

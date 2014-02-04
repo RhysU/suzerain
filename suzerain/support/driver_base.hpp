@@ -429,12 +429,19 @@ public:
      * may wish to invoke the method explicitly during general initialization
      * prior to \ref advance_controller().
      *
-     * Subclasses should not override this method but should instead use \ref
-     * save_metadata_hook.
-     *
      * @see Member #restartdef to control the metadata file location.
      */
-    virtual void save_metadata();
+    void save_metadata();
+
+    /**
+     * Save time-independent metadata that should appear in all restart and
+     * statistics files.
+     *
+     * Subclasses should not override this method but should instead use \ref
+     * save_metadata_hook.
+     */
+    virtual void save_metadata(
+            const esio_handle esioh);
 
     /**
      * Load time-independent metadata appearing in all restart and statistics
