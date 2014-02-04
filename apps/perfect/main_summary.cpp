@@ -392,7 +392,7 @@ suzerain::perfect::driver_summary::run(int argc, char **argv)
             sample::storage_map_type data = sample::process(
                     filename, scenario, grid, b, cop, boplu);
 
-            // Output status to the user so they don't thing we're hung.
+            // Output status to the user so they don't think we're hung.
             BOOST_FOREACH(sample::storage_map_type::value_type i, data) {
                 INFO0("Read sample for t = " << i->first
                        << " from " << filename);
