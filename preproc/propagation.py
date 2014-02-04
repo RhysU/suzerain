@@ -458,9 +458,9 @@ def main(argv):
                    default=statements_by_semicolon,
                    help='expect newline-delimited input with "#" comments;'
                         ' otherwise semicolons delimit with "//" comments')
-    p.add_argument('-d', '--decl', type=str,
-                   help='file containing SymPy-based declarations;'
-                        ' process standard input when "-" supplied')
+    p.add_argument('-d', '--decl', action='append', default=[],
+                   help='file containing SymPy-based declarations defaulting'
+                        ' to standard input when declarations required')
 
     # Control C vs Fortran vs SymPy (default) output for expressions
     g = p.add_mutually_exclusive_group()
@@ -509,59 +509,58 @@ def main(argv):
     # Parse the incoming command line
     args = p.parse_args()
 
-    # Parse any requested files into one unified symbol dictionary
-    syms = parser(args.statements(args.decl) if args.decl else [])
-
-    # Supply "all known declarations" behavior for any f arguments
+    # Supply "all known declarations" behavior for any f arguments first
+    # parsing any requested files into one unified dictionary "args.syms".
     # Additionally, provide nicer error messages on unknown symbols
-    # (otherwise a messy stacktrace appears and folks doubt the code)
+    # (otherwise a messy stacktrace appears and folks doubt the code).
     if ('f' in args):
+        args.syms = parser(args.statements(args.decl))
         if not args.f:
-            args.f = syms.keys()
+            args.f = args.syms.keys()
         else:
-            unknown = set(args.f).difference(syms.keys())
+            unknown = set(args.f).difference(args.syms.keys())
             if unknown:
                 raise LookupError("Requested but not in declarations: %s"
                                   % ', '.join(unknown))
 
-    # Dispatch to the chosen command passing arguments and symbols
-    return args.command(args, syms)
+    # Dispatch to the chosen command
+    return args.command(args)
 
 
-def command_chk(args, syms):
+def command_chk(args):
     r'''Process the 'chk' command on behalf of main()'''
     from doctest import testmod
     failure_count, test_count = testmod(verbose=args.verbosity)
     return failure_count
 
 
-def command_dec(args, syms):
+def command_dec(args):
     r'''Process the 'dec' command on behalf of main()'''
     for qoi in args.f:
-        print(qoi, '=', args.style(syms[qoi]))
+        print(qoi, '=', args.style(args.syms[qoi]))
     return 0
 
 
-def command_pre(args, syms):
+def command_pre(args):
     r'''Process the 'pre' command on behalf of main()'''
     prereqs = set()
     for qoi in args.f:
-        prereqs.update(prerequisites(syms[qoi]))
+        prereqs.update(prerequisites(args.syms[qoi]))
     for prereq in sorted(prereqs):
         print('E', list(prereq), sep='')
 
 
-def command_exp(args, syms):
+def command_exp(args):
     r'''Process the 'exp' command on behalf of main()'''
     for qoi in args.f:
-        m = expectation(syms[qoi])
+        m = expectation(args.syms[qoi])
         print('E[', qoi, '] = (\n', m.__str__(args.style), ')\n', sep='')
 
 
-def command_var(args, syms):
+def command_var(args):
     r'''Process the 'var' command on behalf of main()'''
     for qoi in args.f:
-        m = variance(syms[qoi])
+        m = variance(args.syms[qoi])
         print('Var[', qoi, '] = (\n', m.__str__(args.style), ')\n', sep='')
 
 
