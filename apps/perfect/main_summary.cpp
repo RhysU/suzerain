@@ -237,7 +237,8 @@ namespace sample {
 
 #pragma warning(disable:383 1572)
 
-// TODO Move into libsuzerain
+} // namespace perfect
+
 /**
  * Compute the integration weights necessary to compute a bulk quantity from
  * the quantity's value at collocation points using a dot product.
@@ -264,8 +265,6 @@ static VectorXr compute_bulk_weights(
 
     return retval;
 }
-
-} // namespace perfect
 
 } // namespace suzerain
 
