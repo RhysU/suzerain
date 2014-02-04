@@ -145,13 +145,15 @@ suzerain::perfect::driver_init::run(int argc, char **argv)
     msoln->isothermal_channel();
 
     // Establish binary-specific options
+    bool clobber;
     real_t mms    = numeric_limits<real_t>::quiet_NaN();
     real_t npower = numeric_limits<real_t>::quiet_NaN();
     real_t Re_x   = numeric_limits<real_t>::quiet_NaN();
     options.add_options()
         ("clobber",
-         boost::program_options::bool_switch(),
-         "Overwrite an existing restart file?")
+         boost::program_options::bool_switch(&clobber)
+         ->default_value(false),
+         "Overwrite an existing output file?")
         ("npower",
          boost::program_options::value<string>()
          ->default_value("1")
@@ -235,7 +237,6 @@ suzerain::perfect::driver_init::run(int argc, char **argv)
         return EXIT_FAILURE;
     }
     const std::string restart_file = positional[0];
-    const bool clobber = options.variables()["clobber"].as<bool>();
     if (npower < 0 || npower > 1) {
         FATAL0("npower in [0,1] required");
         return EXIT_FAILURE;
