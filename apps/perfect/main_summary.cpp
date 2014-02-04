@@ -439,6 +439,7 @@ suzerain::perfect::driver_summary::run(int argc, char **argv)
             esio_file_create(h.get(), hdffile.c_str(), 1 /* overwrite */);
 
             // Store the scenario and numerics metadata
+            // TODO Usage driver_base and application_base infrastructure
             scenario->save(h.get());
             grid->save(h.get());
             shared_ptr<bsplineop> gop(new bsplineop(
@@ -529,6 +530,7 @@ suzerain::perfect::sample::process(
     esio_file_open(h.get(), filename.c_str(), 0 /* read-only */);
 
     // Load time, scenario, grid, time, and B-spline details from file.
+    // TODO Usage driver_base and application_base infrastructure
     real_t time;
     definition_scenario scenario;
     support::definition_grid grid;
