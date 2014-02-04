@@ -63,6 +63,7 @@
 #include <suzerain/support/field.hpp>
 #include <suzerain/support/logging.hpp>
 #include <suzerain/support/support.hpp>
+#include <suzerain/utility.hpp>
 
 #include "definition_scenario.hpp"
 
@@ -674,19 +675,17 @@ take_samples(const definition_scenario &scenario,
          j < dgrid.local_physical_end.y();
          ++j) {
 
-        // Type used to accumulate mean quantities versus wall-normal position
-        typedef acc::accumulator_set<
-                real_t, acc::stats<acc::tag::sum_kahan>
-            > accumulator_type;
+        // Prepare logical indices using struct for scoping (e.g. ref::ux).
+#define COMPONENT(quantity, component, offset, description) component,
+        struct ref { enum {
+            SUZERAIN_SAMPLES_COMPONENTS_FOR_EACH(COMPONENT,
+                                                 SUZERAIN_SAMPLES_PHYSICAL)
+            count // Sentry
+        }; };
+#undef  COMPONENT
 
-        // Accumulators for each mean quantity computed in physical space.
-        // For example, quantity "foo" has accumulator "sum_foo".
-        // Declared within Y loop so they are reset on each Y iteration.
-#define DECLARE(r, data, tuple)                                              \
-        accumulator_type BOOST_PP_CAT(sum_,BOOST_PP_TUPLE_ELEM(2, 0, tuple)) \
-                [BOOST_PP_SEQ_SIZE(BOOST_PP_TUPLE_ELEM(2, 1, tuple))];
-        BOOST_PP_SEQ_FOR_EACH(DECLARE,, SUZERAIN_SAMPLES_PHYSICAL)
-#undef DECLARE
+        // An array of summing_accumulator_type holds all running sums
+        array<summing_accumulator_type, ref::count> acc;
 
         // Iterate across the j-th ZX plane
         const int last_zxoffset = offset
@@ -745,114 +744,114 @@ take_samples(const definition_scenario &scenario,
             const Vector3r tau_u = tau * u;
 
             // Accumulate quantities into sum_XXX using function syntax.
-            sum_E[0](e / rho);
+            acc[ref::E](e / rho);
 
-            sum_p[0](p);
+            acc[ref::p](p);
 
-            sum_T[0](T);
+            acc[ref::T](T);
 
-            sum_a[0](std::sqrt(T));
+            acc[ref::a](std::sqrt(T));
 
-            sum_h0[0](e + p);
+            acc[ref::h0](e + p);
 
-            sum_H0[0]((e + p) / rho);
+            acc[ref::H0]((e + p) / rho);
 
-            sum_ke[0](u.squaredNorm() / 2);
+            acc[ref::ke](u.squaredNorm() / 2);
 
-            sum_mu[0](mu);
+            acc[ref::mu](mu);
 
-            sum_nu[0](mu / rho);
+            acc[ref::nu](mu / rho);
 
-            sum_u[0](u.x());
-            sum_u[1](u.y());
-            sum_u[2](u.z());
+            acc[ref::u](u.x());
+            acc[ref::v](u.y());
+            acc[ref::w](u.z());
 
-            sum_sym_grad_u[0]( grad_u(0,0)                   );
-            sum_sym_grad_u[1]((grad_u(0,1) + grad_u(1,0)) / 2);
-            sum_sym_grad_u[2]((grad_u(0,2) + grad_u(2,0)) / 2);
-            sum_sym_grad_u[3]( grad_u(1,1)                   );
-            sum_sym_grad_u[4]((grad_u(1,2) + grad_u(2,1)) / 2);
-            sum_sym_grad_u[5]( grad_u(2,2)                   );
+            acc[ref::symxx_grad_u]( grad_u(0,0)                   );
+            acc[ref::symxy_grad_u]((grad_u(0,1) + grad_u(1,0)) / 2);
+            acc[ref::symxz_grad_u]((grad_u(0,2) + grad_u(2,0)) / 2);
+            acc[ref::symyy_grad_u]( grad_u(1,1)                   );
+            acc[ref::symyz_grad_u]((grad_u(1,2) + grad_u(2,1)) / 2);
+            acc[ref::symzz_grad_u]( grad_u(2,2)                   );
 
-            sum_sym_rho_grad_u[0](rho *  grad_u(0,0)                   );
-            sum_sym_rho_grad_u[1](rho * (grad_u(0,1) + grad_u(1,0)) / 2);
-            sum_sym_rho_grad_u[2](rho * (grad_u(0,2) + grad_u(2,0)) / 2);
-            sum_sym_rho_grad_u[3](rho *  grad_u(1,1)                   );
-            sum_sym_rho_grad_u[4](rho * (grad_u(1,2) + grad_u(2,1)) / 2);
-            sum_sym_rho_grad_u[5](rho *  grad_u(2,2)                   );
+            acc[ref::symxx_rho_grad_u](rho *  grad_u(0,0)                   );
+            acc[ref::symxy_rho_grad_u](rho * (grad_u(0,1) + grad_u(1,0)) / 2);
+            acc[ref::symxz_rho_grad_u](rho * (grad_u(0,2) + grad_u(2,0)) / 2);
+            acc[ref::symyy_rho_grad_u](rho *  grad_u(1,1)                   );
+            acc[ref::symyz_rho_grad_u](rho * (grad_u(1,2) + grad_u(2,1)) / 2);
+            acc[ref::symzz_rho_grad_u](rho *  grad_u(2,2)                   );
 
-            sum_grad_T[0](grad_T.x());
-            sum_grad_T[1](grad_T.y());
-            sum_grad_T[2](grad_T.z());
+            acc[ref::gradx_T](grad_T.x());
+            acc[ref::grady_T](grad_T.y());
+            acc[ref::gradz_T](grad_T.z());
 
-            sum_rho_grad_T[0](rho * grad_T.x());
-            sum_rho_grad_T[1](rho * grad_T.y());
-            sum_rho_grad_T[2](rho * grad_T.z());
+            acc[ref::rho_gradx_T](rho * grad_T.x());
+            acc[ref::rho_grady_T](rho * grad_T.y());
+            acc[ref::rho_gradz_T](rho * grad_T.z());
 
-            sum_tau_colon_grad_u[0]((tau.transpose()*grad_u).trace());
+            acc[ref::tau_colon_grad_u]((tau.transpose()*grad_u).trace());
 
-            sum_tau[0](tau(0,0));
-            sum_tau[1](tau(0,1));
-            sum_tau[2](tau(0,2));
-            sum_tau[3](tau(1,1));
-            sum_tau[4](tau(1,2));
-            sum_tau[5](tau(2,2));
+            acc[ref::tauxx](tau(0,0));
+            acc[ref::tauxy](tau(0,1));
+            acc[ref::tauxz](tau(0,2));
+            acc[ref::tauyy](tau(1,1));
+            acc[ref::tauyz](tau(1,2));
+            acc[ref::tauzz](tau(2,2));
 
-            sum_tau_u[0](tau_u.x());
-            sum_tau_u[1](tau_u.y());
-            sum_tau_u[2](tau_u.z());
+            acc[ref::tauux](tau_u.x());
+            acc[ref::tauuy](tau_u.y());
+            acc[ref::tauuz](tau_u.z());
 
-            sum_p_div_u[0](p*div_u);
+            acc[ref::p_div_u](p*div_u);
 
-            sum_rho_u_u[0](rho * u.x() * u.x());
-            sum_rho_u_u[1](rho * u.x() * u.y());
-            sum_rho_u_u[2](rho * u.x() * u.z());
-            sum_rho_u_u[3](rho * u.y() * u.y());
-            sum_rho_u_u[4](rho * u.y() * u.z());
-            sum_rho_u_u[5](rho * u.z() * u.z());
+            acc[ref::rho_u_u](rho * u.x() * u.x());
+            acc[ref::rho_u_v](rho * u.x() * u.y());
+            acc[ref::rho_u_w](rho * u.x() * u.z());
+            acc[ref::rho_v_v](rho * u.y() * u.y());
+            acc[ref::rho_v_w](rho * u.y() * u.z());
+            acc[ref::rho_w_w](rho * u.z() * u.z());
 
-            sum_rho_u_u_u[0](rho * u.x() * u.x() * u.x());
-            sum_rho_u_u_u[1](rho * u.x() * u.x() * u.y());
-            sum_rho_u_u_u[2](rho * u.x() * u.x() * u.z());
-            sum_rho_u_u_u[3](rho * u.x() * u.y() * u.y());
-            sum_rho_u_u_u[4](rho * u.x() * u.y() * u.z());
-            sum_rho_u_u_u[5](rho * u.x() * u.z() * u.z());
-            sum_rho_u_u_u[6](rho * u.y() * u.y() * u.y());
-            sum_rho_u_u_u[7](rho * u.y() * u.y() * u.z());
-            sum_rho_u_u_u[8](rho * u.y() * u.z() * u.z());
-            sum_rho_u_u_u[9](rho * u.z() * u.z() * u.z());
+            acc[ref::rho_u_u_u](rho * u.x() * u.x() * u.x());
+            acc[ref::rho_u_u_v](rho * u.x() * u.x() * u.y());
+            acc[ref::rho_u_u_w](rho * u.x() * u.x() * u.z());
+            acc[ref::rho_u_v_v](rho * u.x() * u.y() * u.y());
+            acc[ref::rho_u_v_w](rho * u.x() * u.y() * u.z());
+            acc[ref::rho_u_w_w](rho * u.x() * u.z() * u.z());
+            acc[ref::rho_v_v_v](rho * u.y() * u.y() * u.y());
+            acc[ref::rho_v_v_w](rho * u.y() * u.y() * u.z());
+            acc[ref::rho_v_w_w](rho * u.y() * u.z() * u.z());
+            acc[ref::rho_w_w_w](rho * u.z() * u.z() * u.z());
 
-            sum_rho_T_u[0](rho * T * u.x());
-            sum_rho_T_u[1](rho * T * u.y());
-            sum_rho_T_u[2](rho * T * u.z());
+            acc[ref::rho_T_u](rho * T * u.x());
+            acc[ref::rho_T_v](rho * T * u.y());
+            acc[ref::rho_T_w](rho * T * u.z());
 
-            sum_rho_mu[0](rho * mu);
+            acc[ref::rho_mu](rho * mu);
 
-            sum_mu_S[0](mu * ( grad_u(0,0)                    - div_u / 3));
-            sum_mu_S[1](mu * ((grad_u(0,1) + grad_u(1,0)) / 2            ));
-            sum_mu_S[2](mu * ((grad_u(0,2) + grad_u(2,0)) / 2            ));
-            sum_mu_S[3](mu * ( grad_u(1,1)                    - div_u / 3));
-            sum_mu_S[4](mu * ((grad_u(1,2) + grad_u(2,1)) / 2            ));
-            sum_mu_S[5](mu * ( grad_u(2,2)                    - div_u / 3));
+            acc[ref::mu_Sxx](mu * ( grad_u(0,0)                  - div_u / 3));
+            acc[ref::mu_Sxy](mu * ((grad_u(0,1) + grad_u(1,0))/2            ));
+            acc[ref::mu_Sxz](mu * ((grad_u(0,2) + grad_u(2,0))/2            ));
+            acc[ref::mu_Syy](mu * ( grad_u(1,1)                  - div_u / 3));
+            acc[ref::mu_Syz](mu * ((grad_u(1,2) + grad_u(2,1))/2            ));
+            acc[ref::mu_Szz](mu * ( grad_u(2,2)                  - div_u / 3));
 
-            sum_mu_div_u[0](mu * div_u);
+            acc[ref::mu_div_u](mu * div_u);
 
-            sum_mu_grad_T[0](mu * grad_T.x());
-            sum_mu_grad_T[1](mu * grad_T.y());
-            sum_mu_grad_T[2](mu * grad_T.z());
+            acc[ref::mu_gradx_T](mu * grad_T.x());
+            acc[ref::mu_grady_T](mu * grad_T.y());
+            acc[ref::mu_gradz_T](mu * grad_T.z());
 
         } // end X // end Z
 
-        // Move y-specific sums into MPI-reduction-ready storage for y(j) using
-        // Eigen comma initialization syntax.  Yes, this is not stride 1.
-#define EXTRACT_SUM(z, n, q) acc::sum(sum_##q[n])
-#define MOVE_SUM_INTO_TMP(r, data, tuple)                                       \
-        ret->BOOST_PP_TUPLE_ELEM(2, 0, tuple)().row(j) <<                       \
-             BOOST_PP_ENUM(BOOST_PP_SEQ_SIZE(BOOST_PP_TUPLE_ELEM(2, 1, tuple)), \
-                          EXTRACT_SUM, BOOST_PP_TUPLE_ELEM(2, 0, tuple));
-        BOOST_PP_SEQ_FOR_EACH(MOVE_SUM_INTO_TMP,, SUZERAIN_SAMPLES_PHYSICAL)
-#undef EXTRACT_SUM
-#undef MOVE_SUM_INTO_TMP
+        // All accumulators should have seen a consistent number of samples
+        assert(consistent_accumulation_counts(acc));
+
+        // Extract y-specific sums into MPI-reduction-ready storage for y(j)
+        using boost::accumulators::sum;
+#define EXTRACT(quantity, component, offset, description) \
+        ret->quantity()(j, offset) = sum(acc[ref::component]);
+        SUZERAIN_SAMPLES_COMPONENTS_FOR_EACH(
+                EXTRACT, SUZERAIN_SAMPLES_PHYSICAL)
+#undef  EXTRACT
 
     } // end Y
 
