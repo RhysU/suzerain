@@ -61,20 +61,6 @@ main_summary_svnrev.h: $(main_summary_SOURCES) $(libperfect_la_SOURCES)
 	$(top_builddir)/build-aux/svnrev -n -o$@ "-f$(PACKAGE_VERSION).#" -i $?
 
 ##
-## Old, non-suzerain::support::application_base application(s)
-## Beware that all derived quantity computations are wrong
-## TODO Eliminate these as part of closing ticket #2599
-##
-
-bin_PROGRAMS         += perfect_mean
-perfect_mean_SOURCES  = perfect_mean.cpp
-perfect_mean_SOURCES += perfect_mean_svnrev.c
-BUILT_SOURCES        += perfect_mean_svnrev.h
-perfect_mean_LDADD    = ./libperfect.la ../../suzerain/libsuzerain.la
-perfect_mean_svnrev.h: $(perfect_mean_SOURCES) $(libperfect_la_SOURCES)
-	$(top_builddir)/build-aux/svnrev -n -o$@ "-f$(PACKAGE_VERSION).#" -i $?
-
-##
 ## Tests for perfect gas applications
 ##
 ## Identical test logic varying only in the operator choices (e.g. --explicit

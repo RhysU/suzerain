@@ -72,8 +72,8 @@ perfect_advance=(
     --undriven=all         # Driving forces interfere with wall-normal pulses
     --explicit             # TODO Eventually use ${OPER:=}
 )
-perfect_mean=(
-    $(readlink -f perfect_mean)
+perfect_summary=(
+    $(readlink -f perfect_summary)
 )
 
 # Common case execution running $1 time units defaulting to some duration
@@ -98,7 +98,7 @@ run_postproc() {
 
     # Post-process the entire collection of sample and restart files
     shopt -s nullglob
-    ${perfect_mean[*]} -f summary.dat -o summary.h5 \
+    ${perfect_summary[*]} -f summary.dat -o summary.h5 \
                        sample*.h5 initial.h5 restart*.h5
 
     # Display (hopefully) logarithmic decay of signal versus simulation time
