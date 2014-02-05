@@ -120,6 +120,8 @@ nobase_pkginclude_HEADERS += running_statistics.hpp
 nobase_pkginclude_HEADERS += safe_bool.hpp
 nobase_pkginclude_HEADERS += samples.h
 nobase_pkginclude_HEADERS += samples.hpp
+nobase_pkginclude_HEADERS += summary.h
+nobase_pkginclude_HEADERS += summary.hpp
 nobase_pkginclude_HEADERS += sbmv.h
 nobase_pkginclude_HEADERS += shared_range.hpp
 nobase_pkginclude_HEADERS += specification_grid.hpp
@@ -308,6 +310,7 @@ libbase_la_SOURCES       += specification_largo.cpp
 libbase_la_SOURCES       += specification_noise.cpp
 libbase_la_SOURCES       += specification_radialflow.cpp
 libbase_la_SOURCES       += specification_zgbsv.cpp
+libbase_la_SOURCES       += summary.cpp
 libbase_la_SOURCES       += svehla.c
 
 # Sources requiring IEEE-faithful floating point behavior

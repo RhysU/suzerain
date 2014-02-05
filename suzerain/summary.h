@@ -32,11 +32,11 @@
  *
  * An all-encompassing sequence like
  * <pre>
- * #define SUZERAIN_SUMMARY        \
- *     SUZERAIN_SUMMARY_GRID       \
- *     SUZERAIN_SUMMARY_SAMPLED    \
- *     SUZERAIN_SUMMARY_SAMPLED_Y  \
- *     SUZERAIN_SUMMARY_SAMPLED_YY
+ * #define SUZERAIN_SUMMARY         \
+ *     SUZERAIN_SUMMARY_GRID        \
+ *     SUZERAIN_SUMMARY_SAMPLED     \
+ *     SUZERAIN_SUMMARY_SAMPLED__Y  \
+ *     SUZERAIN_SUMMARY_SAMPLED__YY
  * </pre>
  * is deliberately not defined.  It would contain more than BOOST_PP_LIMIT_SEQ
  * elements and be utterly useless for work with Boost.Preprocessor.  However,
@@ -71,7 +71,7 @@
  * components all prefixed by "bar_" and suffixed by "__y".
  * \copydetails SUZERAIN_SUMMARY_SAMPLED
  */
-#define SUZERAIN_SUMMARY_SAMPLED_Y \
+#define SUZERAIN_SUMMARY_SAMPLED__Y                                                        \
     BOOST_PP_SEQ_TRANSFORM(SUZERAIN_SUMMARY_SAMPLED_TRANSFORM_Y,,SUZERAIN_SUMMARY_SAMPLED)
 
 #ifndef SUZERAIN_PARSED_BY_DOXYGEN
@@ -87,7 +87,7 @@
  * components all prefixed by "bar_" and suffixed by "__yy".
  * \copydetails SUZERAIN_SUMMARY_SAMPLED
  */
-#define SUZERAIN_SUMMARY_SAMPLED_YY \
+#define SUZERAIN_SUMMARY_SAMPLED__YY                                                        \
     BOOST_PP_SEQ_TRANSFORM(SUZERAIN_SUMMARY_SAMPLED_TRANSFORM_YY,,SUZERAIN_SUMMARY_SAMPLED)
 
 #ifndef SUZERAIN_PARSED_BY_DOXYGEN
@@ -99,11 +99,11 @@
 #endif /* SUZERAIN_PARSED_BY_DOXYGEN */
 
 /** How many scalar components are included in a summary? */
-#define SUZERAIN_SUMMARY_NSCALARS                    \
-    ( BOOST_PP_SEQ_SIZE(SUZERAIN_SUMMARY_GRID)       \
-    + BOOST_PP_SEQ_SIZE(SUZERAIN_SUMMARY_SAMPLED)    \
-    + BOOST_PP_SEQ_SIZE(SUZERAIN_SUMMARY_SAMPLED_Y)  \
-    + BOOST_PP_SEQ_SIZE(SUZERAIN_SUMMARY_SAMPLED_YY) )
+#define SUZERAIN_SUMMARY_COUNT                          \
+    ( BOOST_PP_SEQ_SIZE(SUZERAIN_SUMMARY_GRID)          \
+    + BOOST_PP_SEQ_SIZE(SUZERAIN_SUMMARY_SAMPLED)       \
+    + BOOST_PP_SEQ_SIZE(SUZERAIN_SUMMARY_SAMPLED__Y)    \
+    + BOOST_PP_SEQ_SIZE(SUZERAIN_SUMMARY_SAMPLED__YY) )
 
 /**
  * An Boost.Preprocessor-like iteration construct invoking <code>
@@ -114,34 +114,34 @@
  * offset will be a constant, integer-only arithmetic expression wrapped in
  * parenthesis and not a single integer token.
  */
-#define SUZERAIN_SUMMARY_FOR_EACH(macro, data)               \
-    BOOST_PP_SEQ_FOR_EACH_I(                                 \
-            SUZERAIN_SUMMARY_FOR_EACH_HELPER,                \
-            (macro,                                          \
-              0,                                             \
-            data),                                           \
-            SUZERAIN_SUMMARY_GRID)                           \
-    BOOST_PP_SEQ_FOR_EACH_I(                                 \
-            SUZERAIN_SUMMARY_FOR_EACH_HELPER,                \
-            (macro,                                          \
-              BOOST_PP_SEQ_SIZE(SUZERAIN_SUMMARY_GRID),      \
-            data),                                           \
-            SUZERAIN_SUMMARY_SAMPLED)                        \
-    BOOST_PP_SEQ_FOR_EACH_I(                                 \
-            SUZERAIN_SUMMARY_FOR_EACH_HELPER,                \
-            (macro,                                          \
-              BOOST_PP_SEQ_SIZE(SUZERAIN_SUMMARY_GRID)       \
-            + BOOST_PP_SEQ_SIZE(SUZERAIN_SUMMARY_SAMPLED),   \
-            data),                                           \
-            SUZERAIN_SUMMARY_SAMPLED_Y)                      \
-    BOOST_PP_SEQ_FOR_EACH_I(                                 \
-            SUZERAIN_SUMMARY_FOR_EACH_HELPER,                \
-            (macro,                                          \
-              BOOST_PP_SEQ_SIZE(SUZERAIN_SUMMARY_GRID)       \
-            + BOOST_PP_SEQ_SIZE(SUZERAIN_SUMMARY_SAMPLED)    \
-            + BOOST_PP_SEQ_SIZE(SUZERAIN_SUMMARY_SAMPLED_Y), \
-            data),                                           \
-            SUZERAIN_SUMMARY_SAMPLED_YY)                     \
+#define SUZERAIN_SUMMARY_FOR_EACH(macro, data)                \
+    BOOST_PP_SEQ_FOR_EACH_I(                                  \
+            SUZERAIN_SUMMARY_FOR_EACH_HELPER,                 \
+            (macro,                                           \
+              0,                                              \
+            data),                                            \
+            SUZERAIN_SUMMARY_GRID)                            \
+    BOOST_PP_SEQ_FOR_EACH_I(                                  \
+            SUZERAIN_SUMMARY_FOR_EACH_HELPER,                 \
+            (macro,                                           \
+              BOOST_PP_SEQ_SIZE(SUZERAIN_SUMMARY_GRID),       \
+            data),                                            \
+            SUZERAIN_SUMMARY_SAMPLED)                         \
+    BOOST_PP_SEQ_FOR_EACH_I(                                  \
+            SUZERAIN_SUMMARY_FOR_EACH_HELPER,                 \
+            (macro,                                           \
+              BOOST_PP_SEQ_SIZE(SUZERAIN_SUMMARY_GRID)        \
+            + BOOST_PP_SEQ_SIZE(SUZERAIN_SUMMARY_SAMPLED),    \
+            data),                                            \
+            SUZERAIN_SUMMARY_SAMPLED__Y)                      \
+    BOOST_PP_SEQ_FOR_EACH_I(                                  \
+            SUZERAIN_SUMMARY_FOR_EACH_HELPER,                 \
+            (macro,                                           \
+              BOOST_PP_SEQ_SIZE(SUZERAIN_SUMMARY_GRID)        \
+            + BOOST_PP_SEQ_SIZE(SUZERAIN_SUMMARY_SAMPLED)     \
+            + BOOST_PP_SEQ_SIZE(SUZERAIN_SUMMARY_SAMPLED__Y), \
+            data),                                            \
+            SUZERAIN_SUMMARY_SAMPLED__YY)                     \
 
 #ifndef SUZERAIN_PARSED_BY_DOXYGEN
 
@@ -162,10 +162,10 @@
  * BOOST_PP_SEQ_TRANSFORM and BOOST_PP_SEQ_ENUM in a way avoiding
  * BOOST_PP_LIMIT_SEQ.
  */
-#define SUZERAIN_SUMMARY_ENUM_TRANSFORM(op, data)                                  \
-    BOOST_PP_SEQ_ENUM(BOOST_PP_SEQ_TRANSFORM(op,data,SUZERAIN_SUMMARY_GRID)),      \
-    BOOST_PP_SEQ_ENUM(BOOST_PP_SEQ_TRANSFORM(op,data,SUZERAIN_SUMMARY_SAMPLED)),   \
-    BOOST_PP_SEQ_ENUM(BOOST_PP_SEQ_TRANSFORM(op,data,SUZERAIN_SUMMARY_SAMPLED_Y)), \
-    BOOST_PP_SEQ_ENUM(BOOST_PP_SEQ_TRANSFORM(op,data,SUZERAIN_SUMMARY_SAMPLED_YY))
+#define SUZERAIN_SUMMARY_ENUM_TRANSFORM(op, data)                                   \
+    BOOST_PP_SEQ_ENUM(BOOST_PP_SEQ_TRANSFORM(op,data,SUZERAIN_SUMMARY_GRID)),       \
+    BOOST_PP_SEQ_ENUM(BOOST_PP_SEQ_TRANSFORM(op,data,SUZERAIN_SUMMARY_SAMPLED)),    \
+    BOOST_PP_SEQ_ENUM(BOOST_PP_SEQ_TRANSFORM(op,data,SUZERAIN_SUMMARY_SAMPLED__Y)), \
+    BOOST_PP_SEQ_ENUM(BOOST_PP_SEQ_TRANSFORM(op,data,SUZERAIN_SUMMARY_SAMPLED__YY))
 
 #endif /* SUZERAIN_SUMMARY_H */
