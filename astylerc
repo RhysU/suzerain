@@ -3,6 +3,8 @@ style=otbs
 add-brackets
 align-pointer=type
 align-reference=type
+attach-namespaces
+attach-extern-c
 convert-tabs
 indent-col1-comments
 indent-preprocessor
