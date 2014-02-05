@@ -70,7 +70,7 @@ public:
     }; };
 
     /** Type of the contiguous storage used to house all scalars */
-    typedef Array<real_t, Dynamic, nscalars::total> storage_type;
+    typedef Array<real_t, Dynamic, nscalars::total, ColMajor> storage_type;
 
     /** Contiguous storage used to house all quantity profiles */
     storage_type storage;

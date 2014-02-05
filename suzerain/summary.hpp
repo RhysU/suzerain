@@ -60,7 +60,7 @@ public:
     }; };
 
     /** Type of the underlying storage mechanism. */
-    typedef Array<real_t, Dynamic, nscalars::total> storage_type;
+    typedef Array<real_t, Dynamic, nscalars::total, ColMajor> storage_type;
 
     /**
      * Contiguous storage used to house all data.
