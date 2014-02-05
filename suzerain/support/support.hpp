@@ -69,98 +69,112 @@ extern const char log4cxx_config[];
 extern const char log4cxx_config_console[];
 
 /** Log-and-abort handler for errors originating in the GSL */
-void mpi_abort_on_error_handler_gsl(const char * reason,
-                                    const char * file,
+void
+mpi_abort_on_error_handler_gsl(const char* reason,
+                               const char* file,
+                               int line,
+                               int error_code);
+
+/** Log-and-abort handler for errors originating in Suzerain */
+void
+mpi_abort_on_error_handler_suzerain(const char* reason,
+                                    const char* file,
                                     int line,
                                     int error_code);
 
-/** Log-and-abort handler for errors originating in Suzerain */
-void mpi_abort_on_error_handler_suzerain(const char * reason,
-                                         const char * file,
-                                         int line,
-                                         int error_code);
-
 /** Log-and-abort handler for errors originating in ESIO */
-void mpi_abort_on_error_handler_esio(const char * reason,
-                                     const char * file,
+void
+mpi_abort_on_error_handler_esio(const char* reason,
+                                const char* file,
+                                int line,
+                                int error_code);
+
+/** Log-and-abort handler for errors originating in underling */
+void
+mpi_abort_on_error_handler_underling(const char* reason,
+                                     const char* file,
                                      int line,
                                      int error_code);
 
-/** Log-and-abort handler for errors originating in underling */
-void mpi_abort_on_error_handler_underling(const char * reason,
-                                          const char * file,
-                                          int line,
-                                          int error_code);
-
 /** Common logic for all error handlers */
-void mpi_abort_on_error_handler(const char * reason,
-                                const char * file,
-                                int line,
-                                int error_code,
-                                const char * origin,
-                                const char * strerror);
+void
+mpi_abort_on_error_handler(const char* reason,
+                           const char* file,
+                           int line,
+                           int error_code,
+                           const char* origin,
+                           const char* strerror);
 
 /**
  * If wisdom_file is not empty, read wisdom on rank zero and broadcast.
  *
  * @return True if wisdom was successfully broadcast.  False otherwise.
  */
-bool wisdom_broadcast(const std::string& wisdom_file);
+bool
+wisdom_broadcast(const std::string& wisdom_file);
 
 /**
  * If wisdom_file is not empty, gather wisdom to rank zero and write it.
  *
  * @return True if wisdom was successfully gathered.  False otherwise.
  */
-bool wisdom_gather(const std::string& wisdom_file);
+bool
+wisdom_gather(const std::string& wisdom_file);
 
 /**
  * Create a B-spline workspace on [left,right] per ndof, k, and htdelta.
  * @return the absolute error in reproducing prescribed abscissae.
  */
-real_t create_bsplines(const int ndof,
-                       const int k,
-                       const double left,
-                       const double right,
-                       const double htdelta,
-                       shared_ptr<bspline>& b,
-                       shared_ptr<bsplineop>& cop);
+real_t
+create_bsplines(const int ndof,
+                const int k,
+                const double left,
+                const double right,
+                const double htdelta,
+                shared_ptr<bspline>& b,
+                shared_ptr<bsplineop>& cop);
 
 /** Save a \ref bspline workspace and associated operators in a file. */
-void save_bsplines(const esio_handle h,
-                         bspline&    b,
-                   const bsplineop&  cop);
+void
+save_bsplines(const esio_handle h,
+              bspline&    b,
+              const bsplineop&  cop);
 
 /** Save a \ref bspline workspace and associated operators in a file. */
-void save_bsplines(const esio_handle h,
-                         bspline&    b,
-                   const bsplineop&  cop,
-                   const bsplineop&  gop);
+void
+save_bsplines(const esio_handle h,
+              bspline&    b,
+              const bsplineop&  cop,
+              const bsplineop&  gop);
 
 /**
  * Load a \ref bspline workspace from a file.
  * @return the absolute error in reproducing prescribed abscissae.
  */
-real_t load_bsplines(const esio_handle      h,
-                     shared_ptr<bspline>&   b,
-                     shared_ptr<bsplineop>& cop);
+real_t
+load_bsplines(const esio_handle      h,
+              shared_ptr<bspline>&   b,
+              shared_ptr<bsplineop>& cop);
 
 /** Save the current simulation time information */
-void save_time(const esio_handle h,
-               real_t time);
+void
+save_time(const esio_handle h,
+          real_t time);
 
 /** Load the current simulation time information */
-void load_time(const esio_handle h,
-               real_t &time);
+void
+load_time(const esio_handle h,
+          real_t& time);
 
 /**
  * Save sampled quantities in a file using name \c prefix.
  *
  * @return True if all sampled quantities could be saved.  False otherwise.
  */
-bool save_samples(const esio_handle h,
-                  const samples& s,
-                  const char * const prefix = "bar_");
+bool
+save_samples(const esio_handle h,
+             const samples& s,
+             const char* const prefix = "bar_");
 
 /**
  * Load sampled quantities from a file using name \c prefix. Statistics not
@@ -169,10 +183,11 @@ bool save_samples(const esio_handle h,
  *
  * @return True if all sampled quantities could be loaded.  False otherwise.
  */
-bool load_samples(const esio_handle h,
-                  samples& s,
-                  const char * const prefix  = "bar_",
-                  const char * const sizeper = "bar_rho");
+bool
+load_samples(const esio_handle h,
+             samples& s,
+             const char* const prefix  = "bar_",
+             const char* const sizeper = "bar_rho");
 
 /**
  * Forward declaration to allocate state padded for transformation to/from
@@ -181,9 +196,10 @@ bool load_samples(const esio_handle h,
  * returned pointer.  No guarantees are made about the memory contents.
  */
 template<class StateType>
-StateType* allocate_padded_state(
-           const std::size_t howmany_fields,
-           const pencil_grid& dgrid);
+StateType*
+allocate_padded_state(
+    const std::size_t howmany_fields,
+    const pencil_grid& dgrid);
 
 /**
  * Specialization of allocate_padded_state for contiguous_state.  Emphatically
@@ -191,9 +207,10 @@ StateType* allocate_padded_state(
  * returned pointer.  No guarantees are made about the memory contents.
  */
 template<>
-contiguous_state<4,complex_t>* allocate_padded_state(
-           const std::size_t howmany_fields,
-           const pencil_grid& dgrid);
+contiguous_state<4, complex_t>*
+allocate_padded_state(
+    const std::size_t howmany_fields,
+    const pencil_grid& dgrid);
 
 } // end namespace support
 

@@ -88,57 +88,62 @@ const char log4cxx_config[] =
     "log4j.appender.LOG.filename=log.dat\n"
     "log4j.appender.LOG.layout=${log4j.appender.CONSOLE.layout}\n"
     "log4j.appender.LOG.layout.ConversionPattern=${log4j.appender.CONSOLE.layout.ConversionPattern}\n"
-;
+    ;
 
 #undef COMMON_CONSOLE_CONFIG
 
 const real_t bsplines_distinct_distance
-    = 3*std::numeric_limits<real_t>::epsilon();
+    = 3 * std::numeric_limits<real_t>::epsilon();
 
-void mpi_abort_on_error_handler_gsl(const char * reason,
-                                    const char * file,
+void
+mpi_abort_on_error_handler_gsl(const char* reason,
+                               const char* file,
+                               int line,
+                               int error_code)
+{
+    return mpi_abort_on_error_handler(reason, file, line,
+                                      error_code, "GSL", gsl_strerror(error_code));
+}
+
+void
+mpi_abort_on_error_handler_suzerain(const char* reason,
+                                    const char* file,
                                     int line,
                                     int error_code)
 {
     return mpi_abort_on_error_handler(reason, file, line,
-            error_code, "GSL", gsl_strerror(error_code));
+                                      error_code, "Suzerain", suzerain_strerror(error_code));
 }
 
-void mpi_abort_on_error_handler_suzerain(const char * reason,
-                                         const char * file,
-                                         int line,
-                                         int error_code)
+void
+mpi_abort_on_error_handler_esio(const char* reason,
+                                const char* file,
+                                int line,
+                                int error_code)
 {
     return mpi_abort_on_error_handler(reason, file, line,
-            error_code, "Suzerain", suzerain_strerror(error_code));
+                                      error_code, "ESIO", esio_strerror(error_code));
 }
 
-void mpi_abort_on_error_handler_esio(const char * reason,
-                                     const char * file,
+#ifdef HAVE_UNDERLING
+void
+mpi_abort_on_error_handler_underling(const char* reason,
+                                     const char* file,
                                      int line,
                                      int error_code)
 {
     return mpi_abort_on_error_handler(reason, file, line,
-            error_code, "ESIO", esio_strerror(error_code));
-}
-
-#ifdef HAVE_UNDERLING
-void mpi_abort_on_error_handler_underling(const char * reason,
-                                          const char * file,
-                                          int line,
-                                          int error_code)
-{
-    return mpi_abort_on_error_handler(reason, file, line,
-            error_code, "underling", underling_strerror(error_code));
+                                      error_code, "underling", underling_strerror(error_code));
 }
 #endif
 
-void mpi_abort_on_error_handler(const char * reason,
-                                const char * file,
-                                int line,
-                                int error_code,
-                                const char * origin,
-                                const char * strerror)
+void
+mpi_abort_on_error_handler(const char* reason,
+                           const char* file,
+                           int line,
+                           int error_code,
+                           const char* origin,
+                           const char* strerror)
 {
     FATAL((origin ? origin : "NULLORIGIN")
           << " reports '"
@@ -154,10 +159,13 @@ void mpi_abort_on_error_handler(const char * reason,
     MPI_Abort(MPI_COMM_WORLD, errno ? errno : EXIT_FAILURE);
 }
 
-bool wisdom_broadcast(const std::string& wisdom_file)
+bool
+wisdom_broadcast(const std::string& wisdom_file)
 {
     int success = 0;
-    if (wisdom_file.empty()) return success; // Short circuit if no path provided
+    if (wisdom_file.empty()) {
+        return success;    // Short circuit if no path provided
+    }
 
     // If available, load wisdom from disk on rank 0 and broadcast it
     // Attempt advisory locking to avoid multiple jobs stepping on each other
@@ -166,7 +174,7 @@ bool wisdom_broadcast(const std::string& wisdom_file)
         // Import any system-wide wisdom available
         fftw_import_system_wisdom();
 
-        FILE *w = fopen(wisdom_file.c_str(), "r");
+        FILE* w = fopen(wisdom_file.c_str(), "r");
         if (w) {
             INFO0(who, "Loading FFTW wisdom from file " << wisdom_file);
             if (flock(fileno(w), LOCK_SH)) {
@@ -190,16 +198,19 @@ bool wisdom_broadcast(const std::string& wisdom_file)
     return success;
 }
 
-bool wisdom_gather(const std::string& wisdom_file)
+bool
+wisdom_gather(const std::string& wisdom_file)
 {
     int success = 0;
-    if (wisdom_file.empty()) return success; // Short circuit if no path provided
+    if (wisdom_file.empty()) {
+        return success;    // Short circuit if no path provided
+    }
 
     // If available, gather wisdom and then write to disk on rank 0
     // Attempt advisory locking to reduce processes stepping on each other
     fftw_mpi_gather_wisdom(MPI_COMM_WORLD);
     if (mpi::comm_rank(MPI_COMM_WORLD) == 0) {
-        FILE *w = fopen(wisdom_file.c_str(), "w+");
+        FILE* w = fopen(wisdom_file.c_str(), "w+");
         if (w) {
             INFO0(who, "Saving FFTW wisdom to file " << wisdom_file);
             if (flock(fileno(w), LOCK_EX)) {
@@ -222,41 +233,42 @@ bool wisdom_gather(const std::string& wisdom_file)
     return success;
 }
 
-real_t create_bsplines(const int ndof,
-                       const int k,
-                       const double left,
-                       const double right,
-                       const double htdelta,
-                       shared_ptr<bspline>& b,
-                       shared_ptr<bsplineop>& cop)
+real_t
+create_bsplines(const int ndof,
+                const int k,
+                const double left,
+                const double right,
+                const double htdelta,
+                shared_ptr<bspline>& b,
+                shared_ptr<bsplineop>& cop)
 {
     INFO0(who, "Creating B-spline basis of order " << k
           << " on [" << left << ", " << right << "] with "
           << ndof << " DOF stretched per htdelta " << htdelta);
 
-////FIXME: Knot vectors are non-increasing for moderate htdelta
-/// FIXME: See https://savannah.gnu.org/bugs/index.php?34361
-////// Compute collocation point locations using ndof and htdelta
-////ArrayXr abscissae(ndof);
-////math::linspace(0.0, 1.0, abscissae.size(), abscissae.data());
-////for (int i = 0; i < abscissae.size(); ++i) {
-////    abscissae[i] = suzerain_htstretch2(htdelta, 1.0, abscissae[i]);
-////}
-////abscissae = (right - left) * abscissae + left;
-////
-////// Generate the B-spline workspace based on order and abscissae
-////// Maximum non-trivial derivative operators included
-////double abserr;
-////b = make_shared<bspline>(k, bspline::from_abscissae(),
-////                         abscissae.size(), abscissae.data(), &abserr);
-////assert(b->n() == ndof);
-////cop.reset(new bsplineop(
-////            *b, k-2, SUZERAIN_BSPLINEOP_COLLOCATION_GREVILLE));
-////assert(cop->n() == ndof);
-////
-////INFO0("Created B-spline basis has Greville abscissae abserr of " << abserr);
-////
-////return abserr;
+    ////FIXME: Knot vectors are non-increasing for moderate htdelta
+    /// FIXME: See https://savannah.gnu.org/bugs/index.php?34361
+    ////// Compute collocation point locations using ndof and htdelta
+    ////ArrayXr abscissae(ndof);
+    ////math::linspace(0.0, 1.0, abscissae.size(), abscissae.data());
+    ////for (int i = 0; i < abscissae.size(); ++i) {
+    ////    abscissae[i] = suzerain_htstretch2(htdelta, 1.0, abscissae[i]);
+    ////}
+    ////abscissae = (right - left) * abscissae + left;
+    ////
+    ////// Generate the B-spline workspace based on order and abscissae
+    ////// Maximum non-trivial derivative operators included
+    ////double abserr;
+    ////b = make_shared<bspline>(k, bspline::from_abscissae(),
+    ////                         abscissae.size(), abscissae.data(), &abserr);
+    ////assert(b->n() == ndof);
+    ////cop.reset(new bsplineop(
+    ////            *b, k-2, SUZERAIN_BSPLINEOP_COLLOCATION_GREVILLE));
+    ////assert(cop->n() == ndof);
+    ////
+    ////INFO0("Created B-spline basis has Greville abscissae abserr of " << abserr);
+    ////
+    ////return abserr;
 
     // Compute breakpoint point locations using ndof and htdelta
     ArrayXr breakpoints(ndof - k + 2);
@@ -277,27 +289,29 @@ real_t create_bsplines(const int ndof,
     b = make_shared<bspline>(k, bspline::from_breakpoints(),
                              breakpoints.size(), breakpoints.data());
     assert(b->n() == ndof);
-    cop.reset(new bsplineop(*b, k-2, SUZERAIN_BSPLINEOP_COLLOCATION_GREVILLE));
+    cop.reset(new bsplineop(*b, k - 2, SUZERAIN_BSPLINEOP_COLLOCATION_GREVILLE));
     assert(cop->n() == ndof);
 
     return 0;
 }
 
-void save_bsplines(const esio_handle h,
-                         bspline&    b,
-                   const bsplineop&  cop)
+void
+save_bsplines(const esio_handle h,
+              bspline&    b,
+              const bsplineop&  cop)
 {
     DEBUG0(who, "Generating B-spline Galerkin L2 mass matrix so it may be saved");
     scoped_ptr<bsplineop> gop(
-            new bsplineop(b, 0, SUZERAIN_BSPLINEOP_GALERKIN_L2));
+        new bsplineop(b, 0, SUZERAIN_BSPLINEOP_GALERKIN_L2));
 
     return save_bsplines(h, b, cop, *gop);
 }
 
-void save_bsplines(const esio_handle h,
-                         bspline&    b,
-                   const bsplineop&  cop,
-                   const bsplineop&  gop)
+void
+save_bsplines(const esio_handle h,
+              bspline&    b,
+              const bsplineop&  cop,
+              const bsplineop&  gop)
 {
     // Ensure we were handed the appropriate discrete operators
     SUZERAIN_ENSURE(cop.get()->method == SUZERAIN_BSPLINEOP_COLLOCATION_GREVILLE);
@@ -311,25 +325,31 @@ void save_bsplines(const esio_handle h,
 
     ArrayXr buf(b.nknot());
 
-    for (int i = 0; i < b.nknot(); ++i) buf[i] = b.knot(i);
+    for (int i = 0; i < b.nknot(); ++i) {
+        buf[i] = b.knot(i);
+    }
     esio_line_establish(h, b.nknot(), 0, (procid == 0 ? b.nknot() : 0));
     esio_line_write(h, "knots", buf.data(), 0,
-            "Knots used to build B-spline basis");
+                    "Knots used to build B-spline basis");
 
-    for (int i = 0; i < b.nbreak(); ++i) buf[i] = b.breakpoint(i);
+    for (int i = 0; i < b.nbreak(); ++i) {
+        buf[i] = b.breakpoint(i);
+    }
     esio_line_establish(h, b.nbreak(), 0, (procid == 0 ? b.nbreak() : 0));
     esio_line_write(h, "breakpoints_y", buf.data(), 0,
-            "Breakpoint locations used to build wall-normal B-spline basis");
+                    "Breakpoint locations used to build wall-normal B-spline basis");
 
-    for (int i = 0; i < b.n(); ++i) buf[i] = b.collocation_point(i);
+    for (int i = 0; i < b.n(); ++i) {
+        buf[i] = b.collocation_point(i);
+    }
     esio_line_establish(h, b.n(), 0, (procid == 0 ? b.n() : 0));
     esio_line_write(h, "collocation_points_y", buf.data(), 0,
-            "Collocation points used to build wall-normal discrete operators");
+                    "Collocation points used to build wall-normal discrete operators");
 
     b.integration_coefficients(0, buf.data());
     esio_line_establish(h, b.n(), 0, (procid == 0 ? b.n() : 0));
     esio_line_write(h, "integration_weights", buf.data(), 0,
-            "Integrate by dotting B-spline coefficients against weights");
+                    "Integrate by dotting B-spline coefficients against weights");
 
     char name[8]      = {};
     char comment[127] = {};
@@ -337,12 +357,12 @@ void save_bsplines(const esio_handle h,
     for (int k = 0; k <= cop.nderiv(); ++k) {
         snprintf(name, sizeof(name), "Dy%dT", k);
         snprintf(comment, sizeof(comment),
-                "Wall-normal derivative trans(Dy%d(i,j)) = D%dT[j,ku+i-j] for"
-                " 0 <= j < n, max(0,j-ku-1) <= i < min(m,j+kl)", k, k);
+                 "Wall-normal derivative trans(Dy%d(i,j)) = D%dT[j,ku+i-j] for"
+                 " 0 <= j < n, max(0,j-ku-1) <= i < min(m,j+kl)", k, k);
         const int lda = cop.ku(k) + 1 + cop.kl(k);
         esio_plane_establish(h,
-                cop.n(), 0, (procid == 0 ? cop.n() : 0),
-                lda,     0, (procid == 0 ? lda     : 0));
+                             cop.n(), 0, (procid == 0 ? cop.n() : 0),
+                             lda,     0, (procid == 0 ? lda     : 0));
         esio_plane_write(h, name, cop.D_T(k), 0, 0, comment);
         esio_attribute_write(h, name, "kl", cop.kl(k));
         esio_attribute_write(h, name, "ku", cop.ku(k));
@@ -355,12 +375,12 @@ void save_bsplines(const esio_handle h,
     for (int k = 0; k <= gop.nderiv(); ++k) {
         snprintf(name, sizeof(name), "Gy%dT", k);
         snprintf(comment, sizeof(comment),
-                "Wall-normal Galerkin L2 trans(Gy%d(i,j)) = G%dT[j,ku+i-j] for"
-                " 0 <= j < n, max(0,j-ku-1) <= i < min(m,j+kl)", k, k);
+                 "Wall-normal Galerkin L2 trans(Gy%d(i,j)) = G%dT[j,ku+i-j] for"
+                 " 0 <= j < n, max(0,j-ku-1) <= i < min(m,j+kl)", k, k);
         const int lda = gop.ku(k) + 1 + gop.kl(k);
         esio_plane_establish(h,
-                gop.n(), 0, (procid == 0 ? gop.n() : 0),
-                lda,     0, (procid == 0 ? lda     : 0));
+                             gop.n(), 0, (procid == 0 ? gop.n() : 0),
+                             lda,     0, (procid == 0 ? lda     : 0));
         esio_plane_write(h, name, gop.D_T(k), 0, 0, comment);
         esio_attribute_write(h, name, "kl", gop.kl(k));
         esio_attribute_write(h, name, "ku", gop.ku(k));
@@ -376,13 +396,14 @@ void save_bsplines(const esio_handle h,
  * last</tt> on return.
  */
 template <typename ForwardIterator>
-static void load_linev(
-        const esio_handle h,
-        ArrayXr &line,
-        ForwardIterator& first,
-        const ForwardIterator& last)
+static void
+load_linev(
+    const esio_handle h,
+    ArrayXr& line,
+    ForwardIterator& first,
+    const ForwardIterator& last)
 {
-    for ( ; first != last; ++first ) {
+    for (; first != last; ++first) {
         int length;
         int ncomponents;
         if (0 == esio_line_sizev(h, *first, &length, &ncomponents)) {
@@ -401,13 +422,14 @@ static void load_linev(
  * last</tt> on return.
  */
 template <typename ForwardIterator>
-static void load_line(
-        const esio_handle h,
-        ArrayXr &line,
-        ForwardIterator& first,
-        const ForwardIterator& last)
+static void
+load_line(
+    const esio_handle h,
+    ArrayXr& line,
+    ForwardIterator& first,
+    const ForwardIterator& last)
 {
-    for ( ; first != last; ++first ) {
+    for (; first != last; ++first) {
         int length;
         if (0 == esio_line_size(h, *first, &length)) {
             line.resize(length);
@@ -419,9 +441,10 @@ static void load_line(
 }
 
 
-real_t load_bsplines(const esio_handle      h,
-                     shared_ptr<bspline>&   b,
-                     shared_ptr<bsplineop>& cop)
+real_t
+load_bsplines(const esio_handle      h,
+              shared_ptr<bspline>&   b,
+              shared_ptr<bsplineop>& cop)
 {
     using std::abs;
     using std::max;
@@ -441,19 +464,21 @@ real_t load_bsplines(const esio_handle      h,
 
     // All ranks load B-spline breakpoints (as best effort attempt)
     ArrayXr breakpoints;
-    array<const char *,2> breakpoints_locs = {{
-        "breakpoints_y", "breakpoints"
-    }};
-    const char **breakpoints_loc = breakpoints_locs.begin();
+    array<const char*, 2> breakpoints_locs = {{
+            "breakpoints_y", "breakpoints"
+        }
+    };
+    const char** breakpoints_loc = breakpoints_locs.begin();
     load_line(h, breakpoints, breakpoints_loc, breakpoints_locs.end());
     const bool breakpoints_found = (breakpoints_loc != breakpoints_locs.end());
 
     // All ranks load B-spline collocation points (as best effort attempt)
     ArrayXr colpoints;
-    array<const char *,2> colpoints_locs = {{
-        "collocation_points_y", "collocation_points"
-    }};
-    const char **colpoints_loc = colpoints_locs.begin();
+    array<const char*, 2> colpoints_locs = {{
+            "collocation_points_y", "collocation_points"
+        }
+    };
+    const char** colpoints_loc = colpoints_locs.begin();
     load_line(h, colpoints, colpoints_loc, colpoints_locs.end());
     const bool colpoints_found = (colpoints_loc != colpoints_locs.end());
 
@@ -469,14 +494,16 @@ real_t load_bsplines(const esio_handle      h,
 
         if (colpoints_found && b->n() == colpoints.size()) {
             double e = 0;
-            for (int i = 0; i < colpoints.size(); ++i)
+            for (int i = 0; i < colpoints.size(); ++i) {
                 e = max(e, abs(b->collocation_point(i) - colpoints[i]));
+            }
 
             DEBUG0(who, "Max difference between breakpoint-computed and loaded"
                    " collocation points is " << e);
 
-            if (e < bsplines_distinct_distance)
+            if (e < bsplines_distinct_distance) {
                 abscissae_veto_breakpoints = false;
+            }
         }
     }
 
@@ -492,18 +519,19 @@ real_t load_bsplines(const esio_handle      h,
     // Ensure we did get B-spline workspace from the above logic
     if (!b) {
         SUZERAIN_ERROR_VAL("Could not load B-spline workspace from restart",
-                SUZERAIN_EFAILED, abserr);
+                           SUZERAIN_EFAILED, abserr);
     }
 
     // Construct B-spline operator workspace from the B-spline workspace
     cop.reset(new bsplineop(
-                *b, k-2, SUZERAIN_BSPLINEOP_COLLOCATION_GREVILLE));
+                  *b, k - 2, SUZERAIN_BSPLINEOP_COLLOCATION_GREVILLE));
 
     return abserr;
 }
 
-void save_time(const esio_handle h,
-               real_t time)
+void
+save_time(const esio_handle h,
+          real_t time)
 {
     // Root writes details
     int rank;
@@ -515,8 +543,9 @@ void save_time(const esio_handle h,
     DEBUG0(who, "Saved simulation time " << time);
 }
 
-void load_time(const esio_handle h,
-               real_t &time)
+void
+load_time(const esio_handle h,
+          real_t& time)
 {
     // All ranks read details
     esio_line_establish(h, 1, 0, 1);
@@ -537,7 +566,8 @@ public:
         : who(who), esioh(esioh), prefix(prefix) {}
 
     template< typename EigenArray >
-    bool operator()(const std::string& name, const EigenArray& dat) const
+    bool
+    operator()(const std::string& name, const EigenArray& dat) const
     {
         int procid;
         esio_handle_comm_rank(esioh, &procid);
@@ -549,10 +579,10 @@ public:
         std::string key(prefix);
         key.append(name);
         return ESIO_SUCCESS == esio_field_write(
-            esioh, key.c_str(), dat.data(), 0, 0, 0,
-            "Sampled quantity stored using row-major indices (B-spline"
-            " coefficient, tensor component, sample number) where the"
-            " B-spline basis is defined by /Ny, /breakpoints_y, and /knots");
+                   esioh, key.c_str(), dat.data(), 0, 0, 0,
+                   "Sampled quantity stored using row-major indices (B-spline"
+                   " coefficient, tensor component, sample number) where the"
+                   " B-spline basis is defined by /Ny, /breakpoints_y, and /knots");
     }
 
 private:
@@ -574,7 +604,9 @@ public:
         : who(who), esioh(esioh), prefix(prefix) {}
 
     template< typename EigenArray >
-    bool operator()(const std::string& name, const EigenArray& dat_) const {
+    bool
+    operator()(const std::string& name, const EigenArray& dat_) const
+    {
 
         // http://eigen.tuxfamily.org/dox/TopicFunctionTakingEigenTypes.html
         EigenArray& dat = const_cast<EigenArray&>(dat_);
@@ -586,9 +618,9 @@ public:
         key.append(name);
 
         int cglobal, bglobal, aglobal;
-        if (   ESIO_SUCCESS == esio_field_size(esioh, key.c_str(),
-                                               &cglobal, &bglobal, &aglobal)
-            && (   EigenArray::ColsAtCompileTime == Dynamic
+        if (ESIO_SUCCESS == esio_field_size(esioh, key.c_str(),
+                                            &cglobal, &bglobal, &aglobal)
+            && (EigenArray::ColsAtCompileTime == Dynamic
                 || dat.cols() == bglobal)) {
             dat.resize(aglobal, bglobal);
             esio_field_establish(esioh,
@@ -596,12 +628,12 @@ public:
                                  dat.cols(), 0, (procid == 0 ? dat.cols() : 0),
                                  dat.rows(), 0, (procid == 0 ? dat.rows() : 0));
             return ESIO_SUCCESS == esio_field_read(
-                    esioh, key.c_str(), dat.data(), 0, 0, 0);
+                       esioh, key.c_str(), dat.data(), 0, 0, 0);
         } else {
             WARN0(who, "Unable to load " << key
                   << " for nscalar = " << dat.cols());
-            dat.fill(std::numeric_limits<
-                     typename EigenArray::Scalar>::quiet_NaN());
+            dat.fill(std::numeric_limits <
+                     typename EigenArray::Scalar >::quiet_NaN());
             return false;
         }
     }
@@ -614,24 +646,26 @@ private:
 
 };
 
-bool save_samples(const esio_handle h,
-                  const samples& s,
-                  const char * const prefix)
+bool
+save_samples(const esio_handle h,
+             const samples& s,
+             const char* const prefix)
 {
     if (s.storage.size()) {
         samples_saver f(who, h, prefix);
         return s.foreach(f);
     } else {
         WARN0(who, "No sampled quantities saved--"
-                   " trivial storage needs detected");
+              " trivial storage needs detected");
         return true; // Warning occurs but behavior was "successful".
     }
 }
 
-bool load_samples(const esio_handle h,
-                  samples& s,
-                  const char * const prefix,
-                  const char * const sizeper)
+bool
+load_samples(const esio_handle h,
+             samples& s,
+             const char* const prefix,
+             const char* const sizeper)
 {
     // Were any samples loaded from file?
     bool success = false;
@@ -647,7 +681,7 @@ bool load_samples(const esio_handle h,
         success = s.foreach(f);
     } else {
         WARN0(who, "No sampled quantities loaded--"
-                   " unable to anticipate storage needs");
+              " unable to anticipate storage needs");
     }
 
     return success;
@@ -655,15 +689,15 @@ bool load_samples(const esio_handle h,
 
 
 // Pooling employed in allocate_padded_state implementations
-typedef boost::ptr_map<
-        size_t, coalescing_pool<complex_t>
-    > padded_state_pools_type;
+typedef boost::ptr_map <
+size_t, coalescing_pool<complex_t>
+> padded_state_pools_type;
 static padded_state_pools_type padded_state_pools;
 
 template<>
-contiguous_state<4,complex_t>* allocate_padded_state(
-           const size_t howmany_fields,
-           const pencil_grid& dgrid)
+contiguous_state<4, complex_t>*
+allocate_padded_state(const size_t howmany_fields,
+                      const pencil_grid& dgrid)
 {
     typedef coalescing_pool<complex_t> pool_type;
 
@@ -684,17 +718,17 @@ contiguous_state<4,complex_t>* allocate_padded_state(
     pool_type::blocks blocks = it->second->acquire(howmany_fields);
     shared_range<complex_t> storage(blocks.begin(), blocks.end(),
                                     boost::bind(&pool_type::release,
-                                                boost::ref(*(it->second)),
-                                                blocks));
+                                            boost::ref(*(it->second)),
+                                            blocks));
 
     // Create instance using provided storage
-    contiguous_state<4,complex_t> * const retval =
-        new contiguous_state<4,complex_t>(
-            storage,
-            to_yxz(howmany_fields, dgrid.local_wave_extent),
-            prepend(dgrid.local_wave_storage(),
-                    strides_cm(to_yxz(dgrid.local_wave_extent)))
-        );
+    contiguous_state<4, complex_t>* const retval =
+        new contiguous_state<4, complex_t>(
+        storage,
+        to_yxz(howmany_fields, dgrid.local_wave_extent),
+        prepend(dgrid.local_wave_storage(),
+                strides_cm(to_yxz(dgrid.local_wave_extent)))
+    );
 
     return retval;
 }
