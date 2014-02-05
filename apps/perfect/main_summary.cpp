@@ -615,7 +615,7 @@ suzerain::perfect::driver_summary::run(int argc, char **argv)
                     numeric_limits<real_t>::digits10*0.75));
             msg << "Collection contains " << t.size()
                 << " samples spanning times ["
-                << t[0] << " ," << t[t.size() - 1] << "]";
+                << t[0] << ", " << t[t.size() - 1] << "]";
             INFO(who, msg.str());
             msg.str("");
             msg.precision(static_cast<int>(
@@ -628,6 +628,9 @@ suzerain::perfect::driver_summary::run(int argc, char **argv)
             INFO(who, msg.str());
         }
 
+        // TODO Extract these AR details into a precompiled class
+        // TODO Use double working precision throughout
+        // TODO Avoid needing the explicit transpose on data
 
         // Prepare vectors to capture burg_method() output
         VectorXr eff_N, eff_var, mu, mu_sigma, p, T, T0;
@@ -638,19 +641,20 @@ suzerain::perfect::driver_summary::run(int argc, char **argv)
         autocor.reserve(ar_maxorder + 1);
 
         // Prepare repeatedly-used working storage for burg_method().
-        // Given relative ease of working in extended precision, do so.
-        std::vector<long double> f, b, Ak, ac;
+        std::vector<real_t> f, b, Ak, ac;
 
         // Reuse one buffer to hold each component's spatiotemporal trace...
         ArrayXXr data;
-        for (std::size_t c = 0; c < summary::count; ++c) {
-            INFO("Processing quantity " << summary::name[c]);
+        for (std::size_t c = BOOST_PP_SEQ_SIZE(SEQ_GRID);
+             c < summary::count;
+             ++c) {
 
-            // ...resizing the buffer to load the *TRANSPOSE* into memory...
+            INFO("Processing component " << summary::name[c]);
+
             int Nt, Ny;
             esio_plane_size(h.get(), summary::name[c], &Nt, &Ny);
-            esio_plane_establish(h.get(), Nt, 0, t.size(), Ny, 0, Ny);
-            data    .resize(Nt, Ny);
+            esio_plane_establish(h.get(), Nt, 0, Nt, Ny, 0, Ny);
+            data    .resize(Ny, Nt);
             eff_N   .resize(    Ny);
             eff_var .resize(    Ny);
             mu      .resize(    Ny);
@@ -659,7 +663,7 @@ suzerain::perfect::driver_summary::run(int argc, char **argv)
             T       .resize(    Ny);
             T0      .resize(    Ny);
             esio_plane_read(h.get(), summary::name[c], data.data(),
-                            data.innerStride(), data.outerStride());
+                            data.outerStride(), data.innerStride());
 
             DEBUG("Iterating over wall-normal points for " << summary::name[c]);
             // ...now, with the temporal traces contiguous at given y(j)...
@@ -672,8 +676,10 @@ suzerain::perfect::driver_summary::run(int argc, char **argv)
                 sigma2e.clear();
                 gain   .clear();
                 autocor.clear();
-                ar::burg_method(data.col(j).data(),
-                                data.col(j).data() + Ny,
+                ar::strided_adaptor<const real_t*> signal_begin(&data.coeff(j, 0),Ny);
+                ar::strided_adaptor<const real_t*> signal_end  (&data.coeff(j,Nt),Ny);
+                ar::burg_method(signal_begin,
+                                signal_end,
                                 mu[j],
                                 maxorder,
                                 std::back_inserter(params),
@@ -684,7 +690,7 @@ suzerain::perfect::driver_summary::run(int argc, char **argv)
                                 true /* output hierarchy? */,
                                 f, b, Ak, ac);
 
-                TRACE("Trimming results to best model");
+                TRACE("Trimming results to best model among those considered");
                 best_model(Nt, ar_minorder, params, sigma2e, gain, autocor);
 
                 TRACE("Deriving values from selected model [Trenberth1984]");
@@ -704,27 +710,35 @@ suzerain::perfect::driver_summary::run(int argc, char **argv)
             }
 
             DEBUG("Writing autocorrelation analysis for " << summary::name[c]);
+            // Results versus wall-normal position
             const char * const n = summary::name[c];
-            // Procedural arsel metadata, coerced to ints if necessary
-            {
-                const int absrho   = ar_absrho;
-                const int minorder = ar_minorder;
-                const int maxorder = ar_maxorder;
-                esio_attribute_write(h.get(), n, "absrho",    &absrho);
-                esio_attribute_write(h.get(), n, "minorder",  &minorder);
-                esio_attribute_write(h.get(), n, "maxorder",  &maxorder);
-                esio_attribute_write(h.get(), n, "wlenT0",    &ar_wlenT0);
-                esio_string_set(h.get(), n, "criterion", ar_criterion.c_str());
-            }
-            // Followed by results versus wall-normal position
-            esio_attribute_writev(h.get(), n, "eff_N",     &eff_N[0],    Ny);
-            esio_attribute_writev(h.get(), n, "eff_var",   &eff_var[0],  Ny);
-            esio_attribute_writev(h.get(), n, "mu",        &mu[0],       Ny);
-            esio_attribute_writev(h.get(), n, "mu_sigma",  &mu_sigma[0], Ny);
-            esio_attribute_writev(h.get(), n, "p",         &p[0],        Ny);
-            esio_attribute_writev(h.get(), n, "T0",        &T0[0],       Ny);
-            esio_attribute_writev(h.get(), n, "T",         &T[0],        Ny);
+            esio_attribute_writev(h.get(), n, "eff_N",     eff_N.data(),    Ny);
+            esio_attribute_writev(h.get(), n, "eff_var",   eff_var.data(),  Ny);
+            esio_attribute_writev(h.get(), n, "mu",        mu.data(),       Ny);
+            esio_attribute_writev(h.get(), n, "mu_sigma",  mu_sigma.data(), Ny);
+            esio_attribute_writev(h.get(), n, "p",         p.data(),        Ny);
+            esio_attribute_writev(h.get(), n, "T0",        T0.data(),       Ny);
+            esio_attribute_writev(h.get(), n, "T",         T.data(),        Ny);
         }
+
+        // Write procedural arsel metadata hanging off '/arsel' entry
+        const char loc[] = "arsel";
+        const int one = 1;
+        esio_line_establish(h.get(), 1, 0, 1);
+        esio_line_write(h.get(), loc, &one, 0,
+                " Autoregressive autocorrelation analysis settings governing"
+                " eff_N, eff_var, mu, mu_sigma, p, T0, and T attributes on"
+                " Reynolds averaged quantities. See 'Estimating Uncertainties"
+                " in Statistics Computed from DNS' by Oliver, Malaya,"
+                " Ulerich, and Moser.");
+        const int absrho   = ar_absrho;
+        const int minorder = ar_minorder;
+        const int maxorder = ar_maxorder;
+        esio_attribute_write(h.get(), loc, "absrho",    &absrho);
+        esio_attribute_write(h.get(), loc, "minorder",  &minorder);
+        esio_attribute_write(h.get(), loc, "maxorder",  &maxorder);
+        esio_attribute_write(h.get(), loc, "wlenT0",    &ar_wlenT0);
+        esio_string_set(h.get(), loc, "criterion", ar_criterion.c_str());
 
         INFO("Finished autocorrelation analysis on aggregated data");
 
