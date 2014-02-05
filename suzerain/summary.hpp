@@ -54,7 +54,8 @@ public:
         sampled     = BOOST_PP_SEQ_SIZE(SUZERAIN_SUMMARY_SAMPLED),
         sampled__y  = BOOST_PP_SEQ_SIZE(SUZERAIN_SUMMARY_SAMPLED__Y),
         sampled__yy = BOOST_PP_SEQ_SIZE(SUZERAIN_SUMMARY_SAMPLED__YY),
-        total       = SUZERAIN_SUMMARY_COUNT
+        total       = SUZERAIN_SUMMARY_COUNT,
+        nongrid     = total - grid
 
     }; };
 
@@ -70,8 +71,9 @@ public:
     /** Compile-time offsets for each component within \c storage */
     struct offset { enum {
 
-        grid        = 0,
-        sampled     = grid       + nscalars::grid,
+        grid        = 0,                                 // Grid details
+        nongrid     = grid       + nscalars::grid,       // Sampled data...
+        sampled     = nongrid    + 0,                    // ...after grid
         sampled__y  = sampled    + nscalars::sampled,
         sampled__yy = sampled__y + nscalars::sampled__y  // Comma below
 
@@ -97,6 +99,9 @@ public:
     storage_type::NColsBlockXpr<nscalars::grid>::Type grid()
     { return storage.middleCols<nscalars::grid>(offset::grid); }
 
+    storage_type::NColsBlockXpr<nscalars::nongrid>::Type nongrid()
+    { return storage.middleCols<nscalars::nongrid>(offset::nongrid); }
+
     storage_type::NColsBlockXpr<nscalars::sampled>::Type sampled()
     { return storage.middleCols<nscalars::sampled>(offset::sampled); }
 
@@ -108,6 +113,9 @@ public:
 
     storage_type::ConstNColsBlockXpr<nscalars::grid>::Type grid() const
     { return storage.middleCols<nscalars::grid>(offset::grid); }
+
+    storage_type::ConstNColsBlockXpr<nscalars::nongrid>::Type nongrid() const
+    { return storage.middleCols<nscalars::nongrid>(offset::nongrid); }
 
     storage_type::ConstNColsBlockXpr<nscalars::sampled>::Type sampled() const
     { return storage.middleCols<nscalars::sampled>(offset::sampled); }
