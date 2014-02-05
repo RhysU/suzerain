@@ -41,6 +41,7 @@ suzerain-revision.h: $(srcdir)/*.h                            \
 
 # Public API headers
 nobase_pkginclude_HEADERS += allocator.hpp
+nobase_pkginclude_HEADERS += ar.hpp
 nobase_pkginclude_HEADERS += baseflow.hpp
 nobase_pkginclude_HEADERS += blas_et_al.h
 nobase_pkginclude_HEADERS += blas_et_al.hpp

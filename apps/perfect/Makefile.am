@@ -53,7 +53,7 @@ main_advance_svnrev.h: $(perfect_advance_SOURCES) $(libperfect_la_SOURCES)
 	$(top_builddir)/build-aux/svnrev -n -o$@ "-f$(PACKAGE_VERSION).#" -i $?
 
 bin_PROGRAMS            += perfect_summary
-perfect_summary_SOURCES  = main_summary.cpp ar.hpp
+perfect_summary_SOURCES  = main_summary.cpp
 perfect_summary_SOURCES += main_summary_svnrev.c
 BUILT_SOURCES           += main_summary_svnrev.h
 perfect_summary_LDADD = ./libperfect.la ../../suzerain/libsuzerain.la

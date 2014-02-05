@@ -30,6 +30,7 @@
 
 #include <esio/esio.h>
 
+#include <suzerain/ar.hpp>
 #include <suzerain/common.hpp>
 #include <suzerain/exprparse.hpp>
 #include <suzerain/math.hpp>
@@ -46,13 +47,6 @@
 #include <suzerain/support/support.hpp>
 #include <suzerain/validation.hpp>
 
-//// TODO After AR(p) stuff is working, try out the GSL-enabled version
-//#include <gsl/gsl_sf_psi.h>
-//#include <gsl/gsl_sf_gamma.h>
-//#define AR_DIGAMMA(x)      gsl_sf_psi(x)
-//#define AR_POCHHAMMER(a,x) gsl_sf_poch(a,x)
-
-#include "ar.hpp"
 #include "driver.hpp"
 #include "perfect.hpp"
 #include "definition_scenario.hpp"
