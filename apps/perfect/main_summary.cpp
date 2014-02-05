@@ -360,7 +360,7 @@ suzerain::perfect::driver_summary::run(int argc, char **argv)
 
     // Ensure that we're running in a single processor environment
     if (mpi::comm_size(MPI_COMM_WORLD) > 1) {
-        FATAL(argv[0] << " only intended to run on single rank");
+        FATAL0(argv[0] << " only intended to run on single rank");
         return EXIT_FAILURE;
     }
 
@@ -372,19 +372,19 @@ suzerain::perfect::driver_summary::run(int argc, char **argv)
     const best_model_function::type best_model
             = best_model_function::lookup(ar_criterion, false);
     if (!best_model) {
-        FATAL("Unknown model selection criterion: " << ar_criterion);
+        FATAL0("Unknown model selection criterion: " << ar_criterion);
         return EXIT_FAILURE;
     }
     if (ar_minorder > ar_maxorder) {
-        FATAL("Minimum order " << ar_minorder
-              << " must be less than maximum order " << ar_maxorder);
+        FATAL0("Minimum order " << ar_minorder
+               << " must be less than maximum order " << ar_maxorder);
         return EXIT_FAILURE;
     }
 
     // Die if the non-HDF5 datfile argument ended with '.h5' like an HDF5 file
     // Defends (somewhat) against clobbering potentially valuable results
     if (use_dat && boost::algorithm::ends_with(datfile, ".h5")) {
-        FATAL("Cowardly refusing to output a 'datfile' ending in '.h5'");
+        FATAL0("Cowardly refusing to output a 'datfile' ending in '.h5'");
         return EXIT_FAILURE;
     }
 
@@ -432,7 +432,7 @@ suzerain::perfect::driver_summary::run(int argc, char **argv)
             } else {
                 outname = filename + ".mean";
             }
-            DEBUG("Saving nondimensional quantities to " << outname);
+            DEBUG0("Saving nondimensional quantities to " << outname);
 
             // Write header followed by data values separated by blanks
             std::ofstream ofs(outname.c_str());
@@ -474,7 +474,7 @@ suzerain::perfect::driver_summary::run(int argc, char **argv)
             // Output status to the user so they don't think we're hung.
             BOOST_FOREACH(summary::storage_map_type::value_type i, data) {
                 INFO0("Read sample for t = " << i->first
-                       << " from " << filename);
+                      << " from " << filename);
             }
 
             // Transfer data into larger pool (which erases it from data)
@@ -514,7 +514,7 @@ suzerain::perfect::driver_summary::run(int argc, char **argv)
                     esio_handle_finalize);
 
             // Create output file and store metadata
-            DEBUG("Creating file " << hdffile);
+            DEBUG0("Creating file " << hdffile);
             esio_file_create(h.get(), hdffile.c_str(), clobber);
             save_metadata(h.get());
 
@@ -580,10 +580,10 @@ suzerain::perfect::driver_summary::run(int argc, char **argv)
     // Autocorrelation analysis occurs after data is safely aggregated on disk
     if (use_hdf5) {
 
-        INFO("Beginning autocorrelation analysis on aggregated data");
+        INFO0("Beginning autocorrelation analysis on aggregated data");
 
         // Open the prior HDF5 file in read-only mode via ESIO handle
-        DEBUG("Reopening file " << hdffile);
+        DEBUG0("Reopening file " << hdffile);
         shared_ptr<boost::remove_pointer<esio_handle>::type> h(
                 esio_handle_initialize(MPI_COMM_WORLD),
                 esio_handle_finalize);
@@ -607,7 +607,7 @@ suzerain::perfect::driver_summary::run(int argc, char **argv)
 
         // Summarize the temporal content of the data iff nontrivial
         if (t.size() == 1) {
-            INFO("Collection contains a single sample at time " << t[0]);
+            INFO0("Collection contains a single sample at time " << t[0]);
         } else if (t.size() > 1) {
             using std::numeric_limits;
             std::ostringstream msg;
@@ -616,7 +616,7 @@ suzerain::perfect::driver_summary::run(int argc, char **argv)
             msg << "Collection contains " << t.size()
                 << " samples spanning times ["
                 << t[0] << ", " << t[t.size() - 1] << "]";
-            INFO(who, msg.str());
+            INFO0(who, msg.str());
             msg.str("");
             msg.precision(static_cast<int>(
                     numeric_limits<real_t>::digits10*0.50));
@@ -625,7 +625,7 @@ suzerain::perfect::driver_summary::run(int argc, char **argv)
                 << dtstats.avg(0) << ", "
                 << dtstats.max(0) << ", "
                 << dtstats.std(0);
-            INFO(who, msg.str());
+            INFO0(who, msg.str());
         }
 
         // TODO Extract these AR details into a precompiled class
@@ -648,7 +648,7 @@ suzerain::perfect::driver_summary::run(int argc, char **argv)
              c < summary::count;
              ++c) {
 
-            INFO("Processing component " << summary::name[c]);
+            INFO0("Processing component " << summary::name[c]);
 
             int Nt, Ny;
             esio_plane_size(h.get(), summary::name[c], &Nt, &Ny);
@@ -664,12 +664,12 @@ suzerain::perfect::driver_summary::run(int argc, char **argv)
             esio_plane_read(h.get(), summary::name[c], data.data(),
                             data.outerStride(), data.innerStride());
 
-            DEBUG("Iterating over wall-normal points for " << summary::name[c]);
+            DEBUG0("Iterating over wall-normal points for " << summary::name[c]);
             // ...now, with the temporal traces contiguous at given y(j)...
             // ...use autoregressive tools to fit model and compute results
             for (int j = 0; j < Ny; ++j) {
 
-                TRACE("Enumerating candidate models at point y(" << j << ')');
+                TRACE0("Enumerating candidate models at point y(" << j << ')');
                 std::size_t maxorder = ar_maxorder;
                 params .clear();
                 sigma2e.clear();
@@ -689,10 +689,10 @@ suzerain::perfect::driver_summary::run(int argc, char **argv)
                                 true /* output hierarchy? */,
                                 f, b, Ak, ac);
 
-                TRACE("Trimming results to best model among those considered");
+                TRACE0("Trimming results to best model among those considered");
                 best_model(Nt, ar_minorder, params, sigma2e, gain, autocor);
 
-                TRACE("Deriving values from selected model [Trenberth1984]");
+                TRACE0("Deriving values from selected model [Trenberth1984]");
                 T0[j]       = ar::decorrelation_time(
                                   static_cast<std::size_t>(ar_wlenT0*Nt),
                                   ar::autocorrelation(params.begin(),
@@ -708,7 +708,7 @@ suzerain::perfect::driver_summary::run(int argc, char **argv)
 
             }
 
-            DEBUG("Writing autocorrelation analysis for " << summary::name[c]);
+            DEBUG0("Writing autocorrelation analysis for " << summary::name[c]);
             // Results versus wall-normal position
             const char * const n = summary::name[c];
             esio_attribute_writev(h.get(), n, "eff_N",     eff_N.data(),    Ny);
@@ -739,7 +739,7 @@ suzerain::perfect::driver_summary::run(int argc, char **argv)
         esio_attribute_write(h.get(), loc, "wlenT0",    &ar_wlenT0);
         esio_string_set(h.get(), loc, "criterion", ar_criterion.c_str());
 
-        INFO("Finished autocorrelation analysis on aggregated data");
+        INFO0("Finished autocorrelation analysis on aggregated data");
 
     }
 
@@ -761,7 +761,7 @@ suzerain::perfect::summary::process(
     shared_ptr<boost::remove_pointer<esio_handle>::type> h(
             esio_handle_initialize(MPI_COMM_WORLD), esio_handle_finalize);
 
-    DEBUG("Loading file " << filename);
+    DEBUG0("Loading file " << filename);
     esio_file_open(h.get(), filename.c_str(), 0 /* read-only */);
 
     // Load time, scenario, grid, time, and B-spline details from file
@@ -861,6 +861,7 @@ suzerain::perfect::summary::process(
 
         // Results do not match target numerics.
         // Must project onto target collocation points.
+        INFO0("Projecting data from " << filename << " onto target grid");
 
         // Convert all results in s to coefficients
         boplu->solve(summary::count, s->data(), 1, b->n());
