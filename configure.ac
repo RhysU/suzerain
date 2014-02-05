@@ -61,6 +61,7 @@ dnl Ordering very specific: AX_CC_MAXOPT usage is fragile
 dnl ------------------------------------------------------
 AC_LANG_PUSH([C])
 AC_PROG_CC
+AC_OPENMP
 AX_PROG_CC_C99_CFLAGS(,AC_MSG_ERROR([Compiler cannot support ISO C99]))
 AX_COMPILER_VENDOR
 if test "x$ax_enable_debug" != "xyes"; then
@@ -91,6 +92,7 @@ fi
 AC_LANG_POP([C])
 AC_LANG_PUSH([C++])
 AC_PROG_CXX
+AC_OPENMP
 AX_COMPILER_VENDOR
 AX_APPEND_COMPILE_FLAGS([${CFLAGS_MAXOPT}]) dnl Check if MAXOPT good on C++
 if test "x$ax_enable_debug" != "xno"; then
@@ -99,6 +101,7 @@ fi
 AC_LANG_POP([C++])
 AC_LANG_PUSH([Fortran])
 AC_PROG_FC
+AC_OPENMP
 AX_COMPILER_VENDOR
 dnl ------------------------------------------------------------------------
 dnl Ensure any optimization flags we maintain produce no warnings
