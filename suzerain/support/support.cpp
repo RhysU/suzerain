@@ -43,6 +43,7 @@
 #include <suzerain/diffwave.hpp>
 #include <suzerain/error.h>
 #include <suzerain/exprparse.hpp>
+#include <suzerain/format.hpp>
 #include <suzerain/htstretch.h>
 #include <suzerain/math.hpp>
 #include <suzerain/mpi_datatype.hpp>
@@ -54,6 +55,7 @@
 #include <suzerain/samples.hpp>
 #include <suzerain/shared_range.hpp>
 #include <suzerain/state.hpp>
+#include <suzerain/summary.hpp>
 #include <suzerain/support/logging.hpp>
 #include <suzerain/validation.hpp>
 
@@ -529,6 +531,28 @@ load_bsplines(const esio_handle      h,
     return abserr;
 }
 
+VectorXr
+compute_bulk_weights(bspline& b,
+                     const bsplineop_lu& masslu)
+{
+    // Obtain coefficient -> bulk quantity weights
+    VectorXr bulkcoeff(b.n());
+    b.integration_coefficients(0, bulkcoeff.data());
+    bulkcoeff /= b.collocation_point(b.n() - 1) - b.collocation_point(0);
+
+    // Form M^-1 to map from collocation point values to coefficients
+    MatrixXXr mat = MatrixXXr::Identity(b.n(),b.n());
+    masslu.solve(b.n(), mat.data(), 1, b.n());
+
+    // Dot the coefficients with each column of M^-1
+    VectorXr retval(b.n());
+    for (int i = 0; i < b.n(); ++i) {
+        retval[i] = bulkcoeff.dot(mat.col(i));
+    }
+
+    return retval;
+}
+
 void
 save_time(const esio_handle h,
           real_t time)
@@ -569,6 +593,7 @@ public:
     bool
     operator()(const std::string& name, const EigenArray& dat) const
     {
+        // TODO Notice "1" sample of possibly many saved using a field, not plane
         int procid;
         esio_handle_comm_rank(esioh, &procid);
         esio_field_establish(esioh,
@@ -611,6 +636,7 @@ public:
         // http://eigen.tuxfamily.org/dox/TopicFunctionTakingEigenTypes.html
         EigenArray& dat = const_cast<EigenArray&>(dat_);
 
+        // TODO Notice "1" sample of possibly many saved using a field, not plane
         int procid;
         esio_handle_comm_rank(esioh, &procid);
 
@@ -685,6 +711,72 @@ load_samples(const esio_handle h,
     }
 
     return success;
+}
+
+std::auto_ptr<boost::ptr_map<real_t, summary> >
+load_summary(const esio_handle h,
+             const bspline& target)
+{
+    boost::ptr_map<real_t, summary> retval;
+    const char * const path = esio_file_path(h);
+    DEBUG0(who, "Attempting to load summary from " << path);
+
+    // Load time and B-spline details
+    real_t time;
+    support::load_time(h, time);
+    shared_ptr<bspline> source;
+    shared_ptr<bsplineop> cop;
+    support::load_bsplines(h, source, cop);
+
+    // Warn on inconsistent basis extents (though we'll likely soon die)
+    const real_t source_lower = source->collocation_point(0);
+    const real_t source_upper = source->collocation_point(source->n()-1);
+    const real_t target_lower = target. collocation_point(0);
+    const real_t target_upper = target. collocation_point(target. n()-1);
+    if (source_lower != target_lower || source_upper != target_upper) {
+        WARN0(who, "File " << path << " has B-spline support ["
+                   << fullprec<>(source_lower)
+                   << ", "
+                   << fullprec<>(source_upper)
+                   << "] versus target support ["
+                   << fullprec<>(target_lower)
+                   << ", "
+                   << fullprec<>(target_upper)
+                   << "]");
+    }
+
+    // Load samples, which are quantity-by-quantity coefficients, into "sam"
+    samples sam(time, source->n());
+    support::load_samples(h, sam);
+    if (sam.t >= 0) {
+        TRACE0(who, "Successfully loaded samples from " << path);
+    } else {
+        WARN0(who, "No valid samples found in " << path);
+        return retval.release();
+    }
+
+    // Summary, component-by-component collocation values, will be "sum"
+    // Then store constant time and wall-normal collocation points
+    std::auto_ptr<summary> sum(new summary(target.n()));
+    sum->t().fill(time);
+    for (int i = 0; i < target.n(); ++i) {
+        sum->y()[i] = target.collocation_point(i);
+    }
+
+    // Use source basis to evaluate quantities and all derivatives on target.
+    // That is, the source basis is used to evaluate everything while
+    // the target basis only provides the targeted collocation points.
+    assert(    (summary::offset::sampled__y  - summary::offset::sampled   )
+            == (summary::offset::sampled__yy - summary::offset::sampled__y));
+    for (int j = 0; j < samples::nscalars::total; ++j) {
+        source->linear_combination(
+                2, sam.storage.col(j).data(),
+                sum->y().rows(), sum->y().data(), sum->storage.col(j).data(),
+                summary::offset::sampled__y - summary::offset::sampled);
+    }
+
+    retval.insert(time, sum);
+    return retval.release();
 }
 
 

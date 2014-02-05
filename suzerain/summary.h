@@ -52,8 +52,7 @@
  */
 #define SUZERAIN_SUMMARY_GRID                                                                         \
     ((t,            "Simulation time"                                                              )) \
-    ((y,            "Wall-normal collocation point locations"                                      )) \
-    ((bulk_weights, "Take dot product of these weights against any quantity to find the bulk value"))
+    ((y,            "Wall-normal collocation point locations"                                      ))
 
 /**
  * A Boost.Preprocessor sequence of tuples of directly-sampled quantity

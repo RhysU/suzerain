@@ -94,7 +94,7 @@ struct driver_summary : public driver
 "Options -s, -f, and -o may be specified simultaneously.\n",
                  revstr)
         , who("summary")
-        , boplu()
+        , masslu()
     {
         // Almost none of the common application/driver infrastructure is used:
         fftwdef.reset();     // No FFTs
@@ -119,8 +119,8 @@ private:
     /** Helps to identify from whom logging messages are being emitted. */
     std::string who;
 
-    /** Discrete operators controlling the grid used for output. */
-    shared_ptr<bsplineop_lu> boplu;
+    /** Discrete factorization controlling the output grid. */
+    shared_ptr<bsplineop_lu> masslu;
 };
 
 /**
@@ -131,8 +131,7 @@ namespace summary {
 /** A Boost.Preprocessor sequence of tuples of grid-related details */
 #define SEQ_GRID                                                                                      \
     ((t,            "Simulation time"))                                                               \
-    ((y,            "Wall-normal collocation point locations"))                                       \
-    ((bulk_weights, "Take dot product of these weights against any quantity to find the bulk value"))
+    ((y,            "Wall-normal collocation point locations"))
 
 /**
  * A Boost.Preprocessor sequence of tuples of directly sampled quantities.
@@ -237,7 +236,7 @@ namespace summary {
      *                   Otherwise, perform no additional interpolation and
      *                   update \c i_b with the basis in \c filename.
      * @param i_bop      Handled identically to \c i_b.
-     * @param i_boplu    Handled identically to \c i_b.
+     * @param i_masslu   Handled identically to \c i_b.
      *
      * @return A map of quantities keyed on the nondimensional simulation time.
      */
@@ -247,40 +246,13 @@ namespace summary {
             shared_ptr<support::definition_grid>& i_grid,
             shared_ptr<bspline                 >& i_b,
             shared_ptr<bsplineop               >& i_bop,
-            shared_ptr<bsplineop_lu            >& i_boplu);
+            shared_ptr<bsplineop_lu            >& i_masslu);
 
 } // namespace summary
 
 #pragma warning(disable:383 1572)
 
 } // namespace perfect
-
-/**
- * Compute the integration weights necessary to compute a bulk quantity from
- * the quantity's value at collocation points using a dot product.
- */
-static VectorXr compute_bulk_weights(
-        real_t Ly,
-        bspline& b,
-        bsplineop_lu& boplu)
-{
-    // Obtain coefficient -> bulk quantity weights
-    VectorXr bulkcoeff(b.n());
-    b.integration_coefficients(0, bulkcoeff.data());
-    bulkcoeff /= Ly;
-
-    // Form M^-1 to map from collocation point values to coefficients
-    MatrixXXr mat = MatrixXXr::Identity(b.n(),b.n());
-    boplu.solve(b.n(), mat.data(), 1, b.n());
-
-    // Dot the coefficients with each column of M^-1
-    VectorXr retval(b.n());
-    for (int i = 0; i < b.n(); ++i) {
-        retval[i] = bulkcoeff.dot(mat.col(i));
-    }
-
-    return retval;
-}
 
 } // namespace suzerain
 
@@ -414,7 +386,7 @@ suzerain::perfect::driver_summary::run(int argc, char **argv)
 
             // Load data from filename
             summary::storage_map_type data = summary::process(
-                    filename, scenario, grid, b, cop, boplu);
+                    filename, scenario, grid, b, cop, masslu);
 
             // Save quantities to `basename filename .h5`.mean
             static const char suffix[] = ".h5";
@@ -442,7 +414,7 @@ suzerain::perfect::driver_summary::run(int argc, char **argv)
             grid.reset();
             b.reset();
             cop.reset();
-            boplu.reset();
+            masslu.reset();
         }
 
     } else {
@@ -463,7 +435,7 @@ suzerain::perfect::driver_summary::run(int argc, char **argv)
 
             // Load data from filename
             summary::storage_map_type data = summary::process(
-                    filename, scenario, grid, b, cop, boplu);
+                    filename, scenario, grid, b, cop, masslu);
 
             // Output status to the user so they don't think we're hung.
             BOOST_FOREACH(summary::storage_map_type::value_type i, data) {
@@ -526,9 +498,7 @@ suzerain::perfect::driver_summary::run(int argc, char **argv)
                 esio_plane_establish(h.get(), Nt, t.size(), 1, Ny, 0, Ny);
                 for (std::size_t j = 0; j < summary::count; ++j) {
                     // ...skipping those which do not vary in time...
-                    if (    j == summary::t
-                         || j == summary::y
-                         || j == summary::bulk_weights) {
+                    if (j == summary::t || j == summary::y ) {
                         continue;
                     }
                     esio_plane_write(h.get(), summary::name[j],
@@ -561,12 +531,12 @@ suzerain::perfect::driver_summary::run(int argc, char **argv)
 
             // (Re-) compute the bulk weights and then output those as well.
             const VectorXr bulk_weights
-                    = compute_bulk_weights(grid->L.y(), *b, *boplu);
+                    = support::compute_bulk_weights(*b, *masslu);
             esio_line_establish(h.get(), bulk_weights.size(),
                                 0, bulk_weights.size());
-            esio_line_write(h.get(), summary::name[summary::bulk_weights],
-                            bulk_weights.data(), 0,
-                            summary::desc[summary::bulk_weights]);
+            esio_line_write(h.get(), "bulk_weights", bulk_weights.data(), 0,
+                            "Take dot product of these weights against any"
+                            " quantity to find the bulk value");
         }
 
     }
@@ -747,7 +717,7 @@ suzerain::perfect::summary::process(
         shared_ptr<support::definition_grid>& i_grid,
         shared_ptr<bspline                 >& i_b,
         shared_ptr<bsplineop               >& i_bop,
-        shared_ptr<bsplineop_lu            >& i_boplu)
+        shared_ptr<bsplineop_lu            >& i_masslu)
 {
     storage_map_type retval;
 
@@ -776,15 +746,15 @@ suzerain::perfect::summary::process(
     if (!i_grid)     i_grid    .reset(new support::definition_grid(grid    ));
 
     // Compute factorized mass matrix for current operators in use
-    shared_ptr<suzerain::bsplineop_lu> boplu
+    shared_ptr<suzerain::bsplineop_lu> masslu
         = suzerain::make_shared<suzerain::bsplineop_lu>(*cop.get());
-    boplu->factor_mass(*cop.get());
+    masslu->factor_mass(*cop.get());
 
     // Likewise, use b and friends if i_b was not supplied by the caller
     if (!i_b) {
-        i_b     = b;
-        i_bop   = cop;
-        i_boplu = boplu;
+        i_b      = b;
+        i_bop    = cop;
+        i_masslu = masslu;
     }
 
     // Load samples as coefficients
@@ -827,7 +797,7 @@ suzerain::perfect::summary::process(
     // Uses that bar_rho{,__y,__yy} is the first entry in SAMPLED{,_Y,_YY}
     s->middleCols<BOOST_PP_SEQ_SIZE(SEQ_SAMPLED_Y)>(summary::bar_rho__y)
         = s->middleCols<BOOST_PP_SEQ_SIZE(SEQ_SAMPLED)>(summary::bar_rho);
-    boplu->solve(BOOST_PP_SEQ_SIZE(SEQ_SAMPLED_Y),
+    masslu->solve(BOOST_PP_SEQ_SIZE(SEQ_SAMPLED_Y),
             s->middleCols<BOOST_PP_SEQ_SIZE(SEQ_SAMPLED_Y)>(summary::bar_rho__y).data(),
             1, b->n());
     s->middleCols<BOOST_PP_SEQ_SIZE(SEQ_SAMPLED_YY)>(summary::bar_rho__yy)
@@ -844,10 +814,6 @@ suzerain::perfect::summary::process(
     const real_t bsplines_dist = b->distance_to(*i_b);
     if (bsplines_dist <= suzerain_bspline_distance_distinct) {
 
-        // Compute bulk integration weights
-        s->col(summary::bulk_weights)
-                = compute_bulk_weights(grid.L.y(), *b, *boplu);
-
         // Results match target numerics to within acceptable tolerance.
         retval.insert(time, s);
 
@@ -858,7 +824,7 @@ suzerain::perfect::summary::process(
         INFO0("Projecting data from " << filename << " onto target grid");
 
         // Convert all results in s to coefficients
-        boplu->solve(summary::count, s->data(), 1, b->n());
+        masslu->solve(summary::count, s->data(), 1, b->n());
 
         // Obtain target collocation points
         suzerain::ArrayXr buf(i_b->n());
@@ -875,10 +841,6 @@ suzerain::perfect::summary::process(
         // Notice that summary::t, being a constant, and summary::y, being a
         // linear, should have been converted to the target collocation points
         // without more than epsilon-like floating point loss.
-
-        // Compute bulk integration weights (which will not translate directly)
-        r->col(summary::bulk_weights)
-                = compute_bulk_weights(grid.L.y(), *b, *boplu);
 
         retval.insert(time, r);
 

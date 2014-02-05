@@ -47,6 +47,7 @@ namespace suzerain {
 // Forward declarations
 class bspline;
 class bsplineop;
+class bsplineop_lu;
 class pencil_grid;
 class samples;
 class summary;
@@ -157,6 +158,14 @@ load_bsplines(const esio_handle      h,
               shared_ptr<bspline>&   b,
               shared_ptr<bsplineop>& cop);
 
+/**
+ * Compute the integration weights necessary to compute a bulk quantity from the
+ * quantity's value at collocation points using only a dot product.
+ */
+VectorXr
+compute_bulk_weights(bspline& b,
+                     const bsplineop_lu& masslu);
+
 /** Save the current simulation time information */
 void
 save_time(const esio_handle h,
@@ -190,19 +199,21 @@ load_samples(const esio_handle h,
              const char* const prefix  = "bar_",
              const char* const sizeper = "bar_rho");
 
+// TODO Separate into prepare_summary(samples&) and load_summary(esio_handle)
+// TODO Recognize and load multiple summaries from the file
 /**
  * Convert all \ref samples in the file into \ref summary, indexed by time,
  * detailing the data and its derivatives at the collocation points of the \c
- * target_basis.
+ * target.
  *
  * @return A resource-owning container mapping unique simulation times to
  * summarized statistics. See <a
  * href="http://www.boost.org/doc/libs/release/libs/ptr_container/"> Boost
  * Pointer Container</a> for the ownership semantics.
  */
-boost::ptr_map<real_t, summary>
+std::auto_ptr<boost::ptr_map<real_t, summary> >
 load_summary(const esio_handle h,
-             const bspline& target_basis);
+             const bspline& target);
 
 /**
  * Forward declaration to allocate state padded for transformation to/from
