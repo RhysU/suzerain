@@ -49,6 +49,7 @@ class bspline;
 class bsplineop;
 class pencil_grid;
 class samples;
+class summary;
 
 /**
  * Contains cross-cutting functionality used within various Suzerain
@@ -188,6 +189,20 @@ load_samples(const esio_handle h,
              samples& s,
              const char* const prefix  = "bar_",
              const char* const sizeper = "bar_rho");
+
+/**
+ * Convert all \ref samples in the file into \ref summary, indexed by time,
+ * detailing the data and its derivatives at the collocation points of the \c
+ * target_basis.
+ *
+ * @return A resource-owning container mapping unique simulation times to
+ * summarized statistics. See <a
+ * href="http://www.boost.org/doc/libs/release/libs/ptr_container/"> Boost
+ * Pointer Container</a> for the ownership semantics.
+ */
+boost::ptr_map<real_t, summary>
+load_summary(const esio_handle h,
+             const bspline& target_basis);
 
 /**
  * Forward declaration to allocate state padded for transformation to/from
