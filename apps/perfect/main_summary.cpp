@@ -629,8 +629,7 @@ suzerain::perfect::driver_summary::run(int argc, char **argv)
         }
 
         // TODO Extract these AR details into a precompiled class
-        // TODO Use double working precision throughout
-        // TODO Avoid needing the explicit transpose on data
+        // TODO Permit processing these things in parallel
 
         // Prepare vectors to capture burg_method() output
         VectorXr eff_N, eff_var, mu, mu_sigma, p, T, T0;
