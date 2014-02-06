@@ -356,10 +356,27 @@ driver::load_metadata_hook(
         const esio_handle esioh)
 {
     super::load_metadata_hook(esioh);
+
+    if (!scenario) {
+        scenario = make_shared<definition_scenario>();
+    }
     scenario->load(esioh);
+
+    if (!isothermal) {
+        isothermal = make_shared<support::definition_isothermal>();
+    }
     isothermal->load(esioh);
+
+    if (!sg) {
+        sg = make_shared<support::definition_largo>();
+    }
     sg->load(esioh);
+
+    if (!rad) {
+        rad = make_shared<support::definition_radialflow>();
+    }
     rad->load(esioh);
+
     load(esioh, msoln, *scenario, *grid);
     return;
 }

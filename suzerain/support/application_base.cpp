@@ -174,11 +174,15 @@ void
 application_base::load_grid_and_operators(
         const esio_handle esioh)
 {
-    SUZERAIN_ENSURE(grid);
-
     // Possibly load the grid parameters from the restart file
+    // If no restart file requested, we'd best have a sane grid instance
     if (esioh) {
+        if (!grid) {
+            grid = make_shared<definition_grid>();
+        }
         grid->load(esioh);
+    } else {
+        SUZERAIN_ENSURE(grid);
     }
 
     // Create the discrete B-spline operators

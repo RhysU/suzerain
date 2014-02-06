@@ -1324,7 +1324,10 @@ driver_base::load_metadata(
 
     load_grid_and_operators(esioh);
 
-    SUZERAIN_ENSURE(timedef);
+    if (!timedef) {
+        timedef = make_shared<definition_time>(
+                std::numeric_limits<real_t>::quiet_NaN());
+    }
     timedef->load(esioh);
 
     // Invoke subclass extension point
