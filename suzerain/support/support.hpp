@@ -209,10 +209,12 @@ load_samples(const esio_handle h,
 
 // TODO Separate into prepare_summary(samples&) and load_summary(esio_handle)
 // TODO Recognize and load multiple summaries from the file
+// TODO At the very least, this default argument stuff is ugly
 /**
  * Convert all \ref samples in the file into \ref summary, indexed by time,
  * detailing the data and its derivatives at the collocation points of the \c
- * target.
+ * target.  If \c target is empty, default to using the B-spline information
+ * from the source file.
  *
  * @return A resource-owning container mapping unique simulation times to
  * summarized statistics. See <a
@@ -221,7 +223,7 @@ load_samples(const esio_handle h,
  */
 std::auto_ptr<boost::ptr_map<real_t, summary> >
 load_summary(const esio_handle h,
-             const bspline& target);
+             shared_ptr<bspline> target = shared_ptr<bspline>());
 
 /**
  * Forward declaration to allocate state padded for transformation to/from

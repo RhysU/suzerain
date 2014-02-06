@@ -254,7 +254,7 @@ suzerain::perfect::driver_summary::run(int argc, char **argv)
                     esio_handle_initialize(MPI_COMM_WORLD),
                     esio_handle_finalize);
             esio_file_open(h.get(), filename.c_str(), /*read-only*/0);
-            pool_type data(support::load_summary(h.get(), *b));
+            pool_type data(support::load_summary(h.get()));
 
             // Save quantities to `basename filename .h5`.mean
             static const char suffix[] = ".h5";
@@ -320,7 +320,7 @@ suzerain::perfect::driver_summary::run(int argc, char **argv)
                     esio_handle_initialize(MPI_COMM_WORLD),
                     esio_handle_finalize);
             esio_file_open(h.get(), filename.c_str(), /*read-only*/0);
-            pool_type data(support::load_summary(h.get(), *b));
+            pool_type data(support::load_summary(h.get(), b));
 
             // Output status to the user so they don't think we're hung.
             BOOST_FOREACH(pool_type::reference i, data) {
