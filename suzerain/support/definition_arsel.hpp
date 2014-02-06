@@ -51,11 +51,6 @@ public:
     /** @copydoc definition_base::options_description() */
     virtual boost::program_options::options_description options_description();
 
-private:
-
-    /** Hack to simplify overload resolution for \ref options_description. */
-    void notify_criterion(const std::string& abbrev);
-
 };
 
 } // namespace support

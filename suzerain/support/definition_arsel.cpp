@@ -70,13 +70,6 @@ definition_arsel::definition_arsel()
 {
 }
 
-void
-definition_arsel::notify_criterion(
-        const std::string& abbrev)
-{
-    this->criterion(abbrev);
-}
-
 boost::program_options::options_description
 definition_arsel::options_description()
 {
@@ -103,12 +96,12 @@ definition_arsel::options_description()
          "Consider only models of at most order AR(p=MAX)")
         ("ar_criterion",
          value<std::string>()
-         ->notifier(bind(&definition_arsel::notify_criterion, this, _1))
+         ->notifier(bind(&definition_arsel::criterion, this, _1))
          ->default_value(criterion()),
          "Employ the specified model selection criterion")
         ("ar_absolute_rho",
          bool_switch(&absrho)->default_value(absrho),
-         "Use absolute autocorrelation when integrating T0")
+         "Integrate absolute autocorrelation when determining T0")
         ("ar_wlenT0", value<string>(NULL)
          ->value_name("WLEN")
          ->notifier(bind(&parse_option<real_t>, _1, &wlenT0,
