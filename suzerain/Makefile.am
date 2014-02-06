@@ -350,6 +350,7 @@ libsupport_la_SOURCES       += support/definition_signal.cpp
 libsupport_la_SOURCES       += support/definition_statistics.cpp
 libsupport_la_SOURCES       += support/definition_time.cpp
 libsupport_la_SOURCES       += support/driver_base.cpp
+libsupport_la_SOURCES       += support/driver_base_summary.cpp
 libsupport_la_SOURCES       += support/field.cpp
 libsupport_la_SOURCES       += support/logging.cpp
 libsupport_la_SOURCES       += support/overridable.cpp

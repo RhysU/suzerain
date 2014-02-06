@@ -714,6 +714,44 @@ protected:
     virtual void default_status_interval(time_type& dt, step_type& nt);
 
     /**
+     * Atop commonly-defined infrastructure, a generic data summarization
+     * application can be defined.  The \ref summary_run routine is designed by
+     * to invoked on a subclass within \c main after the strings below are
+     * passed to the constructor.
+     * @{
+     */
+
+    /**
+     * Provide to constructor as \c description when using \ref summary_run.
+     */
+    static const char * const summary_description;
+
+    /**
+     * Provide to constructor as \c argument_synopsis when using \ref
+     * summary_run.
+     */
+    static const char * const summary_argument_synopsis;
+
+    // TODO Decide on what information to return
+    /**
+     * Run the generic data summarization application.
+     *
+     * Do not invoke \ref initialize first as this routine does so. Subclasses
+     * may wish to reset options definitions to suppress their appearance in the
+     * help message.
+     *
+     * @param argc Incoming arguments per <code>main(argc, ...)</code>
+     * @param argv Incoming arguments per <code>main(..., argv)</code>
+     */
+    void summary_run(
+            int argc,
+            char **argv);
+
+    /**
+     * @}
+     */
+
+    /**
      * Did the previous time advance end because of tear down receipt?
      */
     bool received_teardown;
