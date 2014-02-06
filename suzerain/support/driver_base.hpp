@@ -740,12 +740,13 @@ protected:
      * may wish to reset options definitions to suppress their appearance in the
      * help message.
      *
-     * @param argc Incoming arguments per <code>main(argc, ...)</code>
-     * @param argv Incoming arguments per <code>main(..., argv)</code>
+     * \param argc Incoming arguments per <code>main(argc, ...)</code>
+     * \param argv Incoming arguments per <code>main(..., argv)</code>
+     *
+     * \return Success or failure suitable for return to the OS.
      */
-    void summary_run(
-            int argc,
-            char **argv);
+    int
+    summary_run(int argc, char **argv);
 
     /**
      * @}

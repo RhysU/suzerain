@@ -14,10 +14,12 @@
 # All logic is installed as libsuzerain.la using non-recursive Automake.
 # This final target is built from objects and multiple convenience libraries.
 
-AM_CPPFLAGS    = -I$(top_srcdir) -I$(top_builddir)
-AM_CPPFLAGS   += -I$(top_builddir)/lib -I$(top_srcdir)/lib
-AM_LDFLAGS     =
+AM_CPPFLAGS  = -I$(top_srcdir) -I$(top_builddir)
+AM_CPPFLAGS += -I$(top_builddir)/lib -I$(top_srcdir)/lib
 
+AM_CXXFLAGS               = # Append below
+AM_FCFLAGS                = # Append below
+AM_LDFLAGS                = # Append below
 BUILT_SOURCES             = # Append below
 CLEANFILES                = # Append below
 lib_LTLIBRARIES           = # Append below
@@ -27,6 +29,11 @@ noinst_LTLIBRARIES        = # Append below
 # MPI-based compilation and linking
 CXX = @MPICXX@
 CC  = @MPICC@
+
+AM_CPPFLAGS += $(OPENMP_CPPFLAGS) #pragma
+AM_CXXFLAGS += $(OPENMP_CXXFLAGS) #omp
+AM_FCFLAGS  += $(OPENMP_FCFLAGS)  #partytime
+AM_LDFLAGS  += $(OPENMP_CXXFLAGS) #excellent
 
 BUILT_SOURCES += suzerain-config.h
 BUILT_SOURCES += suzerain-revision.h
