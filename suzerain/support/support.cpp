@@ -772,7 +772,8 @@ load_summary(const esio_handle h,
         source->linear_combination(
                 2, sam.storage.col(j).data(),
                 sum->y().rows(), sum->y().data(), sum->storage.col(j).data(),
-                summary::offset::sampled__y - summary::offset::sampled);
+                sum->storage.outerStride()*(
+                    summary::offset::sampled__y - summary::offset::sampled));
     }
 
     retval.insert(time, sum);
