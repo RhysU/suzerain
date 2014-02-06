@@ -54,6 +54,8 @@ main_advance_svnrev.h: $(perfect_advance_SOURCES) $(libperfect_la_SOURCES)
 
 bin_PROGRAMS            += perfect_summary
 perfect_summary_SOURCES  = main_summary.cpp
+perfect_summary_CXXFLAGS = $(AM_CXXFLAGS) $(OPENMP_CXXFLAGS)
+perfect_summary_CPPFLAGS = $(AM_CPPFLAGS) $(OPENMP_CPPFLAGS)
 perfect_summary_SOURCES += main_summary_svnrev.c
 BUILT_SOURCES           += main_summary_svnrev.h
 perfect_summary_LDADD = ./libperfect.la ../../suzerain/libsuzerain.la

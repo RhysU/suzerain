@@ -363,9 +363,11 @@ suzerain::perfect::driver_summary::run(int argc, char **argv)
             running_statistics<real_t,1> dtstats;
             esio_plane_establish(h.get(), t.size(), 0, t.size(),
                                           y.size(), 0, y.size());
+#           pragma omp parallel default(shared)
             {
                 ArrayXXr data;
                 std::vector<real_t> eff_N, eff_var, mu, mu_sigma, p, T;
+#               pragma omp for schedule(dynamic) lastprivate(dtstats)
                 for (size_t c = summary::offset::nongrid;
                     c < summary::nscalars::total;
                     ++c) {
@@ -380,28 +382,33 @@ suzerain::perfect::driver_summary::run(int argc, char **argv)
                         data.col(off++) = i.second->storage.col(c);
                     }
 
-                    // ...saving the contiguous spatiotemporal plane to disk
-                    esio_plane_write(h.get(), summary::name[c], data.data(),
-                                    data.outerStride(), data.innerStride());
-
                     // ...running the automatic autocorrelation analysis
                     dtstats = arsel(t, data, arspec,
                                     eff_N, eff_var, mu, mu_sigma, p, T);
 
-                    // ...and writing the results as additional attributes
-                    const char * const n = summary::name[c];
-                    esio_attribute_writev(h.get(), n, "eff_N",
-                                        eff_N.data(),    y.size());
-                    esio_attribute_writev(h.get(), n, "eff_var",
-                                        eff_var.data(),  y.size());
-                    esio_attribute_writev(h.get(), n, "mu",
-                                        mu.data(),       y.size());
-                    esio_attribute_writev(h.get(), n, "mu_sigma",
-                                        mu_sigma.data(), y.size());
-                    esio_attribute_writev(h.get(), n, "p",
-                                        p.data(),        y.size());
-                    esio_attribute_writev(h.get(), n, "T",
-                                        T.data(),        y.size());
+                    // ...saving the contiguous spatiotemporal plane to disk
+                    // ...and writing arsel results as additional attributes
+                    // TODO Parallelize IO after isolating/fixing segfault
+#                   pragma omp critical
+                    {
+                        esio_handle esioh = h.get();
+                        const char * const name = summary::name[c];
+                        esio_plane_write(esioh, name, data.data(),
+                                         data.outerStride(),
+                                         data.innerStride());
+                        esio_attribute_writev(esioh, name, "eff_N",
+                                eff_N.data(), eff_N.size());
+                        esio_attribute_writev(esioh, name, "eff_var",
+                                eff_var.data(), eff_var.size());
+                        esio_attribute_writev(esioh, name, "mu",
+                                mu.data(), mu.size());
+                        esio_attribute_writev(esioh, name, "mu_sigma",
+                                mu_sigma.data(), mu_sigma.size());
+                        esio_attribute_writev(esioh, name, "p",
+                                p.data(), p.size());
+                        esio_attribute_writev(esioh, name, "T",
+                                T.data(),        T.size());
+                    }
                 }
             }
 
