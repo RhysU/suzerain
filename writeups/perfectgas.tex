@@ -4653,6 +4653,7 @@ low pass filtering have been employed in his work.  This choice, too, might
 need to be reviewed.
 
 \subsubsection{Implementation primarily within the linear implicit operator}
+\label{sec:nrbc_mostly_implicit}
 
 Rearranging \eqref{eq:dimeulertransformevolve_general} one obtains
 \begin{align}
@@ -4716,6 +4717,7 @@ computed only once per nonreflecting boundary per Runge--Kutta time step from
 $\bar{V}$ and then cached for repeated use.
 
 \subsubsection{Implementation primarily within the nonlinear explicit operator}
+\label{sec:nrbc_mostly_explicit}
 
 Reshuffling \eqref{eq:dimeulertransformevolve_general}, one may instead obtain
 an expression casting the boundary condition primarily as a modification of the
@@ -4750,18 +4752,31 @@ nonlinear operator $N$:
 }_{N_E^G\left(\hat{V}\right)}
 .
 \end{align}
-The form may be more desirable than
-\eqref{eq:dimeulertransformevolve_nonlinear} because it reduces the
-modifications necessary to any existing linear implicit treatment.  In
+Implementation~\eqref{eq:dimeulertransformevolve_nonlinear} may be more
+desirable than \eqref{eq:dimeulertransformevolve_linear} because it reduces the
+modifications necessary to any existing linear implicit treatment. In
 particular, it can be used when the streamwise and spanwise directions are not
 being treated implicitly because it requires only wavenumber-independent
-modifications to $L$ to produce $L_E^G$.  Quite conveniently, the $N_E^G$ may be
-computed from $N$ using only information available in Fourier space assuming
-that reference state $\bar{V}$ has already been gathered.
+modifications to $L$ to produce $L_E^G$.
+%%% TODO
+%%Similarly to~\textsection\ref{sec:nrbc_mostly_explicit}, the incremental action
+%%of $L_I^G$ relative to $L$ can be accumulated:
+%%\begin{alignat}{10}
+%%% Makes no sense to me that I needed to use phantom below...
+%%% ...instead of being able to just use alignat directly.
+%%\left(M+\varphi{}L_I^G\right)\hat{V} - \left(M+\varphi{}L\right)\hat{V}
+%%  &={}   &&\ii \varphi{} k_x \, &&{R^Y}^{-1} \left[V^L S\right]^{-1} &&\left[P^G C^G\right] &&\left[V^L S\right] {R^Y} &&\,\,\hat{V} \\
+%%  &{}+{} &&\ii \varphi{} k_z    &&{R^Y}^{-1} \left[V^L S\right]^{-1} &&\left[P^G B^G\right] &&\left[V^L S\right] {R^Y} &&\,\,\hat{V} \\
+%%  &{}-{} &&                     &&{R^Y}^{-1} \left[V^L S\right]^{-1} &&\left[P^G    \right] &&\left[V^L S\right] {R^Y} &&\left(\varphi{}L\hat{V}\right)
+%%\end{alignat}
+Quite conveniently, the $N_E^G$ may be computed from $N$ using only information
+available in Fourier space assuming that reference state $\bar{V}$ has already
+been gathered.
 
 \section{Imposing a favorable streamwise pressure gradient}
 
-TODO
+See \emph{Designing inviscid, perfect gas flow fields with
+prescribed pressure gradients and edge Mach numbers}.
 
 \chapter{In support of Favre-averaged Navier--Stokes modeling}
 \label{sec:supportFANS}
