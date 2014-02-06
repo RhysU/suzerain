@@ -56,7 +56,7 @@ typedef ar::best_model_function<
         > best_model_function;
 BOOST_STATIC_ASSERT(sizeof(best_model_function::type) == sizeof(void *));
 
-void
+const std::string&
 specification_arsel::criterion(const std::string& abbrev)
 {
     const best_model_function::type best_model
@@ -66,6 +66,13 @@ specification_arsel::criterion(const std::string& abbrev)
                 "Unknown model selection criterion abbreviation");
     }
     bmf = reinterpret_cast<void *>(best_model);
+    return this->abbrev = abbrev;
+}
+
+const std::string&
+specification_arsel::criterion() const
+{
+    return this->abbrev;
 }
 
 std::vector<real_t>::difference_type

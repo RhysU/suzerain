@@ -64,8 +64,12 @@ public:
      * \li \c MCC  - minimally consistent criterion
      *
      * \throws std::invalid_argument on unknown \c criterion.
+     * \returns The newly set criterion abbreviation.
      */
-    void criterion(const std::string& abbrev);
+    const std::string& criterion(const std::string& abbrev);
+
+    /** Retrieve the currently-specified criterion. */
+    const std::string& criterion() const;
 
     /** Consider only models of at most order AR(<code>maxorder</code>). */
     std::size_t maxorder;
@@ -92,6 +96,9 @@ public:
                std::vector<real_t>& autocor) const;
 
 private:
+
+    /** Tracks current criterion for reporting purposes. */
+    std::string abbrev;
 
     /**
      * Encapsulates the best model function.
