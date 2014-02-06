@@ -30,12 +30,12 @@
 
 #include <esio/esio.h>
 
-#include <suzerain/ar.hpp>
+#include <suzerain/arsel.hpp>
 #include <suzerain/common.hpp>
-#include <suzerain/math.hpp>
 #include <suzerain/mpi.hpp>
 #include <suzerain/running_statistics.hpp>
 #include <suzerain/summary.hpp>
+#include <suzerain/support/definition_arsel.hpp>
 #include <suzerain/support/logging.hpp>
 #include <suzerain/support/program_options.hpp>
 #include <suzerain/support/support.hpp>
@@ -132,7 +132,9 @@ suzerain::perfect::driver_summary::run(int argc, char **argv)
     namespace po = boost::program_options;
     using namespace std;
 
-    // Establish general, binary-specific options
+    // Establish binary-specific options
+    support::definition_arsel arspec;
+    options.add_definition(arspec);
     bool clobber;
     string datfile;
     string hdffile;
@@ -154,33 +156,6 @@ suzerain::perfect::driver_summary::run(int argc, char **argv)
          " If omitted, the final positional argument is used.")
         ;
 
-    // Establish options related to autoregressive model processing
-    po::options_description ar_options(
-        "Automatic autocorrelation analysis by AR(p) models");
-    string ar_criterion = "CIC";
-    size_t ar_minorder  = 0;
-    size_t ar_maxorder  = 512;
-    bool   ar_absrho    = false;
-    real_t ar_wlenT0    = 7;
-    ar_options.add_options()
-        ("criterion",
-         po::value(&ar_criterion)->default_value(ar_criterion),
-         "Use the specified model selection criterion")
-        ("minorder",
-         po::value(&ar_minorder)->default_value(ar_minorder)->value_name("MIN"),
-         "Consider only models of at least order AR(p=MIN)")
-        ("maxorder",
-         po::value(&ar_maxorder)->default_value(ar_maxorder)->value_name("MAX"),
-         "Consider only models of at most order AR(p=MAX)")
-        ("absolute_rho",
-         po::bool_switch(&ar_absrho)->default_value(ar_absrho),
-         "Use absolute autocorrelation when integrating for T0")
-        ("window_T0",
-         po::value(&ar_wlenT0)->default_value(ar_wlenT0)->value_name("WLEN"),
-         "Integrate for T0 until WLEN times the input length")
-        ;
-    options.options().add(ar_options);  // Yeeeech
-
     // Initialize application and then process binary-specific options
     // (henceforth suzerain::support::logging macros become usable)
     const vector<string> restart_files = initialize(argc, argv);
@@ -192,23 +167,6 @@ suzerain::perfect::driver_summary::run(int argc, char **argv)
     // Ensure that we're running in a single processor environment
     if (mpi::comm_size(MPI_COMM_WORLD) > 1) {
         FATAL0(argv[0] << " only intended to run on single rank");
-        return EXIT_FAILURE;
-    }
-
-    // Look up desired model selection criterion using ar::best_model_function
-    // best_model_function template parameters fit ar::burg_method usage below
-    typedef ar::best_model_function<
-                ar::Burg, size_t, size_t, vector<real_t>
-            > best_model_function;
-    const best_model_function::type best_model
-            = best_model_function::lookup(ar_criterion, false);
-    if (!best_model) {
-        FATAL0("Unknown model selection criterion: " << ar_criterion);
-        return EXIT_FAILURE;
-    }
-    if (ar_minorder > ar_maxorder) {
-        FATAL0("Minimum order " << ar_minorder
-               << " must be less than maximum order " << ar_maxorder);
         return EXIT_FAILURE;
     }
 
@@ -439,21 +397,47 @@ suzerain::perfect::driver_summary::run(int argc, char **argv)
                 esio_handle_finalize);
         esio_file_open(h.get(), hdffile.c_str(), /*read-write*/1);
 
-        // Load the sequence of sample times and compute dt statistics
-        VectorXr t;
-        {
-            int Nt = 0;
-            esio_line_size(h.get(), summary::name[summary::offset::t], &Nt);
-            t.resize(Nt);
-        }
+        // Load the sample times
+        int Nt = 0;
+        esio_line_size(h.get(), summary::name[summary::offset::t], &Nt);
+        std::vector<real_t> t(Nt);
         esio_line_establish(h.get(), t.size(), 0, t.size());
-        esio_line_read(h.get(), summary::name[summary::offset::t],
-                       t.data(), t.innerStride());
+        esio_line_read(h.get(), summary::name[summary::offset::t], t.data(), 1);
+
+        // Process each component's spatiotemporal trace...
+        ArrayXXr data;
+        std::vector<real_t> eff_N, eff_var, mu, mu_sigma, p, T;
         running_statistics<real_t,1> dtstats;
-        for (int i = 0; i < t.size()-1; ++i) {
-            const real_t diff = t[i+1] - t[i];
-            dtstats(&diff);
+        for (size_t c = summary::offset::nongrid;
+             c < summary::nscalars::total;
+             ++c) {
+
+            INFO0("Processing component " << summary::name[c]);
+
+            // ...loading it from disk
+            int Nt, Ny;
+            esio_plane_size(h.get(), summary::name[c], &Nt, &Ny);
+            esio_plane_establish(h.get(), Nt, 0, Nt, Ny, 0, Ny);
+            data.resize(Ny, Nt);
+            esio_plane_read(h.get(), summary::name[c], data.data(),
+                            data.outerStride(), data.innerStride());
+
+            // ...running the analysis
+            dtstats = arsel(t, data, arspec,
+                            eff_N, eff_var, mu, mu_sigma, p, T);
+
+            // ...and writing the results back as attributes
+            const char * const n = summary::name[c];
+            esio_attribute_writev(h.get(), n, "eff_N",    eff_N.data(),    Ny);
+            esio_attribute_writev(h.get(), n, "eff_var",  eff_var.data(),  Ny);
+            esio_attribute_writev(h.get(), n, "mu",       mu.data(),       Ny);
+            esio_attribute_writev(h.get(), n, "mu_sigma", mu_sigma.data(), Ny);
+            esio_attribute_writev(h.get(), n, "p",        p.data(),        Ny);
+            esio_attribute_writev(h.get(), n, "T",        T.data(),        Ny);
         }
+
+        INFO0("Finished autocorrelation analysis on aggregated data");
+        arspec.save(h.get());
 
         // Summarize the temporal content of the data iff nontrivial
         if (t.size() == 1) {
@@ -476,119 +460,6 @@ suzerain::perfect::driver_summary::run(int argc, char **argv)
                 << dtstats.std(0);
             INFO0(who, msg.str());
         }
-
-        // TODO Extract these AR details into a precompiled class
-        // TODO Permit processing these things in parallel
-
-        // Prepare vectors to capture burg_method() output
-        VectorXr eff_N, eff_var, mu, mu_sigma, p, T, T0;
-        vector<real_t> params, sigma2e, gain, autocor;
-        params .reserve(ar_maxorder*(ar_maxorder + 1)/2);
-        sigma2e.reserve(ar_maxorder + 1);
-        gain   .reserve(ar_maxorder + 1);
-        autocor.reserve(ar_maxorder + 1);
-
-        // Prepare repeatedly-used working storage for burg_method().
-        vector<real_t> f, b, Ak, ac;
-
-        // Reuse one buffer to hold each component's spatiotemporal trace...
-        ArrayXXr data;
-        for (size_t c = summary::offset::nongrid;
-             c < summary::nscalars::total;
-             ++c) {
-
-            INFO0("Processing component " << summary::name[c]);
-
-            int Nt, Ny;
-            esio_plane_size(h.get(), summary::name[c], &Nt, &Ny);
-            esio_plane_establish(h.get(), Nt, 0, Nt, Ny, 0, Ny);
-            data    .resize(Ny, Nt);
-            eff_N   .resize(    Ny);
-            eff_var .resize(    Ny);
-            mu      .resize(    Ny);
-            mu_sigma.resize(    Ny);
-            p       .resize(    Ny);
-            T       .resize(    Ny);
-            T0      .resize(    Ny);
-            esio_plane_read(h.get(), summary::name[c], data.data(),
-                            data.outerStride(), data.innerStride());
-
-            DEBUG0("Iterating over wall-normal points for " << summary::name[c]);
-            // ...now, with the temporal traces contiguous at given y(j)...
-            // ...use autoregressive tools to fit model and compute results
-            for (int j = 0; j < Ny; ++j) {
-
-                TRACE0("Enumerating candidate models at point y(" << j << ')');
-                size_t maxorder = ar_maxorder;
-                params .clear();
-                sigma2e.clear();
-                gain   .clear();
-                autocor.clear();
-                ar::strided_adaptor<const real_t*> signal_begin(&data.coeff(j, 0),Ny);
-                ar::strided_adaptor<const real_t*> signal_end  (&data.coeff(j,Nt),Ny);
-                ar::burg_method(signal_begin,
-                                signal_end,
-                                mu[j],
-                                maxorder,
-                                back_inserter(params),
-                                back_inserter(sigma2e),
-                                back_inserter(gain),
-                                back_inserter(autocor),
-                                true /* submean */,
-                                true /* output hierarchy? */,
-                                f, b, Ak, ac);
-
-                TRACE0("Trimming results to best model among those considered");
-                best_model(Nt, ar_minorder, params, sigma2e, gain, autocor);
-
-                TRACE0("Deriving values from selected model [Trenberth1984]");
-                T0[j]       = ar::decorrelation_time(
-                                  static_cast<size_t>(ar_wlenT0*Nt),
-                                  ar::autocorrelation(params.begin(),
-                                                      params.end(),
-                                                      gain[0],
-                                                      autocor.begin()),
-                                  ar_absrho);
-                eff_var[j]  = (Nt*gain[0]*sigma2e[0]) / (Nt - T0[j]);
-                eff_N[j]    = Nt / T0[j];
-                mu_sigma[j] = sqrt(eff_var[j] / eff_N[j]);
-                p[j]        = params.size();
-                T[j]        = T0[j] * dtstats.avg(0); // Separation to time scale
-
-            }
-
-            DEBUG0("Writing autocorrelation analysis for " << summary::name[c]);
-            // Results versus wall-normal position
-            const char * const n = summary::name[c];
-            esio_attribute_writev(h.get(), n, "eff_N",     eff_N.data(),    Ny);
-            esio_attribute_writev(h.get(), n, "eff_var",   eff_var.data(),  Ny);
-            esio_attribute_writev(h.get(), n, "mu",        mu.data(),       Ny);
-            esio_attribute_writev(h.get(), n, "mu_sigma",  mu_sigma.data(), Ny);
-            esio_attribute_writev(h.get(), n, "p",         p.data(),        Ny);
-            esio_attribute_writev(h.get(), n, "T0",        T0.data(),       Ny);
-            esio_attribute_writev(h.get(), n, "T",         T.data(),        Ny);
-        }
-
-        // Write procedural arsel metadata hanging off '/arsel' entry
-        const char loc[] = "arsel";
-        const int one = 1;
-        esio_line_establish(h.get(), 1, 0, 1);
-        esio_line_write(h.get(), loc, &one, 0,
-                " Autoregressive autocorrelation analysis settings governing"
-                " eff_N, eff_var, mu, mu_sigma, p, T0, and T attributes on"
-                " Reynolds averaged quantities. See 'Estimating Uncertainties"
-                " in Statistics Computed from DNS' by Oliver, Malaya,"
-                " Ulerich, and Moser.");
-        const int absrho   = ar_absrho;
-        const int minorder = ar_minorder;
-        const int maxorder = ar_maxorder;
-        esio_attribute_write(h.get(), loc, "absrho",    &absrho);
-        esio_attribute_write(h.get(), loc, "minorder",  &minorder);
-        esio_attribute_write(h.get(), loc, "maxorder",  &maxorder);
-        esio_attribute_write(h.get(), loc, "wlenT0",    &ar_wlenT0);
-        esio_string_set(h.get(), loc, "criterion", ar_criterion.c_str());
-
-        INFO0("Finished autocorrelation analysis on aggregated data");
 
     }
 
