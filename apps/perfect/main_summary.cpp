@@ -360,47 +360,49 @@ suzerain::perfect::driver_summary::run(int argc, char **argv)
                             " quantity to find the bulk value");
 
             // Process each component's spatiotemporal trace...
-            ArrayXXr data;
-            std::vector<real_t> eff_N, eff_var, mu, mu_sigma, p, T;
             running_statistics<real_t,1> dtstats;
             esio_plane_establish(h.get(), t.size(), 0, t.size(),
                                           y.size(), 0, y.size());
-            for (size_t c = summary::offset::nongrid;
-                c < summary::nscalars::total;
-                ++c) {
+            {
+                ArrayXXr data;
+                std::vector<real_t> eff_N, eff_var, mu, mu_sigma, p, T;
+                for (size_t c = summary::offset::nongrid;
+                    c < summary::nscalars::total;
+                    ++c) {
 
-                INFO0("Processing component " << summary::name[c]);
+                    INFO0("Processing component " << summary::name[c]);
 
-                // ...assembling from the pool into contiguous memory
-                data.setConstant(y.size(), t.size(),
-                                 numeric_limits<real_t>::quiet_NaN());
-                size_t off = 0;
-                BOOST_FOREACH(pool_type::reference i, pool) {
-                    data.col(off++) = i.second->storage.col(c);
+                    // ...assembling from the pool into contiguous memory
+                    data.setConstant(y.size(), t.size(),
+                                    numeric_limits<real_t>::quiet_NaN());
+                    size_t off = 0;
+                    BOOST_FOREACH(pool_type::reference i, pool) {
+                        data.col(off++) = i.second->storage.col(c);
+                    }
+
+                    // ...saving the contiguous spatiotemporal plane to disk
+                    esio_plane_write(h.get(), summary::name[c], data.data(),
+                                    data.outerStride(), data.innerStride());
+
+                    // ...running the automatic autocorrelation analysis
+                    dtstats = arsel(t, data, arspec,
+                                    eff_N, eff_var, mu, mu_sigma, p, T);
+
+                    // ...and writing the results as additional attributes
+                    const char * const n = summary::name[c];
+                    esio_attribute_writev(h.get(), n, "eff_N",
+                                        eff_N.data(),    y.size());
+                    esio_attribute_writev(h.get(), n, "eff_var",
+                                        eff_var.data(),  y.size());
+                    esio_attribute_writev(h.get(), n, "mu",
+                                        mu.data(),       y.size());
+                    esio_attribute_writev(h.get(), n, "mu_sigma",
+                                        mu_sigma.data(), y.size());
+                    esio_attribute_writev(h.get(), n, "p",
+                                        p.data(),        y.size());
+                    esio_attribute_writev(h.get(), n, "T",
+                                        T.data(),        y.size());
                 }
-
-                // ...saving the contiguous spatiotemporal plane to disk
-                esio_plane_write(h.get(), summary::name[c], data.data(),
-                                 data.outerStride(), data.innerStride());
-
-                // ...running the automatic autocorrelation analysis
-                dtstats = arsel(t, data, arspec,
-                                eff_N, eff_var, mu, mu_sigma, p, T);
-
-                // ...and writing the results as additional attributes
-                const char * const n = summary::name[c];
-                esio_attribute_writev(h.get(), n, "eff_N",
-                                      eff_N.data(),    y.size());
-                esio_attribute_writev(h.get(), n, "eff_var",
-                                      eff_var.data(),  y.size());
-                esio_attribute_writev(h.get(), n, "mu",
-                                      mu.data(),       y.size());
-                esio_attribute_writev(h.get(), n, "mu_sigma",
-                                      mu_sigma.data(), y.size());
-                esio_attribute_writev(h.get(), n, "p",
-                                      p.data(),        y.size());
-                esio_attribute_writev(h.get(), n, "T",
-                                      T.data(),        y.size());
             }
 
             INFO0("Finished processing aggregated data");
