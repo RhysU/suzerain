@@ -271,7 +271,8 @@ suzerain::perfect::driver_summary::run(int argc, char **argv)
         // unique set of data across all files.
         pool_type pool;
 
-        BOOST_FOREACH(const string& filename, restart_files) {
+        for (size_t i = 0; i < restart_files.size(); ++i) {
+            const string& filename = restart_files[i];
 
             // Load data from filename using a clean ESIO handle
             shared_ptr<boost::remove_pointer<esio_handle>::type> h(
@@ -317,59 +318,35 @@ suzerain::perfect::driver_summary::run(int argc, char **argv)
         }
 
         if (use_hdf5) {
-            // Create a file-specific ESIO handle using RAII
+
+            // Create output file and store metadata per base class
+            DEBUG0("Creating file " << hdffile);
             shared_ptr<boost::remove_pointer<esio_handle>::type> h(
                     esio_handle_initialize(MPI_COMM_WORLD),
                     esio_handle_finalize);
-
-            // Create output file and store metadata
-            // Notice save_metadata covers everything the base class desires
-            DEBUG0("Creating file " << hdffile);
             esio_file_create(h.get(), hdffile.c_str(), clobber);
             save_metadata(h.get());
 
-            // Determine how many time indices and collocation points we have.
-            // We'll build a vector of time values to write after iteration.
-            const int Nt = pool.size();
-            const int Ny = grid->N.y();
-            vector<real_t> t;
-            t.reserve(Nt);
-
-            // Loop over each entry in pool...
+            // Determine vector of unique times in the pool and save as "/t"
+            std::vector<real_t> t;
+            t.reserve(pool.size());
             BOOST_FOREACH(pool_type::reference i, pool) {
-
-                // ...writing every wall-normal pencil of data to file...
-                esio_plane_establish(h.get(), Nt, t.size(), 1, Ny, 0, Ny);
-                for (size_t j = summary::offset::nongrid;
-                     j < summary::nscalars::total; ++j) {
-                    esio_plane_write(h.get(), summary::name[j],
-                                     i.second->storage.col(j).data(), 0, 0,
-                                     summary::description[j]);
-                }
-
-                // ...and adding the time value to the running vector of times.
                 t.push_back(i.first);
-
-                // Output status to the user so they don't think we're hung.
-                INFO0("Wrote sample " << t.size() << " of " << Nt
-                      << " for t = " << t.back());
-
             }
-
-            // Set "/t" to be the one-dimensional vector containing all times.
-            esio_line_establish(h.get(), Nt, 0, t.size());
+            esio_line_establish(h.get(), t.size(), 0, t.size());
             esio_line_write(h.get(), summary::name[summary::offset::t],
-                            t.size() ? &t.front() : NULL,
-                            0, summary::description[summary::offset::t]);
+                    t.data(), 0, summary::description[summary::offset::t]);
 
             // Set "/y" to be the one-dimensional vector of collocation points.
             // Strictly speaking unnecessary, but useful shorthand for scripts.
-            t.resize(Ny);
-            esio_line_establish(h.get(), t.size(), 0, t.size());
-            for (int i = 0; i < Ny; ++i) t[i] = b->collocation_point(i);
+            std::vector<real_t> y;
+            y.resize(b->n());
+            for (size_t i = 0; i < y.size(); ++i) {
+                y[i] = b->collocation_point(i);
+            }
+            esio_line_establish(h.get(), y.size(), 0, y.size());
             esio_line_write(h.get(), summary::name[summary::offset::y],
-                            t.size() ? &t.front() : NULL,
-                            0, summary::description[summary::offset::y]);
+                    y.data(), 0, summary::description[summary::offset::y]);
 
             // Compute the bulk weights and then output those as well.
             suzerain::bsplineop_lu masslu(*cop.get());
@@ -381,84 +358,75 @@ suzerain::perfect::driver_summary::run(int argc, char **argv)
             esio_line_write(h.get(), "bulk_weights", bulk_weights.data(), 0,
                             "Take dot product of these weights against any"
                             " quantity to find the bulk value");
-        }
 
-    }
+            // Process each component's spatiotemporal trace...
+            ArrayXXr data;
+            std::vector<real_t> eff_N, eff_var, mu, mu_sigma, p, T;
+            running_statistics<real_t,1> dtstats;
+            for (size_t c = summary::offset::nongrid;
+                c < summary::nscalars::total;
+                ++c) {
 
-    // Autocorrelation analysis occurs after data is safely aggregated on disk
-    if (use_hdf5) {
+                INFO0("Processing component " << summary::name[c]);
 
-        INFO0("Beginning autocorrelation analysis on aggregated data");
+                // ...assembling from the pool into contiguous memory
+                data.setConstant(y.size(), t.size(),
+                                 numeric_limits<real_t>::quiet_NaN());
+                size_t off = 0;
+                BOOST_FOREACH(pool_type::reference i, pool) {
+                    data.col(off++) = i.second->storage.col(c);
+                }
 
-        // Open the prior HDF5 file in read-only mode via ESIO handle
-        DEBUG0("Reopening file " << hdffile);
-        shared_ptr<boost::remove_pointer<esio_handle>::type> h(
-                esio_handle_initialize(MPI_COMM_WORLD),
-                esio_handle_finalize);
-        esio_file_open(h.get(), hdffile.c_str(), /*read-write*/1);
+                // ...saving the contiguous spatiotemporal plane to disk
+                esio_plane_establish(h.get(), t.size(), 0, t.size(),
+                                              y.size(), 0, y.size());
+                esio_plane_write(h.get(), summary::name[c], data.data(),
+                                 data.outerStride(), data.innerStride());
 
-        // Load the sample times
-        int Nt = 0;
-        esio_line_size(h.get(), summary::name[summary::offset::t], &Nt);
-        std::vector<real_t> t(Nt);
-        esio_line_establish(h.get(), t.size(), 0, t.size());
-        esio_line_read(h.get(), summary::name[summary::offset::t], t.data(), 1);
+                // ...running the automatic autocorrelation analysis
+                dtstats = arsel(t, data, arspec,
+                                eff_N, eff_var, mu, mu_sigma, p, T);
 
-        // Process each component's spatiotemporal trace...
-        ArrayXXr data;
-        std::vector<real_t> eff_N, eff_var, mu, mu_sigma, p, T;
-        running_statistics<real_t,1> dtstats;
-        for (size_t c = summary::offset::nongrid;
-             c < summary::nscalars::total;
-             ++c) {
+                // ...and writing the results as additional attributes
+                const char * const n = summary::name[c];
+                esio_attribute_writev(h.get(), n, "eff_N",
+                                      eff_N.data(),    y.size());
+                esio_attribute_writev(h.get(), n, "eff_var",
+                                      eff_var.data(),  y.size());
+                esio_attribute_writev(h.get(), n, "mu",
+                                      mu.data(),       y.size());
+                esio_attribute_writev(h.get(), n, "mu_sigma",
+                                      mu_sigma.data(), y.size());
+                esio_attribute_writev(h.get(), n, "p",
+                                      p.data(),        y.size());
+                esio_attribute_writev(h.get(), n, "T",
+                                      T.data(),        y.size());
+            }
 
-            INFO0("Processing component " << summary::name[c]);
+            INFO0("Finished processing aggregated data");
+            arspec.save(h.get());
 
-            // ...loading it from disk
-            int Nt, Ny;
-            esio_plane_size(h.get(), summary::name[c], &Nt, &Ny);
-            esio_plane_establish(h.get(), Nt, 0, Nt, Ny, 0, Ny);
-            data.resize(Ny, Nt);
-            esio_plane_read(h.get(), summary::name[c], data.data(),
-                            data.outerStride(), data.innerStride());
-
-            // ...running the analysis
-            dtstats = arsel(t, data, arspec,
-                            eff_N, eff_var, mu, mu_sigma, p, T);
-
-            // ...and writing the results back as attributes
-            const char * const n = summary::name[c];
-            esio_attribute_writev(h.get(), n, "eff_N",    eff_N.data(),    Ny);
-            esio_attribute_writev(h.get(), n, "eff_var",  eff_var.data(),  Ny);
-            esio_attribute_writev(h.get(), n, "mu",       mu.data(),       Ny);
-            esio_attribute_writev(h.get(), n, "mu_sigma", mu_sigma.data(), Ny);
-            esio_attribute_writev(h.get(), n, "p",        p.data(),        Ny);
-            esio_attribute_writev(h.get(), n, "T",        T.data(),        Ny);
-        }
-
-        INFO0("Finished autocorrelation analysis on aggregated data");
-        arspec.save(h.get());
-
-        // Summarize the temporal content of the data iff nontrivial
-        if (t.size() == 1) {
-            INFO0("Collection contains a single sample at time " << t[0]);
-        } else if (t.size() > 1) {
-            ostringstream msg;
-            msg.precision(static_cast<int>(
-                    numeric_limits<real_t>::digits10*0.75));
-            msg << "Collection contains " << t.size()
-                << " samples spanning times ["
-                << t[0] << ", " << t[t.size() - 1] << "]";
-            INFO0(who, msg.str());
-            msg.str("");
-            msg.precision(static_cast<int>(
-                    numeric_limits<real_t>::digits10*0.50));
-            msg << "Min/avg/max/std of time between samples: "
-                << dtstats.min(0) << ", "
-                << dtstats.avg(0) << ", "
-                << dtstats.max(0) << ", "
-                << dtstats.std(0);
-            INFO0(who, msg.str());
+            // Summarize the temporal content of the data iff nontrivial
+            if (t.size() == 1) {
+                INFO0("Collection contains a single sample at time " << t[0]);
+            } else if (t.size() > 1) {
+                ostringstream msg;
+                msg.precision(static_cast<int>(
+                        numeric_limits<real_t>::digits10*0.75));
+                msg << "Collection contains " << t.size()
+                    << " samples spanning times ["
+                    << t[0] << ", " << t[t.size() - 1] << "]";
+                INFO0(who, msg.str());
+                msg.str("");
+                msg.precision(static_cast<int>(
+                        numeric_limits<real_t>::digits10*0.50));
+                msg << "Min/avg/max/std of time between samples: "
+                    << dtstats.min(0) << ", "
+                    << dtstats.avg(0) << ", "
+                    << dtstats.max(0) << ", "
+                    << dtstats.std(0);
+                INFO0(who, msg.str());
+            }
         }
 
     }
