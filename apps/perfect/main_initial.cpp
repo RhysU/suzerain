@@ -58,7 +58,7 @@ struct driver_init : public driver
 "Boundary layers homogenized by Largo employ a linear ramp in v.\n"
 "When in doubt, please read through the source code.\n",
                  revstr)
-        , who("init")
+        , who("initial")
     {}
 
     /** Logging requirements are simpler than what superclass provides. */
@@ -233,22 +233,23 @@ suzerain::perfect::driver_init::run(int argc, char **argv)
     // (henceforth suzerain::support::logging macros becomes usable)
     std::vector<std::string> positional = initialize(argc, argv);
     if (positional.size() != 1) {
-        FATAL0("Exactly one restart file name must be specified");
+        FATAL0(who, "Exactly one restart file name must be specified");
         return EXIT_FAILURE;
     }
     const std::string restart_file = positional[0];
     if (npower < 0 || npower > 1) {
-        FATAL0("npower in [0,1] required");
+        FATAL0(who, "npower in [0,1] required");
         return EXIT_FAILURE;
     }
     if (grid->k < 4) {
-        FATAL0("k >= 4 required for two non-trivial wall-normal derivatives");
+        FATAL0(who,
+               "k >= 4 required for two non-trivial wall-normal derivatives");
         return EXIT_FAILURE;
     }
     options.conflicting_options("acoustic_strength", "mms");
     options.conflicting_options("entropy_strength",  "mms");
     if (grid->two_sided() && options.variables().count("Re_x")) {
-        WARN0("Conflicting two-sided grid and Blasius profile requested?");
+        WARN0(who, "Conflicting two-sided grid and Blasius profile requested?");
     }
     options.conflicting_options("Re_x", "upper_u"); // Blasius sets freestream
     options.conflicting_options("Re_x", "upper_v"); // Blasius sets freestream
@@ -281,7 +282,7 @@ suzerain::perfect::driver_init::run(int argc, char **argv)
 
     } else if (!dgrid->has_zero_zero_modes()) {
 
-        DEBUG("Saving no non-zero information on non-zero-zero rank");
+        DEBUG(who, "Saving no non-zero information on non-zero-zero rank");
         msoln.reset(); // No manufactured solution in use
 
     } else {
@@ -300,9 +301,9 @@ suzerain::perfect::driver_init::run(int argc, char **argv)
              && !sg->formulation.enabled()) {
             INFO(who, "Initializing a classical boundary layer profile");
 
-            INFO("Blasius base profile for u, v, and T uses Re_x = "
+            INFO(who, "Blasius base profile for u, v, and T uses Re_x = "
                  << Re_x << ", Pr = " << scenario->Pr);
-            INFO("Linear ramp uses for w from "
+            INFO(who, "Linear ramp uses for w from "
                  << isothermal->lower_w << " to " << isothermal->upper_w);
             shared_ptr<gsl_spline> fit_u(suzerain_blasius_u(Re_x),
                                          gsl_spline_free);
@@ -339,17 +340,17 @@ suzerain::perfect::driver_init::run(int argc, char **argv)
 
             // Find pressure using constant density taken from freestream
             p = isothermal->upper_rho * T / scenario->gamma;
-            INFO("Base field uses p from " << p(0) << " to " << p(Ny - 1));
+            INFO(who, "Base field uses p from " << p(0) << " to " << p(Ny - 1));
 
         } else if (    options.variables().count("Re_x")
                     && sg->formulation.enabled()) {
             INFO(who, "Initializing approximate homogenized boundary layer");
 
-            INFO("Blasius base profile for u and T uses Re_x = "
+            INFO(who, "Blasius base profile for u and T uses Re_x = "
                  << Re_x << ", Pr = " << scenario->Pr);
-            INFO("Linear ramp uses for v from "
+            INFO(who, "Linear ramp uses for v from "
                  << isothermal->lower_v << " to " << isothermal->upper_v);
-            INFO("Linear ramp uses for w from "
+            INFO(who, "Linear ramp uses for w from "
                  << isothermal->lower_w << " to " << isothermal->upper_w);
             shared_ptr<gsl_spline> fit_u(suzerain_blasius_u(Re_x),
                                          gsl_spline_free);
@@ -379,12 +380,12 @@ suzerain::perfect::driver_init::run(int argc, char **argv)
 
             // Find pressure using constant density taken from freestream
             p = isothermal->upper_rho * T / scenario->gamma;
-            INFO("Base field uses p from " << p(0) << " to " << p(Ny - 1));
+            INFO(who, "Base field uses p from " << p(0) << " to " << p(Ny - 1));
 
         } else {
             INFO(who, "Initializing channel flow profile");
 
-            INFO("Base field starts from linear ramps for u, v, w, and T");
+            INFO(who, "Base field starts from linear ramps for u, v, w, and T");
             for (int j = 0; j < Ny; ++j) {
                 const double norm_y_j = b->collocation_point(j) / grid->L.y();
                 u[j] = isothermal->denormalize_u(norm_y_j);
@@ -392,13 +393,13 @@ suzerain::perfect::driver_init::run(int argc, char **argv)
                 w[j] = isothermal->denormalize_w(norm_y_j);
                 T[j] = isothermal->denormalize_T(norm_y_j);
             }
-            INFO("Base field uses u from " << u(0) << " to " << u(Ny - 1));
-            INFO("Base field uses v from " << v(0) << " to " << v(Ny - 1));
-            INFO("Base field uses w from " << w(0) << " to " << w(Ny - 1));
-            INFO("Base field uses T from " << T(0) << " to " << T(Ny - 1));
+            INFO(who, "Base field uses u from " << u(0) << " to " << u(Ny - 1));
+            INFO(who, "Base field uses v from " << v(0) << " to " << v(Ny - 1));
+            INFO(who, "Base field uses w from " << w(0) << " to " << w(Ny - 1));
+            INFO(who, "Base field uses T from " << T(0) << " to " << T(Ny - 1));
 
-            INFO("Parabolic profile will be added with npower = " << npower);
-            INFO("Finding normalization so u = (y*(L-y))^npower integral is 1");
+            INFO(who, "Parabolic profile will be added with npower = " << npower);
+            INFO(who, "Finding normalization so u = (y*(L-y))^npower integral is 1");
             real_t normalization = numeric_limits<real_t>::quiet_NaN();
             if (npower == 1) {
                 // Mathematica: (Integrate[(x (L-x)),{x,0,L}]/L)^(-1)
@@ -420,7 +421,7 @@ suzerain::perfect::driver_init::run(int argc, char **argv)
                 normalization = 0;
             }
 
-            INFO("Adding the requested parabolic streamwise velocity profile");
+            INFO(who, "Adding the requested parabolic streamwise velocity profile");
             for (int j = 0; j < Ny; ++j) {
                 const real_t y_j = b->collocation_point(j);
                 u(j) += (   scenario->bulk_rho_u
@@ -431,23 +432,23 @@ suzerain::perfect::driver_init::run(int argc, char **argv)
 
             // Find pressure from temperature and constant density assumption
             p = scenario->bulk_rho * T / scenario->gamma;
-            INFO("Base field uses p from " << p(0) << " to " << p(Ny - 1));
+            INFO(who, "Base field uses p from " << p(0) << " to " << p(Ny - 1));
 
         }
 
         // Shout, as appropriate, if non-trivial radial flow without slow growth
         if (rad->trivial()) {
-            DEBUG("Trivial radial flow problem parameters ignored");
+            DEBUG(who, "Trivial radial flow problem parameters ignored");
         } else if (sg->formulation.enabled()) {
-            INFO("Non-trivial radial flow active");
+            INFO(who, "Non-trivial radial flow active");
         } else {
-            WARN("Non-trivial radial flow active but without Largo formulation");
+            WARN(who, "Non-trivial radial flow active but without Largo formulation");
         }
 
         if (options.variables().count("acoustic_strength")) {
             const real_t left  = (Ly / 2) * (1 - acoustic_support);
             const real_t right = (Ly / 2) * (1 + acoustic_support);
-            INFO("Adding wall-normal acoustic pulse with strength "
+            INFO(who, "Adding wall-normal acoustic pulse with strength "
                  << acoustic_strength
                  << " on (" << left << ", " << right << ")");
             for (int j = 0; j < Ny; ++j) {// Baum et al JCP 1994 pp 254-5
@@ -465,7 +466,7 @@ suzerain::perfect::driver_init::run(int argc, char **argv)
         if (options.variables().count("entropy_strength")) {
             const real_t left  = (Ly / 2) * (1 - entropy_support);
             const real_t right = (Ly / 2) * (1 + entropy_support);
-            INFO("Adding wall-normal entropy pulse with strength "
+            INFO(who, "Adding wall-normal entropy pulse with strength "
                  << entropy_strength
                  << " on (" << left << ", " << right << ")");
             for (int j = 0; j < Ny; ++j) {  // Baum et al JCP 1994 pp 254-5
@@ -475,11 +476,11 @@ suzerain::perfect::driver_init::run(int argc, char **argv)
             }
         }
 
-        INFO("Computing density from pressure and temperature profiles");
+        INFO(who, "Computing density from pressure and temperature profiles");
         ArrayXr rho = scenario->gamma * p / T;
         T.resize(0); // Mark irrelevant for further use
 
-        INFO("Computing total energy and momentum from primitive state");
+        INFO(who, "Computing total energy and momentum from primitive state");
         ArrayXr rho_E(Ny);
         for (int j = 0; j < Ny; ++j) {
             const Vector3r m(rho(j) * u(j),
@@ -496,7 +497,7 @@ suzerain::perfect::driver_init::run(int argc, char **argv)
         w.resize(0); // Mark irrelevant for further use
         p.resize(0); // Mark irrelevant for further use
 
-        INFO("Converting conserved state to B-spline coefficients");
+        INFO(who, "Converting conserved state to B-spline coefficients");
         suzerain::bsplineop_lu masslu(*cop);
         masslu.factor_mass(*cop);
         masslu.solve(1, rho_E.data(), 1, rho_E.size());
@@ -505,7 +506,7 @@ suzerain::perfect::driver_init::run(int argc, char **argv)
         masslu.solve(1, rho_w.data(), 1, rho_w.size());
         masslu.solve(1, rho  .data(), 1, rho  .size());
 
-        INFO("Copying the coefficients directly into the zero-zero modes");
+        INFO(who, "Copying the coefficients directly into the zero-zero modes");
         Map<VectorXc>((*state_linear)[ndx::e  ].origin(), Ny)
                 = rho_E.cast<complex_t>();
         Map<VectorXc>((*state_linear)[ndx::mx ].origin(), Ny)
