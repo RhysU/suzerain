@@ -30,6 +30,7 @@
 #endif
 
 #include <suzerain/summary.hpp>
+#include <suzerain/format.hpp>
 
 namespace suzerain {
 
@@ -65,19 +66,40 @@ SUZERAIN_SUMMARY_ENUM_TRANSFORM(DESCRIPTION,)
 };
 #undef DESCRIPTION
 
-void
-summary::write_names(std::ostream &out)
+// Deliberately no flush operations as we're dropping lengthy output
+std::ostream&
+summary::write(std::ostream &out, bool header, bool csv)
 {
-    for (size_t i = 0; i < summary::nscalars::total; ++i) {  // Headings
-        out << std::setw(std::numeric_limits<real_t>::digits10 + 11)
-            << summary::name[i];
-        if (i < summary::nscalars::total - 1) out << " ";
-    }
-    out << std::endl;
-}
+    typedef fullprec<storage_type::Scalar> fp;
+    using std::setw;
+    using std::right;
+    using std::max;
 
-/** Used for formatting output data to match \ref summary::write_names. */
-const Eigen::IOFormat
-summary::iofmt(Eigen::FullPrecision, 0, "     ", "\n", "    ");
+    const char * const sep = csv ? ", " : "  ";
+
+    // Compute maximum field width to anticipate
+    // (Could be done at compile-time, but, meh).
+    size_t width = fp::width;
+    for (size_t i = 0; i < nscalars::total; ++i) {
+        width = max(width, strlen(name[i]));
+    }
+
+    if (header) {
+        for (size_t j = 0; j < nscalars::total - 1; ++j) {
+            out << setw(width) << right << name[j] << sep;
+        }
+        out << setw(width) << right << name[nscalars::total-1] << '\n';
+    }
+
+    const std::string pad(width - fp::width,' ');
+    for (int i = 0; i < storage.rows(); ++i) {
+        for (size_t j = 0; j < nscalars::total-1; ++j) {
+            out << pad << fp(storage(i,j)) << sep;
+        }
+        out << pad << fp(storage(i, nscalars::total-1)) << '\n';
+    }
+
+    return out;
+}
 
 } // namespace suzerain

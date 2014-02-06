@@ -95,11 +95,9 @@ public:
     /** Provides human-readable descriptions indexed on \ref offset. */
     static const char * description[nscalars::total];
 
-    /** Output names in a manner suitable for columns output by \ref iofmt. */
-    static void write_names(std::ostream &out);
-
-    /** Used for formatting output data to match \ref write_names. */
-    static const Eigen::IOFormat iofmt;
+    /** Write whitespace- or comma-delimited output to stream. */
+    std::ostream&
+    write(std::ostream &out, bool header = false, bool csv = false);
 
     /**
      * Provide access to contiguous subregions within storage.

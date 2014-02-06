@@ -192,11 +192,10 @@ driver_base::summary_run(int argc, char **argv)
 
             // Write header followed by data values separated by blanks
             ofstream ofs(outname.c_str());
-            summary::write_names(ofs);
+            bool header_shown = false;
             BOOST_FOREACH(pool_type::reference i, data) {
-                ofs << i.second->storage.format(summary::iofmt)
-                    << '\n'
-                    << endl;
+                i.second->write(ofs, !header_shown) << '\n' << endl;
+                header_shown = true;
             }
             ofs.close();
 
@@ -263,20 +262,20 @@ driver_base::summary_run(int argc, char **argv)
 
         if (use_stdout) {
             // Write header followed by data values separated by blanks
-            summary::write_names(cout);
+            bool header_shown = false;
             BOOST_FOREACH(pool_type::reference i, pool) {
-                cout << i.second->storage.format(summary::iofmt) << endl
-                          << endl;
+                i.second->write(cout, !header_shown) << '\n' << endl;
+                header_shown = true;
             }
         }
 
         if (use_dat) {
             INFO0("Writing file " << datfile);
             ofstream outf(datfile.c_str());
-            summary::write_names(outf);
+            bool header_shown = false;
             BOOST_FOREACH(pool_type::reference i, pool) {
-                outf << i.second->storage.format(summary::iofmt) << endl
-                     << endl;
+                i.second->write(outf, !header_shown) << '\n' << endl;
+                header_shown = true;
             }
         }
 
