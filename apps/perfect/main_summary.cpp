@@ -363,6 +363,8 @@ suzerain::perfect::driver_summary::run(int argc, char **argv)
             ArrayXXr data;
             std::vector<real_t> eff_N, eff_var, mu, mu_sigma, p, T;
             running_statistics<real_t,1> dtstats;
+            esio_plane_establish(h.get(), t.size(), 0, t.size(),
+                                          y.size(), 0, y.size());
             for (size_t c = summary::offset::nongrid;
                 c < summary::nscalars::total;
                 ++c) {
@@ -378,8 +380,6 @@ suzerain::perfect::driver_summary::run(int argc, char **argv)
                 }
 
                 // ...saving the contiguous spatiotemporal plane to disk
-                esio_plane_establish(h.get(), t.size(), 0, t.size(),
-                                              y.size(), 0, y.size());
                 esio_plane_write(h.get(), summary::name[c], data.data(),
                                  data.outerStride(), data.innerStride());
 
