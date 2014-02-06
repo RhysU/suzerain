@@ -57,9 +57,10 @@ namespace suzerain {
  *                      computed from decorrelatio separation \f$T_0\f$
  *                      and the mean sampling rate in \c t.
  *
+ * \returns The observed mean sample rate from processing \c t.
  * \see \ref ar for more details.
  */
-void
+real_t
 arsel(const std::vector<real_t> t,
       const ArrayXXr& data,
       const specification_arsel& spec,

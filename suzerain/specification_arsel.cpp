@@ -78,7 +78,6 @@ specification_arsel::criterion() const
 std::vector<real_t>::difference_type
 specification_arsel::best_model(
         std::size_t          N,
-        std::size_t          minorder,
         std::vector<real_t>& params,
         std::vector<real_t>& sigma2e,
         std::vector<real_t>& gain,
