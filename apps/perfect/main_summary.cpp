@@ -32,24 +32,16 @@
 
 #include <suzerain/ar.hpp>
 #include <suzerain/common.hpp>
-#include <suzerain/exprparse.hpp>
 #include <suzerain/math.hpp>
 #include <suzerain/mpi.hpp>
-#include <suzerain/ndx.hpp>
-#include <suzerain/physical_view.hpp>
-#include <suzerain/pre_gsl.h>
-#include <suzerain/rholut.hpp>
 #include <suzerain/running_statistics.hpp>
-#include <suzerain/samples.hpp>
-#include <suzerain/support/definition_grid.hpp>
+#include <suzerain/summary.hpp>
 #include <suzerain/support/logging.hpp>
 #include <suzerain/support/program_options.hpp>
 #include <suzerain/support/support.hpp>
-#include <suzerain/validation.hpp>
 
 #include "driver.hpp"
 #include "perfect.hpp"
-#include "definition_scenario.hpp"
 
 #pragma warning(disable:1419)
 
@@ -94,7 +86,6 @@ struct driver_summary : public driver
 "Options -s, -f, and -o may be specified simultaneously.\n",
                  revstr)
         , who("summary")
-        , masslu()
     {
         // Almost none of the common application/driver infrastructure is used:
         fftwdef.reset();     // No FFTs
@@ -118,139 +109,7 @@ private:
 
     /** Helps to identify from whom logging messages are being emitted. */
     std::string who;
-
-    /** Discrete factorization controlling the output grid. */
-    shared_ptr<bsplineop_lu> masslu;
 };
-
-/**
- * Details on the sampled and computed quantities
- */
-namespace summary {
-
-/** A Boost.Preprocessor sequence of tuples of grid-related details */
-#define SEQ_GRID                                                                                      \
-    ((t,            "Simulation time"))                                                               \
-    ((y,            "Wall-normal collocation point locations"))
-
-/**
- * A Boost.Preprocessor sequence of tuples of directly sampled quantities.
- * Automatically synchronized with \ref SUZERAIN_SAMPLES in \ref samples.h.
- */
-#define SEQ_SAMPLED \
-    SUZERAIN_SAMPLES_COMPONENTS(bar_)
-
-// Helpers for working with sequences of tuples
-#define NAME(tuple)  BOOST_PP_TUPLE_ELEM(2,0,tuple)
-#define SNAME(tuple) BOOST_PP_STRINGIZE(BOOST_PP_TUPLE_ELEM(2,0,tuple))
-#define DESC(tuple)  BOOST_PP_TUPLE_ELEM(2,1,tuple)
-
-// Prepare sequences of first wall-normal derivatives
-#define TRANSFORM_Y(r, data, tuple)                                                 \
-    (BOOST_PP_CAT(NAME(tuple),__y),  "Wall-normal first derivative of "DESC(tuple))
-#define SEQ_SAMPLED_Y BOOST_PP_SEQ_TRANSFORM(TRANSFORM_Y,,SEQ_SAMPLED)
-
-// Prepare sequences of second wall-normal derivatives
-#define TRANSFORM_YY(r, data, tuple)                                                 \
-    (BOOST_PP_CAT(NAME(tuple),__yy), "Wall-normal second derivative of "DESC(tuple))
-#define SEQ_SAMPLED_YY BOOST_PP_SEQ_TRANSFORM(TRANSFORM_YY,,SEQ_SAMPLED)
-
-// Building a Boost.Preprocessor sequence of all data of interest
-//   #define SEQ_ALL
-//       SEQ_GRID SEQ_SAMPLED    SEQ_DERIVED
-//                SEQ_SAMPLED_Y  SEQ_DERIVED_Y
-//                SEQ_SAMPLED_YY SEQ_DERIVED_YY
-// appears to be impossible as the sequence has more than 256 elements.
-// Instead, we have to invoke on each component sequence in turn.
-
-    /** Number of scalar quantities processed as a wall-normal function */
-    static const std::size_t count = BOOST_PP_SEQ_SIZE(SEQ_GRID)
-                                   + BOOST_PP_SEQ_SIZE(SEQ_SAMPLED)
-                                   + BOOST_PP_SEQ_SIZE(SEQ_SAMPLED_Y)
-                                   + BOOST_PP_SEQ_SIZE(SEQ_SAMPLED_YY);
-
-#define OP(s, data, tuple) NAME(tuple)
-    /** Provides named index constants for each quantity */
-    enum index {
-        BOOST_PP_SEQ_ENUM(BOOST_PP_SEQ_TRANSFORM(OP, , SEQ_GRID))      ,
-        BOOST_PP_SEQ_ENUM(BOOST_PP_SEQ_TRANSFORM(OP, , SEQ_SAMPLED))   ,
-        BOOST_PP_SEQ_ENUM(BOOST_PP_SEQ_TRANSFORM(OP, , SEQ_SAMPLED_Y)) ,
-        BOOST_PP_SEQ_ENUM(BOOST_PP_SEQ_TRANSFORM(OP, , SEQ_SAMPLED_YY)),
-    };
-#undef OP
-
-#define OP(s, data, tuple) SNAME(tuple)
-    /** Provides names indexed on \ref index */
-    static const char * name[count] = {
-        BOOST_PP_SEQ_ENUM(BOOST_PP_SEQ_TRANSFORM(OP, , SEQ_GRID))      ,
-        BOOST_PP_SEQ_ENUM(BOOST_PP_SEQ_TRANSFORM(OP, , SEQ_SAMPLED))   ,
-        BOOST_PP_SEQ_ENUM(BOOST_PP_SEQ_TRANSFORM(OP, , SEQ_SAMPLED_Y)) ,
-        BOOST_PP_SEQ_ENUM(BOOST_PP_SEQ_TRANSFORM(OP, , SEQ_SAMPLED_YY))
-    };
-#undef OP
-
-#define OP(s, data, tuple) DESC(tuple)
-    /** Provides human-readable descriptions indexed on \ref index */
-    static const char * desc[count] = {
-        BOOST_PP_SEQ_ENUM(BOOST_PP_SEQ_TRANSFORM(OP, , SEQ_GRID))      ,
-        BOOST_PP_SEQ_ENUM(BOOST_PP_SEQ_TRANSFORM(OP, , SEQ_SAMPLED))   ,
-        BOOST_PP_SEQ_ENUM(BOOST_PP_SEQ_TRANSFORM(OP, , SEQ_SAMPLED_Y)) ,
-        BOOST_PP_SEQ_ENUM(BOOST_PP_SEQ_TRANSFORM(OP, , SEQ_SAMPLED_YY))
-    };
-#undef OP
-
-    /** Type used to store all quantities in a single contiguous region */
-    typedef Eigen::Array<real_t, Eigen::Dynamic, count> storage_type;
-
-    /**
-     * Map type used to manage and sort samples across a time series.
-     */
-    typedef boost::ptr_map<real_t, storage_type> storage_map_type;
-
-    /** Output names in a manner suitable for columns output by \ref iofmt */
-    static void write_names(std::ostream &out)
-    {
-        for (size_t i = 0; i < summary::count; ++i) {  // Headings
-            out << std::setw(std::numeric_limits<real_t>::digits10 + 11)
-                << summary::name[i];
-            if (i < summary::count - 1) out << " ";
-        }
-        out << std::endl;
-    }
-
-    /** Used for formatting output data to match \ref summary::write_names. */
-    static const Eigen::IOFormat iofmt(
-            Eigen::FullPrecision, 0, "     ", "\n", "    ");
-
-    /**
-     * Compute all quantities from namespace \ref summary using the sample
-     * collections present in \c filename using the wall-normal discretization
-     * from \c filename.
-     *
-     * @param filename   To be loaded.
-     * @param i_scenario If <tt>!i_scenario</tt>,
-     *                   populated with the definition_scenario from the file.
-     * @param i_grid     Handled identically to <tt>i_scenario</tt>.
-     * @param i_b        If <tt>!!i_b</tt> on entry, after computation interpolate
-     *                   the results onto the collocation points given by \c i_b.
-     *                   Otherwise, perform no additional interpolation and
-     *                   update \c i_b with the basis in \c filename.
-     * @param i_bop      Handled identically to \c i_b.
-     * @param i_masslu   Handled identically to \c i_b.
-     *
-     * @return A map of quantities keyed on the nondimensional simulation time.
-     */
-    storage_map_type process(
-            const std::string& filename,
-            shared_ptr<definition_scenario     >& i_scenario,
-            shared_ptr<support::definition_grid>& i_grid,
-            shared_ptr<bspline                 >& i_b,
-            shared_ptr<bsplineop               >& i_bop,
-            shared_ptr<bsplineop_lu            >& i_masslu);
-
-} // namespace summary
-
-#pragma warning(disable:383 1572)
 
 } // namespace perfect
 
@@ -271,32 +130,38 @@ int
 suzerain::perfect::driver_summary::run(int argc, char **argv)
 {
     namespace po = boost::program_options;
+    using namespace std;
 
     // Establish general, binary-specific options
     bool clobber;
-    std::string datfile;
-    std::string hdffile;
+    string datfile;
+    string hdffile;
+    string tgtfile;
     options.add_options()
         ("clobber",    po::bool_switch(&clobber)->default_value(false),
          "Overwrite any existing HDF5 output files?")
+        ("describe,d",
+         "Dump all sample descriptions to standard output")
         ("stdout,s",
          "Write results to standard output?")
         ("datfile,f",  po::value(&datfile),
          "Write results to a textual output file")
         ("hdffile,o",  po::value(&hdffile),
          "Write results to an HDF5 output file")
-        ("describe,d",
-         "Dump all sample descriptions to standard output")
+        ("target,t",   po::value(&tgtfile),
+         "Project output (per --datfile, --hdffile) onto target grid"
+         " and scenario from this file."
+         " If omitted, the final positional argument is used.")
         ;
 
     // Establish options related to autoregressive model processing
     po::options_description ar_options(
         "Automatic autocorrelation analysis by AR(p) models");
-    std::string ar_criterion = "CIC";
-    std::size_t ar_minorder  = 0;
-    std::size_t ar_maxorder  = 512;
-    bool        ar_absrho    = false;
-    real_t      ar_wlenT0    = 7;
+    string ar_criterion = "CIC";
+    size_t ar_minorder  = 0;
+    size_t ar_maxorder  = 512;
+    bool   ar_absrho    = false;
+    real_t ar_wlenT0    = 7;
     ar_options.add_options()
         ("criterion",
          po::value(&ar_criterion)->default_value(ar_criterion),
@@ -318,7 +183,7 @@ suzerain::perfect::driver_summary::run(int argc, char **argv)
 
     // Initialize application and then process binary-specific options
     // (henceforth suzerain::support::logging macros become usable)
-    const std::vector<std::string> restart_files = initialize(argc, argv);
+    const vector<string> restart_files = initialize(argc, argv);
     const bool use_stdout = options.variables().count("stdout");
     const bool use_dat    = options.variables().count("datfile");
     const bool use_hdf5   = options.variables().count("hdffile");
@@ -333,7 +198,7 @@ suzerain::perfect::driver_summary::run(int argc, char **argv)
     // Look up desired model selection criterion using ar::best_model_function
     // best_model_function template parameters fit ar::burg_method usage below
     typedef ar::best_model_function<
-                ar::Burg, std::size_t, std::size_t, std::vector<real_t>
+                ar::Burg, size_t, size_t, vector<real_t>
             > best_model_function;
     const best_model_function::type best_model
             = best_model_function::lookup(ar_criterion, false);
@@ -356,42 +221,44 @@ suzerain::perfect::driver_summary::run(int argc, char **argv)
 
     // Dump a banner containing one-indexed columns, names, and descriptions
     if (describe) {
-        boost::io::ios_all_saver ias(std::cout);
+        boost::io::ios_all_saver ias(cout);
 
-        const std::size_t ndxwidth = 1 + static_cast<std::size_t>(
-                std::floor(std::log10(static_cast<real_t>(summary::count))));
-
-        std::size_t namewidth = 0;
-        for (std::size_t i = 0; i < summary::count; ++i) {
-            namewidth = std::max(namewidth, strlen(summary::name[i]));
+        const size_t ndxwidth = 1 + static_cast<size_t>(
+                floor(log10(static_cast<real_t>(summary::nscalars::total))));
+        size_t namewidth = 0;
+        for (size_t i = 0; i < summary::nscalars::total; ++i) {
+            namewidth = max(namewidth, strlen(summary::name[i]));
         }
 
-        for (size_t i = 0; i < summary::count; ++i) {
-            std::cout << "# "
-                      << std::setw(ndxwidth) << std::right << i
-                      << "  "
-                      << std::setw(namewidth) << std::left << summary::name[i]
-                      << "  "
-                      << std::left << summary::desc[i]
-                      << '\n';
+        for (size_t i = 0; i < summary::nscalars::total; ++i) {
+            cout << "# "
+                 << setw(ndxwidth) << right << i
+                 << "  "
+                 << setw(namewidth) << left << summary::name[i]
+                 << "  "
+                 << left << summary::description[i]
+                 << '\n';
         }
-        std::cout << std::flush;
+        cout << flush;
     }
 
     // Processing differs slightly when done file-by-file versus
     // aggregated across multiple files...
+    typedef boost::ptr_map<real_t, summary> pool_type;
     if (!use_stdout && !use_dat && !use_hdf5) {
 
-        BOOST_FOREACH(const std::string& filename, restart_files) {
+        BOOST_FOREACH(const string& filename, restart_files) {
 
-            // Load data from filename
-            summary::storage_map_type data = summary::process(
-                    filename, scenario, grid, b, cop, masslu);
+            // Load data from filename using a clean ESIO handle
+            shared_ptr<boost::remove_pointer<esio_handle>::type> h(
+                    esio_handle_initialize(MPI_COMM_WORLD),
+                    esio_handle_finalize);
+            pool_type data(support::load_summary(h.get(), *b));
 
             // Save quantities to `basename filename .h5`.mean
             static const char suffix[] = ".h5";
-            const std::size_t suffix_len = sizeof(suffix) - 1;
-            std::string outname;
+            const size_t suffix_len = sizeof(suffix) - 1;
+            string outname;
             if (filename.rfind(suffix) == filename.length() - suffix_len) {
                 outname = filename.substr(
                         0, filename.length() - suffix_len) + ".mean";
@@ -401,11 +268,12 @@ suzerain::perfect::driver_summary::run(int argc, char **argv)
             DEBUG0("Saving nondimensional quantities to " << outname);
 
             // Write header followed by data values separated by blanks
-            std::ofstream ofs(outname.c_str());
+            ofstream ofs(outname.c_str());
             summary::write_names(ofs);
-            BOOST_FOREACH(summary::storage_map_type::value_type i, data) {
-                ofs << i->second->format(summary::iofmt) << std::endl
-                    << std::endl;
+            BOOST_FOREACH(pool_type::reference i, data) {
+                ofs << i.second->storage.format(summary::iofmt)
+                    << '\n'
+                    << endl;
             }
             ofs.close();
 
@@ -414,62 +282,78 @@ suzerain::perfect::driver_summary::run(int argc, char **argv)
             grid.reset();
             b.reset();
             cop.reset();
-            masslu.reset();
         }
 
     } else {
 
+        // Load the target grid and scenario per --target or positionals
+        // Notice load_metadata gets everything the base class desires
+        {
+            shared_ptr<boost::remove_pointer<esio_handle>::type> h(
+                    esio_handle_initialize(MPI_COMM_WORLD),
+                    esio_handle_finalize);
+
+            if (options.variables().count("target")) {
+                esio_file_open(h.get(), tgtfile.c_str(), /*read-only*/0);
+            } else if (restart_files.size() > 0) {
+                esio_file_open(h.get(),
+                               restart_files.back().c_str(), /*read-only*/0);
+            } else {
+                FATAL0("One or more positional arguments required when "
+                       " --target is not supplied");
+                return EXIT_FAILURE;
+            }
+
+            load_metadata(h.get());
+        }
+
         // A single map of data is stored across all files.  Because the map
         // key is the simulation time, we automatically get a well-ordered,
         // unique set of data across all files.
-        summary::storage_map_type pool;
+        pool_type pool;
 
-        // Scenario and grid details preserved across multiple files!
-        // The last file on the command line determines the projection target
-        // grid because of the BOOST_REVERSE_FOREACH below.  That causes
-        // date-sorting input files to behave sensibly.
-        BOOST_REVERSE_FOREACH(const std::string& filename, restart_files) {
+        BOOST_FOREACH(const string& filename, restart_files) {
 
-            if (!scenario) INFO0 ("Output file has scenario per " << filename);
-            if (!grid)     DEBUG0("Output file has grid per "     << filename);
-
-            // Load data from filename
-            summary::storage_map_type data = summary::process(
-                    filename, scenario, grid, b, cop, masslu);
+            // Load data from filename using a clean ESIO handle
+            shared_ptr<boost::remove_pointer<esio_handle>::type> h(
+                    esio_handle_initialize(MPI_COMM_WORLD),
+                    esio_handle_finalize);
+            esio_file_open(h.get(), filename.c_str(), /*read-only*/0);
+            pool_type data(support::load_summary(h.get(), *b));
 
             // Output status to the user so they don't think we're hung.
-            BOOST_FOREACH(summary::storage_map_type::value_type i, data) {
-                INFO0("Read sample for t = " << i->first
+            BOOST_FOREACH(pool_type::reference i, data) {
+                INFO0("Read sample for t = " << i.first
                       << " from " << filename);
             }
 
-            // Transfer data into larger pool (which erases it from data)
+            // Transfer data into pool (which erases it from data)
             pool.transfer(data);
 
             // Warn on any duplicate values which were not transfered
-            BOOST_FOREACH(summary::storage_map_type::value_type i, data) {
+            BOOST_FOREACH(pool_type::reference i, data) {
                 WARN0("Duplicate sample time "
-                      << i->first << " from " << filename << " ignored");
+                      << i.first << " from " << filename << " ignored");
             }
 
         }
 
         if (use_stdout) {
             // Write header followed by data values separated by blanks
-            summary::write_names(std::cout);
-            BOOST_FOREACH(summary::storage_map_type::value_type i, pool) {
-                std::cout << i->second->format(summary::iofmt) << std::endl
-                          << std::endl;
+            summary::write_names(cout);
+            BOOST_FOREACH(pool_type::reference i, pool) {
+                cout << i.second->storage.format(summary::iofmt) << endl
+                          << endl;
             }
         }
 
         if (use_dat) {
             INFO0("Writing file " << datfile);
-            std::ofstream outf(datfile.c_str());
+            ofstream outf(datfile.c_str());
             summary::write_names(outf);
-            BOOST_FOREACH(summary::storage_map_type::value_type i, pool) {
-                outf << i->second->format(summary::iofmt) << std::endl
-                     << std::endl;
+            BOOST_FOREACH(pool_type::reference i, pool) {
+                outf << i.second->storage.format(summary::iofmt) << endl
+                     << endl;
             }
         }
 
@@ -480,6 +364,7 @@ suzerain::perfect::driver_summary::run(int argc, char **argv)
                     esio_handle_finalize);
 
             // Create output file and store metadata
+            // Notice save_metadata covers everything the base class desires
             DEBUG0("Creating file " << hdffile);
             esio_file_create(h.get(), hdffile.c_str(), clobber);
             save_metadata(h.get());
@@ -488,26 +373,23 @@ suzerain::perfect::driver_summary::run(int argc, char **argv)
             // We'll build a vector of time values to write after iteration.
             const int Nt = pool.size();
             const int Ny = grid->N.y();
-            std::vector<real_t> t;
+            vector<real_t> t;
             t.reserve(Nt);
 
             // Loop over each entry in pool...
-            BOOST_FOREACH(summary::storage_map_type::value_type i, pool) {
+            BOOST_FOREACH(pool_type::reference i, pool) {
 
                 // ...writing every wall-normal pencil of data to file...
                 esio_plane_establish(h.get(), Nt, t.size(), 1, Ny, 0, Ny);
-                for (std::size_t j = 0; j < summary::count; ++j) {
-                    // ...skipping those which do not vary in time...
-                    if (j == summary::t || j == summary::y ) {
-                        continue;
-                    }
+                for (size_t j = summary::offset::nongrid;
+                     j < summary::nscalars::total; ++j) {
                     esio_plane_write(h.get(), summary::name[j],
-                                     i->second->col(j).data(), 0, 0,
-                                     summary::desc[j]);
+                                     i.second->storage.col(j).data(), 0, 0,
+                                     summary::description[j]);
                 }
 
                 // ...and adding the time value to the running vector of times.
-                t.push_back(i->first);
+                t.push_back(i.first);
 
                 // Output status to the user so they don't think we're hung.
                 INFO0("Wrote sample " << t.size() << " of " << Nt
@@ -517,21 +399,24 @@ suzerain::perfect::driver_summary::run(int argc, char **argv)
 
             // Set "/t" to be the one-dimensional vector containing all times.
             esio_line_establish(h.get(), Nt, 0, t.size());
-            esio_line_write(h.get(), summary::name[summary::t],
+            esio_line_write(h.get(), summary::name[summary::offset::t],
                             t.size() ? &t.front() : NULL,
-                            0, summary::desc[summary::t]);
+                            0, summary::description[summary::offset::t]);
 
             // Set "/y" to be the one-dimensional vector of collocation points.
             // Strictly speaking unnecessary, but useful shorthand for scripts.
             t.resize(Ny);
             esio_line_establish(h.get(), t.size(), 0, t.size());
             for (int i = 0; i < Ny; ++i) t[i] = b->collocation_point(i);
-            esio_line_write(h.get(), summary::name[summary::y], &t.front(),
-                            0, summary::desc[summary::y]);
+            esio_line_write(h.get(), summary::name[summary::offset::y],
+                            t.size() ? &t.front() : NULL,
+                            0, summary::description[summary::offset::y]);
 
-            // (Re-) compute the bulk weights and then output those as well.
+            // Compute the bulk weights and then output those as well.
+            suzerain::bsplineop_lu masslu(*cop.get());
+            masslu.factor_mass(*cop.get());
             const VectorXr bulk_weights
-                    = support::compute_bulk_weights(*b, *masslu);
+                    = support::compute_bulk_weights(*b, masslu);
             esio_line_establish(h.get(), bulk_weights.size(),
                                 0, bulk_weights.size());
             esio_line_write(h.get(), "bulk_weights", bulk_weights.data(), 0,
@@ -557,11 +442,11 @@ suzerain::perfect::driver_summary::run(int argc, char **argv)
         VectorXr t;
         {
             int Nt = 0;
-            esio_line_size(h.get(), summary::name[summary::t], &Nt);
+            esio_line_size(h.get(), summary::name[summary::offset::t], &Nt);
             t.resize(Nt);
         }
         esio_line_establish(h.get(), t.size(), 0, t.size());
-        esio_line_read(h.get(), summary::name[summary::t],
+        esio_line_read(h.get(), summary::name[summary::offset::t],
                        t.data(), t.innerStride());
         running_statistics<real_t,1> dtstats;
         for (int i = 0; i < t.size()-1; ++i) {
@@ -573,8 +458,7 @@ suzerain::perfect::driver_summary::run(int argc, char **argv)
         if (t.size() == 1) {
             INFO0("Collection contains a single sample at time " << t[0]);
         } else if (t.size() > 1) {
-            using std::numeric_limits;
-            std::ostringstream msg;
+            ostringstream msg;
             msg.precision(static_cast<int>(
                     numeric_limits<real_t>::digits10*0.75));
             msg << "Collection contains " << t.size()
@@ -597,19 +481,19 @@ suzerain::perfect::driver_summary::run(int argc, char **argv)
 
         // Prepare vectors to capture burg_method() output
         VectorXr eff_N, eff_var, mu, mu_sigma, p, T, T0;
-        std::vector<real_t> params, sigma2e, gain, autocor;
+        vector<real_t> params, sigma2e, gain, autocor;
         params .reserve(ar_maxorder*(ar_maxorder + 1)/2);
         sigma2e.reserve(ar_maxorder + 1);
         gain   .reserve(ar_maxorder + 1);
         autocor.reserve(ar_maxorder + 1);
 
         // Prepare repeatedly-used working storage for burg_method().
-        std::vector<real_t> f, b, Ak, ac;
+        vector<real_t> f, b, Ak, ac;
 
         // Reuse one buffer to hold each component's spatiotemporal trace...
         ArrayXXr data;
-        for (std::size_t c = BOOST_PP_SEQ_SIZE(SEQ_GRID);
-             c < summary::count;
+        for (size_t c = summary::offset::nongrid;
+             c < summary::nscalars::total;
              ++c) {
 
             INFO0("Processing component " << summary::name[c]);
@@ -634,7 +518,7 @@ suzerain::perfect::driver_summary::run(int argc, char **argv)
             for (int j = 0; j < Ny; ++j) {
 
                 TRACE0("Enumerating candidate models at point y(" << j << ')');
-                std::size_t maxorder = ar_maxorder;
+                size_t maxorder = ar_maxorder;
                 params .clear();
                 sigma2e.clear();
                 gain   .clear();
@@ -645,10 +529,10 @@ suzerain::perfect::driver_summary::run(int argc, char **argv)
                                 signal_end,
                                 mu[j],
                                 maxorder,
-                                std::back_inserter(params),
-                                std::back_inserter(sigma2e),
-                                std::back_inserter(gain),
-                                std::back_inserter(autocor),
+                                back_inserter(params),
+                                back_inserter(sigma2e),
+                                back_inserter(gain),
+                                back_inserter(autocor),
                                 true /* submean */,
                                 true /* output hierarchy? */,
                                 f, b, Ak, ac);
@@ -658,7 +542,7 @@ suzerain::perfect::driver_summary::run(int argc, char **argv)
 
                 TRACE0("Deriving values from selected model [Trenberth1984]");
                 T0[j]       = ar::decorrelation_time(
-                                  static_cast<std::size_t>(ar_wlenT0*Nt),
+                                  static_cast<size_t>(ar_wlenT0*Nt),
                                   ar::autocorrelation(params.begin(),
                                                       params.end(),
                                                       gain[0],
@@ -666,7 +550,7 @@ suzerain::perfect::driver_summary::run(int argc, char **argv)
                                   ar_absrho);
                 eff_var[j]  = (Nt*gain[0]*sigma2e[0]) / (Nt - T0[j]);
                 eff_N[j]    = Nt / T0[j];
-                mu_sigma[j] = std::sqrt(eff_var[j] / eff_N[j]);
+                mu_sigma[j] = sqrt(eff_var[j] / eff_N[j]);
                 p[j]        = params.size();
                 T[j]        = T0[j] * dtstats.avg(0); // Separation to time scale
 
@@ -708,143 +592,4 @@ suzerain::perfect::driver_summary::run(int argc, char **argv)
     }
 
     return EXIT_SUCCESS;
-}
-
-suzerain::perfect::summary::storage_map_type
-suzerain::perfect::summary::process(
-        const std::string& filename,
-        shared_ptr<definition_scenario     >& i_scenario,
-        shared_ptr<support::definition_grid>& i_grid,
-        shared_ptr<bspline                 >& i_b,
-        shared_ptr<bsplineop               >& i_bop,
-        shared_ptr<bsplineop_lu            >& i_masslu)
-{
-    storage_map_type retval;
-
-    // Create a file-specific ESIO handle using RAII
-    shared_ptr<boost::remove_pointer<esio_handle>::type> h(
-            esio_handle_initialize(MPI_COMM_WORLD), esio_handle_finalize);
-
-    DEBUG0("Loading file " << filename);
-    esio_file_open(h.get(), filename.c_str(), 0 /* read-only */);
-
-    // Load time, scenario, grid, time, and B-spline details from file
-    // (cannot use driver_base::load_metadata as method is freestanding)
-    real_t time;
-    definition_scenario scenario;
-    support::definition_grid grid;
-    shared_ptr<bspline> b;
-    shared_ptr<bsplineop> cop;
-    support::load_time(h.get(), time);
-    scenario.load(h.get());
-    grid.load(h.get());
-    support::load_bsplines(h.get(), b, cop);
-    assert(b->n() == grid.N.y());
-
-    // Return the scenario and grid to the caller if not already set
-    if (!i_scenario) i_scenario.reset(new definition_scenario     (scenario));
-    if (!i_grid)     i_grid    .reset(new support::definition_grid(grid    ));
-
-    // Compute factorized mass matrix for current operators in use
-    shared_ptr<suzerain::bsplineop_lu> masslu
-        = suzerain::make_shared<suzerain::bsplineop_lu>(*cop.get());
-    masslu->factor_mass(*cop.get());
-
-    // Likewise, use b and friends if i_b was not supplied by the caller
-    if (!i_b) {
-        i_b      = b;
-        i_bop    = cop;
-        i_masslu = masslu;
-    }
-
-    // Load samples as coefficients
-    std::auto_ptr<samples> q(new samples(time, b->n()));
-    support::load_samples(h.get(), *q);
-    if (q->t >= 0) {
-        DEBUG0("Successfully loaded samples from " << filename);
-    } else {
-        WARN0("No valid samples found in " << filename);
-        return retval;
-    }
-
-    // Convert samples into collocation point values in s
-    std::auto_ptr<storage_type> s(new storage_type(b->n(),
-                (storage_type::Index) storage_type::ColsAtCompileTime));
-    s->fill(std::numeric_limits<real_t>::quiet_NaN());  // ++paranoia
-
-#define ACCUMULATE(quantity, component, offset, description)                          \
-    cop->accumulate(0, 1.0, q->quantity().col(offset).data(),                     1,  \
-                       0.0, s->col(summary::BOOST_PP_CAT(bar_,component)).data(), 1);
-
-    SUZERAIN_SAMPLES_COMPONENTS_FOR_EACH(ACCUMULATE, SUZERAIN_SAMPLES)
-
-#undef ACCUMULATE
-
-    // Store time and collocation points into s.
-    // Not strictly necessary, but very useful for textual output
-    // and as a sanity check of any later grid projection.
-    s->col(summary::t).fill(q->t);
-    for (int i = 0; i < b->n(); ++i)
-        s->col(summary::y)[i] = b->collocation_point(i);
-
-    // Free coefficient-related resources
-    q.reset();
-
-    // Shorthand for referring to a particular column
-#define C(name) s->col(summary::name)
-
-    // Differentiate SAMPLED
-    // Uses that bar_rho{,__y,__yy} is the first entry in SAMPLED{,_Y,_YY}
-    s->middleCols<BOOST_PP_SEQ_SIZE(SEQ_SAMPLED_Y)>(summary::bar_rho__y)
-        = s->middleCols<BOOST_PP_SEQ_SIZE(SEQ_SAMPLED)>(summary::bar_rho);
-    masslu->solve(BOOST_PP_SEQ_SIZE(SEQ_SAMPLED_Y),
-            s->middleCols<BOOST_PP_SEQ_SIZE(SEQ_SAMPLED_Y)>(summary::bar_rho__y).data(),
-            1, b->n());
-    s->middleCols<BOOST_PP_SEQ_SIZE(SEQ_SAMPLED_YY)>(summary::bar_rho__yy)
-        = s->middleCols<BOOST_PP_SEQ_SIZE(SEQ_SAMPLED_Y)>(summary::bar_rho__y);
-    cop->apply(1, BOOST_PP_SEQ_SIZE(SEQ_SAMPLED_Y), 1.0,
-            s->middleCols<BOOST_PP_SEQ_SIZE(SEQ_SAMPLED_Y)>(summary::bar_rho__y).data(),
-            1, b->n());
-    cop->apply(2, BOOST_PP_SEQ_SIZE(SEQ_SAMPLED_Y), 1.0,
-            s->middleCols<BOOST_PP_SEQ_SIZE(SEQ_SAMPLED_YY)>(summary::bar_rho__yy).data(),
-            1, b->n());
-
-#undef C
-
-    const real_t bsplines_dist = b->distance_to(*i_b);
-    if (bsplines_dist <= suzerain_bspline_distance_distinct) {
-
-        // Results match target numerics to within acceptable tolerance.
-        retval.insert(time, s);
-
-    } else {
-
-        // Results do not match target numerics.
-        // Must project onto target collocation points.
-        INFO0("Projecting data from " << filename << " onto target grid");
-
-        // Convert all results in s to coefficients
-        masslu->solve(summary::count, s->data(), 1, b->n());
-
-        // Obtain target collocation points
-        suzerain::ArrayXr buf(i_b->n());
-        for (int i = 0; i < i_b->n(); ++i) buf[i] = i_b->collocation_point(i);
-
-        // Evaluate coefficients onto the target collocation points
-        std::auto_ptr<storage_type> r(new storage_type(i_b->n(),
-                    (storage_type::Index) storage_type::ColsAtCompileTime));
-        for (std::size_t i = 0; i < summary::count; ++i) {
-            b->linear_combination(0, s->col(i).data(),
-                                  buf.size(), buf.data(), r->col(i).data());
-        }
-
-        // Notice that summary::t, being a constant, and summary::y, being a
-        // linear, should have been converted to the target collocation points
-        // without more than epsilon-like floating point loss.
-
-        retval.insert(time, r);
-
-    }
-
-    return retval;
 }
