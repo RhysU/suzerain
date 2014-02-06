@@ -253,6 +253,7 @@ suzerain::perfect::driver_summary::run(int argc, char **argv)
             shared_ptr<boost::remove_pointer<esio_handle>::type> h(
                     esio_handle_initialize(MPI_COMM_WORLD),
                     esio_handle_finalize);
+            esio_file_open(h.get(), filename.c_str(), /*read-only*/0);
             pool_type data(support::load_summary(h.get(), *b));
 
             // Save quantities to `basename filename .h5`.mean
