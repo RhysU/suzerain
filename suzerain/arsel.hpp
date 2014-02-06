@@ -28,7 +28,47 @@
  * Serves as a high-level wrapper of functionality within \ref ar.hpp.
  */
 
+#include <suzerain/common.hpp>
+#include <suzerain/specification_arsel.hpp>
+
 namespace suzerain {
+
+// Forward declarations
+
+/**
+ * Automatically fit autoregressive models to input signals. Use ar::burg_method
+ * and ar::best_model to fit an autoregressive process for signals contained in
+ * the rows of matrix data.
+ *
+ * \param[in]  t        Times of input data samples.
+ *                      Though \e only equispaced data is currently supported,
+ *                      this information will be used to compute a mean
+ *                      sample rate and therefore inform output \c T.
+ * \param[in]  data     Data to process.
+ *                      Each row is one signal to process \e independently.
+ * \param[in]  spec     Specification governing algorithmic choices.
+ * \param[out] eff_N    Number of effectively independent samples in each row.
+ * \param[out] eff_var  Estimated effective signal variance for each row.
+ * \param[out] mu       Sample mean for each row.
+ * \param[out] mu_sigma Sampling error in each row.
+ *                      (that is, the standard deviation of the sample mean).
+ * \param[out] p        Selected autoregressive model order for each row.
+ * \param[out] T        Decorrelation time for each row
+ *                      computed from decorrelatio separation \f$T_0\f$
+ *                      and the mean sampling rate in \c t.
+ *
+ * \see \ref ar for more details.
+ */
+void
+arsel(const std::vector<real_t> t,
+      const ArrayXXr& data,
+      const specification_arsel& spec,
+      std::vector<real_t>& eff_N,
+      std::vector<real_t>& eff_var,
+      std::vector<real_t>& mu,
+      std::vector<real_t>& mu_sigma,
+      std::vector<real_t>& p,
+      std::vector<real_t>& T);
 
 } // end namespace suzerain
 
