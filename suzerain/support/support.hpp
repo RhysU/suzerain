@@ -155,6 +155,14 @@ save_bsplines(const esio_handle h,
  */
 real_t
 load_bsplines(const esio_handle      h,
+              shared_ptr<bspline>&   b);
+
+/**
+ * Load a \ref bspline and \ref bsplineop workspace from a file.
+ * @return the absolute error in reproducing prescribed abscissae.
+ */
+real_t
+load_bsplines(const esio_handle      h,
               shared_ptr<bspline>&   b,
               shared_ptr<bsplineop>& cop);
 

@@ -442,11 +442,9 @@ load_line(
     }
 }
 
-
 real_t
 load_bsplines(const esio_handle      h,
-              shared_ptr<bspline>&   b,
-              shared_ptr<bsplineop>& cop)
+              shared_ptr<bspline>&   b)
 {
     using std::abs;
     using std::max;
@@ -524,9 +522,19 @@ load_bsplines(const esio_handle      h,
                            SUZERAIN_EFAILED, abserr);
     }
 
-    // Construct B-spline operator workspace from the B-spline workspace
+    return abserr;
+}
+
+real_t
+load_bsplines(const esio_handle      h,
+              shared_ptr<bspline>&   b,
+              shared_ptr<bsplineop>& cop)
+{
+    const real_t abserr = load_bsplines(h, b);
+
+    DEBUG0("Constructing B-spline operators from the loaded workspace");
     cop.reset(new bsplineop(
-                  *b, k - 2, SUZERAIN_BSPLINEOP_COLLOCATION_GREVILLE));
+                *b, b->k() - 2, SUZERAIN_BSPLINEOP_COLLOCATION_GREVILLE));
 
     return abserr;
 }
@@ -725,8 +733,7 @@ load_summary(const esio_handle h,
     real_t time;
     support::load_time(h, time);
     shared_ptr<bspline> source;
-    shared_ptr<bsplineop> cop;
-    support::load_bsplines(h, source, cop);
+    support::load_bsplines(h, source);
 
     // Warn on inconsistent basis extents (though we'll likely soon die)
     const real_t source_lower = source->collocation_point(0);
