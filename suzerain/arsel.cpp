@@ -30,11 +30,10 @@
 
 #include <suzerain/arsel.hpp>
 #include <suzerain/ar.hpp>
-#include <suzerain/running_statistics.hpp>
 
 namespace suzerain {
 
-real_t
+running_statistics<real_t,1>
 arsel(const std::vector<real_t> t,
       const ArrayXXr& data,
       const specification_arsel& spec,
@@ -112,7 +111,7 @@ arsel(const std::vector<real_t> t,
 
     }
 
-    return dt.avg(0);
+    return dt;
 }
 
 } // namespace suzerain

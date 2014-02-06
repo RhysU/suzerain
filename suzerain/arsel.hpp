@@ -30,6 +30,7 @@
 
 #include <suzerain/common.hpp>
 #include <suzerain/specification_arsel.hpp>
+#include <suzerain/running_statistics.hpp>
 
 namespace suzerain {
 
@@ -57,10 +58,10 @@ namespace suzerain {
  *                      computed from decorrelatio separation \f$T_0\f$
  *                      and the mean sampling rate in \c t.
  *
- * \returns The observed mean sample rate from processing \c t.
+ * \returns Statistical information about input sample times \c t.
  * \see \ref ar for more details.
  */
-real_t
+running_statistics<real_t,1>
 arsel(const std::vector<real_t> t,
       const ArrayXXr& data,
       const specification_arsel& spec,
