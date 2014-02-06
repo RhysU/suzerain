@@ -51,6 +51,13 @@ BOOST_STATIC_ASSERT(summary::nscalars::total == SUZERAIN_SUMMARY_COUNT);
 SUZERAIN_SUMMARY_FOR_EACH(CHECK,)
 #undef CHECK
 
+#define NAME(s, data, name_description_tuple) \
+        BOOST_PP_STRINGIZE(BOOST_PP_TUPLE_ELEM(2, 0, name_description_tuple))
+const char * summary::name[summary::nscalars::total] = {
+SUZERAIN_SUMMARY_ENUM_TRANSFORM(NAME,)
+};
+#undef NAME
+
 #define DESCRIPTION(s, data, name_description_tuple) \
         BOOST_PP_TUPLE_ELEM(2, 1, name_description_tuple)
 const char * summary::description[summary::nscalars::total] = {
@@ -58,5 +65,19 @@ SUZERAIN_SUMMARY_ENUM_TRANSFORM(DESCRIPTION,)
 };
 #undef DESCRIPTION
 
+void
+summary::write_names(std::ostream &out)
+{
+    for (size_t i = 0; i < summary::nscalars::total; ++i) {  // Headings
+        out << std::setw(std::numeric_limits<real_t>::digits10 + 11)
+            << summary::name[i];
+        if (i < summary::nscalars::total - 1) out << " ";
+    }
+    out << std::endl;
+}
+
+/** Used for formatting output data to match \ref summary::write_names. */
+const Eigen::IOFormat
+summary::iofmt(Eigen::FullPrecision, 0, "     ", "\n", "    ");
 
 } // namespace suzerain

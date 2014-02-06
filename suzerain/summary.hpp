@@ -83,14 +83,23 @@ public:
 
     }; };
 
-    /** Provides human-readable descriptions indexed on \ref offset */
-    static const char * description[nscalars::total];
-
     /** Caller will need to resize <tt>this->storage</tt> prior to use. */
     summary();
 
     /** Constructor preparing zero-filled storage containing \c Ny rows. */
     explicit summary(storage_type::Index Ny);
+
+    /** Provides short names indexed on \ref offset. */
+    static const char * name[nscalars::total];
+
+    /** Provides human-readable descriptions indexed on \ref offset. */
+    static const char * description[nscalars::total];
+
+    /** Output names in a manner suitable for columns output by \ref iofmt. */
+    static void write_names(std::ostream &out);
+
+    /** Used for formatting output data to match \ref write_names. */
+    static const Eigen::IOFormat iofmt;
 
     /**
      * Provide access to contiguous subregions within storage.
