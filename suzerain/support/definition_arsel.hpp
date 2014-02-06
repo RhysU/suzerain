@@ -30,6 +30,8 @@
 
 #include <suzerain/specification_arsel.hpp>
 #include <suzerain/support/definition_base.hpp>
+#include <suzerain/support/loadable.hpp>
+#include <suzerain/support/savable.hpp>
 
 namespace suzerain {
 
@@ -42,6 +44,8 @@ namespace support {
 class definition_arsel
     : public specification_arsel
     , public virtual definition_base
+////, public virtual loadable
+    , public virtual savable
 {
 public:
 
@@ -50,6 +54,15 @@ public:
 
     /** @copydoc definition_base::options_description() */
     virtual boost::program_options::options_description options_description();
+
+    /** @copydoc savable::save */
+    virtual void save(
+            const esio_handle h) const;
+
+/////** @copydoc loadable::load */
+////virtual void load(
+////        const esio_handle h,
+////        const bool verbose = true);
 
 };
 

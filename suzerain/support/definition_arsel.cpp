@@ -31,7 +31,10 @@
 
 #include <suzerain/support/definition_arsel.hpp>
 
+#include <esio/esio.h>
+
 #include <suzerain/exprparse.hpp>
+#include <suzerain/support/logging.hpp>
 #include <suzerain/validation.hpp>
 
 namespace suzerain {
@@ -70,6 +73,37 @@ definition_arsel::definition_arsel()
 {
 }
 
+// Strings used in options_description and populate/override/save/load.
+static const char location      [] = "arsel";
+static const char desc_location []
+    = " Autoregressive autocorrelation analysis settings governing"
+      " eff_N, eff_var, mu, mu_sigma, p, and T attributes on"
+      " Reynolds averaged quantities. See 'Estimating Uncertainties"
+      " in Statistics Computed from DNS' by Oliver et al. in PoF.";
+
+static const char name_absrho   [] = "arsel_absrho";
+static const char name_criterion[] = "arsel_criterion";
+static const char name_maxorder [] = "arsel_maxorder";
+static const char name_minorder [] = "arsel_minorder";
+static const char name_wlenT0   [] = "arsel_wlenT0";
+
+static const char * const attr_absrho    = name_absrho    + sizeof(location);
+static const char * const attr_criterion = name_criterion + sizeof(location);
+static const char * const attr_maxorder  = name_maxorder  + sizeof(location);
+static const char * const attr_minorder  = name_minorder  + sizeof(location);
+static const char * const attr_wlenT0    = name_wlenT0    + sizeof(location);
+
+static const char desc_absrho   []
+    = "Integrate absolute autocorrelation when determining T0";
+static const char desc_criterion[]
+    = "Employ the specified model selection criterion";
+static const char desc_maxorder []
+    = "Consider only models of at most order AR(p=MAX)";
+static const char desc_minorder []
+    = "Consider only models of at least order AR(p=MIN)";
+static const char desc_wlenT0   []
+    = "Integrate for T0 until WLEN times the input length";
+
 boost::program_options::options_description
 definition_arsel::options_description()
 {
@@ -80,37 +114,61 @@ definition_arsel::options_description()
     using std::string;
     using validation::ensure_positive;
 
-    boost::program_options::options_description retval(
-            "Automatic autocorrelation analysis by AR(p) models");
+    boost::program_options::options_description retval(desc_location);
 
     retval.add_options()
-        ("ar_minorder", value<string>(NULL)
+        (name_minorder, value<string>(NULL)
          ->value_name("MIN")
-         ->notifier(bind(&parse_size_t, _1, &minorder, "ar_minorder"))
+         ->notifier(bind(&parse_size_t, _1, &minorder, name_minorder))
          ->default_value(lexical_cast<string>(minorder)),
-         "Consider only models of at least order AR(p=MIN)")
-        ("ar_maxorder", value<string>(NULL)
+         desc_minorder)
+        (name_maxorder, value<string>(NULL)
          ->value_name("MAX")
-         ->notifier(bind(&parse_size_t, _1, &maxorder, "ar_maxorder"))
+         ->notifier(bind(&parse_size_t, _1, &maxorder, name_maxorder))
          ->default_value(lexical_cast<string>(maxorder)),
-         "Consider only models of at most order AR(p=MAX)")
-        ("ar_criterion",
+         desc_maxorder)
+        (name_criterion,
          value<std::string>()
          ->notifier(bind(&definition_arsel::criterion, this, _1))
          ->default_value(criterion()),
-         "Employ the specified model selection criterion")
-        ("ar_absolute_rho",
+         desc_criterion)
+        (name_absrho,
          bool_switch(&absrho)->default_value(absrho),
-         "Integrate absolute autocorrelation when determining T0")
-        ("ar_wlenT0", value<string>(NULL)
+         desc_absrho)
+        (name_wlenT0, value<string>(NULL)
          ->value_name("WLEN")
          ->notifier(bind(&parse_option<real_t>, _1, &wlenT0,
-                         &ensure_positive<real_t>, "ar_wlenT0"))
+                         &ensure_positive<real_t>, name_wlenT0))
          ->default_value(lexical_cast<string>(wlenT0)),
-         "Integrate for T0 until WLEN times the input length")
+         desc_wlenT0)
         ;
 
     return retval;
+}
+
+void
+definition_arsel::save(
+        const esio_handle h) const
+{
+    DEBUG0("Storing definition_arsel parameters");
+
+    // Only root writes the containing location
+    const int one = 1;
+    int procid;
+    esio_handle_comm_rank(h, &procid);
+    esio_line_establish(h, 1, 0, (procid == 0 ? 1 : 0));
+    esio_line_write(h, location, &one, 0, desc_location);
+
+    // Everyone writes the metadata
+    const int absrho   = this->absrho;
+    const int minorder = this->minorder;
+    const int maxorder = this->maxorder;
+    esio_attribute_write(h, location, attr_absrho,    &absrho);
+    esio_attribute_write(h, location, attr_minorder,  &minorder);
+    esio_attribute_write(h, location, attr_maxorder,  &maxorder);
+    esio_attribute_write(h, location, attr_wlenT0,    &wlenT0);
+    esio_string_set     (h, location, attr_criterion, criterion().c_str());
+
 }
 
 } // end namespace support
