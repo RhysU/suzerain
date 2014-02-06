@@ -42,6 +42,7 @@ suzerain-revision.h: $(srcdir)/*.h                            \
 # Public API headers
 nobase_pkginclude_HEADERS += allocator.hpp
 nobase_pkginclude_HEADERS += ar.hpp
+nobase_pkginclude_HEADERS += arsel.hpp
 nobase_pkginclude_HEADERS += baseflow.hpp
 nobase_pkginclude_HEADERS += blas_et_al.h
 nobase_pkginclude_HEADERS += blas_et_al.hpp
@@ -317,7 +318,8 @@ libbase_la_SOURCES       += svehla.c
 # Built separately to utilize separate optimization settings
 noinst_LTLIBRARIES          += libprecise.la
 libprecise_la_LDFLAGS        = # Convenience-only
-libprecise_la_SOURCES        = kahan.c
+libprecise_la_SOURCES        = arsel.cpp
+libprecise_la_SOURCES       += kahan.c
 EXTRA_libprecise_la_SOURCES  = kahan.def
 libprecise_la_CFLAGS         = $(AM_CFLAGS)   $(CFLAGS_PRECISE)
 libprecise_la_CXXFLAGS       = $(AM_CXXFLAGS) $(CXXFLAGS_PRECISE)
