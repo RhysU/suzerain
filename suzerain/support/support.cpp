@@ -778,9 +778,19 @@ load_summary(const esio_handle h,
     // Use source basis to evaluate quantities and all derivatives on target.
     // That is, the source basis is used to evaluate everything while
     // the target basis only provides the targeted collocation points.
-    assert(    (summary::offset::sampled__y  - summary::offset::sampled   )
-            == (summary::offset::sampled__yy - summary::offset::sampled__y));
-    for (int j = 0; j < samples::nscalars::total; ++j) {
+    BOOST_STATIC_ASSERT(summary::offset::t < summary::offset::nongrid);
+    BOOST_STATIC_ASSERT(summary::offset::y < summary::offset::nongrid);
+    for (int j = summary::offset::nongrid; j < samples::nscalars::total; ++j) {
+
+        // Evil trick for simultaneously getting the function and derivatives
+        BOOST_STATIC_ASSERT(
+                   (summary::offset::sampled__y  - summary::offset::sampled   )
+                == (summary::offset::sampled__yy - summary::offset::sampled__y)
+        );
+        BOOST_STATIC_ASSERT(
+                    summary::nscalars::nongrid
+                == 3*(summary::offset::sampled__y  - summary::offset::sampled)
+        );
         source->linear_combination(
                 2, sam.storage.col(j).data(),
                 sum->y().rows(), sum->y().data(), sum->storage.col(j).data(),
