@@ -780,7 +780,7 @@ load_summary(const esio_handle h,
     // the target basis only provides the targeted collocation points.
     BOOST_STATIC_ASSERT(summary::offset::t < summary::offset::nongrid);
     BOOST_STATIC_ASSERT(summary::offset::y < summary::offset::nongrid);
-    for (int j = summary::offset::nongrid; j < samples::nscalars::total; ++j) {
+    for (int j = 0; j < samples::nscalars::total; ++j) {
 
         // Evil trick for simultaneously getting the function and derivatives
         BOOST_STATIC_ASSERT(
@@ -791,11 +791,15 @@ load_summary(const esio_handle h,
                     summary::nscalars::nongrid
                 == 3*(summary::offset::sampled__y  - summary::offset::sampled)
         );
+
+        // Notice acute need to adjust from samples to summary indexing
         source->linear_combination(
                 2, sam.storage.col(j).data(),
-                sum->y().rows(), sum->y().data(), sum->storage.col(j).data(),
+                sum->y().rows(), sum->y().data(),
+                sum->storage.col(j + summary::offset::nongrid).data(),
                 sum->storage.outerStride()*(
                     summary::offset::sampled__y - summary::offset::sampled));
+
     }
 
     retval.insert(time, sum);
