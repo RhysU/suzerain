@@ -725,108 +725,71 @@ protected:
     bool received_halt;
 
     /**
-     * Flag used to control whether \ref log_status_L2 shows headers.
-     * The default implementation disables headers after the first invocation.
+     * Flags tracking of whether or not headers should be shown on particular
+     * log messages. The default implementation disables these headers after the
+     * first time each one is logged.
+     * @{
      */
+
+    /** Should \ref log_status_L2 show headers? */
     bool log_status_L2_header_shown;
 
-    /**
-     * Flag used to control whether \ref log_status_bulk shows headers.
-     * The default implementation disables headers after the first invocation.
-     */
+    /** Should \ref log_status_bulk show headers? */
     bool log_status_bulk_header_shown;
 
     /**
-     * Flags used to control whether \ref log_status_boundary_state shows
-     * headers.  Index zero refers to lower boundary state.  Index one refers
-     * to upper boundary state.  The default implementation disables headers
-     * after the first invocation.
+     * Should \ref log_status_boundary_state show headers?  Index zero refers
+     * to lower boundary state.  Index one refers to upper boundary state.
      */
     array<bool,2> log_status_boundary_state_header_shown;
 
-    /**
-     * Flag used to control whether \ref log_boundary_layer_quantities shows
-     * wall-related headers.  The default implementation disables headers after
-     * the first invocation.
-     */
+    /** Should \ref log_boundary_layer_quantities show wall headers? */
     bool log_boundary_layer_quantities_wall_header_shown;
 
-    /**
-     * Flag used to control whether \ref log_boundary_layer_quantities shows
-     * viscous-related headers.  The default implementation disables headers after
-     * the first invocation.
-     */
+    /** Should \ref log_boundary_layer_quantities show viscous headers? */
     bool log_boundary_layer_quantities_visc_header_shown;
 
-    /**
-     * Flag used to control whether \ref log_boundary_layer_quantities shows
-     * thickness-related headers.  The default implementation disables headers
-     * after the first invocation.
+    /** Should \ref log_boundary_layer_quantities show thickness headers?
      */
     bool log_boundary_layer_quantities_thick_header_shown;
 
-    /**
-     * Flag used to control whether \ref log_boundary_layer_quantities shows
-     * edge-related headers.  The default implementation disables headers after
-     * the first invocation.
-     */
+    /** Should \ref log_boundary_layer_quantities show edge headers? */
     bool log_boundary_layer_quantities_edge_header_shown;
 
-    /**
-     * Flag used to control whether \ref log_boundary_layer_quantities shows
-     * edge99-related headers.  The default implementation disables headers after
-     * the first invocation.
-     */
+    /** Should \ref log_boundary_layer_quantities show edge99 headers? */
     bool log_boundary_layer_quantities_edge99_header_shown;
 
-    /**
-     * Flag used to control whether \ref log_boundary_layer_quantities shows
-     * Reynolds number-related headers.  The default implementation disables
-     * headers after the first invocation.
-     */
+    /** Should \ref log_boundary_layer_quantities show Reynolds headers? */
     bool log_boundary_layer_quantities_Re_header_shown;
 
     /**
-     * Flag used to control whether \ref log_boundary_layer_quantities shows
-     * general quantity of interest headers.  The default implementation
-     * disables headers after the first invocation.
+     * Should \ref log_boundary_layer_quantities show general quantity of
+     * interest headers?
      */
     bool log_boundary_layer_quantities_qoi_header_shown;
 
     /**
-     * Flag used to control whether \ref log_boundary_layer_quantities shows
-     * pressure gradient-related headers.  The default implementation disables
-     * headers after the first invocation.
+     * Should \ref log_boundary_layer_quantities show pressure gradient
+     * headers?
      */
     bool log_boundary_layer_quantities_pg_header_shown;
 
-    /**
-     * Flag used to control whether \ref log_channel_quantities shows
-     * wall-related headers.  The default implementation disables headers after
-     * the first invocation.
-     */
+    /** Should \ref log_channel_quantities show wall headers? */
     bool log_channel_quantities_wall_header_shown;
 
-    /**
-     * Flag used to control whether \ref log_channel_quantities shows
-     * viscous-related headers.  The default implementation disables headers after
-     * the first invocation.
-     */
+    /** Should \ref log_channel_quantities show viscous headers? */
     bool log_channel_quantities_visc_header_shown;
 
-    /**
-     * Flag used to control whether \ref log_channel_quantities shows
-     * centerline-related headers.  The default implementation disables headers
-     * after the first invocation.
-     */
+    /** Should \ref log_channel_quantities show centerline headers? */
     bool log_channel_quantities_center_header_shown;
 
     /**
-     * Flag used to control whether \ref log_channel_quantities shows
-     * general quantity of interest headers.  The default implementation
-     * disables headers after the first invocation.
+     * Should \ref log_channel_quantities show general quantity of interest
+     * headers?
      */
     bool log_channel_quantities_qoi_header_shown;
+
+    /** @} */
 
     /** Wall time elapsed during loading of state from the restart file */
     double wtime_load_restart;
