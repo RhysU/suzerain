@@ -329,11 +329,11 @@ driver_base::summary_run(int argc, char **argv)
             running_statistics<real_t,1> dtstats;
             esio_plane_establish(h.get(), t.size(), 0, t.size(),
                                           y.size(), 0, y.size());
-#           pragma omp parallel default(shared)
+            #pragma omp parallel default(shared)
             {
                 ArrayXXr data;
                 std::vector<real_t> eff_N, eff_var, mu, mu_sigma, p, T;
-#               pragma omp for schedule(dynamic) lastprivate(dtstats)
+                #pragma omp for schedule(dynamic) lastprivate(dtstats)
                 for (size_t c = summary::offset::nongrid;
                     c < summary::nscalars::total;
                     ++c) {
@@ -356,7 +356,7 @@ driver_base::summary_run(int argc, char **argv)
                     // ...saving the contiguous spatiotemporal plane to disk
                     // ...and writing arsel results as additional attributes
                     // TODO Parallelize IO after isolating/fixing segfault
-#                   pragma omp critical
+                    #pragma omp critical
                     {
                         esio_handle esioh = h.get();
                         const char * const name = summary::name[c];
