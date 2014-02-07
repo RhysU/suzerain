@@ -28,25 +28,30 @@
  * Serves as a high-level wrapper of functionality within \ref ar.hpp.
  */
 
-#include <suzerain/common.hpp>
-#include <suzerain/specification_arsel.hpp>
+#include <cstddef>
+#include <vector>
+
 #include <suzerain/running_statistics.hpp>
 
 namespace suzerain {
 
 // Forward declarations
+class specification_arsel;
 
 /**
  * Automatically fit autoregressive models to input signals. Use ar::burg_method
  * and ar::best_model to fit an autoregressive process for signals contained in
  * the rows of matrix data.
  *
- * \param[in]  t        Times of input data samples.
- *                      Though \e only equispaced data is currently supported,
- *                      this information will be used to compute a mean
- *                      sample rate and therefore inform output \c T.
- * \param[in]  data     Data to process.
- *                      Each row is one signal to process \e independently.
+ * \param[in   Ny       Number of independent signals to process.
+ * \param[in]  t        Times of input data samples also informing number of
+ *                      samples.  Though \e only equispaced data is
+ *                      currently supported, this information will be
+ *                      used to compute a mean sample rate and therefore
+ *                      inform output \c T.
+ * \param[in]  data     Column-major <code>Ny</code> by <code>t.size()</code>
+ *                      data to process.
+ * \param[in   ld       Leading dimension between columns of \c data.
  * \param[in]  spec     Specification governing algorithmic choices.
  * \param[out] eff_N    Number of effectively independent samples in each row.
  * \param[out] eff_var  Estimated effective signal variance for each row.
@@ -61,16 +66,18 @@ namespace suzerain {
  * \returns Statistical information about input sample times \c t.
  * \see \ref ar for more details.
  */
-running_statistics<real_t,1>
-arsel(const std::vector<real_t> t,
-      const ArrayXXr& data,
+running_statistics<double,1>
+arsel(const std::size_t Ny,
+      const std::vector<double>& t,
+      const double * data,
+      const std::size_t ld,
       const specification_arsel& spec,
-      std::vector<real_t>& eff_N,
-      std::vector<real_t>& eff_var,
-      std::vector<real_t>& mu,
-      std::vector<real_t>& mu_sigma,
-      std::vector<real_t>& p,
-      std::vector<real_t>& T);
+      std::vector<double>& eff_N,
+      std::vector<double>& eff_var,
+      std::vector<double>& mu,
+      std::vector<double>& mu_sigma,
+      std::vector<double>& p,
+      std::vector<double>& T);
 
 } // end namespace suzerain
 

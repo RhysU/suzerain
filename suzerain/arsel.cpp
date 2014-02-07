@@ -29,62 +29,64 @@
 #endif
 
 #include <suzerain/arsel.hpp>
+
 #include <suzerain/ar.hpp>
+#include <suzerain/specification_arsel.hpp>
 
 namespace suzerain {
 
-running_statistics<real_t,1>
-arsel(const std::vector<real_t> t,
-      const ArrayXXr& data,
+running_statistics<double,1>
+arsel(const std::size_t Ny,
+      const std::vector<double>& t,
+      const double * data,
+      const std::size_t ld,
       const specification_arsel& spec,
-      std::vector<real_t>& eff_N,
-      std::vector<real_t>& eff_var,
-      std::vector<real_t>& mu,
-      std::vector<real_t>& mu_sigma,
-      std::vector<real_t>& p,
-      std::vector<real_t>& T)
+      std::vector<double>& eff_N,
+      std::vector<double>& eff_var,
+      std::vector<double>& mu,
+      std::vector<double>& mu_sigma,
+      std::vector<double>& p,
+      std::vector<double>& T)
 {
-    size_t Ny, Nt;
-    SUZERAIN_ENSURE((Ny = data.rows()) > 0);
-    SUZERAIN_ENSURE((Nt = data.cols()) > 0);
-    SUZERAIN_ENSURE(t.size() == Nt);
+    const std::size_t Nt = t.size();
+    if (Ny == 0) throw std::invalid_argument("arsel received Ny == 0");
+    if (Nt == 0) throw std::invalid_argument("arsel received Nt == 0");
+    if (ld < Ny) throw std::invalid_argument("arsel received ld < Ny");
 
     // Prepare output vectors to gather burg_method()
     eff_N   .resize(Ny);
-    eff_var .resize(    Ny);
-    mu      .resize(    Ny);
-    mu_sigma.resize(    Ny);
-    p       .resize(    Ny);
-    T       .resize(    Ny);
+    eff_var .resize(Ny);
+    mu      .resize(Ny);
+    mu_sigma.resize(Ny);
+    p       .resize(Ny);
+    T       .resize(Ny);
 
     // Compute sampling rate statistics
-    running_statistics<real_t,1> dt;
-    for (size_t i = 1; i < t.size(); ++i) {
-        const real_t diff = t[i] - t[i-1];
+    running_statistics<double,1> dt;
+    for (std::size_t i = 1; i < t.size(); ++i) {
+        const double diff = t[i] - t[i-1];
         dt(&diff);
     }
 
     // Prepare vectors to capture burg_method() output
-    std::vector<real_t> params, sigma2e, gain, autocor;
+    std::vector<double> params, sigma2e, gain, autocor;
     params .reserve(spec.maxorder*(spec.maxorder + 1)/2);
     sigma2e.reserve(spec.maxorder + 1);
     gain   .reserve(spec.maxorder + 1);
     autocor.reserve(spec.maxorder + 1);
 
     // Prepare repeatedly-used working storage for burg_method().
-    std::vector<real_t> f, b, Ak, ac;
+    std::vector<double> f, b, Ak, ac;
 
-    for (size_t j = 0; j < Ny; ++j) {
+    for (std::size_t j = 0; j < Ny; ++j) {
 
         std::size_t maxorder = spec.maxorder;
         params .clear();
         sigma2e.clear();
         gain   .clear();
         autocor.clear();
-        ar::strided_adaptor<const real_t*> signal_begin(&data.coeff(j, 0),Ny);
-        ar::strided_adaptor<const real_t*> signal_end  (&data.coeff(j,Nt),Ny);
-        ar::burg_method(signal_begin,
-                        signal_end,
+        ar::burg_method(ar::strided_adaptor<const double*>(&data[j+ 0*ld], ld),
+                        ar::strided_adaptor<const double*>(&data[j+Nt*ld], ld),
                         mu[j],
                         maxorder,
                         back_inserter(params),
@@ -97,8 +99,8 @@ arsel(const std::vector<real_t> t,
 
         spec.best_model(Nt, params, sigma2e, gain, autocor);
 
-        const real_t T0 = ar::decorrelation_time(
-                static_cast<size_t>(spec.wlenT0*Nt),
+        const double T0 = ar::decorrelation_time(
+                static_cast<std::size_t>(spec.wlenT0*Nt),
                 ar::autocorrelation(params.begin(), params.end(),
                                     gain[0], autocor.begin()),
                 spec.absrho);

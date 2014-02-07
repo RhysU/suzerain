@@ -350,7 +350,7 @@ driver_base::summary_run(int argc, char **argv)
                     }
 
                     // ...running the automatic autocorrelation analysis
-                    dtstats = arsel(t, data, arspec,
+                    dtstats = arsel(y.size(), t, data.data(), y.size(), arspec,
                                     eff_N, eff_var, mu, mu_sigma, p, T);
 
                     // ...saving the contiguous spatiotemporal plane to disk
