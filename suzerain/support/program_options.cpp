@@ -241,8 +241,10 @@ std::vector<std::string> program_options::process_internal(
     {
         vector<string> unrecognized = po::collect_unrecognized(
                 parsed_cli.options, po::exclude_positional);
-        BOOST_FOREACH( string option, unrecognized ) {
-            warn << "Unrecognized option '" << option << "'"
+        for (vector<string>::const_iterator it = unrecognized.begin();
+             it != unrecognized.end();
+             ++it) {
+            warn << "Unrecognized option '" << *it << "'"
                  << " on command line"
                  << endl;
         }
@@ -280,98 +282,103 @@ std::vector<std::string> program_options::process_internal(
 
     // Parse any input files provided on the command line
     // Earlier files shadow/override settings found in later files
-    if (variables_.count("response-file")) {
-        BOOST_FOREACH(const string &filename,
-                      variables_["response-file"].as< vector<string> >()) {
+    // TODO This open-file-and-broadcast would be a nice library routine
+    const vector<string>& responsefiles
+        = variables_.count("response-file")
+        ? variables_["response-file"].as< vector<string> >()
+        : vector<string>();
+    for (vector<string>::const_iterator it = responsefiles.begin();
+         it != responsefiles.end();
+         ++it) {
 
-            debug << "Reading additional options from file '"
-                  << filename << "'" << endl;
+        const string &filename = *it;
+        debug << "Reading additional options from file '"
+                << filename << "'" << endl;
 
-            // Specialized istream::failure subclass for this routine
-            struct failure : public istream::failure {
-                failure(const string &op, const string& file, int errnum)
-                    : istream::failure("Failure during " + op
-                            + " for response-file '" + file
-                            + "': " + strerror(errnum) ) {}
+        // Specialized istream::failure subclass for this routine
+        struct failure : public istream::failure {
+            failure(const string &op, const string& file, int errnum)
+                : istream::failure("Failure during " + op
+                        + " for response-file '" + file
+                        + "': " + strerror(errnum) ) {}
 
-                failure(const string& file) : istream::failure(
-                        "Failure processing response-file '" + file + "'") {}
-            };
+            failure(const string& file) : istream::failure(
+                    "Failure processing response-file '" + file + "'") {}
+        };
 
-            long len;
-            scoped_array<char> buf;
+        long len;
+        scoped_array<char> buf;
 
-            // Rank zero slurps the file into appropriately-sized buf
-            if (rank == 0) {
-                errno = 0;
-                FILE * fp = NULL;
-                try {
-                    // Open file and obtain length
-                    fp = fopen(filename.c_str(), "rb");
-                    if (!fp || errno)
-                        throw failure("fopen", filename, errno);
-                    if (fseek(fp, 0, SEEK_END))
-                        throw failure("fseek", filename, errno);
-                    len = ftell(fp);
-                    if (len == -1)
-                        throw failure("ftell", filename, errno);
-                    if (fseek(fp, 0, SEEK_SET))
-                        throw failure("fseek", filename, errno);
+        // Rank zero slurps the file into appropriately-sized buf
+        if (rank == 0) {
+            errno = 0;
+            FILE * fp = NULL;
+            try {
+                // Open file and obtain length
+                fp = fopen(filename.c_str(), "rb");
+                if (!fp || errno)
+                    throw failure("fopen", filename, errno);
+                if (fseek(fp, 0, SEEK_END))
+                    throw failure("fseek", filename, errno);
+                len = ftell(fp);
+                if (len == -1)
+                    throw failure("ftell", filename, errno);
+                if (fseek(fp, 0, SEEK_SET))
+                    throw failure("fseek", filename, errno);
 
-                    // Allocate buffer and slurp contents
-                    buf.reset(new char[len]);
-                    if (fread(buf.get(), 1, len, fp) != (size_t) len) {
-                        throw failure("fread", filename, errno);
-                    }
-
-                    // Close appears after catch
-                } catch (istream::failure &f) {
-                    error << f.what() << endl;
-                    len = -1;
-                }
-                if (fp) fclose(fp);
-            }
-
-            // Buffer size and then buf contents are broadcast to other ranks
-            MPI_Bcast(&len, 1, MPI_LONG, 0, comm);
-            if (len == -1)
-                throw failure(filename);
-            if (rank > 0)
+                // Allocate buffer and slurp contents
                 buf.reset(new char[len]);
-            MPI_Bcast(buf.get(), len, MPI_CHAR, 0, MPI_COMM_WORLD);
-
-            // Create an istream from the buffer contents a la
-            // bytes.com/topic/c/answers/582365-making-istream-char-array
-            struct membuf : public streambuf
-            {
-                membuf(streambuf::char_type *b, size_t n)
-                {
-                    this->setg(b, b, b + n);
+                if (fread(buf.get(), 1, len, fp) != (size_t) len) {
+                    throw failure("fread", filename, errno);
                 }
-            };
-            membuf mb(buf.get(), len);
-            istream is(&mb);
 
-            // Parse and store from the buffer-based istream
-            po::parsed_options parsed_file
-                = po::parse_config_file(is, opts_file, true);
-            po::store(parsed_file, variables_);
-
-            // TODO Display appropriate warning on unrecognized options
-            // collect_unrecognized/parse_config_file broken in Boost 1.40
-            // Refer to https://svn.boost.org/trac/boost/ticket/3775
-            {
-                vector< string > unrecognized = po::collect_unrecognized(
-                        parsed_file.options, po::exclude_positional);
-                BOOST_FOREACH( string option, unrecognized ) {
-                    warn << "Unrecognized option '" << option << "'"
-                        << " in response-file '" << filename << "'"
-                        << endl;
-                }
+                // Close appears after catch
+            } catch (istream::failure &f) {
+                error << f.what() << endl;
+                len = -1;
             }
-
-            // TODO Display appropriate debug message on shadowed options
+            if (fp) fclose(fp);
         }
+
+        // Buffer size and then buf contents are broadcast to other ranks
+        MPI_Bcast(&len, 1, MPI_LONG, 0, comm);
+        if (len == -1)
+            throw failure(filename);
+        if (rank > 0)
+            buf.reset(new char[len]);
+        MPI_Bcast(buf.get(), len, MPI_CHAR, 0, MPI_COMM_WORLD);
+
+        // Create an istream from the buffer contents a la
+        // bytes.com/topic/c/answers/582365-making-istream-char-array
+        struct membuf : public streambuf
+        {
+            membuf(streambuf::char_type *b, size_t n)
+            {
+                this->setg(b, b, b + n);
+            }
+        };
+        membuf mb(buf.get(), len);
+        istream is(&mb);
+
+        // Parse and store from the buffer-based istream
+        po::parsed_options parsed_file
+            = po::parse_config_file(is, opts_file, true);
+        po::store(parsed_file, variables_);
+
+        // TODO Display appropriate warning on unrecognized options
+        // collect_unrecognized/parse_config_file broken in Boost 1.40
+        // Refer to https://svn.boost.org/trac/boost/ticket/3775
+        {
+            vector< string > unrecognized = po::collect_unrecognized(
+                    parsed_file.options, po::exclude_positional);
+            BOOST_FOREACH( string option, unrecognized ) {
+                warn << "Unrecognized option '" << option << "'"
+                    << " in response-file '" << filename << "'"
+                    << endl;
+            }
+        }
+
+        // TODO Display appropriate debug message on shadowed options
     }
 
     // Compute --verbose and --verbose-all levels by summation

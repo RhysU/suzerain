@@ -169,9 +169,12 @@ driver_base::summary_run(int argc, char **argv)
     typedef boost::ptr_map<real_t, summary> pool_type;
     if (!use_stdout && !use_dat && !use_hdf5) {
 
-        BOOST_FOREACH(const string& filename, restart_files) {
+        for (vector<string>::const_iterator it = restart_files.begin();
+             it != restart_files.end();
+             ++it) {
 
             // Load data from filename using a clean ESIO handle
+            const string& filename = *it;
             shared_ptr<boost::remove_pointer<esio_handle>::type> h(
                     esio_handle_initialize(MPI_COMM_WORLD),
                     esio_handle_finalize);
@@ -192,10 +195,9 @@ driver_base::summary_run(int argc, char **argv)
 
             // Write header followed by data values separated by blanks
             ofstream ofs(outname.c_str());
-            bool header_shown = false;
-            BOOST_FOREACH(pool_type::reference i, data) {
-                i.second->write(ofs, !header_shown) << '\n' << endl;
-                header_shown = true;
+            for (pool_type::const_iterator i = data.begin();
+                 i != data.end(); ++i) {
+                i->second->write(ofs, data.begin() == i) << '\n' << endl;
             }
             ofs.close();
 
@@ -244,8 +246,9 @@ driver_base::summary_run(int argc, char **argv)
             pool_type data(support::load_summary(h.get(), b));
 
             // Output status to the user so they don't think we're hung.
-            BOOST_FOREACH(pool_type::reference i, data) {
-                INFO0("Read sample for t = " << i.first
+            for (pool_type::const_iterator i = data.begin();
+                 i != data.end(); ++i) {
+                INFO0("Read sample for t = " << i->first
                       << " from " << filename);
             }
 
@@ -253,29 +256,28 @@ driver_base::summary_run(int argc, char **argv)
             pool.transfer(data);
 
             // Warn on any duplicate values which were not transfered
-            BOOST_FOREACH(pool_type::reference i, data) {
+            for (pool_type::const_iterator i = data.begin();
+                 i != data.end(); ++i) {
                 WARN0("Duplicate sample time "
-                      << i.first << " from " << filename << " ignored");
+                      << i->first << " from " << filename << " ignored");
             }
 
         }
 
         if (use_stdout) {
             // Write header followed by data values separated by blanks
-            bool header_shown = false;
-            BOOST_FOREACH(pool_type::reference i, pool) {
-                i.second->write(cout, !header_shown) << '\n' << endl;
-                header_shown = true;
+            for (pool_type::const_iterator i = pool.begin();
+                 i != pool.end(); ++i) {
+                i->second->write(cout, pool.begin() == i) << '\n' << endl;
             }
         }
 
         if (use_dat) {
             INFO0("Writing file " << datfile);
             ofstream outf(datfile.c_str());
-            bool header_shown = false;
-            BOOST_FOREACH(pool_type::reference i, pool) {
-                i.second->write(outf, !header_shown) << '\n' << endl;
-                header_shown = true;
+            for (pool_type::const_iterator i = pool.begin();
+                 i != pool.end(); ++i) {
+                i->second->write(outf, pool.begin() == i) << '\n' << endl;
             }
         }
 
@@ -292,9 +294,11 @@ driver_base::summary_run(int argc, char **argv)
             // Determine vector of unique times in the pool and save as "/t"
             std::vector<real_t> t;
             t.reserve(pool.size());
-            BOOST_FOREACH(pool_type::reference i, pool) {
-                t.push_back(i.first);
+            for (pool_type::const_iterator i = pool.begin();
+                 i != pool.end(); ++i) {
+                t.push_back(i->first);
             }
+
             esio_line_establish(h.get(), t.size(), 0, t.size());
             esio_line_write(h.get(), summary::name[summary::offset::t],
                     t.data(), 0, summary::description[summary::offset::t]);
@@ -340,8 +344,9 @@ driver_base::summary_run(int argc, char **argv)
                     data.setConstant(y.size(), t.size(),
                                     numeric_limits<real_t>::quiet_NaN());
                     size_t off = 0;
-                    BOOST_FOREACH(pool_type::reference i, pool) {
-                        data.col(off++) = i.second->storage.col(c);
+                    for (pool_type::const_iterator i = pool.begin();
+                        i != pool.end(); ++i) {
+                        data.col(off++) = i->second->storage.col(c);
                     }
 
                     // ...running the automatic autocorrelation analysis
