@@ -1,4 +1,4 @@
-dl ------------------------------------------------
+dnl ------------------------------------------------
 dnl Package name and version number
 dnl ------------------------------------------------
 AC_INIT(suzerain, [0.1.2], [rhys@ices.utexas.edu])
@@ -61,6 +61,12 @@ dnl Ordering very specific: AX_CC_MAXOPT usage is fragile
 dnl ------------------------------------------------------
 AC_LANG_PUSH([C])
 AC_PROG_CC
+AC_C_RESTRICT
+if test "x$ac_cv_c_restrict" != "xno"; then
+    AC_DEFINE_UNQUOTED([RESTRICT],
+                       [$ac_cv_c_restrict],
+                       [Spell "restrict" for C89/C++ according to vendor])
+fi
 AC_OPENMP
 AX_PROG_CC_C99_CFLAGS(,AC_MSG_ERROR([Compiler cannot support ISO C99]))
 AX_COMPILER_VENDOR
