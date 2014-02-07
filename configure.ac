@@ -341,7 +341,6 @@ dnl Compilation strictness and compatibility
 dnl ------------------------------------------------
 dnl Strictness must come after libraries to avoid breaking AC_CHECK_LIB
 AC_LANG_PUSH([C])
-AC_C_TYPEOF
 AX_CFLAGS_WARN_ALL
 case $ax_cv_c_compiler_vendor in #(
     gnu) AX_APPEND_COMPILE_FLAGS([-Wsuggest-attribute=pure    ],[CFLAGS])
