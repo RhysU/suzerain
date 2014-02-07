@@ -28,7 +28,9 @@
  * Provides \ref specification_arsel.
  */
 
-#include <suzerain/common.hpp>
+#include <cstddef>
+#include <string>
+#include <vector>
 
 namespace suzerain {
 
@@ -45,7 +47,7 @@ public:
                         const std::string& criterion = "CIC",
                         const std::size_t  maxorder  = 512,
                         const std::size_t  minorder  = 0,
-                        const real_t       wlenT0    = 7);
+                        const double       wlenT0    = 7);
 
     /** Use absolute autocorrelation when integrating for T0. */
     bool absrho;
@@ -81,19 +83,19 @@ public:
     static const bool submean = true;
 
     /** Integrate for T0 until WLEN times the input length. */
-    real_t wlenT0;
+    double wlenT0;
 
     /**
      * Perform best model selection per the selected criterion.
      * Automatically uses member \c minorder.
      * Meant for use by \ref suzerain::arsel.
      */
-    std::vector<real_t>::difference_type
+    std::vector<double>::difference_type
     best_model(std::size_t          N,
-               std::vector<real_t>& params,
-               std::vector<real_t>& sigma2e,
-               std::vector<real_t>& gain,
-               std::vector<real_t>& autocor) const;
+               std::vector<double>& params,
+               std::vector<double>& sigma2e,
+               std::vector<double>& gain,
+               std::vector<double>& autocor) const;
 
 private:
 

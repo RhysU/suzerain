@@ -40,7 +40,7 @@ specification_arsel::specification_arsel(
         const std::string& criterion,
         const std::size_t  maxorder,
         const std::size_t  minorder,
-        const real_t       wlenT0)
+        const double       wlenT0)
     : absrho(absrho)
     , maxorder(maxorder)
     , minorder(minorder)
@@ -52,9 +52,12 @@ specification_arsel::specification_arsel(
 
 // Once-and-for-all typedef around the void star crimes we commit
 typedef ar::best_model_function<
-            ar::Burg, std::size_t, std::size_t, std::vector<real_t>
+            ar::Burg, std::size_t, std::size_t, std::vector<double>
         > best_model_function;
-BOOST_STATIC_ASSERT(sizeof(best_model_function::type) == sizeof(void *));
+// Then make sure the coppers will never find us, never.  We hope.
+enum {
+    the_crime = 1/(sizeof(best_model_function::type) == sizeof(void *))
+};
 
 const std::string&
 specification_arsel::criterion(const std::string& abbrev)
@@ -75,13 +78,13 @@ specification_arsel::criterion() const
     return this->abbrev;
 }
 
-std::vector<real_t>::difference_type
+std::vector<double>::difference_type
 specification_arsel::best_model(
         std::size_t          N,
-        std::vector<real_t>& params,
-        std::vector<real_t>& sigma2e,
-        std::vector<real_t>& gain,
-        std::vector<real_t>& autocor) const
+        std::vector<double>& params,
+        std::vector<double>& sigma2e,
+        std::vector<double>& gain,
+        std::vector<double>& autocor) const
 {
     return reinterpret_cast<best_model_function::type>(bmf)(
             N, minorder, params, sigma2e, gain, autocor);
