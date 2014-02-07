@@ -71,6 +71,15 @@ SUZERAIN_GCC_DIAG_OFF(unused-variable);
 #include <Eigen/LU>
 #include <Eigen/SVD>
 
+// Before Intel 12.1 update 7 combining Eigen with OpenMP breaks us per
+// issue at http://software.intel.com/en-us/forums/topic/279542.
+// Warn the user if they're playing with internal compiler error fire.
+#if defined(_OPENMP) && defined(__INTEL_COMPILER)
+# if __INTEL_COMPILER == 1210 && __INTEL_COMPILER_BUILD_DATE < 20120928
+#   warning "OpenMP + Eigen on Intel 12.1.0 -- 12.1.6 aggravates DPD200173397"
+# endif
+#endif
+
 // Include Boost functionality used throughout Suzerain
 // Boost.Preprocessor was included in common.h
 #include <boost/accumulators/accumulators.hpp>
