@@ -5064,6 +5064,46 @@ suzerain_blasext_zpromote(
     return 0;
 }
 
+int
+suzerain_blasext_zwge55_sum_mvmv(
+        const complex_double alpha,
+        const complex_double *a,
+        const complex_double  x0,
+        const complex_double  x1,
+        const complex_double  x2,
+        const complex_double  x3,
+        const complex_double  x4,
+        const complex_double beta,
+        const complex_double *b,
+        const complex_double  y0,
+        const complex_double  y1,
+        const complex_double  y2,
+        const complex_double  y3,
+        const complex_double  y4,
+              complex_double *w0,
+              complex_double *w1,
+              complex_double *w2,
+              complex_double *w3,
+              complex_double *w4)
+{
+    *w0 += alpha * (a[ 0]*x0 + a[ 5]*x1 + a[10]*x2 + a[15]*x3 + a[20]*x4)
+         + beta  * (b[ 0]*y0 + b[ 5]*y1 + b[10]*y2 + b[15]*y3 + b[20]*y4);
+
+    *w1 += alpha * (a[ 1]*x0 + a[ 6]*x1 + a[11]*x2 + a[16]*x3 + a[21]*x4)
+         + beta  * (b[ 1]*y0 + b[ 6]*y1 + b[11]*y2 + b[16]*y3 + b[21]*y4);
+
+    *w2 += alpha * (a[ 2]*x0 + a[ 7]*x1 + a[12]*x2 + a[17]*x3 + a[22]*x4)
+         + beta  * (b[ 2]*y0 + b[ 7]*y1 + b[12]*y2 + b[17]*y3 + b[22]*y4);
+
+    *w3 += alpha * (a[ 3]*x0 + a[ 8]*x1 + a[13]*x2 + a[18]*x3 + a[23]*x4)
+         + beta  * (b[ 3]*y0 + b[ 8]*y1 + b[13]*y2 + b[18]*y3 + b[23]*y4);
+
+    *w4 += alpha * (a[ 4]*x0 + a[ 9]*x1 + a[14]*x2 + a[19]*x3 + a[24]*x4)
+         + beta  * (b[ 4]*y0 + b[ 9]*y1 + b[14]*y2 + b[19]*y3 + b[24]*y4);
+
+    return 0;
+}
+
 inline int
 suzerain_lapackext_sgbsv(
         char * const fact,

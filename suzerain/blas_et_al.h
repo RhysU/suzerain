@@ -3909,6 +3909,68 @@ suzerain_blasext_zpromote(
         const int n,
         void *x);
 
+/**
+ * The goofiest kernel you'll ever come across:
+ * \verbatim
+ *
+ *     /w0\            /a0 a5 a10 a15 a20\   /x0\
+ *     |w1|            |a1 a6 a11 a16 a21|   |x1|
+ *     |w2| += alpha * |a2 a7 a12 a17 a22| * |x2|
+ *     |w3|            |a3 a8 a13 a18 a23|   |x3|
+ *     \w4/            \a4 a9 a14 a19 a24/   \x4/
+ *
+ *                     /b0 b5 b10 b15 b20\   /y0\
+ *                     |b1 b6 b11 b16 b21|   |y1|
+ *           + beta  * |b2 b7 b12 b17 b22| * |y2|
+ *                     |b3 b8 b13 b18 b23|   |y3|
+ *                     \b4 b9 b14 b19 b24/   \y4/
+ *
+ * \endverbatim
+ *
+ * \param [in ] alpha  Scaling factor on first matrix
+ * \param [in ] a      Five-by-five matrix, column-major contiguous
+ * \param [in ] x0     First component of x vector
+ * \param [in ] x1     Second component of x vector
+ * \param [in ] x2     Third  component of x vector
+ * \param [in ] x3     Fourth component of x vector
+ * \param [in ] x4     Fifth component of x vector
+ * \param [in ] beta   Scaling factor on second matrix
+ * \param [in ] b      Five-by-five matrix, column-major contiguous
+ * \param [in ] y0     First component of y vector
+ * \param [in ] y1     Second component of y vector
+ * \param [in ] y2     Third component of y vector
+ * \param [in ] y3     Fourth component of y vector
+ * \param [in ] y4     Fifth component of y vector
+ * \param [out] w0     First component of w vector
+ * \param [out] w1     Second component of w vector
+ * \param [out] w2     Third component of w vector
+ * \param [out] w3     Fourth component of w vector
+ * \param [out] w4     Fifth component of w vector
+ *
+ * @return Zero, always.
+ */
+int
+suzerain_blasext_zwge55_sum_mvmv(
+        const complex_double alpha,
+        const complex_double *a,
+        const complex_double  x0,
+        const complex_double  x1,
+        const complex_double  x2,
+        const complex_double  x3,
+        const complex_double  x4,
+        const complex_double beta,
+        const complex_double *b,
+        const complex_double  y0,
+        const complex_double  y1,
+        const complex_double  y2,
+        const complex_double  y3,
+        const complex_double  y4,
+              complex_double *w0,
+              complex_double *w1,
+              complex_double *w2,
+              complex_double *w3,
+              complex_double *w4);
+
 /*! @} */
 
 /*! \name LAPACK-like extensions
