@@ -68,7 +68,7 @@ SUZERAIN_SUMMARY_ENUM_TRANSFORM(DESCRIPTION,)
 
 // Deliberately no flush operations as we're dropping lengthy output
 std::ostream&
-summary::write(std::ostream &out, bool header, bool csv)
+summary::write(std::ostream &out, bool header, bool csv) const
 {
     typedef fullprec<storage_type::Scalar> fp;
     using std::setw;

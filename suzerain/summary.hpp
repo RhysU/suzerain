@@ -97,7 +97,7 @@ public:
 
     /** Write whitespace- or comma-delimited output to stream. */
     std::ostream&
-    write(std::ostream &out, bool header = false, bool csv = false);
+    write(std::ostream &out, bool header = false, bool csv = false) const;
 
     /**
      * Provide access to contiguous subregions within storage.
