@@ -144,6 +144,42 @@ typedef struct {
  * @param[out] out_rho_u Wall-normal output data for \f$\rho{}u\f$.
  * @param[out] out_rho   Wall-normal output data for \f$\rho{}\f$.
  *
+ * A mostly-implicit Giles nonreflecting boundary condition may optionally be
+ * imposed on the final coefficient corresponding to the upper boundary.  To do
+ * so, the state vector \f$\hat{V} = \left[ \rho{}E, \rho{}u, \ldots \right]f$
+ * and the linear operator action \f$\varphi L \hat{V}\f$ are gathered during
+ * processing. Afterwards, they may be used to adjust the accumulation result
+ * at the upper boundary coefficient
+ * \f{align*}{
+ *   \left(M+\varphi{}L_I^G\right)\hat{V} - \left(M+\varphi{}L\right)\hat{V}
+ *   &{}= \ii \varphi{} k_x \, {R^Y}^{-1} \left[V^L S\right]^{-1}
+ *                             \left[P^G C^G\right] \left[V^L S\right] {R^Y}
+ *                             \,\,\hat{V} \\
+ *   &{}+ \ii \varphi{} k_z    {R^Y}^{-1} \left[V^L S\right]^{-1}
+ *                             \left[P^G B^G\right] \left[V^L S\right] {R^Y}
+ *                             \,\,\hat{V} \\
+ *   &{}-                      {R^Y}^{-1} \left[V^L S\right]^{-1}
+ *                             \left[P^G    \right] \left[V^L S\right] {R^Y}
+ *                             \left(\varphi{}L\hat{V}\right)
+ * \f}
+ * by using the arguments \c alpha, \c a, \c beta, \c b, \c gamma, and \c c as
+ * documented in the parameters section.  These matrices are defined within the
+ * Suzerain perfect gas model document. If \c a, \c b, and \c c are \c NULL, no
+ * additional boundary condition processing is performed.
+ *
+ * @param[in] alpha \f$ \ii \varphi k_x \f$ to set an NRBC.
+ * @param[in] a     If \c NULL, ignored.  Set to the 5x5 column major matrix
+ *                  \f${R^Y}^{-1} \left[V^L S\right]^{-1}
+ *                  \left[P^G C^G\right] \left[V^L S\right] {R^Y}\f$ for NRBC.
+ * @param[in] beta  \f$ \ii \varphi k_z \f$ to set an NRBC.
+ * @param[in] b     If \c NULL, ignored.  Set to the 5x5 column major matrix
+ *                  \f${R^Y}^{-1} \left[V^L S\right]^{-1}
+ *                  \left[P^G B^G\right] \left[V^L S\right] {R^Y}\f$ for NRBC.
+ * @param[in] gamma \f$ -1 \f$ to set an NRBC.
+ * @param[in] c     If \c NULL, ignored.  Set to the 5x5 column major matrix
+ *                  \f${R^Y}^{-1} \left[V^L S\right]^{-1}
+ *                  \left[P^G    \right] \left[V^L S\right] {R^Y}\f$ for NRBC.
+ *
  * @see Model documentation in <tt>writeups/derivation.tex</tt> for details.
  */
 void
