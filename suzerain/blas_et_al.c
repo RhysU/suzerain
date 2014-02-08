@@ -5100,6 +5100,27 @@ suzerain_blasext_zgedsummv55(
     return 0;
 }
 
+int
+suzerain_blasext_zgedmv55(
+        const complex_double                     gamma,
+        const         double * SUZERAIN_RESTRICT c,
+        const complex_double * SUZERAIN_RESTRICT y,
+              complex_double * SUZERAIN_RESTRICT w)
+{
+
+    w[0] = gamma*(c[0]*y[0] + c[5]*y[1] + c[10]*y[2] + c[15]*y[3] + c[20]*y[4]);
+
+    w[1] = gamma*(c[1]*y[0] + c[6]*y[1] + c[11]*y[2] + c[16]*y[3] + c[21]*y[4]);
+
+    w[2] = gamma*(c[2]*y[0] + c[7]*y[1] + c[12]*y[2] + c[17]*y[3] + c[22]*y[4]);
+
+    w[3] = gamma*(c[3]*y[0] + c[8]*y[1] + c[13]*y[2] + c[18]*y[3] + c[23]*y[4]);
+
+    w[4] = gamma*(c[4]*y[0] + c[9]*y[1] + c[14]*y[2] + c[19]*y[3] + c[24]*y[4]);
+
+    return 0;
+}
+
 inline int
 suzerain_lapackext_sgbsv(
         char * const fact,

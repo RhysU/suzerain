@@ -3956,6 +3956,33 @@ suzerain_blasext_zgedsummv55(
         const complex_double * SUZERAIN_RESTRICT y,
               complex_double * SUZERAIN_RESTRICT w);
 
+/**
+ * A five-by-five, mixed scalar matrix vector product.
+ * Arguments named to match \ref suzerain_blasext_zgedsummv55.
+ * \verbatim
+ *
+ *     /w0\           /c0 c5 c10 c15 c20\   /y0\
+ *     |w1|           |c1 c6 c11 c16 c21|   |y1|
+ *     |w2| = gamma * |c2 c7 c12 c17 c22| * |y2|
+ *     |w3|           |c3 c8 c13 c18 c23|   |y3|
+ *     \w4/           \c4 c9 c14 c19 c24/   \y4/
+ *
+ * \endverbatim
+ *
+ * \param [in ] gamma  Scaling factor on third matrix
+ * \param [in ] c      Five-by-five matrix, column-major contiguous
+ * \param [in ] y      Second five-vector to be hit by \e one matrix
+ * \param [out] w      Output five-vector to overwrite with the result
+ *
+ * @return Zero, always.
+ */
+int
+suzerain_blasext_zgedmv55(
+        const complex_double                     gamma,
+        const         double * SUZERAIN_RESTRICT c,
+        const complex_double * SUZERAIN_RESTRICT y,
+              complex_double * SUZERAIN_RESTRICT w);
+
 /*! @} */
 
 /*! \name LAPACK-like extensions
