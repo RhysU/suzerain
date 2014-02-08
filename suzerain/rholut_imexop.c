@@ -58,7 +58,10 @@ suzerain_rholut_imexop_accumulate(
         complex_double *out_rho_u,
         complex_double *out_rho_v,
         complex_double *out_rho_w,
-        complex_double *out_rho)
+        complex_double *out_rho,
+        const double * a,
+        const double * b,
+        const double * c)
 {
     // When you modify this routine, you must also modify rholut_imexop.def so
     // that operator accumulation-without-assembly and assembly match.  The
@@ -76,6 +79,7 @@ suzerain_rholut_imexop_accumulate(
     assert(!(!in_rho_v ^ !out_rho_v)); // ditto
     assert(!(!in_rho_w ^ !out_rho_w)); // ditto
     assert(!(!in_rho   ^ !out_rho  )); // ditto
+    assert((a && b && c) || (!a && !b && !c)); // All non-NULL or NULL?
 
     // Prepare shorthand for some useful derived values
     const complex_double ikm = _Complex_I*km;
@@ -479,15 +483,27 @@ suzerain_rholut_imexop_accumulate(
         upper_hatV[4] = in_rho[w->n - 1];
     }
 
+    // If requested, use matrices a, b, and c to partially provide upper NRBC
+    // TODO Consider inlining the BLAS-like call to hide some memory latency
+    if (a) {
+        complex_double tmp[5];
+        suzerain_blasext_zgedsummv55(phi*ikm, a,
+                                     phi*ikn, b, upper_hatV,
+                                     -1,      c, upper_varphi_L_hatV,
+                                     tmp);
+        if (LIKELY(out_rho_E)) out_rho_E[w->n - 1] += tmp[0];
+        if (LIKELY(out_rho_u)) out_rho_u[w->n - 1] += tmp[1];
+        if (LIKELY(out_rho_v)) out_rho_v[w->n - 1] += tmp[2];
+        if (LIKELY(out_rho_w)) out_rho_w[w->n - 1] += tmp[3];
+        if (LIKELY(out_rho  )) out_rho  [w->n - 1] += tmp[4];
+    }
+
 #   undef PREAMBLE_NN
 #   undef PREAMBLE_N
 #   undef LIKELY
 #   undef REF
 #   undef IN
 #   undef OUT
-
-    // TODO Redmine #2979 use suzerain_blasext_zgedsummv55 to set upper NRBC
-
 }
 
 // suzerain_rholut_imexop_pack{c,f} differ trivially

@@ -200,7 +200,10 @@ suzerain_rholut_imexop_accumulate(
         complex_double *out_rho_u,
         complex_double *out_rho_v,
         complex_double *out_rho_w,
-        complex_double *out_rho);
+        complex_double *out_rho,
+        const double *a,
+        const double *b,
+        const double *c);
 
 /**
  * Accumulate the ``zero-zero'' mode 'linear implicit operator application \f$y
@@ -227,7 +230,8 @@ suzerain_rholut_imexop_accumulate00(
         complex_double *out_rho_u,
         complex_double *out_rho_v,
         complex_double *out_rho_w,
-        complex_double *out_rho);
+        complex_double *out_rho,
+        const double *c);
 
 /**
  * Pack \f$\left(M + \varphi{}L\right)^{\mbox{T}}\f$ into the corresponding

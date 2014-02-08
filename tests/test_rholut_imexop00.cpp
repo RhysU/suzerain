@@ -128,7 +128,8 @@ static void operator_consistency(const parameters& p)
         suzerain_rholut_imexop_accumulate00(
             phi, &s, &r, &ld, op.get(),
                &B1[0*n+jN], &B1[1*n+jN], &B1[2*n+jN], &B1[3*n+jN], &B1[4*n+jN],
-            0, &B2[0*n+jN], &B2[1*n+jN], &B2[2*n+jN], &B2[3*n+jN], &B2[4*n+jN]);
+            0, &B2[0*n+jN], &B2[1*n+jN], &B2[2*n+jN], &B2[3*n+jN], &B2[4*n+jN],
+            NULL /* TODO Consistency testing per Ticket #2979 */);
     }
 
     // Compute B1 = P*B2

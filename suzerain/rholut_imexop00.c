@@ -58,7 +58,8 @@ suzerain_rholut_imexop_accumulate00(
         complex_double *out_rho_u,
         complex_double *out_rho_v,
         complex_double *out_rho_w,
-        complex_double *out_rho )
+        complex_double *out_rho,
+        const double *c)
 {
     // The special case suzerain_rholut_imexop_accumulate00()
     // is distilled from suzerain_rholut_imexop_accumulate().
@@ -323,15 +324,24 @@ suzerain_rholut_imexop_accumulate00(
             1.0, w->D_T[M], w->ld, IN(rho), 1.0, OUT(rho));
     }
 
+    // If requested, use matrix c to partially provide upper NRBC
+    // TODO Consider inlining the BLAS-like call to hide some memory latency
+    if (c) {
+        complex_double tmp[5];
+        suzerain_blasext_zgedmv55(-1, c, upper_varphi_L_hatV, tmp);
+        if (LIKELY(out_rho_E)) out_rho_E[w->n - 1] += tmp[0];
+        if (LIKELY(out_rho_u)) out_rho_u[w->n - 1] += tmp[1];
+        if (LIKELY(out_rho_v)) out_rho_v[w->n - 1] += tmp[2];
+        if (LIKELY(out_rho_w)) out_rho_w[w->n - 1] += tmp[3];
+        if (LIKELY(out_rho  )) out_rho  [w->n - 1] += tmp[4];
+    }
+
 #   undef PREAMBLE_NN
 #   undef PREAMBLE_N
 #   undef LIKELY
 #   undef REF
 #   undef IN
 #   undef OUT
-
-    // TODO Redmine #2979 use suzerain_blasext_zgedsummv55 to set upper NRBC
-    // TODO Use that NRBC has degenerate I*k_x I*k_z terms on zero-zero mode
 
 }
 

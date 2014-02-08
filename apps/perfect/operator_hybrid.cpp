@@ -185,7 +185,8 @@ void isothermal_hybrid_linear_operator::apply_mass_plus_scaled_operator(
                         p + ndx::mx  * Ny,
                         p + ndx::my  * Ny,
                         p + ndx::mz  * Ny,
-                        p + ndx::rho * Ny);
+                        p + ndx::rho * Ny,
+                        NULL, NULL, NULL /* #TODO Ticket #2979 Upper NRBC */);
             }
         }
         break;
@@ -221,7 +222,8 @@ void isothermal_hybrid_linear_operator::apply_mass_plus_scaled_operator(
                         p + ndx::mx  * Ny,
                         p + ndx::my  * Ny,
                         p + ndx::mz  * Ny,
-                        p + ndx::rho * Ny);
+                        p + ndx::rho * Ny,
+                        NULL /* #TODO Ticket #2979 Upper NRBC */);
             }
         }
         break;
@@ -317,7 +319,8 @@ void isothermal_hybrid_linear_operator::accumulate_mass_plus_scaled_operator(
                         &output[ndx::mx  ][0][m - dkbx][n - dkbz],
                         &output[ndx::my  ][0][m - dkbx][n - dkbz],
                         &output[ndx::mz  ][0][m - dkbx][n - dkbz],
-                        &output[ndx::rho ][0][m - dkbx][n - dkbz]);
+                        &output[ndx::rho ][0][m - dkbx][n - dkbz],
+                        NULL, NULL, NULL /* #TODO Ticket #2979 Upper NRBC */);
 
             }
         }
@@ -348,7 +351,8 @@ void isothermal_hybrid_linear_operator::accumulate_mass_plus_scaled_operator(
                         &output[ndx::mx  ][0][m - dkbx][n - dkbz],
                         &output[ndx::my  ][0][m - dkbx][n - dkbz],
                         &output[ndx::mz  ][0][m - dkbx][n - dkbz],
-                        &output[ndx::rho ][0][m - dkbx][n - dkbz]);
+                        &output[ndx::rho ][0][m - dkbx][n - dkbz],
+                        NULL /* #TODO Ticket #2979 Upper NRBC */);
 
             }
         }
