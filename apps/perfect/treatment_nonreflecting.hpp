@@ -29,10 +29,13 @@
  */
 
 #include <suzerain/common.hpp>
+#include <suzerain/giles.hpp>
 #include <suzerain/lowstorage.hpp>
 #include <suzerain/operator_base.hpp>
 #include <suzerain/specification_isothermal.hpp>
 #include <suzerain/state_fwd.hpp>
+
+#include "definition_scenario.hpp"
 
 namespace suzerain {
 
@@ -43,9 +46,6 @@ class specification_grid;
 class pencil_grid;
 
 namespace perfect {
-
-// Forward declarations
-class definition_scenario;
 
 /**
  * Provides Giles-like nonreflecting boundary conditions at the upper \f$y =
@@ -100,7 +100,7 @@ public:
      *   <li>#VL_S_RY</li>
      *   <li>#PG_BG_VL_S_RY_by_chi</li>
      *   <li>#PG_CG_VL_S_RY_by_chi</li>
-     *   <li>#ImPG_CG_VL_S_RY</li>
+     *   <li>#ImPG_VL_S_RY</li>
      *   <li>#invVL_S_RY</li>
      * </ol>
      * during invocation.
@@ -163,49 +163,25 @@ protected:
     Matrix5r inv_VL_S_RY;
 
     /**
-     * Compute Medida's Giles-like nonreflecting boundary condition matrices
-     * given reference state information and the \ref definition_scenario
-     * provided at construction time.  Inflow vs outflow and subsonic vs
-     * supersonic conditions are determined using \c ref_v and \c normal_sign.
-     * Updates all of
-     * <ol>
-     *   <li>#VL_S_RY</li>
-     *   <li>#PG_BG_VL_S_RY_by_chi</li>
-     *   <li>#PG_CG_VL_S_RY_by_chi</li>
-     *   <li>#ImPG_CG_VL_S_RY</li>
-     *   <li>#inv_VL_S_RY</li>
-     * </ol>
-     * during invocation.
-     *
-     * @param ref_rho     Nondimensional reference density \f$rho\f$.
-     * @param ref_u       Nondimensional reference streamwise velocity \f$u\f$.
-     * @param ref_v       Nondimensional reference velocity \f$v\f$.
-     * @param ref_w       Nondimensional reference spanwise velocity \f$w\f$.
-     * @param ref_a       Nondimensional reference sound speed \f$a\f$.
-     * @param normal_sign Sign of a boundary-normal vector.
-     *                    For the boundary at \f$y=0\f$ this should be negative.
-     *                    For the boundary at \f$y=L_y\f$, it must be positive.
-     */
-    void compute_giles_matrices(
-            const real_t ref_rho,
-            const real_t ref_u,
-            const real_t ref_v,
-            const real_t ref_w,
-            const real_t ref_a,
-            const real_t normal_sign);
-
-    /**
      * Invokes compute_giles_matrices() for lower boundary.
      * Broken out for brevity and to document reference state choices.
      */
     void compute_giles_matrices_lower()
     {
-        return compute_giles_matrices(isothermal.lower_rho,
-                                      isothermal.lower_u,
-                                      isothermal.lower_v,
-                                      isothermal.lower_w,
-                                      std::sqrt(isothermal.lower_T),
-                                      -1);
+        return giles_matrices_lower(scenario.Ma,
+                                    scenario.gamma,
+                                    isothermal.lower_rho,
+                                    isothermal.lower_u,
+                                    isothermal.lower_v,
+                                    isothermal.lower_w,
+                                    std::sqrt(isothermal.lower_T),
+                                    VL_S_RY,
+                                    PG_BG_VL_S_RY_by_chi, // Rescaled below
+                                    PG_CG_VL_S_RY_by_chi, // Rescaled below
+                                    ImPG_VL_S_RY,
+                                    inv_VL_S_RY);
+        PG_BG_VL_S_RY_by_chi /= dgrid.chi();
+        PG_CG_VL_S_RY_by_chi /= dgrid.chi();
     }
 
     /**
@@ -214,12 +190,20 @@ protected:
      */
     void compute_giles_matrices_upper()
     {
-        return compute_giles_matrices(isothermal.upper_rho,
-                                      isothermal.upper_u,
-                                      isothermal.upper_v,
-                                      isothermal.upper_w,
-                                      std::sqrt(isothermal.upper_T),
-                                      +1);
+        return giles_matrices_upper(scenario.Ma,
+                                    scenario.gamma,
+                                    isothermal.upper_rho,
+                                    isothermal.upper_u,
+                                    isothermal.upper_v,
+                                    isothermal.upper_w,
+                                    std::sqrt(isothermal.upper_T),
+                                    VL_S_RY,
+                                    PG_BG_VL_S_RY_by_chi, // Rescaled below
+                                    PG_CG_VL_S_RY_by_chi, // Rescaled below
+                                    ImPG_VL_S_RY,
+                                    inv_VL_S_RY);
+        PG_BG_VL_S_RY_by_chi /= dgrid.chi();
+        PG_CG_VL_S_RY_by_chi /= dgrid.chi();
     }
 
 private:
