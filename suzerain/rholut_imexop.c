@@ -55,7 +55,7 @@ suzerain_rholut_imexop_accumulate(
         complex_double *out_rho_u,
         complex_double *out_rho_v,
         complex_double *out_rho_w,
-        complex_double *out_rho )
+        complex_double *out_rho)
 {
     // When you modify this routine, you must also modify rholut_imexop.def so
     // that operator accumulation-without-assembly and assembly match.  The
