@@ -83,12 +83,11 @@ suzerain_rholut_imexop_accumulate00(
     const double ginvPr      = s->gamma / s->Pr;
     const double ginvRePr    = s->gamma / (s->Re * s->Pr);
 
-    // Storage for gathering vectors \varphi L [ rho_E, rho_u, ...]' and
-    // [rho_E, rho_u, ...]' at the "upper" coefficient w->n - 1.
-    // Permits later adjusting the accumulated operator to provide NRBC.
-    // Zero initialization necessary to handle omitting scalars (e.g. rho).
+    // Storage for gathering vector \varphi L [ rho_E, rho_u, ...]' at the
+    // "upper" coefficient w->n - 1.  Permits later adjusting the accumulated
+    // operator to provide NRBC. Zero initialization necessary to handle
+    // omitting scalars (e.g. rho).
     complex_double upper_varphi_L_hatV[5] = { 0, 0, 0, 0, 0 };
-    complex_double          upper_hatV[5] = { 0, 0, 0, 0, 0 };
 
     // Accumulate the requested portions of the M + \varphi L operator.  Scale
     // output by beta, accumulate non-mass contributions, and finally
@@ -164,8 +163,6 @@ suzerain_rholut_imexop_accumulate00(
 
         suzerain_blas_zgbmv_d_z(PREAMBLE_NN(M),
             1.0, w->D_T[M], w->ld, IN(rho_E), 1.0, OUT(rho_E));
-
-        upper_hatV[0] = in_rho_E[w->n - 1];
     }
 
     if (LIKELY(in_rho_u)) {  // Accumulate X momentum terms into out_rho_u
@@ -209,8 +206,6 @@ suzerain_rholut_imexop_accumulate00(
 
         suzerain_blas_zgbmv_d_z(PREAMBLE_NN(M),
             1.0, w->D_T[M], w->ld, IN(rho_u), 1.0, OUT(rho_u));
-
-        upper_hatV[1] = in_rho_u[w->n - 1];
     }
 
     if (LIKELY(in_rho_v)) {  // Accumulate Y momentum terms into out_rho_v
@@ -261,8 +256,6 @@ suzerain_rholut_imexop_accumulate00(
 
         suzerain_blas_zgbmv_d_z(PREAMBLE_NN(M),
             1.0, w->D_T[M], w->ld, IN(rho_v), 1.0, OUT(rho_v));
-
-        upper_hatV[2] = in_rho_v[w->n - 1];
     }
 
     if (LIKELY(in_rho_w)) {  // Accumulate Z momentum terms into out_rho_w
@@ -306,8 +299,6 @@ suzerain_rholut_imexop_accumulate00(
 
         suzerain_blas_zgbmv_d_z(PREAMBLE_NN(M),
             1.0, w->D_T[M], w->ld, IN(rho_w), 1.0, OUT(rho_w));
-
-        upper_hatV[3] = in_rho_w[w->n - 1];
     }
 
     if (LIKELY(in_rho )) {  // Accumulate density terms into out_rho
@@ -330,8 +321,6 @@ suzerain_rholut_imexop_accumulate00(
 
         suzerain_blas_zgbmv_d_z(PREAMBLE_NN(M),
             1.0, w->D_T[M], w->ld, IN(rho), 1.0, OUT(rho));
-
-        upper_hatV[4] = in_rho[w->n - 1];
     }
 
 #   undef PREAMBLE_NN
