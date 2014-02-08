@@ -3912,23 +3912,23 @@ suzerain_blasext_zpromote(
  * The goofiest kernel you'll ever come across:
  * \verbatim
  *
- *     /w0\            /a0 a5 a10 a15 a20\   /x0\
- *     |w1|            |a1 a6 a11 a16 a21|   |x1|
- *     |w2| += alpha * |a2 a7 a12 a17 a22| * |x2|
- *     |w3|            |a3 a8 a13 a18 a23|   |x3|
- *     \w4/            \a4 a9 a14 a19 a24/   \x4/
+ *     /w0\           /a0 a5 a10 a15 a20\   /x0\
+ *     |w1|           |a1 a6 a11 a16 a21|   |x1|
+ *     |w2| = alpha * |a2 a7 a12 a17 a22| * |x2|
+ *     |w3|           |a3 a8 a13 a18 a23|   |x3|
+ *     \w4/           \a4 a9 a14 a19 a24/   \x4/
  *
- *                     /b0 b5 b10 b15 b20\   /x0\
- *                     |b1 b6 b11 b16 b21|   |x1|
- *           + beta  * |b2 b7 b12 b17 b22| * |x2|
- *                     |b3 b8 b13 b18 b23|   |x3|
- *                     \b4 b9 b14 b19 b24/   \x4/
+ *                    /b0 b5 b10 b15 b20\   /x0\
+ *                    |b1 b6 b11 b16 b21|   |x1|
+ *          + beta  * |b2 b7 b12 b17 b22| * |x2|
+ *                    |b3 b8 b13 b18 b23|   |x3|
+ *                    \b4 b9 b14 b19 b24/   \x4/
  *
- *                     /c0 c5 c10 c15 c20\   /y0\
- *                     |c1 c6 c11 c16 c21|   |y1|
- *           + gamma * |c2 c7 c12 c17 c22| * |y2|
- *                     |c3 c8 c13 c18 c23|   |y3|
- *                     \c4 c9 c14 c19 c24/   \y4/
+ *                    /c0 c5 c10 c15 c20\   /y0\
+ *                    |c1 c6 c11 c16 c21|   |y1|
+ *          + gamma * |c2 c7 c12 c17 c22| * |y2|
+ *                    |c3 c8 c13 c18 c23|   |y3|
+ *                    \c4 c9 c14 c19 c24/   \y4/
  *
  * \endverbatim
  *
@@ -3936,15 +3936,11 @@ suzerain_blasext_zpromote(
  * \param [in ] a      Five-by-five matrix, column-major contiguous
  * \param [in ] beta   Scaling factor on second matrix
  * \param [in ] b      Five-by-five matrix, column-major contiguous
- * \param [in ] x      First five vector to be hit by \e two matrices
+ * \param [in ] x      First five-vector to be hit by \e two matrices
  * \param [in ] gamma  Scaling factor on third matrix
  * \param [in ] c      Five-by-five matrix, column-major contiguous
- * \param [in ] y      Second five vector to be hit by \e one matrix
- * \param [out] w0     First component of w output vector
- * \param [out] w1     Second component of w output vector
- * \param [out] w2     Third component of w output vector
- * \param [out] w3     Fourth component of w output vector
- * \param [out] w4     Fifth component of w output vector
+ * \param [in ] y      Second five-vector to be hit by \e one matrix
+ * \param [out] w      Output five-vector to overwrite with the result
  *
  * @return Zero, always.
  */
@@ -3958,11 +3954,7 @@ suzerain_blasext_zgedsummv55(
         const complex_double                     gamma,
         const         double * SUZERAIN_RESTRICT c,
         const complex_double * SUZERAIN_RESTRICT y,
-              complex_double * SUZERAIN_RESTRICT w0,
-              complex_double * SUZERAIN_RESTRICT w1,
-              complex_double * SUZERAIN_RESTRICT w2,
-              complex_double * SUZERAIN_RESTRICT w3,
-              complex_double * SUZERAIN_RESTRICT w4);
+              complex_double * SUZERAIN_RESTRICT w);
 
 /*! @} */
 

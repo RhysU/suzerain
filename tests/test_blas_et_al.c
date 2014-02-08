@@ -2950,7 +2950,7 @@ test_blasext_zgedsummv55()
     //     y = round(10*rand(5,1))
     //     w = round(10*rand(5,1))
     // followed by
-    //     w += alpha*a*x + beta*b*x + gamma*c*y
+    //     w = alpha*a*x + beta*b*x + gamma*c*y
 
 
     const complex_double alpha = complex_double(2, 3);
@@ -2987,15 +2987,14 @@ test_blasext_zgedsummv55()
         9, 0, 9, 1, 9
     };
     const complex_double expected[] = {
-        complex_double(  18, 339),
-        complex_double( -93,  18),
-        complex_double( -69,  86),
-        complex_double(  38, 262),
-        complex_double(-293, 184)
+        complex_double(  18, 339) - 9,
+        complex_double( -93,  18) - 0,
+        complex_double( -69,  86) - 9,
+        complex_double(  38, 262) - 1,
+        complex_double(-293, 184) - 9
     };
 
-    suzerain_blasext_zgedsummv55(alpha, a, beta, b, x, gamma, c, y,
-                                 w+0, w+1, w+2, w+3, w+4);
+    suzerain_blasext_zgedsummv55(alpha, a, beta, b, x, gamma, c, y, w);
 
     for (int i = 0; i < 5; ++i) {
         gsl_test_int((int) creal(w[i]), (int) creal(expected[i]),

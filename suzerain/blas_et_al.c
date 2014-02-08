@@ -5074,30 +5074,26 @@ suzerain_blasext_zgedsummv55(
         const complex_double                     gamma,
         const         double * SUZERAIN_RESTRICT c,
         const complex_double * SUZERAIN_RESTRICT y,
-              complex_double * SUZERAIN_RESTRICT w0,
-              complex_double * SUZERAIN_RESTRICT w1,
-              complex_double * SUZERAIN_RESTRICT w2,
-              complex_double * SUZERAIN_RESTRICT w3,
-              complex_double * SUZERAIN_RESTRICT w4)
+              complex_double * SUZERAIN_RESTRICT w)
 {
 
-    *w0 += alpha*(a[0]*x[0] + a[5]*x[1] + a[10]*x[2] + a[15]*x[3] + a[20]*x[4])
+    w[0] = alpha*(a[0]*x[0] + a[5]*x[1] + a[10]*x[2] + a[15]*x[3] + a[20]*x[4])
          + beta *(b[0]*x[0] + b[5]*x[1] + b[10]*x[2] + b[15]*x[3] + b[20]*x[4])
          + gamma*(c[0]*y[0] + c[5]*y[1] + c[10]*y[2] + c[15]*y[3] + c[20]*y[4]);
 
-    *w1 += alpha*(a[1]*x[0] + a[6]*x[1] + a[11]*x[2] + a[16]*x[3] + a[21]*x[4])
+    w[1] = alpha*(a[1]*x[0] + a[6]*x[1] + a[11]*x[2] + a[16]*x[3] + a[21]*x[4])
          + beta *(b[1]*x[0] + b[6]*x[1] + b[11]*x[2] + b[16]*x[3] + b[21]*x[4])
          + gamma*(c[1]*y[0] + c[6]*y[1] + c[11]*y[2] + c[16]*y[3] + c[21]*y[4]);
 
-    *w2 += alpha*(a[2]*x[0] + a[7]*x[1] + a[12]*x[2] + a[17]*x[3] + a[22]*x[4])
+    w[2] = alpha*(a[2]*x[0] + a[7]*x[1] + a[12]*x[2] + a[17]*x[3] + a[22]*x[4])
          + beta *(b[2]*x[0] + b[7]*x[1] + b[12]*x[2] + b[17]*x[3] + b[22]*x[4])
          + gamma*(c[2]*y[0] + c[7]*y[1] + c[12]*y[2] + c[17]*y[3] + c[22]*y[4]);
 
-    *w3 += alpha*(a[3]*x[0] + a[8]*x[1] + a[13]*x[2] + a[18]*x[3] + a[23]*x[4])
+    w[3] = alpha*(a[3]*x[0] + a[8]*x[1] + a[13]*x[2] + a[18]*x[3] + a[23]*x[4])
          + beta *(b[3]*x[0] + b[8]*x[1] + b[13]*x[2] + b[18]*x[3] + b[23]*x[4])
          + gamma*(c[3]*y[0] + c[8]*y[1] + c[13]*y[2] + c[18]*y[3] + c[23]*y[4]);
 
-    *w4 += alpha*(a[4]*x[0] + a[9]*x[1] + a[14]*x[2] + a[19]*x[3] + a[24]*x[4])
+    w[4] = alpha*(a[4]*x[0] + a[9]*x[1] + a[14]*x[2] + a[19]*x[3] + a[24]*x[4])
          + beta *(b[4]*x[0] + b[9]*x[1] + b[14]*x[2] + b[19]*x[3] + b[24]*x[4])
          + gamma*(c[4]*y[0] + c[9]*y[1] + c[14]*y[2] + c[19]*y[3] + c[24]*y[4]);
 
