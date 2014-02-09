@@ -59,7 +59,7 @@ tilde_wpp_wpp__y = tilde_w_w__y - 2*tilde_w*tilde_w__y;
 // }
 
 
-// Favre-averaged turbulent kinetic energy and related internal energy {
+// Favre-averaged turbulent kinetic energy, internal energy, dissipation {
 tilde_k    = (tilde_upp_upp    + tilde_vpp_vpp    + tilde_wpp_wpp   ) / 2;
 tilde_k__y = (tilde_upp_upp__y + tilde_vpp_vpp__y + tilde_wpp_wpp__y) / 2;
 
@@ -78,15 +78,18 @@ tilde_T__y = (gamma*(gamma-1))*(tilde_E__y - Ma*Ma*(
 
 tilde_H    = tilde_E    + tilde_T   /gamma;
 tilde_H__y = tilde_E__y + tilde_T__y/gamma;
-//}
-
-// FIXME Start here
 
 bar_tau_colon_grad_upp = bar_tau_colon_grad_u
                        - bar_tauxy*tilde_u__y
                        - bar_tauyy*tilde_v__y
                        - bar_tauyz*tilde_w__y;
+
 tilde_epsilon = bar_tau_colon_grad_upp/bar_rho;
+//}
+
+// FIXME Start here
+
+
 bar_rhop_up = bar_rho_u - bar_rho*bar_u;
 bar_rhop_vp = bar_rho_v - bar_rho*bar_v;
 bar_rhop_wp = bar_rho_w - bar_rho*bar_w;
