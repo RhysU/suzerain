@@ -85,42 +85,65 @@ bar_tau_colon_grad_upp = bar_tau_colon_grad_u
                        - bar_tauyz*tilde_w__y;
 
 tilde_epsilon = bar_tau_colon_grad_upp/bar_rho;
-//}
+// }
 
-// FIXME Start here
-
-
+// Reynolds-fluctuating density-velocity correlations {
 bar_rhop_up = bar_rho_u - bar_rho*bar_u;
 bar_rhop_vp = bar_rho_v - bar_rho*bar_v;
 bar_rhop_wp = bar_rho_w - bar_rho*bar_w;
+// }
+
+// Favre-fluctuating velocities {
 bar_upp = bar_u - tilde_u;
 bar_vpp = bar_v - tilde_v;
 bar_wpp = bar_w - tilde_w;
-bar_f_dot_upp = bar_f_dot_u
-              - bar_fx * tilde_u
-              - bar_fy * tilde_v
-              - bar_fz * tilde_w;
-bar_Srhou_dot_upp = bar_Srhou_dot_u
-                  - bar_Srhou * tilde_u
-                  - bar_Srhov * tilde_v
-                  - bar_Srhow * tilde_w;
-bar_Crhou_dot_upp = bar_Crhou_dot_u
-                  - bar_Crhou * tilde_u
-                  - bar_Crhov * tilde_v
-                  - bar_Crhow * tilde_w;
-bar_tauuppx = bar_tauux
-            - bar_tauxx*tilde_u
-            - bar_tauxy*tilde_v
-            - bar_tauxz*tilde_w;
-bar_tauuppy = bar_tauuy
-            - bar_tauxy*tilde_u
-            - bar_tauyy*tilde_v
-            - bar_tauyz*tilde_w;
-bar_tauuppz = bar_tauuz
-               - bar_tauxz*tilde_u
-               - bar_tauyz*tilde_v
-               - bar_tauzz*tilde_w;
+// }
+
+// Favre-fluctuating forcing work {
+bar_f_dot_upp        = bar_f_dot_u
+                     - bar_fx    * tilde_u
+                     - bar_fy    * tilde_v
+                     - bar_fz    * tilde_w;
+
+bar_Srhou_dot_upp    = bar_Srhou_dot_u
+                     - bar_Srhou * tilde_u
+                     - bar_Srhov * tilde_v
+                     - bar_Srhow * tilde_w;
+
+bar_Crhou_dot_upp    = bar_Crhou_dot_u
+                     - bar_Crhou * tilde_u
+                     - bar_Crhov * tilde_v
+                     - bar_Crhow * tilde_w;
+// }
+
+
+// Viscous work on the Favre-fluctuating velocity {
+bar_tauuppx    = bar_tauux
+               - bar_tauxx    * tilde_u
+               - bar_tauxy    * tilde_v
+               - bar_tauxz    * tilde_w;
+
+bar_tauuppy    = bar_tauuy
+               - bar_tauxy    * tilde_u
+               - bar_tauyy    * tilde_v
+               - bar_tauyz    * tilde_w;
+
+bar_tauuppy__y = bar_tauuy__y
+               - bar_tauxy__y * tilde_u - bar_tauxy    * tilde_u__y
+               - bar_tauyy__y * tilde_v - bar_tauyy    * tilde_v__y
+               - bar_tauyz__y * tilde_w - bar_tauyz    * tilde_w__y;
+
+bar_tauuppz    = bar_tauuz
+               - bar_tauxz    * tilde_u
+               - bar_tauyz    * tilde_v
+               - bar_tauzz    * tilde_w;
+
+// }
+
+// FIXME Start here
+
 D(bar_v);  // Form derivatives
+
 bar_pp_div_upp = bar_p_div_u - bar_p*bar_v__y;
 tilde_u_u_u = bar_rho_u_u_u/bar_rho;
 tilde_u_u_v = bar_rho_u_u_v/bar_rho;
