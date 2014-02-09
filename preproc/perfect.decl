@@ -85,15 +85,15 @@ tilde_u2w = tilde_u_u_w + tilde_v_v_w + tilde_w_w_w;
 tilde_upp2upp = tilde_u2u
               - (tilde_u_u + tilde_v_v + tilde_w_w)*tilde_u
               - 2*(tilde_u_u*tilde_u + tilde_u_v*tilde_v + tilde_u_w*tilde_w)
-              + 2*(tilde_u.square() + tilde_v.square() + tilde_w.square())*tilde_u;
+              + 2*(tilde_u**2 + tilde_v**2 + tilde_w**2)*tilde_u;
 tilde_upp2vpp = tilde_u2v
               - (tilde_u_u + tilde_v_v + tilde_w_w)*tilde_v
               - 2*(tilde_u_v*tilde_u + tilde_v_v*tilde_v + tilde_v_w*tilde_w)
-              + 2*(tilde_u.square() + tilde_v.square() + tilde_w.square())*tilde_v;
+              + 2*(tilde_u**2 + tilde_v**2 + tilde_w**2)*tilde_v;
 tilde_upp2wpp = tilde_u2w
               - (tilde_u_u + tilde_v_v + tilde_w_w)*tilde_w
               - 2*(tilde_u_w*tilde_u + tilde_v_w*tilde_v + tilde_w_w*tilde_w)
-              + 2*(tilde_u.square() + tilde_v.square() + tilde_w.square())*tilde_w;
+              + 2*(tilde_u**2 + tilde_v**2 + tilde_w**2)*tilde_w;
 tilde_T_u = bar_rho_T_u/bar_rho;
 tilde_T_v = bar_rho_T_v/bar_rho;
 tilde_T_w = bar_rho_T_w/bar_rho;
