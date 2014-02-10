@@ -196,10 +196,22 @@ def statements_by_semicolon(files=None):
 
 class symboldict(collections.OrderedDict):
     r'''
-    A collections.OrderedDict subclass for symbol -> SymPy expression entries.
-    Accordingly, entry insertion order is preserved.
+    A collections.OrderedDict subclass for symbol -> SymPy expression
+    entries.  Accordingly, entry insertion order is preserved.  Lookup of
+    missing entries like 'foo__y' will automatically invoke 'daff(foo,y)',
+    insert the result, and return the derivative.
     '''
-    pass
+    def __missing__(self, key):
+        head, sep, tail = key.partition('__')
+        if sep and tail:
+            if head in self:
+                val = daff(self[head], *list(tail))  # Generate deriative...
+                self[key] = val                      # ...and insert entry
+                return val
+            else:
+                raise KeyError('%s depends on missing key %s' % (key, head))
+        else:
+            raise KeyError(key)
 
 
 def parser(statement_tuples):
