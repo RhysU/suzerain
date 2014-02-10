@@ -40,10 +40,12 @@ derived quantities" within Suzerain's perfect gas model document.
 '''
 from __future__ import division, print_function
 import collections
+import distutils.version
 import fileinput
 import itertools
 import sympy
 import sympy.parsing.sympy_parser
+import sys
 from sympy.core.function import AppliedUndef
 
 # FIXME Hand check correct behavior against several known Coleman cases
@@ -549,7 +551,16 @@ def main(argv):
                                   % ', '.join(unknown))
 
     # Dispatch to the chosen command
-    return args.command(args)
+    retval = args.command(args)
+
+    # Warn if the results are likely bogus due to an older SymPy version
+    if (   distutils.version.StrictVersion(sympy.__version__)
+         < distutils.version.StrictVersion('0.7.2')           ):
+        print('WARN: %s notes SymPy %s older than minimum 0.7.2'
+              % (argv[0], sympy.__version__),
+              file=sys.stderr)
+
+    return retval
 
 
 def command_chk(args):
@@ -598,5 +609,4 @@ def command_var(args):
 
 
 if __name__ == "__main__":
-    from sys import argv, exit
-    exit(main(argv))
+    sys.exit(main(sys.argv))
