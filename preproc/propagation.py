@@ -52,30 +52,42 @@ from sympy.core.function import AppliedUndef
 # FIXME Incorporate dedub function into the parser
 
 
-def dedub(expr):
+def daff(expr, *symbols, **kwargs):
     r'''
-    Dub Derivative(f(x), x) to be f__x(x), effectively flattening it.
-    Meant to facilitate a derivative naming convention like foo__y(y).
+    Write Derivative(f(x), x) to be f__x(x), effectively flattening
+    it. Named as a contraction of 'derivative affix', the functionality
+    is meant to facilitate a derivative naming convention like foo__y(y).
 
     First and second derivatives are named by per the convention:
 
     >>> f, x, y = sympy.Function('f'), sympy.Symbol('x'), sympy.Symbol('y')
-    >>> dedub( (f(x)).diff(x) )
+    >>> daff( (f(x)).diff(x) )
     f__x(x)
-    >>> dedub( (f(x)).diff(x).diff(x) )
+    >>> daff( (f(x)).diff(x).diff(x) )
     f__xx(x)
 
     Regular function application is unaffected:
 
-    >>> dedub( sympy.cos(3*f(x, y)) )
+    >>> daff( sympy.cos(3*f(x, y)) )
     cos(3*f(x, y))
 
     Multivariate functions behavior assumes partial differentiation commutes:
 
-    >>> dedub( (f(x,y)).diff(x).diff(y) )
+    >>> daff( (f(x,y)).diff(x).diff(y) )
     f__xy(x, y)
-    >>> dedub( (f(y,x)).diff(y).diff(x) )
+    >>> daff( (f(y,x)).diff(y).diff(x) )
     f__xy(y, x)
+
+    Because calling sympy.diff then daff is cumbersome, a multiargument
+    invocation automatically wraps daff around sympy.diff:
+
+    >>> daff(f(x), x)
+    f__x(x)
+    >>> daff(f(y,x), y, x)
+    f__xy(y, x)
+    >>> daff(f(x), x, 5)
+    f__xxxxx(x)
+
     '''
 
     def helper(f, *wrt):
@@ -85,6 +97,9 @@ def dedub(expr):
         name = [head, '__']
         name.extend(sorted(deriv))
         return sympy.Function(''.join(name))(*list(f.args))
+
+    if symbols:
+        expr = sympy.diff(expr, *symbols, **kwargs)
 
     return expr.replace(sympy.Derivative, helper)
 
@@ -97,6 +112,8 @@ def parse(f, symbol_table=None):
     injecting module-specific handling into the parsing process.
     '''
     if isinstance(f, basestring):
+        if not symbol_table:
+            symbol_table = { 'daff': daff }
         f = sympy.parsing.sympy_parser.parse_expr(f, symbol_table)
     return f
 
