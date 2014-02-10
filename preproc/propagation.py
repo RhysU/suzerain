@@ -51,6 +51,43 @@ import sympy.physics.units
 #                 Deal with correlation between state and derivatives
 
 
+def dedub(expr):
+    r'''
+    Dub Derivative(f(x), x) to be f__x(x), effectively flattening it.
+    Meant to facilitate a derivative naming convention like foo__y(y).
+
+    First and second derivatives are named by per the convention:
+
+    >>> f, x, y = sympy.Function('f'), sympy.Symbol('x'), sympy.Symbol('y')
+    >>> dedub( (f(x)).diff(x) )
+    f__x(x)
+    >>> dedub( (f(x)).diff(x).diff(x) )
+    f__xx(x)
+
+    Regular function application is unaffected:
+
+    >>> dedub( sympy.cos(3*f(x, y)) )
+    cos(3*f(x, y))
+
+    Multivariate functions behavior assumes partial differentiation commutes:
+
+    >>> dedub( (f(x,y)).diff(x).diff(y) )
+    f__xy(x, y)
+    >>> dedub( (f(y,x)).diff(y).diff(x) )
+    f__xy(y, x)
+    '''
+
+    def helper(f, *wrt):
+        head, sep, tail = type(f).__name__.partition('__')
+        deriv = list(tail)
+        deriv.extend(sym.name for sym in wrt)
+        name  = [head, '__']
+        name.extend(sorted(deriv))
+        return sympy.Function(''.join(name))(*list(f.args))
+
+    return expr.replace(sympy.Derivative, helper)
+
+
 def constant(abbrev, name=None):
     r'''
     Define a constant with only trivial derivatives.
