@@ -194,22 +194,29 @@ def statements_by_semicolon(files=None):
                 del stmt[:]
 
 
+class symboldict(collections.OrderedDict):
+    r'''
+    A collections.OrderedDict subclass for symbol -> SymPy expression entries.
+    Accordingly, entry insertion order is preserved.
+    '''
+    pass
+
+
 def parser(statement_tuples):
     r'''
-    Parse statements from (filename, lineno, statement) tuples into
-    a collections.OrderedDict of symbol -> SymPy expression entries.
-    Either statements_by_newline() or statements_by_semicolon() may be used to
-    generate tuples from input files.
+    Parse statements from (filename, lineno, statement) tuples into a
+    symboldict.  Either statements_by_newline() or statements_by_semicolon()
+    may be used to generate tuples from input files.
 
     >>> parser([ ("test", 1, "a=1"     )    # Simple assignment
     ...        , ("test", 2, "b  = a+1")    # Reuse earlier definition
     ...        , ("test", 3, "c =  d+e") ]) # Purely symbolic result okay
-    OrderedDict([('a', 1), ('b', 2), ('c', d + e)])
+    symboldict([('a', 1), ('b', 2), ('c', d + e)])
 
     Lacking assignment, a target name will be generated from the line number:
 
     >>> parser([ ("test", 4, "f") ])
-    OrderedDict([('line4', f)])
+    symboldict([('line4', f)])
 
     Symbol re-definitions cause LookupErrors identifying the location:
 
@@ -220,7 +227,7 @@ def parser(statement_tuples):
     LookupError: Symbol 'a' redefined at somefile:2
     '''
     # Accumulate symbol definitions maintaining declaration order
-    symbol_table = collections.OrderedDict()
+    symbol_table = symboldict()
 
     # Process each trimmed, comment-less statement...
     for (filename, lineno, stmt) in statement_tuples:
