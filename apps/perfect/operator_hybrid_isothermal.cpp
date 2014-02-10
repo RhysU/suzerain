@@ -523,9 +523,9 @@ public:
         //   1) Unpack into a buffer relevant columns from banded, transposed
         //      operator which contain the rows of (M + \varphi L).
         //   2) Use knowledge that M = I at the edge to isolate the
-        //      action of \varphi L by subtracting I from the buffer.
+        //      action of -\varphi L.
         //   3) Left multiply by the wavenumber-independent factor
-        //      and accumulate the k_m- and k_n-dependent portions
+        //      and accumulate the k_m- and k_n-dependent contributions
         //   4) Accumulate the result back into the packed operator.
         //
         // The packing and unpacking operation are not as optimal as
@@ -542,32 +542,33 @@ public:
 
             // Steps 1 and 2: A transpose occurs during the unpack operation and
             // because Matrix5c is small, we choose to access it non-stride-1.
+            // Capitalizes on I - (M + \varphi L) = - \varphi L because M = 1.
             const complex_t one(1, 0);
-            buf(ndx::e  , ndx::e  ) = LOC(e  [edge]   , e  [edge]   ) - one;
-            buf(ndx::e  , ndx::mx ) = LOC(m  [edge][0], e  [edge]   );
-            buf(ndx::e  , ndx::my ) = LOC(m  [edge][1], e  [edge]   );
-            buf(ndx::e  , ndx::mz ) = LOC(m  [edge][2], e  [edge]   );
-            buf(ndx::e  , ndx::rho) = LOC(rho[edge]   , e  [edge]   );
-            buf(ndx::mx , ndx::e  ) = LOC(e  [edge]   , m  [edge][0]);
-            buf(ndx::mx , ndx::mx ) = LOC(m  [edge][0], m  [edge][0]) - one;
-            buf(ndx::mx , ndx::my ) = LOC(m  [edge][1], m  [edge][0]);
-            buf(ndx::mx , ndx::mz ) = LOC(m  [edge][2], m  [edge][0]);
-            buf(ndx::mx , ndx::rho) = LOC(rho[edge]   , m  [edge][0]);
-            buf(ndx::my , ndx::e  ) = LOC(e  [edge]   , m  [edge][1]);
-            buf(ndx::my , ndx::mx ) = LOC(m  [edge][0], m  [edge][1]);
-            buf(ndx::my , ndx::my ) = LOC(m  [edge][1], m  [edge][1]) - one;
-            buf(ndx::my , ndx::mz ) = LOC(m  [edge][2], m  [edge][1]);
-            buf(ndx::my , ndx::rho) = LOC(rho[edge]   , m  [edge][1]);
-            buf(ndx::mz , ndx::e  ) = LOC(e  [edge]   , m  [edge][2]);
-            buf(ndx::mz , ndx::mx ) = LOC(m  [edge][0], m  [edge][2]);
-            buf(ndx::mz , ndx::my ) = LOC(m  [edge][1], m  [edge][2]);
-            buf(ndx::mz , ndx::mz ) = LOC(m  [edge][2], m  [edge][2]) - one;
-            buf(ndx::mz , ndx::rho) = LOC(rho[edge]   , m  [edge][2]);
-            buf(ndx::rho, ndx::e  ) = LOC(e  [edge]   , rho[edge]   );
-            buf(ndx::rho, ndx::mx ) = LOC(m  [edge][0], rho[edge]   );
-            buf(ndx::rho, ndx::my ) = LOC(m  [edge][1], rho[edge]   );
-            buf(ndx::rho, ndx::mz ) = LOC(m  [edge][2], rho[edge]   );
-            buf(ndx::rho, ndx::rho) = LOC(rho[edge]   , rho[edge]   ) - one;
+            buf(ndx::e  , ndx::e  ) = one - LOC(e  [edge]   , e  [edge]   );
+            buf(ndx::e  , ndx::mx ) =     - LOC(m  [edge][0], e  [edge]   );
+            buf(ndx::e  , ndx::my ) =     - LOC(m  [edge][1], e  [edge]   );
+            buf(ndx::e  , ndx::mz ) =     - LOC(m  [edge][2], e  [edge]   );
+            buf(ndx::e  , ndx::rho) =     - LOC(rho[edge]   , e  [edge]   );
+            buf(ndx::mx , ndx::e  ) =     - LOC(e  [edge]   , m  [edge][0]);
+            buf(ndx::mx , ndx::mx ) = one - LOC(m  [edge][0], m  [edge][0]);
+            buf(ndx::mx , ndx::my ) =     - LOC(m  [edge][1], m  [edge][0]);
+            buf(ndx::mx , ndx::mz ) =     - LOC(m  [edge][2], m  [edge][0]);
+            buf(ndx::mx , ndx::rho) =     - LOC(rho[edge]   , m  [edge][0]);
+            buf(ndx::my , ndx::e  ) =     - LOC(e  [edge]   , m  [edge][1]);
+            buf(ndx::my , ndx::mx ) =     - LOC(m  [edge][0], m  [edge][1]);
+            buf(ndx::my , ndx::my ) = one - LOC(m  [edge][1], m  [edge][1]);
+            buf(ndx::my , ndx::mz ) =     - LOC(m  [edge][2], m  [edge][1]);
+            buf(ndx::my , ndx::rho) =     - LOC(rho[edge]   , m  [edge][1]);
+            buf(ndx::mz , ndx::e  ) =     - LOC(e  [edge]   , m  [edge][2]);
+            buf(ndx::mz , ndx::mx ) =     - LOC(m  [edge][0], m  [edge][2]);
+            buf(ndx::mz , ndx::my ) =     - LOC(m  [edge][1], m  [edge][2]);
+            buf(ndx::mz , ndx::mz ) = one - LOC(m  [edge][2], m  [edge][2]);
+            buf(ndx::mz , ndx::rho) =     - LOC(rho[edge]   , m  [edge][2]);
+            buf(ndx::rho, ndx::e  ) =     - LOC(e  [edge]   , rho[edge]   );
+            buf(ndx::rho, ndx::mx ) =     - LOC(m  [edge][0], rho[edge]   );
+            buf(ndx::rho, ndx::my ) =     - LOC(m  [edge][1], rho[edge]   );
+            buf(ndx::rho, ndx::mz ) =     - LOC(m  [edge][2], rho[edge]   );
+            buf(ndx::rho, ndx::rho) = one - LOC(rho[edge]   , rho[edge]   );
 
             // Step 3: TODO
 
