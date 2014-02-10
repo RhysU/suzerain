@@ -556,7 +556,7 @@ def main(argv):
                            description='Run verification sanity checks')
     sp_dec = sp.add_parser('dec', help='Output known declarations',
                            description='Output known declarations')
-    sp_lib = sp.add_parser('lib', help='List free symbols from declarations',
+    sp_lib = sp.add_parser('lib', help='List undefined symbols in declarations',
                            description=prerequisites.__doc__,
                            formatter_class=RawDescriptionHelpFormatter)
     sp_pre = sp.add_parser('pre', help='Prerequisites for E[f(x)], Var[f(x)]',
@@ -631,10 +631,15 @@ def command_dec(args):
 
 def command_lib(args):
     r'''Process the 'lib' command on behalf of main()'''
-    free = set()
+    freesyms = set()
+    freefunc = set()
     for qoi in args.f:
-        free.update(args.syms[qoi].free_symbols)
-    map(print, sorted(free))
+        decl = args.syms[qoi]
+        freefunc.update(decl.atoms(AppliedUndef))
+        freesyms.update(decl.free_symbols)
+    map(print, sorted(freefunc))
+    print()
+    map(print, sorted(freesyms))
 
 
 def command_pre(args):
