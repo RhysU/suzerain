@@ -22,10 +22,10 @@
 //--------------------------------------------------------------------------
 
 /** @file
- * @copydoc operator_hybrid.hpp
+ * @copydoc operator_hybrid_isothermal.hpp
  */
 
-#include "operator_hybrid.hpp"
+#include "operator_hybrid_isothermal.hpp"
 
 #include <suzerain/blas_et_al.hpp>
 #include <suzerain/bsmbsm.h>
@@ -68,7 +68,7 @@ namespace suzerain {
 
 namespace perfect {
 
-isothermal_hybrid_linear_operator::isothermal_hybrid_linear_operator(
+operator_hybrid_isothermal::operator_hybrid_isothermal(
         const specification_zgbsv& spec,
         const definition_scenario& scenario,
         const specification_isothermal& isothermal,
@@ -88,7 +88,7 @@ isothermal_hybrid_linear_operator::isothermal_hybrid_linear_operator(
 {
 }
 
-isothermal_hybrid_linear_operator::~isothermal_hybrid_linear_operator()
+operator_hybrid_isothermal::~operator_hybrid_isothermal()
 {
     // TODO Allreduce bsmbsm_solver statistics from all ranks
     if (solver) {
@@ -99,7 +99,7 @@ isothermal_hybrid_linear_operator::~isothermal_hybrid_linear_operator()
     }
 }
 
-void isothermal_hybrid_linear_operator::apply_mass_plus_scaled_operator(
+void operator_hybrid_isothermal::apply_mass_plus_scaled_operator(
         const complex_t& phi,
         multi_array::ref<complex_t,4> &state,
         const std::size_t substep_index) const
@@ -235,7 +235,7 @@ void isothermal_hybrid_linear_operator::apply_mass_plus_scaled_operator(
     }
 }
 
-void isothermal_hybrid_linear_operator::accumulate_mass_plus_scaled_operator(
+void operator_hybrid_isothermal::accumulate_mass_plus_scaled_operator(
         const complex_t& phi,
         const multi_array::ref<complex_t,4> &input,
         const complex_t& beta,
@@ -523,7 +523,7 @@ public:
     }
 };
 
-void isothermal_hybrid_linear_operator::invert_mass_plus_scaled_operator(
+void operator_hybrid_isothermal::invert_mass_plus_scaled_operator(
         const complex_t& phi,
         multi_array::ref<complex_t,4> &state,
         const lowstorage::method_interface<complex_t> &method,
@@ -756,7 +756,7 @@ void isothermal_hybrid_linear_operator::invert_mass_plus_scaled_operator(
 }
 
 suzerain_rholut_imexop_scenario
-isothermal_hybrid_linear_operator::imexop_s() const
+operator_hybrid_isothermal::imexop_s() const
 {
     suzerain_rholut_imexop_scenario retval;
     retval.Re    = scenario.Re;

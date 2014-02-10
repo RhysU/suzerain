@@ -44,7 +44,7 @@
 #include <suzerain/support/logging.hpp>
 
 #include "driver.hpp"
-#include "operator_hybrid.hpp"
+#include "operator_hybrid_isothermal.hpp"
 #include "operator_mass_isothermal.hpp"
 #include "operator_nonlinear.hpp"
 #include "treatment_nonreflecting.hpp"
@@ -521,7 +521,7 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
                         " not currently usable with implicit advance");
             return EXIT_FAILURE;
         }
-        constrainer->L.reset(new isothermal_hybrid_linear_operator(
+        constrainer->L.reset(new operator_hybrid_isothermal(
                     solver_spec, *scenario, *isothermal,
                     *grid, *dgrid, *cop, *b, common_block));
 

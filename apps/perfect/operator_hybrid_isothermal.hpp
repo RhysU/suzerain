@@ -54,7 +54,7 @@ class definition_scenario;
  * It requires interoperation with operator_nonlinear via
  * operator_common_block.
  */
-class isothermal_hybrid_linear_operator
+class operator_hybrid_isothermal
   : public operator_base,
     public lowstorage::linear_operator<
         multi_array::ref<complex_t,4>,
@@ -68,7 +68,7 @@ public:
      * boundaries are constrained to be isothermal.  When
      * specification_grid::one_sided(), only the lower boundary is constrained.
      */
-    isothermal_hybrid_linear_operator(
+    operator_hybrid_isothermal(
             const specification_zgbsv& spec,
             const definition_scenario& scenario,
             const specification_isothermal& isothermal,
@@ -78,7 +78,7 @@ public:
             bspline& b,
             operator_common_block& common);
 
-    ~isothermal_hybrid_linear_operator();
+    ~operator_hybrid_isothermal();
 
     virtual void apply_mass_plus_scaled_operator(
              const complex_t& phi,
