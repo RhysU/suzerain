@@ -400,17 +400,17 @@ void operator_hybrid_isothermal::accumulate_mass_plus_scaled_operator(
 class IsothermalPATPTEnforcer
 {
     // Loop constants to reduce magic number usage
-    enum { nwalls = 2, nmomentum = 3 };
+    enum { nedges = 2, nmomentum = 3 };
 
     // Indices within PA^TP^T at which to apply boundary conditions
     // Computed once within constructor and then repeatedly used
-    int rho[nwalls], m[nwalls][nmomentum], e[nwalls];
+    int rho[nedges], m[nedges][nmomentum], e[nedges];
 
     // Precomputed coefficients based on the isothermal equation of state
-    real_t E_factor[nwalls];
+    real_t E_factor[nedges];
 
     // Coefficients used to enforce possibly transpiring walls
-    real_t vel_factor[nwalls][nmomentum];
+    real_t vel_factor[nedges][nmomentum];
 
     // On which wall indices will constraints be enforced?
     // These control wall loop extents during enforcement
@@ -435,11 +435,11 @@ public:
         const int rho0 = static_cast<int>(ndx::rho) * A_T.n;
 
         // Relative to foo0 what is the offset to lower, upper walls
-        const int wall[nwalls] = { 0, A_T.n - 1};
+        const int wall[nedges] = { 0, A_T.n - 1};
 
         // Prepare indices within PA^TP^T corresponding to the walls.
         // Uses that {A^T}_{i,j} maps to {PA^TP^T}_{{q^-1}(i),{q^(-1)}(j)}.
-        for (int i = 0; i < nwalls; ++i) {
+        for (int i = 0; i < nedges; ++i) {
             e  [i]    = suzerain_bsmbsm_qinv(A_T.S, A_T.n, e0   + wall[i]);
             m  [i][0] = suzerain_bsmbsm_qinv(A_T.S, A_T.n, mx0  + wall[i]);
             m  [i][1] = suzerain_bsmbsm_qinv(A_T.S, A_T.n, my0  + wall[i]);
