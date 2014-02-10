@@ -40,7 +40,7 @@ tilde_T = (gam*(gam-1))*(tilde_E - Ma*Ma*(
                + tilde_w**2 ) / 2
            +  tilde_k
            ));
-tilde_H = tilde_E    + tilde_T   /gam;
+tilde_H = tilde_E + tilde_T / gam;
 
 bar_tau_colon_grad_upp = bar_tau_colon_grad_u(y)
                        - bar_tauxy(y) * tilde_u__y
