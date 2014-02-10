@@ -466,28 +466,21 @@ public:
     }
 
     /**
-     * Zero RHS of momentum and energy equations at lower, upper walls.
-     * Must be used in conjunction with op().
+     * Modify the equations within PA^TP^T for lower, upper walls and possibly a
+     * wavenumber-dependent nonreflecting upper boundary where each contiguous
+     * column within PA^TP^T contains one equation.  This storage is ideal from
+     * a cache locality perspective for this boundary condition. Must be done in
+     * conjunction with rhs().
      */
     template<typename T>
-    void rhs(T * const b)
-    {
-        for (int wall = wall_begin; wall < wall_end; ++wall) {
-            b[e[wall]] = 0;
-            for (int eqn = 0; eqn < nmomentum; ++eqn) {
-                b[m[wall][eqn]] = 0;
-            }
-        }
-    }
-
-    /**
-     * Modify the equations within PA^TP^T for lower, upper walls where each
-     * contiguous column within PA^TP^T contains one equation.  This storage is
-     * ideal from a cache locality perspective for this boundary condition.
-     * Must be done in conjunction with rhs().
-     */
-    template<typename T>
-    void op(const suzerain_bsmbsm& A_T, T * const patpt, int patpt_ld)
+    void op(const suzerain_bsmbsm& A_T,
+            T * const patpt,
+            int patpt_ld,
+            const Matrix5r& nrbc_a,
+            const Matrix5r& nrbc_b,
+            const Matrix5r& nrbc_c,
+            const real_t& km,
+            const real_t& kn)
     {
         for (int wall = wall_begin; wall < wall_end; ++wall) {
 
@@ -521,6 +514,22 @@ public:
                            : i == rho[wall]    ? -scaling*vel_factor[wall][eqn]
                            :                     0;
                 }
+            }
+        }
+    }
+
+    /**
+     * Zero RHS of momentum and energy equations at lower, upper walls. Must be
+     * used in conjunction with op().  Always wavenumber-independent and hence
+     * no \c km or \c kn arguments in contrast with \c op().
+     */
+    template<typename T>
+    void rhs(T * const b)
+    {
+        for (int wall = wall_begin; wall < wall_end; ++wall) {
+            b[e[wall]] = 0;
+            for (int eqn = 0; eqn < nmomentum; ++eqn) {
+                b[m[wall][eqn]] = 0;
             }
         }
     }
@@ -653,8 +662,13 @@ void operator_hybrid_isothermal::invert_mass_plus_scaled_operator(
                 // Apply boundary conditions to PA^TP^T
                 {
                     SUZERAIN_TIMER_SCOPED("implicit operator BCs");
-                    bc_enforcer.op(*solver, solver->PAPT.data(),
-                                            solver->PAPT.colStride());
+                    bc_enforcer.op(*solver,
+                                   solver->PAPT.data(),
+                                   solver->PAPT.colStride(),
+                                   upper_nrbc_a,
+                                   upper_nrbc_b,
+                                   upper_nrbc_c,
+                                   km, kn);
                 }
                 // Inform the solver about the new, unfactorized operator
                 solver->supplied_PAPT();
@@ -701,11 +715,16 @@ void operator_hybrid_isothermal::invert_mass_plus_scaled_operator(
                     ndx::e, ndx::mx, ndx::my, ndx::mz, ndx::rho,
                     buf.data(), solver.get(), solver->PAPT.data());
         }
-        // Apply boundary conditions to PA^TP^T
+        // Apply wavenumber-independent boundary conditions to PA^TP^T
         {
             SUZERAIN_TIMER_SCOPED("implicit operator BCs");
-            bc_enforcer.op(*solver, solver->PAPT.data(),
-                                    solver->PAPT.colStride());
+            bc_enforcer.op(*solver,
+                           solver->PAPT.data(),
+                           solver->PAPT.colStride(),
+                           upper_nrbc_a,
+                           upper_nrbc_b,
+                           upper_nrbc_c,
+                           0, 0);
         }
         // Inform the solver about the new, unfactorized operator
         solver->supplied_PAPT();
