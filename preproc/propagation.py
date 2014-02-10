@@ -205,7 +205,7 @@ class symboldict(collections.OrderedDict):
         head, sep, tail = key.partition('__')
         if sep and tail:
             if head in self:
-                val = daff(self[head], *list(tail))  # Generate deriative...
+                val = daff(self[head], *list(tail))  # Generate derivative...
                 self[key] = val                      # ...and insert entry
                 return val
             else:
