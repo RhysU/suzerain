@@ -112,9 +112,11 @@ def parse(f, symbol_table=None):
     injecting module-specific handling into the parsing process.
     '''
     if isinstance(f, basestring):
-        if not symbol_table:
-            symbol_table = { 'daff': daff }
-        f = sympy.parsing.sympy_parser.parse_expr(f, symbol_table)
+        t = { 'daff': daff }
+        if symbol_table is not None:
+            t.update(symbol_table)
+        f = sympy.parsing.sympy_parser.parse_expr(f, t)
+
     return f
 
 
