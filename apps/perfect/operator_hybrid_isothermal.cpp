@@ -479,6 +479,7 @@ public:
             const Matrix5r& nrbc_a,
             const Matrix5r& nrbc_b,
             const Matrix5r& nrbc_c,
+            const complex_t& phi,
             const real_t& km,
             const real_t& kn)
     {
@@ -751,7 +752,7 @@ void operator_hybrid_isothermal::invert_mass_plus_scaled_operator(
                                    upper_nrbc_a,
                                    upper_nrbc_b,
                                    upper_nrbc_c,
-                                   km, kn);
+                                   phi, km, kn);
                 }
                 // Inform the solver about the new, unfactorized operator
                 solver->supplied_PAPT();
@@ -807,7 +808,7 @@ void operator_hybrid_isothermal::invert_mass_plus_scaled_operator(
                            upper_nrbc_a,
                            upper_nrbc_b,
                            upper_nrbc_c,
-                           0, 0);
+                           phi, /*km*/0, /*kn*/0);
         }
         // Inform the solver about the new, unfactorized operator
         solver->supplied_PAPT();
