@@ -104,7 +104,7 @@ def daff(expr, *symbols, **kwargs):
         return sympy.Function(''.join(name))(*list(f.args))
 
     if symbols:
-        expr = sympy.diff(expr, *symbols, **kwargs)
+        expr = sympy.diff(expr, *symbols, **kwargs).simplify()
 
     return expr.replace(sympy.Derivative, helper)
 
