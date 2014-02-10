@@ -422,10 +422,10 @@ public:
     IsothermalPATPTEnforcer(const suzerain_bsmbsm& A_T,
                             const suzerain_rholut_imexop_scenario& s,
                             const specification_isothermal& spec,
-                            const bool enforce_lower,
-                            const bool enforce_upper)
-        : wall_begin(enforce_lower ? 0 : 1)
-        , wall_end  (enforce_upper ? 2 : 1)
+                            const bool is_wall_lower,
+                            const bool is_wall_upper)
+        : wall_begin(is_wall_lower ? 0 : 1)
+        , wall_end  (is_wall_upper ? 2 : 1)
     {
         // Starting offset to named scalars in interleaved_state pencil
         const int e0   = static_cast<int>(ndx::e  ) * A_T.n;
@@ -463,16 +463,6 @@ public:
         vel_factor[1][0] = spec.upper_u;
         vel_factor[1][1] = spec.upper_v;
         vel_factor[1][2] = spec.upper_w;
-
-        // Yell if spec.lower_rho or spec.upper_rho inappropriate
-        if (enforce_lower && !(boost::math::isnan)(spec.lower_rho)) {
-            WARN0("Ignoring specification_isothermal lower_rho = "
-                  << spec.lower_rho);
-        }
-        if (enforce_upper && !(boost::math::isnan)(spec.upper_rho)) {
-            WARN0("Ignoring specification_isothermal upper_rho = "
-                  << spec.upper_rho);
-        }
     }
 
     /**
