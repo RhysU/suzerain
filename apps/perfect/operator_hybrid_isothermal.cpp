@@ -837,11 +837,11 @@ operator_hybrid_isothermal::apply_operator(
 
             // Modify the packed RHS per
             // "Implementation primarily within the linear explicit operator"
-            const Vector5c NGI_hatV = upper_nrbc_n.cast<complex_t>() * N_hatV;
+            N_hatV.applyOnTheLeft(upper_nrbc_n.cast<complex_t>());
 
             // Pack new upper boundary RHS from the contiguous buffer
-            for (int f = 0; f < NGI_hatV.size(); ++f) {
-                swave[f][Ny - 1][m - dkbx][n - dkbz] = NGI_hatV(f);
+            for (int f = 0; f < N_hatV.size(); ++f) {
+                swave[f][Ny - 1][m - dkbx][n - dkbz] = N_hatV(f);
             }
 
         }
