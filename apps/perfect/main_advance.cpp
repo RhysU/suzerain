@@ -523,9 +523,6 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
             INFO0(who, "Preparing nonreflecting upper boundary treatment");
             hybrid->N = N;
             N = hybrid;
-            // FIXME Redmine #2979 Remove warning when working
-            WARN0(who, "Nonreflecting upper boundary treatment"
-                        " known to be broken with implicit advance");
         }
         constrainer->L = hybrid;  // Constrainer invokes hybrid linear operator
 

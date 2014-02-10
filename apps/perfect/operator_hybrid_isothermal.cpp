@@ -570,7 +570,10 @@ public:
             buf(ndx::rho, ndx::mz ) =     - LOC(m  [edge][2], rho[edge]   );
             buf(ndx::rho, ndx::rho) = one - LOC(rho[edge]   , rho[edge]   );
 
-            // Step 3: TODO
+            // Step 3
+            buf.applyOnTheLeft(nrbc_c.cast<complex_t>());
+            buf += (phi * complex_t(real_t(0), km)) * nrbc_a.cast<complex_t>();
+            buf += (phi * complex_t(real_t(0), kn)) * nrbc_b.cast<complex_t>();
 
             // Step 4: Again, a transpose on re-pack.
             LOC(e  [edge]   , e  [edge]   ) = buf(ndx::e  , ndx::e  );
@@ -620,7 +623,6 @@ public:
     }
 };
 
-// FIXME Redmine #2979 include upper NRBC in assembled matrices
 void operator_hybrid_isothermal::invert_mass_plus_scaled_operator(
         const complex_t& phi,
         multi_array::ref<complex_t,4> &state,
