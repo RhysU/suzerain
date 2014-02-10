@@ -49,7 +49,12 @@ import sys
 from sympy.core.function import AppliedUndef
 
 # FIXME Hand check correct behavior against several known Coleman cases
-# FIXME Incorporate dedub function into the parser
+
+
+# Separator between a quantity name and the partial derivatives requested. For
+# example, when 'foo' is some quantity then 'foo_xyz' is its partial derivative
+# with respect to x, y, and z.
+daffsep = '__'
 
 
 def daff(expr, *symbols, **kwargs):
@@ -91,10 +96,10 @@ def daff(expr, *symbols, **kwargs):
     '''
 
     def helper(f, *wrt):
-        head, sep, tail = type(f).__name__.partition('__')
+        head, sep, tail = type(f).__name__.partition(daffsep)
         deriv = list(tail)
         deriv.extend(sym.name for sym in wrt)
-        name = [head, '__']
+        name = [head, daffsep]
         name.extend(sorted(deriv))
         return sympy.Function(''.join(name))(*list(f.args))
 
@@ -104,20 +109,16 @@ def daff(expr, *symbols, **kwargs):
     return expr.replace(sympy.Derivative, helper)
 
 
-def parse(f, symbol_table=None):
+def parse(expr, symbol_table=None):
     r'''
-    Given a SymPy expression f or any string parsable as such, produce
-    a SymPy expression prepared for further processing by methods
-    within this module.  This provides a common extension point for
+    Given a SymPy expression expr or any string parsable as such, produce a
+    SymPy expression.  This method provides a common extension point for
     injecting module-specific handling into the parsing process.
     '''
-    if isinstance(f, basestring):
-        t = { 'daff': daff }
-        if symbol_table is not None:
-            t.update(symbol_table)
-        f = sympy.parsing.sympy_parser.parse_expr(f, t)
+    if isinstance(expr, basestring):
+        expr = sympy.parsing.sympy_parser.parse_expr(expr, symbol_table)
 
-    return f
+    return expr
 
 
 # TODO Line continuation via trailing backslash
@@ -194,7 +195,7 @@ def statements_by_semicolon(files=None):
                 del stmt[:]
 
 
-class symboldict(collections.OrderedDict):
+class symboltranscript(collections.OrderedDict):
     r'''
     A collections.OrderedDict subclass for symbol -> SymPy expression
     entries.  Accordingly, entry insertion order is preserved.  Lookup of
@@ -202,7 +203,8 @@ class symboldict(collections.OrderedDict):
     insert the result, and return the derivative.
     '''
     def __missing__(self, key):
-        head, sep, tail = key.partition('__')
+        'Uses daff(...) to generate missing keys whenever possible.'
+        head, sep, tail = key.partition(daffsep)
         if sep and tail:
             if head in self:
                 val = daff(self[head], *list(tail))  # Generate derivative...
@@ -213,22 +215,34 @@ class symboldict(collections.OrderedDict):
         else:
             raise KeyError(key)
 
+    def __contains__(self, key):
+        'Augments containment to include keys computable via daff(...).'
+        if super(symboltranscript, self).__contains__(key):
+            return True
+        else:
+            head, sep, tail = key.partition(daffsep)
+            if sep and tail:
+                return super(symboltranscript, self).__contains__(head)
+            else:
+                return False
+
+
 
 def parser(statement_tuples):
     r'''
     Parse statements from (filename, lineno, statement) tuples into a
-    symboldict.  Either statements_by_newline() or statements_by_semicolon()
-    may be used to generate tuples from input files.
+    symboltranscript.  Either statements_by_newline() or
+    statements_by_semicolon() may be used to generate tuples from input files.
 
     >>> parser([ ("test", 1, "a=1"     )    # Simple assignment
     ...        , ("test", 2, "b  = a+1")    # Reuse earlier definition
     ...        , ("test", 3, "c =  d+e") ]) # Purely symbolic result okay
-    symboldict([('a', 1), ('b', 2), ('c', d + e)])
+    symboltranscript([('a', 1), ('b', 2), ('c', d + e)])
 
     Lacking assignment, a target name will be generated from the line number:
 
     >>> parser([ ("test", 4, "f") ])
-    symboldict([('line4', f)])
+    symboltranscript([('line4', f)])
 
     Symbol re-definitions cause LookupErrors identifying the location:
 
@@ -239,7 +253,7 @@ def parser(statement_tuples):
     LookupError: Symbol 'a' redefined at somefile:2
     '''
     # Accumulate symbol definitions maintaining declaration order
-    symbol_table = symboldict()
+    symbol_table = symboltranscript()
 
     # Process each trimmed, comment-less statement...
     for (filename, lineno, stmt) in statement_tuples:
