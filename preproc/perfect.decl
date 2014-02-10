@@ -6,16 +6,16 @@
 
 // Favre-averaged specific state {
 tilde_u    = bar_rho_u/bar_rho;
-tilde_u__y = bar_rho_u__y/bar_rho -bar_rho_u*bar_rho__y/bar_rho**2;
+tilde_u__y = bar_rho_u__y/bar_rho - bar_rho_u*bar_rho__y/bar_rho**2;
 
 tilde_v    = bar_rho_v/bar_rho;
-tilde_v__y = bar_rho_v__y/bar_rho -bar_rho_v*bar_rho__y/bar_rho**2;
+tilde_v__y = bar_rho_v__y/bar_rho - bar_rho_v*bar_rho__y/bar_rho**2;
 
 tilde_w    = bar_rho_w/bar_rho;
-tilde_w__y = bar_rho_w__y/bar_rho -bar_rho_w*bar_rho__y/bar_rho**2;
+tilde_w__y = bar_rho_w__y/bar_rho - bar_rho_w*bar_rho__y/bar_rho**2;
 
 tilde_E    = bar_rho_E/bar_rho;
-tilde_E__y = bar_rho_E__y/bar_rho -bar_rho_E*bar_rho__y/bar_rho**2;
+tilde_E__y = bar_rho_E__y/bar_rho - bar_rho_E*bar_rho__y/bar_rho**2;
 // }
 
 // Favre-averaged Reynolds stresses {
@@ -137,39 +137,126 @@ bar_tauuppz    = bar_tauuz
                - bar_tauxz    * tilde_u
                - bar_tauyz    * tilde_v
                - bar_tauzz    * tilde_w;
+// }
+
+// Fluctuating pressure/velocity-divergence correlation
+bar_pp_div_upp = bar_p_div_u - bar_p*bar_v__y;
+
+// Favre-averaged turbulent transport and its wall-normal derivative {
+tilde_u_u_u    = bar_rho_u_u_u/bar_rho;
+tilde_u_u_u__y = bar_rho_u_u_u__y/bar_rho
+               - bar_rho_u_u_u*bar_rho__y/bar_rho**2;
+
+tilde_u_u_v    = bar_rho_u_u_v/bar_rho;
+tilde_u_u_v__y = bar_rho_u_u_v__y/bar_rho
+               - bar_rho_u_u_v*bar_rho__y/bar_rho**2;
+
+tilde_u_u_w    = bar_rho_u_u_w/bar_rho;
+tilde_u_u_w__y = bar_rho_u_u_w__y/bar_rho
+               - bar_rho_u_u_w*bar_rho__y/bar_rho**2;
+
+tilde_u_v_v    = bar_rho_u_v_v/bar_rho;
+tilde_u_v_v__y = bar_rho_u_v_v__y/bar_rho
+               - bar_rho_u_v_v*bar_rho__y/bar_rho**2;
+
+tilde_u_v_w    = bar_rho_u_v_w/bar_rho;
+tilde_u_v_w__y = bar_rho_u_v_w__y/bar_rho
+               - bar_rho_u_v_w*bar_rho__y/bar_rho**2;
+
+tilde_u_w_w    = bar_rho_u_w_w/bar_rho;
+tilde_u_w_w__y = bar_rho_u_w_w__y/bar_rho
+               - bar_rho_u_w_w*bar_rho__y/bar_rho**2;
+
+tilde_v_v_v    = bar_rho_v_v_v/bar_rho;
+tilde_v_v_v__y = bar_rho_v_v_v__y/bar_rho
+               - bar_rho_v_v_v*bar_rho__y/bar_rho**2;
+
+tilde_v_v_w    = bar_rho_v_v_w/bar_rho;
+tilde_v_v_w__y = bar_rho_v_v_w__y/bar_rho
+               - bar_rho_v_v_w*bar_rho__y/bar_rho**2;
+
+tilde_v_w_w    = bar_rho_v_w_w/bar_rho;
+tilde_v_w_w__y = bar_rho_v_w_w__y/bar_rho
+               - bar_rho_v_w_w*bar_rho__y/bar_rho**2;
+
+tilde_w_w_w    = bar_rho_w_w_w/bar_rho;
+tilde_w_w_w__y = bar_rho_w_w_w__y/bar_rho
+               - bar_rho_w_w_w*bar_rho__y/bar_rho**2;
+
+tilde_u2u    = tilde_u_u_u    + tilde_u_v_v    + tilde_u_w_w;
+tilde_u2u__y = tilde_u_u_u__y + tilde_u_v_v__y + tilde_u_w_w__y;
+tilde_u2v    = tilde_u_u_v    + tilde_v_v_v    + tilde_v_w_w;
+tilde_u2v__y = tilde_u_u_v__y + tilde_v_v_v__y + tilde_v_w_w__y;
+tilde_u2w    = tilde_u_u_w    + tilde_v_v_w    + tilde_w_w_w;
+tilde_u2w__y = tilde_u_u_w__y + tilde_v_v_w__y + tilde_w_w_w__y;
+
+tilde_upp2upp    = tilde_u2u
+                 - (tilde_u_u + tilde_v_v + tilde_w_w)*tilde_u
+                 - 2*(   tilde_u_u*tilde_u
+                       + tilde_u_v*tilde_v
+                       + tilde_u_w*tilde_w )
+                 + 2*(tilde_u**2 + tilde_v**2 + tilde_w**2)*tilde_u;
+
+tilde_upp2upp__y = tilde_u2u__y
+                 - (tilde_u_u    + tilde_v_v    + tilde_w_w   )*tilde_u__y
+                 - (tilde_u_u__y + tilde_v_v__y + tilde_w_w__y)*tilde_u
+                 - 2*(   tilde_u_u__y * tilde_u
+                       + tilde_u_u    * tilde_u__y
+                       + tilde_u_v__y * tilde_v
+                       + tilde_u_v    * tilde_v__y
+                       + tilde_u_w__y * tilde_w
+                       + tilde_u_w    * tilde_w__y )
+                 + 2*(tilde_u**2    + tilde_v**2    + tilde_w**2)*tilde_u__y
+                 + 4*(   tilde_u*tilde_u__y
+                       + tilde_v*tilde_v__y
+                       + tilde_w*tilde_w__y)*tilde_u;
+
+tilde_upp2vpp    = tilde_u2v
+                 - (tilde_u_u + tilde_v_v + tilde_w_w)*tilde_v
+                 - 2*(   tilde_u_v*tilde_u
+                       + tilde_v_v*tilde_v
+                       + tilde_v_w*tilde_w )
+                 + 2*(tilde_u**2 + tilde_v**2 + tilde_w**2)*tilde_v;
+
+tilde_upp2vpp__y = tilde_u2v__y
+                 - (tilde_u_u    + tilde_v_v    + tilde_w_w   )*tilde_v__y
+                 - (tilde_u_u__y + tilde_v_v__y + tilde_w_w__y)*tilde_v
+                 - 2*(   tilde_u_v__y * tilde_u
+                       + tilde_u_v    * tilde_u__y
+                       + tilde_v_v__y * tilde_v
+                       + tilde_v_v    * tilde_v__y
+                       + tilde_v_w__y * tilde_w
+                       + tilde_v_w    * tilde_w__y )
+                 + 2*(tilde_u**2 + tilde_v**2 + tilde_w**2)*tilde_v__y
+                 + 4*(   tilde_u*tilde_u__y
+                       + tilde_v*tilde_v__y
+                       + tilde_w*tilde_w__y)*tilde_v;
+
+tilde_upp2wpp    = tilde_u2w
+                 - (tilde_u_u + tilde_v_v + tilde_w_w)*tilde_w
+                 - 2*(   tilde_u_w*tilde_u
+                       + tilde_v_w*tilde_v
+                       + tilde_w_w*tilde_w )
+                 + 2*(tilde_u**2 + tilde_v**2 + tilde_w**2)*tilde_w;
+
+tilde_upp2wpp__y = tilde_u2w__y
+                 - (tilde_u_u    + tilde_v_v    + tilde_w_w   )*tilde_w__y
+                 - (tilde_u_u__y + tilde_v_v__y + tilde_w_w__y)*tilde_w
+                 - 2*(   tilde_u_w__y * tilde_u
+                       + tilde_u_w    * tilde_u__y
+                       + tilde_v_w__y * tilde_v
+                       + tilde_v_w    * tilde_v__y
+                       + tilde_w_w__y * tilde_w
+                       + tilde_w_w    * tilde_w__y )
+                 + 2*(tilde_u**2 + tilde_v**2 + tilde_w**2)*tilde_w__y
+                 + 4*(   tilde_u*tilde_u__y
+                       + tilde_v*tilde_v__y
+                       + tilde_w*tilde_w__y ) * tilde_w;
 
 // }
 
-// FIXME Start here
+// FIXME STARTHERE
 
-D(bar_v);  // Form derivatives
-
-bar_pp_div_upp = bar_p_div_u - bar_p*bar_v__y;
-tilde_u_u_u = bar_rho_u_u_u/bar_rho;
-tilde_u_u_v = bar_rho_u_u_v/bar_rho;
-tilde_u_u_w = bar_rho_u_u_w/bar_rho;
-tilde_u_v_v = bar_rho_u_v_v/bar_rho;
-tilde_u_v_w = bar_rho_u_v_w/bar_rho;
-tilde_u_w_w = bar_rho_u_w_w/bar_rho;
-tilde_v_v_v = bar_rho_v_v_v/bar_rho;
-tilde_v_v_w = bar_rho_v_v_w/bar_rho;
-tilde_v_w_w = bar_rho_v_w_w/bar_rho;
-tilde_w_w_w = bar_rho_w_w_w/bar_rho;
-tilde_u2u = tilde_u_u_u + tilde_u_v_v + tilde_u_w_w;
-tilde_u2v = tilde_u_u_v + tilde_v_v_v + tilde_v_w_w;
-tilde_u2w = tilde_u_u_w + tilde_v_v_w + tilde_w_w_w;
-tilde_upp2upp = tilde_u2u
-              - (tilde_u_u + tilde_v_v + tilde_w_w)*tilde_u
-              - 2*(tilde_u_u*tilde_u + tilde_u_v*tilde_v + tilde_u_w*tilde_w)
-              + 2*(tilde_u**2 + tilde_v**2 + tilde_w**2)*tilde_u;
-tilde_upp2vpp = tilde_u2v
-              - (tilde_u_u + tilde_v_v + tilde_w_w)*tilde_v
-              - 2*(tilde_u_v*tilde_u + tilde_v_v*tilde_v + tilde_v_w*tilde_w)
-              + 2*(tilde_u**2 + tilde_v**2 + tilde_w**2)*tilde_v;
-tilde_upp2wpp = tilde_u2w
-              - (tilde_u_u + tilde_v_v + tilde_w_w)*tilde_w
-              - 2*(tilde_u_w*tilde_u + tilde_v_w*tilde_v + tilde_w_w*tilde_w)
-              + 2*(tilde_u**2 + tilde_v**2 + tilde_w**2)*tilde_w;
 tilde_T_u = bar_rho_T_u/bar_rho;
 tilde_T_v = bar_rho_T_v/bar_rho;
 tilde_T_w = bar_rho_T_w/bar_rho;
