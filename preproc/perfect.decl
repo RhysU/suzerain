@@ -135,24 +135,31 @@ tilde_upp2wpp = tilde_u2w
               + 2*(tilde_u**2 + tilde_v**2 + tilde_w**2)*tilde_w;
 // }
 
-// FIXME STARTHERE
+// Favre-averaged temperature-velocity correlations {
+tilde_T_u = bar_rho_T_u(y) / bar_rho(y);
+tilde_T_v = bar_rho_T_v(y) / bar_rho(y);
+tilde_T_w = bar_rho_T_w(y) / bar_rho(y);
 
-tilde_T_u = bar_rho_T_u/bar_rho;
-tilde_T_v = bar_rho_T_v/bar_rho;
-tilde_T_w = bar_rho_T_w/bar_rho;
 tilde_Tpp_upp = tilde_T_u - tilde_T*tilde_u;
 tilde_Tpp_vpp = tilde_T_v - tilde_T*tilde_v;
 tilde_Tpp_wpp = tilde_T_w - tilde_T*tilde_w;
-tilde_mu = bar_rho_mu/bar_rho;
-bar_mupp = bar_mu - tilde_mu;
-tilde_nu = bar_mu/bar_rho;
-bar_nupp = bar_nu - tilde_nu;
-tilde_symxx_grad_u = bar_symxx_rho_grad_u/bar_rho;
-tilde_symxy_grad_u = bar_symxy_rho_grad_u/bar_rho;
-tilde_symxz_grad_u = bar_symxz_rho_grad_u/bar_rho;
-tilde_symyy_grad_u = bar_symyy_rho_grad_u/bar_rho;
-tilde_symyz_grad_u = bar_symyz_rho_grad_u/bar_rho;
-tilde_symzz_grad_u = bar_symzz_rho_grad_u/bar_rho;
+// }
+
+// Favre-averaged and -fluctuating viscous stress information {
+
+tilde_mu = bar_rho_mu(y) / bar_rho(y);
+tilde_nu = bar_mu(y)     / bar_rho(y);
+
+bar_mupp = bar_mu(y) - tilde_mu;
+bar_nupp = bar_nu(y) - tilde_nu;
+
+tilde_symxx_grad_u = bar_symxx_rho_grad_u(y) / bar_rho(y);
+tilde_symxy_grad_u = bar_symxy_rho_grad_u(y) / bar_rho(y);
+tilde_symxz_grad_u = bar_symxz_rho_grad_u(y) / bar_rho(y);
+tilde_symyy_grad_u = bar_symyy_rho_grad_u(y) / bar_rho(y);
+tilde_symyz_grad_u = bar_symyz_rho_grad_u(y) / bar_rho(y);
+tilde_symzz_grad_u = bar_symzz_rho_grad_u(y) / bar_rho(y);
+
 tilde_Sxx = tilde_symxx_grad_u
           - (tilde_symxx_grad_u + tilde_symyy_grad_u + tilde_symzz_grad_u) / 3;
 tilde_Sxy = tilde_symxy_grad_u;
@@ -162,17 +169,24 @@ tilde_Syy = tilde_symyy_grad_u
 tilde_Syz = tilde_symyz_grad_u;
 tilde_Szz = tilde_symzz_grad_u
           - (tilde_symxx_grad_u + tilde_symyy_grad_u + tilde_symzz_grad_u) / 3;
-tilde_nupp_Sppxx = bar_mu_Sxx/bar_rho - tilde_nu*tilde_Sxx;
-tilde_nupp_Sppxy = bar_mu_Sxy/bar_rho - tilde_nu*tilde_Sxy;
-tilde_nupp_Sppxz = bar_mu_Sxz/bar_rho - tilde_nu*tilde_Sxz;
-tilde_nupp_Sppyy = bar_mu_Syy/bar_rho - tilde_nu*tilde_Syy;
-tilde_nupp_Sppyz = bar_mu_Syz/bar_rho - tilde_nu*tilde_Syz;
-tilde_nupp_Sppzz = bar_mu_Szz/bar_rho - tilde_nu*tilde_Szz;
-tilde_nupp_div_upp = bar_mu_div_u/bar_rho
+
+tilde_nupp_Sppxx = bar_mu_Sxx(y) / bar_rho(y) - tilde_nu * tilde_Sxx;
+tilde_nupp_Sppxy = bar_mu_Sxy(y) / bar_rho(y) - tilde_nu * tilde_Sxy;
+tilde_nupp_Sppxz = bar_mu_Sxz(y) / bar_rho(y) - tilde_nu * tilde_Sxz;
+tilde_nupp_Sppyy = bar_mu_Syy(y) / bar_rho(y) - tilde_nu * tilde_Syy;
+tilde_nupp_Sppyz = bar_mu_Syz(y) / bar_rho(y) - tilde_nu * tilde_Syz;
+tilde_nupp_Sppzz = bar_mu_Szz(y) / bar_rho(y) - tilde_nu * tilde_Szz;
+
+tilde_nupp_div_upp = bar_mu_div_u(y) / bar_rho(y)
                    - tilde_nu*(tilde_symxx_grad_u + tilde_symyy_grad_u + tilde_symzz_grad_u);
-tilde_nupp_gradxTpp = (bar_mu_gradx_T - tilde_nu*bar_rho_gradx_T)/bar_rho;
-tilde_nupp_gradyTpp = (bar_mu_grady_T - tilde_nu*bar_rho_grady_T)/bar_rho;
-tilde_nupp_gradzTpp = (bar_mu_gradz_T - tilde_nu*bar_rho_gradz_T)/bar_rho;
+
+tilde_nupp_gradxTpp = (bar_mu_gradx_T(y) - tilde_nu * bar_rho_gradx_T(y)) / bar_rho(y);
+tilde_nupp_gradyTpp = (bar_mu_grady_T(y) - tilde_nu * bar_rho_grady_T(y)) / bar_rho(y);
+tilde_nupp_gradzTpp = (bar_mu_gradz_T(y) - tilde_nu * bar_rho_gradz_T(y)) / bar_rho(y);
+
+// }
+
+// FIXME STARTHERE
 
 // Differentiate SAMPLED
 
