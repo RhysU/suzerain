@@ -44,11 +44,10 @@ import fileinput
 import itertools
 import sympy
 import sympy.parsing.sympy_parser
-import sympy.physics.units
+from sympy.core.function import AppliedUndef
 
-# TODO How to handle uncertainty in derivatives of measured quantities?
-# Likely verdict: Chain out derivatives
-#                 Deal with correlation between state and derivatives
+# FIXME Hand check correct behavior against several known Coleman cases
+# FIXME Incorporate dedub function into the parser
 
 
 def dedub(expr):
@@ -81,33 +80,11 @@ def dedub(expr):
         head, sep, tail = type(f).__name__.partition('__')
         deriv = list(tail)
         deriv.extend(sym.name for sym in wrt)
-        name  = [head, '__']
+        name = [head, '__']
         name.extend(sorted(deriv))
         return sympy.Function(''.join(name))(*list(f.args))
 
     return expr.replace(sympy.Derivative, helper)
-
-
-def constant(abbrev, name=None):
-    r'''
-    Define a constant with only trivial derivatives.
-    '''
-    return sympy.physics.units.Unit(name if name else abbrev, abbrev)
-
-
-# TODO Permit user-defined constants from parsing
-# Supply the following set only on a given command line option
-
-"Symbolic constants known at parse time to have zero derivatives."
-constants = {
-    'alpha': constant('alpha', 'Ratio of bulk to dynamic viscosity'),
-    'beta':  constant('beta',  'Temperature power law exponent'),
-    'gamma': constant('gamma', 'Ratio of specific heats'),
-    'Kn':    constant('Kn',    'Knudsen number'),
-    'Ma':    constant('Ma',    'Mach number'),
-    'Pr':    constant('Pr',    'Prandtl number'),
-    'Re':    constant('Re',    'Reynolds number'),
-}
 
 
 def parse(f, symbol_table=None):
@@ -115,16 +92,10 @@ def parse(f, symbol_table=None):
     Given a SymPy expression f or any string parsable as such, produce
     a SymPy expression prepared for further processing by methods
     within this module.  This provides a common extension point for
-    injecting known constants (e.g. the Reynolds number Re) and other
-    module-specific handling into the parsing process.
+    injecting module-specific handling into the parsing process.
     '''
     if isinstance(f, basestring):
-        if symbol_table is None:
-            t = constants
-        else:
-            t = constants.copy()
-            t.update(symbol_table)
-        f = sympy.parsing.sympy_parser.parse_expr(f, t)
+        f = sympy.parsing.sympy_parser.parse_expr(f, symbol_table)
     return f
 
 
@@ -259,42 +230,43 @@ def parser(statement_tuples):
 def partials(f):
     r'''
     Given a SymPy expression f or any string parsable as such by parse(),
-    produce a defaultdict df where referencing df[x] produces the
-    precomputed result f.diff(x).simplify().factor() for any x.
+    produce a defaultdict df where referencing df[x] produces the result
+    f.diff(fx).simplify().factor() for every fx in f.atoms(AppliedUndef).
 
-    >>> a, b, c = sympy.symbols('a, b, c')
-    >>> df = partials(b**2 + a + 1)
-    >>> df[a], df[b], df[c]
-    (1, 2*b, 0)
 
-    >>> df = partials("1 + 2 + 3")
+    >>> f, g, h = map(sympy.Function, 'fgh')
+    >>> x, y, z = map(sympy.Symbol,   'xyz')
+    >>> log = sympy.log
+    >>> df = partials(g(x)**2 + f(x) + 1 + log(h(x)))
+    >>> df[f(x)], df[g(x)], df[h(x)], df[log(h(x))]
+    (1, 2*g(x), 1/h(x), 0)
+
+    Non-functions are not considered for the list of partial derivatives:
+
+    >>> df = partials("x + y + z + 1 + 2 + 3")
     >>> df.keys()
     []
-
-    Fluid-related symbolic constants are treated as genuinely constant:
-    >>> df = partials("x + alpha + beta + gamma + Kn + Ma + Pr + Re + y")
-    >>> df.keys()
-    [x, y]
     '''
     f = parse(f)
     df = collections.defaultdict(lambda: sympy.Integer(0))
-    for x in f.free_symbols:
-        df[x] = f.diff(x).factor().simplify().factor()
+    for fx in f.atoms(AppliedUndef):
+        df[fx] = f.diff(fx).factor().simplify().factor()
     return df
 
 
 def mixed_partials(f, df=None):
     r'''
     Given a SymPy expression f or any string parsable as such by parse(),
-    produce a defaultdict of defaultdicts ddf where referencing ddf[x][y]
-    produces the precomputed result f.diff(x,y).simplify().factor()
-    for any x and y.
+    produce a defaultdict of defaultdicts ddf where referencing ddf[fx][fy]
+    produces the precomputed result f.diff(fx,fy).simplify().factor()
+    for all fx and fy in expr.atoms(AppliedUndef).
 
-    >>> a, b, c = sympy.symbols('a, b, c')
-    >>> ddf = mixed_partials(a**2 + a*b + b**2 + 1)
-    >>> ddf[a][a], ddf[a][b], ddf[b][a], ddf[b][b]
+    >>> f, g, h = map(sympy.Function, 'fgh')
+    >>> x, y, z = map(sympy.Symbol,   'xyz')
+    >>> ddf = mixed_partials(f(x)**2 + f(x)*g(x) + g(x)**2 + 1)
+    >>> ddf[f(x)][f(x)], ddf[f(x)][g(x)], ddf[g(x)][f(x)], ddf[g(x)][g(x)]
     (2, 1, 1, 2)
-    >>> ddf[a][c], ddf[c][a], ddf[c][c]
+    >>> ddf[f(x)][h(x)], ddf[h(x)][f(x)], ddf[h(x)][h(x)]
     (0, 0, 0)
     '''
     ddf = collections.defaultdict(
@@ -310,20 +282,14 @@ def mixed_partials(f, df=None):
 def prerequisites(f, df=None, ddf=None):
     r'''
     Given a SymPy expression f or any string parsable as such by parse(),
-    return a set wherein unique tuples represents moments necessary
-    for computing an estimate of E[f(x)] and Var[f(x)].
+    return a set wherein unique tuples represents moments necessary to
+    estimate E[f(x)] and Var[f(x)].
 
-    >>> sorted(prerequisites('1'))
+    >>> sorted(prerequisites('1 + x*y + log(x/y)'))
     []
 
-    >>> sorted(prerequisites('log(x)'))
-    [(x,), (x, x)]
-
-    >>> sorted(prerequisites('x*y'))
-    [(x,), (x, x), (x, y), (y,), (y, y)]
-
-    >>> sorted(prerequisites('a + x*y'))
-    [(a,), (a, a), (a, x), (a, y), (x,), (x, x), (x, y), (y,), (y, y)]
+    >>> sorted(prerequisites('f(x)*g(y) + a'))
+    [(f(x),), (f(x), f(x)), (f(x), g(y)), (g(y),), (g(y), g(y))]
     '''
     f = parse(f)
 
@@ -341,14 +307,14 @@ def prerequisites(f, df=None, ddf=None):
     # Term:          \sum_{ i } \sigma_{ii} f_{,i}^2(d)
     for i in df.keys():
         if not df[i].is_zero:
-            for s in df[i].free_symbols:
+            for s in df[i].atoms(AppliedUndef):
                 m.add((s,))
             m.add((i, i))                    # Canonical
     # Term: +    2   \sum_{i<j} \sigma_{ij} f_{,i}(d) f_{,j}(d)
     for (i, j) in itertools.combinations(df.keys(), 2):
         fifj = (df[i] * df[j]).simplify()
         if not fifj.is_zero:
-            for s in fifj.free_symbols:
+            for s in fifj.atoms(AppliedUndef):
                 m.add((s,))
             m.add(tuple(sorted([i, j])))     # Canonicalize
 
@@ -356,18 +322,18 @@ def prerequisites(f, df=None, ddf=None):
     if ddf is None:
         ddf = mixed_partials(f, df)
     # Term:    f(d)
-    for s in f.free_symbols:
+    for s in f.atoms(AppliedUndef):
         m.add((s,))
     # Term: + (1/2) \sum_{ i } \sigma_{ii} f_{,ii}(d)
     for i in ddf.keys():
         if not ddf[i][i].is_zero:
-            for s in ddf[i][i].free_symbols:
+            for s in ddf[i][i].atoms(AppliedUndef):
                 m.add((s,))
             m.add((i, i))                    # Canonical
     # Term: +       \sum_{i<j} \sigma_{ij} f_{,ij}(d)
     for (i, j) in itertools.combinations(ddf.keys(), 2):
         if not ddf[i][j].is_zero:
-            for s in ddf[i][j].free_symbols:
+            for s in ddf[i][j].atoms(AppliedUndef):
                 m.add((s,))
             m.add(tuple(sorted([i, j])))     # Canonicalize
 
@@ -412,15 +378,21 @@ def expectation(f, ddf=None):
     r'''
     Prepare momentdict detailing the second-order approximation to E[f(x)].
 
-    >>> x = sympy.symbols('x')
-    >>> E = expectation(x**2)
-    >>> len(E), E[1], E[(x, x)]
-    (2, x**2, 1)
+    >>> f, x = sympy.Function('f'), sympy.Symbol('x')
+    >>> E = expectation(f(x)**2)
+    >>> len(E), E[1], E[(f(x), f(x))]
+    (2, f(x)**2, 1)
 
-    >>> x, y = sympy.symbols('x, y')
-    >>> E = expectation(x*y)
-    >>> len(E), E[1], E[(x, y)]
-    (2, x*y, 1)
+    >>> g = sympy.Function('g')
+    >>> E = expectation(f(x)*g(x))
+    >>> len(E), E[1], E[(f(x), g(x))]
+    (2, f(x)*g(x), 1)
+
+    Non-functions are assumed to lack interesting correlations:
+
+    >>> E = expectation(x**2 * f(x))
+    >>> len(E), E[1]
+    (1, x**2*f(x))
     '''
     f = parse(f)
     if ddf is None:
@@ -454,20 +426,24 @@ def variance(f, df=None):
     October 1966.  ISSN 0022-4316.  Beware, however, that article discusses
     only the first-order approximation to E[f(x)].
 
-    >>> x, y = sympy.symbols('x, y')
-    >>> Var = variance(2*x + 3*y)
-    >>> len(Var), Var[(x, x)], Var[(y, y)], Var[(x, y)]
+    >>> f, g, x = sympy.Function('f'), sympy.Function('g'), sympy.Symbol('x')
+    >>> Var = variance(2*f(x) + 3*g(x))
+    >>> len(Var), Var[(f(x), f(x))], Var[(g(x), g(x))], Var[(f(x), g(x))]
     (3, 4, 9, 12)
 
-    >>> x, y = sympy.symbols('x, y')
-    >>> Var = variance(x/y)
-    >>> len(Var), Var[(x, x)], Var[(y, y)], Var[(x, y)]
-    (3, y**(-2), x**2/y**4, -2*x/y**3)
+    >>> Var = variance(f(x)/g(x))
+    >>> len(Var), Var[(f(x), f(x))], Var[(g(x), g(x))], Var[(f(x), g(x))]
+    (3, g(x)**(-2), f(x)**2/g(x)**4, -2*f(x)/g(x)**3)
 
-    >>> x = sympy.symbols('x')
-    >>> Var = variance(x / (1 + x))
-    >>> len(Var), Var[(x, x)]
-    (1, (x + 1)**(-4))
+    >>> Var = variance(f(x) / (1 + f(x)))
+    >>> len(Var), Var[(f(x), f(x))]
+    (1, (f(x) + 1)**(-4))
+
+    Non-functions are assumed to lack interesting correlations:
+
+    >>> Var = variance(x**2 * f(x))
+    >>> len(Var), Var[(f(x), f(x))]
+    (1, x**4)
     '''
     f = parse(f)
     if df is None:
@@ -491,18 +467,9 @@ def variance(f, df=None):
 
 def main(argv):
 
-    # Prepare a description of what's happening to later be joined as lines
-    description = [
-        __doc__,
-        '',
-        'Constants predefined to have trivial derivatives:'
-    ]
-    for k in sorted(constants):
-        description.append("    %-8s: %s" % (k, constants[k].name))
-
     # Define arguments applicable to all commands
     from argparse import ArgumentParser, RawDescriptionHelpFormatter, SUPPRESS
-    p = ArgumentParser(description='\n'.join(description),
+    p = ArgumentParser(description=__doc__,
                        formatter_class=RawDescriptionHelpFormatter)
     p.add_argument('-v', '--verbosity', action='count',
                    help='increase verbosity; may be supplied repeatedly')
