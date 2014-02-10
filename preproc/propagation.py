@@ -502,6 +502,9 @@ def main(argv):
                            description='Run verification sanity checks')
     sp_dec = sp.add_parser('dec', help='Output known declarations',
                            description='Output known declarations')
+    sp_lib = sp.add_parser('lib', help='List free symbols from declarations',
+                           description=prerequisites.__doc__,
+                           formatter_class=RawDescriptionHelpFormatter)
     sp_pre = sp.add_parser('pre', help='Prerequisites for E[f(x)], Var[f(x)]',
                            description=prerequisites.__doc__,
                            formatter_class=RawDescriptionHelpFormatter)
@@ -515,6 +518,7 @@ def main(argv):
     # Some of the subparsers take one or more symbols to process
     f_help = 'quantities of interest; if empty, process all declarations'
     sp_dec.add_argument('f', nargs='*', help=f_help)
+    sp_lib.add_argument('f', nargs='*', help=f_help)
     sp_pre.add_argument('f', nargs='*', help=f_help)
     sp_exp.add_argument('f', nargs='*', help=f_help)
     sp_var.add_argument('f', nargs='*', help=f_help)
@@ -522,6 +526,7 @@ def main(argv):
     # Each command dispatches to one of the following methods
     sp_chk.set_defaults(command=command_chk)
     sp_dec.set_defaults(command=command_dec)
+    sp_lib.set_defaults(command=command_lib)
     sp_pre.set_defaults(command=command_pre)
     sp_exp.set_defaults(command=command_exp)
     sp_var.set_defaults(command=command_var)
@@ -559,6 +564,14 @@ def command_dec(args):
     for qoi in args.f:
         print(qoi, '=', args.style(args.syms[qoi]))
     return 0
+
+
+def command_lib(args):
+    r'''Process the 'lib' command on behalf of main()'''
+    free = set()
+    for qoi in args.f:
+        free.update(args.syms[qoi].free_symbols)
+    map(print, sorted(free))
 
 
 def command_pre(args):
