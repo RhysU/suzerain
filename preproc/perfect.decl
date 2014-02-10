@@ -205,7 +205,7 @@ tilde_nupp_gradzTpp = (bar_mu_gradz_T(y) - tilde_nu * bar_rho_gradz_T(y)) / bar_
 local_Ma  = Ma * bar_u(y) / bar_a(y);
 
 // Local turbulent Mach number
-local_Mat = Ma * (sqrt(real_t(2)*abs(tilde_k))) / bar_a(y);
+local_Mat = Ma * (sqrt(2*Abs(tilde_k))) / bar_a(y);
 
 // Local turbulent Prandtl number
 local_Prt = (tilde_upp_vpp * tilde_T__y) / (tilde_Tpp_vpp * tilde_u__y);
