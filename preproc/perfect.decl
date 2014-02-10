@@ -186,32 +186,38 @@ tilde_nupp_gradzTpp = (bar_mu_gradz_T(y) - tilde_nu * bar_rho_gradz_T(y)) / bar_
 
 // }
 
-// FIXME STARTHERE
 
-// Differentiate SAMPLED
-
-// Differentiate DERIVED
-
-// Computations of local quantities (see descriptions for definitions).
-// This must occur after differentiation of SAMPLED and DERIVED.
-// Note the following:
+// Computations of local quantities:
 //
-// 1)  In local_Mat computation, ".abs()" is present to avoid taking the
-// square root of very small, negative tilde_k arising from negative
-// tilde_{upp_upp,vpp_vpp_vpp} in laminar situations due to round off
-// errors (i.e. tilde_u_u - tilde_u**2 ~= -eps).
+// 1)  In local_Mat computation, "abs()" is present to avoid taking the square
+// root of very small, negative tilde_k arising from negative
+// tilde_{upp_upp,vpp_vpp_vpp} in laminar situations due to round off errors
+// (i.e. tilde_u_u - tilde_u**2 ~= -eps).
 //
-// 2)  In local_Re computation, the coefficient scenario.Re arises because
-// (bar_rho_u * L / bar_mu) are already nondimensional.  Multiplying by Re
-// re-incorporates the reference quantities rho_0, u_0, L_0, and mu_0 to
-// cause the nondimensional local_Re to be correctly formed from
-// dimensional quantities.  Ditto for Re in the eddy viscosity. Ditto for
-// Ma in local_Ma and local_Mat.
-local_Ma  = Ma * bar_u / bar_a;
-local_Mat = Ma * (std::sqrt(real_t(2))*tilde_k.abs().sqrt()) / bar_a;
+// 2)  In local_Re computation, the coefficient Re arises because (bar_rho_u * L
+// / bar_mu) are already nondimensional.  Multiplying by Re re-incorporates the
+// reference quantities rho_0, u_0, L_0, and mu_0 to cause the nondimensional
+// local_Re to be correctly formed from dimensional quantities.  Ditto for Re in
+// the eddy viscosity. Ditto for Ma in local_Ma and local_Mat.
+// {
+
+// Local Mach number
+local_Ma  = Ma * bar_u(y) / bar_a(y);
+
+// Local turbulent Mach number
+local_Mat = Ma * (sqrt(real_t(2)*abs(tilde_k))) / bar_a(y);
+
+// Local turbulent Prandtl number
 local_Prt = (tilde_upp_vpp * tilde_T__y) / (tilde_Tpp_vpp * tilde_u__y);
+
+// Local eddy viscosity
 local_nut = - Re * tilde_upp_vpp / tilde_u__y;
-local_Re  = Re * bar_rho_u /* L = 1 */ / bar_mu;
+
+// Local Reynolds number based on wall-normal distance y
+local_Re  = Re * bar_rho_u(y) * y / bar_mu(y);
+// }
+
+// FIXME STARTHERE
 
 // Computation of Favre-averaged density equation residual following writeup
 bar_rho__t =
