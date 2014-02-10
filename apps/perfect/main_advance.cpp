@@ -515,15 +515,19 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
 
         INFO0(who, "Initializing hybrid implicit/explicit spatial operators");
         INFO0(who, "Implicit linearization employed: " << implicit);
+        shared_ptr<operator_hybrid_isothermal> hybrid(
+                    new operator_hybrid_isothermal(
+                        solver_spec, *scenario, *isothermal,
+                        *grid, *dgrid, *cop, *b, common_block));
         if (grid->one_sided()) {
             INFO0(who, "Preparing nonreflecting upper boundary treatment");
-            FATAL0(who, "Nonreflecting upper boundary treatment"
-                        " not currently usable with implicit advance");
-            return EXIT_FAILURE;
+            hybrid->N = N;
+            N = hybrid;
+            // FIXME Redmine #2979 Remove warning when working
+            WARN0(who, "Nonreflecting upper boundary treatment"
+                        " known to be broken with implicit advance");
         }
-        constrainer->L.reset(new operator_hybrid_isothermal(
-                    solver_spec, *scenario, *isothermal,
-                    *grid, *dgrid, *cop, *b, common_block));
+        constrainer->L = hybrid;  // Constrainer invokes hybrid linear operator
 
     } else {
 

@@ -25,9 +25,10 @@
 #define SUZERAIN_PERFECT_OPERATOR_HYBRID_HPP
 
 /** @file
- * Hybrid implicit/explicit Navier--Stokes operators.
+ * A hybrid implicit/explicit Navier--Stokes operator for isothermal wall(s).
  */
 
+#include <suzerain/common.hpp>
 #include <suzerain/lowstorage.hpp>
 #include <suzerain/multi_array.hpp>
 #include <suzerain/operator_base.hpp>
@@ -50,9 +51,9 @@ class operator_common_block;
 class definition_scenario;
 
 /**
- * A hybrid implicit operator that provides isothermal wall conditions.
- * It requires interoperation with operator_nonlinear via
- * operator_common_block.
+ * A hybrid implicit/explicit operator that providing isothermal wall conditions
+ * and possibly a nonreflecting freestream. It requires interoperation with
+ * operator_nonlinear, set on member #N, via operator_common_block.
  */
 class operator_hybrid_isothermal
   : public operator_base,
@@ -60,13 +61,36 @@ class operator_hybrid_isothermal
         multi_array::ref<complex_t,4>,
         contiguous_state<4,complex_t>
     >
+  , public lowstorage::operator_nonlinear<
+        contiguous_state<4,complex_t>
+    >
 {
 public:
 
+    /** The superclass specifying the linear operator interface. */
+    typedef lowstorage::linear_operator<
+        multi_array::ref<complex_t,4>,
+        contiguous_state<4,complex_t>
+    > linear;
+
+    /** The superclass specifying the nonlinear operator interface. */
+    typedef lowstorage::operator_nonlinear<
+        contiguous_state<4,complex_t>
+    > nonlinear;
+
+    // See http://eigen.tuxfamily.org/dox/TopicStructHavingEigenMembers.html
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
     /**
-     * When specification_grid::two_sided(), both the lower and upper
-     * boundaries are constrained to be isothermal.  When
-     * specification_grid::one_sided(), only the lower boundary is constrained.
+     * Construct either a one-sided or two-sided instance.
+     *
+     * When specification_grid::two_sided(), both the lower and upper boundaries
+     * are constrained to be isothermal.  When specification_grid::one_sided(),
+     * the lower boundary is constrained in this manner and a nonreflecting
+     * boundary condition is applied at the upper boundary.
+     *
+     * After construction, member #N must be populated by a
+     * \ref operator_nonlinear instance.
      */
     operator_hybrid_isothermal(
             const specification_zgbsv& spec,
@@ -93,17 +117,33 @@ public:
             const std::size_t substep_index) const;
 
     /**
-     * Sets no-slip, isothermal boundary conditions at first and last
-     * wall-normal collocation point using that
-     * rho_wall = e_wall * gamma * (gamma - 1).
+     *
+     * Sets no-slip, isothermal boundary conditions at first and possibly the
+     * last wall-normal collocation point using rho_wall = e_wall * gamma *
+     * (gamma - 1).
      */
     virtual void invert_mass_plus_scaled_operator(
             const complex_t& phi,
             multi_array::ref<complex_t,4> &state,
             const lowstorage::method_interface<complex_t> &method,
-            const component delta_t,
+            const linear::component delta_t,
             const std::size_t substep_index,
             multi_array::ref<complex_t,4>* ic0 = NULL) const;
+
+    /**
+     * Delegates to #N, adjusting the result to achieve
+     * a nonreflecting upper boundary when grid.one_sided().
+     */
+    virtual std::vector<real_t> apply_operator(
+            const real_t time,
+            contiguous_state<4,complex_t> &swave,
+            const lowstorage::method_interface<complex_t> &method,
+            const std::size_t substep_index) const;
+
+    /** The operator whose behavior is modified by this instance. */
+    shared_ptr<lowstorage::operator_nonlinear<
+                contiguous_state<4,complex_t>
+            > > N;
 
 protected:
 
@@ -118,6 +158,50 @@ protected:
 
     /** Houses data required for operator application and inversion */
     operator_common_block& common;
+
+    /**
+     * When <code>grid.one_sided()</code>, set to the 5x5 column major matrix
+     * \f${R^Y}^{-1} \left[V^L S\right]^{-1} \left[P^G C^G\right] \left[V^L
+     * S\right] {R^Y}\f$ for upper NRBC on substep 0 during \ref
+     * apply_operator().  Otherwise, ignored.
+     *
+     * \see suzerain_rholut_imexop_accumulate for details behind \c a suffix.
+     */
+    Matrix5r upper_nrbc_a;
+
+    /**
+     * When <code>grid.one_sided()</code>, set to the 5x5 column major matrix
+     * \f${R^Y}^{-1} \left[V^L S\right]^{-1} \left[P^G B^G\right] \left[V^L
+     * S\right] {R^Y}\f$ for upper NRBC on substep 0 during \ref apply_operator.
+     * Otherwise, ignored.
+     *
+     * \see suzerain_rholut_imexop_accumulate for details behind \c b suffix.
+     */
+    Matrix5r upper_nrbc_b;
+
+    /**
+     * When <code>grid.one_sided()</code>, set to the 5x5 column major matrix
+     * \f${R^Y}^{-1} \left[V^L S\right]^{-1} \left[P^G    \right] \left[V^L
+     * S\right] {R^Y}\f$ for upper NRBC on substep 0 during \ref apply_operator.
+     * Otherwide, ignored.
+     *
+     * \see suzerain_rholut_imexop_accumulate for details behind \c c suffix.
+     */
+    Matrix5r upper_nrbc_c;
+
+    /**
+     * When <code>grid.one_sided()</code>, set to the 5x5 column major matrix
+     * \f${R^Y}^{-1} \left[V^L S\right]^{-1} \left[I - P^G\right] \left[V^L
+     * S\right] {R^Y}\f$ for upper NRBC on substep 0 during \ref apply_operator.
+     * Otherwide, ignored.
+     */
+    Matrix5r upper_nrbc_n;
+
+    /**
+     * Invokes compute_giles_matrices() for upper boundary.
+     * Broken out separately to help document reference state choices.
+     */
+    void compute_giles_matrices_upper();
 
 private:
 

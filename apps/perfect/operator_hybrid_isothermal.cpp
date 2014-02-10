@@ -33,6 +33,7 @@
 #include <suzerain/complex.hpp>
 #include <suzerain/error.h>
 #include <suzerain/gbmatrix.h>
+#include <suzerain/giles.hpp>
 #include <suzerain/inorder.hpp>
 #include <suzerain/multi_array.hpp>
 #include <suzerain/ndx.hpp>
@@ -84,6 +85,10 @@ operator_hybrid_isothermal::operator_hybrid_isothermal(
     , scenario(scenario)
     , isothermal(isothermal)
     , common(common)
+    , upper_nrbc_a(Matrix5r::Constant(std::numeric_limits<real_t>::quiet_NaN()))
+    , upper_nrbc_b(Matrix5r::Constant(std::numeric_limits<real_t>::quiet_NaN()))
+    , upper_nrbc_c(Matrix5r::Constant(std::numeric_limits<real_t>::quiet_NaN()))
+    , upper_nrbc_n(Matrix5r::Constant(std::numeric_limits<real_t>::quiet_NaN()))
     , who("operator.L")
 {
 }
@@ -155,6 +160,9 @@ void operator_hybrid_isothermal::apply_mass_plus_scaled_operator(
 
     case linearize::rhome_xyz:
     {
+        const real_t *maybe_a = grid.one_sided() ? upper_nrbc_a.data() : NULL;
+        const real_t *maybe_b = grid.one_sided() ? upper_nrbc_b.data() : NULL;
+        const real_t *maybe_c = grid.one_sided() ? upper_nrbc_c.data() : NULL;
         for (int n = dkbz; n < dkez; ++n) {
             const int wn = wavenumber(dNz, n);
             if (std::abs(wn) > wavenumber_absmin(Nz)) continue;
@@ -186,7 +194,7 @@ void operator_hybrid_isothermal::apply_mass_plus_scaled_operator(
                         p + ndx::my  * Ny,
                         p + ndx::mz  * Ny,
                         p + ndx::rho * Ny,
-                        NULL, NULL, NULL /* #TODO Ticket #2979 Upper NRBC */);
+                        maybe_a, maybe_b, maybe_c);
             }
         }
         break;
@@ -194,6 +202,7 @@ void operator_hybrid_isothermal::apply_mass_plus_scaled_operator(
 
     case linearize::rhome_y:
     {
+        const real_t *maybe_c = grid.one_sided() ? upper_nrbc_c.data() : NULL;
         for (int n = dkbz; n < dkez; ++n) {
             const int wn = wavenumber(dNz, n);
             if (std::abs(wn) > wavenumber_absmin(Nz)) continue;
@@ -223,7 +232,7 @@ void operator_hybrid_isothermal::apply_mass_plus_scaled_operator(
                         p + ndx::my  * Ny,
                         p + ndx::mz  * Ny,
                         p + ndx::rho * Ny,
-                        NULL /* #TODO Ticket #2979 Upper NRBC */);
+                        maybe_c);
             }
         }
         break;
@@ -295,6 +304,9 @@ void operator_hybrid_isothermal::accumulate_mass_plus_scaled_operator(
 
     case linearize::rhome_xyz:
     {
+        const real_t *maybe_a = grid.one_sided() ? upper_nrbc_a.data() : NULL;
+        const real_t *maybe_b = grid.one_sided() ? upper_nrbc_b.data() : NULL;
+        const real_t *maybe_c = grid.one_sided() ? upper_nrbc_c.data() : NULL;
         for (int n = dkbz; n < dkez; ++n) {
             const int wn = wavenumber(dNz, n);
             if (std::abs(wn) > wavenumber_absmin(Nz)) continue;
@@ -320,7 +332,7 @@ void operator_hybrid_isothermal::accumulate_mass_plus_scaled_operator(
                         &output[ndx::my  ][0][m - dkbx][n - dkbz],
                         &output[ndx::mz  ][0][m - dkbx][n - dkbz],
                         &output[ndx::rho ][0][m - dkbx][n - dkbz],
-                        NULL, NULL, NULL /* #TODO Ticket #2979 Upper NRBC */);
+                        maybe_a, maybe_b, maybe_c);
 
             }
         }
@@ -329,6 +341,7 @@ void operator_hybrid_isothermal::accumulate_mass_plus_scaled_operator(
 
     case linearize::rhome_y:
     {
+        const real_t *maybe_c = grid.one_sided() ? upper_nrbc_c.data() : NULL;
         for (int n = dkbz; n < dkez; ++n) {
             const int wn = wavenumber(dNz, n);
             if (std::abs(wn) > wavenumber_absmin(Nz)) continue;
@@ -352,7 +365,7 @@ void operator_hybrid_isothermal::accumulate_mass_plus_scaled_operator(
                         &output[ndx::my  ][0][m - dkbx][n - dkbz],
                         &output[ndx::mz  ][0][m - dkbx][n - dkbz],
                         &output[ndx::rho ][0][m - dkbx][n - dkbz],
-                        NULL /* #TODO Ticket #2979 Upper NRBC */);
+                        maybe_c);
 
             }
         }
@@ -523,11 +536,12 @@ public:
     }
 };
 
+// FIXME Redmine #2979 include upper NRBC in assembled matrices
 void operator_hybrid_isothermal::invert_mass_plus_scaled_operator(
         const complex_t& phi,
         multi_array::ref<complex_t,4> &state,
         const lowstorage::method_interface<complex_t> &method,
-        const component delta_t,
+        const operator_hybrid_isothermal::linear::component delta_t,
         const std::size_t substep_index,
         multi_array::ref<complex_t,4>* ic0) const
 {
@@ -753,6 +767,107 @@ void operator_hybrid_isothermal::invert_mass_plus_scaled_operator(
     }
 
     // State leaves method as coefficients in X, Y, and Z directions
+}
+
+std::vector<real_t>
+operator_hybrid_isothermal::apply_operator(
+            const real_t time,
+            contiguous_state<4,complex_t> &swave,
+            const lowstorage::method_interface<complex_t> &method,
+            const std::size_t substep_index) const
+{
+    SUZERAIN_TIMER_SCOPED("apply_operator");
+    SUZERAIN_ENSURE(common.linearization != linearize::none);
+
+    // Implementation approach:
+    //   1) Invoke the wrapper N operator.
+    //   2) If one_sided and substep zero, prepare NRBC matrices so they are
+    //      ready for both this method and subsequent linear operator methods.
+    //   3) If one_sided, modify right hand side in wavenumber-independent
+    //      manner to apply the explicit portion of the NRBC.
+
+    // State enters method as coefficients in X, Y, and Z directions
+
+    // Invoke the wrapped nonlinear operator (which may compute references!)
+    const std::vector<real_t> retval = N->apply_operator(
+            time, swave, method, substep_index);
+
+    // State is now coefficients in X and Z directions
+    // State is now collocation point values in Y direction
+
+    // Stop processing unless the grid is one_sided.
+    if (grid.two_sided()) return retval;
+    assert(grid.one_sided());
+
+    // Prepare the matrices required to implement the boundary condition.
+    // The hideous const_cast is required due to timestepping API.
+    if (substep_index == 0) {
+        const_cast<operator_hybrid_isothermal*>(this)
+                ->compute_giles_matrices_upper();
+    }
+
+    // Wavenumber traversal modeled after those found in suzerain/diffwave.c
+    // Notice, however, the computations are wavenumber-independent
+    // TODO Could short circuit some of this traversal using dealiasing
+    const int Ny   = dgrid.global_wave_extent.y();
+    const int dkbx = dgrid.local_wave_start.x();
+    const int dkex = dgrid.local_wave_end.x();
+    const int dkbz = dgrid.local_wave_start.z();
+    const int dkez = dgrid.local_wave_end.z();
+
+    // Traverse wavenumbers updating the RHS with the Giles boundary condition
+    for (int n = dkbz; n < dkez; ++n) {
+
+        for (int m = dkbx; m < dkex; ++m) {
+
+            // Unpack upper boundary RHS into a contiguous buffer
+            Vector5c N_hatV;
+            for (int f = 0; f < N_hatV.size(); ++f) {
+                N_hatV(f) = swave[f][Ny - 1][m - dkbx][n - dkbz];
+            }
+
+            // Modify the packed RHS per
+            // "Implementation primarily within the linear explicit operator"
+            const Vector5c NGI_hatV = upper_nrbc_n.cast<complex_t>() * N_hatV;
+
+            // Pack new upper boundary RHS from the contiguous buffer
+            for (int f = 0; f < NGI_hatV.size(); ++f) {
+                swave[f][Ny - 1][m - dkbx][n - dkbz] = NGI_hatV(f);
+            }
+
+        }
+
+    }
+
+    return retval;
+}
+
+void
+operator_hybrid_isothermal::compute_giles_matrices_upper()
+{
+    SUZERAIN_TIMER_SCOPED("compute_giles_matrices_upper");
+
+    Matrix5r VL_S_RY;
+    Matrix5r PG_BG_VL_S_RY;
+    Matrix5r PG_CG_VL_S_RY;
+    Matrix5r PG_VL_S_RY;
+    Matrix5r inv_VL_S_RY;
+    giles_matrices_upper(scenario.Ma,
+                         scenario.gamma,
+                         isothermal.upper_rho,
+                         isothermal.upper_u,
+                         isothermal.upper_v,
+                         isothermal.upper_w,
+                         std::sqrt(isothermal.upper_T),
+                         VL_S_RY,
+                         PG_BG_VL_S_RY,
+                         PG_CG_VL_S_RY,
+                         PG_VL_S_RY,
+                         inv_VL_S_RY);
+    upper_nrbc_a = inv_VL_S_RY * PG_CG_VL_S_RY;
+    upper_nrbc_b = inv_VL_S_RY * PG_BG_VL_S_RY;
+    upper_nrbc_c = inv_VL_S_RY * PG_VL_S_RY;
+    upper_nrbc_n = inv_VL_S_RY * (VL_S_RY - PG_VL_S_RY);
 }
 
 suzerain_rholut_imexop_scenario

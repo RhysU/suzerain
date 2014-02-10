@@ -136,6 +136,7 @@ treatment_nonreflecting::apply_operator(
     const real_t twopioverLz = twopiover(grid.L.z());  // ...for FP control
 
     // Traverse wavenumbers updating the RHS with the Giles boundary condition
+    // TODO Could short circuit some of this traversal using dealiasing
     using suzerain::inorder::wavenumber;
     const int mu = boost::numeric_cast<int>(swave.shape()[2]);
     for (int n = dkbz; n < dkez; ++n) {
@@ -174,6 +175,28 @@ treatment_nonreflecting::apply_operator(
     }
 
     return retval;
+}
+
+void
+treatment_nonreflecting::compute_giles_matrices_upper()
+{
+    SUZERAIN_TIMER_SCOPED("compute_giles_matrices_upper");
+
+    giles_matrices_upper(scenario.Ma,
+                         scenario.gamma,
+                         isothermal.upper_rho,
+                         isothermal.upper_u,
+                         isothermal.upper_v,
+                         isothermal.upper_w,
+                         std::sqrt(isothermal.upper_T),
+                         VL_S_RY,
+                         PG_BG_VL_S_RY_by_chi, // Rescaled below
+                         PG_CG_VL_S_RY_by_chi, // Rescaled below
+                         ImPG_VL_S_RY,         // Adjusted below
+                         inv_VL_S_RY);
+    PG_BG_VL_S_RY_by_chi /= dgrid.chi();
+    PG_CG_VL_S_RY_by_chi /= dgrid.chi();
+    ImPG_VL_S_RY = VL_S_RY - ImPG_VL_S_RY;
 }
 
 } // namespace perfect

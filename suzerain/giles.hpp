@@ -51,9 +51,9 @@ namespace suzerain {
  * @param[in]  ref_w   Reference spanwise velocity \f$w\f$.
  * @param[in]  ref_a   Reference sound speed \f$a\f$.
  * @param[out] VL_S_RY       \f$\left[V^L S\right] R^Y\f
- * @param[out] PG_BG_VL_S_RY \f$\left[B^G\right] \left[V^L S\right] R^Y\f$
- * @param[out] PG_CG_VL_S_RY \f$\left[C^G\right] \left[V^L S\right] R^Y\f$
- * @param[out] ImPG_VL_S_RY  \f$\left(I - P^G\right) \left[V^L S\right] R^Y\f$
+ * @param[out] PG_BG_VL_S_RY \f$\left[P^G B^G\right] \left[V^L S\right] R^Y\f$
+ * @param[out] PG_CG_VL_S_RY \f$\left[P^G C^G\right] \left[V^L S\right] R^Y\f$
+ * @param[out] PG_VL_S_RY    \f$\left[P^G    \right] \left[V^L S\right] R^Y\f$
  * @param[out] inv_VL_S_RY   \f${R^Y}^{-1} \left[V^L S\right]^{-1}\f$
  * @param[in]  normal_sign Sign of a boundary-normal vector.
  *                    For the boundary at \f$y=0\f$ this should be negative.
@@ -71,7 +71,7 @@ giles_matrices(
         Matrix5r& VL_S_RY,
         Matrix5r& PG_BG_VL_S_RY,
         Matrix5r& PG_CG_VL_S_RY,
-        Matrix5r& ImPG_VL_S_RY,
+        Matrix5r& PG_VL_S_RY,
         Matrix5r& inv_VL_S_RY,
         const real_t normal_sign);
 
@@ -91,11 +91,11 @@ giles_matrices_lower(
         Matrix5r& VL_S_RY,
         Matrix5r& PG_BG_VL_S_RY,
         Matrix5r& PG_CG_VL_S_RY,
-        Matrix5r& ImPG_VL_S_RY,
+        Matrix5r& PG_VL_S_RY,
         Matrix5r& inv_VL_S_RY)
 {
     return giles_matrices(Ma, gamma, ref_rho, ref_u, ref_v, ref_w, ref_a,
-            VL_S_RY, PG_BG_VL_S_RY, PG_CG_VL_S_RY, ImPG_VL_S_RY, inv_VL_S_RY,
+            VL_S_RY, PG_BG_VL_S_RY, PG_CG_VL_S_RY, PG_VL_S_RY, inv_VL_S_RY,
             -1);
 }
 
@@ -115,11 +115,11 @@ giles_matrices_upper(
         Matrix5r& VL_S_RY,
         Matrix5r& PG_BG_VL_S_RY,
         Matrix5r& PG_CG_VL_S_RY,
-        Matrix5r& ImPG_VL_S_RY,
+        Matrix5r& PG_VL_S_RY,
         Matrix5r& inv_VL_S_RY)
 {
     return giles_matrices(Ma, gamma, ref_rho, ref_u, ref_v, ref_w, ref_a,
-            VL_S_RY, PG_BG_VL_S_RY, PG_CG_VL_S_RY, ImPG_VL_S_RY, inv_VL_S_RY,
+            VL_S_RY, PG_BG_VL_S_RY, PG_CG_VL_S_RY, PG_VL_S_RY, inv_VL_S_RY,
             +1);
 }
 

@@ -47,7 +47,7 @@ giles_matrices(
         Matrix5r& VL_S_RY,
         Matrix5r& PG_BG_VL_S_RY,
         Matrix5r& PG_CG_VL_S_RY,
-        Matrix5r& ImPG_VL_S_RY,
+        Matrix5r& PG_VL_S_RY,
         Matrix5r& inv_VL_S_RY,
         const real_t normal_sign)
 {
@@ -195,7 +195,7 @@ giles_matrices(
     VL_S_RY       = VL * S * RY;
     PG_BG_VL_S_RY = PG.asDiagonal() * BG * VL_S_RY;
     PG_CG_VL_S_RY = PG.asDiagonal() * CG * VL_S_RY;
-    ImPG_VL_S_RY  = (Vector5r::Ones() - PG).asDiagonal() * VL_S_RY;
+    PG_VL_S_RY    = PG.asDiagonal()      * VL_S_RY;
     inv_VL_S_RY   = inv_RY * inv_S * inv_VL;
 }
 

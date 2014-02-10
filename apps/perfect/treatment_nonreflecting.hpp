@@ -48,10 +48,11 @@ class pencil_grid;
 namespace perfect {
 
 /**
- * Provides Giles-like nonreflecting boundary conditions at the upper \f$y =
- * L_y\f$ boundary.  Background and notation set within
+ * Provides explicitly-implemented, Giles-like nonreflecting boundary conditions
+ * at the upper \f$y = L_y\f$ boundary.  Background and notation set within
  * <tt>writeups/perfect_gas.tex</tt> section entitled "Nonreflecting freestream
- * boundary conditions".
+ * boundary conditions" and specifically "Implementation primarily within the
+ * nonlinear explicit operator."
  */
 class treatment_nonreflecting
     : public operator_base
@@ -150,7 +151,7 @@ protected:
 
     /**
      * Wavenumber-independent matrix
-     * \f$ \left(I - P^G\right) \left[V^L S\right] R^Y \f$
+     * \f$ \left[I - P^G\right] \left[V^L S\right] R^Y \f$
      * used by apply_operator().
      */
     Matrix5r ImPG_VL_S_RY;
@@ -163,48 +164,10 @@ protected:
     Matrix5r inv_VL_S_RY;
 
     /**
-     * Invokes compute_giles_matrices() for lower boundary.
-     * Broken out for brevity and to document reference state choices.
-     */
-    void compute_giles_matrices_lower()
-    {
-        return giles_matrices_lower(scenario.Ma,
-                                    scenario.gamma,
-                                    isothermal.lower_rho,
-                                    isothermal.lower_u,
-                                    isothermal.lower_v,
-                                    isothermal.lower_w,
-                                    std::sqrt(isothermal.lower_T),
-                                    VL_S_RY,
-                                    PG_BG_VL_S_RY_by_chi, // Rescaled below
-                                    PG_CG_VL_S_RY_by_chi, // Rescaled below
-                                    ImPG_VL_S_RY,
-                                    inv_VL_S_RY);
-        PG_BG_VL_S_RY_by_chi /= dgrid.chi();
-        PG_CG_VL_S_RY_by_chi /= dgrid.chi();
-    }
-
-    /**
      * Invokes compute_giles_matrices() for upper boundary.
-     * Broken out for brevity and to document reference state choices.
+     * Broken out separately to help document reference state choices.
      */
-    void compute_giles_matrices_upper()
-    {
-        return giles_matrices_upper(scenario.Ma,
-                                    scenario.gamma,
-                                    isothermal.upper_rho,
-                                    isothermal.upper_u,
-                                    isothermal.upper_v,
-                                    isothermal.upper_w,
-                                    std::sqrt(isothermal.upper_T),
-                                    VL_S_RY,
-                                    PG_BG_VL_S_RY_by_chi, // Rescaled below
-                                    PG_CG_VL_S_RY_by_chi, // Rescaled below
-                                    ImPG_VL_S_RY,
-                                    inv_VL_S_RY);
-        PG_BG_VL_S_RY_by_chi /= dgrid.chi();
-        PG_CG_VL_S_RY_by_chi /= dgrid.chi();
-    }
+    void compute_giles_matrices_upper();
 
 private:
 
