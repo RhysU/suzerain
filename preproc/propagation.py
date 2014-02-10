@@ -597,7 +597,7 @@ def main(argv):
         if not args.f:
             args.f = args.syms.keys()
         else:
-            unknown = set(args.f).difference(args.syms.keys())
+            unknown = filter(lambda k: k not in args.syms, args.f)
             if unknown:
                 raise LookupError("Requested but not in declarations: %s"
                                   % ', '.join(unknown))
