@@ -575,32 +575,32 @@ public:
             buf += (phi * complex_t(real_t(0), km)) * nrbc_a.cast<complex_t>();
             buf += (phi * complex_t(real_t(0), kn)) * nrbc_b.cast<complex_t>();
 
-            // Step 4: Again, a transpose on re-pack.
-            LOC(e  [edge]   , e  [edge]   ) = buf(ndx::e  , ndx::e  );
-            LOC(m  [edge][0], e  [edge]   ) = buf(ndx::e  , ndx::mx );
-            LOC(m  [edge][1], e  [edge]   ) = buf(ndx::e  , ndx::my );
-            LOC(m  [edge][2], e  [edge]   ) = buf(ndx::e  , ndx::mz );
-            LOC(rho[edge]   , e  [edge]   ) = buf(ndx::e  , ndx::rho);
-            LOC(e  [edge]   , m  [edge][0]) = buf(ndx::mx , ndx::e  );
-            LOC(m  [edge][0], m  [edge][0]) = buf(ndx::mx , ndx::mx );
-            LOC(m  [edge][1], m  [edge][0]) = buf(ndx::mx , ndx::my );
-            LOC(m  [edge][2], m  [edge][0]) = buf(ndx::mx , ndx::mz );
-            LOC(rho[edge]   , m  [edge][0]) = buf(ndx::mx , ndx::rho);
-            LOC(e  [edge]   , m  [edge][1]) = buf(ndx::my , ndx::e  );
-            LOC(m  [edge][0], m  [edge][1]) = buf(ndx::my , ndx::mx );
-            LOC(m  [edge][1], m  [edge][1]) = buf(ndx::my , ndx::my );
-            LOC(m  [edge][2], m  [edge][1]) = buf(ndx::my , ndx::mz );
-            LOC(rho[edge]   , m  [edge][1]) = buf(ndx::my , ndx::rho);
-            LOC(e  [edge]   , m  [edge][2]) = buf(ndx::mz , ndx::e  );
-            LOC(m  [edge][0], m  [edge][2]) = buf(ndx::mz , ndx::mx );
-            LOC(m  [edge][1], m  [edge][2]) = buf(ndx::mz , ndx::my );
-            LOC(m  [edge][2], m  [edge][2]) = buf(ndx::mz , ndx::mz );
-            LOC(rho[edge]   , m  [edge][2]) = buf(ndx::mz , ndx::rho);
-            LOC(e  [edge]   , rho[edge]   ) = buf(ndx::rho, ndx::e  );
-            LOC(m  [edge][0], rho[edge]   ) = buf(ndx::rho, ndx::mx );
-            LOC(m  [edge][1], rho[edge]   ) = buf(ndx::rho, ndx::my );
-            LOC(m  [edge][2], rho[edge]   ) = buf(ndx::rho, ndx::mz );
-            LOC(rho[edge]   , rho[edge]   ) = buf(ndx::rho, ndx::rho);
+            // Step 4: Again, a transpose on accumulating into packed operator
+            LOC(e  [edge]   , e  [edge]   ) += buf(ndx::e  , ndx::e  );
+            LOC(m  [edge][0], e  [edge]   ) += buf(ndx::e  , ndx::mx );
+            LOC(m  [edge][1], e  [edge]   ) += buf(ndx::e  , ndx::my );
+            LOC(m  [edge][2], e  [edge]   ) += buf(ndx::e  , ndx::mz );
+            LOC(rho[edge]   , e  [edge]   ) += buf(ndx::e  , ndx::rho);
+            LOC(e  [edge]   , m  [edge][0]) += buf(ndx::mx , ndx::e  );
+            LOC(m  [edge][0], m  [edge][0]) += buf(ndx::mx , ndx::mx );
+            LOC(m  [edge][1], m  [edge][0]) += buf(ndx::mx , ndx::my );
+            LOC(m  [edge][2], m  [edge][0]) += buf(ndx::mx , ndx::mz );
+            LOC(rho[edge]   , m  [edge][0]) += buf(ndx::mx , ndx::rho);
+            LOC(e  [edge]   , m  [edge][1]) += buf(ndx::my , ndx::e  );
+            LOC(m  [edge][0], m  [edge][1]) += buf(ndx::my , ndx::mx );
+            LOC(m  [edge][1], m  [edge][1]) += buf(ndx::my , ndx::my );
+            LOC(m  [edge][2], m  [edge][1]) += buf(ndx::my , ndx::mz );
+            LOC(rho[edge]   , m  [edge][1]) += buf(ndx::my , ndx::rho);
+            LOC(e  [edge]   , m  [edge][2]) += buf(ndx::mz , ndx::e  );
+            LOC(m  [edge][0], m  [edge][2]) += buf(ndx::mz , ndx::mx );
+            LOC(m  [edge][1], m  [edge][2]) += buf(ndx::mz , ndx::my );
+            LOC(m  [edge][2], m  [edge][2]) += buf(ndx::mz , ndx::mz );
+            LOC(rho[edge]   , m  [edge][2]) += buf(ndx::mz , ndx::rho);
+            LOC(e  [edge]   , rho[edge]   ) += buf(ndx::rho, ndx::e  );
+            LOC(m  [edge][0], rho[edge]   ) += buf(ndx::rho, ndx::mx );
+            LOC(m  [edge][1], rho[edge]   ) += buf(ndx::rho, ndx::my );
+            LOC(m  [edge][2], rho[edge]   ) += buf(ndx::rho, ndx::mz );
+            LOC(rho[edge]   , rho[edge]   ) += buf(ndx::rho, ndx::rho);
 
 #undef      LOC
         }
