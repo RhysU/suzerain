@@ -31,6 +31,28 @@
  * implicit/explicit" treatment within the model document.  These routines are
  * meant to be used in conjunction with compute kernels found in rholut.hpp.
  * The logic is coded in C99 to facilitate profiling.
+ *
+ * These routines optionally may impose a mostly-implicit Giles nonreflecting
+ * boundary condition on the final coefficients corresponding to the upper
+ * boundary.  When enabled, the routines adjust upper boundary accumulation
+ * results according to
+ * \f{align*}{
+ *   \left(M+\varphi{}L_I^G\right)\hat{V} - \left(M+\varphi{}L\right)\hat{V}
+ *   &{}= \ii \varphi{} k_x \, {R^Y}^{-1} \left[V^L S\right]^{-1}
+ *                             \left[P^G C^G\right] \left[V^L S\right] {R^Y}
+ *                             \,M\,\hat{V} \\
+ *   &{}+ \ii \varphi{} k_z    {R^Y}^{-1} \left[V^L S\right]^{-1}
+ *                             \left[P^G B^G\right] \left[V^L S\right] {R^Y}
+ *                             \,M\,\hat{V} \\
+ *   &{}-                      {R^Y}^{-1} \left[V^L S\right]^{-1}
+ *                             \left[P^G    \right] \left[V^L S\right] {R^Y}
+ *                             \left(\varphi{}L\hat{V}\right)
+ * \f}
+ * provided their \c a, \c b, and \c c parameters are non-NULL.  For a valid
+ * boundary condition to be in effect, additional conditions \e must be imposed
+ * during the explicit nonlinear Navier--Stokes operator application.  See the
+ * subsection entitled "Implementation primarily within the linear implicit
+ * operator" within Suzerain's perfect gas model document for more details.
  */
 
 #include <suzerain/bsmbsm.h>
@@ -145,41 +167,20 @@ typedef struct {
  * @param[out] out_rho   Wall-normal output data for \f$\rho{}\f$.
  *
  * A mostly-implicit Giles nonreflecting boundary condition may optionally be
- * imposed on the final coefficient corresponding to the upper boundary.  To do
- * so, the state vector \f$\hat{V} = \left[ \rho{}E, \rho{}u, \ldots \right]f$
- * and the linear operator action \f$\varphi L \hat{V}\f$ are gathered during
- * processing. Afterwards, are used to adjust the accumulation result at the
- * upper boundary coefficient
- * \f{align*}{
- *   \left(M+\varphi{}L_I^G\right)\hat{V} - \left(M+\varphi{}L\right)\hat{V}
- *   &{}= \ii \varphi{} k_x \, {R^Y}^{-1} \left[V^L S\right]^{-1}
- *                             \left[P^G C^G\right] \left[V^L S\right] {R^Y}
- *                             \,\,\hat{V} \\
- *   &{}+ \ii \varphi{} k_z    {R^Y}^{-1} \left[V^L S\right]^{-1}
- *                             \left[P^G B^G\right] \left[V^L S\right] {R^Y}
- *                             \,\,\hat{V} \\
- *   &{}-                      {R^Y}^{-1} \left[V^L S\right]^{-1}
- *                             \left[P^G    \right] \left[V^L S\right] {R^Y}
- *                             \left(\varphi{}L\hat{V}\right)
- * \f}
- * by using argument \c a, \c b, and \c c to provide the matrices listed in the
- * parameters section and fully defined within the Suzerain perfect gas model
- * document. If \c a, \c b, and \c c are all \c  NULL, no additional boundary
- * condition processing is performed.  Additionally, conditions \e must
- * be imposed during the implicit operator solve as well as during the
- * explicit nonlinear Navier--Stokes operator application.
+ * imposed on the final coefficient corresponding to the upper boundary when \c
+ * a, \c b, and \c c are all non-NULL.
  *
  * @param[in] a If \c NULL, ignored.  Set to the 5x5 column major matrix
  *              \f${R^Y}^{-1} \left[V^L S\right]^{-1} \left[P^G C^G\right]
- *              \left[V^L S\right] {R^Y}\f$ for upper NRBC.
+ *              \left[V^L S\right] {R^Y} M \f$ for upper NRBC.
  * @param[in] b If \c NULL, ignored.  Set to the 5x5 column major matrix
  *              \f${R^Y}^{-1} \left[V^L S\right]^{-1} \left[P^G B^G\right]
- *              \left[V^L S\right] {R^Y}\f$ for upper NRBC.
+ *              \left[V^L S\right] {R^Y}M \f$ for upper NRBC.
  * @param[in] c If \c NULL, ignored.  Set to the 5x5 column major matrix
  *              \f${R^Y}^{-1} \left[V^L S\right]^{-1} \left[P^G    \right]
  *              \left[V^L S\right] {R^Y}\f$ for upper NRBC.
  *
- * @see Model documentation in <tt>writeups/derivation.tex</tt> for details.
+ * @see Boundary condition discussion at \ref reholut_imexop.h for details.
  */
 void
 suzerain_rholut_imexop_accumulate(
