@@ -95,7 +95,7 @@ FUNCNAME()(
 
     // This routine assembles the transpose of the operator and hence the
     // equation indices are transposed in calls to PACK(...)(...) and we right
-    // the transpose of the discrete operators by diagonal matrices.
+    // multiply the transpose of the discrete operators by diagonal matrices.
 
     // The provided buf may contain INFs or NaNs.  Defensively zero it.
     // Also serves to (possibly) bring the buffer into cache for accumulation.
