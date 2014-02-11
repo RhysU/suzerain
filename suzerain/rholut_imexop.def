@@ -518,7 +518,7 @@ FUNCNAME()(
     if (rho >= 0) {  // Prepare density row
 
         if (rho_E >= 0) {
-            PACK(z)( A_T, rho_E, rho, 0.0, 0, patpt);
+            PACK(z)( A_T, rho_E, rho, 0.0, NULL, patpt); // Zero fill
 
             upper_phi_L_T[0][4] = 0;
         }

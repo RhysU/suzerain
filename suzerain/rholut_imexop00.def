@@ -124,44 +124,44 @@ FUNCNAME00()(
 
         if (rho_u >= 0) {
             suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
-                    phi*Ma2*invRe*(1-ginvPr),    REF(nuux),
+                    Ma2*invRe*(1-ginvPr),        REF(nuux),
                     D2, 1, w->ld, 0.0, buf, 1, A_T->ld);
 
-            PACK(z)(A_T, rho_u, rho_E, 1.0, buf, patpt);
+            PACK(z)(A_T, rho_u, rho_E, phi, buf, patpt);
         }
 
         if (rho_v >= 0) {
             suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
-                    -phi,                        REF(e_divm),
+                    -1.0,                        REF(e_divm),
                     D1, 1, w->ld, 0.0, buf, 1, A_T->ld);
 
             suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
-                    phi*Ma2*invRe*(ap43-ginvPr), REF(nuuy),
+                    Ma2*invRe*(ap43-ginvPr),     REF(nuuy),
                     D2, 1, w->ld, 1.0, buf, 1, A_T->ld);
 
-            PACK(z)(A_T, rho_v, rho_E, 1.0, buf, patpt);
+            PACK(z)(A_T, rho_v, rho_E, phi, buf, patpt);
         }
 
         if (rho_w >= 0) {
             suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
-                    phi*Ma2*invRe*(1-ginvPr),    REF(nuuz),
+                    Ma2*invRe*(1-ginvPr),        REF(nuuz),
                     D2, 1, w->ld, 0.0, buf, 1, A_T->ld);
 
-            PACK(z)(A_T, rho_w, rho_E, 1.0, buf, patpt);
+            PACK(z)(A_T, rho_w, rho_E, phi, buf, patpt);
         }
 
         if (rho  >= 0) {
             suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
-                    -phi,                        REF(ey_gradrho),
+                    -1.0,                        REF(ey_gradrho),
                     D1, 1, w->ld, 0.0, buf, 1, A_T->ld);
 
             suzerain_blasext_zgb_dddiag_scale_acc_d(PREAMBLE,
-                    -phi*Ma2*invRe,              REF(nuu2),
-                    -phi*Ma2*invRe*ap13,         REF(nuuyuy),
-                    phi*ginvRePr/gm1,            REF(e_deltarho),
+                    -Ma2*invRe,                  REF(nuu2),
+                    -Ma2*invRe*ap13,             REF(nuuyuy),
+                    ginvRePr/gm1,                REF(e_deltarho),
                     D2, 1, w->ld, 1.0, buf, 1, A_T->ld);
 
-            PACK(z)(A_T, rho, rho_E, 1.0, buf, patpt);
+            PACK(z)(A_T, rho, rho_E, phi, buf, patpt);
         }
 
     }
@@ -192,26 +192,26 @@ FUNCNAME00()(
 
         if (rho_v >= 0) {
             suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
-                    -phi,                        REF(ux),
+                    -1.0,                        REF(ux),
                     D1, 1, w->ld, 0.0, buf, 1, A_T->ld);
 
-            PACK(z)(A_T, rho_v, rho_u, 1.0, buf, patpt);
+            PACK(z)(A_T, rho_v, rho_u, phi, buf, patpt);
         }
 
         if (rho_w >= 0) {
-            PACK(z)(A_T, rho_w, rho_u, 0.0, buf, patpt);  // Zero fill
+            PACK(z)(A_T, rho_w, rho_u, 0.0, NULL, patpt);  // Zero fill
         }
 
         if (rho  >= 0) {
             suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
-                     phi,                        REF(uxuy),
+                     1.0,                        REF(uxuy),
                     D1, 1, w->ld, 0.0, buf, 1, A_T->ld);
 
             suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
-                    -phi*invRe,                  REF(nuux),
+                    -invRe,                      REF(nuux),
                     D2, 1, w->ld, 1.0, buf, 1, A_T->ld);
 
-            PACK(z)(A_T, rho, rho_u, 1.0, buf, patpt);
+            PACK(z)(A_T, rho, rho_u, phi, buf, patpt);
         }
 
     }
@@ -219,15 +219,17 @@ FUNCNAME00()(
     if (rho_v >= 0) { // Prepare wall-normal momentum row
 
         if (rho_E >= 0) {
-            PACK(zd)(A_T, rho_E, rho_v, -gm1*invMa2*phi, D1, patpt);
+            const complex_double coeff = -gm1*invMa2*phi;
+
+            PACK(zd)(A_T, rho_E, rho_v, coeff, D1, patpt);
         }
 
         if (rho_u >= 0) {
             suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
-                    phi*gm1,              REF(ux),
+                    gm1,                  REF(ux),
                     D1, 1, w->ld, 0.0, buf, 1, A_T->ld);
 
-            PACK(z)(A_T, rho_u, rho_v, 1.0, buf, patpt);
+            PACK(z)(A_T, rho_u, rho_v, phi, buf, patpt);
         }
 
         // On diagonal, mass accumulated last to avoid swamping small values.
@@ -250,23 +252,23 @@ FUNCNAME00()(
 
         if (rho_w >= 0) {
             suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
-                    phi*gm1,              REF(uz),
+                    gm1,                  REF(uz),
                     D1, 1, w->ld, 0.0, buf, 1, A_T->ld);
 
-            PACK(z)(A_T, rho_w, rho_v, 1.0, buf, patpt);
+            PACK(z)(A_T, rho_w, rho_v, phi, buf, patpt);
         }
 
         if (rho  >= 0) {
             suzerain_blasext_zgb_ddiag_scale_acc_d(PREAMBLE,
-                    -phi*0.5*gm1,         REF(u2),
-                     phi,                 REF(uyuy),
+                    -0.5*gm1,             REF(u2),
+                     1.0,                 REF(uyuy),
                     D1, 1, w->ld, 0.0, buf, 1, A_T->ld);
 
             suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
-                    -phi*ap43*invRe,      REF(nuuy),
+                    -ap43*invRe,          REF(nuuy),
                     D2, 1, w->ld, 1.0, buf, 1, A_T->ld);
 
-            PACK(z)(A_T, rho, rho_v, 1.0, buf, patpt);
+            PACK(z)(A_T, rho, rho_v, phi, buf, patpt);
         }
 
     }
@@ -283,10 +285,10 @@ FUNCNAME00()(
 
         if (rho_v >= 0) {
             suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
-                    -phi,                        REF(uz),
+                    -1.0,                        REF(uz),
                     D1, 1, w->ld, 0.0, buf, 1, A_T->ld);
 
-            PACK(z)(A_T, rho_v, rho_w, 1.0, buf, patpt);
+            PACK(z)(A_T, rho_v, rho_w, phi, buf, patpt);
         }
 
         // On diagonal, mass accumulated last to avoid swamping small values.
@@ -309,29 +311,39 @@ FUNCNAME00()(
 
         if (rho  >= 0) {
             suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
-                     phi,                        REF(uyuz),
+                     1.0,                        REF(uyuz),
                     D1, 1, w->ld, 0.0, buf, 1, A_T->ld);
 
             suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
-                    -phi*invRe,                  REF(nuuz),
+                    -invRe,                      REF(nuuz),
                     D2, 1, w->ld, 1.0, buf, 1, A_T->ld);
 
-            PACK(z)(A_T, rho, rho_w, 1.0, buf, patpt);
+            PACK(z)(A_T, rho, rho_w, phi, buf, patpt);
         }
 
     }
 
     if (rho >= 0) {  // Prepare density row
 
-        if (rho_E >= 0) PACK(z)( A_T, rho_E, rho,      0.0, NULL, patpt);
+        if (rho_E >= 0) {
+            PACK(z)( A_T, rho_E, rho,  0.0, NULL, patpt); // Zero fill
+        }
 
-        if (rho_u >= 0) PACK(zd)(A_T, rho_u, rho,      0.0, NULL, patpt);
+        if (rho_u >= 0) {
+            PACK(zd)(A_T, rho_u, rho,  0.0, NULL, patpt); // Zero fill
+        }
 
-        if (rho_v >= 0) PACK(zd)(A_T, rho_v, rho, -1.0*phi, D1,   patpt);
+        if (rho_v >= 0) {
+            PACK(zd)(A_T, rho_v, rho, -phi, D1,   patpt); // Zero fill
+        }
 
-        if (rho_w >= 0) PACK(zd)(A_T, rho_w, rho,      0.0, NULL, patpt);
+        if (rho_w >= 0) {
+            PACK(zd)(A_T, rho_w, rho,  0.0, NULL, patpt); // Zero fill
+        }
 
-        PACK(zd)(A_T, rho,  rho, 1.0, M, patpt);
+        /* rho */ {
+            PACK(zd)(A_T, rho,  rho, 1.0, M, patpt);
+        }
 
     }
 
