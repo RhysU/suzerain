@@ -102,6 +102,17 @@ FUNCNAME()(
     assert(buf);
     memset(buf, 0, A_T->ld*A_T->n*sizeof(buf[0]));
 
+    // Storage for gathering submatrix phi*L indexed on [ rho_E, rho_u, ...]-by
+    // -[rho_E, rho_u, ...]' at the "upper" coefficient w->n - 1.
+    // Permits later adjusting the accumulated operator to provide NRBC.
+    // Zero initialization necessary to handle omitting scalars (e.g. rho).
+    // Notice that a column-major view of this raw data produces phi*L^T!
+    complex_double upper_phi_L[5][5] = { { 0 } };
+
+    // Prepare offset to the last element within banded buf, M, D1, and D2
+    const int upper = suzerain_gbmatrix_offset(
+            A_T->ld, A_T->kl, A_T->ku, A_T->n-1, A_T->n-1);
+
     // Shorthand for common patterns below
     static const double one = 1.0;
 #   define IDENTITY      &one,        0
@@ -126,6 +137,8 @@ FUNCNAME()(
             suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
                     ginvRePr,                    REF(nu),
                     D2, 1, w->ld, 1.0, buf, 1, A_T->ld);
+
+            upper_phi_L[0][0] = phi * buf[upper];
 
             suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
                     1.0,                         IDENTITY,
@@ -152,6 +165,8 @@ FUNCNAME()(
                     D2, 1, w->ld, 1.0, buf, 1, A_T->ld);
 
             PACK(z)(A_T, rho_u, rho_E, 1.0, buf, patpt);
+
+            upper_phi_L[0][1] = buf[upper];
         }
 
         if (rho_v >= 0) {
@@ -172,6 +187,8 @@ FUNCNAME()(
                     D2, 1, w->ld, 1.0, buf, 1, A_T->ld);
 
             PACK(z)(A_T, rho_v, rho_E, 1.0, buf, patpt);
+
+            upper_phi_L[0][2] = buf[upper];
         }
 
         if (rho_w >= 0) {
@@ -192,6 +209,8 @@ FUNCNAME()(
                     D2, 1, w->ld, 1.0, buf, 1, A_T->ld);
 
             PACK(z)(A_T, rho_w, rho_E, 1.0, buf, patpt);
+
+            upper_phi_L[0][3] = buf[upper];
         }
 
         if (rho  >= 0) {
@@ -222,6 +241,8 @@ FUNCNAME()(
                     D2, 1, w->ld, 1.0, buf, 1, A_T->ld);
 
             PACK(z)(A_T, rho, rho_E, 1.0, buf, patpt);
+
+            upper_phi_L[0][4] = buf[upper];
         }
 
     }
@@ -229,7 +250,11 @@ FUNCNAME()(
     if (rho_u >= 0) { // Prepare streamwise momentum row
 
         if (rho_E >= 0) {
-            PACK(zd)(A_T, rho_E, rho_u, -gm1*invMa2*ikm*phi, M, patpt);
+            const complex_double coeff = -gm1*invMa2*ikm*phi;
+
+            PACK(zd)(A_T, rho_E, rho_u, coeff, M, patpt);
+
+            upper_phi_L[1][0] = coeff * M[upper];
         }
 
         // On diagonal, mass accumulated last to avoid swamping small values.
@@ -249,6 +274,8 @@ FUNCNAME()(
                     invRe,                       REF(nu),
                     D2, 1, w->ld, 1.0, buf, 1, A_T->ld);
 
+            upper_phi_L[1][1] = phi * buf[upper];
+
             suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
                     1.0,                         IDENTITY,
                     M,  1, w->ld, phi, buf, 1, A_T->ld);
@@ -267,6 +294,8 @@ FUNCNAME()(
                     D1, 1, w->ld, 1.0, buf, 1, A_T->ld);
 
             PACK(z)(A_T, rho_v, rho_u, 1.0, buf, patpt);
+
+            upper_phi_L[1][2] = buf[upper];
         }
 
         if (rho_w >= 0) {
@@ -277,6 +306,8 @@ FUNCNAME()(
                     M,  1, w->ld, 0.0, buf, 1, A_T->ld);
 
             PACK(z)(A_T, rho_w, rho_u, 1.0, buf, patpt);
+
+            upper_phi_L[1][3] = buf[upper];
         }
 
         if (rho  >= 0) {
@@ -298,6 +329,8 @@ FUNCNAME()(
                     D2, 1, w->ld, 1.0, buf, 1, A_T->ld);
 
             PACK(z)(A_T, rho, rho_u, 1.0, buf, patpt);
+
+            upper_phi_L[1][4] = buf[upper];
         }
 
     }
@@ -305,7 +338,11 @@ FUNCNAME()(
     if (rho_v >= 0) { // Prepare wall-normal momentum row
 
         if (rho_E >= 0) {
-            PACK(zd)(A_T, rho_E, rho_v, -gm1*invMa2*phi, D1, patpt);
+            const complex_double coeff = -gm1*invMa2*phi;
+
+            PACK(zd)(A_T, rho_E, rho_v, coeff, D1, patpt);
+
+            upper_phi_L[2][0] = coeff * D1[upper];
         }
 
         if (rho_u >= 0) {
@@ -319,6 +356,8 @@ FUNCNAME()(
                     D1, 1, w->ld, 1.0, buf, 1, A_T->ld);
 
             PACK(z)(A_T, rho_u, rho_v, 1.0, buf, patpt);
+
+            upper_phi_L[2][1] = buf[upper];
         }
 
         // On diagonal, mass accumulated last to avoid swamping small values.
@@ -338,6 +377,8 @@ FUNCNAME()(
                     ap43*invRe,           REF(nu),
                     D2, 1, w->ld, 1.0, buf, 1, A_T->ld);
 
+            upper_phi_L[2][2] = phi * buf[upper];
+
             suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
                     1.0,                  IDENTITY,
                     M,  1, w->ld, phi, buf, 1, A_T->ld);
@@ -356,6 +397,8 @@ FUNCNAME()(
                     D1, 1, w->ld, 1.0, buf, 1, A_T->ld);
 
             PACK(z)(A_T, rho_w, rho_v, 1.0, buf, patpt);
+
+            upper_phi_L[2][3] = buf[upper];
         }
 
         if (rho  >= 0) {
@@ -377,6 +420,8 @@ FUNCNAME()(
                     D2, 1, w->ld, 1.0, buf, 1, A_T->ld);
 
             PACK(z)(A_T, rho, rho_v, 1.0, buf, patpt);
+
+            upper_phi_L[2][4] = buf[upper];
         }
 
     }
@@ -384,7 +429,11 @@ FUNCNAME()(
     if (rho_w >= 0) { // Prepare spanwise momentum row
 
         if (rho_E >= 0) {
-            PACK(zd)(A_T, rho_E, rho_w, -gm1*invMa2*ikn*phi, M, patpt);
+            const complex_double coeff = -gm1*invMa2*ikn*phi;
+
+            PACK(zd)(A_T, rho_E, rho_w, coeff, M, patpt);
+
+            upper_phi_L[3][0] = coeff * M[upper];
         }
 
         if (rho_u >= 0) {
@@ -395,6 +444,8 @@ FUNCNAME()(
                     M,  1, w->ld, 0.0, buf, 1, A_T->ld);
 
             PACK(z)(A_T, rho_u, rho_w, 1.0, buf, patpt);
+
+            upper_phi_L[3][1] = buf[upper];
         }
 
         if (rho_v >= 0) {
@@ -408,6 +459,8 @@ FUNCNAME()(
                     D1, 1, w->ld, 1.0, buf, 1, A_T->ld);
 
             PACK(z)(A_T, rho_v, rho_w, 1.0, buf, patpt);
+
+            upper_phi_L[3][2] = buf[upper];
         }
 
         // On diagonal, mass accumulated last to avoid swamping small values.
@@ -426,6 +479,8 @@ FUNCNAME()(
             suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
                     invRe,                       REF(nu),
                     D2, 1, w->ld, 1.0, buf, 1, A_T->ld);
+
+            upper_phi_L[3][3] = phi * buf[upper];
 
             suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
                     1.0,                         IDENTITY,
@@ -453,21 +508,49 @@ FUNCNAME()(
                     D2, 1, w->ld, 1.0, buf, 1, A_T->ld);
 
             PACK(z)(A_T, rho, rho_w, 1.0, buf, patpt);
+
+            upper_phi_L[3][4] = buf[upper];
         }
 
     }
 
     if (rho >= 0) {  // Prepare density row
 
-        if (rho_E >= 0) PACK(z)( A_T, rho_E, rho,      0.0, 0,  patpt);
+        if (rho_E >= 0) {
+            PACK(z)( A_T, rho_E, rho, 0.0, 0, patpt);
 
-        if (rho_u >= 0) PACK(zd)(A_T, rho_u, rho, -ikm*phi, M,  patpt);
+            upper_phi_L[4][0] = 0;
+        }
 
-        if (rho_v >= 0) PACK(zd)(A_T, rho_v, rho, -1.0*phi, D1, patpt);
+        if (rho_u >= 0) {
+            const complex_double coeff = -ikm*phi;
 
-        if (rho_w >= 0) PACK(zd)(A_T, rho_w, rho, -ikn*phi, M,  patpt);
+            PACK(zd)(A_T, rho_u, rho, coeff, M, patpt);
 
-        PACK(zd)(A_T, rho,  rho, 1.0, M, patpt);
+            upper_phi_L[4][1] = coeff * M[upper];
+        }
+
+        if (rho_v >= 0) {
+            const complex_double coeff = -1.0*phi;
+
+            PACK(zd)(A_T, rho_v, rho, coeff, D1, patpt);
+
+            upper_phi_L[4][2] = coeff * D1[upper];
+        }
+
+        if (rho_w >= 0) {
+            const complex_double coeff = -ikn*phi;
+
+            PACK(zd)(A_T, rho_w, rho, coeff, M, patpt);
+
+            upper_phi_L[4][3] = coeff * M[upper];
+        }
+
+        /* rho */ {
+            PACK(zd)(A_T, rho,  rho, 1.0, M, patpt);
+
+            upper_phi_L[4][4] = 0; // M does not contribute
+        }
 
     }
 
