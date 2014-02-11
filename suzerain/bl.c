@@ -417,14 +417,16 @@ suzerain_bl_compute_reynolds(
     FILL_WITH_NANS(reynolds);
 
 #pragma warning(push,disable:1572)
-    if (SUZERAIN_UNLIKELY(thick->delta != edge->y)) {
+    if (SUZERAIN_UNLIKELY(    !isnan(thick->delta)
+                           && thick->delta != edge->y)) {
 #pragma warning(pop)
         SUZERAIN_ERROR("Value thick->delta inconsistent with edge->y",
                 SUZERAIN_EINVAL);
     }
 
 #pragma warning(push,disable:1572)
-    if (SUZERAIN_UNLIKELY(thick->delta99 != edge99->y)) {
+    if (SUZERAIN_UNLIKELY(    !isnan(thick->delta99)
+                           && thick->delta99 != edge99->y)) {
 #pragma warning(pop)
         SUZERAIN_ERROR("Value thick->delta99 inconsistent with edge99->y",
                 SUZERAIN_EINVAL);
