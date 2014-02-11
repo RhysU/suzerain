@@ -1,11 +1,7 @@
 dnl ------------------------------------------------
 dnl Package overview
 dnl ------------------------------------------------
-AC_INIT([suzerain],                                      dnl Name
-        [0.1.2],                                         dnl Version
-        [rhys@ices.utexas.edu],                          dnl Bug reports
-        [suzerain],                                      dnl Tarball
-        [https://red.ices.utexas.edu/projects/suzerain]) dnl URL
+AC_INIT([suzerain],[0.1.2],[rhys@ices.utexas.edu],[suzerain],[https://red.ices.utexas.edu/projects/suzerain])
 AC_REVISION([$Id$])
 
 dnl ------------------------------------------------
