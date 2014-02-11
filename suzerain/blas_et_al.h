@@ -3956,7 +3956,35 @@ suzerain_blasext_zgedsummm55(
               complex_double * SUZERAIN_RESTRICT e);
 
 /**
- * The goofiest kernel you'll ever come across:
+ * A fixed-size, mixed scalar matrix product:
+ * \verbatim
+
+ *   /e0 e5 e10 e15 e20\         /c0 c5 c10 c15 c20\ /d0 d5 d10 d15 d20\
+ *   |e1 e6 e11 e16 e21|         |c1 c6 c11 c16 c21| |d1 d6 d11 d16 d21|
+ *   |e2 e7 e12 e17 e22| + gamma |c2 c7 c12 c17 c22| |d2 d7 d12 d17 d22|
+ *   |e3 e8 e13 e18 e23|         |c3 c8 c13 c18 c23| |d3 d8 d13 d18 d23|
+ *   \e4 e9 e14 e19 e24/         \c4 c9 c14 c19 c24/ \d4 d9 d14 d19 d24/
+ *
+ * \endverbatim
+ * All matrices are column-major, contiguous, and of size five-by-five.
+ * Arguments named to match \ref suzerain_blasext_zgedsummv55.
+ *
+ * \param [in ] gamma  Scaling factor on matrix product
+ * \param [in ] c      Left real matrix for product, column-major contiguous
+ * \param [in ] d      Right complex matrix for product, column-major contiguous
+ * \param [out] e      Output matrix to overwrite with the result
+ *
+ * @return Zero, always.
+ */
+int
+suzerain_blasext_zgedmm55(
+        const complex_double                     gamma,
+        const         double * SUZERAIN_RESTRICT c,
+        const complex_double * SUZERAIN_RESTRICT d,
+              complex_double * SUZERAIN_RESTRICT e);
+
+/**
+ * Scaled matrix-vector products with repeated vector use:
  * \verbatim
  *
  *     /w0\           /a0 a5 a10 a15 a20\   /x0\
