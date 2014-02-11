@@ -46,7 +46,8 @@ FUNCNAME00()(
         const int rho,
         complex_double * const buf,
         suzerain_bsmbsm * const A_T,
-        complex_double * const patpt)
+        complex_double * const patpt,
+        const double * const c)
 {
     // When you modify this routine, you must also modify
     // suzerain_rholut_imexop_accumulate00 so that operator

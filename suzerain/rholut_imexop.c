@@ -49,20 +49,20 @@ suzerain_rholut_imexop_accumulate(
         const suzerain_rholut_imexop_ref      * const r,
         const suzerain_rholut_imexop_refld    * const ld,
         const suzerain_bsplineop_workspace    * const w,
-        const complex_double *in_rho_E,
-        const complex_double *in_rho_u,
-        const complex_double *in_rho_v,
-        const complex_double *in_rho_w,
-        const complex_double *in_rho ,
+        const complex_double * const in_rho_E,
+        const complex_double * const in_rho_u,
+        const complex_double * const in_rho_v,
+        const complex_double * const in_rho_w,
+        const complex_double * const in_rho ,
         const complex_double beta,
-        complex_double *out_rho_E,
-        complex_double *out_rho_u,
-        complex_double *out_rho_v,
-        complex_double *out_rho_w,
-        complex_double *out_rho,
-        const double * a,
-        const double * b,
-        const double * c)
+        complex_double * const out_rho_E,
+        complex_double * const out_rho_u,
+        complex_double * const out_rho_v,
+        complex_double * const out_rho_w,
+        complex_double * const out_rho,
+        const double * const a,
+        const double * const b,
+        const double * const c)
 {
     // When you modify this routine, you must also modify rholut_imexop.def so
     // that operator accumulation-without-assembly and assembly match.  The

@@ -180,17 +180,18 @@ typedef struct {
  *              \f${R^Y}^{-1} \left[V^L S\right]^{-1} \left[P^G    \right]
  *              \left[V^L S\right] {R^Y}\f$ for upper NRBC.
  *
- * @see Boundary condition discussion at \ref reholut_imexop.h for details.
+ * @see Boundary condition discussion at \ref reholut_imexop.h.
+ * @see Operator documentation in <tt>writeups/perfectgas.tex</tt> for details.
  */
 void
 suzerain_rholut_imexop_accumulate(
         const complex_double phi,
         const double km,
         const double kn,
-        const suzerain_rholut_imexop_scenario * const s,
-        const suzerain_rholut_imexop_ref      * const r,
-        const suzerain_rholut_imexop_refld    * const ld,
-        const suzerain_bsplineop_workspace    * const w,
+        const suzerain_rholut_imexop_scenario *s,
+        const suzerain_rholut_imexop_ref      *r,
+        const suzerain_rholut_imexop_refld    *ld,
+        const suzerain_bsplineop_workspace    *w,
         const complex_double *in_rho_E,
         const complex_double *in_rho_w,
         const complex_double *in_rho_v,
@@ -283,7 +284,22 @@ suzerain_rholut_imexop_accumulate00(
  *                   <tt>A_T->KL</tt> and <tt>A_T->KU</tt> diagonals and
  *                   leading dimension <tt>A_T->LD</tt>.
  *
- * @see Model documentation in <tt>writeups/derivation.tex</tt> for details.
+ * A mostly-implicit Giles nonreflecting boundary condition may optionally be
+ * imposed on the final coefficient corresponding to the upper boundary when \c
+ * a, \c b, and \c c are all non-NULL.
+ *
+ * @param[in] a If \c NULL, ignored.  Set to the 5x5 column major matrix
+ *              \f${R^Y}^{-1} \left[V^L S\right]^{-1} \left[P^G C^G\right]
+ *              \left[V^L S\right] {R^Y} M \f$ for upper NRBC.
+ * @param[in] b If \c NULL, ignored.  Set to the 5x5 column major matrix
+ *              \f${R^Y}^{-1} \left[V^L S\right]^{-1} \left[P^G B^G\right]
+ *              \left[V^L S\right] {R^Y}M \f$ for upper NRBC.
+ * @param[in] c If \c NULL, ignored.  Set to the 5x5 column major matrix
+ *              \f${R^Y}^{-1} \left[V^L S\right]^{-1} \left[P^G    \right]
+ *              \left[V^L S\right] {R^Y}\f$ for upper NRBC.
+ *
+ * @see Operator documentation in <tt>writeups/perfectgas.tex</tt> for details.
+ * @see Boundary condition discussion at \ref reholut_imexop.h.
  * @see suzerain_bsmbsm_zaPxpby() for how to permute state to match \c patpt.
  */
 void
@@ -291,18 +307,21 @@ suzerain_rholut_imexop_packc(
         const complex_double phi,
         const double km,
         const double kn,
-        const suzerain_rholut_imexop_scenario * const s,
-        const suzerain_rholut_imexop_ref      * const r,
-        const suzerain_rholut_imexop_refld    * const ld,
-        const suzerain_bsplineop_workspace    * const w,
+        const suzerain_rholut_imexop_scenario *s,
+        const suzerain_rholut_imexop_ref      *r,
+        const suzerain_rholut_imexop_refld    *ld,
+        const suzerain_bsplineop_workspace    *w,
         const int rho_E,
         const int rho_w,
         const int rho_v,
         const int rho_u,
         const int rho,
-        complex_double * const buf,
-        suzerain_bsmbsm * const A_T,
-        complex_double * const patpt);
+        complex_double *buf,
+        suzerain_bsmbsm *A_T,
+        complex_double *patpt,
+        const double *a,
+        const double *b,
+        const double *c);
 
 /**
  * Pack the ``zero-zero'' mode portion of '\f$\left(M +
@@ -318,18 +337,19 @@ suzerain_rholut_imexop_packc(
 void
 suzerain_rholut_imexop_packc00(
         const complex_double phi,
-        const suzerain_rholut_imexop_scenario * const s,
-        const suzerain_rholut_imexop_ref      * const r,
-        const suzerain_rholut_imexop_refld    * const ld,
-        const suzerain_bsplineop_workspace    * const w,
+        const suzerain_rholut_imexop_scenario *s,
+        const suzerain_rholut_imexop_ref      *r,
+        const suzerain_rholut_imexop_refld    *ld,
+        const suzerain_bsplineop_workspace    *w,
         const int rho_E,
         const int rho_w,
         const int rho_v,
         const int rho_u,
         const int rho,
-        complex_double * const buf,
-        suzerain_bsmbsm * const A_T,
-        complex_double * const patpt);
+        complex_double *buf,
+        suzerain_bsmbsm *A_T,
+        complex_double *patpt,
+        const double *c);
 
 /**
  * Pack \f$\left(M + \varphi{}L\right)^{\mbox{T}}\f$ into the corresponding
@@ -381,7 +401,16 @@ suzerain_rholut_imexop_packc00(
  *                   <tt>A_T->KL</tt> and <tt>A_T->KU</tt> diagonals and
  *                   leading dimension <tt>A_T->LD + A_T->KL</tt>.
  *
- * @see Model documentation in <tt>writeups/derivation.tex</tt> for details.
+ * A mostly-implicit Giles nonreflecting boundary condition may optionally be
+ * imposed on the final coefficient corresponding to the upper boundary when \c
+ * a, \c b, and \c c are all non-NULL.
+ *
+ * @param[in] c If \c NULL, ignored.  Set to the 5x5 column major matrix
+ *              \f${R^Y}^{-1} \left[V^L S\right]^{-1} \left[P^G    \right]
+ *              \left[V^L S\right] {R^Y}\f$ for upper NRBC.
+ *
+ * @see Boundary condition discussion at \ref reholut_imexop.h.
+ * @see Model documentation in <tt>writeups/perfectgas.tex</tt> for details.
  * @see suzerain_bsmbsm_zaPxpby() for how to permute state to match \c patpt.
  */
 void
@@ -400,7 +429,10 @@ suzerain_rholut_imexop_packf(
         const int rho,
         complex_double * const buf,
         suzerain_bsmbsm * const A_T,
-        complex_double *const patpt);
+        complex_double *const patpt,
+        const double *a,
+        const double *b,
+        const double *c);
 
 /**
  * Pack the ``zero-zero'' mode portion of '\f$\left(M +
@@ -427,7 +459,8 @@ suzerain_rholut_imexop_packf00(
         const int rho,
         complex_double * const buf,
         suzerain_bsmbsm * const A_T,
-        complex_double *const patpt);
+        complex_double *const patpt,
+        const double *c);
 
 #ifdef __cplusplus
 } /* extern "C" */

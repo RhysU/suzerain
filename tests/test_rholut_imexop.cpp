@@ -161,7 +161,8 @@ static void operator_consistency(const parameters& p)
     fill(buf.get(),  buf.get()  + bufsize,  NaN<real_t>());
     fill(papt.get(), papt.get() + paptsize, NaN<real_t>());
     suzerain_rholut_imexop_packc(phi, km, kn, &s, &r, &ld, op.get(),
-                                 0, 1, 2, 3, 4, buf.get(), &A, papt.get());
+                                 0, 1, 2, 3, 4, buf.get(), &A, papt.get(),
+                                 NULL, NULL, NULL /* TODO Consistency testing per Ticket #2979 */);
     for (int i = 0; i < A.N; ++i) {
         const int qi = suzerain_bsmbsm_q(A.S, A.n, i);
         for (int j = 0; j < A.N; ++j) {

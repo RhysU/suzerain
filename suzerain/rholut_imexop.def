@@ -48,7 +48,10 @@ FUNCNAME()(
         const int rho,
         complex_double * const buf,
         suzerain_bsmbsm * const A_T,
-        complex_double * const patpt)
+        complex_double * const patpt,
+        const double * a,
+        const double * b,
+        const double * c)
 {
     // When you modify this routine, you must also modify
     // suzerain_rholut_imexop_accumulate so that operator
@@ -59,6 +62,8 @@ FUNCNAME()(
     // When you modify this routine, you may also need to modify
     // rholut_imexop00.c and rholut_imexop00.def so the zero-zero
     // mode case is handled consistently.
+
+    assert((a && b && c) || (!a && !b && !c)); // All non-NULL or NULL?
 
     // How many rows and columns of banded submatrices will we build?
     const int nneg = (rho_E >= 0)

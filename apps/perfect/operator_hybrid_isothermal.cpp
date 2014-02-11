@@ -709,6 +709,9 @@ void operator_hybrid_isothermal::invert_mass_plus_scaled_operator(
 
     case linearize::rhome_xyz:
     {
+        const real_t *maybe_a = grid.one_sided() ? upper_nrbc_a.data() : NULL;
+        const real_t *maybe_b = grid.one_sided() ? upper_nrbc_b.data() : NULL;
+        const real_t *maybe_c = grid.one_sided() ? upper_nrbc_c.data() : NULL;
         for (int n = dkbz; n < dkez; ++n) {
             const int wn = wavenumber(dNz, n);
             const real_t kn = twopioverLz*wn;
@@ -738,13 +741,15 @@ void operator_hybrid_isothermal::invert_mass_plus_scaled_operator(
                     suzerain_rholut_imexop_packf(
                             phi, km, kn, &s, &ref, &ld, cop.get(),
                             ndx::e, ndx::mx, ndx::my, ndx::mz, ndx::rho,
-                            buf.data(), solver.get(), solver->LU.data());
+                            buf.data(), solver.get(), solver->LU.data(),
+                            NULL, NULL, NULL /* FIXME Use maybe_{a,b,c} per Redmine Ticket #2979 */);
                 } else {                       // Pack for out-of-place LU
                     SUZERAIN_TIMER_SCOPED("implicit operator assembly (packc)");
                     suzerain_rholut_imexop_packc(
                             phi, km, kn, &s, &ref, &ld, cop.get(),
                             ndx::e, ndx::mx, ndx::my, ndx::mz, ndx::rho,
-                            buf.data(), solver.get(), solver->PAPT.data());
+                            buf.data(), solver.get(), solver->PAPT.data(),
+                            NULL, NULL, NULL /* FIXME Use maybe_{a,b,c} per Redmine Ticket #2979 */);
                 }
                 // Apply boundary conditions to PA^TP^T
                 {
@@ -787,6 +792,8 @@ void operator_hybrid_isothermal::invert_mass_plus_scaled_operator(
 
     case linearize::rhome_y:
     {
+        const real_t *maybe_c = grid.one_sided() ? upper_nrbc_c.data() : NULL;
+
         // Form complex-valued, wavenumber-independent PA^TP^T
         static const char trans = 'T';
         if (solver->spec.in_place()) { // Pack for in-place LU
@@ -794,13 +801,15 @@ void operator_hybrid_isothermal::invert_mass_plus_scaled_operator(
             suzerain_rholut_imexop_packf00(
                     phi, &s, &ref, &ld, cop.get(),
                     ndx::e, ndx::mx, ndx::my, ndx::mz, ndx::rho,
-                    buf.data(), solver.get(), solver->LU.data());
+                    buf.data(), solver.get(), solver->LU.data(),
+                    NULL /* FIXME Use maybe_{c} per Redmine Ticket #2979 */);
         } else {                       // Pack for out-of-place LU
             SUZERAIN_TIMER_SCOPED("implicit operator assembly (packc00)");
             suzerain_rholut_imexop_packc00(
                     phi, &s, &ref, &ld, cop.get(),
                     ndx::e, ndx::mx, ndx::my, ndx::mz, ndx::rho,
-                    buf.data(), solver.get(), solver->PAPT.data());
+                    buf.data(), solver.get(), solver->PAPT.data(),
+                    NULL /* FIXME Use maybe_{c} per Redmine Ticket #2979 */);
         }
         // Apply wavenumber-independent boundary conditions to PA^TP^T
         {
