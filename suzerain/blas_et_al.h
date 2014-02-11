@@ -3909,6 +3909,53 @@ suzerain_blasext_zpromote(
         void *x);
 
 /**
+ * Scaled matrix accumulation mixed with a fixed-size matrix product:
+ * \verbatim
+ *
+ *  /e0 e5 e10 e15 e20\         /a0 a5 a10 a15 a20\
+ *  |e1 e6 e11 e16 e21|         |a1 a6 a11 a16 a21|
+ *  |e2 e7 e12 e17 e22| = alpha |a2 a7 a12 a17 a22|
+ *  |e3 e8 e13 e18 e23|         |a3 a8 a13 a18 a23|
+ *  \e4 e9 e14 e19 e24/         \a4 a9 a14 a19 a24/
+ *
+ *                              /b0 b5 b10 b15 b20\
+ *                              |b1 b6 b11 b16 b21|
+ *                      + beta  |b2 b7 b12 b17 b22|
+ *                              |b3 b8 b13 b18 b23|
+ *                              \b4 b9 b14 b19 b24/
+ *
+ *                              /c0 c5 c10 c15 c20\ /d0 d5 d10 d15 d20\
+ *                              |c1 c6 c11 c16 c21| |d1 d6 d11 d16 d21|
+ *                      + gamma |c2 c7 c12 c17 c22| |d2 d7 d12 d17 d22|
+ *                              |c3 c8 c13 c18 c23| |d3 d8 d13 d18 d23|
+ *                              \c4 c9 c14 c19 c24/ \d4 d9 d14 d19 d24/
+ *
+ * \endverbatim
+ * All matrices are column-major, contiguous, and of size five-by-five.
+ *
+ * \param [in ] alpha  Scaling factor on first matrix
+ * \param [in ] a      Summed real matrix, column-major contiguous.
+ * \param [in ] beta   Scaling factor on second matrix
+ * \param [in ] b      Summed real matrix, column-major contiguous
+ * \param [in ] gamma  Scaling factor on matrix product
+ * \param [in ] c      Left real matrix for product, column-major contiguous
+ * \param [in ] d      Right complex matrix for product, column-major contiguous
+ * \param [out] e      Output matrix to overwrite with the result
+ *
+ * @return Zero, always.
+ */
+int
+suzerain_blasext_zgedsummm55(
+        const complex_double                     alpha,
+        const         double * SUZERAIN_RESTRICT a,
+        const complex_double                     beta,
+        const         double * SUZERAIN_RESTRICT b,
+        const complex_double                     gamma,
+        const         double * SUZERAIN_RESTRICT c,
+        const complex_double * SUZERAIN_RESTRICT d,
+              complex_double * SUZERAIN_RESTRICT e);
+
+/**
  * The goofiest kernel you'll ever come across:
  * \verbatim
  *

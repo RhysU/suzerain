@@ -5065,6 +5065,46 @@ suzerain_blasext_zpromote(
 }
 
 int
+suzerain_blasext_zgedsummm55(
+        const complex_double                     alpha,
+        const         double * SUZERAIN_RESTRICT a,
+        const complex_double                     beta,
+        const         double * SUZERAIN_RESTRICT b,
+        const complex_double                     gamma,
+        const         double * SUZERAIN_RESTRICT c,
+        const complex_double * SUZERAIN_RESTRICT d,
+              complex_double * SUZERAIN_RESTRICT e)
+{
+    e[ 0] = alpha*a[ 0] + beta*b[ 0] + gamma*(c[0]*d[ 0] + c[5]*d[ 1] + c[10]*d[ 2] + c[15]*d[ 3] + c[20]*d[ 4]);
+    e[ 1] = alpha*a[ 1] + beta*b[ 1] + gamma*(c[1]*d[ 0] + c[6]*d[ 1] + c[11]*d[ 2] + c[16]*d[ 3] + c[21]*d[ 4]);
+    e[ 2] = alpha*a[ 2] + beta*b[ 2] + gamma*(c[2]*d[ 0] + c[7]*d[ 1] + c[12]*d[ 2] + c[17]*d[ 3] + c[22]*d[ 4]);
+    e[ 3] = alpha*a[ 3] + beta*b[ 3] + gamma*(c[3]*d[ 0] + c[8]*d[ 1] + c[13]*d[ 2] + c[18]*d[ 3] + c[23]*d[ 4]);
+    e[ 4] = alpha*a[ 4] + beta*b[ 4] + gamma*(c[4]*d[ 0] + c[9]*d[ 1] + c[14]*d[ 2] + c[19]*d[ 3] + c[24]*d[ 4]);
+    e[ 5] = alpha*a[ 5] + beta*b[ 5] + gamma*(c[0]*d[ 5] + c[5]*d[ 6] + c[10]*d[ 7] + c[15]*d[ 8] + c[20]*d[ 9]);
+    e[ 6] = alpha*a[ 6] + beta*b[ 6] + gamma*(c[1]*d[ 5] + c[6]*d[ 6] + c[11]*d[ 7] + c[16]*d[ 8] + c[21]*d[ 9]);
+    e[ 7] = alpha*a[ 7] + beta*b[ 7] + gamma*(c[2]*d[ 5] + c[7]*d[ 6] + c[12]*d[ 7] + c[17]*d[ 8] + c[22]*d[ 9]);
+    e[ 8] = alpha*a[ 8] + beta*b[ 8] + gamma*(c[3]*d[ 5] + c[8]*d[ 6] + c[13]*d[ 7] + c[18]*d[ 8] + c[23]*d[ 9]);
+    e[ 9] = alpha*a[ 9] + beta*b[ 9] + gamma*(c[4]*d[ 5] + c[9]*d[ 6] + c[14]*d[ 7] + c[19]*d[ 8] + c[24]*d[ 9]);
+    e[10] = alpha*a[10] + beta*b[10] + gamma*(c[0]*d[10] + c[5]*d[11] + c[10]*d[12] + c[15]*d[13] + c[20]*d[14]);
+    e[11] = alpha*a[11] + beta*b[11] + gamma*(c[1]*d[10] + c[6]*d[11] + c[11]*d[12] + c[16]*d[13] + c[21]*d[14]);
+    e[12] = alpha*a[12] + beta*b[12] + gamma*(c[2]*d[10] + c[7]*d[11] + c[12]*d[12] + c[17]*d[13] + c[22]*d[14]);
+    e[13] = alpha*a[13] + beta*b[13] + gamma*(c[3]*d[10] + c[8]*d[11] + c[13]*d[12] + c[18]*d[13] + c[23]*d[14]);
+    e[14] = alpha*a[14] + beta*b[14] + gamma*(c[4]*d[10] + c[9]*d[11] + c[14]*d[12] + c[19]*d[13] + c[24]*d[14]);
+    e[15] = alpha*a[15] + beta*b[15] + gamma*(c[0]*d[15] + c[5]*d[16] + c[10]*d[17] + c[15]*d[18] + c[20]*d[19]);
+    e[16] = alpha*a[16] + beta*b[16] + gamma*(c[1]*d[15] + c[6]*d[16] + c[11]*d[17] + c[16]*d[18] + c[21]*d[19]);
+    e[17] = alpha*a[17] + beta*b[17] + gamma*(c[2]*d[15] + c[7]*d[16] + c[12]*d[17] + c[17]*d[18] + c[22]*d[19]);
+    e[18] = alpha*a[18] + beta*b[18] + gamma*(c[3]*d[15] + c[8]*d[16] + c[13]*d[17] + c[18]*d[18] + c[23]*d[19]);
+    e[19] = alpha*a[19] + beta*b[19] + gamma*(c[4]*d[15] + c[9]*d[16] + c[14]*d[17] + c[19]*d[18] + c[24]*d[19]);
+    e[20] = alpha*a[20] + beta*b[20] + gamma*(c[0]*d[20] + c[5]*d[21] + c[10]*d[22] + c[15]*d[23] + c[20]*d[24]);
+    e[21] = alpha*a[21] + beta*b[21] + gamma*(c[1]*d[20] + c[6]*d[21] + c[11]*d[22] + c[16]*d[23] + c[21]*d[24]);
+    e[22] = alpha*a[22] + beta*b[22] + gamma*(c[2]*d[20] + c[7]*d[21] + c[12]*d[22] + c[17]*d[23] + c[22]*d[24]);
+    e[23] = alpha*a[23] + beta*b[23] + gamma*(c[3]*d[20] + c[8]*d[21] + c[13]*d[22] + c[18]*d[23] + c[23]*d[24]);
+    e[24] = alpha*a[24] + beta*b[24] + gamma*(c[4]*d[20] + c[9]*d[21] + c[14]*d[22] + c[19]*d[23] + c[24]*d[24]);
+
+    return 0;
+}
+
+int
 suzerain_blasext_zgedsummv55(
         const complex_double                     alpha,
         const         double * SUZERAIN_RESTRICT a,
