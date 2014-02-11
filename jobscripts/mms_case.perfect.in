@@ -2,7 +2,7 @@
 set -e
 
 # Specify operational defaults which may be overridden in the environment
-: ${MMS_CASE_INITIAL:=@bindir@/perfect_init}
+: ${MMS_CASE_INITIAL:=@bindir@/perfect_initial}
 : ${MMS_CASE_ADVANCE:=@bindir@/perfect_advance}
 : ${MMS_CASE_NPROC:=4}
 

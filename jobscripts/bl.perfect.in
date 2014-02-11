@@ -2,7 +2,7 @@
 set -eu
 
 # Specify operational defaults which may be overridden in the environment
-: ${LAMINAR_INITIAL:=@bindir@/perfect_init}
+: ${LAMINAR_INITIAL:=@bindir@/perfect_initial}
 : ${LAMINAR_ADVANCE:=@bindir@/perfect_advance}
 
 # Parse incoming parameters
