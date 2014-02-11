@@ -69,7 +69,7 @@ FUNCNAME()(
     *A_T = suzerain_bsmbsm_construct(nneg, w->n, w->max_kl, w->max_ku);
     const double * const M  = w->D_T[0] - (w->max_ku - w->ku[0]);
     const double * const D1 = w->D_T[1] - (w->max_ku - w->ku[1]);
-    const double * const D2 = w->D_T[2] - (w->max_ku - w->ku[1]);
+    const double * const D2 = w->D_T[2] - (w->max_ku - w->ku[2]);
     assert(w->nderiv >= 2);         // Enough derivatives in workspace?
     assert(A_T->ld == w->ld);       // Compatible storage?
 
