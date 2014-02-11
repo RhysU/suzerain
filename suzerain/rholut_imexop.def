@@ -32,6 +32,8 @@
 // #define FUNCNAME() /* Function name, e.g. suzerain_rholut_imexop_packc */
 // #define PACK(x)    /* suzerain_bsmbsm_ ## x ## pack{c,f}               */
 
+#define LIKELY(expr) SUZERAIN_LIKELY(expr)
+
 void
 FUNCNAME()(
         const complex_double phi,
@@ -108,11 +110,9 @@ FUNCNAME()(
     memset(buf, 0, A_T->ld*A_T->n*sizeof(buf[0]));
 
     // Storage for gathering submatrix phi*L^T indexed on [ rho_E, rho_u,
-    // ...]-by-[rho_E, rho_u, ...]' at the "upper" coefficient w->n -
-    // 1. Permits later adjusting the accumulated operator to provide
-    // NRBC. Zero initialization necessary to handle omitting scalars
-    // (e.g. rho).  Notice that a column-major view of this raw data is
-    // nothing but phi*L.
+    // ...]-by-[rho_E, rho_u, ...]' at the "upper" coefficient w->n - 1. Permits
+    // later adjusting the accumulated operator to provide NRBC. Zero
+    // initialization necessary to handle omitting scalars (e.g. rho).
     complex_double upper_phi_L_T[5][5] = { { 0 } };
 
     // Prepare offset to the last element within banded buf, M, D1, and D2
@@ -564,7 +564,82 @@ FUNCNAME()(
 #   undef REF
 #   undef PREAMBLE
 
+    // If requested, use matrices a, b, and c to partially provide upper NRBC
+    // TODO Consider inlining the BLAS-like call to hide some memory latency
+    if (a) {
+        // This column-major usage of upper_phi_L_T is nothing but phi*L.
+        complex_double tmp[5][5];
+        suzerain_blasext_zgedsummm55(phi*ikm, a,
+                                     phi*ikn, b,
+                                     -1,      c, (const void *) upper_phi_L_T,
+                                                 (      void *) tmp);
+
+        if (LIKELY(rho_E >= 0)) {
+            /* rho_E */ {
+            }
+            if (LIKELY(rho_u >= 0)) {
+            }
+            if (LIKELY(rho_v >= 0)) {
+            }
+            if (LIKELY(rho_w >= 0)) {
+            }
+            if (LIKELY(rho   >= 0)) {
+            }
+        }
+        if (LIKELY(rho_u >= 0)) {
+            if (LIKELY(rho_E >= 0)) {
+            }
+            /* rho_u */ {
+            }
+            if (LIKELY(rho_v >= 0)) {
+            }
+            if (LIKELY(rho_w >= 0)) {
+            }
+            if (LIKELY(rho   >= 0)) {
+            }
+        }
+        if (LIKELY(rho_v >= 0)) {
+            if (LIKELY(rho_E >= 0)) {
+            }
+            if (LIKELY(rho_u >= 0)) {
+            }
+            /* rho_v */ {
+            }
+            if (LIKELY(rho_w >= 0)) {
+            }
+            if (LIKELY(rho   >= 0)) {
+            }
+        }
+        if (LIKELY(rho_w >= 0)) {
+            if (LIKELY(rho_E >= 0)) {
+            }
+            if (LIKELY(rho_u >= 0)) {
+            }
+            if (LIKELY(rho_v >= 0)) {
+            }
+            /* rho_w */ {
+            }
+            if (LIKELY(rho   >= 0)) {
+            }
+        }
+        if (LIKELY(rho   >= 0)) {
+            if (LIKELY(rho_E >= 0)) {
+            }
+            if (LIKELY(rho_u >= 0)) {
+            }
+            if (LIKELY(rho_v >= 0)) {
+            }
+            if (LIKELY(rho_w >= 0)) {
+            }
+            /* rho */ {
+            }
+        }
+
+    }
+
 }
+
+#undef LIKELY
 
 #undef FUNCNAME
 #undef PACK
