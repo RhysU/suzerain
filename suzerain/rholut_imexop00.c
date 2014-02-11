@@ -35,6 +35,7 @@
 #include <suzerain/common.h>
 #include <suzerain/blas_et_al.h>
 #include <suzerain/bsmbsm.h>
+#include <suzerain/gbmatrix.h>
 
 #define SWAPCPLX(a, b)                                                 \
     do { const complex_double t = (a); (a) = (b); (b) = t; } while (0)
