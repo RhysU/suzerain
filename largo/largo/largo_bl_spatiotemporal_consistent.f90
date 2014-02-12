@@ -226,6 +226,8 @@ module largo_BL_spatiotemporal_consistent
   public  :: largo_BL_spatiotemporal_consistent_energy_sEta_
   public  :: largo_BL_spatiotemporal_consistent_ispecies_sEta_
   public  :: largo_BL_spatiotemporal_consistent_species_sEta_
+
+  public  :: largo_BL_spatiotemporal_consistent_sEtaMean
   public  :: largo_BL_spatiotemporal_consistent_sEta
 
   private :: largo_BL_spatiotemporal_consistent_preStep_sEta_
@@ -819,6 +821,25 @@ contains
       call largo_BL_spatiotemporal_consistent_ispecies_sEtaMean (cp, A, B, srcvec(is), is)
     end do
   end subroutine largo_BL_spatiotemporal_consistent_species_sEtaMean
+
+
+  subroutine largo_BL_spatiotemporal_consistent_sEtaMean (cp, A, B, srcvec) bind(C)
+    type(largo_workspace_ptr), intent(in)     :: cp
+    real(WP)       , intent(in)               :: A, B
+    real(WP), dimension(*), intent(inout)     :: srcvec ! "*" = 5+ns_
+    integer(c_int)                            :: is
+
+    call largo_BL_spatiotemporal_consistent_continuity_sEtaMean (cp,      A, B, srcvec(irho ))
+    call largo_BL_spatiotemporal_consistent_xMomentum_sEtaMean  (cp,      A, B, srcvec(irhou))
+    call largo_BL_spatiotemporal_consistent_yMomentum_sEtaMean  (cp,      A, B, srcvec(irhov))
+    call largo_BL_spatiotemporal_consistent_zMomentum_sEtaMean  (cp,      A, B, srcvec(irhow))
+    call largo_BL_spatiotemporal_consistent_energy_sEtaMean     (cp,      A, B, srcvec(irhoE))
+
+    do is = 1, ns_
+      call largo_BL_spatiotemporal_consistent_ispecies_sEtaMean (cp,      A, B, srcvec(5+is), is)
+    end do
+
+  end subroutine largo_BL_spatiotemporal_consistent_sEtaMean
 
 
   subroutine DECLARE_SUBROUTINE(largo_BL_spatiotemporal_consistent_continuity_sEta_)

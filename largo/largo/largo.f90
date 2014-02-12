@@ -264,6 +264,7 @@ contains
       lauxp%largo_energy           => largo_BL_temporal_consistent_energy_sEta_
       lauxp%largo_species          => largo_BL_temporal_consistent_species_sEta_
 
+      lauxp%largo_all_sources_mean => largo_BL_temporal_consistent_sEtaMean
       lauxp%largo_all_sources      => largo_BL_temporal_consistent_sEta
 
       lauxp%largo_prestep_baseflow => largo_BL_temporal_consistent_preStep_baseflow
@@ -294,6 +295,7 @@ contains
       lauxp%largo_energy             => largo_BL_spatiotemporal_consistent_energy_sEta_
       lauxp%largo_species            => largo_BL_spatiotemporal_consistent_species_sEta_
 
+      lauxp%largo_all_sources_mean   => largo_BL_spatiotemporal_consistent_sEtaMean
       lauxp%largo_all_sources        => largo_BL_spatiotemporal_consistent_sEta
 
       lauxp%largo_init_wall_baseflow => largo_BL_spatiotemporal_consistent_init_wall_baseflow

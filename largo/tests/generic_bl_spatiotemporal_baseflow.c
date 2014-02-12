@@ -389,6 +389,43 @@ FCT_BGN()
           // Deallocate workspace
           largo_deallocate (&work);
 
+
+          // Recompute mean sources using mean methods for rans
+          // Allocate generic workspace;
+          largo_allocate (&work, model, neq, ns, 0, "dns");
+
+          // Init growth rates
+          largo_init     (work, grxDelta, grxDA, grxDArms);
+
+          // Init wall baseflow
+          largo_init_wall_baseflow(work   \ 
+            ,wall_base ,wall_ddy_base ,wall_ddt_base \
+                       ,wall_ddx_base ,wall_src_base \
+            );
+
+          // Compute prestep values;
+          largo_prestep_baseflow  (work,   base,  dybase,
+                                              dtbase, dxbase, srcbase);
+          largo_prestep_setamean  (work, y, mean, dmean);
+
+          // Compute mean sources;
+          largo_setamean (work, 0.0, 1.0, &srcmean[0]);
+
+          // Deallocate workspace
+          largo_deallocate (&work);
+
+          // Check mean part
+          // Tolerance for energy source adjusted manually
+          fct_chk_eq_dbl(srcmean[1-1]       , srcmean_good[1-1]);
+          fct_chk_eq_dbl(srcmean[2-1]/10.0  , srcmean_good[2-1]/10.0);
+          fct_chk_eq_dbl(srcmean[3-1]       , srcmean_good[3-1]);
+          fct_chk_eq_dbl(srcmean[4-1]       , srcmean_good[4-1]);
+          fct_chk_eq_dbl(srcmean[5-1]/10000., srcmean_good[5-1]/10000.);
+          for (unsigned int is=0; is < ns; ++is)
+          {
+            fct_chk_eq_dbl(srcmean[5+is]      , srcmean_good[5+is]);
+          }
+
         }
         FCT_TEST_END();
     }
