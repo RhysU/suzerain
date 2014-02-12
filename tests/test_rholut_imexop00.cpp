@@ -49,16 +49,24 @@ static const real_t macheps = std::numeric_limits<real_t>::epsilon();
 static const size_t NREFS = sizeof(suzerain_rholut_imexop_ref)/sizeof(real_t*);
 BOOST_STATIC_ASSERT(NREFS == sizeof(suzerain_rholut_imexop_refld)/sizeof(int));
 
+// Abuse what we know about NRBC matrices supplied to suzerain_rholut_XXX
+static const size_t CSIZE = 5 * 5;
+
 struct parameters
 {
     int refndx;
+    int cndx;   // Negative -1 to disable NRBC "c" matrix
+                // Zero to provide a "c" matrix full of zeros
+                // Positive to set nonzero (cndx - 1) entry
 };
 
 template< typename charT, typename traits >
 std::basic_ostream<charT,traits>& operator<<(
         std::basic_ostream<charT,traits> &os, const parameters& p)
 {
-    return os << "{refndx="   << p.refndx << '}';
+    return os << "{refndx=" << p.refndx
+              << ",cndx="   << p.cndx
+              << '}';
 }
 
 // Free function checking if the apply and pack operations are
@@ -109,11 +117,18 @@ static void operator_consistency(const parameters& p)
             }
         }
     }
-    for (size_t i = 0; i < NREFS; ++i) {        // Establish refs
+    for (size_t i = 0; i < NREFS; ++i) {    // Establish refs
         ((real_t **)&r)[i] = &refs[i*n];
     }
     suzerain_rholut_imexop_refld ld;
-    fill((int *)&ld, (int *)(&ld + 1), 1); // Establish lds
+    fill((int *)&ld, (int *)(&ld + 1), 1);  // Establish lds
+
+    suzerain::scoped_array<real_t> c;       // Establish NRBC matrix
+    if (p.cndx != -1) {
+        c.reset(new real_t[CSIZE]);
+        fill(c.get(), c.get() + CSIZE, 0);
+        if (p.cndx > 0) c[p.cndx - 1] = (random() / RAND_MAX);
+    }
 
     // Allocate state storage and initialize B1 to eye(N)
     suzerain::scoped_array<complex_t> B1(new complex_t[N*N]);
@@ -129,7 +144,7 @@ static void operator_consistency(const parameters& p)
             phi, &s, &r, &ld, op.get(),
                &B1[0*n+jN], &B1[1*n+jN], &B1[2*n+jN], &B1[3*n+jN], &B1[4*n+jN],
             0, &B2[0*n+jN], &B2[1*n+jN], &B2[2*n+jN], &B2[3*n+jN], &B2[4*n+jN],
-            NULL /* TODO Consistency testing per Ticket #2979 */);
+            c.get());
     }
 
     // Compute B1 = P*B2
@@ -156,7 +171,7 @@ static void operator_consistency(const parameters& p)
     fill(papt.get(), papt.get() + paptsize, NaN<real_t>());
     suzerain_rholut_imexop_packc00(phi, &s, &r, &ld, op.get(),
                                    0, 1, 2, 3, 4, buf.get(), &A, papt.get(),
-                                   NULL /* TODO Consistency testing per Ticket #2979 */);
+                                   c.get());
     for (int i = 0; i < A.N; ++i) {
         const int qi = suzerain_bsmbsm_q(A.S, A.n, i);
         for (int j = 0; j < A.N; ++j) {
@@ -242,15 +257,15 @@ bool init_unit_test_suite() {
     //
     // First register all-zero reference values to tickle degenerate cases.
     // Then register nonzero references one-by-one to ensure consistency.
-    parameters p[] = { {/*refndx*/-1}  };
-    for (int i = -1; i < (int) NREFS; ++i) {
-        for (size_t j = 0; j < sizeof(p)/sizeof(p[0]); ++j) {
-            p[j].refndx = i;
+    parameters p[] = { {/*refndx*/-1, /*cndx*/-1}  };
+    for (int j = -1; j < (int) NREFS; ++j) {
+        for (size_t k = 0; k < sizeof(p)/sizeof(p[0]); ++k) {
+            p[k].refndx = j;
             std::ostringstream name;
             name << BOOST_TEST_STRINGIZE(operator_consistency)
-                 << ' ' << p[j];
+                << ' ' << p[k];
             master_test_suite().add(boost::unit_test::make_test_case(
-                    &operator_consistency, name.str(), p + j, p + j + 1));
+                    &operator_consistency, name.str(), p + k, p + k + 1));
         }
     }
 
