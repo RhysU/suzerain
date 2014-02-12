@@ -85,17 +85,17 @@ suzerain_rholut_imexop_accumulate00(
     const double ginvPr      = s->gamma / s->Pr;
     const double ginvRePr    = s->gamma / (s->Re * s->Pr);
 
-    // Storage for gathering vector \varphi L [ rho_E, rho_u, ...]' at the
+    // Storage for gathering vector \phi L [ rho_E, rho_u, ...]' at the
     // "upper" coefficient w->n - 1.  Permits later adjusting the accumulated
     // operator to provide NRBC. Zero initialization necessary to handle
     // omitting scalars (e.g. rho).
-    complex_double upper_varphi_L_hatV[5] = { 0, 0, 0, 0, 0 };
+    complex_double upper_phi_L_hatV[5] = { 0, 0, 0, 0, 0 };
 
-    // Accumulate the requested portions of the M + \varphi L operator.  Scale
+    // Accumulate the requested portions of the M + \phi L operator.  Scale
     // output by beta, accumulate non-mass contributions, and finally
     // accumulate the mass contributions.  Mass contributions come last as they
     // are expected to have magnitudes much larger than phi-- this helps to
-    // ensure better rounding of \varphi L contributions.
+    // ensure better rounding of \phi L contributions.
 
     // Readable shorthand for the common code patterns appearing below
     //
@@ -113,7 +113,7 @@ suzerain_rholut_imexop_accumulate00(
 
         suzerain_blas_zscal(w->n, beta, OUT(rho_E));
 
-        SWAPCPLX(upper_varphi_L_hatV[0], out_rho_E[w->n - 1]);
+        SWAPCPLX(upper_phi_L_hatV[0], out_rho_E[w->n - 1]);
 
         /* in_rho_E */ {
             suzerain_blasext_zgbdmv_d_z(PREAMBLE_N(D1),
@@ -160,8 +160,8 @@ suzerain_rholut_imexop_accumulate00(
                 w->D_T[D2], w->ld, IN(rho), 1.0, OUT(rho_E));
         }
 
-        SWAPCPLX(upper_varphi_L_hatV[0], out_rho_E[w->n - 1]);
-        out_rho_E[w->n - 1] += upper_varphi_L_hatV[0];
+        SWAPCPLX(upper_phi_L_hatV[0], out_rho_E[w->n - 1]);
+        out_rho_E[w->n - 1] += upper_phi_L_hatV[0];
 
         suzerain_blas_zgbmv_d_z(PREAMBLE_NN(M),
             1.0, w->D_T[M], w->ld, IN(rho_E), 1.0, OUT(rho_E));
@@ -171,7 +171,7 @@ suzerain_rholut_imexop_accumulate00(
 
         suzerain_blas_zscal(w->n, beta, OUT(rho_u));
 
-        SWAPCPLX(upper_varphi_L_hatV[1], out_rho_u[w->n - 1]);
+        SWAPCPLX(upper_phi_L_hatV[1], out_rho_u[w->n - 1]);
 
         if (LIKELY(in_rho_E)) { /* NOP */ }
 
@@ -203,8 +203,8 @@ suzerain_rholut_imexop_accumulate00(
                 w->D_T[D2], w->ld, IN(rho), 1.0, OUT(rho_u));
         }
 
-        SWAPCPLX(upper_varphi_L_hatV[1], out_rho_u[w->n - 1]);
-        out_rho_u[w->n - 1] += upper_varphi_L_hatV[1];
+        SWAPCPLX(upper_phi_L_hatV[1], out_rho_u[w->n - 1]);
+        out_rho_u[w->n - 1] += upper_phi_L_hatV[1];
 
         suzerain_blas_zgbmv_d_z(PREAMBLE_NN(M),
             1.0, w->D_T[M], w->ld, IN(rho_u), 1.0, OUT(rho_u));
@@ -214,7 +214,7 @@ suzerain_rholut_imexop_accumulate00(
 
         suzerain_blas_zscal(w->n, beta, OUT(rho_v));
 
-        SWAPCPLX(upper_varphi_L_hatV[2], out_rho_v[w->n - 1]);
+        SWAPCPLX(upper_phi_L_hatV[2], out_rho_v[w->n - 1]);
 
         if (LIKELY(in_rho_E)) suzerain_blas_zgbmv_d_z(PREAMBLE_NN(D1),
                 -phi*gm1*invMa2, w->D_T[D1], w->ld, IN(rho_E),
@@ -253,8 +253,8 @@ suzerain_rholut_imexop_accumulate00(
                 w->D_T[D2], w->ld, IN(rho), 1.0, OUT(rho_v));
         }
 
-        SWAPCPLX(upper_varphi_L_hatV[2], out_rho_v[w->n - 1]);
-        out_rho_v[w->n - 1] += upper_varphi_L_hatV[2];
+        SWAPCPLX(upper_phi_L_hatV[2], out_rho_v[w->n - 1]);
+        out_rho_v[w->n - 1] += upper_phi_L_hatV[2];
 
         suzerain_blas_zgbmv_d_z(PREAMBLE_NN(M),
             1.0, w->D_T[M], w->ld, IN(rho_v), 1.0, OUT(rho_v));
@@ -264,7 +264,7 @@ suzerain_rholut_imexop_accumulate00(
 
         suzerain_blas_zscal(w->n, beta, OUT(rho_w));
 
-        SWAPCPLX(upper_varphi_L_hatV[3], out_rho_w[w->n - 1]);
+        SWAPCPLX(upper_phi_L_hatV[3], out_rho_w[w->n - 1]);
 
         if (LIKELY(in_rho_E)) { /* NOP */ }
 
@@ -296,8 +296,8 @@ suzerain_rholut_imexop_accumulate00(
                 w->D_T[D2], w->ld, IN(rho), 1.0, OUT(rho_w));
         }
 
-        SWAPCPLX(upper_varphi_L_hatV[3], out_rho_w[w->n - 1]);
-        out_rho_w[w->n - 1] += upper_varphi_L_hatV[3];
+        SWAPCPLX(upper_phi_L_hatV[3], out_rho_w[w->n - 1]);
+        out_rho_w[w->n - 1] += upper_phi_L_hatV[3];
 
         suzerain_blas_zgbmv_d_z(PREAMBLE_NN(M),
             1.0, w->D_T[M], w->ld, IN(rho_w), 1.0, OUT(rho_w));
@@ -307,7 +307,7 @@ suzerain_rholut_imexop_accumulate00(
 
         suzerain_blas_zscal(w->n, beta, OUT(rho));
 
-        SWAPCPLX(upper_varphi_L_hatV[4], out_rho[w->n - 1]);
+        SWAPCPLX(upper_phi_L_hatV[4], out_rho[w->n - 1]);
 
         if (LIKELY(in_rho_E)) {/* NOP */}
 
@@ -318,8 +318,8 @@ suzerain_rholut_imexop_accumulate00(
 
         if (LIKELY(in_rho_w)) {/* NOP */}
 
-        SWAPCPLX(upper_varphi_L_hatV[4], out_rho[w->n - 1]);
-        out_rho[w->n - 1] += upper_varphi_L_hatV[4];
+        SWAPCPLX(upper_phi_L_hatV[4], out_rho[w->n - 1]);
+        out_rho[w->n - 1] += upper_phi_L_hatV[4];
 
         suzerain_blas_zgbmv_d_z(PREAMBLE_NN(M),
             1.0, w->D_T[M], w->ld, IN(rho), 1.0, OUT(rho));
@@ -329,7 +329,7 @@ suzerain_rholut_imexop_accumulate00(
     // TODO Consider inlining the BLAS-like call to hide some memory latency
     if (c) {
         complex_double tmp[5];
-        suzerain_blasext_zgedmv55(-1, c, upper_varphi_L_hatV, tmp);
+        suzerain_blasext_zgedmv55(-1, c, upper_phi_L_hatV, tmp);
         if (LIKELY(out_rho_E)) out_rho_E[w->n - 1] += tmp[0];
         if (LIKELY(out_rho_u)) out_rho_u[w->n - 1] += tmp[1];
         if (LIKELY(out_rho_v)) out_rho_v[w->n - 1] += tmp[2];
