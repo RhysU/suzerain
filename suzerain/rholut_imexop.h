@@ -280,7 +280,7 @@ suzerain_rholut_imexop_accumulate00(
  *                   <tt>w->n*(w->max_kl + 1 + w->max_ku)</tt>.
  * @param[out] A_T   Storage details for the BSMBSM matrix \c patpt.
  * @param[out] patpt Band storage of renumbered matrix
- *                   \f$PA^{\mbox{T}}P^{\mbox{T}}\f$ which will have
+ *                   \f$PA^{\mbox{T}}P^{\mbox{T}}\f$ which must have
  *                   <tt>A_T->KL</tt> and <tt>A_T->KU</tt> diagonals and
  *                   leading dimension <tt>A_T->LD</tt>.
  *
@@ -397,7 +397,7 @@ suzerain_rholut_imexop_packc00(
  *                   <tt>w->n*(w->max_kl + 1 + w->max_ku)</tt>.
  * @param[out] A_T   Storage details for the BSMBSM matrix \c patpt.
  * @param[out] patpt Band storage of renumbered matrix
- *                   \f$PA^{\mbox{T}}P^{\mbox{T}}\f$ which will have
+ *                   \f$PA^{\mbox{T}}P^{\mbox{T}}\f$ which must have
  *                   <tt>A_T->KL</tt> and <tt>A_T->KU</tt> diagonals and
  *                   leading dimension <tt>A_T->LD + A_T->KL</tt>.
  *
