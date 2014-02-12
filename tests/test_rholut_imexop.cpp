@@ -107,7 +107,7 @@ static void operator_consistency(const parameters& p)
     for (int i = 0; i < (int) NREFS; ++i) {
         if (i == p.refndx) {
             for (int j = 0; j < n; ++j) {
-                refs[i*n + j] = 1 + (random() / RAND_MAX);
+                refs[i*n + j] = 1;
             }
         } else {
             for (int j = 0; j < n; ++j) {

@@ -109,7 +109,7 @@ static void operator_consistency(const parameters& p)
     for (int i = 0; i < (int) NREFS; ++i) {
         if (i == p.refndx) {
             for (int j = 0; j < n; ++j) {
-                refs[i*n + j] = 1 + (random() / RAND_MAX);
+                refs[i*n + j] = 1;
             }
         } else {
             for (int j = 0; j < n; ++j) {
@@ -127,7 +127,7 @@ static void operator_consistency(const parameters& p)
     if (p.cndx != -1) {
         c.reset(new real_t[CSIZE]);
         fill(c.get(), c.get() + CSIZE, 0);
-        if (p.cndx > 0) c[p.cndx - 1] = (random() / RAND_MAX);
+        if (p.cndx > 0) c[p.cndx - 1] = 1;
     }
 
     // Allocate state storage and initialize B1 to eye(N)
