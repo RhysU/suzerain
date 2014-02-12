@@ -257,7 +257,8 @@ bool init_unit_test_suite() {
     //
     // First register all-zero reference values to tickle degenerate cases.
     // Then register nonzero references one-by-one to ensure consistency.
-    parameters p[] = { {/*refndx*/-1, /*cndx*/-1}  };
+    parameters p[] = { {/*refndx*/-1, /*cndx*/-1},
+                       {/*refndx*/-1, /*cndx*/ 0} };
     for (int j = -1; j < (int) NREFS; ++j) {
         for (size_t k = 0; k < sizeof(p)/sizeof(p[0]); ++k) {
             p[k].refndx = j;
