@@ -31,6 +31,17 @@
 //
 // #define FUNCNAME() /* Function name, e.g. suzerain_rholut_imexop_packc */
 // #define PACK(x)    /* suzerain_bsmbsm_ ## x ## pack{c,f}               */
+//
+// Additionally one of \c PACKC or \c PACKF must be defined.
+// It will also be #undef-ed at the end of the template.
+
+#ifdef PACKC
+# ifdef PACKF
+#  error "Exactly one of PACKC and PACKF must be defined for template"
+# endif
+#elif !defined(PACKF)
+# error "Exactly one of PACKC and PACKF must be defined for template"
+#endif
 
 #define LIKELY(expr) SUZERAIN_LIKELY(expr)
 
@@ -629,6 +640,11 @@ FUNCNAME()(
 
 #undef FUNCNAME
 #undef PACK
+#ifdef PACKC
+# undef PACKC
+#else
+# undef PACKF
+#endif
 
 /* vim: set ft=c:   */
 /* Local Variables: */

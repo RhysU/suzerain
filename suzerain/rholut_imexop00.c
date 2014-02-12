@@ -352,9 +352,11 @@ suzerain_rholut_imexop_accumulate00(
 // suzerain_rholut_imexop_packc00
 #define FUNCNAME00() suzerain_rholut_imexop_packc00
 #define PACK(x)      suzerain_bsmbsm_ ## x ## packc
+#define PACKC
 #include "rholut_imexop00.def"
 
 // suzerain_rholut_imexop_packf00
 #define FUNCNAME00() suzerain_rholut_imexop_packf00
 #define PACK(x)      suzerain_bsmbsm_ ## x ## packf
+#define PACKF
 #include "rholut_imexop00.def"
