@@ -594,9 +594,11 @@ FUNCNAME()(
             suzerain_bsmbsm_qinv(A_T->S, A_T->n, (rho   + 1)*A_T->n - 1)
         };
 
+        // TODO Hide this indexing detail within suzerain_bsmbsm_XXX
+        // TODO Then remove PACKC vs PACKF preprocessor magic
 #       ifdef PACKF
 #       define PATPT(i,j) patpt[A_T->KL + suzerain_gbmatrix_offset( \
-                                          A_T->LD, A_T->KL, A_T->KU, (i), (j))]
+                                A_T->KL + A_T->LD, A_T->KL, A_T->KU, (i), (j))]
 #       else
 #       define PATPT(i,j) patpt[          suzerain_gbmatrix_offset( \
                                           A_T->LD, A_T->KL, A_T->KU, (i), (j))]
