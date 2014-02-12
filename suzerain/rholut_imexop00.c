@@ -35,7 +35,6 @@
 #include <suzerain/common.h>
 #include <suzerain/blas_et_al.h>
 #include <suzerain/bsmbsm.h>
-#include <suzerain/gbmatrix.h>
 
 #define SWAPCPLX(a, b)                                                 \
     do { const complex_double t = (a); (a) = (b); (b) = t; } while (0)
@@ -352,11 +351,11 @@ suzerain_rholut_imexop_accumulate00(
 // suzerain_rholut_imexop_packc00
 #define FUNCNAME00() suzerain_rholut_imexop_packc00
 #define PACK(x)      suzerain_bsmbsm_ ## x ## packc
-#define PACKC
+#define PTR(x)       suzerain_bsmbsm_ ## x ## packc_ptr
 #include "rholut_imexop00.def"
 
 // suzerain_rholut_imexop_packf00
 #define FUNCNAME00() suzerain_rholut_imexop_packf00
 #define PACK(x)      suzerain_bsmbsm_ ## x ## packf
-#define PACKF
+#define PTR(x)       suzerain_bsmbsm_ ## x ## packf_ptr
 #include "rholut_imexop00.def"
