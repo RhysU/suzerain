@@ -566,6 +566,7 @@ FUNCNAME()(
 
     // If requested, use matrices a, b, and c to partially provide upper NRBC
     // TODO Consider inlining the BLAS-like call to hide some memory latency
+    // TODO Trim down the line lengths once final version discovered
     if (a) {
         // This column-major usage of upper_phi_L_T is nothing but phi*L.
         complex_double tmp[5][5];
@@ -576,11 +577,11 @@ FUNCNAME()(
 
         // Maps indices from tmp into renumbered BSMBSM eqns on upper boundary
         const int up[5] = {
-            suzerain_bsmbsm_qinv(A_T->S, A_T->n, rho_E*(1 + A_T->n) - 1),
-            suzerain_bsmbsm_qinv(A_T->S, A_T->n, rho_u*(1 + A_T->n) - 1),
-            suzerain_bsmbsm_qinv(A_T->S, A_T->n, rho_v*(1 + A_T->n) - 1),
-            suzerain_bsmbsm_qinv(A_T->S, A_T->n, rho_w*(1 + A_T->n) - 1),
-            suzerain_bsmbsm_qinv(A_T->S, A_T->n, rho  *(1 + A_T->n) - 1),
+            suzerain_bsmbsm_qinv(A_T->S, A_T->n, (rho_E + 1)*A_T->n - 1),
+            suzerain_bsmbsm_qinv(A_T->S, A_T->n, (rho_u + 1)*A_T->n - 1),
+            suzerain_bsmbsm_qinv(A_T->S, A_T->n, (rho_v + 1)*A_T->n - 1),
+            suzerain_bsmbsm_qinv(A_T->S, A_T->n, (rho_w + 1)*A_T->n - 1),
+            suzerain_bsmbsm_qinv(A_T->S, A_T->n, (rho   + 1)*A_T->n - 1)
         };
 
         // Accumulate modifications into active submatrices within packed storage
