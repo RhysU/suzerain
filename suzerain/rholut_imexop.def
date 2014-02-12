@@ -577,7 +577,6 @@ FUNCNAME()(
 
     // If requested, use matrices a, b, and c to partially provide upper NRBC
     // TODO Consider inlining the BLAS-like call to hide some memory latency
-    // TODO Trim down the line lengths once final version discovered
     if (a) {
         // This column-major usage of upper_phi_L_T is nothing but phi*L.
         complex_double tmp[5][5];
@@ -595,42 +594,52 @@ FUNCNAME()(
             suzerain_bsmbsm_qinv(A_T->S, A_T->n, (rho   + 1)*A_T->n - 1)
         };
 
+#       ifdef PACKF
+#       define PATPT(i,j) patpt[A_T->KL + suzerain_gbmatrix_offset( \
+                                          A_T->LD, A_T->KL, A_T->KU, (i), (j))]
+#       else
+#       define PATPT(i,j) patpt[          suzerain_gbmatrix_offset( \
+                                          A_T->LD, A_T->KL, A_T->KU, (i), (j))]
+#       endif
+
         // Accumulate modifications into active submatrices within packed storage
         if (LIKELY(rho_E >= 0)) {
-            /* rho_E */             patpt[suzerain_gbmatrix_offset(A_T->LD, A_T->KL, A_T->KU, up[rho_E], up[rho_E])] += tmp[0][0];
-            if (LIKELY(rho_u >= 0)) patpt[suzerain_gbmatrix_offset(A_T->LD, A_T->KL, A_T->KU, up[rho_u], up[rho_E])] += tmp[1][0];
-            if (LIKELY(rho_v >= 0)) patpt[suzerain_gbmatrix_offset(A_T->LD, A_T->KL, A_T->KU, up[rho_v], up[rho_E])] += tmp[2][0];
-            if (LIKELY(rho_w >= 0)) patpt[suzerain_gbmatrix_offset(A_T->LD, A_T->KL, A_T->KU, up[rho_w], up[rho_E])] += tmp[3][0];
-            if (LIKELY(rho   >= 0)) patpt[suzerain_gbmatrix_offset(A_T->LD, A_T->KL, A_T->KU, up[rho  ], up[rho_E])] += tmp[4][0];
+            /* rho_E */             PATPT(up[rho_E], up[rho_E]) += tmp[0][0];
+            if (LIKELY(rho_u >= 0)) PATPT(up[rho_u], up[rho_E]) += tmp[1][0];
+            if (LIKELY(rho_v >= 0)) PATPT(up[rho_v], up[rho_E]) += tmp[2][0];
+            if (LIKELY(rho_w >= 0)) PATPT(up[rho_w], up[rho_E]) += tmp[3][0];
+            if (LIKELY(rho   >= 0)) PATPT(up[rho  ], up[rho_E]) += tmp[4][0];
         }
         if (LIKELY(rho_u >= 0)) {
-            if (LIKELY(rho_E >= 0)) patpt[suzerain_gbmatrix_offset(A_T->LD, A_T->KL, A_T->KU, up[rho_E], up[rho_u])] += tmp[0][1];
-            /* rho_u */             patpt[suzerain_gbmatrix_offset(A_T->LD, A_T->KL, A_T->KU, up[rho_u], up[rho_u])] += tmp[1][1];
-            if (LIKELY(rho_v >= 0)) patpt[suzerain_gbmatrix_offset(A_T->LD, A_T->KL, A_T->KU, up[rho_v], up[rho_u])] += tmp[2][1];
-            if (LIKELY(rho_w >= 0)) patpt[suzerain_gbmatrix_offset(A_T->LD, A_T->KL, A_T->KU, up[rho_w], up[rho_u])] += tmp[3][1];
-            if (LIKELY(rho   >= 0)) patpt[suzerain_gbmatrix_offset(A_T->LD, A_T->KL, A_T->KU, up[rho  ], up[rho_u])] += tmp[4][1];
+            if (LIKELY(rho_E >= 0)) PATPT(up[rho_E], up[rho_u]) += tmp[0][1];
+            /* rho_u */             PATPT(up[rho_u], up[rho_u]) += tmp[1][1];
+            if (LIKELY(rho_v >= 0)) PATPT(up[rho_v], up[rho_u]) += tmp[2][1];
+            if (LIKELY(rho_w >= 0)) PATPT(up[rho_w], up[rho_u]) += tmp[3][1];
+            if (LIKELY(rho   >= 0)) PATPT(up[rho  ], up[rho_u]) += tmp[4][1];
         }
         if (LIKELY(rho_v >= 0)) {
-            if (LIKELY(rho_E >= 0)) patpt[suzerain_gbmatrix_offset(A_T->LD, A_T->KL, A_T->KU, up[rho_E], up[rho_v])] += tmp[0][2];
-            if (LIKELY(rho_u >= 0)) patpt[suzerain_gbmatrix_offset(A_T->LD, A_T->KL, A_T->KU, up[rho_u], up[rho_v])] += tmp[1][2];
-            /* rho_v */             patpt[suzerain_gbmatrix_offset(A_T->LD, A_T->KL, A_T->KU, up[rho_v], up[rho_v])] += tmp[2][2];
-            if (LIKELY(rho_w >= 0)) patpt[suzerain_gbmatrix_offset(A_T->LD, A_T->KL, A_T->KU, up[rho_w], up[rho_v])] += tmp[3][2];
-            if (LIKELY(rho   >= 0)) patpt[suzerain_gbmatrix_offset(A_T->LD, A_T->KL, A_T->KU, up[rho  ], up[rho_v])] += tmp[4][2];
+            if (LIKELY(rho_E >= 0)) PATPT(up[rho_E], up[rho_v]) += tmp[0][2];
+            if (LIKELY(rho_u >= 0)) PATPT(up[rho_u], up[rho_v]) += tmp[1][2];
+            /* rho_v */             PATPT(up[rho_v], up[rho_v]) += tmp[2][2];
+            if (LIKELY(rho_w >= 0)) PATPT(up[rho_w], up[rho_v]) += tmp[3][2];
+            if (LIKELY(rho   >= 0)) PATPT(up[rho  ], up[rho_v]) += tmp[4][2];
         }
         if (LIKELY(rho_w >= 0)) {
-            if (LIKELY(rho_E >= 0)) patpt[suzerain_gbmatrix_offset(A_T->LD, A_T->KL, A_T->KU, up[rho_E], up[rho_w])] += tmp[0][3];
-            if (LIKELY(rho_u >= 0)) patpt[suzerain_gbmatrix_offset(A_T->LD, A_T->KL, A_T->KU, up[rho_u], up[rho_w])] += tmp[1][3];
-            if (LIKELY(rho_v >= 0)) patpt[suzerain_gbmatrix_offset(A_T->LD, A_T->KL, A_T->KU, up[rho_v], up[rho_w])] += tmp[2][3];
-            /* rho_w */             patpt[suzerain_gbmatrix_offset(A_T->LD, A_T->KL, A_T->KU, up[rho_w], up[rho_w])] += tmp[3][3];
-            if (LIKELY(rho   >= 0)) patpt[suzerain_gbmatrix_offset(A_T->LD, A_T->KL, A_T->KU, up[rho  ], up[rho_w])] += tmp[4][3];
+            if (LIKELY(rho_E >= 0)) PATPT(up[rho_E], up[rho_w]) += tmp[0][3];
+            if (LIKELY(rho_u >= 0)) PATPT(up[rho_u], up[rho_w]) += tmp[1][3];
+            if (LIKELY(rho_v >= 0)) PATPT(up[rho_v], up[rho_w]) += tmp[2][3];
+            /* rho_w */             PATPT(up[rho_w], up[rho_w]) += tmp[3][3];
+            if (LIKELY(rho   >= 0)) PATPT(up[rho  ], up[rho_w]) += tmp[4][3];
         }
         if (LIKELY(rho   >= 0)) {
-            if (LIKELY(rho_E >= 0)) patpt[suzerain_gbmatrix_offset(A_T->LD, A_T->KL, A_T->KU, up[rho_E], up[rho  ])] += tmp[0][4];
-            if (LIKELY(rho_u >= 0)) patpt[suzerain_gbmatrix_offset(A_T->LD, A_T->KL, A_T->KU, up[rho_u], up[rho  ])] += tmp[1][4];
-            if (LIKELY(rho_v >= 0)) patpt[suzerain_gbmatrix_offset(A_T->LD, A_T->KL, A_T->KU, up[rho_v], up[rho  ])] += tmp[2][4];
-            if (LIKELY(rho_w >= 0)) patpt[suzerain_gbmatrix_offset(A_T->LD, A_T->KL, A_T->KU, up[rho_w], up[rho  ])] += tmp[3][4];
-            /* rho */               patpt[suzerain_gbmatrix_offset(A_T->LD, A_T->KL, A_T->KU, up[rho  ], up[rho  ])] += tmp[4][4];
+            if (LIKELY(rho_E >= 0)) PATPT(up[rho_E], up[rho  ]) += tmp[0][4];
+            if (LIKELY(rho_u >= 0)) PATPT(up[rho_u], up[rho  ]) += tmp[1][4];
+            if (LIKELY(rho_v >= 0)) PATPT(up[rho_v], up[rho  ]) += tmp[2][4];
+            if (LIKELY(rho_w >= 0)) PATPT(up[rho_w], up[rho  ]) += tmp[3][4];
+            /* rho */               PATPT(up[rho  ], up[rho  ]) += tmp[4][4];
         }
+
+#undef  PATPT
 
     }
 
