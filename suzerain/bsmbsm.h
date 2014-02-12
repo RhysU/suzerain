@@ -35,6 +35,7 @@
 #include <gsl/gsl_permute.h>
 
 #include <suzerain/complex.h>
+#include <suzerain/gbmatrix.h>
 
 /** @file
  * Utilities for working with blocked square matrices with banded submatrices
@@ -467,6 +468,51 @@ suzerain_bsmbsm_zdpackc(const suzerain_bsmbsm *A, int ihat, int jhat,
 }
 
 /**
+ * Retrieve a pointer to contiguously packed element \f$\left.A\right|_{i,j}\f$
+ * given \f$q^{-1}\left(i\right)\f$ and \f$q^{-1}\left(j\right)\f$.
+ *
+ * @param[in] A      Storage details for the BSMBSM matrix.
+ * @param[in] qinv_i Packed index obtained from \ref suzerain_bsmbsm_qinv.
+ * @param[in] qinv_j Packed index obtained from \ref suzerain_bsmbsm_qinv.
+ * @param[in] papt   Band storage of renumbered matrix \f$PAP^{\mbox{T}}\f$
+ *                   which <em>must</em> have <tt>A->KL</tt> and
+ *                   <tt>A->KU</tt> diagonals and leading dimension
+ *                   <tt>A->LD</tt>.
+ *
+ * @return A mutable pointer to the requested element.
+ */
+inline static float*
+suzerain_bsmbsm_spackc_ptr(const suzerain_bsmbsm *A, int qinv_i, int qinv_j,
+                           float *papt)
+{
+    return papt + suzerain_gbmatrix_offset(A->LD, A->KL, A->KU, qinv_i, qinv_j);
+}
+
+/** @copydoc suzerain_bsmbsm_spackc_ptr */
+inline static double*
+suzerain_bsmbsm_dpackc_ptr(const suzerain_bsmbsm *A, int qinv_i, int qinv_j,
+                           double *papt)
+{
+    return papt + suzerain_gbmatrix_offset(A->LD, A->KL, A->KU, qinv_i, qinv_j);
+}
+
+/** @copydoc suzerain_bsmbsm_spackc_ptr */
+inline static complex_float*
+suzerain_bsmbsm_cpackc_ptr(const suzerain_bsmbsm *A, int qinv_i, int qinv_j,
+                           complex_float *papt)
+{
+    return papt + suzerain_gbmatrix_offset(A->LD, A->KL, A->KU, qinv_i, qinv_j);
+}
+
+/** @copydoc suzerain_bsmbsm_spackc_ptr */
+inline static complex_double*
+suzerain_bsmbsm_zpackc_ptr(const suzerain_bsmbsm *A, int qinv_i, int qinv_j,
+                           complex_double *papt)
+{
+    return papt + suzerain_gbmatrix_offset(A->LD, A->KL, A->KU, qinv_i, qinv_j);
+}
+
+/**
  * Pack contiguous, scaled, banded submatrix
  * \f$\alpha{}B^{\hat{\imath},\hat{\jmath}}\f$ into the corresponding
  * locations within contiguous, LU factorization-ready storage of \f$P A
@@ -557,6 +603,56 @@ suzerain_bsmbsm_zdpackf(const suzerain_bsmbsm *A, int ihat, int jhat,
             A->S, A->n, ihat, jhat,
             A->kl, A->ku, alpha, b,            A->ld,
             A->KL, A->KU,        papt + A->KL, A->LD + A->KL);
+}
+
+/**
+ * Retrieve a pointer to LU-factorization-ready packed element
+ * \f$\left.A\right|_{i,j}\f$ given \f$q^{-1}\left(i\right)\f$ and
+ * \f$q^{-1}\left(j\right)\f$.
+ *
+ * @param[in] A      Storage details for the BSMBSM matrix.
+ * @param[in] qinv_i Packed index obtained from \ref suzerain_bsmbsm_qinv.
+ * @param[in] qinv_j Packed index obtained from \ref suzerain_bsmbsm_qinv.
+ * @param[in] papt   Band storage of renumbered matrix \f$PAP^{\mbox{T}}\f$
+ *                   which <em>must</em> have <tt>A->KL</tt> and <tt>A->KU</tt>
+ *                   diagonals and leading dimension
+ *                   <tt>A->LD + A->KL = 2*A->KL + A->KU + 1</tt>.
+ *
+ * @return A mutable pointer to the requested element.
+ */
+inline static float*
+suzerain_bsmbsm_spackf_ptr(const suzerain_bsmbsm *A, int qinv_i, int qinv_j,
+                           float *papt)
+{
+    return papt + A->KL
+        + suzerain_gbmatrix_offset(A->LD + A->KL, A->KL, A->KU, qinv_i, qinv_j);
+}
+
+/** @copydoc suzerain_bsmbsm_spackf_ptr */
+inline static double*
+suzerain_bsmbsm_dpackf_ptr(const suzerain_bsmbsm *A, int qinv_i, int qinv_j,
+                           double *papt)
+{
+    return papt + A->KL
+        + suzerain_gbmatrix_offset(A->LD + A->KL, A->KL, A->KU, qinv_i, qinv_j);
+}
+
+/** @copydoc suzerain_bsmbsm_spackf_ptr */
+inline static complex_float*
+suzerain_bsmbsm_cpackf_ptr(const suzerain_bsmbsm *A, int qinv_i, int qinv_j,
+                           complex_float *papt)
+{
+    return papt + A->KL
+        + suzerain_gbmatrix_offset(A->LD + A->KL, A->KL, A->KU, qinv_i, qinv_j);
+}
+
+/** @copydoc suzerain_bsmbsm_spackf_ptr */
+inline static complex_double*
+suzerain_bsmbsm_zpackf_ptr(const suzerain_bsmbsm *A, int qinv_i, int qinv_j,
+                           complex_double *papt)
+{
+    return papt + A->KL
+        + suzerain_gbmatrix_offset(A->LD + A->KL, A->KL, A->KU, qinv_i, qinv_j);
 }
 
 #ifdef __cplusplus
