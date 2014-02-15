@@ -208,7 +208,7 @@ suzerain_rholut_imexop_accumulate(
         const double *c);
 
 /**
- * Accumulate the ``zero-zero'' mode 'linear implicit operator application \f$y
+ * Accumulate the ``zero-zero'' mode linear implicit operator application \f$y
  * \leftarrow{} \left(M + \varphi{}L\right) x + \beta{} y\f$.  This method is
  * equivalent to calling suzerain_rholut_imexop_accumulate() using <tt>km ==
  * 0</tt> and <tt>kn == 0</tt> but should be appreciably faster.
@@ -435,7 +435,7 @@ suzerain_rholut_imexop_packf(
         const double *c);
 
 /**
- * Pack the ``zero-zero'' mode portion of '\f$\left(M +
+ * Pack the ``zero-zero'' mode portion of \f$\left(M +
  * \varphi{}L\right)^{\mbox{T}}\f$ into the corresponding locations within
  * contiguous, LU factorization-ready storage of \f$P\left(M +
  * \varphi{}L\right)^{\mbox{T}}P^{\mbox{T}}\f$ for use by the LAPACK's
