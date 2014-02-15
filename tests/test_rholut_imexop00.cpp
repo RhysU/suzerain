@@ -239,9 +239,11 @@ static void operator_consistency(const parameters& p)
     // Check that the maximum absolute deviation from zero is small.
     // "Small" defined as machine epsilon modified by conditioning estimate.
     const int imaxabs = iamax(N*N, B1.get(), 1);
-    BOOST_TEST_MESSAGE("maximum absolute error is " << B1[imaxabs]);
     BOOST_WARN_LT(1/rcond, 1/sqrt(macheps));         // Squack on bad rcond
     BOOST_CHECK_LT(abs(B1[imaxabs]), macheps/rcond); // Check on estimate
+    BOOST_TEST_MESSAGE("maximum absolute error is from value " << B1[imaxabs]
+                       << " at index (" << (imaxabs % N)
+                       << ", " << (imaxabs / N) << ")");
 }
 
 #ifdef BOOST_TEST_ALTERNATIVE_INIT_API
