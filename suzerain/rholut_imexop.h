@@ -250,11 +250,11 @@ suzerain_rholut_imexop_accumulate00(
  * nonnegative order parameters must form a unique, contiguous set starting
  * from zero.
  *
- * The problem size and discrete operators are taken from the provided B-spline
- * workspace \c w.  On entry, \c patpt must be of at least size
+ * The problem size and discrete operators are taken from the provided
+ * B-spline workspace \c w.  On entry, \c patpt must be of at least size
  * <tt>(nneg*w->n)*(nneg*(w->max_kl + w->max_ku + 2) - 1)</tt> where \c nneg
- * is the number of nonnegative state order parameters.  Boundary conditions,
- * which are \em not applied, will require using information about the
+ * is the number of nonnegative state order parameters.  Subsequent
+ * manipulation of the operator requires using information about the
  * permutation returned in \c A_T.
  *
  * @param[in]  phi   Factor \f$\varphi\f$ used in forming \f$M+\varphi{}L\f$.
@@ -366,11 +366,11 @@ suzerain_rholut_imexop_packc00(
  * nonnegative order parameters must form a unique, contiguous set starting
  * from zero.
  *
- * The problem size and discrete operators are taken from the provided B-spline
- * workspace \c w.  On entry, \c patpt must be of at least size
+ * The problem size and discrete operators are taken from the provided
+ * B-spline workspace \c w.  On entry, \c patpt must be of at least size
  * <tt>(nneg*w->n)*(nneg*(2*w->max_kl + w->max_ku + 3) - 2)</tt> where
- * <tt>nneg</tt> is the number of nonnegative state order parameters.  Boundary
- * conditions, which are \em not applied, will require using information about
+ * <tt>nneg</tt> is the number of nonnegative state order parameters.
+ * Subsequent manipulation of the operator requires using information about
  * the permutation returned in \c A_T taking care that in accordance with
  * <tt>gbtrf</tt> the operator starts at row <tt>A_T->KL</tt>.
  *
