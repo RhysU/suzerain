@@ -172,7 +172,9 @@ suzerain_rholut_imexop_accumulate00(
 
         SWAPCPLX(upper_phi_L_hatV[1], out_rho_u[w->n - 1]);
 
-        if (LIKELY(in_rho_E)) { /* NOP */ }
+        if (LIKELY(in_rho_E)) {
+            // NOP
+        }
 
         /* in_rho_u */ {
             suzerain_blasext_zgbdmv_d_z(PREAMBLE_N(D1),
@@ -190,7 +192,9 @@ suzerain_rholut_imexop_accumulate00(
                 w->D_T[D1], w->ld, IN(rho_v), 1.0, OUT(rho_u));
         }
 
-        if (LIKELY(in_rho_w)) { /* NOP */ }
+        if (LIKELY(in_rho_w)) {
+            // NOP
+        }
 
         if (LIKELY(in_rho)) {
             suzerain_blasext_zgbdmv_d_z(PREAMBLE_N(D1),
@@ -215,9 +219,11 @@ suzerain_rholut_imexop_accumulate00(
 
         SWAPCPLX(upper_phi_L_hatV[2], out_rho_v[w->n - 1]);
 
-        if (LIKELY(in_rho_E)) suzerain_blas_zgbmv_d_z(PREAMBLE_NN(D1),
+        if (LIKELY(in_rho_E)) {
+            suzerain_blas_zgbmv_d_z(PREAMBLE_NN(D1),
                 -phi*gm1*invMa2, w->D_T[D1], w->ld, IN(rho_E),
                 1.0, OUT(rho_v));
+        }
 
         if (LIKELY(in_rho_u)) {
             suzerain_blasext_zgbdmv_d_z(PREAMBLE_N(D1),
@@ -265,9 +271,13 @@ suzerain_rholut_imexop_accumulate00(
 
         SWAPCPLX(upper_phi_L_hatV[3], out_rho_w[w->n - 1]);
 
-        if (LIKELY(in_rho_E)) { /* NOP */ }
+        if (LIKELY(in_rho_E)) {
+            // NOP
+        }
 
-        if (LIKELY(in_rho_u)) { /* NOP */ }
+        if (LIKELY(in_rho_u)) {
+            // NOP
+        }
 
         if (LIKELY(in_rho_v)) {
             suzerain_blasext_zgbdmv_d_z(PREAMBLE_N(D1),
@@ -287,7 +297,7 @@ suzerain_rholut_imexop_accumulate00(
 
         if (LIKELY(in_rho)) {
             suzerain_blasext_zgbdmv_d_z(PREAMBLE_N(D1),
-                 phi,                      REF(uyuz),
+                phi,                       REF(uyuz),
                 w->D_T[D1], w->ld, IN(rho), 1.0, OUT(rho_w));
 
             suzerain_blasext_zgbdmv_d_z(PREAMBLE_N(D2),
@@ -308,14 +318,26 @@ suzerain_rholut_imexop_accumulate00(
 
         SWAPCPLX(upper_phi_L_hatV[4], out_rho[w->n - 1]);
 
-        if (LIKELY(in_rho_E)) {/* NOP */}
+        if (LIKELY(in_rho_E)) {
+            // NOP
+        }
 
-        if (LIKELY(in_rho_u)) {/* NOP */}
+        if (LIKELY(in_rho_u)) {
+            // NOP
+        }
 
-        if (LIKELY(in_rho_v)) suzerain_blas_zgbmv_d_z(PREAMBLE_NN(D1),
+        if (LIKELY(in_rho_v)) {
+            suzerain_blas_zgbmv_d_z(PREAMBLE_NN(D1),
                 -phi,     w->D_T[D1], w->ld, IN(rho_v), 1.0, OUT(rho));
+        }
 
-        if (LIKELY(in_rho_w)) {/* NOP */}
+        if (LIKELY(in_rho_w)) {
+            // NOP
+        }
+
+        /* rho */ {
+            // NOP as only a mass matrix is present on this diagonal
+        }
 
         SWAPCPLX(upper_phi_L_hatV[4], out_rho[w->n - 1]);
         out_rho[w->n - 1] += upper_phi_L_hatV[4];
