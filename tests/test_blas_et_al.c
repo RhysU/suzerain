@@ -3004,6 +3004,50 @@ test_blasext_zgedsummv55()
     }
 }
 
+static
+SUZERAIN_DONTINLINE
+void
+test_blasext_zgedmv55()
+{
+    // Data pulled out of a hat by Octave
+    //     format compact
+    //     gamma = -4 + i
+    //     c = round(10*rand(5,5)); c'
+    //     y = round(10*rand(5,1))
+    // followed by
+    //     w = gamma*c*y
+
+
+    const complex_double gamma = complex_double(-4, 1);
+    const double c[] = { // Note storage order
+        3,   9,   3,   8,   0,
+        8,   8,   4,   0,   6,
+        6,   6,   3,   3,  10,
+        6,   1,   6,   8,   1,
+        4,   3,   8,   6,   6
+    };
+    const complex_double y[] = { // Should be complex
+        3, 0, 3, 4, 7
+    };
+    complex_double w[5];
+    const complex_double expected[] = {
+        complex_double(-316,  79),
+        complex_double(-280,  70),
+        complex_double(-392,  98),
+        complex_double(-428, 107),
+        complex_double(-304,  76)
+    };
+
+    suzerain_blasext_zgedmv55(gamma, c, y, w);
+
+    for (int i = 0; i < 5; ++i) {
+        gsl_test_int((int) creal(w[i]), (int) creal(expected[i]),
+                     "%s:%d entry %i", __func__, __LINE__, i);
+        gsl_test_int((int) cimag(w[i]), (int) cimag(expected[i]),
+                     "%s:%d entry %i", __func__, __LINE__, i);
+    }
+}
+
 // Form nastily conditioned test problems per Mark Lotkin, A Set of Test
 // Matrices (1955) available at http://www.jstor.org/stable/2002051.
 //
@@ -3364,6 +3408,7 @@ main(int argc, char **argv)
     test_blasext_zpromote();
 
     test_blasext_zgedsummv55();
+    test_blasext_zgedmv55();
 
     /* TODO Add test_lapack_{c,z}gbtr{f,s} */
     /* Already exercised to some extent in test_bsplineop */
