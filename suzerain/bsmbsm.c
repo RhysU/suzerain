@@ -40,6 +40,18 @@
 static inline int imin(int a, int b) { return a < b ? a : b; }
 static inline int imax(int a, int b) { return a > b ? a : b; }
 
+// C99 extern declaration for static inline function
+extern
+suzerain_bsmbsm suzerain_bsmbsm_construct(int S, int n, int kl, int ku);
+
+// C99 extern declaration for static inline function
+extern
+int suzerain_bsmbsm_q(int S, int n, int i);
+
+// C99 extern declaration for static inline function
+extern
+int suzerain_bsmbsm_qinv(int S, int n, int i);
+
 // suzerain_bsmbsm_saPxpby
 #define COMPONENT float
 #define AFFIXPREC(pre,post) pre ## s ## post
@@ -114,3 +126,111 @@ suzerain_bsmbsm_permutation(int S, int n)
     }
     return p;
 }
+
+// C99 extern declaration for static inline function
+extern int
+suzerain_bsmbsm_spackc(const suzerain_bsmbsm *A, int ihat, int jhat,
+                       const float alpha, const float *b, float *papt);
+
+// C99 extern declaration for static inline function
+extern int
+suzerain_bsmbsm_dpackc(const suzerain_bsmbsm *A, int ihat, int jhat,
+                       const double alpha, const double *b, double *papt);
+
+// C99 extern declaration for static inline function
+extern int
+suzerain_bsmbsm_cpackc(const suzerain_bsmbsm *A, int ihat, int jhat,
+                       const complex_float alpha, const complex_float *b,
+                                                        complex_float *papt);
+
+// C99 extern declaration for static inline function
+extern int
+suzerain_bsmbsm_zpackc(const suzerain_bsmbsm *A, int ihat, int jhat,
+                       const complex_double alpha, const complex_double *b,
+                                                         complex_double *papt);
+
+// C99 extern declaration for static inline function
+extern int
+suzerain_bsmbsm_cspackc(const suzerain_bsmbsm *A, int ihat, int jhat,
+                        const complex_float alpha, const float *b,
+                        complex_float *papt);
+
+// C99 extern declaration for static inline function
+extern int
+suzerain_bsmbsm_zdpackc(const suzerain_bsmbsm *A, int ihat, int jhat,
+                        const complex_double alpha, const double *b,
+                        complex_double *papt);
+
+// C99 extern declaration for static inline function
+extern float*
+suzerain_bsmbsm_spackc_ptr(const suzerain_bsmbsm *A, int qinv_i, int qinv_j,
+                           float *papt);
+
+// C99 extern declaration for static inline function
+extern double*
+suzerain_bsmbsm_dpackc_ptr(const suzerain_bsmbsm *A, int qinv_i, int qinv_j,
+                           double *papt);
+
+// C99 extern declaration for static inline function
+extern complex_float*
+suzerain_bsmbsm_cpackc_ptr(const suzerain_bsmbsm *A, int qinv_i, int qinv_j,
+                           complex_float *papt);
+
+// C99 extern declaration for static inline function
+extern complex_double*
+suzerain_bsmbsm_zpackc_ptr(const suzerain_bsmbsm *A, int qinv_i, int qinv_j,
+                           complex_double *papt);
+
+// C99 extern declaration for static inline function
+extern int
+suzerain_bsmbsm_spackf(const suzerain_bsmbsm *A, int ihat, int jhat,
+                       const float alpha, const float *b, float *papt);
+
+// C99 extern declaration for static inline function
+extern int
+suzerain_bsmbsm_dpackf(const suzerain_bsmbsm *A, int ihat, int jhat,
+                       const double alpha, const double *b, double *papt);
+
+// C99 extern declaration for static inline function
+extern int
+suzerain_bsmbsm_cpackf(const suzerain_bsmbsm *A, int ihat, int jhat,
+                       const complex_float alpha, const complex_float *b,
+                                                        complex_float *papt);
+
+// C99 extern declaration for static inline function
+extern int
+suzerain_bsmbsm_zpackf(const suzerain_bsmbsm *A, int ihat, int jhat,
+                       const complex_double alpha, const complex_double *b,
+                                                         complex_double *papt);
+
+// C99 extern declaration for static inline function
+extern int
+suzerain_bsmbsm_cspackf(const suzerain_bsmbsm *A, int ihat, int jhat,
+                        const complex_float alpha, const float *b,
+                        complex_float *papt);
+
+// C99 extern declaration for static inline function
+extern int
+suzerain_bsmbsm_zdpackf(const suzerain_bsmbsm *A, int ihat, int jhat,
+                        const complex_double alpha, const double *b,
+                        complex_double *papt);
+
+// C99 extern declaration for static inline function
+extern float*
+suzerain_bsmbsm_spackf_ptr(const suzerain_bsmbsm *A, int qinv_i, int qinv_j,
+                           float *papt);
+
+// C99 extern declaration for static inline function
+extern double*
+suzerain_bsmbsm_dpackf_ptr(const suzerain_bsmbsm *A, int qinv_i, int qinv_j,
+                           double *papt);
+
+// C99 extern declaration for static inline function
+extern complex_float*
+suzerain_bsmbsm_cpackf_ptr(const suzerain_bsmbsm *A, int qinv_i, int qinv_j,
+                           complex_float *papt);
+
+// C99 extern declaration for static inline function
+extern complex_double*
+suzerain_bsmbsm_zpackf_ptr(const suzerain_bsmbsm *A, int qinv_i, int qinv_j,
+                           complex_double *papt);
