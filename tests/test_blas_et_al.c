@@ -3007,6 +3007,52 @@ test_blasext_zgedsummv55()
 static
 SUZERAIN_DONTINLINE
 void
+test_blasext_zgedmm55()
+{
+    // Data pulled out of a hat by Octave
+    //     format compact
+    //     gamma = -4 + i
+    //     c = round(10*rand(5,5)); c'
+    //     d = round(10*rand(5,5)) + I*round(10*rand(5,5)); d.'
+    // followed by
+    //     w = gamma*c*d; w.'
+    const complex_double gamma = -4 + I;
+    const double c[] = { // Note storage order
+         6,   5,   8,   2,   5,
+         6,   9,   5,   2,  10,
+         8,   4,   8,  10,   1,
+         5,   4,   0,   5,   8,
+        10,   7,   9,   6,   4
+    };
+    const complex_double d[] = { // Note storage order
+        2 +  2*I,    3 +  2*I,    3 +  8*I,    9 +  2*I,    4 +  3*I,
+        5 +  5*I,    4 +  3*I,    5 +  9*I,    9 +  8*I,    9 +  0*I,
+        9 +  5*I,    9 +  5*I,    7 +  2*I,    1 +  9*I,    5 +  7*I,
+        5 +  2*I,    7 + 10*I,    3 +  9*I,    9 +  5*I,    2 +  3*I,
+        8 +  0*I,    8 +  1*I,    8 +  1*I,    8 + 10*I,    9 +  9*I,
+    };
+    complex_double w[25];
+    const complex_double expected[] = {
+         -684-373*I,  -541-243*I,  -481-377*I, -552-355*I,  -590-133*I,
+        -1076-411*I,  -840-300*I,  -851-327*I, -814-417*I,  -840-334*I,
+        -1067-545*I,  -935-459*I, -1016-358*I, -691-367*I,  -857-538*I,
+         -843-635*I,  -777-558*I,  -633-543*I, -601-517*I,  -883-506*I,
+        -1314-326*I, -1072-225*I, -1090-127*I, -940-258*I, -1039-280*I
+    };
+
+    suzerain_blasext_zgedmm55(gamma, c, d, w);
+
+    for (int i = 0; i < 25; ++i) {
+        gsl_test_int((int) creal(w[i]), (int) creal(expected[i]),
+                     "%s:%d entry %i", __func__, __LINE__, i);
+        gsl_test_int((int) cimag(w[i]), (int) cimag(expected[i]),
+                     "%s:%d entry %i", __func__, __LINE__, i);
+    }
+}
+
+static
+SUZERAIN_DONTINLINE
+void
 test_blasext_zgedmv55()
 {
     // Data pulled out of a hat by Octave
@@ -3408,6 +3454,7 @@ main(int argc, char **argv)
     test_blasext_zpromote();
 
     test_blasext_zgedsummv55();
+    test_blasext_zgedmm55();
     test_blasext_zgedmv55();
 
     /* TODO Add test_lapack_{c,z}gbtr{f,s} */
