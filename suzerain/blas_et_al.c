@@ -2571,7 +2571,8 @@ suzerain_blasext_sgbddmv(
                                        alpha0, d0, ldd0,
                                        alpha1, d1, ldd1,
                                        a, lda, x, incx,
-                                       beta,   y, incy);
+                                       beta,   y, incy,
+                                       0);
     if (UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
     return info;
 }
@@ -2632,7 +2633,8 @@ suzerain_blasext_dgbddmv(
                                        alpha0, d0, ldd0,
                                        alpha1, d1, ldd1,
                                        a, lda, x, incx,
-                                       beta,   y, incy);
+                                       beta,   y, incy,
+                                       0);
     if (UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
     return info;
 }
@@ -2693,7 +2695,8 @@ suzerain_blasext_cgbddmv_s_c(
                                          alpha0, d0, ldd0,
                                          alpha1, d1, ldd1,
                                          a, lda, x, incx,
-                                         beta,   y, incy);
+                                         beta,   y, incy,
+                                         0);
     if (UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
     return info;
 }
@@ -2722,7 +2725,8 @@ suzerain_blasext_cgbddmv_s_s(
                                          alpha0, d0, ldd0,
                                          alpha1, d1, ldd1,
                                          a, lda, x, incx,
-                                         beta,   y, incy);
+                                         beta,   y, incy,
+                                         0);
     if (UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
     return info;
 }
@@ -2783,7 +2787,8 @@ suzerain_blasext_zgbddmv_d_z(
                                          alpha0, d0, ldd0,
                                          alpha1, d1, ldd1,
                                          a, lda, x, incx,
-                                         beta,   y, incy);
+                                         beta,   y, incy,
+                                         0);
     if (UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
     return 0;
 }
@@ -2812,7 +2817,8 @@ suzerain_blasext_zgbddmv_d_d(
                                          alpha0, d0, ldd0,
                                          alpha1, d1, ldd1,
                                          a, lda, x, incx,
-                                         beta,   y, incy);
+                                         beta,   y, incy,
+                                         0);
     if (UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
     return 0;
 }
