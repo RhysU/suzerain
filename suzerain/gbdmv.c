@@ -120,9 +120,9 @@
 // Provide externally callable logic dispatching to internal routines
 // ------------------------------------------------------------------
 
-#define FIXEDBW_CASE(z,num,prefix)                                \
-    case num: return BOOST_PP_CAT(prefix,num)(                    \
-        trans, n, alpha, d, ldd, a, lda, x, incx, beta, y, incy);
+#define FIXEDBW_CASE(z,num,prefix)                                       \
+    case num: return BOOST_PP_CAT(prefix,num)(                           \
+        trans, n, alpha, d, ldd, a, lda, x, incx, beta, y, incy, gamma);
 
 int
 suzerain_gbdmv_s(
@@ -139,7 +139,8 @@ suzerain_gbdmv_s(
         const int incx,
         const float beta,
         float *y,
-        const int incy)
+        const int incy,
+        const float gamma)
 {
     // Dispatch to fixed bandwidth specialization for small bandwidth...
     if (kl == ku) {
@@ -152,7 +153,8 @@ suzerain_gbdmv_s(
     // ...otherwise employ a general bandwidth implementation
     return suzerain_gbdmv_internal_s(trans, n, kl, ku,
                                      alpha, d, ldd, a, lda, x, incx,
-                                     beta,                  y, incy);
+                                     beta,                  y, incy,
+                                     gamma);
 }
 
 int
@@ -170,7 +172,8 @@ suzerain_gbdmv_ssc(
         const int incx,
         const complex_float beta,
         complex_float *y,
-        const int incy)
+        const int incy,
+        const float gamma)
 {
     // Dispatch to fixed bandwidth specialization for small bandwidth...
     if (kl == ku) {
@@ -183,7 +186,8 @@ suzerain_gbdmv_ssc(
     // ...otherwise employ a general bandwidth implementation
     return suzerain_gbdmv_internal_ssc(trans, n, kl, ku,
                                        alpha, d, ldd, a, lda, x, incx,
-                                       beta,                  y, incy);
+                                       beta,                  y, incy,
+                                       gamma);
 }
 
 int
@@ -201,7 +205,8 @@ suzerain_gbdmv_scc(
         const int incx,
         const complex_float beta,
         complex_float *y,
-        const int incy)
+        const int incy,
+        const float gamma)
 {
     // Dispatch to fixed bandwidth specialization for small bandwidth...
     if (kl == ku) {
@@ -214,7 +219,8 @@ suzerain_gbdmv_scc(
     // ...otherwise employ a general bandwidth implementation
     return suzerain_gbdmv_internal_scc(trans, n, kl, ku,
                                        alpha, d, ldd, a, lda, x, incx,
-                                       beta,                  y, incy);
+                                       beta,                  y, incy,
+                                       gamma);
 }
 
 int
@@ -232,7 +238,8 @@ suzerain_gbdmv_d(
         const int incx,
         const double beta,
         double *y,
-        const int incy)
+        const int incy,
+        const double gamma)
 {
     // Dispatch to fixed bandwidth specialization for small bandwidth...
     if (kl == ku) {
@@ -245,7 +252,8 @@ suzerain_gbdmv_d(
     // ...otherwise employ a general bandwidth implementation
     return suzerain_gbdmv_internal_d(trans, n, kl, ku,
                                      alpha, d, ldd, a, lda, x, incx,
-                                     beta,                  y, incy);
+                                     beta,                  y, incy,
+                                     gamma);
 }
 
 int
@@ -263,7 +271,8 @@ suzerain_gbdmv_ddz(
         const int incx,
         const complex_double beta,
         complex_double *y,
-        const int incy)
+        const int incy,
+        const double gamma)
 {
     // Dispatch to fixed bandwidth specialization for small bandwidth...
     if (kl == ku) {
@@ -276,7 +285,8 @@ suzerain_gbdmv_ddz(
     // ...otherwise employ a general bandwidth implementation
     return suzerain_gbdmv_internal_ddz(trans, n, kl, ku,
                                        alpha, d, ldd, a, lda, x, incx,
-                                       beta,                  y, incy);
+                                       beta,                  y, incy,
+                                       gamma);
 }
 
 int
@@ -294,7 +304,8 @@ suzerain_gbdmv_dzz(
         const int incx,
         const complex_double beta,
         complex_double *y,
-        const int incy)
+        const int incy,
+        const double gamma)
 {
     // Dispatch to fixed bandwidth specialization for small bandwidth...
     if (kl == ku) {
@@ -307,7 +318,8 @@ suzerain_gbdmv_dzz(
     // ...otherwise employ a general bandwidth implementation
     return suzerain_gbdmv_internal_dzz(trans, n, kl, ku,
                                        alpha, d, ldd, a, lda, x, incx,
-                                       beta,                  y, incy);
+                                       beta,                  y, incy,
+                                       gamma);
 }
 
 #else
