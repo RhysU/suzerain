@@ -73,16 +73,15 @@ FUNCNAME00()(
     assert(A_T->ld == w->ld);       // Compatible storage?
 
     // Prepare shorthand for some useful derived values
-    const double gm1         = s->gamma - 1;
-    const double gm3         = s->gamma - 3;
-    const double ap43        = s->alpha + 4.0/3.0;
-    const double ap13        = s->alpha + 1.0/3.0;
-    const double Ma2         = s->Ma*s->Ma;
-    const double invRe       = 1 / s->Re;
-    const double invMa2      = 1 / Ma2;
-    const double ginvPr      = s->gamma / s->Pr;
-    const double ginvRePr    = s->gamma / (s->Re * s->Pr);
-
+    const double gm1      = s->gamma - 1;
+    const double gm3      = s->gamma - 3;
+    const double ap43     = s->alpha + 4.0/3.0;
+    const double ap13     = s->alpha + 1.0/3.0;
+    const double Ma2      = s->Ma*s->Ma;
+    const double invRe    = 1 / s->Re;
+    const double invMa2   = 1 / Ma2;
+    const double ginvPr   = s->gamma / s->Pr;
+    const double ginvRePr = s->gamma / (s->Re * s->Pr);
 
     // TODO Memset patpt to be uniformly zeros and remove zero fill operations.
     // We do not know the leading dimension associated with the definition of
