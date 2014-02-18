@@ -451,13 +451,17 @@ FUNCNAME()(
 
     if (rho_w >= 0) { // Prepare spanwise momentum row
 
-        // TODO UPPER_C(c, 0, 3)
-        // TODO UPPER_A(a, 0, 3)
-        // TODO UPPER_B(b, 0, 3)
         if (rho_E >= 0) {
-            const complex_double coeff = -gm1*invMa2*ikn*phi;
+            // Scale real-valued M, sans phi, into complex-valued buf
+            for (int i = 0; i < A_T->ld*A_T->n; ++i) {
+                buf[i] = -gm1*invMa2*ikn*M[i];
+            }
 
-            PACK(zd)(A_T, rho_E, rho_w, coeff, M, patpt);
+            // TODO UPPER_C(c, 0, 3)
+            // TODO UPPER_A(a, 0, 3)
+            // TODO UPPER_B(b, 0, 3)
+
+            PACK(z)(A_T, rho_E, rho_w, phi, buf, patpt);
         }
 
         if (rho_u >= 0) {
