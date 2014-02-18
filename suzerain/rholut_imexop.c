@@ -240,9 +240,11 @@ suzerain_rholut_imexop_accumulate(
 
         SWAPCPLX(upper_phi_L_hatV[1], out_rho_u[w->n - 1]);
 
-        if (in_rho_E) suzerain_blas_zgbmv_d_z(PREAMBLE_NN(M),
+        if (in_rho_E) {
+            suzerain_blas_zgbmv_d_z(PREAMBLE_NN(M),
                 -phi*gm1*invMa2*ikm, w->D_T[M], w->ld, IN(rho_E),
                 1.0, OUT(rho_u));
+        }
 
         /* in_rho_u */ {
             suzerain_blasext_zgbdddmv_d_z(PREAMBLE_N(M),
@@ -313,9 +315,11 @@ suzerain_rholut_imexop_accumulate(
 
         SWAPCPLX(upper_phi_L_hatV[2], out_rho_v[w->n - 1]);
 
-        if (in_rho_E) suzerain_blas_zgbmv_d_z(PREAMBLE_NN(D1),
+        if (in_rho_E) {
+            suzerain_blas_zgbmv_d_z(PREAMBLE_NN(D1),
                 -phi*gm1*invMa2, w->D_T[D1], w->ld, IN(rho_E),
                 1.0, OUT(rho_v));
+        }
 
         if (in_rho_u) {
             suzerain_blasext_zgbdmv_d_z(PREAMBLE_N(M),
@@ -389,9 +393,11 @@ suzerain_rholut_imexop_accumulate(
 
         SWAPCPLX(upper_phi_L_hatV[3], out_rho_w[w->n - 1]);
 
-        if (in_rho_E) suzerain_blas_zgbmv_d_z(PREAMBLE_NN(M),
+        if (in_rho_E) {
+            suzerain_blas_zgbmv_d_z(PREAMBLE_NN(M),
                 -phi*gm1*invMa2*ikn, w->D_T[M], w->ld, IN(rho_E),
                 1.0, OUT(rho_w));
+        }
 
         if (in_rho_u) {
             suzerain_blasext_zgbdddmv_d_z(PREAMBLE_N(M),
@@ -456,22 +462,30 @@ suzerain_rholut_imexop_accumulate(
         upper_hatV[3] = in_rho_w[w->n - 1];
     }
 
-    if (in_rho ) {  // Accumulate density terms into out_rho
+    if (in_rho) {   // Accumulate density terms into out_rho
 
         suzerain_blas_zscal(w->n, beta, OUT(rho));
 
         SWAPCPLX(upper_phi_L_hatV[4], out_rho[w->n - 1]);
 
-        if (in_rho_E) {/* NOP */}
+        if (in_rho_E) {
+            // NOP
+        }
 
-        if (in_rho_u) suzerain_blas_zgbmv_d_z(PREAMBLE_NN(M),
+        if (in_rho_u) {
+            suzerain_blas_zgbmv_d_z(PREAMBLE_NN(M),
                 -phi*ikm, w->D_T[M], w->ld, IN(rho_u),  1.0, OUT(rho));
+        }
 
-        if (in_rho_v) suzerain_blas_zgbmv_d_z(PREAMBLE_NN(D1),
+        if (in_rho_v) {
+            suzerain_blas_zgbmv_d_z(PREAMBLE_NN(D1),
                 -phi,     w->D_T[D1], w->ld, IN(rho_v), 1.0, OUT(rho));
+        }
 
-        if (in_rho_w) suzerain_blas_zgbmv_d_z(PREAMBLE_NN(M),
+        if (in_rho_w) {
+            suzerain_blas_zgbmv_d_z(PREAMBLE_NN(M),
                 -phi*ikn, w->D_T[M], w->ld, IN(rho_w),  1.0, OUT(rho));
+        }
 
         SWAPCPLX(upper_phi_L_hatV[4], out_rho[w->n - 1]);
         out_rho[w->n - 1] += upper_phi_L_hatV[4];
