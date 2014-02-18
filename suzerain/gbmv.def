@@ -47,10 +47,12 @@ STATIC int FUNCTION(
     char trans, const int m, const int n, KL KU
     const TYPE_Y alpha, const TYPE_A *       restrict a,       int lda,
                         const TYPE_X * const restrict x, const int incx,
-    const TYPE_Y beta,        TYPE_Y * const restrict y, const int incy)
+    const TYPE_Y beta,        TYPE_Y * const restrict y, const int incy,
+    const TYPE_A gamma)
 {
     // Logic from http://www.netlib.org/blas/dgbmv.f revised
     // for zero-indexed, vectorization-ready code on GCC and Intel.
+    // Permits 1 + gamma scaling factor on final row.
 
     trans = toupper(trans);  // Simplifies case-insensitive checks
 
@@ -124,7 +126,9 @@ STATIC int FUNCTION(
     --lda;
 
     // Perform the banded matrix-vector accumulation
-    const int klp1 = kl + 1;
+    const TYPE_A gp1  = gamma + 1;
+    const int    klp1 = kl    + 1;
+    const int    nm1  = n     - 1;
 
     if (trans == 'N') {   // Form y := alpha*A*x + y...
 
@@ -135,7 +139,7 @@ STATIC int FUNCTION(
                 const int iu = ndxmin(m, j + klp1);
                 const TYPE_Y temp = alpha*x[jx];
                 for (int i = il; i < iu; ++i) {
-                    y[i] += temp*a[i];
+                    y[i] += temp*(i == nm1 ? gp1 : 1)*a[i];
                 }
                 jx += incx;
                 a += lda;
@@ -147,7 +151,7 @@ STATIC int FUNCTION(
                 const TYPE_Y temp = alpha*x[jx];
                 int iy = ky;
                 for (int i = il; i < iu; ++i) {
-                    y[iy] += temp*a[i];
+                    y[iy] += temp*(i == nm1 ? gp1 : 1)*a[i];
                     iy += incy;
                 }
                 jx += incx;
@@ -169,7 +173,7 @@ STATIC int FUNCTION(
                 for (int i = il; i < iu; ++i) {
                     temp += a[i]*x[i];
                 }
-                y[jy] += alpha * temp;
+                y[jy] += alpha*(j == nm1 ? gp1 : 1)*temp;
                 jy += incy;
                 a += lda;
             }
@@ -183,7 +187,7 @@ STATIC int FUNCTION(
                     temp += a[i]*x[ix];
                     ix += incx;
                 }
-                y[jy] += alpha*temp;
+                y[jy] += alpha*(j == nm1 ? gp1 : 1)*temp;
                 jy += incy;
                 if (j >= ku) {
                     kx += incx;

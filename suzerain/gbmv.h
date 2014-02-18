@@ -37,7 +37,8 @@ extern "C" {
  */
 
 /*!
- * \brief Compute \f$ y \leftarrow{} \alpha{} A x + \beta{} y \f$.
+ * \brief Compute \f$ y \leftarrow{} \alpha{} \begin{bmatrix} I & 0 \\ 0 & 1 +
+ * \gamma \end{bmatrix} A x + \beta{} y \f$.
  *
  * Transposes of \f$ A \f$ can be taken using the \c trans parameter.
  *
@@ -55,6 +56,7 @@ extern "C" {
  * \param beta Multiplicative scalar \f$ \beta \f$.
  * \param y Vector to be added to product and to contain result.
  * \param incy Stride of vector \c y.
+ * \param gamma Controls factor \f$ 1+\gamma \f$ scaling only the final row.
  *
  * \return Zero on success and a BLAS-like error code otherwise.
  * \see A BLAS reference for more details, especially for general
@@ -74,7 +76,8 @@ suzerain_gbmv_s(
         const int incx,
         const float beta,
         float *y,
-        const int incy);
+        const int incy,
+        const float gamma);
 
 /*! \copydoc suzerain_gbmv_s */
 int
@@ -91,7 +94,8 @@ suzerain_gbmv_d(
         const int incx,
         const double beta,
         double *y,
-        const int incy);
+        const int incy,
+        const double gamma);
 
 /*! \copydoc suzerain_gbmv_s */
 int
@@ -108,7 +112,8 @@ suzerain_gbmv_c(
         const int incx,
         const complex_float beta,
         complex_float *y,
-        const int incy);
+        const int incy,
+        const float gamma);
 
 /*! \copydoc suzerain_gbmv_s */
 int
@@ -125,12 +130,13 @@ suzerain_gbmv_z(
         const int incx,
         const complex_double beta,
         complex_double *y,
-        const int incy);
+        const int incy,
+        const double gamma);
 
 /*!
- * \brief Compute \f$ y \leftarrow{} \alpha{} A x + \beta{} y \f$ for complex
- * \f$\alpha{}\f$, \f$\beta\f$, and \f$y\f$ but real-valued \f$A\f$ and
- * \f$x\f$.
+ * \brief Compute \f$ y \leftarrow{} \alpha{} \begin{bmatrix} I & 0 \\ 0 & 1 +
+ * \gamma \end{bmatrix} A x + \beta{} y \f$ for complex \f$\alpha{}\f$,
+ * \f$\beta\f$, and \f$y\f$ but real-valued \f$\gamma\f$, \f$A\f$, and \f$x\f$.
  *
  * \copydetails suzerain_gbmv_s
  */
@@ -148,7 +154,8 @@ suzerain_gbmv_ssc(
         const int incx,
         const complex_float beta,
         complex_float *y,
-        const int incy);
+        const int incy,
+        const float gamma);
 
 /*! \copydoc suzerain_gbmv_ssc */
 int
@@ -165,11 +172,13 @@ suzerain_gbmv_ddz(
         const int incx,
         const complex_double beta,
         complex_double *y,
-        const int incy);
+        const int incy,
+        const double gamma);
 
 /*!
- * \brief Compute \f$ y \leftarrow{} \alpha{} A x + \beta{} y \f$ for complex
- * \f$\alpha{}\f$, \f$x\f$, \f$\beta\f$, and \f$y\f$ but real-valued \f$A\f$.
+ * \brief Compute \f$ y \leftarrow{} \alpha{} \begin{bmatrix} I & 0 \\ 0 & 1 +
+ * \gamma \end{bmatrix} A x + \beta{} y \f$ for complex \f$\alpha{}\f$, \f$x\f$,
+ * \f$\beta\f$, and \f$y\f$ but real-valued \f$\gamma\f$ and \f$A\f$.
  *
  * \copydetails suzerain_gbmv_s
  */
@@ -187,7 +196,8 @@ suzerain_gbmv_scc(
         const int incx,
         const complex_float beta,
         complex_float *y,
-        const int incy);
+        const int incy,
+        const float gamma);
 
 /*! \copydoc suzerain_gbmv_scc */
 int
@@ -204,7 +214,8 @@ suzerain_gbmv_dzz(
         const int incx,
         const complex_double beta,
         complex_double *y,
-        const int incy);
+        const int incy,
+        const double gamma);
 
 #ifdef __cplusplus
 } /* extern "C" */

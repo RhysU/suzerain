@@ -144,7 +144,8 @@ static void test_gbmv_s(const gbmv_tc_type& t)
     BOOST_REQUIRE_EQUAL(0, suzerain_gbmv_s(
                 t.trans, t.m, t.n, t.kl, t.ku,
                   alpha, a.get(), t.lda, x.get(), t.incx,
-                  beta,                  y.get(), t.incy));
+                  beta,                  y.get(), t.incy,
+                  0));
 
     check_close_collections(e.get(), e.get() + leny,
                             y.get(), y.get() + leny,
@@ -175,7 +176,8 @@ static void test_gbmv_d(const gbmv_tc_type& t)
     BOOST_REQUIRE_EQUAL(0, suzerain_gbmv_d(
                 t.trans, t.m, t.n, t.kl, t.ku,
                 t.alpha, a.get(), t.lda, x.get(), t.incx,
-                t.beta,                  y.get(), t.incy));
+                t.beta,                  y.get(), t.incy,
+                0));
 
     check_close_collections(e.get(), e.get() + leny,
                             y.get(), y.get() + leny,
@@ -211,7 +213,8 @@ static void test_gbmv_scc(const gbmzv_tc_type& t)
     BOOST_REQUIRE_EQUAL(0, suzerain_gbmv_scc(
             t.trans, t.m, t.n, t.kl, t.ku,
             alpha, a.get(), t.lda, (complex_float *) x.get(), t.incx,
-            beta,                  (complex_float *) y.get(), t.incy));
+            beta,                  (complex_float *) y.get(), t.incy,
+            0));
 
     check_close_collections(e.get(), e.get() + leny,
                             y.get(), y.get() + leny,
@@ -247,7 +250,8 @@ static void test_gbmv_dzz(const gbmzv_tc_type& t)
     BOOST_REQUIRE_EQUAL(0, suzerain_gbmv_dzz(
             t.trans, t.m, t.n, t.kl, t.ku,
             alpha, a.get(), t.lda, (complex_double *) x.get(), t.incx,
-            beta,                  (complex_double *) y.get(), t.incy));
+            beta,                  (complex_double *) y.get(), t.incy,
+            0));
 
     check_close_collections(e.get(), e.get() + leny,
                             y.get(), y.get() + leny,
