@@ -114,14 +114,13 @@ suzerain_rholut_imexop_accumulate(
     // Notice we need to account for suzerain_bsplineop_workspace storing the
     // transpose of the operators when we invoke suzerain_blaseext_* routines.
     enum { M = 0, D1 = 1, D2 = 2 };
-#   define LIKELY(expr)    SUZERAIN_LIKELY(expr)
 #   define IN(quantity)    in_##quantity,  1
 #   define OUT(quantity)   out_##quantity, 1
 #   define REF(quantity)   r->quantity, ld->quantity
 #   define PREAMBLE_N(op)  'T', w->n, w->kl[op], w->ku[op]
 #   define PREAMBLE_NN(op) 'T', w->n, w->n, w->kl[op], w->ku[op]
 
-    if (LIKELY(in_rho_E)) {  // Accumulate total energy terms into out_rho_E
+    if (in_rho_E) {  // Accumulate total energy terms into out_rho_E
 
         suzerain_blas_zscal(w->n, beta, OUT(rho_E));
 
@@ -143,7 +142,7 @@ suzerain_rholut_imexop_accumulate(
                 w->D_T[D2], w->ld, IN(rho_E), 1.0, OUT(rho_E));
         }
 
-        if (LIKELY(in_rho_u)) {
+        if (in_rho_u) {
             const double coeff_nuux
                 = Ma2*invRe*((ginvPr-ap43)*km2 + (ginvPr-1)*kn2);
             suzerain_blasext_zgbdddmv_d_z(PREAMBLE_N(M),
@@ -161,7 +160,7 @@ suzerain_rholut_imexop_accumulate(
                 w->D_T[D2], w->ld, IN(rho_u), 1.0, OUT(rho_E));
         }
 
-        if (LIKELY(in_rho_v)) {
+        if (in_rho_v) {
             const double coeff_nuuy
                 = Ma2*invRe*(ginvPr-1)*(km2+kn2);
             suzerain_blasext_zgbdmv_d_z(PREAMBLE_N(M),
@@ -179,7 +178,7 @@ suzerain_rholut_imexop_accumulate(
                 w->D_T[D2], w->ld, IN(rho_v), 1.0, OUT(rho_E));
         }
 
-        if (LIKELY(in_rho_w)) {
+        if (in_rho_w) {
             const double coeff_nuuz
                 = Ma2*invRe*((ginvPr-1)*km2 + (ginvPr-ap43)*kn2);
             suzerain_blasext_zgbdddmv_d_z(PREAMBLE_N(M),
@@ -197,7 +196,7 @@ suzerain_rholut_imexop_accumulate(
                 w->D_T[D2], w->ld, IN(rho_w), 1.0, OUT(rho_E));
         }
 
-        if (LIKELY(in_rho)) {
+        if (in_rho) {
 
             // Mass terms done in 2 passes to avoid zgbdddddddmv_d.
             // Writing such a beast may provide a tiny speedup.
@@ -235,13 +234,13 @@ suzerain_rholut_imexop_accumulate(
         upper_hatV[0] = in_rho_E[w->n - 1];
     }
 
-    if (LIKELY(in_rho_u)) {  // Accumulate X momentum terms into out_rho_u
+    if (in_rho_u) {  // Accumulate X momentum terms into out_rho_u
 
         suzerain_blas_zscal(w->n, beta, OUT(rho_u));
 
         SWAPCPLX(upper_phi_L_hatV[1], out_rho_u[w->n - 1]);
 
-        if (LIKELY(in_rho_E)) suzerain_blas_zgbmv_d_z(PREAMBLE_NN(M),
+        if (in_rho_E) suzerain_blas_zgbmv_d_z(PREAMBLE_NN(M),
                 -phi*gm1*invMa2*ikm, w->D_T[M], w->ld, IN(rho_E),
                 1.0, OUT(rho_u));
 
@@ -261,7 +260,7 @@ suzerain_rholut_imexop_accumulate(
                 w->D_T[D2], w->ld, IN(rho_u), 1.0, OUT(rho_u));
         }
 
-        if (LIKELY(in_rho_v)) {
+        if (in_rho_v) {
             suzerain_blasext_zgbdmv_d_z(PREAMBLE_N(M),
                 phi*gm1*ikm,               REF(uy),
                 w->D_T[M],  w->ld, IN(rho_v), 1.0, OUT(rho_u));
@@ -272,7 +271,7 @@ suzerain_rholut_imexop_accumulate(
                 w->D_T[D1], w->ld, IN(rho_v), 1.0, OUT(rho_u));
         }
 
-        if (LIKELY(in_rho_w)) {
+        if (in_rho_w) {
             suzerain_blasext_zgbdddmv_d_z(PREAMBLE_N(M),
                 -phi*ikn,                  REF(ux),
                  phi*gm1*ikm,              REF(uz),
@@ -280,7 +279,7 @@ suzerain_rholut_imexop_accumulate(
                 w->D_T[M],  w->ld, IN(rho_w), 1.0, OUT(rho_u));
         }
 
-        if (LIKELY(in_rho)) {
+        if (in_rho) {
             suzerain_blasext_zgbdddddmv_d_z(PREAMBLE_N(M),
                 -phi*0.5*gm1*ikm,          REF(u2),
                 phi*ikm,                   REF(uxux),
@@ -308,17 +307,17 @@ suzerain_rholut_imexop_accumulate(
         upper_hatV[1] = in_rho_u[w->n - 1];
     }
 
-    if (LIKELY(in_rho_v)) {  // Accumulate Y momentum terms into out_rho_v
+    if (in_rho_v) {  // Accumulate Y momentum terms into out_rho_v
 
         suzerain_blas_zscal(w->n, beta, OUT(rho_v));
 
         SWAPCPLX(upper_phi_L_hatV[2], out_rho_v[w->n - 1]);
 
-        if (LIKELY(in_rho_E)) suzerain_blas_zgbmv_d_z(PREAMBLE_NN(D1),
+        if (in_rho_E) suzerain_blas_zgbmv_d_z(PREAMBLE_NN(D1),
                 -phi*gm1*invMa2, w->D_T[D1], w->ld, IN(rho_E),
                 1.0, OUT(rho_v));
 
-        if (LIKELY(in_rho_u)) {
+        if (in_rho_u) {
             suzerain_blasext_zgbdmv_d_z(PREAMBLE_N(M),
                 -phi*ikm,             REF(uy),
                 w->D_T[M],   w->ld, IN(rho_u), 1.0, OUT(rho_v));
@@ -345,7 +344,7 @@ suzerain_rholut_imexop_accumulate(
                 w->D_T[D2], w->ld, IN(rho_v), 1.0, OUT(rho_v));
         }
 
-        if (LIKELY(in_rho_w)) {
+        if (in_rho_w) {
             suzerain_blasext_zgbdmv_d_z(PREAMBLE_N(M),
                 -phi*ikn,             REF(uy),
                 w->D_T[M],   w->ld, IN(rho_w), 1.0, OUT(rho_v));
@@ -356,7 +355,7 @@ suzerain_rholut_imexop_accumulate(
                 w->D_T[D1],  w->ld, IN(rho_w), 1.0, OUT(rho_v));
         }
 
-        if (LIKELY(in_rho)) {
+        if (in_rho) {
             suzerain_blasext_zgbdddmv_d_z(PREAMBLE_N(M),
                 phi*ikm,              REF(uxuy),
                 phi*ikn,              REF(uyuz),
@@ -384,17 +383,17 @@ suzerain_rholut_imexop_accumulate(
         upper_hatV[2] = in_rho_v[w->n - 1];
     }
 
-    if (LIKELY(in_rho_w)) {  // Accumulate Z momentum terms into out_rho_w
+    if (in_rho_w) {  // Accumulate Z momentum terms into out_rho_w
 
         suzerain_blas_zscal(w->n, beta, OUT(rho_w));
 
         SWAPCPLX(upper_phi_L_hatV[3], out_rho_w[w->n - 1]);
 
-        if (LIKELY(in_rho_E)) suzerain_blas_zgbmv_d_z(PREAMBLE_NN(M),
+        if (in_rho_E) suzerain_blas_zgbmv_d_z(PREAMBLE_NN(M),
                 -phi*gm1*invMa2*ikn, w->D_T[M], w->ld, IN(rho_E),
                 1.0, OUT(rho_w));
 
-        if (LIKELY(in_rho_u)) {
+        if (in_rho_u) {
             suzerain_blasext_zgbdddmv_d_z(PREAMBLE_N(M),
                  phi*gm1*ikn,              REF(ux),
                 -phi*ikm,                  REF(uz),
@@ -402,7 +401,7 @@ suzerain_rholut_imexop_accumulate(
                 w->D_T[M],  w->ld, IN(rho_u), 1.0, OUT(rho_w));
         }
 
-        if (LIKELY(in_rho_v)) {
+        if (in_rho_v) {
             suzerain_blasext_zgbdmv_d_z(PREAMBLE_N(M),
                 phi*gm1*ikn,               REF(uy),
                 w->D_T[M],  w->ld, IN(rho_v), 1.0, OUT(rho_w));
@@ -429,7 +428,7 @@ suzerain_rholut_imexop_accumulate(
                 w->D_T[D2], w->ld, IN(rho_w), 1.0, OUT(rho_w));
         }
 
-        if (LIKELY(in_rho)) {
+        if (in_rho) {
             suzerain_blasext_zgbdddddmv_d_z(PREAMBLE_N(M),
                 -phi*0.5*gm1*ikn,          REF(u2),
                 phi*ikm,                   REF(uxuz),
@@ -457,21 +456,21 @@ suzerain_rholut_imexop_accumulate(
         upper_hatV[3] = in_rho_w[w->n - 1];
     }
 
-    if (LIKELY(in_rho )) {  // Accumulate density terms into out_rho
+    if (in_rho ) {  // Accumulate density terms into out_rho
 
         suzerain_blas_zscal(w->n, beta, OUT(rho));
 
         SWAPCPLX(upper_phi_L_hatV[4], out_rho[w->n - 1]);
 
-        if (LIKELY(in_rho_E)) {/* NOP */}
+        if (in_rho_E) {/* NOP */}
 
-        if (LIKELY(in_rho_u)) suzerain_blas_zgbmv_d_z(PREAMBLE_NN(M),
+        if (in_rho_u) suzerain_blas_zgbmv_d_z(PREAMBLE_NN(M),
                 -phi*ikm, w->D_T[M], w->ld, IN(rho_u),  1.0, OUT(rho));
 
-        if (LIKELY(in_rho_v)) suzerain_blas_zgbmv_d_z(PREAMBLE_NN(D1),
+        if (in_rho_v) suzerain_blas_zgbmv_d_z(PREAMBLE_NN(D1),
                 -phi,     w->D_T[D1], w->ld, IN(rho_v), 1.0, OUT(rho));
 
-        if (LIKELY(in_rho_w)) suzerain_blas_zgbmv_d_z(PREAMBLE_NN(M),
+        if (in_rho_w) suzerain_blas_zgbmv_d_z(PREAMBLE_NN(M),
                 -phi*ikn, w->D_T[M], w->ld, IN(rho_w),  1.0, OUT(rho));
 
         SWAPCPLX(upper_phi_L_hatV[4], out_rho[w->n - 1]);
@@ -491,16 +490,15 @@ suzerain_rholut_imexop_accumulate(
                                      phi*ikn, b, upper_hatV,
                                      -1,      c, upper_phi_L_hatV,
                                      tmp);
-        if (LIKELY(out_rho_E)) out_rho_E[w->n - 1] += tmp[0];
-        if (LIKELY(out_rho_u)) out_rho_u[w->n - 1] += tmp[1];
-        if (LIKELY(out_rho_v)) out_rho_v[w->n - 1] += tmp[2];
-        if (LIKELY(out_rho_w)) out_rho_w[w->n - 1] += tmp[3];
-        if (LIKELY(out_rho  )) out_rho  [w->n - 1] += tmp[4];
+        if (out_rho_E) out_rho_E[w->n - 1] += tmp[0];
+        if (out_rho_u) out_rho_u[w->n - 1] += tmp[1];
+        if (out_rho_v) out_rho_v[w->n - 1] += tmp[2];
+        if (out_rho_w) out_rho_w[w->n - 1] += tmp[3];
+        if (out_rho  ) out_rho  [w->n - 1] += tmp[4];
     }
 
 #   undef PREAMBLE_NN
 #   undef PREAMBLE_N
-#   undef LIKELY
 #   undef REF
 #   undef IN
 #   undef OUT
