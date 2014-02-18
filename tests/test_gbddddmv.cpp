@@ -195,7 +195,8 @@ static void test_gbddddmv_s(const gbddddmv_tc_type& t)
                   alpha2, d2.get(), t.ldd2,
                   alpha3, d3.get(), t.ldd3,
                   a.get(), t.lda, x.get(), t.incx,
-                  beta,           y.get(), t.incy));
+                  beta,           y.get(), t.incy,
+                  0));
 
     check_close_collections(e.get(), e.get() + leny,
                             y.get(), y.get() + leny,
@@ -247,7 +248,8 @@ static void test_gbddddmv_d(const gbddddmv_tc_type& t)
                 t.alpha2, d2.get(), t.ldd2,
                 t.alpha3, d3.get(), t.ldd3,
                 a.get(), t.lda, x.get(), t.incx,
-                t.beta,         y.get(), t.incy));
+                t.beta,         y.get(), t.incy,
+                0));
 
     check_close_collections(e.get(), e.get() + leny,
                             y.get(), y.get() + leny,
@@ -306,7 +308,8 @@ static void test_gbddddmv_scc(const gbddddmzv_tc_type& t)
             alpha2, d2.get(), t.ldd2,
             alpha3, d3.get(), t.ldd3,
             a.get(), t.lda, (const complex_float *) x.get(), t.incx,
-            beta,           (      complex_float *) y.get(), t.incy));
+            beta,           (      complex_float *) y.get(), t.incy,
+            0));
 
     check_close_collections(e.get(), e.get() + leny,
                             y.get(), y.get() + leny,
@@ -365,7 +368,8 @@ static void test_gbddddmv_dzz(const gbddddmzv_tc_type& t)
             alpha2, d2.get(), t.ldd2,
             alpha3, d3.get(), t.ldd3,
             a.get(), t.lda, (const complex_double *) x.get(), t.incx,
-            beta,           (      complex_double *) y.get(), t.incy));
+            beta,           (      complex_double *) y.get(), t.incy,
+            0));
 
     check_close_collections(e.get(), e.get() + leny,
                             y.get(), y.get() + leny,
