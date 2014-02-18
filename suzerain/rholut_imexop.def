@@ -246,13 +246,17 @@ FUNCNAME()(
 
     if (rho_u >= 0) { // Prepare streamwise momentum row
 
-        // TODO UPPER_C(c, 0, 1)
-        // TODO UPPER_A(a, 0, 1)
-        // TODO UPPER_B(b, 0, 1)
         if (rho_E >= 0) {
-            const complex_double coeff = -gm1*invMa2*ikm*phi;
+            // Scale real-valued M, sans phi, into complex-valued buf
+            for (int i = 0; i < A_T->ld*A_T->n; ++i) {
+                buf[i] = -gm1*invMa2*ikm*M[i];
+            }
 
-            PACK(zd)(A_T, rho_E, rho_u, coeff, M, patpt);
+            // TODO UPPER_C(c, 0, 1)
+            // TODO UPPER_A(a, 0, 1)
+            // TODO UPPER_B(b, 0, 1)
+
+            PACK(z)(A_T, rho_E, rho_u, phi, buf, patpt);
         }
 
         // On diagonal, mass accumulated last to avoid swamping small values.
