@@ -31,9 +31,8 @@
 //
 // #define FUNCNAME00() /* Function name, e.g. suzerain_rholut_imexop_packc00 */
 // #define PACK(x)      /* suzerain_bsmbsm_ ## x ## pack{c,f}                 */
-// #define PTR(x)       /* suzerain_bsmbsm_ ## x ## pack{c,f}_ptr             */
 
-#define LIKELY(expr) SUZERAIN_LIKELY(expr)
+// TODO Memset patpt to be uniformly zeros and remove zero fill operations
 
 void
 FUNCNAME00()(
@@ -100,99 +99,94 @@ FUNCNAME00()(
     assert(buf);
     memset(buf, 0, A_T->ld*A_T->n*sizeof(buf[0]));
 
-    // Storage for gathering submatrix phi*L^T indexed on [ rho_E, rho_u,
-    // ...]-by-[rho_E, rho_u, ...]' at the "upper" coefficient w->n -
-    // 1. Permits later adjusting the accumulated operator to provide
-    // NRBC. Zero initialization necessary to handle omitting scalars
-    // (e.g. rho).  Notice that a column-major view of this raw data is
-    // nothing but phi*L.
-    complex_double upper_phi_L_T[5][5] = { { 0 } };
-
-    // Prepare offset to the last element within banded buf, M, D1, and D2
-    const int upper = suzerain_gbmatrix_offset(
-            A_T->ld, A_T->kl, A_T->ku, A_T->n-1, A_T->n-1);
+    // Prepare offset to the final column of buf to permit adjusting
+    // the accumulated operator to provide nonreflecting boundary conditions.
+    int bufupper_il, bufupper_iu;
+    complex_double * const bufupper = suzerain_gbmatrix_col(
+            A_T->n, A_T->n, A_T->kl, A_T->ku, buf, A_T->ld, sizeof(buf[0]),
+            A_T->n-1, &bufupper_il, &bufupper_iu);
 
     // Shorthand for common patterns below
-    static const double one = 1.0;
-#   define IDENTITY      &one,        0
 #   define REF(quantity) r->quantity, ld->quantity
 #   define PREAMBLE      'R', A_T->n, A_T->n, A_T->kl, A_T->ku
+#   define BUFUPPER_SCALE_BY(mat,i,j)                           \
+        do {                                                    \
+            if (mat) {                                          \
+                for (int k = bufupper_il; k < bufupper_iu; ++k) \
+                    bufupper[k] *= 1 - mat[(i) + 5*(j)];        \
+            }                                                   \
+        } while (0)
 
     if (rho_E >= 0) { // Prepare total energy row
 
         // On diagonal, mass accumulated last to avoid swamping small values.
         // The factor phi is accounted for in this final mass accumulation.
         /* rho_E */ {
-            memset(buf, 0, A_T->ld*A_T->n*sizeof(buf[0])); // DEBUG
-/*XXX*/     suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
-/*XXX*/             -s->gamma,                   REF(uy),
-/*XXX*/             D1, 1, w->ld, 0.0, buf, 1, A_T->ld);
-//DEBUG
-//DEBUG     suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
-//DEBUG             ginvRePr,                    REF(nu),
-//DEBUG             D2, 1, w->ld, 1.0, buf, 1, A_T->ld);
-
-            upper_phi_L_T[0][0] = phi * buf[upper];
+            suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
+                    -s->gamma,                   REF(uy),
+                    D1, 1, w->ld, 0.0, buf, 1, A_T->ld);
 
             suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
-                    1.0,                         IDENTITY,
-                    M,  1, w->ld, phi, buf, 1, A_T->ld);
+                    ginvRePr,                    REF(nu),
+                    D2, 1, w->ld, 1.0, buf, 1, A_T->ld);
+
+            BUFUPPER_SCALE_BY(c, 0, 0);
+
+            suzerain_blas_zgb_acc_d(
+                    A_T->n, A_T->n, A_T->kl, A_T->ku,
+                    1, M, w->ld, phi, buf, A_T->ld);
 
             PACK(z)(A_T, rho_E, rho_E, 1.0, buf, patpt);
         }
 
         if (rho_u >= 0) {
-//DEBUG     suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
-//DEBUG             Ma2*invRe*(1-ginvPr),        REF(nuux),
-//DEBUG             D2, 1, w->ld, 0.0, buf, 1, A_T->ld);
-//DEBUG
-//DEBUG     PACK(z)(A_T, rho_u, rho_E, phi, buf, patpt);
-            PACK(z)(A_T, rho_u, rho_E, 0.0, buf, patpt); // DEBUG
-//DEBUG
-//DEBUG     upper_phi_L_T[1][0] = phi * buf[upper];
+            suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
+                    Ma2*invRe*(1-ginvPr),        REF(nuux),
+                    D2, 1, w->ld, 0.0, buf, 1, A_T->ld);
+
+            BUFUPPER_SCALE_BY(c, 1, 0);
+
+            PACK(z)(A_T, rho_u, rho_E, phi, buf, patpt);
         }
 
         if (rho_v >= 0) {
-//DEBUG     suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
-//DEBUG             -1.0,                        REF(e_divm),
-//DEBUG             D1, 1, w->ld, 0.0, buf, 1, A_T->ld);
-//DEBUG
-//DEBUG     suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
-//DEBUG             Ma2*invRe*(ap43-ginvPr),     REF(nuuy),
-//DEBUG             D2, 1, w->ld, 1.0, buf, 1, A_T->ld);
-//DEBUG
-//DEBUG     PACK(z)(A_T, rho_v, rho_E, phi, buf, patpt);
-            PACK(z)(A_T, rho_v, rho_E, 0.0, buf, patpt); // DEBUG
-//DEBUG
-//DEBUG     upper_phi_L_T[2][0] = phi * buf[upper];
+            suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
+                    -1.0,                        REF(e_divm),
+                    D1, 1, w->ld, 0.0, buf, 1, A_T->ld);
+
+            suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
+                    Ma2*invRe*(ap43-ginvPr),     REF(nuuy),
+                    D2, 1, w->ld, 1.0, buf, 1, A_T->ld);
+
+            BUFUPPER_SCALE_BY(c, 2, 0);
+
+            PACK(z)(A_T, rho_v, rho_E, phi, buf, patpt);
         }
 
         if (rho_w >= 0) {
-//DEBUG     suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
-//DEBUG             Ma2*invRe*(1-ginvPr),        REF(nuuz),
-//DEBUG             D2, 1, w->ld, 0.0, buf, 1, A_T->ld);
-//DEBUG
-//DEBUG     PACK(z)(A_T, rho_w, rho_E, phi, buf, patpt);
-            PACK(z)(A_T, rho_w, rho_E, 0.0, buf, patpt); // DEBUG
-//DEBUG
-//DEBUG     upper_phi_L_T[3][0] = phi * buf[upper];
+            suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
+                    Ma2*invRe*(1-ginvPr),        REF(nuuz),
+                    D2, 1, w->ld, 0.0, buf, 1, A_T->ld);
+
+            BUFUPPER_SCALE_BY(c, 3, 0);
+
+            PACK(z)(A_T, rho_w, rho_E, phi, buf, patpt);
         }
 
         if (rho  >= 0) {
-//DEBUG     suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
-//DEBUG             -1.0,                        REF(ey_gradrho),
-//DEBUG             D1, 1, w->ld, 0.0, buf, 1, A_T->ld);
-//DEBUG
-//DEBUG     suzerain_blasext_zgb_dddiag_scale_acc_d(PREAMBLE,
-//DEBUG             -Ma2*invRe,                  REF(nuu2),
-//DEBUG             -Ma2*invRe*ap13,             REF(nuuyuy),
-//DEBUG             ginvRePr/gm1,                REF(e_deltarho),
-//DEBUG             D2, 1, w->ld, 1.0, buf, 1, A_T->ld);
-//DEBUG
-//DEBUG     PACK(z)(A_T, rho, rho_E, phi, buf, patpt);
-            PACK(z)(A_T, rho, rho_E, 0.0, buf, patpt); // DEBUG
-//DEBUG
-//DEBUG     upper_phi_L_T[4][0] = phi * buf[upper];
+            suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
+                    -1.0,                        REF(ey_gradrho),
+                    D1, 1, w->ld, 0.0, buf, 1, A_T->ld);
+
+            suzerain_blasext_zgb_dddiag_scale_acc_d(PREAMBLE,
+                    -Ma2*invRe,                  REF(nuu2),
+                    -Ma2*invRe*ap13,             REF(nuuyuy),
+                    ginvRePr/gm1,                REF(e_deltarho),
+                    D2, 1, w->ld, 1.0, buf, 1, A_T->ld);
+
+            BUFUPPER_SCALE_BY(c, 4, 0);
+
+            PACK(z)(A_T, rho, rho_E, phi, buf, patpt);
         }
 
     }
@@ -200,62 +194,55 @@ FUNCNAME00()(
     if (rho_u >= 0) { // Prepare streamwise momentum row
 
         if (rho_E >= 0) {
-            PACK(zd)(A_T, rho_E, rho_u, 0.0, NULL, patpt);  // Zero fill
-
-            upper_phi_L_T[0][1] = 0.0;
+            PACK(zd)(A_T, rho_E, rho_u, 0.0, NULL, patpt);
         }
 
         // On diagonal, mass accumulated last to avoid swamping small values.
         // The factor phi is accounted for in this final mass accumulation.
         /* rho_u */ {
-            memset(buf, 0, A_T->ld*A_T->n*sizeof(buf[0])); // DEBUG
-//DIAG      suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
-//DIAG              -1.0,                        REF(uy),
-//DIAG              D1, 1, w->ld, 0.0, buf, 1, A_T->ld);
-//DIAG
-//DIAG      suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
-//DIAG              invRe,                       REF(nu),
-//DIAG              D2, 1, w->ld, 1.0, buf, 1, A_T->ld);
-
-            upper_phi_L_T[1][1] = phi * buf[upper];
+            suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
+                    -1.0,                        REF(uy),
+                    D1, 1, w->ld, 0.0, buf, 1, A_T->ld);
 
             suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
-                    1.0,                         IDENTITY,
-                    M,  1, w->ld, phi, buf, 1, A_T->ld);
+                    invRe,                       REF(nu),
+                    D2, 1, w->ld, 1.0, buf, 1, A_T->ld);
+
+            BUFUPPER_SCALE_BY(c, 1, 1);
+
+            suzerain_blas_zgb_acc_d(
+                    A_T->n, A_T->n, A_T->kl, A_T->ku,
+                    1, M, w->ld, phi, buf, A_T->ld);
 
             PACK(z)(A_T, rho_u, rho_u, 1.0, buf, patpt);
         }
 
         if (rho_v >= 0) {
-//DEBUG     suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
-//DEBUG             -1.0,                        REF(ux),
-//DEBUG             D1, 1, w->ld, 0.0, buf, 1, A_T->ld);
-//DEBUG
-//DEBUG     PACK(z)(A_T, rho_v, rho_u, phi, buf, patpt);
-            PACK(z)(A_T, rho_v, rho_u, 0.0, buf, patpt); // DEBUG
-//DEBUG
-//DEBUG     upper_phi_L_T[2][1] = phi * buf[upper];
+            suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
+                    -1.0,                        REF(ux),
+                    D1, 1, w->ld, 0.0, buf, 1, A_T->ld);
+
+            BUFUPPER_SCALE_BY(c, 2, 1);
+
+            PACK(z)(A_T, rho_v, rho_u, phi, buf, patpt);
         }
 
         if (rho_w >= 0) {
-            PACK(z)(A_T, rho_w, rho_u, 0.0, NULL, patpt);  // Zero fill
-
-            upper_phi_L_T[3][1] = 0.0;
+            PACK(z)(A_T, rho_w, rho_u, 0.0, NULL, patpt);
         }
 
         if (rho  >= 0) {
-//DEBUG     suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
-//DEBUG              1.0,                        REF(uxuy),
-//DEBUG             D1, 1, w->ld, 0.0, buf, 1, A_T->ld);
-//DEBUG
-//DEBUG     suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
-//DEBUG             -invRe,                      REF(nuux),
-//DEBUG             D2, 1, w->ld, 1.0, buf, 1, A_T->ld);
-//DEBUG
-//DEBUG     PACK(z)(A_T, rho, rho_u, phi, buf, patpt);
-            PACK(z)(A_T, rho, rho_u, 0.0, buf, patpt); // DEBUG
-//DEBUG
-//DEBUG     upper_phi_L_T[4][1] = phi * buf[upper];
+            suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
+                     1.0,                        REF(uxuy),
+                    D1, 1, w->ld, 0.0, buf, 1, A_T->ld);
+
+            suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
+                    -invRe,                      REF(nuux),
+                    D2, 1, w->ld, 1.0, buf, 1, A_T->ld);
+
+            BUFUPPER_SCALE_BY(c, 4, 1);
+
+            PACK(z)(A_T, rho, rho_u, phi, buf, patpt);
         }
 
     }
@@ -263,71 +250,69 @@ FUNCNAME00()(
     if (rho_v >= 0) { // Prepare wall-normal momentum row
 
         if (rho_E >= 0) {
-//DEBUG     const complex_double coeff = -gm1*invMa2*phi;
-//DEBUG
-//DEBUG     PACK(zd)(A_T, rho_E, rho_v, coeff, D1, patpt);
-            PACK(zd)(A_T, rho_E, rho_v, 0.0, D1, patpt); // DEBUG
-//DEBUG
-//DEBUG     upper_phi_L_T[0][2] = coeff * D1[upper];
+            // Scale real-valued D1, sans phi, into complex-valued buf
+            for (int i = 0; i < A_T->ld*A_T->n; ++i) {
+                buf[i] = -gm1*invMa2*D1[i];
+            }
+
+            BUFUPPER_SCALE_BY(c, 0, 2);
+
+            PACK(z)(A_T, rho_E, rho_v, phi, buf, patpt);
         }
 
         if (rho_u >= 0) {
-//DEBUG     suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
-//DEBUG             gm1,                  REF(ux),
-//DEBUG             D1, 1, w->ld, 0.0, buf, 1, A_T->ld);
-//DEBUG
-//DEBUG     PACK(z)(A_T, rho_u, rho_v, phi, buf, patpt);
-            PACK(z)(A_T, rho_u, rho_v, 0.0, buf, patpt); // DEBUG
-//DEBUG
-//DEBUG     upper_phi_L_T[1][2] = phi * buf[upper];
+            suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
+                    gm1,                  REF(ux),
+                    D1, 1, w->ld, 0.0, buf, 1, A_T->ld);
+
+            BUFUPPER_SCALE_BY(c, 1, 2);
+
+            PACK(z)(A_T, rho_u, rho_v, phi, buf, patpt);
         }
 
         // On diagonal, mass accumulated last to avoid swamping small values.
         // The factor phi is accounted for in this final mass accumulation.
         /* rho_v */ {
-            memset(buf, 0, A_T->ld*A_T->n*sizeof(buf[0])); // DEBUG
-//DIAG      suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
-//DIAG              gm3,                  REF(uy),
-//DIAG              D1, 1, w->ld, 0.0, buf, 1, A_T->ld);
-//DIAG
-//DIAG      suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
-//DIAG              ap43*invRe,           REF(nu),
-//DIAG              D2, 1, w->ld, 1.0, buf, 1, A_T->ld);
-
-            upper_phi_L_T[2][2] = phi * buf[upper];
+            suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
+                    gm3,                  REF(uy),
+                    D1, 1, w->ld, 0.0, buf, 1, A_T->ld);
 
             suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
-                    1.0,                  IDENTITY,
-                    M,  1, w->ld, phi, buf, 1, A_T->ld);
+                    ap43*invRe,           REF(nu),
+                    D2, 1, w->ld, 1.0, buf, 1, A_T->ld);
+
+            BUFUPPER_SCALE_BY(c, 2, 2);
+
+            suzerain_blas_zgb_acc_d(
+                    A_T->n, A_T->n, A_T->kl, A_T->ku,
+                    1, M, w->ld, phi, buf, A_T->ld);
 
             PACK(z)(A_T, rho_v, rho_v, 1.0, buf, patpt);
         }
 
         if (rho_w >= 0) {
-//DEBUG     suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
-//DEBUG             gm1,                  REF(uz),
-//DEBUG             D1, 1, w->ld, 0.0, buf, 1, A_T->ld);
-//DEBUG
-//DEBUG     PACK(z)(A_T, rho_w, rho_v, phi, buf, patpt);
-            PACK(z)(A_T, rho_w, rho_v, 0.0, buf, patpt); // DEBUG
-//DEBUG
-//DEBUG     upper_phi_L_T[3][2] = phi * buf[upper];
+            suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
+                    gm1,                  REF(uz),
+                    D1, 1, w->ld, 0.0, buf, 1, A_T->ld);
+
+            BUFUPPER_SCALE_BY(c, 3, 2);
+
+            PACK(z)(A_T, rho_w, rho_v, phi, buf, patpt);
         }
 
         if (rho  >= 0) {
-//DEBUG     suzerain_blasext_zgb_ddiag_scale_acc_d(PREAMBLE,
-//DEBUG             -0.5*gm1,             REF(u2),
-//DEBUG              1.0,                 REF(uyuy),
-//DEBUG             D1, 1, w->ld, 0.0, buf, 1, A_T->ld);
-//DEBUG
-//DEBUG     suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
-//DEBUG             -ap43*invRe,          REF(nuuy),
-//DEBUG             D2, 1, w->ld, 1.0, buf, 1, A_T->ld);
-//DEBUG
-//DEBUG     PACK(z)(A_T, rho, rho_v, phi, buf, patpt);
-            PACK(z)(A_T, rho, rho_v, 0.0, buf, patpt); // DEBUG
-//DEBUG
-//DEBUG     upper_phi_L_T[4][2] = phi * buf[upper];
+            suzerain_blasext_zgb_ddiag_scale_acc_d(PREAMBLE,
+                    -0.5*gm1,             REF(u2),
+                     1.0,                 REF(uyuy),
+                    D1, 1, w->ld, 0.0, buf, 1, A_T->ld);
+
+            suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
+                    -ap43*invRe,          REF(nuuy),
+                    D2, 1, w->ld, 1.0, buf, 1, A_T->ld);
+
+            BUFUPPER_SCALE_BY(c, 4, 2);
+
+            PACK(z)(A_T, rho, rho_v, phi, buf, patpt);
         }
 
     }
@@ -335,62 +320,55 @@ FUNCNAME00()(
     if (rho_w >= 0) { // Prepare spanwise momentum row
 
         if (rho_E >= 0) {
-            PACK(zd)(A_T, rho_E, rho_w, 0.0, NULL, patpt);  // Zero fill
-
-            upper_phi_L_T[0][3] = 0.0;
+            PACK(zd)(A_T, rho_E, rho_w, 0.0, NULL, patpt);
         }
 
         if (rho_u >= 0) {
-            PACK(zd)(A_T, rho_u, rho_w, 0.0, NULL, patpt);   // Zero fill
-
-            upper_phi_L_T[1][3] = 0.0;
+            PACK(zd)(A_T, rho_u, rho_w, 0.0, NULL, patpt);
         }
 
         if (rho_v >= 0) {
-//DEBUG     suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
-//DEBUG             -1.0,                        REF(uz),
-//DEBUG             D1, 1, w->ld, 0.0, buf, 1, A_T->ld);
-//DEBUG
-//DEBUG     PACK(z)(A_T, rho_v, rho_w, phi, buf, patpt);
-            PACK(z)(A_T, rho_v, rho_w, 0.0, buf, patpt); // DEBUG
-//DEBUG
-//DEBUG     upper_phi_L_T[2][3] = phi * buf[upper];
+            suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
+                    -1.0,                        REF(uz),
+                    D1, 1, w->ld, 0.0, buf, 1, A_T->ld);
+
+            BUFUPPER_SCALE_BY(c, 2, 3);
+
+            PACK(z)(A_T, rho_v, rho_w, phi, buf, patpt);
         }
 
         // On diagonal, mass accumulated last to avoid swamping small values.
         // The factor phi is accounted for in this final mass accumulation.
         /* rho_w */ {
-            memset(buf, 0, A_T->ld*A_T->n*sizeof(buf[0])); // DEBUG
-//DIAG      suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
-//DIAG              -1.0,                        REF(uy),
-//DIAG              D1, 1, w->ld, 0.0, buf, 1, A_T->ld);
-//DIAG
-//DIAG      suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
-//DIAG              invRe,                       REF(nu),
-//DIAG              D2, 1, w->ld, 1.0, buf, 1, A_T->ld);
-
-            upper_phi_L_T[3][3] = phi * buf[upper];
+            suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
+                    -1.0,                        REF(uy),
+                    D1, 1, w->ld, 0.0, buf, 1, A_T->ld);
 
             suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
-                    1.0,                         IDENTITY,
-                    M,  1, w->ld, phi, buf, 1, A_T->ld);
+                    invRe,                       REF(nu),
+                    D2, 1, w->ld, 1.0, buf, 1, A_T->ld);
+
+            BUFUPPER_SCALE_BY(c, 3, 3);
+
+            suzerain_blas_zgb_acc_d(
+                    A_T->n, A_T->n, A_T->kl, A_T->ku,
+                    1, M, w->ld, phi, buf, A_T->ld);
 
             PACK(z)(A_T, rho_w, rho_w, 1.0, buf, patpt);
         }
 
         if (rho  >= 0) {
-//DEBUG     suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
-//DEBUG              1.0,                        REF(uyuz),
-//DEBUG             D1, 1, w->ld, 0.0, buf, 1, A_T->ld);
-//DEBUG
-//DEBUG     suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
-//DEBUG             -invRe,                      REF(nuuz),
-//DEBUG             D2, 1, w->ld, 1.0, buf, 1, A_T->ld);
-//DEBUG
-//DEBUG     PACK(z)(A_T, rho, rho_w, phi, buf, patpt);
-            PACK(z)(A_T, rho, rho_w, 0.0, buf, patpt); // DEBUG
-//DEBUG
-//DEBUG     upper_phi_L_T[4][3] = phi * buf[upper];
+            suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
+                     1.0,                        REF(uyuz),
+                    D1, 1, w->ld, 0.0, buf, 1, A_T->ld);
+
+            suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
+                    -invRe,                      REF(nuuz),
+                    D2, 1, w->ld, 1.0, buf, 1, A_T->ld);
+
+            BUFUPPER_SCALE_BY(c, 4, 3);
+
+            PACK(z)(A_T, rho, rho_w, phi, buf, patpt);
         }
 
     }
@@ -398,131 +376,42 @@ FUNCNAME00()(
     if (rho >= 0) {  // Prepare density row
 
         if (rho_E >= 0) {
-            PACK(zd)( A_T, rho_E, rho,  0.0, NULL, patpt); // Zero fill
-
-            upper_phi_L_T[0][4] = 0.0;
+            PACK(zd)(A_T, rho_E, rho, 0.0, NULL, patpt);
         }
 
         if (rho_u >= 0) {
-            PACK(zd)(A_T, rho_u, rho,  0.0, NULL, patpt); // Zero fill
-
-            upper_phi_L_T[1][4] = 0.0;
+            PACK(zd)(A_T, rho_u, rho, 0.0, NULL, patpt);
         }
 
         if (rho_v >= 0) {
-//DEBUG     const complex_double coeff = -phi;
-//DEBUG
-//DEBUG     PACK(zd)(A_T, rho_v, rho, coeff, D1,   patpt);
-            PACK(zd)(A_T, rho_v, rho, 0.0, D1,   patpt); // DEBUG
-//DEBUG
-//DEBUG     upper_phi_L_T[2][4] = coeff * D1[upper];
+            // Scale real-valued D1, sans phi, into complex-valued buf
+            for (int i = 0; i < A_T->ld*A_T->n; ++i) {
+                buf[i] = -D1[i];
+            }
+
+            BUFUPPER_SCALE_BY(c, 2, 4);
+
+            PACK(z )(A_T, rho_v, rho, phi, buf, patpt);
         }
 
         if (rho_w >= 0) {
-            PACK(zd)(A_T, rho_w, rho,  0.0, NULL, patpt); // Zero fill
-
-            upper_phi_L_T[3][4] = 0.0;
+            PACK(zd)(A_T, rho_w, rho, 0.0, NULL, patpt);
         }
 
         /* rho */ {
-//DEBUG     PACK(zd)(A_T, rho,  rho, 1.0, M, patpt);
-            PACK(zd)(A_T, rho,  rho, 1.0, M, patpt); // DEBUG
-//DEBUG
-//DEBUG     upper_phi_L_T[4][4] = 0; // M does not contribute
+            PACK(zd)(A_T, rho,   rho, 1.0, M, patpt);
         }
 
     }
 
-#   undef IDENTITY
 #   undef REF
 #   undef PREAMBLE
+#   undef BUFUPPER_SCALE_BY
 
-    // If requested, use matrix c to partially provide upper NRBC
-    // TODO Consider inlining the BLAS-like call to hide some memory latency
-    if (c) {
-        // Maps indices from tmp into renumbered BSMBSM eqns on upper boundary
-        const int up[5] = {
-            suzerain_bsmbsm_qinv(A_T->S, A_T->n, (rho_E + 1)*A_T->n - 1),
-            suzerain_bsmbsm_qinv(A_T->S, A_T->n, (rho_u + 1)*A_T->n - 1),
-            suzerain_bsmbsm_qinv(A_T->S, A_T->n, (rho_v + 1)*A_T->n - 1),
-            suzerain_bsmbsm_qinv(A_T->S, A_T->n, (rho_w + 1)*A_T->n - 1),
-            suzerain_bsmbsm_qinv(A_T->S, A_T->n, (rho   + 1)*A_T->n - 1)
-        };
-
-        // DEBUG
-        for (int i = 0; i < 5; ++i)
-            for (int j = 0; j < 5; ++j)
-                if (creal(upper_phi_L_T[i][j]) != 0 || cimag(upper_phi_L_T[i][j]) != 0)
-                    printf("\tupper_phi_L_T (%d,%d)\t%+g%+gI\t vs %+g%+gI\n",
-                           i, j,
-                           upper_phi_L_T[i][j],
-                           upper_phi_L_T[i][j] - *PTR(z)(A_T, up[i], up[j], patpt) + (i==j));
-
-        // This column-major usage of upper_phi_L_T is nothing but phi*L.
-        complex_double tmp[5][5];
-        const double d[25] = {1,0,0,0,0
-                             ,0,1,0,0,0
-                             ,0,0,1,0,0
-                             ,0,0,0,1,0
-                             ,0,0,0,0,1}; // DEBUG
-//DEBUG suzerain_blasext_zgedmm55(-1, c, (const void *) upper_phi_L_T,
-//DEBUG                                  (      void *) tmp);
-        suzerain_blasext_zgedmm55(-1, d, (const void *) upper_phi_L_T,
-                                         (      void *) tmp);
-
-        // DEBUG
-        for (int i = 0; i < 5; ++i)
-            for (int j = 0; j < 5; ++j)
-                if (creal(tmp[i][j]) != 0 || cimag(tmp[i][j]) != 0)
-                    printf("\ttmp           (%d,%d)\t%+g%+gI\n",
-                           i, j,
-                           tmp[i][j]);
-
-        // Accumulate modifications into active submatrices within packed storage
-        if (LIKELY(rho_E >= 0)) {
-            /* rho_E */             *PTR(z)(A_T, up[rho_E], up[rho_E], patpt) += tmp[0][0];
-            if (LIKELY(rho_u >= 0)) *PTR(z)(A_T, up[rho_u], up[rho_E], patpt) += tmp[1][0];
-            if (LIKELY(rho_v >= 0)) *PTR(z)(A_T, up[rho_v], up[rho_E], patpt) += tmp[2][0];
-            if (LIKELY(rho_w >= 0)) *PTR(z)(A_T, up[rho_w], up[rho_E], patpt) += tmp[3][0];
-            if (LIKELY(rho   >= 0)) *PTR(z)(A_T, up[rho  ], up[rho_E], patpt) += tmp[4][0];
-        }
-        if (LIKELY(rho_u >= 0)) {
-            if (LIKELY(rho_E >= 0)) *PTR(z)(A_T, up[rho_E], up[rho_u], patpt) += tmp[0][1];
-            /* rho_u */             *PTR(z)(A_T, up[rho_u], up[rho_u], patpt) += tmp[1][1];
-            if (LIKELY(rho_v >= 0)) *PTR(z)(A_T, up[rho_v], up[rho_u], patpt) += tmp[2][1];
-            if (LIKELY(rho_w >= 0)) *PTR(z)(A_T, up[rho_w], up[rho_u], patpt) += tmp[3][1];
-            if (LIKELY(rho   >= 0)) *PTR(z)(A_T, up[rho  ], up[rho_u], patpt) += tmp[4][1];
-        }
-        if (LIKELY(rho_v >= 0)) {
-            if (LIKELY(rho_E >= 0)) *PTR(z)(A_T, up[rho_E], up[rho_v], patpt) += tmp[0][2];
-            if (LIKELY(rho_u >= 0)) *PTR(z)(A_T, up[rho_u], up[rho_v], patpt) += tmp[1][2];
-            /* rho_v */             *PTR(z)(A_T, up[rho_v], up[rho_v], patpt) += tmp[2][2];
-            if (LIKELY(rho_w >= 0)) *PTR(z)(A_T, up[rho_w], up[rho_v], patpt) += tmp[3][2];
-            if (LIKELY(rho   >= 0)) *PTR(z)(A_T, up[rho  ], up[rho_v], patpt) += tmp[4][2];
-        }
-        if (LIKELY(rho_w >= 0)) {
-            if (LIKELY(rho_E >= 0)) *PTR(z)(A_T, up[rho_E], up[rho_w], patpt) += tmp[0][3];
-            if (LIKELY(rho_u >= 0)) *PTR(z)(A_T, up[rho_u], up[rho_w], patpt) += tmp[1][3];
-            if (LIKELY(rho_v >= 0)) *PTR(z)(A_T, up[rho_v], up[rho_w], patpt) += tmp[2][3];
-            /* rho_w */             *PTR(z)(A_T, up[rho_w], up[rho_w], patpt) += tmp[3][3];
-            if (LIKELY(rho   >= 0)) *PTR(z)(A_T, up[rho  ], up[rho_w], patpt) += tmp[4][3];
-        }
-        if (LIKELY(rho   >= 0)) {
-            if (LIKELY(rho_E >= 0)) *PTR(z)(A_T, up[rho_E], up[rho  ], patpt) += tmp[0][4];
-            if (LIKELY(rho_u >= 0)) *PTR(z)(A_T, up[rho_u], up[rho  ], patpt) += tmp[1][4];
-            if (LIKELY(rho_v >= 0)) *PTR(z)(A_T, up[rho_v], up[rho  ], patpt) += tmp[2][4];
-            if (LIKELY(rho_w >= 0)) *PTR(z)(A_T, up[rho_w], up[rho  ], patpt) += tmp[3][4];
-            /* rho */               *PTR(z)(A_T, up[rho  ], up[rho  ], patpt) += tmp[4][4];
-        }
-
-    }
 }
-
-#undef LIKELY
 
 #undef FUNCNAME00
 #undef PACK
-#undef PTR
 
 /* vim: set ft=c:   */
 /* Local Variables: */

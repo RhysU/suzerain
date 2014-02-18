@@ -89,16 +89,10 @@ STATIC int FUNCTION(
             }
         } else {              // ...for strided y
             if (beta == 0) {
-#ifdef __INTEL_COMPILER
-#pragma unroll
-#endif
                 for (int i = 0; i < n; ++i) {
                     y[i*abs_incy] = 0;
                 }
             } else {
-#ifdef __INTEL_COMPILER
-#pragma unroll
-#endif
                 for (int i = 0; i < n; ++i) {
                     y[i*abs_incy] *= beta;
                 }
@@ -145,9 +139,6 @@ STATIC int FUNCTION(
                 TYPE_Y temp2       = 0;
                 int ix = kx;
                 int iy = ky;
-#ifdef __INTEL_COMPILER
-#pragma unroll
-#endif
                 for (int i = il; i < j; ++i) {
                     y[iy] += temp1*a[i];
                     temp2 += a[i]*x[ix];
@@ -195,9 +186,6 @@ STATIC int FUNCTION(
                 y[jy] += temp1*a[j];
                 int ix = jx;
                 int iy = jy;
-#ifdef __INTEL_COMPILER
-#pragma unroll
-#endif
                 for (int i = j + 1; i < iu; ++i) {
                     ix += incx;
                     iy += incy;

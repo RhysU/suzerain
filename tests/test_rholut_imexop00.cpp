@@ -93,8 +93,7 @@ static void operator_consistency(const parameters& p)
     const int N = S*n;    // DOF for global operator
 
     // Initialize scenario parameters
-//  const complex_t phi(M_SQRT2/11, M_LOG2E/13); // FIXME
-    const complex_t phi(1, 0);                   // DEBUG
+    const complex_t phi(M_SQRT2/11, M_LOG2E/13);
 
     suzerain_rholut_imexop_scenario s;
     s.Re    = 3000;
@@ -277,30 +276,30 @@ bool init_unit_test_suite() {
          {         -1,       -1 }
         ,{         -1,        0 }
         ,{         -1,        1 }
-//TODO  ,{         -1,        2 }
-//TODO  ,{         -1,        3 }
-//TODO  ,{         -1,        4 }
-//TODO  ,{         -1,        5 }
-//TODO  ,{         -1,        6 }
-//TODO  ,{         -1,        7 }
-//TODO  ,{         -1,        8 }
-//TODO  ,{         -1,        9 }
-//TODO  ,{         -1,       10 }
-//TODO  ,{         -1,       11 }
-//TODO  ,{         -1,       12 }
-//TODO  ,{         -1,       13 }
-//TODO  ,{         -1,       14 }
-//TODO  ,{         -1,       15 }
-//TODO  ,{         -1,       16 }
-//TODO  ,{         -1,       17 }
-//TODO  ,{         -1,       18 }
-//TODO  ,{         -1,       19 }
-//TODO  ,{         -1,       20 }
-//TODO  ,{         -1,       21 }
-//TODO  ,{         -1,       22 }
-//TODO  ,{         -1,       23 }
-//TODO  ,{         -1,       24 }
-//TODO  ,{         -1,       25 }
+        ,{         -1,        2 }
+        ,{         -1,        3 }
+        ,{         -1,        4 }
+        ,{         -1,        5 }
+        ,{         -1,        6 }
+        ,{         -1,        7 }
+        ,{         -1,        8 }
+        ,{         -1,        9 }
+        ,{         -1,       10 }
+        ,{         -1,       11 }
+        ,{         -1,       12 }
+        ,{         -1,       13 }
+        ,{         -1,       14 }
+        ,{         -1,       15 }
+        ,{         -1,       16 }
+        ,{         -1,       17 }
+        ,{         -1,       18 }
+        ,{         -1,       19 }
+        ,{         -1,       20 }
+        ,{         -1,       21 }
+        ,{         -1,       22 }
+        ,{         -1,       23 }
+        ,{         -1,       24 }
+        ,{         -1,       25 }
     };
     for (int j = -1; j < (int) NREFS; ++j) {
         for (size_t k = 0; k < sizeof(p)/sizeof(p[0]); ++k) {
