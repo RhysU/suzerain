@@ -109,16 +109,10 @@ STATIC int FUNCTION(
             }
         } else {              // ...for strided y
             if (beta == 0) {
-#ifdef __INTEL_COMPILER
-#pragma unroll
-#endif
                 for (int i = 0; i < n; ++i) {
                     y[i*abs_incy] = 0;
                 }
             } else {
-#ifdef __INTEL_COMPILER
-#pragma unroll
-#endif
                 for (int i = 0; i < n; ++i) {
                     y[i*abs_incy] *= beta;
                 }
@@ -166,9 +160,6 @@ STATIC int FUNCTION(
                 const int il = ndxmax(0, j - ku);
                 const int iu = ndxmin(n, j + klp1);
                 int iy = ky;
-#ifdef __INTEL_COMPILER
-#pragma unroll
-#endif
                 for (int i = il; i < iu; ++i) {
                     y[iy] += ( alpha0*d0[i*ldd0]
                               +alpha1*d1[i*ldd1]
@@ -211,9 +202,6 @@ STATIC int FUNCTION(
                 const int iu = ndxmin(n, j + klp1);
                 TYPE_Y temp = 0;
                 int ix = kx;
-#ifdef __INTEL_COMPILER
-#pragma unroll
-#endif
                 for (int i = il; i < iu; ++i) {
                     temp += a[i]*x[ix];
                     ix += incx;
