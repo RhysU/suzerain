@@ -562,13 +562,17 @@ FUNCNAME()(
             PACK(z)(A_T, rho_E, rho, phi, buf, patpt);
         }
 
-        // TODO UPPER_C(c, 1, 4)
-        // TODO UPPER_A(a, 1, 4)
-        // TODO UPPER_B(b, 1, 4)
         if (rho_u >= 0) {
-            const complex_double coeff = -ikm*phi;
+            // Scale real-valued M, sans phi, into complex-valued buf
+            for (int i = 0; i < A_T->ld*A_T->n; ++i) {
+                buf[i] = -ikm*M[i];
+            }
 
-            PACK(zd)(A_T, rho_u, rho, coeff, M, patpt);
+            // TODO UPPER_C(c, 1, 4)
+            // TODO UPPER_A(a, 1, 4)
+            // TODO UPPER_B(b, 1, 4)
+
+            PACK(z)(A_T, rho_u, rho, phi, buf, patpt);
         }
 
         // TODO UPPER_C(c, 2, 4)
