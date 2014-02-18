@@ -99,12 +99,12 @@ suzerain_rholut_imexop_accumulate00(
     // Notice we need to account for suzerain_bsplineop_workspace storing the
     // transpose of the operators when we invoke suzerain_blasext_* routines.
     enum { M = 0, D1 = 1, D2 = 2 };
-#   define IN(quantity)        in_##quantity,  1
-#   define OUT(quantity)       out_##quantity, 1
-#   define REF(quantity)       r->quantity, ld->quantity
-#   define PREAMBLE_N(op)      'T', w->n, w->kl[op], w->ku[op]
-#   define PREAMBLE_NN(op)     'T', w->n, w->n, w->kl[op], w->ku[op]
-#   define UPPER_NRBC(mat,i,j) ((mat) ? -(mat[(i) + 5*(j)]) : 0)
+#   define IN(quantity)    in_##quantity,  1
+#   define OUT(quantity)   out_##quantity, 1
+#   define REF(quantity)   r->quantity, ld->quantity
+#   define PREAMBLE_N(op)  'T', w->n, w->kl[op], w->ku[op]
+#   define PREAMBLE_NN(op) 'T', w->n, w->n, w->kl[op], w->ku[op]
+#   define UPPER_C(i,j)    (c ? -c[(i) + 5*(j)] : 0)
 
     if (in_rho_E) {  // Accumulate total energy terms into out_rho_E
 
@@ -114,52 +114,52 @@ suzerain_rholut_imexop_accumulate00(
             suzerain_gbdmv_dzz(PREAMBLE_N(D1),
                 -phi*s->gamma,               REF(uy),
                 w->D_T[D1], w->ld, IN(rho_E), 1.0, OUT(rho_E),
-                UPPER_NRBC(c, 0, 0));
+                UPPER_C(0, 0));
 
             suzerain_gbdmv_dzz(PREAMBLE_N(D2),
                 phi*ginvRePr,                REF(nu),
                 w->D_T[D2], w->ld, IN(rho_E), 1.0, OUT(rho_E),
-                UPPER_NRBC(c, 0, 0));
+                UPPER_C(0, 0));
         }
 
         if (in_rho_u) {
             suzerain_gbdmv_dzz(PREAMBLE_N(D2),
                 phi*Ma2*invRe*(1-ginvPr),    REF(nuux),
                 w->D_T[D2], w->ld, IN(rho_u), 1.0, OUT(rho_E),
-                UPPER_NRBC(c, 1, 0));
+                UPPER_C(1, 0));
         }
 
         if (in_rho_v) {
             suzerain_gbdmv_dzz(PREAMBLE_N(D1),
                 -phi,                        REF(e_divm),
                 w->D_T[D1], w->ld, IN(rho_v), 1.0, OUT(rho_E),
-                UPPER_NRBC(c, 2, 0));
+                UPPER_C(2, 0));
 
             suzerain_gbdmv_dzz(PREAMBLE_N(D2),
                 phi*Ma2*invRe*(ap43-ginvPr), REF(nuuy),
                 w->D_T[D2], w->ld, IN(rho_v), 1.0, OUT(rho_E),
-                UPPER_NRBC(c, 2, 0));
+                UPPER_C(2, 0));
         }
 
         if (in_rho_w) {
             suzerain_gbdmv_dzz(PREAMBLE_N(D2),
                 phi*Ma2*invRe*(1-ginvPr),    REF(nuuz),
                 w->D_T[D2], w->ld, IN(rho_w), 1.0, OUT(rho_E),
-                UPPER_NRBC(c, 3, 0));
+                UPPER_C(3, 0));
         }
 
         if (in_rho) {
             suzerain_gbdmv_dzz(PREAMBLE_N(D1),
                 -phi,                        REF(ey_gradrho),
                 w->D_T[D1], w->ld, IN(rho), 1.0, OUT(rho_E),
-                UPPER_NRBC(c, 4, 0));
+                UPPER_C(4, 0));
 
             suzerain_gbdddmv_dzz(PREAMBLE_N(D2),
                 -phi*Ma2*invRe,              REF(nuu2),
                 -phi*Ma2*invRe*ap13,         REF(nuuyuy),
                 phi*ginvRePr/gm1,            REF(e_deltarho),
                 w->D_T[D2], w->ld, IN(rho), 1.0, OUT(rho_E),
-                UPPER_NRBC(c, 4, 0));
+                UPPER_C(4, 0));
         }
 
         suzerain_blas_zgbmv_d_z(PREAMBLE_NN(M),
@@ -178,19 +178,19 @@ suzerain_rholut_imexop_accumulate00(
             suzerain_gbdmv_dzz(PREAMBLE_N(D1),
                 -phi,                      REF(uy),
                 w->D_T[D1], w->ld, IN(rho_u), 1.0, OUT(rho_u),
-                UPPER_NRBC(c, 1, 1));
+                UPPER_C(1, 1));
 
             suzerain_gbdmv_dzz(PREAMBLE_N(D2),
                 phi*invRe,                 REF(nu),
                 w->D_T[D2], w->ld, IN(rho_u), 1.0, OUT(rho_u),
-                UPPER_NRBC(c, 1, 1));
+                UPPER_C(1, 1));
         }
 
         if (in_rho_v) {
             suzerain_gbdmv_dzz(PREAMBLE_N(D1),
                 -phi,                      REF(ux),
                 w->D_T[D1], w->ld, IN(rho_v), 1.0, OUT(rho_u),
-                UPPER_NRBC(c, 2, 1));
+                UPPER_C(2, 1));
         }
 
         if (in_rho_w) {
@@ -201,12 +201,12 @@ suzerain_rholut_imexop_accumulate00(
             suzerain_gbdmv_dzz(PREAMBLE_N(D1),
                 phi,                       REF(uxuy),
                 w->D_T[D1], w->ld, IN(rho), 1.0, OUT(rho_u),
-                UPPER_NRBC(c, 4, 1));
+                UPPER_C(4, 1));
 
             suzerain_gbdmv_dzz(PREAMBLE_N(D2),
                 -phi*invRe,                REF(nuux),
                 w->D_T[D2], w->ld, IN(rho), 1.0, OUT(rho_u),
-                UPPER_NRBC(c, 4, 1));
+                UPPER_C(4, 1));
         }
 
         suzerain_blas_zgbmv_d_z(PREAMBLE_NN(M),
@@ -221,33 +221,33 @@ suzerain_rholut_imexop_accumulate00(
             suzerain_gbmv_dzz(PREAMBLE_NN(D1),
                 -phi*gm1*invMa2, w->D_T[D1], w->ld, IN(rho_E),
                 1.0, OUT(rho_v),
-                UPPER_NRBC(c, 0, 2));
+                UPPER_C(0, 2));
         }
 
         if (in_rho_u) {
             suzerain_gbdmv_dzz(PREAMBLE_N(D1),
                 phi*gm1,              REF(ux),
                 w->D_T[D1],  w->ld, IN(rho_u), 1.0, OUT(rho_v),
-                UPPER_NRBC(c, 1, 2));
+                UPPER_C(1, 2));
         }
 
         /* in_rho_v */ {
             suzerain_gbdmv_dzz(PREAMBLE_N(D1),
                 phi*gm3,              REF(uy),
                 w->D_T[D1], w->ld, IN(rho_v), 1.0, OUT(rho_v),
-                UPPER_NRBC(c, 2, 2));
+                UPPER_C(2, 2));
 
             suzerain_gbdmv_dzz(PREAMBLE_N(D2),
                 phi*ap43*invRe,       REF(nu),
                 w->D_T[D2], w->ld, IN(rho_v), 1.0, OUT(rho_v),
-                UPPER_NRBC(c, 2, 2));
+                UPPER_C(2, 2));
         }
 
         if (in_rho_w) {
             suzerain_gbdmv_dzz(PREAMBLE_N(D1),
                 phi*gm1,              REF(uz),
                 w->D_T[D1],  w->ld, IN(rho_w), 1.0, OUT(rho_v),
-                UPPER_NRBC(c, 3, 2));
+                UPPER_C(3, 2));
         }
 
         if (in_rho) {
@@ -255,12 +255,12 @@ suzerain_rholut_imexop_accumulate00(
                 -phi*0.5*gm1,         REF(u2),
                  phi,                 REF(uyuy),
                 w->D_T[D1], w->ld, IN(rho), 1.0, OUT(rho_v),
-                UPPER_NRBC(c, 4, 2));
+                UPPER_C(4, 2));
 
             suzerain_gbdmv_dzz(PREAMBLE_N(D2),
                 -phi*ap43*invRe,      REF(nuuy),
                 w->D_T[D2], w->ld, IN(rho), 1.0, OUT(rho_v),
-                UPPER_NRBC(c, 4, 2));
+                UPPER_C(4, 2));
         }
 
         suzerain_blas_zgbmv_d_z(PREAMBLE_NN(M),
@@ -283,31 +283,31 @@ suzerain_rholut_imexop_accumulate00(
             suzerain_gbdmv_dzz(PREAMBLE_N(D1),
                 -phi,                      REF(uz),
                 w->D_T[D1], w->ld, IN(rho_v), 1.0, OUT(rho_w),
-                UPPER_NRBC(c, 2, 3));
+                UPPER_C(2, 3));
         }
 
         /* in_rho_w */ {
             suzerain_gbdmv_dzz(PREAMBLE_N(D1),
                 -phi,                      REF(uy),
                 w->D_T[D1], w->ld, IN(rho_w), 1.0, OUT(rho_w),
-                UPPER_NRBC(c, 3, 3));
+                UPPER_C(3, 3));
 
             suzerain_gbdmv_dzz(PREAMBLE_N(D2),
                 phi*invRe,                 REF(nu),
                 w->D_T[D2], w->ld, IN(rho_w), 1.0, OUT(rho_w),
-                UPPER_NRBC(c, 3, 3));
+                UPPER_C(3, 3));
         }
 
         if (in_rho) {
             suzerain_gbdmv_dzz(PREAMBLE_N(D1),
                 phi,                       REF(uyuz),
                 w->D_T[D1], w->ld, IN(rho), 1.0, OUT(rho_w),
-                UPPER_NRBC(c, 4, 3));
+                UPPER_C(4, 3));
 
             suzerain_gbdmv_dzz(PREAMBLE_N(D2),
                 -phi*invRe,                REF(nuuz),
                 w->D_T[D2], w->ld, IN(rho), 1.0, OUT(rho_w),
-                UPPER_NRBC(c, 4, 3));
+                UPPER_C(4, 3));
         }
 
         suzerain_blas_zgbmv_d_z(PREAMBLE_NN(M),
@@ -329,7 +329,7 @@ suzerain_rholut_imexop_accumulate00(
         if (in_rho_v) {
             suzerain_gbmv_dzz(PREAMBLE_NN(D1),
                 -phi, w->D_T[D1], w->ld, IN(rho_v), 1.0, OUT(rho),
-                UPPER_NRBC(c, 2, 4));
+                UPPER_C(2, 4));
         }
 
         if (in_rho_w) {
