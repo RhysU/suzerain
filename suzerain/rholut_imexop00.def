@@ -32,8 +32,6 @@
 // #define FUNCNAME00() /* Function name, e.g. suzerain_rholut_imexop_packc00 */
 // #define PACK(x)      /* suzerain_bsmbsm_ ## x ## pack{c,f}                 */
 
-// TODO Memset patpt to be uniformly zeros and remove zero fill operations
-
 void
 FUNCNAME00()(
         const complex_double phi,
@@ -85,10 +83,10 @@ FUNCNAME00()(
     const double ginvPr      = s->gamma / s->Pr;
     const double ginvRePr    = s->gamma / (s->Re * s->Pr);
 
+
+    // TODO Memset patpt to be uniformly zeros and remove zero fill operations.
     // We do not know the leading dimension associated with the definition of
     // PACK() so we must overwrite every possible submatrix within PATPT.
-    // This is only suboptimal for the zero (rho, rho_E) submatrix and
-    // brings with it much flexibility.
 
     // This routine assembles the transpose of the operator and hence the
     // equation indices are transposed in calls to PACK(...)(...) and we right
