@@ -125,6 +125,10 @@ FUNCNAME()(
                     ginvRePr,                    REF(nu),
                     D2, 1, w->ld, 1.0, buf, 1, A_T->ld);
 
+            // TODO UPPER_C(c, 0, 0)
+            // TODO UPPER_A(a, 0, 0)
+            // TODO UPPER_B(b, 0, 0)
+
             suzerain_blas_zgb_acc_d(
                     A_T->n, A_T->n, A_T->kl, A_T->ku,
                     1, M, w->ld, phi, buf, A_T->ld);
@@ -149,6 +153,10 @@ FUNCNAME()(
                     Ma2*invRe*(1-ginvPr),        REF(nuux),
                     D2, 1, w->ld, 1.0, buf, 1, A_T->ld);
 
+            // TODO UPPER_C(c, 1, 0)
+            // TODO UPPER_A(a, 1, 0)
+            // TODO UPPER_B(b, 1, 0)
+
             PACK(z)(A_T, rho_u, rho_E, phi, buf, patpt);
         }
 
@@ -169,6 +177,10 @@ FUNCNAME()(
                     Ma2*invRe*(ap43-ginvPr),     REF(nuuy),
                     D2, 1, w->ld, 1.0, buf, 1, A_T->ld);
 
+            // TODO UPPER_C(c, 2, 0)
+            // TODO UPPER_A(a, 2, 0)
+            // TODO UPPER_B(b, 2, 0)
+
             PACK(z)(A_T, rho_v, rho_E, phi, buf, patpt);
         }
 
@@ -188,6 +200,10 @@ FUNCNAME()(
             suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
                     Ma2*invRe*(1-ginvPr),        REF(nuuz),
                     D2, 1, w->ld, 1.0, buf, 1, A_T->ld);
+
+            // TODO UPPER_C(c, 3, 0)
+            // TODO UPPER_A(a, 3, 0)
+            // TODO UPPER_B(b, 3, 0)
 
             PACK(z)(A_T, rho_w, rho_E, phi, buf, patpt);
         }
@@ -219,6 +235,10 @@ FUNCNAME()(
                     ginvRePr/gm1,                REF(e_deltarho),
                     D2, 1, w->ld, 1.0, buf, 1, A_T->ld);
 
+            // TODO UPPER_C(c, 4, 0)
+            // TODO UPPER_A(a, 4, 0)
+            // TODO UPPER_B(b, 4, 0)
+
             PACK(z)(A_T, rho, rho_E, phi, buf, patpt);
         }
 
@@ -226,6 +246,9 @@ FUNCNAME()(
 
     if (rho_u >= 0) { // Prepare streamwise momentum row
 
+        // TODO UPPER_C(c, 0, 1)
+        // TODO UPPER_A(a, 0, 1)
+        // TODO UPPER_B(b, 0, 1)
         if (rho_E >= 0) {
             const complex_double coeff = -gm1*invMa2*ikm*phi;
 
@@ -249,6 +272,10 @@ FUNCNAME()(
                     invRe,                       REF(nu),
                     D2, 1, w->ld, 1.0, buf, 1, A_T->ld);
 
+            // TODO UPPER_C(c, 1, 1)
+            // TODO UPPER_A(a, 1, 1)
+            // TODO UPPER_B(b, 1, 1)
+
             suzerain_blas_zgb_acc_d(
                     A_T->n, A_T->n, A_T->kl, A_T->ku,
                     1, M, w->ld, phi, buf, A_T->ld);
@@ -266,6 +293,10 @@ FUNCNAME()(
                     ap13*invRe*ikm,              REF(nu),
                     D1, 1, w->ld, 1.0, buf, 1, A_T->ld);
 
+            // TODO UPPER_C(c, 2, 1)
+            // TODO UPPER_A(a, 2, 1)
+            // TODO UPPER_B(b, 2, 1)
+
             PACK(z)(A_T, rho_v, rho_u, phi, buf, patpt);
         }
 
@@ -275,6 +306,10 @@ FUNCNAME()(
                     -ikn,                        REF(ux),
                     -ap13*invRe*km*kn,           REF(nu),
                     M,  1, w->ld, 0.0, buf, 1, A_T->ld);
+
+            // TODO UPPER_C(c, 3, 1)
+            // TODO UPPER_A(a, 3, 1)
+            // TODO UPPER_B(b, 3, 1)
 
             PACK(z)(A_T, rho_w, rho_u, phi, buf, patpt);
         }
@@ -297,6 +332,10 @@ FUNCNAME()(
                     -invRe,                      REF(nuux),
                     D2, 1, w->ld, 1.0, buf, 1, A_T->ld);
 
+            // TODO UPPER_C(c, 4, 1)
+            // TODO UPPER_A(a, 4, 1)
+            // TODO UPPER_B(b, 4, 1)
+
             PACK(z)(A_T, rho, rho_u, phi, buf, patpt);
         }
 
@@ -304,6 +343,9 @@ FUNCNAME()(
 
     if (rho_v >= 0) { // Prepare wall-normal momentum row
 
+        // TODO UPPER_C(c, 0, 2)
+        // TODO UPPER_A(a, 0, 2)
+        // TODO UPPER_B(b, 0, 2)
         if (rho_E >= 0) {
             const complex_double coeff = -gm1*invMa2*phi;
 
@@ -319,6 +361,10 @@ FUNCNAME()(
                     gm1,                  REF(ux),
                     ap13*invRe*ikm,       REF(nu),
                     D1, 1, w->ld, 1.0, buf, 1, A_T->ld);
+
+            // TODO UPPER_C(c, 1, 2)
+            // TODO UPPER_A(a, 1, 2)
+            // TODO UPPER_B(b, 1, 2)
 
             PACK(z)(A_T, rho_u, rho_v, phi, buf, patpt);
         }
@@ -340,6 +386,10 @@ FUNCNAME()(
                     ap43*invRe,           REF(nu),
                     D2, 1, w->ld, 1.0, buf, 1, A_T->ld);
 
+            // TODO UPPER_C(c, 2, 2)
+            // TODO UPPER_A(a, 2, 2)
+            // TODO UPPER_B(b, 2, 2)
+
             suzerain_blas_zgb_acc_d(
                     A_T->n, A_T->n, A_T->kl, A_T->ku,
                     1, M, w->ld, phi, buf, A_T->ld);
@@ -356,6 +406,10 @@ FUNCNAME()(
                     gm1,                  REF(uz),
                     ap13*invRe*ikn,       REF(nu),
                     D1, 1, w->ld, 1.0, buf, 1, A_T->ld);
+
+            // TODO UPPER_C(c, 3, 2)
+            // TODO UPPER_A(a, 3, 2)
+            // TODO UPPER_B(b, 3, 2)
 
             PACK(z)(A_T, rho_w, rho_v, phi, buf, patpt);
         }
@@ -378,6 +432,10 @@ FUNCNAME()(
                     -ap43*invRe,          REF(nuuy),
                     D2, 1, w->ld, 1.0, buf, 1, A_T->ld);
 
+            // TODO UPPER_C(c, 4, 2)
+            // TODO UPPER_A(a, 4, 2)
+            // TODO UPPER_B(b, 4, 2)
+
             PACK(z)(A_T, rho, rho_v, phi, buf, patpt);
         }
 
@@ -385,6 +443,9 @@ FUNCNAME()(
 
     if (rho_w >= 0) { // Prepare spanwise momentum row
 
+        // TODO UPPER_C(c, 0, 3)
+        // TODO UPPER_A(a, 0, 3)
+        // TODO UPPER_B(b, 0, 3)
         if (rho_E >= 0) {
             const complex_double coeff = -gm1*invMa2*ikn*phi;
 
@@ -398,6 +459,10 @@ FUNCNAME()(
                     -ap13*invRe*km*kn,           REF(nu),
                     M,  1, w->ld, 0.0, buf, 1, A_T->ld);
 
+            // TODO UPPER_C(c, 1, 3)
+            // TODO UPPER_A(a, 1, 3)
+            // TODO UPPER_B(b, 1, 3)
+
             PACK(z)(A_T, rho_u, rho_w, phi, buf, patpt);
         }
 
@@ -410,6 +475,10 @@ FUNCNAME()(
                     -1.0,                        REF(uz),
                     ap13*invRe*ikn,              REF(nu),
                     D1, 1, w->ld, 1.0, buf, 1, A_T->ld);
+
+            // TODO UPPER_C(c, 2, 3)
+            // TODO UPPER_A(a, 2, 3)
+            // TODO UPPER_B(b, 2, 3)
 
             PACK(z)(A_T, rho_v, rho_w, phi, buf, patpt);
         }
@@ -430,6 +499,10 @@ FUNCNAME()(
             suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
                     invRe,                       REF(nu),
                     D2, 1, w->ld, 1.0, buf, 1, A_T->ld);
+
+            // TODO UPPER_C(c, 3, 3)
+            // TODO UPPER_A(a, 3, 3)
+            // TODO UPPER_B(b, 3, 3)
 
             suzerain_blas_zgb_acc_d(
                     A_T->n, A_T->n, A_T->kl, A_T->ku,
@@ -456,6 +529,10 @@ FUNCNAME()(
                     -invRe,                      REF(nuuz),
                     D2, 1, w->ld, 1.0, buf, 1, A_T->ld);
 
+            // TODO UPPER_C(c, 3, 3)
+            // TODO UPPER_A(a, 3, 3)
+            // TODO UPPER_B(b, 3, 3)
+
             PACK(z)(A_T, rho, rho_w, phi, buf, patpt);
         }
 
@@ -463,28 +540,43 @@ FUNCNAME()(
 
     if (rho >= 0) {  // Prepare density row
 
+        // TODO UPPER_C(c, 0, 4)
+        // TODO UPPER_A(a, 0, 4)
+        // TODO UPPER_B(b, 0, 4)
         if (rho_E >= 0) {
-            PACK(z)( A_T, rho_E, rho, 0.0, NULL, patpt); // Zero fill
+            PACK(z)( A_T, rho_E, rho, 0.0, NULL, patpt);
         }
 
+        // TODO UPPER_C(c, 1, 4)
+        // TODO UPPER_A(a, 1, 4)
+        // TODO UPPER_B(b, 1, 4)
         if (rho_u >= 0) {
             const complex_double coeff = -ikm*phi;
 
             PACK(zd)(A_T, rho_u, rho, coeff, M, patpt);
         }
 
+        // TODO UPPER_C(c, 2, 4)
+        // TODO UPPER_A(a, 2, 4)
+        // TODO UPPER_B(b, 2, 4)
         if (rho_v >= 0) {
             const complex_double coeff = -1.0*phi;
 
             PACK(zd)(A_T, rho_v, rho, coeff, D1, patpt);
         }
 
+        // TODO UPPER_C(c, 3, 4)
+        // TODO UPPER_A(a, 3, 4)
+        // TODO UPPER_B(b, 3, 4)
         if (rho_w >= 0) {
             const complex_double coeff = -ikn*phi;
 
             PACK(zd)(A_T, rho_w, rho, coeff, M, patpt);
         }
 
+        // TODO UPPER_C(c, 4, 4)
+        // TODO UPPER_A(a, 4, 4)
+        // TODO UPPER_B(b, 4, 4)
         /* rho */ {
             PACK(zd)(A_T, rho,  rho, 1.0, M, patpt);
         }
