@@ -138,8 +138,8 @@ suzerain_rholut_imexop_accumulate(
                 w->D_T[D2], w->ld, IN(rho_E), 1.0, OUT(rho_E),
                 UPPER_C(c, 0, 0));
 
-            //TODO UPPER_A(a, 0, 0)
-            //TODO UPPER_B(b, 0, 0)
+            //TODO UPPER_A(a, 0, 0, in_rho_E, out_rho_E)
+            //TODO UPPER_B(b, 0, 0, in_rho_E, out_rho_E)
         }
 
         if (in_rho_u) {
@@ -162,8 +162,8 @@ suzerain_rholut_imexop_accumulate(
                 w->D_T[D2], w->ld, IN(rho_u), 1.0, OUT(rho_E),
                 UPPER_C(c, 1, 0));
 
-            //TODO UPPER_A(a, 1, 0)
-            //TODO UPPER_B(b, 1, 0)
+            //TODO UPPER_A(a, 1, 0, in_rho_u, out_rho_E)
+            //TODO UPPER_B(b, 1, 0, in_rho_u, out_rho_E)
         }
 
         if (in_rho_v) {
@@ -186,8 +186,8 @@ suzerain_rholut_imexop_accumulate(
                 w->D_T[D2], w->ld, IN(rho_v), 1.0, OUT(rho_E),
                 UPPER_C(c, 2, 0));
 
-            //TODO UPPER_A(a, 2, 0)
-            //TODO UPPER_B(b, 2, 0)
+            //TODO UPPER_A(a, 2, 0, in_rho_v, out_rho_E)
+            //TODO UPPER_B(b, 2, 0, in_rho_v, out_rho_E)
         }
 
         if (in_rho_w) {
@@ -210,8 +210,8 @@ suzerain_rholut_imexop_accumulate(
                 w->D_T[D2], w->ld, IN(rho_w), 1.0, OUT(rho_E),
                 UPPER_C(c, 3, 0));
 
-            //TODO UPPER_A(a, 3, 0)
-            //TODO UPPER_B(b, 3, 0)
+            //TODO UPPER_A(a, 3, 0, in_rho_w, out_rho_E)
+            //TODO UPPER_B(b, 3, 0, in_rho_w, out_rho_E)
         }
 
         if (in_rho) {
@@ -246,8 +246,8 @@ suzerain_rholut_imexop_accumulate(
                 w->D_T[D2], w->ld, IN(rho), 1.0, OUT(rho_E),
                 UPPER_C(c, 4, 0));
 
-            //TODO UPPER_A(a, 4, 0)
-            //TODO UPPER_B(b, 4, 0)
+            //TODO UPPER_A(a, 4, 0, in_rho, out_rho_E)
+            //TODO UPPER_B(b, 4, 0, in_rho, out_rho_E)
         }
 
         suzerain_blas_zgbmv_d_z(PREAMBLE_NN(M),
@@ -265,8 +265,8 @@ suzerain_rholut_imexop_accumulate(
                 1.0, OUT(rho_u),
                 UPPER_C(c, 0, 1));
 
-            //TODO UPPER_A(a, 0, 1)
-            //TODO UPPER_B(b, 0, 1)
+            //TODO UPPER_A(a, 0, 1, in_rho_E, out_rho_u)
+            //TODO UPPER_B(b, 0, 1, in_rho_E, out_rho_u)
         }
 
         /* in_rho_u */ {
@@ -287,8 +287,8 @@ suzerain_rholut_imexop_accumulate(
                 w->D_T[D2], w->ld, IN(rho_u), 1.0, OUT(rho_u),
                 UPPER_C(c, 1, 1));
 
-            //TODO UPPER_A(a, 1, 1)
-            //TODO UPPER_B(b, 1, 1)
+            //TODO UPPER_A(a, 1, 1, in_rho_u, out_rho_u)
+            //TODO UPPER_B(b, 1, 1, in_rho_u, out_rho_u)
         }
 
         if (in_rho_v) {
@@ -303,8 +303,8 @@ suzerain_rholut_imexop_accumulate(
                 w->D_T[D1], w->ld, IN(rho_v), 1.0, OUT(rho_u),
                 UPPER_C(c, 2, 1));
 
-            //TODO UPPER_A(a, 2, 1)
-            //TODO UPPER_B(b, 2, 1)
+            //TODO UPPER_A(a, 2, 1, in_rho_v, out_rho_u)
+            //TODO UPPER_B(b, 2, 1, in_rho_v, out_rho_u)
         }
 
         if (in_rho_w) {
@@ -315,8 +315,8 @@ suzerain_rholut_imexop_accumulate(
                 w->D_T[M],  w->ld, IN(rho_w), 1.0, OUT(rho_u),
                 UPPER_C(c, 3, 1));
 
-            //TODO UPPER_A(a, 3, 1)
-            //TODO UPPER_B(b, 3, 1)
+            //TODO UPPER_A(a, 3, 1, in_rho_w, out_rho_u)
+            //TODO UPPER_B(b, 3, 1, in_rho_w, out_rho_u)
         }
 
         if (in_rho) {
@@ -340,8 +340,8 @@ suzerain_rholut_imexop_accumulate(
                 w->D_T[D2], w->ld, IN(rho), 1.0, OUT(rho_u),
                 UPPER_C(c, 4, 1));
 
-            //TODO UPPER_A(a, 4, 1)
-            //TODO UPPER_B(b, 4, 1)
+            //TODO UPPER_A(a, 4, 1, in_rho, out_rho_u)
+            //TODO UPPER_B(b, 4, 1, in_rho, out_rho_u)
         }
 
         suzerain_blas_zgbmv_d_z(PREAMBLE_NN(M),
@@ -359,8 +359,8 @@ suzerain_rholut_imexop_accumulate(
                 1.0, OUT(rho_v),
                 UPPER_C(c, 0, 2));
 
-            //TODO UPPER_A(a, 0, 2)
-            //TODO UPPER_B(b, 0, 2)
+            //TODO UPPER_A(a, 0, 2, in_rho_E, out_rho_v)
+            //TODO UPPER_B(b, 0, 2, in_rho_E, out_rho_v)
         }
 
         if (in_rho_u) {
@@ -375,8 +375,8 @@ suzerain_rholut_imexop_accumulate(
                 w->D_T[D1],  w->ld, IN(rho_u), 1.0, OUT(rho_v),
                 UPPER_C(c, 1, 2));
 
-            //TODO UPPER_A(a, 1, 2)
-            //TODO UPPER_B(b, 1, 2)
+            //TODO UPPER_A(a, 1, 2, in_rho_u, out_rho_v)
+            //TODO UPPER_B(b, 1, 2, in_rho_u, out_rho_v)
         }
 
         /* in_rho_v */ {
@@ -397,8 +397,8 @@ suzerain_rholut_imexop_accumulate(
                 w->D_T[D2], w->ld, IN(rho_v), 1.0, OUT(rho_v),
                 UPPER_C(c, 2, 2));
 
-            //TODO UPPER_A(a, 2, 2)
-            //TODO UPPER_B(b, 2, 2)
+            //TODO UPPER_A(a, 2, 2, in_rho_v, out_rho_v)
+            //TODO UPPER_B(b, 2, 2, in_rho_v, out_rho_v)
         }
 
         if (in_rho_w) {
@@ -413,8 +413,8 @@ suzerain_rholut_imexop_accumulate(
                 w->D_T[D1],  w->ld, IN(rho_w), 1.0, OUT(rho_v),
                 UPPER_C(c, 3, 2));
 
-            //TODO UPPER_A(a, 3, 2)
-            //TODO UPPER_B(b, 3, 2)
+            //TODO UPPER_A(a, 3, 2, in_rho_w, out_rho_v)
+            //TODO UPPER_B(b, 3, 2, in_rho_w, out_rho_v)
         }
 
         if (in_rho) {
@@ -438,8 +438,8 @@ suzerain_rholut_imexop_accumulate(
                 w->D_T[D2], w->ld, IN(rho), 1.0, OUT(rho_v),
                 UPPER_C(c, 4, 2));
 
-            //TODO UPPER_A(a, 4, 2)
-            //TODO UPPER_B(b, 4, 2)
+            //TODO UPPER_A(a, 4, 2, in_rho, out_rho_v)
+            //TODO UPPER_B(b, 4, 2, in_rho, out_rho_v)
         }
 
         suzerain_blas_zgbmv_d_z(PREAMBLE_NN(M),
@@ -457,8 +457,8 @@ suzerain_rholut_imexop_accumulate(
                 1.0, OUT(rho_w),
                 UPPER_C(c, 0, 3));
 
-            //TODO UPPER_A(a, 0, 3)
-            //TODO UPPER_B(b, 0, 3)
+            //TODO UPPER_A(a, 0, 3, in_rho_E, out_rho_w)
+            //TODO UPPER_B(b, 0, 3, in_rho_E, out_rho_w)
         }
 
         if (in_rho_u) {
@@ -469,8 +469,8 @@ suzerain_rholut_imexop_accumulate(
                 w->D_T[M],  w->ld, IN(rho_u), 1.0, OUT(rho_w),
                 UPPER_C(c, 1, 3));
 
-            //TODO UPPER_A(a, 1, 3)
-            //TODO UPPER_B(b, 1, 3)
+            //TODO UPPER_A(a, 1, 3, in_rho_u, out_rho_w)
+            //TODO UPPER_B(b, 1, 3, in_rho_u, out_rho_w)
         }
 
         if (in_rho_v) {
@@ -485,8 +485,8 @@ suzerain_rholut_imexop_accumulate(
                 w->D_T[D1], w->ld, IN(rho_v), 1.0, OUT(rho_w),
                 UPPER_C(c, 2, 3));
 
-            //TODO UPPER_A(a, 2, 3)
-            //TODO UPPER_B(b, 2, 3)
+            //TODO UPPER_A(a, 2, 3, in_rho_v, out_rho_w)
+            //TODO UPPER_B(b, 2, 3, in_rho_v, out_rho_w)
         }
 
         /* in_rho_w */ {
@@ -507,8 +507,8 @@ suzerain_rholut_imexop_accumulate(
                 w->D_T[D2], w->ld, IN(rho_w), 1.0, OUT(rho_w),
                 UPPER_C(c, 3, 3));
 
-            //TODO UPPER_A(a, 3, 3)
-            //TODO UPPER_B(b, 3, 3)
+            //TODO UPPER_A(a, 3, 3, in_rho_w, out_rho_w)
+            //TODO UPPER_B(b, 3, 3, in_rho_w, out_rho_w)
         }
 
         if (in_rho) {
@@ -532,8 +532,8 @@ suzerain_rholut_imexop_accumulate(
                 w->D_T[D2], w->ld, IN(rho), 1.0, OUT(rho_w),
                 UPPER_C(c, 4, 3));
 
-            //TODO UPPER_A(a, 4, 3)
-            //TODO UPPER_B(b, 4, 3)
+            //TODO UPPER_A(a, 4, 3, in_rho, out_rho_w)
+            //TODO UPPER_B(b, 4, 3, in_rho, out_rho_w)
         }
 
         suzerain_blas_zgbmv_d_z(PREAMBLE_NN(M),
@@ -546,8 +546,8 @@ suzerain_rholut_imexop_accumulate(
         suzerain_blas_zscal(w->n, beta, OUT(rho));
 
         if (in_rho_E) {
-            //TODO UPPER_A(a, 0, 4)
-            //TODO UPPER_B(b, 0, 4)
+            //TODO UPPER_A(a, 0, 4, in_rho_E, out_rho)
+            //TODO UPPER_B(b, 0, 4, in_rho_E, out_rho)
         }
 
         if (in_rho_u) {
@@ -555,8 +555,8 @@ suzerain_rholut_imexop_accumulate(
                 -phi*ikm, w->D_T[M], w->ld, IN(rho_u),  1.0, OUT(rho),
                 UPPER_C(c, 1, 4));
 
-            //TODO UPPER_A(a, 1, 4)
-            //TODO UPPER_B(b, 1, 4)
+            //TODO UPPER_A(a, 1, 4, in_rho_u, out_rho)
+            //TODO UPPER_B(b, 1, 4, in_rho_u, out_rho)
         }
 
         if (in_rho_v) {
@@ -564,8 +564,8 @@ suzerain_rholut_imexop_accumulate(
                 -phi,     w->D_T[D1], w->ld, IN(rho_v), 1.0, OUT(rho),
                 UPPER_C(c, 2, 4));
 
-            //TODO UPPER_A(a, 2, 4)
-            //TODO UPPER_B(b, 2, 4)
+            //TODO UPPER_A(a, 2, 4, in_rho_v, out_rho)
+            //TODO UPPER_B(b, 2, 4, in_rho_v, out_rho)
         }
 
         if (in_rho_w) {
@@ -573,13 +573,13 @@ suzerain_rholut_imexop_accumulate(
                 -phi*ikn, w->D_T[M], w->ld, IN(rho_w),  1.0, OUT(rho),
                 UPPER_C(c, 3, 4));
 
-            //TODO UPPER_A(a, 3, 4)
-            //TODO UPPER_B(b, 3, 4)
+            //TODO UPPER_A(a, 3, 4, in_rho_w, out_rho)
+            //TODO UPPER_B(b, 3, 4, in_rho_w, out_rho)
         }
 
         /* rho */ {
-            //TODO UPPER_A(a, 4, 4)
-            //TODO UPPER_B(b, 4, 4)
+            //TODO UPPER_A(a, 4, 4, in_rho, out_rho)
+            //TODO UPPER_B(b, 4, 4, in_rho, out_rho)
         }
 
         suzerain_blas_zgbmv_d_z(PREAMBLE_NN(M),
