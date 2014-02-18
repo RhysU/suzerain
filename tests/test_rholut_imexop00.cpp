@@ -93,7 +93,8 @@ static void operator_consistency(const parameters& p)
     const int N = S*n;    // DOF for global operator
 
     // Initialize scenario parameters
-    const complex_t phi(M_SQRT2/11, M_LOG2E/13);
+//  const complex_t phi(M_SQRT2/11, M_LOG2E/13); // FIXME
+    const complex_t phi(1, 0);                   // DEBUG
 
     suzerain_rholut_imexop_scenario s;
     s.Re    = 3000;
@@ -244,6 +245,18 @@ static void operator_consistency(const parameters& p)
     BOOST_TEST_MESSAGE("maximum absolute error is from value " << B1[imaxabs]
                        << " at index (" << (imaxabs % N)
                        << ", " << (imaxabs / N) << ")");
+
+////// DEBUG
+////std::cout << "B1=[";
+////std::cout.setf(std::ios::showpos);
+////for (int i = 0; i < N; ++i) {
+////    for (int j = 0; j < N; ++j) {
+////        std::cout << B1[i + j*N].real() << B1[i + j*N].imag() << "i";
+////        if (j != N-1) std::cout << ",";
+////    }
+////    if (i != N-1) std::cout << ";\n";
+////}
+////std::cout << "]\n";
 }
 
 #ifdef BOOST_TEST_ALTERNATIVE_INIT_API
@@ -263,7 +276,7 @@ bool init_unit_test_suite() {
            /*refndx*/  /*cndx*/
          {         -1,       -1 }
         ,{         -1,        0 }
-//TODO  ,{         -1,        1 }
+        ,{         -1,        1 }
 //TODO  ,{         -1,        2 }
 //TODO  ,{         -1,        3 }
 //TODO  ,{         -1,        4 }

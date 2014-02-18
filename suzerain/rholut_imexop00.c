@@ -115,48 +115,48 @@ suzerain_rholut_imexop_accumulate00(
         SWAPCPLX(upper_phi_L_hatV[0], out_rho_E[w->n - 1]);
 
         /* in_rho_E */ {
-            suzerain_blasext_zgbdmv_d_z(PREAMBLE_N(D1),
-                -phi*s->gamma,               REF(uy),
-                w->D_T[D1], w->ld, IN(rho_E), 1.0, OUT(rho_E));
-
-            suzerain_blasext_zgbdmv_d_z(PREAMBLE_N(D2),
-                phi*ginvRePr,                REF(nu),
-                w->D_T[D2], w->ld, IN(rho_E), 1.0, OUT(rho_E));
+/*XXX*/     suzerain_blasext_zgbdmv_d_z(PREAMBLE_N(D1),
+/*XXX*/         -phi*s->gamma,               REF(uy),
+/*XXX*/         w->D_T[D1], w->ld, IN(rho_E), 1.0, OUT(rho_E));
+//DEBUG
+//DEBUG     suzerain_blasext_zgbdmv_d_z(PREAMBLE_N(D2),
+//DEBUG         phi*ginvRePr,                REF(nu),
+//DEBUG         w->D_T[D2], w->ld, IN(rho_E), 1.0, OUT(rho_E));
         }
 
         if (LIKELY(in_rho_u)) {
-            suzerain_blasext_zgbdmv_d_z(PREAMBLE_N(D2),
-                phi*Ma2*invRe*(1-ginvPr),    REF(nuux),
-                w->D_T[D2], w->ld, IN(rho_u), 1.0, OUT(rho_E));
+//DEBUG     suzerain_blasext_zgbdmv_d_z(PREAMBLE_N(D2),
+//DEBUG         phi*Ma2*invRe*(1-ginvPr),    REF(nuux),
+//DEBUG         w->D_T[D2], w->ld, IN(rho_u), 1.0, OUT(rho_E));
         }
 
         if (LIKELY(in_rho_v)) {
-            suzerain_blasext_zgbdmv_d_z(PREAMBLE_N(D1),
-                -phi,                        REF(e_divm),
-                w->D_T[D1], w->ld, IN(rho_v), 1.0, OUT(rho_E));
-
-            suzerain_blasext_zgbdmv_d_z(PREAMBLE_N(D2),
-                phi*Ma2*invRe*(ap43-ginvPr), REF(nuuy),
-                w->D_T[D2], w->ld, IN(rho_v), 1.0, OUT(rho_E));
+//DEBUG     suzerain_blasext_zgbdmv_d_z(PREAMBLE_N(D1),
+//DEBUG         -phi,                        REF(e_divm),
+//DEBUG         w->D_T[D1], w->ld, IN(rho_v), 1.0, OUT(rho_E));
+//DEBUG
+//DEBUG     suzerain_blasext_zgbdmv_d_z(PREAMBLE_N(D2),
+//DEBUG         phi*Ma2*invRe*(ap43-ginvPr), REF(nuuy),
+//DEBUG         w->D_T[D2], w->ld, IN(rho_v), 1.0, OUT(rho_E));
         }
 
         if (LIKELY(in_rho_w)) {
-            suzerain_blasext_zgbdmv_d_z(PREAMBLE_N(D2),
-                phi*Ma2*invRe*(1-ginvPr),    REF(nuuz),
-                w->D_T[D2], w->ld, IN(rho_w), 1.0, OUT(rho_E));
+//DEBUG     suzerain_blasext_zgbdmv_d_z(PREAMBLE_N(D2),
+//DEBUG         phi*Ma2*invRe*(1-ginvPr),    REF(nuuz),
+//DEBUG         w->D_T[D2], w->ld, IN(rho_w), 1.0, OUT(rho_E));
         }
 
         if (LIKELY(in_rho)) {
-
-            suzerain_blasext_zgbdmv_d_z(PREAMBLE_N(D1),
-                -phi,                        REF(ey_gradrho),
-                w->D_T[D1], w->ld, IN(rho), 1.0, OUT(rho_E));
-
-            suzerain_blasext_zgbdddmv_d_z(PREAMBLE_N(D2),
-                -phi*Ma2*invRe,              REF(nuu2),
-                -phi*Ma2*invRe*ap13,         REF(nuuyuy),
-                phi*ginvRePr/gm1,            REF(e_deltarho),
-                w->D_T[D2], w->ld, IN(rho), 1.0, OUT(rho_E));
+//DEBUG
+//DEBUG     suzerain_blasext_zgbdmv_d_z(PREAMBLE_N(D1),
+//DEBUG         -phi,                        REF(ey_gradrho),
+//DEBUG         w->D_T[D1], w->ld, IN(rho), 1.0, OUT(rho_E));
+//DEBUG
+//DEBUG     suzerain_blasext_zgbdddmv_d_z(PREAMBLE_N(D2),
+//DEBUG         -phi*Ma2*invRe,              REF(nuu2),
+//DEBUG         -phi*Ma2*invRe*ap13,         REF(nuuyuy),
+//DEBUG         phi*ginvRePr/gm1,            REF(e_deltarho),
+//DEBUG         w->D_T[D2], w->ld, IN(rho), 1.0, OUT(rho_E));
         }
 
         SWAPCPLX(upper_phi_L_hatV[0], out_rho_E[w->n - 1]);
@@ -177,19 +177,19 @@ suzerain_rholut_imexop_accumulate00(
         }
 
         /* in_rho_u */ {
-            suzerain_blasext_zgbdmv_d_z(PREAMBLE_N(D1),
-                -phi,                      REF(uy),
-                w->D_T[D1], w->ld, IN(rho_u), 1.0, OUT(rho_u));
-
-            suzerain_blasext_zgbdmv_d_z(PREAMBLE_N(D2),
-                phi*invRe,                 REF(nu),
-                w->D_T[D2], w->ld, IN(rho_u), 1.0, OUT(rho_u));
+//DIAG      suzerain_blasext_zgbdmv_d_z(PREAMBLE_N(D1),
+//DIAG          -phi,                      REF(uy),
+//DIAG          w->D_T[D1], w->ld, IN(rho_u), 1.0, OUT(rho_u));
+//DIAG
+//DIAG      suzerain_blasext_zgbdmv_d_z(PREAMBLE_N(D2),
+//DIAG          phi*invRe,                 REF(nu),
+//DIAG          w->D_T[D2], w->ld, IN(rho_u), 1.0, OUT(rho_u));
         }
 
         if (LIKELY(in_rho_v)) {
-            suzerain_blasext_zgbdmv_d_z(PREAMBLE_N(D1),
-                -phi,                      REF(ux),
-                w->D_T[D1], w->ld, IN(rho_v), 1.0, OUT(rho_u));
+//DEBUG     suzerain_blasext_zgbdmv_d_z(PREAMBLE_N(D1),
+//DEBUG         -phi,                      REF(ux),
+//DEBUG         w->D_T[D1], w->ld, IN(rho_v), 1.0, OUT(rho_u));
         }
 
         if (LIKELY(in_rho_w)) {
@@ -197,13 +197,13 @@ suzerain_rholut_imexop_accumulate00(
         }
 
         if (LIKELY(in_rho)) {
-            suzerain_blasext_zgbdmv_d_z(PREAMBLE_N(D1),
-                phi,                       REF(uxuy),
-                w->D_T[D1], w->ld, IN(rho), 1.0, OUT(rho_u));
-
-            suzerain_blasext_zgbdmv_d_z(PREAMBLE_N(D2),
-                -phi*invRe,                REF(nuux),
-                w->D_T[D2], w->ld, IN(rho), 1.0, OUT(rho_u));
+//DEBUG     suzerain_blasext_zgbdmv_d_z(PREAMBLE_N(D1),
+//DEBUG         phi,                       REF(uxuy),
+//DEBUG         w->D_T[D1], w->ld, IN(rho), 1.0, OUT(rho_u));
+//DEBUG
+//DEBUG     suzerain_blasext_zgbdmv_d_z(PREAMBLE_N(D2),
+//DEBUG         -phi*invRe,                REF(nuux),
+//DEBUG         w->D_T[D2], w->ld, IN(rho), 1.0, OUT(rho_u));
         }
 
         SWAPCPLX(upper_phi_L_hatV[1], out_rho_u[w->n - 1]);
@@ -220,42 +220,42 @@ suzerain_rholut_imexop_accumulate00(
         SWAPCPLX(upper_phi_L_hatV[2], out_rho_v[w->n - 1]);
 
         if (LIKELY(in_rho_E)) {
-            suzerain_blas_zgbmv_d_z(PREAMBLE_NN(D1),
-                -phi*gm1*invMa2, w->D_T[D1], w->ld, IN(rho_E),
-                1.0, OUT(rho_v));
+//DEBUG     suzerain_blas_zgbmv_d_z(PREAMBLE_NN(D1),
+//DEBUG         -phi*gm1*invMa2, w->D_T[D1], w->ld, IN(rho_E),
+//DEBUG         1.0, OUT(rho_v));
         }
 
         if (LIKELY(in_rho_u)) {
-            suzerain_blasext_zgbdmv_d_z(PREAMBLE_N(D1),
-                phi*gm1,              REF(ux),
-                w->D_T[D1],  w->ld, IN(rho_u), 1.0, OUT(rho_v));
+//DEBUG     suzerain_blasext_zgbdmv_d_z(PREAMBLE_N(D1),
+//DEBUG         phi*gm1,              REF(ux),
+//DEBUG         w->D_T[D1],  w->ld, IN(rho_u), 1.0, OUT(rho_v));
         }
 
         /* in_rho_v */ {
-            suzerain_blasext_zgbdmv_d_z(PREAMBLE_N(D1),
-                phi*gm3,              REF(uy),
-                w->D_T[D1], w->ld, IN(rho_v), 1.0, OUT(rho_v));
-
-            suzerain_blasext_zgbdmv_d_z(PREAMBLE_N(D2),
-                phi*ap43*invRe,       REF(nu),
-                w->D_T[D2], w->ld, IN(rho_v), 1.0, OUT(rho_v));
+//DIAG      suzerain_blasext_zgbdmv_d_z(PREAMBLE_N(D1),
+//DIAG          phi*gm3,              REF(uy),
+//DIAG          w->D_T[D1], w->ld, IN(rho_v), 1.0, OUT(rho_v));
+//DIAG
+//DIAG      suzerain_blasext_zgbdmv_d_z(PREAMBLE_N(D2),
+//DIAG          phi*ap43*invRe,       REF(nu),
+//DIAG          w->D_T[D2], w->ld, IN(rho_v), 1.0, OUT(rho_v));
         }
 
         if (LIKELY(in_rho_w)) {
-            suzerain_blasext_zgbdmv_d_z(PREAMBLE_N(D1),
-                phi*gm1,              REF(uz),
-                w->D_T[D1],  w->ld, IN(rho_w), 1.0, OUT(rho_v));
+//DEBUG     suzerain_blasext_zgbdmv_d_z(PREAMBLE_N(D1),
+//DEBUG         phi*gm1,              REF(uz),
+//DEBUG         w->D_T[D1],  w->ld, IN(rho_w), 1.0, OUT(rho_v));
         }
 
         if (LIKELY(in_rho)) {
-            suzerain_blasext_zgbddmv_d_z(PREAMBLE_N(D1),
-                -phi*0.5*gm1,         REF(u2),
-                 phi,                 REF(uyuy),
-                w->D_T[D1], w->ld, IN(rho), 1.0, OUT(rho_v));
-
-            suzerain_blasext_zgbdmv_d_z(PREAMBLE_N(D2),
-                -phi*ap43*invRe,      REF(nuuy),
-                w->D_T[D2], w->ld, IN(rho), 1.0, OUT(rho_v));
+//DEBUG     suzerain_blasext_zgbddmv_d_z(PREAMBLE_N(D1),
+//DEBUG         -phi*0.5*gm1,         REF(u2),
+//DEBUG          phi,                 REF(uyuy),
+//DEBUG         w->D_T[D1], w->ld, IN(rho), 1.0, OUT(rho_v));
+//DEBUG
+//DEBUG     suzerain_blasext_zgbdmv_d_z(PREAMBLE_N(D2),
+//DEBUG         -phi*ap43*invRe,      REF(nuuy),
+//DEBUG         w->D_T[D2], w->ld, IN(rho), 1.0, OUT(rho_v));
         }
 
         SWAPCPLX(upper_phi_L_hatV[2], out_rho_v[w->n - 1]);
@@ -280,29 +280,29 @@ suzerain_rholut_imexop_accumulate00(
         }
 
         if (LIKELY(in_rho_v)) {
-            suzerain_blasext_zgbdmv_d_z(PREAMBLE_N(D1),
-                -phi,                      REF(uz),
-                w->D_T[D1], w->ld, IN(rho_v), 1.0, OUT(rho_w));
+//DEBUG     suzerain_blasext_zgbdmv_d_z(PREAMBLE_N(D1),
+//DEBUG         -phi,                      REF(uz),
+//DEBUG         w->D_T[D1], w->ld, IN(rho_v), 1.0, OUT(rho_w));
         }
 
         /* in_rho_w */ {
-            suzerain_blasext_zgbdmv_d_z(PREAMBLE_N(D1),
-                -phi,                      REF(uy),
-                w->D_T[D1], w->ld, IN(rho_w), 1.0, OUT(rho_w));
-
-            suzerain_blasext_zgbdmv_d_z(PREAMBLE_N(D2),
-                phi*invRe,                 REF(nu),
-                w->D_T[D2], w->ld, IN(rho_w), 1.0, OUT(rho_w));
+//DIAG      suzerain_blasext_zgbdmv_d_z(PREAMBLE_N(D1),
+//DIAG          -phi,                      REF(uy),
+//DIAG          w->D_T[D1], w->ld, IN(rho_w), 1.0, OUT(rho_w));
+//DIAG
+//DIAG      suzerain_blasext_zgbdmv_d_z(PREAMBLE_N(D2),
+//DIAG          phi*invRe,                 REF(nu),
+//DIAG          w->D_T[D2], w->ld, IN(rho_w), 1.0, OUT(rho_w));
         }
 
         if (LIKELY(in_rho)) {
-            suzerain_blasext_zgbdmv_d_z(PREAMBLE_N(D1),
-                phi,                       REF(uyuz),
-                w->D_T[D1], w->ld, IN(rho), 1.0, OUT(rho_w));
-
-            suzerain_blasext_zgbdmv_d_z(PREAMBLE_N(D2),
-                -phi*invRe,                REF(nuuz),
-                w->D_T[D2], w->ld, IN(rho), 1.0, OUT(rho_w));
+//DEBUG     suzerain_blasext_zgbdmv_d_z(PREAMBLE_N(D1),
+//DEBUG         phi,                       REF(uyuz),
+//DEBUG         w->D_T[D1], w->ld, IN(rho), 1.0, OUT(rho_w));
+//DEBUG
+//DEBUG     suzerain_blasext_zgbdmv_d_z(PREAMBLE_N(D2),
+//DEBUG         -phi*invRe,                REF(nuuz),
+//DEBUG         w->D_T[D2], w->ld, IN(rho), 1.0, OUT(rho_w));
         }
 
         SWAPCPLX(upper_phi_L_hatV[3], out_rho_w[w->n - 1]);
@@ -327,8 +327,8 @@ suzerain_rholut_imexop_accumulate00(
         }
 
         if (LIKELY(in_rho_v)) {
-            suzerain_blas_zgbmv_d_z(PREAMBLE_NN(D1),
-                -phi,     w->D_T[D1], w->ld, IN(rho_v), 1.0, OUT(rho));
+//DEBUG     suzerain_blas_zgbmv_d_z(PREAMBLE_NN(D1),
+//DEBUG         -phi,     w->D_T[D1], w->ld, IN(rho_v), 1.0, OUT(rho));
         }
 
         if (LIKELY(in_rho_w)) {
@@ -350,7 +350,21 @@ suzerain_rholut_imexop_accumulate00(
     // TODO Consider inlining the BLAS-like call to hide some memory latency
     if (c) {
         complex_double tmp[5];
-        suzerain_blasext_zgedmv55(-1, c, upper_phi_L_hatV, tmp);
+        const double d[25] = {1,0,0,0,0
+                             ,0,1,0,0,0
+                             ,0,0,1,0,0
+                             ,0,0,0,1,0
+                             ,0,0,0,0,1}; // DEBUG
+//DEBUG suzerain_blasext_zgedmv55(-1, c, upper_phi_L_hatV, tmp);
+
+
+        // DEBUG
+        suzerain_blasext_zgedmv55(-1, d, upper_phi_L_hatV, tmp);
+        for (int i = 0; i < 5; ++i)
+            if (creal(tmp[i]) != 0 || cimag(tmp[i]) != 0)
+                printf("\ttmp           (%d)\t%+g%+gI\n",
+                        i, tmp[i]);
+
         if (LIKELY(out_rho_E)) out_rho_E[w->n - 1] += tmp[0];
         if (LIKELY(out_rho_u)) out_rho_u[w->n - 1] += tmp[1];
         if (LIKELY(out_rho_v)) out_rho_v[w->n - 1] += tmp[2];
