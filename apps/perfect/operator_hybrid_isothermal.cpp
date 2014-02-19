@@ -422,10 +422,10 @@ public:
     IsothermalPATPTEnforcer(const suzerain_bsmbsm& A_T,
                             const suzerain_rholut_imexop_scenario& s,
                             const specification_isothermal& spec,
-                            const bool is_wall_lower,
-                            const bool is_wall_upper)
-        : wall_begin(is_wall_lower ? 0 : 1)
-        , wall_end  (is_wall_upper ? 2 : 1)
+                            const bool enforce_lower,
+                            const bool enforce_upper)
+        : wall_begin(enforce_lower ? 0 : 1)
+        , wall_end  (enforce_upper ? 2 : 1)
     {
         // Starting offset to named scalars in interleaved_state pencil
         const int e0   = static_cast<int>(ndx::e  ) * A_T.n;
@@ -466,24 +466,17 @@ public:
     }
 
     /**
-     * Modify the equations within PA^TP^T for lower, upper walls and possibly a
-     * wavenumber-dependent nonreflecting upper boundary where each contiguous
-     * column within PA^TP^T contains one equation.  This storage is ideal from
-     * a cache locality perspective for this boundary condition. Must be done in
-     * conjunction with rhs().
+     * Modify the equations within PA^TP^T for lower, upper walls where each
+     * contiguous column within PA^TP^T contains one equation.  This storage is
+     * ideal from a cache locality perspective for this boundary condition.
+     * Must be done in conjunction with rhs().
      */
     template<typename T>
     void op(const suzerain_bsmbsm& A_T,
             T * const patpt,
-            int patpt_ld,
-            const Matrix5r& nrbc_a,
-            const Matrix5r& nrbc_b,
-            const Matrix5r& nrbc_c,
-            const complex_t& phi,
-            const real_t& km,
-            const real_t& kn)
+            int patpt_ld)
     {
-        // Enforce isothermal conditions at each wall
+        // Enforce isothermal conditions at each requested wall
         for (int wall = wall_begin; wall < wall_end; ++wall) {
 
             // Set constraint \partial_t rhoE - factor*\partial_t rho = 0
@@ -518,98 +511,11 @@ public:
                 }
             }
         }
-
-        // Enforce isothermal conditions at a possibly nonreflecting upper edge:
-        //   1) Unpack into a buffer relevant columns from banded, transposed
-        //      operator which contain the rows of (M + \varphi L).
-        //   2) Use knowledge that M = I at the edge to isolate the
-        //      action of -\varphi L.
-        //   3) Left multiply by the wavenumber-independent factor
-        //      and accumulate the k_m- and k_n-dependent contributions
-        //   4) Accumulate the result back into the packed operator.
-        //
-        // The packing and unpacking operation are not as optimal as
-        // possible but they are independent of the equation numbering
-        // provided that the NBRC matrices arrive in the same order.
-        if (wall_end < nedges) {
-
-            assert(wall_end == 1);  // Assert we're processing upper boundary
-            enum { edge = 1 };      // ...and permit inlining its edge index
-            Matrix5c buf;           // ...and prep a working storage
-
-            // A helper macro to reduce boilerplate in indexing patpt per A_T
-#define     LOC(i,j) patpt[suzerain_gbmatrix_offset(patpt_ld,A_T.KL,A_T.KU,i,j)]
-
-            // Steps 1 and 2: A transpose occurs during the unpack operation and
-            // because Matrix5c is small, we choose to access it non-stride-1.
-            // Capitalizes on I - (M + \varphi L) = - \varphi L because M = 1.
-            const complex_t one(1, 0);
-            buf(ndx::e  , ndx::e  ) = one - LOC(e  [edge]   , e  [edge]   );
-            buf(ndx::e  , ndx::mx ) =     - LOC(m  [edge][0], e  [edge]   );
-            buf(ndx::e  , ndx::my ) =     - LOC(m  [edge][1], e  [edge]   );
-            buf(ndx::e  , ndx::mz ) =     - LOC(m  [edge][2], e  [edge]   );
-            buf(ndx::e  , ndx::rho) =     - LOC(rho[edge]   , e  [edge]   );
-            buf(ndx::mx , ndx::e  ) =     - LOC(e  [edge]   , m  [edge][0]);
-            buf(ndx::mx , ndx::mx ) = one - LOC(m  [edge][0], m  [edge][0]);
-            buf(ndx::mx , ndx::my ) =     - LOC(m  [edge][1], m  [edge][0]);
-            buf(ndx::mx , ndx::mz ) =     - LOC(m  [edge][2], m  [edge][0]);
-            buf(ndx::mx , ndx::rho) =     - LOC(rho[edge]   , m  [edge][0]);
-            buf(ndx::my , ndx::e  ) =     - LOC(e  [edge]   , m  [edge][1]);
-            buf(ndx::my , ndx::mx ) =     - LOC(m  [edge][0], m  [edge][1]);
-            buf(ndx::my , ndx::my ) = one - LOC(m  [edge][1], m  [edge][1]);
-            buf(ndx::my , ndx::mz ) =     - LOC(m  [edge][2], m  [edge][1]);
-            buf(ndx::my , ndx::rho) =     - LOC(rho[edge]   , m  [edge][1]);
-            buf(ndx::mz , ndx::e  ) =     - LOC(e  [edge]   , m  [edge][2]);
-            buf(ndx::mz , ndx::mx ) =     - LOC(m  [edge][0], m  [edge][2]);
-            buf(ndx::mz , ndx::my ) =     - LOC(m  [edge][1], m  [edge][2]);
-            buf(ndx::mz , ndx::mz ) = one - LOC(m  [edge][2], m  [edge][2]);
-            buf(ndx::mz , ndx::rho) =     - LOC(rho[edge]   , m  [edge][2]);
-            buf(ndx::rho, ndx::e  ) =     - LOC(e  [edge]   , rho[edge]   );
-            buf(ndx::rho, ndx::mx ) =     - LOC(m  [edge][0], rho[edge]   );
-            buf(ndx::rho, ndx::my ) =     - LOC(m  [edge][1], rho[edge]   );
-            buf(ndx::rho, ndx::mz ) =     - LOC(m  [edge][2], rho[edge]   );
-            buf(ndx::rho, ndx::rho) = one - LOC(rho[edge]   , rho[edge]   );
-
-            // Step 3
-            buf.applyOnTheLeft(nrbc_c.cast<complex_t>());
-            buf += (phi * complex_t(real_t(0), km)) * nrbc_a.cast<complex_t>();
-            buf += (phi * complex_t(real_t(0), kn)) * nrbc_b.cast<complex_t>();
-
-            // Step 4: Again, a transpose on accumulating into packed operator
-            LOC(e  [edge]   , e  [edge]   ) += buf(ndx::e  , ndx::e  );
-            LOC(m  [edge][0], e  [edge]   ) += buf(ndx::e  , ndx::mx );
-            LOC(m  [edge][1], e  [edge]   ) += buf(ndx::e  , ndx::my );
-            LOC(m  [edge][2], e  [edge]   ) += buf(ndx::e  , ndx::mz );
-            LOC(rho[edge]   , e  [edge]   ) += buf(ndx::e  , ndx::rho);
-            LOC(e  [edge]   , m  [edge][0]) += buf(ndx::mx , ndx::e  );
-            LOC(m  [edge][0], m  [edge][0]) += buf(ndx::mx , ndx::mx );
-            LOC(m  [edge][1], m  [edge][0]) += buf(ndx::mx , ndx::my );
-            LOC(m  [edge][2], m  [edge][0]) += buf(ndx::mx , ndx::mz );
-            LOC(rho[edge]   , m  [edge][0]) += buf(ndx::mx , ndx::rho);
-            LOC(e  [edge]   , m  [edge][1]) += buf(ndx::my , ndx::e  );
-            LOC(m  [edge][0], m  [edge][1]) += buf(ndx::my , ndx::mx );
-            LOC(m  [edge][1], m  [edge][1]) += buf(ndx::my , ndx::my );
-            LOC(m  [edge][2], m  [edge][1]) += buf(ndx::my , ndx::mz );
-            LOC(rho[edge]   , m  [edge][1]) += buf(ndx::my , ndx::rho);
-            LOC(e  [edge]   , m  [edge][2]) += buf(ndx::mz , ndx::e  );
-            LOC(m  [edge][0], m  [edge][2]) += buf(ndx::mz , ndx::mx );
-            LOC(m  [edge][1], m  [edge][2]) += buf(ndx::mz , ndx::my );
-            LOC(m  [edge][2], m  [edge][2]) += buf(ndx::mz , ndx::mz );
-            LOC(rho[edge]   , m  [edge][2]) += buf(ndx::mz , ndx::rho);
-            LOC(e  [edge]   , rho[edge]   ) += buf(ndx::rho, ndx::e  );
-            LOC(m  [edge][0], rho[edge]   ) += buf(ndx::rho, ndx::mx );
-            LOC(m  [edge][1], rho[edge]   ) += buf(ndx::rho, ndx::my );
-            LOC(m  [edge][2], rho[edge]   ) += buf(ndx::rho, ndx::mz );
-            LOC(rho[edge]   , rho[edge]   ) += buf(ndx::rho, ndx::rho);
-
-#undef      LOC
-        }
     }
 
     /**
-     * Zero RHS of momentum and energy equations at lower, upper walls. Must be
-     * used in conjunction with op().  Always wavenumber-independent and hence
-     * no \c km or \c kn arguments in contrast with \c op().
+     * Zero RHS of momentum and energy equations at lower, upper walls.
+     * Must be used in conjunction with op().
      */
     template<typename T>
     void rhs(T * const b)
@@ -742,25 +648,21 @@ void operator_hybrid_isothermal::invert_mass_plus_scaled_operator(
                             phi, km, kn, &s, &ref, &ld, cop.get(),
                             ndx::e, ndx::mx, ndx::my, ndx::mz, ndx::rho,
                             buf.data(), solver.get(), solver->LU.data(),
-                            NULL, NULL, NULL /* FIXME Use maybe_{a,b,c} per Redmine Ticket #2979 */);
+                            maybe_a, maybe_b, maybe_c);
                 } else {                       // Pack for out-of-place LU
                     SUZERAIN_TIMER_SCOPED("implicit operator assembly (packc)");
                     suzerain_rholut_imexop_packc(
                             phi, km, kn, &s, &ref, &ld, cop.get(),
                             ndx::e, ndx::mx, ndx::my, ndx::mz, ndx::rho,
                             buf.data(), solver.get(), solver->PAPT.data(),
-                            NULL, NULL, NULL /* FIXME Use maybe_{a,b,c} per Redmine Ticket #2979 */);
+                            maybe_a, maybe_b, maybe_c);
                 }
                 // Apply boundary conditions to PA^TP^T
                 {
                     SUZERAIN_TIMER_SCOPED("implicit operator BCs");
                     bc_enforcer.op(*solver,
                                    solver->PAPT.data(),
-                                   solver->PAPT.colStride(),
-                                   upper_nrbc_a,
-                                   upper_nrbc_b,
-                                   upper_nrbc_c,
-                                   phi, km, kn);
+                                   solver->PAPT.colStride());
                 }
                 // Inform the solver about the new, unfactorized operator
                 solver->supplied_PAPT();
@@ -802,25 +704,21 @@ void operator_hybrid_isothermal::invert_mass_plus_scaled_operator(
                     phi, &s, &ref, &ld, cop.get(),
                     ndx::e, ndx::mx, ndx::my, ndx::mz, ndx::rho,
                     buf.data(), solver.get(), solver->LU.data(),
-                    NULL /* FIXME Use maybe_{c} per Redmine Ticket #2979 */);
+                    maybe_c);
         } else {                       // Pack for out-of-place LU
             SUZERAIN_TIMER_SCOPED("implicit operator assembly (packc00)");
             suzerain_rholut_imexop_packc00(
                     phi, &s, &ref, &ld, cop.get(),
                     ndx::e, ndx::mx, ndx::my, ndx::mz, ndx::rho,
                     buf.data(), solver.get(), solver->PAPT.data(),
-                    NULL /* FIXME Use maybe_{c} per Redmine Ticket #2979 */);
+                    maybe_c);
         }
         // Apply wavenumber-independent boundary conditions to PA^TP^T
         {
             SUZERAIN_TIMER_SCOPED("implicit operator BCs");
             bc_enforcer.op(*solver,
                            solver->PAPT.data(),
-                           solver->PAPT.colStride(),
-                           upper_nrbc_a,
-                           upper_nrbc_b,
-                           upper_nrbc_c,
-                           phi, /*km*/0, /*kn*/0);
+                           solver->PAPT.colStride());
         }
         // Inform the solver about the new, unfactorized operator
         solver->supplied_PAPT();
