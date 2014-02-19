@@ -296,15 +296,20 @@ bool init_unit_test_suite() {
     // Use a mixture of non-zero and zero wavenumbers in each of X, Z
     // Done as zero-wavenumbers hit degenerate portions of BLAS-like calls.
     //
+    // Due to excessive test runtime, the wavenumber sweep is avoided
+    // unless we are testing the operator sans NRBC matrices a, b, and c.
+    //
     // First register all-zero reference values to tickle degenerate cases.
     // Then register nonzero references one-by-one to ensure consistency.
     const real_t wavenumbers[][2] = {
          /*kx*/   /*kz*/
+#ifdef TEST_RHOLUT_IMEXOP
         {     0,       0},
         {     0,  3*M_PI},
         { 7*M_E,       0},
         {     1,  3*M_PI},
         { 7*M_E,       1},
+#endif
         { 7*M_E,  3*M_PI},
     };
 
