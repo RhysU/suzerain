@@ -263,8 +263,8 @@ FUNCNAME()(
 
         if (rho_E >= 0) {
             // Scale real-valued M, sans phi, into complex-valued buf
-            for (int i = 0; i < A_T->ld*A_T->n; ++i) {
-                buf[i] = -gm1*invMa2*ikm*M[i];
+            for (int k = 0; k < A_T->ld*A_T->n; ++k) {
+                buf[k] = -gm1*invMa2*ikm*M[k];
             }
 
             UPPER_C(0, 1);
@@ -364,8 +364,8 @@ FUNCNAME()(
 
         if (rho_E >= 0) {
             // Scale real-valued D1, sans phi, into complex-valued buf
-            for (int i = 0; i < A_T->ld*A_T->n; ++i) {
-                buf[i] = -gm1*invMa2*D1[i];
+            for (int k = 0; k < A_T->ld*A_T->n; ++k) {
+                buf[k] = -gm1*invMa2*D1[k];
             }
 
             UPPER_C(0, 2);
@@ -468,8 +468,8 @@ FUNCNAME()(
 
         if (rho_E >= 0) {
             // Scale real-valued M, sans phi, into complex-valued buf
-            for (int i = 0; i < A_T->ld*A_T->n; ++i) {
-                buf[i] = -gm1*invMa2*ikn*M[i];
+            for (int k = 0; k < A_T->ld*A_T->n; ++k) {
+                buf[k] = -gm1*invMa2*ikn*M[k];
             }
 
             UPPER_C(0, 3);
@@ -579,8 +579,8 @@ FUNCNAME()(
 
         if (rho_u >= 0) {
             // Scale real-valued M, sans phi, into complex-valued buf
-            for (int i = 0; i < A_T->ld*A_T->n; ++i) {
-                buf[i] = -ikm*M[i];
+            for (int k = 0; k < A_T->ld*A_T->n; ++k) {
+                buf[k] = -ikm*M[k];
             }
 
             UPPER_C(1, 4);
@@ -592,8 +592,8 @@ FUNCNAME()(
 
         if (rho_v >= 0) {
             // Scale real-valued D1, sans phi, into complex-valued buf
-            for (int i = 0; i < A_T->ld*A_T->n; ++i) {
-                buf[i] = -D1[i];
+            for (int k = 0; k < A_T->ld*A_T->n; ++k) {
+                buf[k] = -D1[k];
             }
 
             UPPER_C(2, 4);
@@ -605,8 +605,8 @@ FUNCNAME()(
 
         if (rho_w >= 0) {
             // Scale real-valued M, sans phi, into complex-valued buf
-            for (int i = 0; i < A_T->ld*A_T->n; ++i) {
-                buf[i] = -ikn*M[i];
+            for (int k = 0; k < A_T->ld*A_T->n; ++k) {
+                buf[k] = -ikn*M[k];
             }
 
             UPPER_C(3, 4);
@@ -618,8 +618,8 @@ FUNCNAME()(
 
         /* rho */ {
             // Copy real-valued M into complex-valued buf
-            for (int i = 0; i < A_T->ld*A_T->n; ++i) {
-                buf[i] = M[i];
+            for (int k = 0; k < A_T->ld*A_T->n; ++k) {
+                buf[k] = M[k];
             }
 
             // TODO Using packed BSMBSM matrix value access should be faster
