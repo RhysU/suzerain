@@ -249,20 +249,44 @@ bool init_unit_test_suite() {
     //
     // First register all-zero reference values to tickle degenerate cases.
     // Then register nonzero references one-by-one to ensure consistency.
-    parameters p[] = { {    0,      0, /*refndx*/-1},
-                       {    0, 3*M_PI, /*refndx*/-1},
-                       {7*M_E,      0, /*refndx*/-1},
-                       {    1, 3*M_PI, /*refndx*/-1},
-                       {7*M_E,      1, /*refndx*/-1},
-                       {7*M_E, 3*M_PI, /*refndx*/-1} };
-    for (int i = -1; i < (int) NREFS; ++i) {
-        for (size_t j = 0; j < sizeof(p)/sizeof(p[0]); ++j) {
-            p[j].refndx = i;
-            std::ostringstream name;
-            name << BOOST_TEST_STRINGIZE(operator_consistency)
-                 << ' ' << p[j];
-            master_test_suite().add(boost::unit_test::make_test_case(
-                    &operator_consistency, name.str(), p + j, p + j + 1));
+    const real_t wavenumbers[][2] = {
+         /*kx*/   /*kz*/
+        {     0,       0},
+        {     0,  3*M_PI},
+        { 7*M_E,       0},
+        {     1,  3*M_PI},
+        { 7*M_E,       1},
+        { 7*M_E,  3*M_PI},
+    };
+
+    // TODO Add andx, bndx, cndx
+    parameters p[] = {
+          /*kx*/   /*kz*/  /*refndx*/
+#ifdef TEST_RHOLUT_IMEXOP
+        {    -1,      -1,         -1},
+#endif
+#ifdef TEST_RHOLUT_IMEXOPA
+        {    -1,      -1,         -1},
+#endif
+#ifdef TEST_RHOLUT_IMEXOPB
+        {    -1,      -1,         -1},
+#endif
+#ifdef TEST_RHOLUT_IMEXOPC
+        {    -1,      -1,         -1},
+#endif
+    };
+    for (size_t i = 0; i < sizeof(wavenumbers)/sizeof(wavenumbers[0]); ++i) {
+        for (int j = -1; j < (int) NREFS; ++j) {
+            for (size_t k = 0; k < sizeof(p)/sizeof(p[0]); ++k) {
+                p[k].km = wavenumbers[i][0];
+                p[k].kn = wavenumbers[i][1];
+                p[k].refndx = j;
+                std::ostringstream name;
+                name << BOOST_TEST_STRINGIZE(operator_consistency)
+                    << ' ' << p[k];
+                master_test_suite().add(boost::unit_test::make_test_case(
+                        &operator_consistency, name.str(), p + k, p + k + 1));
+            }
         }
     }
 
