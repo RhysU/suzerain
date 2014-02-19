@@ -168,7 +168,7 @@ typedef struct {
  *
  * A mostly-implicit Giles nonreflecting boundary condition may optionally be
  * imposed on the final coefficient corresponding to the upper boundary when \c
- * a, \c b, and \c c are all non-NULL.
+ * a, \c b, and \c c are non-NULL.
  *
  * @param[in] a If \c NULL, ignored.  Set to the 5x5 column major matrix
  *              \f${R^Y}^{-1} \left[V^L S\right]^{-1} \left[P^G C^G\right]
@@ -286,7 +286,7 @@ suzerain_rholut_imexop_accumulate00(
  *
  * A mostly-implicit Giles nonreflecting boundary condition may optionally be
  * imposed on the final coefficient corresponding to the upper boundary when \c
- * a, \c b, and \c c are all non-NULL.
+ * a, \c b, and \c c are non-NULL.
  *
  * @param[in] a If \c NULL, ignored.  Set to the 5x5 column major matrix
  *              \f${R^Y}^{-1} \left[V^L S\right]^{-1} \left[P^G C^G\right]

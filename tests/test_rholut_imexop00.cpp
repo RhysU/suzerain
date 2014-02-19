@@ -123,11 +123,11 @@ static void operator_consistency(const parameters& p)
     suzerain_rholut_imexop_refld ld;
     fill((int *)&ld, (int *)(&ld + 1), 1);  // Establish lds
 
-    suzerain::scoped_array<real_t> c;       // Establish NRBC matrix
+    suzerain::scoped_array<real_t> c55;     // Establish NRBC matrix
     if (p.cndx != -1) {
-        c.reset(new real_t[CSIZE]);
-        fill(c.get(), c.get() + CSIZE, 0);
-        if (p.cndx > 0) c[p.cndx - 1] = 1;
+        c55.reset(new real_t[CSIZE]);
+        fill(c55.get(), c55.get() + CSIZE, 0);
+        if (p.cndx > 0) c55[p.cndx - 1] = 1;
     }
 
     // Allocate state storage and initialize B1 to eye(N)
@@ -144,7 +144,7 @@ static void operator_consistency(const parameters& p)
             phi, &s, &r, &ld, op.get(),
                &B1[0*n+jN], &B1[1*n+jN], &B1[2*n+jN], &B1[3*n+jN], &B1[4*n+jN],
             0, &B2[0*n+jN], &B2[1*n+jN], &B2[2*n+jN], &B2[3*n+jN], &B2[4*n+jN],
-            c.get());
+            c55.get());
     }
 
     // Compute B1 = P*B2
@@ -171,7 +171,7 @@ static void operator_consistency(const parameters& p)
     fill(papt.get(), papt.get() + paptsize, NaN<real_t>());
     suzerain_rholut_imexop_packc00(phi, &s, &r, &ld, op.get(),
                                    0, 1, 2, 3, 4, buf.get(), &A, papt.get(),
-                                   c.get());
+                                   c55.get());
     for (int i = 0; i < A.N; ++i) {
         const int qi = suzerain_bsmbsm_q(A.S, A.n, i);
         for (int j = 0; j < A.N; ++j) {
@@ -239,7 +239,7 @@ static void operator_consistency(const parameters& p)
     // Check that the maximum absolute deviation from zero is small.
     // "Small" defined as machine epsilon modified by conditioning estimate.
     const int imaxabs = iamax(N*N, B1.get(), 1);
-    BOOST_WARN_LT(1/rcond, 1/sqrt(macheps));         // Squack on bad rcond
+    BOOST_WARN_LT(1/rcond, 1/sqrt(macheps));         // Squawk on bad rcond
     BOOST_CHECK_LT(abs(B1[imaxabs]), macheps/rcond); // Check on estimate
     BOOST_TEST_MESSAGE("maximum absolute error is from value " << B1[imaxabs]
                        << " at index (" << (imaxabs % N)

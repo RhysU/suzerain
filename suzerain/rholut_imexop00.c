@@ -344,7 +344,7 @@ suzerain_rholut_imexop_accumulate00(
             1.0, w->D_T[M], w->ld, IN(rho), 1.0, OUT(rho));
     }
 
-#   undef UPPER_NRBC
+#   undef UPPER_C
 #   undef PREAMBLE_NN
 #   undef PREAMBLE_N
 #   undef REF

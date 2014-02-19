@@ -49,20 +49,34 @@ static const real_t macheps = std::numeric_limits<real_t>::epsilon();
 static const size_t NREFS = sizeof(suzerain_rholut_imexop_ref)/sizeof(real_t*);
 BOOST_STATIC_ASSERT(NREFS == sizeof(suzerain_rholut_imexop_refld)/sizeof(int));
 
+// Abuse what we know about NRBC matrices supplied to suzerain_rholut_XXX
+static const size_t ASIZE = 5 * 5;
+static const size_t BSIZE = 5 * 5;
+static const size_t CSIZE = 5 * 5;
+
 struct parameters
 {
     real_t km;
     real_t kn;
     int    refndx;
+    int    andx;   // Negative -1 to disable NRBC "a" matrix
+                   // Zero to provide a "a" matrix full of zeros
+                   // Positive to set nonzero (andx - 1) entry
+    int    bndx;   // As andx but for NRBC "b" matrix
+    int    cndx;   // As andx but for NRBC "c" matrix
 };
 
 template< typename charT, typename traits >
 std::basic_ostream<charT,traits>& operator<<(
         std::basic_ostream<charT,traits> &os, const parameters& p)
 {
-    return os << "{km="        << p.km
-              << ", kn="       << p.kn
-              << ", refndx="   << p.refndx << '}';
+    return os << "{km="      << p.km
+              << ", kn="     << p.kn
+              << ", refndx=" << p.refndx
+              << ", andx="   << p.andx
+              << ", bndx="   << p.bndx
+              << ", cndx="   << p.cndx
+              << '}';
 }
 
 // Free function checking if the apply and pack operations are
@@ -115,11 +129,32 @@ static void operator_consistency(const parameters& p)
             }
         }
     }
-    for (size_t i = 0; i < NREFS; ++i) {        // Establish refs
+    for (size_t i = 0; i < NREFS; ++i) {    // Establish refs
         ((real_t **)&r)[i] = &refs[i*n];
     }
     suzerain_rholut_imexop_refld ld;
-    fill((int *)&ld, (int *)(&ld + 1), 1); // Establish lds
+    fill((int *)&ld, (int *)(&ld + 1), 1);  // Establish lds
+
+    suzerain::scoped_array<real_t> a55;     // Establish NRBC "a55" matrix
+    if (p.andx != -1) {
+        a55.reset(new real_t[ASIZE]);
+        fill(a55.get(), a55.get() + ASIZE, 0);
+        if (p.andx > 0) a55[p.andx - 1] = 1;
+    }
+
+    suzerain::scoped_array<real_t> b55;     // Establish NRBC "b" matrix
+    if (p.bndx != -1) {
+        b55.reset(new real_t[BSIZE]);
+        fill(b55.get(), b55.get() + BSIZE, 0);
+        if (p.bndx > 0) b55[p.bndx - 1] = 1;
+    }
+
+    suzerain::scoped_array<real_t> c55;     // Establish NRBC "c55" matrix
+    if (p.cndx != -1) {
+        c55.reset(new real_t[CSIZE]);
+        fill(c55.get(), c55.get() + CSIZE, 0);
+        if (p.cndx > 0) c55[p.cndx - 1] = 1;
+    }
 
     // Allocate state storage and initialize B1 to eye(N)
     suzerain::scoped_array<complex_t> B1(new complex_t[N*N]);
@@ -135,7 +170,7 @@ static void operator_consistency(const parameters& p)
             phi, km, kn, &s, &r, &ld, op.get(),
                &B1[0*n+jN], &B1[1*n+jN], &B1[2*n+jN], &B1[3*n+jN], &B1[4*n+jN],
             0, &B2[0*n+jN], &B2[1*n+jN], &B2[2*n+jN], &B2[3*n+jN], &B2[4*n+jN],
-            NULL, NULL, NULL /* TODO Consistency testing per Ticket #2979 */);
+            a55.get(), b55.get(), c55.get());
     }
 
     // Compute B1 = P*B2
@@ -162,7 +197,7 @@ static void operator_consistency(const parameters& p)
     fill(papt.get(), papt.get() + paptsize, NaN<real_t>());
     suzerain_rholut_imexop_packc(phi, km, kn, &s, &r, &ld, op.get(),
                                  0, 1, 2, 3, 4, buf.get(), &A, papt.get(),
-                                 NULL, NULL, NULL /* TODO Consistency testing per Ticket #2979 */);
+                                 a55.get(), b55.get(), c55.get());
     for (int i = 0; i < A.N; ++i) {
         const int qi = suzerain_bsmbsm_q(A.S, A.n, i);
         for (int j = 0; j < A.N; ++j) {
@@ -230,9 +265,23 @@ static void operator_consistency(const parameters& p)
     // Check that the maximum absolute deviation from zero is small.
     // "Small" defined as machine epsilon modified by conditioning estimate.
     const int imaxabs = iamax(N*N, B1.get(), 1);
-    BOOST_TEST_MESSAGE("maximum absolute error is " << B1[imaxabs]);
-    BOOST_WARN_LT(1/rcond, 1/sqrt(macheps));         // Squack on bad rcond
+    BOOST_WARN_LT(1/rcond, 1/sqrt(macheps));         // Squawk on bad rcond
     BOOST_CHECK_LT(abs(B1[imaxabs]), macheps/rcond); // Check on estimate
+    BOOST_TEST_MESSAGE("maximum absolute error is from value " << B1[imaxabs]
+                       << " at index (" << (imaxabs % N)
+                       << ", " << (imaxabs / N) << ")");
+
+////// DEBUG
+////std::cout << "B1=[";
+////std::cout.setf(std::ios::showpos);
+////for (int i = 0; i < N; ++i) {
+////    for (int j = 0; j < N; ++j) {
+////        std::cout << B1[i + j*N].real() << B1[i + j*N].imag() << "i";
+////        if (j != N-1) std::cout << ",";
+////    }
+////    if (i != N-1) std::cout << ";\n";
+////}
+////std::cout << "]\n";
 }
 
 #ifdef BOOST_TEST_ALTERNATIVE_INIT_API
@@ -261,18 +310,18 @@ bool init_unit_test_suite() {
 
     // TODO Add andx, bndx, cndx
     parameters p[] = {
-          /*kx*/   /*kz*/  /*refndx*/
+          /*kx*/   /*kz*/  /*refndx*/  /*andx*/ /*bndx*/ /*cndx*/
 #ifdef TEST_RHOLUT_IMEXOP
-        {    -1,      -1,         -1},
+        {    -1,      -1,         -1,        -1,     -1,      -1},
 #endif
 #ifdef TEST_RHOLUT_IMEXOPA
-        {    -1,      -1,         -1},
+        {    -1,      -1,         -1,         0,     -1,      -1},
 #endif
 #ifdef TEST_RHOLUT_IMEXOPB
-        {    -1,      -1,         -1},
+        {    -1,      -1,         -1,        -1,      0,      -1},
 #endif
 #ifdef TEST_RHOLUT_IMEXOPC
-        {    -1,      -1,         -1},
+        {    -1,      -1,         -1,        -1,     -1,       0},
 #endif
     };
     for (size_t i = 0; i < sizeof(wavenumbers)/sizeof(wavenumbers[0]); ++i) {
