@@ -101,11 +101,11 @@ FUNCNAME00()(
     // Shorthand for common patterns below
 #   define REF(quantity) r->quantity, ld->quantity
 #   define PREAMBLE      'R', A_T->n, A_T->n, A_T->kl, A_T->ku
-#   define BUFUPPER_SCALE_BY(mat,i,j)                           \
+#   define UPPER_C(i,j)                                         \
         do {                                                    \
-            if (mat) {                                          \
+            if (c) {                                            \
                 for (int k = bufupper_il; k < bufupper_iu; ++k) \
-                    bufupper[k] *= 1 - mat[(i) + 5*(j)];        \
+                    bufupper[k] *= 1 - c[(i) + 5*(j)];          \
             }                                                   \
         } while (0)
 
@@ -122,7 +122,7 @@ FUNCNAME00()(
                     ginvRePr,                    REF(nu),
                     D2, 1, w->ld, 1.0, buf, 1, A_T->ld);
 
-            BUFUPPER_SCALE_BY(c, 0, 0);
+            UPPER_C(0, 0);
 
             suzerain_blas_zgb_acc_d(
                     A_T->n, A_T->n, A_T->kl, A_T->ku,
@@ -136,7 +136,7 @@ FUNCNAME00()(
                     Ma2*invRe*(1-ginvPr),        REF(nuux),
                     D2, 1, w->ld, 0.0, buf, 1, A_T->ld);
 
-            BUFUPPER_SCALE_BY(c, 1, 0);
+            UPPER_C(1, 0);
 
             PACK(z)(A_T, rho_u, rho_E, phi, buf, patpt);
         }
@@ -150,7 +150,7 @@ FUNCNAME00()(
                     Ma2*invRe*(ap43-ginvPr),     REF(nuuy),
                     D2, 1, w->ld, 1.0, buf, 1, A_T->ld);
 
-            BUFUPPER_SCALE_BY(c, 2, 0);
+            UPPER_C(2, 0);
 
             PACK(z)(A_T, rho_v, rho_E, phi, buf, patpt);
         }
@@ -160,7 +160,7 @@ FUNCNAME00()(
                     Ma2*invRe*(1-ginvPr),        REF(nuuz),
                     D2, 1, w->ld, 0.0, buf, 1, A_T->ld);
 
-            BUFUPPER_SCALE_BY(c, 3, 0);
+            UPPER_C(3, 0);
 
             PACK(z)(A_T, rho_w, rho_E, phi, buf, patpt);
         }
@@ -176,7 +176,7 @@ FUNCNAME00()(
                     ginvRePr/gm1,                REF(e_deltarho),
                     D2, 1, w->ld, 1.0, buf, 1, A_T->ld);
 
-            BUFUPPER_SCALE_BY(c, 4, 0);
+            UPPER_C(4, 0);
 
             PACK(z)(A_T, rho, rho_E, phi, buf, patpt);
         }
@@ -200,7 +200,7 @@ FUNCNAME00()(
                     invRe,                       REF(nu),
                     D2, 1, w->ld, 1.0, buf, 1, A_T->ld);
 
-            BUFUPPER_SCALE_BY(c, 1, 1);
+            UPPER_C(1, 1);
 
             suzerain_blas_zgb_acc_d(
                     A_T->n, A_T->n, A_T->kl, A_T->ku,
@@ -214,7 +214,7 @@ FUNCNAME00()(
                     -1.0,                        REF(ux),
                     D1, 1, w->ld, 0.0, buf, 1, A_T->ld);
 
-            BUFUPPER_SCALE_BY(c, 2, 1);
+            UPPER_C(2, 1);
 
             PACK(z)(A_T, rho_v, rho_u, phi, buf, patpt);
         }
@@ -232,7 +232,7 @@ FUNCNAME00()(
                     -invRe,                      REF(nuux),
                     D2, 1, w->ld, 1.0, buf, 1, A_T->ld);
 
-            BUFUPPER_SCALE_BY(c, 4, 1);
+            UPPER_C(4, 1);
 
             PACK(z)(A_T, rho, rho_u, phi, buf, patpt);
         }
@@ -247,7 +247,7 @@ FUNCNAME00()(
                 buf[i] = -gm1*invMa2*D1[i];
             }
 
-            BUFUPPER_SCALE_BY(c, 0, 2);
+            UPPER_C(0, 2);
 
             PACK(z)(A_T, rho_E, rho_v, phi, buf, patpt);
         }
@@ -257,7 +257,7 @@ FUNCNAME00()(
                     gm1,                  REF(ux),
                     D1, 1, w->ld, 0.0, buf, 1, A_T->ld);
 
-            BUFUPPER_SCALE_BY(c, 1, 2);
+            UPPER_C(1, 2);
 
             PACK(z)(A_T, rho_u, rho_v, phi, buf, patpt);
         }
@@ -273,7 +273,7 @@ FUNCNAME00()(
                     ap43*invRe,           REF(nu),
                     D2, 1, w->ld, 1.0, buf, 1, A_T->ld);
 
-            BUFUPPER_SCALE_BY(c, 2, 2);
+            UPPER_C(2, 2);
 
             suzerain_blas_zgb_acc_d(
                     A_T->n, A_T->n, A_T->kl, A_T->ku,
@@ -287,7 +287,7 @@ FUNCNAME00()(
                     gm1,                  REF(uz),
                     D1, 1, w->ld, 0.0, buf, 1, A_T->ld);
 
-            BUFUPPER_SCALE_BY(c, 3, 2);
+            UPPER_C(3, 2);
 
             PACK(z)(A_T, rho_w, rho_v, phi, buf, patpt);
         }
@@ -302,7 +302,7 @@ FUNCNAME00()(
                     -ap43*invRe,          REF(nuuy),
                     D2, 1, w->ld, 1.0, buf, 1, A_T->ld);
 
-            BUFUPPER_SCALE_BY(c, 4, 2);
+            UPPER_C(4, 2);
 
             PACK(z)(A_T, rho, rho_v, phi, buf, patpt);
         }
@@ -324,7 +324,7 @@ FUNCNAME00()(
                     -1.0,                        REF(uz),
                     D1, 1, w->ld, 0.0, buf, 1, A_T->ld);
 
-            BUFUPPER_SCALE_BY(c, 2, 3);
+            UPPER_C(2, 3);
 
             PACK(z)(A_T, rho_v, rho_w, phi, buf, patpt);
         }
@@ -340,7 +340,7 @@ FUNCNAME00()(
                     invRe,                       REF(nu),
                     D2, 1, w->ld, 1.0, buf, 1, A_T->ld);
 
-            BUFUPPER_SCALE_BY(c, 3, 3);
+            UPPER_C(3, 3);
 
             suzerain_blas_zgb_acc_d(
                     A_T->n, A_T->n, A_T->kl, A_T->ku,
@@ -358,7 +358,7 @@ FUNCNAME00()(
                     -invRe,                      REF(nuuz),
                     D2, 1, w->ld, 1.0, buf, 1, A_T->ld);
 
-            BUFUPPER_SCALE_BY(c, 4, 3);
+            UPPER_C(4, 3);
 
             PACK(z)(A_T, rho, rho_w, phi, buf, patpt);
         }
@@ -381,7 +381,7 @@ FUNCNAME00()(
                 buf[i] = -D1[i];
             }
 
-            BUFUPPER_SCALE_BY(c, 2, 4);
+            UPPER_C(2, 4);
 
             PACK(z )(A_T, rho_v, rho, phi, buf, patpt);
         }
