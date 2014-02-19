@@ -93,6 +93,7 @@ FUNCNAME00()(
 
     // Prepare offset to the final column of buf to permit adjusting
     // the accumulated operator to provide nonreflecting boundary conditions.
+    // "Enumerated" constants i and j track the active NRBC matrix element.
     int bufupper_il, bufupper_iu;
     complex_double * const bufupper = suzerain_gbmatrix_col(
             A_T->n, A_T->n, A_T->kl, A_T->ku, buf, A_T->ld, sizeof(buf[0]),
@@ -107,11 +108,11 @@ FUNCNAME00()(
                 bufupper[k] *= 1 - c[(i) + 5*(j)];          \
         } while (0)
 
-    if (rho_E >= 0) { // Prepare total energy row
+    if (rho_E >= 0) { enum { i = 0 };  // Prepare total energy row
 
         // On diagonal, mass accumulated last to avoid swamping small values.
         // The factor phi is accounted for in this final mass accumulation.
-        /* rho_E */ {
+        /* rho_E */ { enum { j = 0 };
             suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
                     -s->gamma,                   REF(uy),
                     D1, 1, w->ld, 0.0, buf, 1, A_T->ld);
@@ -120,7 +121,7 @@ FUNCNAME00()(
                     ginvRePr,                    REF(nu),
                     D2, 1, w->ld, 1.0, buf, 1, A_T->ld);
 
-            UPPER_C(0, 0);
+            UPPER_C(j, i);
 
             suzerain_blas_zgb_acc_d(
                     A_T->n, A_T->n, A_T->kl, A_T->ku,
@@ -129,17 +130,17 @@ FUNCNAME00()(
             PACK(z)(A_T, rho_E, rho_E, 1.0, buf, patpt);
         }
 
-        if (rho_u >= 0) {
+        if (rho_u >= 0) { enum { j = 1 };
             suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
                     Ma2*invRe*(1-ginvPr),        REF(nuux),
                     D2, 1, w->ld, 0.0, buf, 1, A_T->ld);
 
-            UPPER_C(1, 0);
+            UPPER_C(j, i);
 
             PACK(z)(A_T, rho_u, rho_E, phi, buf, patpt);
         }
 
-        if (rho_v >= 0) {
+        if (rho_v >= 0) { enum { j = 2 };
             suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
                     -1.0,                        REF(e_divm),
                     D1, 1, w->ld, 0.0, buf, 1, A_T->ld);
@@ -148,22 +149,22 @@ FUNCNAME00()(
                     Ma2*invRe*(ap43-ginvPr),     REF(nuuy),
                     D2, 1, w->ld, 1.0, buf, 1, A_T->ld);
 
-            UPPER_C(2, 0);
+            UPPER_C(j, i);
 
             PACK(z)(A_T, rho_v, rho_E, phi, buf, patpt);
         }
 
-        if (rho_w >= 0) {
+        if (rho_w >= 0) { enum { j = 3 };
             suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
                     Ma2*invRe*(1-ginvPr),        REF(nuuz),
                     D2, 1, w->ld, 0.0, buf, 1, A_T->ld);
 
-            UPPER_C(3, 0);
+            UPPER_C(j, i);
 
             PACK(z)(A_T, rho_w, rho_E, phi, buf, patpt);
         }
 
-        if (rho  >= 0) {
+        if (rho   >= 0) { enum { j = 4 };
             suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
                     -1.0,                        REF(ey_gradrho),
                     D1, 1, w->ld, 0.0, buf, 1, A_T->ld);
@@ -174,22 +175,22 @@ FUNCNAME00()(
                     ginvRePr/gm1,                REF(e_deltarho),
                     D2, 1, w->ld, 1.0, buf, 1, A_T->ld);
 
-            UPPER_C(4, 0);
+            UPPER_C(j, i);
 
             PACK(z)(A_T, rho, rho_E, phi, buf, patpt);
         }
 
     }
 
-    if (rho_u >= 0) { // Prepare streamwise momentum row
+    if (rho_u >= 0) { enum { i = 1 };  // Prepare streamwise momentum row
 
-        if (rho_E >= 0) {
+        if (rho_E >= 0) { enum { j = 0 };
             PACK(zd)(A_T, rho_E, rho_u, 0.0, NULL, patpt);
         }
 
         // On diagonal, mass accumulated last to avoid swamping small values.
         // The factor phi is accounted for in this final mass accumulation.
-        /* rho_u */ {
+        /* rho_u */ { enum { j = 1 };
             suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
                     -1.0,                        REF(uy),
                     D1, 1, w->ld, 0.0, buf, 1, A_T->ld);
@@ -198,7 +199,7 @@ FUNCNAME00()(
                     invRe,                       REF(nu),
                     D2, 1, w->ld, 1.0, buf, 1, A_T->ld);
 
-            UPPER_C(1, 1);
+            UPPER_C(j, i);
 
             suzerain_blas_zgb_acc_d(
                     A_T->n, A_T->n, A_T->kl, A_T->ku,
@@ -207,21 +208,21 @@ FUNCNAME00()(
             PACK(z)(A_T, rho_u, rho_u, 1.0, buf, patpt);
         }
 
-        if (rho_v >= 0) {
+        if (rho_v >= 0) { enum { j = 2 };
             suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
                     -1.0,                        REF(ux),
                     D1, 1, w->ld, 0.0, buf, 1, A_T->ld);
 
-            UPPER_C(2, 1);
+            UPPER_C(j, i);
 
             PACK(z)(A_T, rho_v, rho_u, phi, buf, patpt);
         }
 
-        if (rho_w >= 0) {
+        if (rho_w >= 0) { enum { j = 3 };
             PACK(z)(A_T, rho_w, rho_u, 0.0, NULL, patpt);
         }
 
-        if (rho  >= 0) {
+        if (rho   >= 0) { enum { j = 4 };
             suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
                      1.0,                        REF(uxuy),
                     D1, 1, w->ld, 0.0, buf, 1, A_T->ld);
@@ -230,39 +231,39 @@ FUNCNAME00()(
                     -invRe,                      REF(nuux),
                     D2, 1, w->ld, 1.0, buf, 1, A_T->ld);
 
-            UPPER_C(4, 1);
+            UPPER_C(j, i);
 
             PACK(z)(A_T, rho, rho_u, phi, buf, patpt);
         }
 
     }
 
-    if (rho_v >= 0) { // Prepare wall-normal momentum row
+    if (rho_v >= 0) { enum { i = 2 };  // Prepare wall-normal momentum row
 
-        if (rho_E >= 0) {
+        if (rho_E >= 0) { enum { j = 0 };
             // Scale real-valued D1, sans phi, into complex-valued buf
             for (int i = 0; i < A_T->ld*A_T->n; ++i) {
                 buf[i] = -gm1*invMa2*D1[i];
             }
 
-            UPPER_C(0, 2);
+            UPPER_C(j, i);
 
             PACK(z)(A_T, rho_E, rho_v, phi, buf, patpt);
         }
 
-        if (rho_u >= 0) {
+        if (rho_u >= 0) { enum { j = 1 };
             suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
                     gm1,                  REF(ux),
                     D1, 1, w->ld, 0.0, buf, 1, A_T->ld);
 
-            UPPER_C(1, 2);
+            UPPER_C(j, i);
 
             PACK(z)(A_T, rho_u, rho_v, phi, buf, patpt);
         }
 
         // On diagonal, mass accumulated last to avoid swamping small values.
         // The factor phi is accounted for in this final mass accumulation.
-        /* rho_v */ {
+        /* rho_v */ { enum { j = 2 };
             suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
                     gm3,                  REF(uy),
                     D1, 1, w->ld, 0.0, buf, 1, A_T->ld);
@@ -271,7 +272,7 @@ FUNCNAME00()(
                     ap43*invRe,           REF(nu),
                     D2, 1, w->ld, 1.0, buf, 1, A_T->ld);
 
-            UPPER_C(2, 2);
+            UPPER_C(j, i);
 
             suzerain_blas_zgb_acc_d(
                     A_T->n, A_T->n, A_T->kl, A_T->ku,
@@ -280,17 +281,17 @@ FUNCNAME00()(
             PACK(z)(A_T, rho_v, rho_v, 1.0, buf, patpt);
         }
 
-        if (rho_w >= 0) {
+        if (rho_w >= 0) { enum { j = 3 };
             suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
                     gm1,                  REF(uz),
                     D1, 1, w->ld, 0.0, buf, 1, A_T->ld);
 
-            UPPER_C(3, 2);
+            UPPER_C(j, i);
 
             PACK(z)(A_T, rho_w, rho_v, phi, buf, patpt);
         }
 
-        if (rho  >= 0) {
+        if (rho  >= 0) { enum { j = 4 };
             suzerain_blasext_zgb_ddiag_scale_acc_d(PREAMBLE,
                     -0.5*gm1,             REF(u2),
                      1.0,                 REF(uyuy),
@@ -300,36 +301,36 @@ FUNCNAME00()(
                     -ap43*invRe,          REF(nuuy),
                     D2, 1, w->ld, 1.0, buf, 1, A_T->ld);
 
-            UPPER_C(4, 2);
+            UPPER_C(j, i);
 
             PACK(z)(A_T, rho, rho_v, phi, buf, patpt);
         }
 
     }
 
-    if (rho_w >= 0) { // Prepare spanwise momentum row
+    if (rho_w >= 0) { enum { i = 3 };  // Prepare spanwise momentum row
 
-        if (rho_E >= 0) {
+        if (rho_E >= 0) { enum { j = 0 };
             PACK(zd)(A_T, rho_E, rho_w, 0.0, NULL, patpt);
         }
 
-        if (rho_u >= 0) {
+        if (rho_u >= 0) { enum { j = 1 };
             PACK(zd)(A_T, rho_u, rho_w, 0.0, NULL, patpt);
         }
 
-        if (rho_v >= 0) {
+        if (rho_v >= 0) { enum { j = 2 };
             suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
                     -1.0,                        REF(uz),
                     D1, 1, w->ld, 0.0, buf, 1, A_T->ld);
 
-            UPPER_C(2, 3);
+            UPPER_C(j, i);
 
             PACK(z)(A_T, rho_v, rho_w, phi, buf, patpt);
         }
 
         // On diagonal, mass accumulated last to avoid swamping small values.
         // The factor phi is accounted for in this final mass accumulation.
-        /* rho_w */ {
+        /* rho_w */ { enum { j = 3 };
             suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
                     -1.0,                        REF(uy),
                     D1, 1, w->ld, 0.0, buf, 1, A_T->ld);
@@ -338,7 +339,7 @@ FUNCNAME00()(
                     invRe,                       REF(nu),
                     D2, 1, w->ld, 1.0, buf, 1, A_T->ld);
 
-            UPPER_C(3, 3);
+            UPPER_C(j, i);
 
             suzerain_blas_zgb_acc_d(
                     A_T->n, A_T->n, A_T->kl, A_T->ku,
@@ -347,7 +348,7 @@ FUNCNAME00()(
             PACK(z)(A_T, rho_w, rho_w, 1.0, buf, patpt);
         }
 
-        if (rho  >= 0) {
+        if (rho  >= 0) { enum { j = 4 };
             suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
                      1.0,                        REF(uyuz),
                     D1, 1, w->ld, 0.0, buf, 1, A_T->ld);
@@ -356,39 +357,39 @@ FUNCNAME00()(
                     -invRe,                      REF(nuuz),
                     D2, 1, w->ld, 1.0, buf, 1, A_T->ld);
 
-            UPPER_C(4, 3);
+            UPPER_C(j, i);
 
             PACK(z)(A_T, rho, rho_w, phi, buf, patpt);
         }
 
     }
 
-    if (rho >= 0) {  // Prepare density row
+    if (rho >= 0) { enum { i = 4 };  // Prepare density row
 
-        if (rho_E >= 0) {
+        if (rho_E >= 0) { enum { j = 0 };
             PACK(zd)(A_T, rho_E, rho, 0.0, NULL, patpt);
         }
 
-        if (rho_u >= 0) {
+        if (rho_u >= 0) { enum { j = 1 };
             PACK(zd)(A_T, rho_u, rho, 0.0, NULL, patpt);
         }
 
-        if (rho_v >= 0) {
+        if (rho_v >= 0) { enum { j = 2 };
             // Scale real-valued D1, sans phi, into complex-valued buf
             for (int i = 0; i < A_T->ld*A_T->n; ++i) {
                 buf[i] = -D1[i];
             }
 
-            UPPER_C(2, 4);
+            UPPER_C(j, i);
 
             PACK(z )(A_T, rho_v, rho, phi, buf, patpt);
         }
 
-        if (rho_w >= 0) {
+        if (rho_w >= 0) { enum { j = 3 };
             PACK(zd)(A_T, rho_w, rho, 0.0, NULL, patpt);
         }
 
-        /* rho */ {
+        /* rho */       { enum { j = 4 };
             PACK(zd)(A_T, rho,   rho, 1.0, M, patpt);
         }
 
