@@ -556,9 +556,9 @@ FUNCNAME()(
                     -invRe,                      REF(nuuz),
                     D2, 1, w->ld, 1.0, buf, 1, A_T->ld);
 
-            UPPER_C(3, 3);
-            UPPER_A(3, 3);
-            UPPER_B(3, 3);
+            UPPER_C(4, 3);
+            UPPER_A(4, 3);
+            UPPER_B(4, 3);
 
             PACK(z)(A_T, rho, rho_w, phi, buf, patpt);
         }
