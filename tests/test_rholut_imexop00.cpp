@@ -271,35 +271,42 @@ bool init_unit_test_suite() {
     //
     // First register all-zero reference values to tickle degenerate cases.
     // Then register nonzero references one-by-one to ensure consistency.
+    //
+    // By using #defines, a subset of the tests may be selected at runtime.
+    // This is advantageous because it provides greater parallelism.
     parameters p[] = {
            /*refndx*/  /*cndx*/
-         {         -1,       -1 }
-        ,{         -1,        0 }
-        ,{         -1,        1 }
-        ,{         -1,        2 }
-        ,{         -1,        3 }
-        ,{         -1,        4 }
-        ,{         -1,        5 }
-        ,{         -1,        6 }
-        ,{         -1,        7 }
-        ,{         -1,        8 }
-        ,{         -1,        9 }
-        ,{         -1,       10 }
-        ,{         -1,       11 }
-        ,{         -1,       12 }
-        ,{         -1,       13 }
-        ,{         -1,       14 }
-        ,{         -1,       15 }
-        ,{         -1,       16 }
-        ,{         -1,       17 }
-        ,{         -1,       18 }
-        ,{         -1,       19 }
-        ,{         -1,       20 }
-        ,{         -1,       21 }
-        ,{         -1,       22 }
-        ,{         -1,       23 }
-        ,{         -1,       24 }
-        ,{         -1,       25 }
+#ifdef TEST_RHOLUT_IMEXOP00
+         {         -1,       -1 },
+#endif
+#ifdef TEST_RHOLUT_IMEXOP00C
+         {         -1,        0 },
+         {         -1,        1 },
+         {         -1,        2 },
+         {         -1,        3 },
+         {         -1,        4 },
+         {         -1,        5 },
+         {         -1,        6 },
+         {         -1,        7 },
+         {         -1,        8 },
+         {         -1,        9 },
+         {         -1,       10 },
+         {         -1,       11 },
+         {         -1,       12 },
+         {         -1,       13 },
+         {         -1,       14 },
+         {         -1,       15 },
+         {         -1,       16 },
+         {         -1,       17 },
+         {         -1,       18 },
+         {         -1,       19 },
+         {         -1,       20 },
+         {         -1,       21 },
+         {         -1,       22 },
+         {         -1,       23 },
+         {         -1,       24 },
+         {         -1,       25 },
+#endif
     };
     for (int j = -1; j < (int) NREFS; ++j) {
         for (size_t k = 0; k < sizeof(p)/sizeof(p[0]); ++k) {

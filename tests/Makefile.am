@@ -439,13 +439,27 @@ test_rholut_imexop_LDADD    = ../suzerain/libsuzerain.la
 test_rholut_imexop_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
 test_rholut_imexop_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
 
-TESTS                        += test_rholut_imexop00
-EXTRA_PROGRAMS               += test_rholut_imexop00
-test_rholut_imexop00_SOURCES  = test_rholut_imexop00.cpp
-test_rholut_imexop00_CPPFLAGS = $(AM_CPPFLAGS) -DBOOST_TEST_DYN_LINK -DBOOST_TEST_NO_LIB
-test_rholut_imexop00_LDADD    = ../suzerain/libsuzerain.la
-test_rholut_imexop00_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
-test_rholut_imexop00_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
+### Runtime of test_rholut_imexop00 can be mildly frustrating,
+### so break it up to permit more parallelism to speed edit/compile/test.
+### Also serves to logically decompose the collection of test cases.
+
+TESTS                          += test_rholut_imexop00
+EXTRA_PROGRAMS                 += test_rholut_imexop00
+test_rholut_imexop00_SOURCES    = test_rholut_imexop00.cpp
+test_rholut_imexop00_CPPFLAGS   = $(AM_CPPFLAGS) -DTEST_RHOLUT_IMEXOP00
+test_rholut_imexop00_CPPFLAGS  += -DBOOST_TEST_DYN_LINK -DBOOST_TEST_NO_LIB
+test_rholut_imexop00_LDADD      = ../suzerain/libsuzerain.la
+test_rholut_imexop00_LDADD     += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
+test_rholut_imexop00_LDADD     += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
+
+TESTS                          += test_rholut_imexop00c
+EXTRA_PROGRAMS                 += test_rholut_imexop00c
+test_rholut_imexop00c_SOURCES   = test_rholut_imexop00.cpp
+test_rholut_imexop00c_CPPFLAGS  = $(AM_CPPFLAGS) -DTEST_RHOLUT_IMEXOP00C
+test_rholut_imexop00c_CPPFLAGS += -DBOOST_TEST_DYN_LINK -DBOOST_TEST_NO_LIB
+test_rholut_imexop00c_LDADD     = ../suzerain/libsuzerain.la
+test_rholut_imexop00c_LDADD    += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
+test_rholut_imexop00c_LDADD    += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
 
 TESTS                        += test_reacting_imexop
 EXTRA_PROGRAMS               += test_reacting_imexop
