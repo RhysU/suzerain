@@ -101,12 +101,10 @@ FUNCNAME00()(
     // Shorthand for common patterns below
 #   define REF(quantity) r->quantity, ld->quantity
 #   define PREAMBLE      'R', A_T->n, A_T->n, A_T->kl, A_T->ku
-#   define UPPER_C(i,j)                                         \
-        do {                                                    \
-            if (c) {                                            \
-                for (int k = bufupper_il; k < bufupper_iu; ++k) \
-                    bufupper[k] *= 1 - c[(i) + 5*(j)];          \
-            }                                                   \
+#   define UPPER_C(i,j)                                     \
+        if (c) do {                                         \
+            for (int k = bufupper_il; k < bufupper_iu; ++k) \
+                bufupper[k] *= 1 - c[(i) + 5*(j)];          \
         } while (0)
 
     if (rho_E >= 0) { // Prepare total energy row
@@ -398,7 +396,7 @@ FUNCNAME00()(
 
 #   undef REF
 #   undef PREAMBLE
-#   undef BUFUPPER_SCALE_BY
+#   undef UPPER_C
 
 }
 
