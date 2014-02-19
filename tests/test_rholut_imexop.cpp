@@ -95,7 +95,7 @@ static void operator_consistency(const parameters& p)
     using suzerain::bspline;
     using suzerain::bsplineop;
     const real_t breakpts[] = { 0.0, 0.5, 1.5, 2.25, 2.5, 3.0, 3.35 };
-    suzerain::bspline b(8, suzerain::bspline::from_breakpoints(),
+    suzerain::bspline b(6, suzerain::bspline::from_breakpoints(),
                         SUZERAIN_COUNTOF(breakpts), breakpts);
     suzerain::bsplineop op(b, 2, SUZERAIN_BSPLINEOP_COLLOCATION_GREVILLE);
     const int S = 5;      // Number of state scalars
