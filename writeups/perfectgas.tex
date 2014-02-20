@@ -791,7 +791,7 @@ u^h(x,y,z,t)
 \end{align}
 where $k_m = 2\pi{}m/L_x$, $k_n = 2\pi{}n/L_z$, and $B_l\!\left(y\right)$ are a
 B-spline basis for some order and knot selection.  The precise B-spline basis
-details are deferred until section~\ref{sec:formingoperators}.
+details are deferred until \autoref{sec:formingoperators}.
 
 Now, within the method of weighted residuals framework, we choose a mixed
 Galerkin/collocation approach (often called a ``pseudospectral'' technique)
@@ -1181,7 +1181,7 @@ algorithm~\vref{alg:substep}.
 \begin{algorithm}
 \label{alg:substep}
 \caption{Compute one substep in the SMR91 scheme following
-         equation~(\ref{eq:generaloperatormasssubstep})
+         \autoref{eq:generaloperatormasssubstep}
          }
 \begin{algorithmic}
   \REQUIRE Storage $a = u^i$;
@@ -1211,7 +1211,7 @@ follows algorithm~\vref{alg:step}.
 
 \begin{algorithm}
 \caption{Compute all substeps in the SMR91 scheme following
-         equation~(\ref{eq:generaloperatormasssubstep})
+         \autoref{eq:generaloperatormasssubstep}
          }
 \label{alg:step}
 \begin{algorithmic}
@@ -1530,7 +1530,7 @@ nearly an order of magnitude after taking into account the inhomogeneity.  He
 concluded that, taking $\Delta{}y$ to be the breakpoint separation, $C^{(1)} =
 4$ was feasible \citep[equation~3.29]{Venugopal2003}.  Suzerain's choice of
 $\Delta{}y$ and $C^{(1)}$ will be covered in
-section~\ref{sec:wallnormaleigval}.
+\autoref{sec:wallnormaleigval}.
 
 \subsection{Diffusive stability criterion}
 \label{sec:diffusivestability}
@@ -1589,7 +1589,7 @@ used a nearly identical diffusive criterion
 \citep[equation~3.15]{Venugopal2003}.  His analysis determined that the
 diffusive stability criterion was not overly conservative for a non-periodic
 B-spline discretization.  Suzerain's determination of $\Delta{}y$ and $C^{(2)}$
-will be covered in section~\ref{sec:wallnormaleigval}.
+will be covered in \autoref{sec:wallnormaleigval}.
 
 \subsection{Empirical stability limits from inhomogeneous B-spline operators}
 \label{sec:wallnormaleigval}
@@ -1598,7 +1598,7 @@ Employing stability estimates \eqref{eq:convectivestability}
 and~\eqref{eq:diffusivestability} requires information about the wall-normal
 discrete operator eigenvalue magnitudes.  By equations~\eqref{eq:lambda1deltay}
 and~\eqref{eq:lambda2deltay} this is equivalent to estimating both $C^{(1)}$
-and $C^{(2)}$.  Per section~\ref{sec:formingoperators}, our operators are a
+and $C^{(2)}$.  Per \autoref{sec:formingoperators}, our operators are a
 function of three parameters: the piecewise polynomial order $k$ where $k=4$
 indicates piecewise cubic B-splines, the hyperbolic tangent stretching
 parameter $\delta\geq{}0$, and the wall-normal number of degrees of freedom
@@ -1627,12 +1627,12 @@ Using actual eigenvalue magnitudes
 $\lambda^{(1)}=\lambda^{(1)}_y\!\left(k,\delta,N_y\right)$ and
 $\lambda^{(2)}=\lambda^{(2)}_y\!\left(k,\delta,N_y\right)$ from a large
 collection of discrete operators, we computed exact results for $C^{(1)}$ and
-$C^{(2)}$.  The results are shown in figure~\ref{fig:inhomogeneity}.  The
+$C^{(2)}$.  The results are shown in \autoref{fig:inhomogeneity}.  The
 minimum grid spacing $\Delta{}y$ was measured using either adjacent breakpoints
 or adjacent collocation points to permit a comparison.  Considering only
 breakpoint-based results for $k=8$, one can see how \citet{Venugopal2003}
 probably chose $C^{(1)}=4$ and $C^{(2)}=1$ as discussed in
-sections~\ref{sec:convectivestability} and~\ref{sec:diffusivestability}.
+\autoref{sec:convectivestability} and \autoref{sec:diffusivestability}.
 However, it is striking just how non-universal those choices happen to be.
 Evidently, neither a breakpoint-based nor a collocation point-based $\Delta{}y$
 inherently captures the maximum eigenvalue magnitudes as $k$, $\delta$, and
@@ -1643,7 +1643,7 @@ Hereafter, unlike \citeauthor{Guarini1998}, \citeauthor{Kwok2002}, and
 \citeauthor{Venugopal2003} we take $\Delta{}y$ to be the spacing between
 adjacent \emph{collocation points}.  Performing Levenberg--Marquardt nonlinear
 regression against the vast majority of the empirical data in
-figure~\ref{fig:inhomogeneity} shows good agreement with curve fits like the
+\autoref{fig:inhomogeneity} shows good agreement with curve fits like the
 following
 \begin{align}
   \label{eq:Cfit}
@@ -1662,7 +1662,7 @@ following
 \end{align}
 The data from ``nearly spectral'' discrete operators, defined as when $N_y \leq
 5 k$, proved difficult to fit and was omitted.  Such cases look like outliers
-in figure~\ref{fig:inhomogeneity} and are not operationally important as
+in \autoref{fig:inhomogeneity} and are not operationally important as
 Suzerain is not run in production using a spectral wall-normal basis.  When
 using two-sided stretching per~\eqref{eq:htstretch2}, one collection of
 constants $a$--$i$ permits fitting the retained $C^{(1)}$ observations for
@@ -1671,7 +1671,7 @@ collection permits fitting retained $C^{(2)}$ observations to within [-11.3\%,
 17.1\%].  While those results are encouraging for the generality of the chosen
 functional forms, they are less than satisfactory for production use.  More
 precise, $k$-specific, coefficients for both two- and one-sided stretching
-appear in tables~\ref{tab:C1fit} and~\ref{tab:C2fit}.
+appear in \autoref{tab:C1fit} and \autoref{tab:C2fit}.
 
 Unfortunately, using either $C_\text{approx}^{(1)}$ or $C_\text{approx}^{(2)}$
 directly proves to be overly aggressive as measured using a collection of
@@ -1696,7 +1696,7 @@ $C_\text{approx}^{(i)}$.  That is, the code computes
   \right)^{27/64}
 \end{align}
 where the fit-specific, negative-valued lower error bounds appear in
-tables~\ref{tab:C1fit} and~\ref{tab:C2fit}.  Adjusting to the empirical fits'
+\autoref{tab:C1fit} and \autoref{tab:C2fit}.  Adjusting to the empirical fits'
 lower bounds delivers slightly conservative $\lambda_y^{(i)}$ estimates.  These
 values of $C^{(i)}$ are plugged into equations~\eqref{eq:lambda1deltay}
 and~\eqref{eq:lambda2deltay} with those results feeding into
@@ -2474,9 +2474,9 @@ $N_y > 5k$.
 
 \chapter{Numerical considerations}
 
-Here we take the complete mathematical model from section \ref{sec:derivation}
-and put it into the form which Suzerain will compute per section
-\ref{sec:discretization}.  Though less clean in appearance, this section's
+Here we take the complete mathematical model from \autoref{sec:derivation}
+and put it into the form which Suzerain will compute per
+\autoref{sec:discretization}.  Though less clean in appearance, this section's
 equations will better reflect the spectral implementation details used in
 Suzerain than those given in earlier sections.
 
@@ -2499,7 +2499,7 @@ $e=\rho{}E$ are used as the state variables within the computations.  Though it
 eliminates division and potentially allows for fully dealiased calculations,
 specific density $\sigma=1/\rho$ is not used because it would require a
 nonconservative mass equation.  When rewritten using the state variables the
-equations in section~\ref{nondim_equations} become
+equations in \autoref{nondim_equations} become
 \begin{subequations}
 \begin{align}
   \label{eq:state_continuity}
@@ -2553,7 +2553,7 @@ been employed.
 \section{Communications overhead}
 \label{sec:commoverhead}
 
-As detailed in section~\ref{sec:combineddiscretization}, time advancement
+As detailed in \autoref{sec:combineddiscretization}, time advancement
 occurs in wave space but nonlinear terms must be computed in physical space.
 The communications and computation cost required to convert state data from
 wave space to physical space or vice versa is very high.  Consequently, the
@@ -2758,12 +2758,12 @@ and~\eqref{eq:state_energy} are formed by $\tilde{N}$ in physical space.
 Further, derivatives of different orders are never mixed.  The only linear solve
 required uses a wavenumber-independent factorization of the mass matrix $M$.
 
-Using the information in sections~\ref{velocity_derivative_expansions}
-and~\ref{sec:separate_first_second_deriv} we tabulate in
-table~\vref{tab:nofirstderivnonlinearcost} the specific state variable
+Using the information in \autoref{velocity_derivative_expansions}
+and \autoref{sec:separate_first_second_deriv} we tabulate in
+\autoref{tab:nofirstderivnonlinearcost} the specific state variable
 derivatives necessary to compute each mixed-derivative nonlinear term and all
 of its contributions.  From this table and the equations appearing in
-section~\ref{state_variable_selection}, a fully explicit timestepping approach
+\autoref{state_variable_selection}, a fully explicit timestepping approach
 could compute a single substep at the cost of converting 33 scalar fields from
 wave space to physical space, forming 5 scalars representing the right hand
 sides of equations~\eqref{eq:state_continuity}--\eqref{eq:state_energy}, and
@@ -2942,8 +2942,8 @@ associated programming and runtime overhead.
 Because second derivatives give rise to the most restrictive eigenvalues for
 timestepping, we first focus on how second order terms enter the full operator.
 Nonlinear coefficients found in second order quantities from
-sections~\ref{velocity_derivative_expansions}
-and~\ref{sec:separate_first_second_deriv} will be linearized about a reference
+\autoref{velocity_derivative_expansions} and
+\autoref{sec:separate_first_second_deriv} will be linearized about a reference
 state.
 
 Beginning with the nonlinear linearization candidates within $\nabla\cdot\tau$
@@ -3015,7 +3015,7 @@ from \eqref{eq:nabla_cdot_tau_expansion}:
 \end{align}
 Though linearizing the latter two terms is less common, not linearizing them
 while linearizing the former two technically requires introducing more terms
-into the stability criteria set forth in~\ref{sec:stabilitycriteria}.  We
+into the stability criteria set forth in \autoref{sec:stabilitycriteria}.  We
 implicitly treat the latter two terms to unify the numerics across the momentum
 and energy equations and to acquire an additional iota of stability.
 
@@ -3182,12 +3182,12 @@ equations to the total energy equation is comparatively small.  The ability to
 treat all directions implicitly for both acoustic and diffusive terms has a
 higher runtime cost which should be offset by the larger time stability that
 results.  Coupling the density equation reduces the communications overhead at
-the expense of on-node work (see section~\ref{sec:contconv}) and further
+the expense of on-node work (see \autoref{sec:contconv}) and further
 unifies the programmatic details.  Moreover, so long as the fully coupled
 implicit operations can fit in cache, increasing the on-node work to take
-larger time steps (e.g. section~\ref{sec:momtconv}) helps to balance the high
-communication overhead stemming from sections~\ref{sec:commoverhead}
-and~\ref{sec:separate_first_second_deriv}.  Improving the computation to
+larger time steps (e.g. \autoref{sec:momtconv}) helps to balance the high
+communication overhead stemming from \autoref{sec:commoverhead}
+and \autoref{sec:separate_first_second_deriv}.  Improving the computation to
 communication ratio bolsters scalability.
 
 Accordingly, Suzerain implicitly treats all terms identified as candidates
@@ -3321,10 +3321,10 @@ straightforward.  For simulations with no mean bulk velocity in the spanwise
 direction, the reference coefficient matrices $C^{u_z}$ and $C^{\nu{}u_z}$ may
 be treated as effectively zero.  This reduces the required linear algebra.  If
 desired, the density equation and density terms in the other equations may
-removed from the result in figure~\ref{fig:discreteimplicitop} to greatly
+removed from the result in \autoref{fig:discreteimplicitop} to greatly
 reduce operator assembly and factorization overhead.  Previous work by
 \citet{Guarini1998} did not treat density implicitly.  Note, however, implicit
-density treatment will be assumed in section~\ref{sec:nonreflectingbcs}.
+density treatment will be assumed in \autoref{sec:nonreflectingbcs}.
 Finally, implicitly handling only the wall-normal directions may be
 accomplished by setting $k_{m}$ and $k_{n}$ to zero.  Doing so results in a
 wavenumber independent operator requiring factorization only once per substep.
@@ -3679,7 +3679,7 @@ wavenumber independent operator requiring factorization only once per substep.
 \label{sec:bsmbsm}
 
 The discretized implicit operator $M+\varphi{}L$ depicted in
-figure~\ref{fig:discreteimplicitop} is a blocked square matrix with banded
+\autoref{fig:discreteimplicitop} is a blocked square matrix with banded
 submatrices (BSMBSM).  Matrix $A$ is said to be a BSMBSM when
 \[A = \begin{pmatrix}
     B^{0,0}  & \cdots & B^{0,S-1}   \\
@@ -3769,7 +3769,7 @@ constraints:
 \end{align}
 These conditions may be strongly enforced by linear implicit operators using
 how B-spline basis support limits the number of nonzero coefficients at the
-wall as discussed in section~\ref{sec:formingoperators}.
+wall as discussed in \autoref{sec:formingoperators}.
 
 \subsection{Nonreflecting freestream boundary conditions}
 \label{sec:nonreflectingbcs}
@@ -4255,8 +4255,7 @@ alternative state variables.
 The particular coordinate transformation Suzerain requires maps the
 nondimensional primitive state $U^*$ satisfying
 requirements~\eqref{eq:eulerprimnondim} to the conserved state $V^*$
-nondimensionalized per sections~\ref{sec:nondimrefq}
-and~\ref{nondim_equations}:
+nondimensionalized per \autoref{sec:nondimrefq} and \autoref{nondim_equations}:
 \begin{align}
 \label{eq:eulerconsnondim}
 V^{*}
@@ -4492,7 +4491,7 @@ $,
 .
 \end{align}
 Transforming to Fourier space gives a linear condition almost suitable for
-implicit advance per section~\ref{sec:timediscretization},
+implicit advance per \autoref{sec:timediscretization},
 \begin{align}
   \left[P^G V^L S\right]
   R^Y
@@ -4539,7 +4538,7 @@ nothing but the boundary coefficient.
 While equation~\eqref{eq:dimeulertransformcharnotYwave} constrains incoming
 characteristics, it does not evolve the remainder in accordance with the
 interior of the simulation domain.  Returning to the time discretization of
-section~\ref{sec:timediscretization},
+\autoref{sec:timediscretization},
 equation~\eqref{eq:timediscretization_mass_chi} evolves coefficients $\hat{V}$
 per
 \begin{align}
@@ -4689,7 +4688,7 @@ Rearranging \eqref{eq:dimeulertransformevolve_general} one obtains
 .
 \end{align}
 Evidently, Giles' conditions can be shoehorned into
-section~\ref{sec:imextreatment}'s IMEX Runge--Kutta framework by modifying the
+\autoref{sec:imextreatment}'s IMEX Runge--Kutta framework by modifying the
 action of any existing global operators $L$ and $N$ to obtain the
 boundary-specific $L_I^G$ and $N_I^G$ behavior described by
 equation~\eqref{eq:dimeulertransformevolve_nonlinear}. This treatment is
@@ -4740,7 +4739,7 @@ Now, $N_I^G(\hat{V})$ may be found from a straightforward,
 wavenumber-independent linear transformation of $N(\hat{V})$.  Unfortunately,
 $L_I^G$ requires more effort.
 
-Adhering to the low storage requirements from section~\ref{sec:imextreatment},
+Adhering to the low storage requirements from \autoref{sec:imextreatment},
 implementing $\left(M+\varphi{}L_I^G\right)\hat{V}$ in an $L$-agnostic way atop
 an existing routine accumulating $\left(M+\varphi{}L\right)\hat{V}$ out-of-place
 is best done by having the latter routine return $\varphi{}L\hat{V}$ so that the
@@ -4761,7 +4760,7 @@ $\left(M+\varphi{}L_I^G\right)^{-1}$ atop $\left(M+\varphi{}L\right)^{-1}$ is
 best done by modifying the boundary equations after $M+\varphi{}L$ is formed but
 before the matrix is factorized. These modifications take some care given the
 boundary-agnostic discrete operator assembly and factorization process described
-in section~\ref{sec:bsmbsm}.
+in \autoref{sec:bsmbsm}.
 
 To illustrate implementing $\left(M+\varphi{}L_I^G\right)^{-1}$, suppose only a
 single nonreflecting boundary is desired and that the associated boundary state
@@ -4873,7 +4872,7 @@ $q(x,y,z, t)$ is
 For the remainder of this section to make sense mathematically, it is
 assumed that both the Reynolds and Favre averages are well-defined for
 any required flow variable, $q$.  That is, the integral on the
-right-hand side of (\ref{eqn:reynoldsAvg}) exists whenever required,
+right-hand side of~\eqref{eqn:reynoldsAvg} exists whenever required,
 and the Reynolds-averaged density, $\bar{\rho}$, is positive
 everywhere.
 
@@ -5088,7 +5087,7 @@ terms represent transport of the turbulent kinetic energy density $k$, defined
 below, and viscous stress work due to turbulent velocity fluctuations,
 respectively.
 
-We now average the perfect gas relations from section~\ref{sec:constitutive}.
+We now average the perfect gas relations from \autoref{sec:constitutive}.
 The Reynolds average of~\eqref{eq:perfectgaseos} gives
 \begin{align}
   \bar{p} &= R\overline{\rho{}T} = \bar{\rho}R\tilde{T}
@@ -5452,7 +5451,7 @@ information:
 \end{align}
 Other ways to minimally capture the mean thermodynamic state, e.g. $\bar{\rho}$
 and $\tilde{T}$, could have been chosen.  The information above are natural
-choices following section~\ref{state_variable_selection}.  Favre-fluctuating
+choices following \autoref{state_variable_selection}.  Favre-fluctuating
 correlation densities (e.g.  $\widetilde{h''u''}$ are adopted for notational
 brevity instead of their informationally equivalent Reynolds-averaged
 correlations (e.g.  $\overline{\rho{}h''u''}$).
@@ -5462,7 +5461,7 @@ correlations (e.g.  $\overline{\rho{}h''u''}$).
 
 The dimensional FANS equations from the last section need to be
 nondimensionalized.   The reference quantity selections made in
-section~\ref{sec:nondimrefq} are used and are augmented by
+\autoref{sec:nondimrefq} are used and are augmented by
 \begin{align}
   k_0 &= u_{0}^2
 &
@@ -5577,7 +5576,7 @@ The equations are augmented by the following nondimensional relationships:
 \end{align}
 \end{subequations}
 where $\Reynolds$, $\Mach$, and $\Prandtl$ are defined as in
-section~\ref{sec:nondimrefq}.  One may exactly compute the nondimensional mean
+\autoref{sec:nondimrefq}.  One may exactly compute the nondimensional mean
 state evolution given the following statistical quantities:
 \begin{align}
 &\bar{\rho}
@@ -5660,10 +5659,10 @@ Statistical quantities are obtained by sampling from a well-resolved,
 stationary simulation.  Mean quantity samples may be computed on-the-fly.
 Fluctuating quantity samples, because they must be taken relative to an unknown
 true mean, are computed by combining mean quantity samples following the rules
-in section~\ref{sec:averaging}.
+in \autoref{sec:averaging}.
 
 Sampling the following mean quantities is sufficient to compute
-the statistical quantities listed in section~\ref{sec:nondimfans}:
+the statistical quantities listed in \autoref{sec:nondimfans}:
 \begin{align}
 &\bar{\rho}
 &
@@ -5912,7 +5911,7 @@ perfectly estimate the uncertainty in Reynolds-averaged quantities like
 $\bar{\rho}$.  Many quantities derived from $\bar{\rho}$, for instance
 $\tilde{u}$, and their uncertainties are also of interest and require
 estimation.  A sm\"{o}rg\r{a}sbord of such quantities, all of engineering
-interest, are cataloged in section~\ref{sec:nondimfans}.
+interest, are cataloged in \autoref{sec:nondimfans}.
 
 This section assumes both robust mean and uncertainty-in-the-mean estimates can
 be obtained for Reynolds-averaged quantities.  This section describes how those
