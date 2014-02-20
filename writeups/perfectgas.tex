@@ -4626,9 +4626,8 @@ Moving the nonsingular characteristic projection to the right hand side,
 ,
 \end{align}
 a boundary evolution equation matching the form~\eqref{eq:coeffspaceevolve} is
-recovered.  Further auxiliary definitions could improve the previous equation's
-brevity but they would obfuscate the derivation and the physics.  Notice this
-result omits viscous effects.
+recovered.  Auxiliary definitions could improve the result's brevity but they
+would obfuscate the physics.
 
 %%% TODO This content is utter garbage as letting \bar{V} drift was a disaster!
 %% While the derivation of this section's results has assumed a steady $\bar{V}$,
@@ -4692,12 +4691,14 @@ section~\ref{sec:imextreatment}'s IMEX Runge--Kutta framework by modifying the
 action of any existing global operators $L$ and $N$ to obtain the
 boundary-specific $L_I^G$ and $N_I^G$ behavior described by
 equation~\eqref{eq:dimeulertransformevolve_nonlinear}. This treatment is
-suitable for purely explicit time advance. It may also be used when the
-streamwise and spanwise directions are not handled implicitly because the
+suitable for purely explicit time advance where $L=0$. It may also be used when
+the streamwise and spanwise directions are not handled implicitly because the
 equation requires only wavenumber-independent modifications to $L$ to produce
-$L_E^G$. Quite conveniently, $N_E^G\left(\hat{V}\right)$ may be computed from
+$L_E^G$. Conveniently, $N_E^G\left(\hat{V}\right)$ may be obtained from
 $N\left(\hat{V}\right)$ using only information available in Fourier space
-assuming that reference state $\bar{V}$ has already been gathered.
+assuming that reference state $\bar{V}$ has already been gathered. The required
+$C^G$-, $B^G$-, and $P^G$-related matrices may be computed only once for this
+$\bar{V}$ and then cached for repeated use.
 
 \subsubsection{Implementation primarily within the linear implicit operator}
 \label{sec:nrbc_mostly_implicit}
@@ -4733,6 +4734,9 @@ linear operator $L$:
 }_{N_I^G\left(\hat{V}\right)}
 .
 \end{align}
+Now, $N_I^G(\hat{V})$ may be found from a straightforward,
+wavenumber-independent linear transformation of $N(\hat{V})$.  Unfortunately,
+$L_I^G$ requires more effort.
 
 Adhering to the low storage requirements from section~\ref{sec:imextreatment},
 implementing $\left(M+\varphi{}L_I^G\right)\hat{V}$ in an $L$-agnostic way atop
@@ -4740,6 +4744,7 @@ an existing routine accumulating $\left(M+\varphi{}L\right)\hat{V}$ out-of-place
 is best done by having the latter routine return $\varphi{}L\hat{V}$ so that the
 boundary action of $L_I^G$ relative to $L$ can be further accommodated:
 \begin{alignat}{10}
+\label{eq:dimeulertransformevolve_lineardelta}
 \left.\left(M+\varphi{}L_I^G\right) - \left(M+\varphi{}L\right)\right|_\text{boundary}
   &={}   &&\ii &&\varphi{} k_x \, &&{R^Y}^{-1} \left[V^L S\right]^{-1} &&\left[P^G C^G\right] &&\left[V^L S\right] {R^Y} & M& \\
   &{}+{} &&\ii &&\varphi{} k_z    &&{R^Y}^{-1} \left[V^L S\right]^{-1} &&\left[P^G B^G\right] &&\left[V^L S\right] {R^Y} & M& \\
@@ -4751,17 +4756,13 @@ two boundaries of $\hat{V}$.  No special handling is required for in-place
 application as it is currently implemented using out-of-place routines in
 conjunction with auxiliary buffers.
 
-\todo{STARTHERE}
-Implementing
-$\left(M+\varphi{}L_I^G\right)^{-1}$ atop $\left(M+\varphi{}L\right)^{-1}$ is
-best done by modifying the boundary equations after $M+\varphi{}L$ is formed
-but before the matrix is factorized.  Doing so requires using that, for a
-B-spline basis, $M$ contains only a single one in the boundary equations with
-all other entries being zero.  Happily, $N_I^G(\hat{V})$ can be found by a
-straightforward linear transformation of $N(\hat{V})$ after the latter has been
-computed.  The required $C^G$-, $B^G$-, and $P^G$-related matrices may be
-computed only once per nonreflecting boundary per Runge--Kutta time step from
-$\bar{V}$ and then cached for repeated use.
+Implementing $\left(M+\varphi{}L_I^G\right)^{-1}$ atop
+$\left(M+\varphi{}L\right)^{-1}$ is best done by modifying the boundary
+equations after $M+\varphi{}L$ is formed but before the matrix is factorized.
+Doing so requires using that, for a B-spline basis, $M$ contains only a single
+one in the boundary equations with all other entries being zero.
+%Rewriting~\eqref{eq:dimeulertransformevolve_lineardelta} as a partitioned
+%matrix isolating the interior
 
 \section{Imposing a favorable streamwise pressure gradient}
 
