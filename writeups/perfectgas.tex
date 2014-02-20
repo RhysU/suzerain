@@ -4829,7 +4829,7 @@ One possibility for solving the problem $\hat{V} = \left(M +
    &=
     \begin{bmatrix} I & 0 \\ 0 & \left(I - C\right)^{-1} \end{bmatrix}
 \end{align}
-is the straightforward approach
+is the straightforward, in-place-friendly approach
 \begin{align}
     \begin{bmatrix} I & 0 \\ 0 & \left(I - C\right)^{-1} \end{bmatrix}
     \hat{V}
@@ -4862,15 +4862,16 @@ is the straightforward approach
     \right)
     X
 \end{align}
-which suffers no increase in operator factorization bandwidth and can be
-performed in-place.  The incremental cost consists of a handful of small, dense
-operations. Approach~\eqref{eq:dimeulertransformevolve_linearsolve} happily may
-reuse the considerable effort expended to verify the $\left(M +
-\varphi{}L\right)$ operator depicted in \autoref{fig:discreteimplicitop} when
-coded atop the solver machinery detailed in \autoref{sec:bsmbsm}. Lastly, if $L$
-is wavenumber-independent and a lower-order nonreflecting boundary condition
-taking $k_x = k_z = 0$ adequate, the operator factorization and additional dense
-operations are wavenumber-independent too.
+which suffers no increase in operator factorization bandwidth. The incremental
+cost consists of a handful of small, dense operations.
+Approach~\eqref{eq:dimeulertransformevolve_linearsolve} happily may reuse the
+considerable effort expended to verify the $M + \varphi{}L$ operator depicted in
+\autoref{fig:discreteimplicitop} when coded atop the solver machinery detailed
+in \autoref{sec:bsmbsm}. Lastly, if $L$ is wavenumber-independent and a
+lower-order nonreflecting boundary condition taking $k_x = k_z = 0$ adequate,
+the operator factorization and dense operations are wavenumber-independent too.
+
+\todo{Check that $I - C$ is invertible.  I'm concerned.}
 
 \section{Imposing a favorable streamwise pressure gradient}
 
