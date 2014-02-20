@@ -4628,7 +4628,7 @@ Moving the nonsingular characteristic projection to the right hand side,
 \end{align}
 a boundary evolution equation matching the form~\eqref{eq:coeffspaceevolve} is
 recovered.  Auxiliary definitions could improve the result's brevity but they
-would obfuscate the physics.
+obfuscate the physics.
 
 %%% TODO This content is utter garbage as letting \bar{V} drift was a disaster!
 %% While the derivation of this section's results has assumed a steady $\bar{V}$,
@@ -4641,17 +4641,16 @@ would obfuscate the physics.
 %% modified to account for any auxiliary constraints (e.g. holding freestream
 %% streamwise momentum constant at each substep).
 
-Finally, \citet{Guarini1998} mentions that \citet{Poinsot1992Boundary}
-suggest two additional viscous conditions be supplied when conditions like
-these are applied to the Navier--Stokes equations.  These are currently omitted
-but that choice may need to be revisited.  Guarini also rotated the
-nonreflecting boundary to match the nonorthogonal coordinate system used for
-his spatially homogenized boundary layer.  Personal communications with Victor
-Topalian regarding his temporally homogenized work suggests reorienting the
-nonreflecting coordinate system is unnecessary.  However, modest grid
-stretching near the freestream and other ``solution conditioning'' tools like
-low pass filtering have been employed in his work.  This choice, too, might
-need to be reviewed.
+\citet{Guarini1998} mentions that \citet{Poinsot1992Boundary} suggest two
+additional viscous conditions be supplied when conditions like these are applied
+to the Navier--Stokes equations.  These are currently omitted but that choice
+may need to be revisited.  Guarini also rotated the nonreflecting boundary to
+match the nonorthogonal coordinate system used for his spatially homogenized
+boundary layer.  Personal communications with Victor Topalian regarding his
+temporally homogenized work suggests reorienting the nonreflecting coordinate
+system is unnecessary.  However, modest grid stretching near the freestream and
+other ``solution conditioning'' tools like low pass filtering have been employed
+in his work.  This choice, too, might need to be reviewed.
 
 \subsubsection{Implementation primarily within the nonlinear explicit operator}
 \label{sec:nrbc_mostly_explicit}
@@ -4822,9 +4821,56 @@ operators permits writing
 The hidden constituent $\left(I-C\right)L_1$
 inside~\eqref{eq:dimeulertransformevolve_linearfact} increases the matrix
 bandwidth relative to the original operator recoverable by setting $A=B=C=0$.
-Mitigating this increased bandwidth is important for both solving efficiently
-and for reusing the considerable effort to implement $\left(M +
-\varphi{}L\right)$ as depicted in \autoref{fig:discreteimplicitop}.
+Mitigating this increased bandwidth is necessary to maintain solver efficiency.
+One possibility for solving the problem $\hat{V} = \left(M +
+\varphi{}L_I^G\right) X$ capitalizing on identity
+\begin{align}
+    \begin{bmatrix} I & 0 \\ 0 & I - C \end{bmatrix}^{-1}
+   &=
+    \begin{bmatrix} I & 0 \\ 0 & \left(I - C\right)^{-1} \end{bmatrix}
+\end{align}
+is the straightforward approach
+\begin{align}
+    \begin{bmatrix} I & 0 \\ 0 & \left(I - C\right)^{-1} \end{bmatrix}
+    \hat{V}
+    &=
+    \begin{bmatrix} I & 0 \\ 0 & I - C \end{bmatrix}^{-1}
+    \left(M + \varphi{}L_I^G\right) X
+\\
+    &=
+    \left(
+        \left(M + \varphi{}L\right)
+        +
+        \begin{bmatrix} I & 0 \\ 0 & \left(I - C\right)^{-1} \end{bmatrix}
+        \begin{bmatrix}
+            0 & 0 \\
+            0 & C + \ii \varphi{} k_x A + \ii \varphi{} k_z B
+        \end{bmatrix}
+    \right)
+    X
+\\
+    &=
+    \label{eq:dimeulertransformevolve_linearsolve}
+    \left(
+        \left(M + \varphi{}L\right)
+        +
+        \begin{bmatrix}
+            0 & 0 \\
+            0 & \left(I-C\right)^{-1}
+                \left(C + \ii \varphi{} k_x A + \ii \varphi{} k_z B\right)
+        \end{bmatrix}
+    \right)
+    X
+\end{align}
+which suffers no increase in operator factorization bandwidth and can be
+performed in-place.  The incremental cost consists of a handful of small, dense
+operations. Approach~\eqref{eq:dimeulertransformevolve_linearsolve} happily may
+reuse the considerable effort expended to verify the $\left(M +
+\varphi{}L\right)$ operator depicted in \autoref{fig:discreteimplicitop} when
+coded atop the solver machinery detailed in \autoref{sec:bsmbsm}. Lastly, if $L$
+is wavenumber-independent and a lower-order nonreflecting boundary condition
+taking $k_x = k_z = 0$ adequate, the operator factorization and additional dense
+operations are wavenumber-independent too.
 
 \section{Imposing a favorable streamwise pressure gradient}
 
