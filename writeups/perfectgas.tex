@@ -4756,18 +4756,20 @@ The auxiliary work and storage required is small and scales like two times the
 number of equations as $\varphi{}L\hat{V}$ need only be returned for at most the
 two boundaries of $\hat{V}$.  No special handling is required for in-place
 application as it is currently implemented using out-of-place routines in
-conjunction with auxiliary buffers.
+conjunction with auxiliary buffers. Implementing
+$\left(M+\varphi{}L_I^G\right)^{-1}$ atop $\left(M+\varphi{}L\right)^{-1}$ is
+best done by modifying the boundary equations after $M+\varphi{}L$ is formed but
+before the matrix is factorized. These modifications take some care given the
+boundary-agnostic discrete operator assembly and factorization process described
+in section~\ref{sec:bsmbsm}.
 
-Implementing $\left(M+\varphi{}L_I^G\right)^{-1}$ atop
-$\left(M+\varphi{}L\right)^{-1}$ is best done by modifying the boundary
-equations after $M+\varphi{}L$ is formed but before the matrix is factorized.
-These modifications take some care given the boundary-agnostic discrete operator
-assembly and factorization process described in section~\ref{sec:bsmbsm}. To
-illustrate, suppose only a single nonreflecting boundary is desired and that the
-associated boundary state coefficients are stored interleaved at the bottom of
-the state vector $\hat{V}$ per~\eqref{eq:bsmbsm_renumbering}. Then one can
+To illustrate implementing $\left(M+\varphi{}L_I^G\right)^{-1}$, suppose only a
+single nonreflecting boundary is desired and that the associated boundary state
+coefficients are stored interleaved at the bottom of the state vector $\hat{V}$
+per~\eqref{eq:bsmbsm_renumbering}. Then one can
 partition~\eqref{eq:dimeulertransformevolve_lineardelta} as
 \begin{align}
+    \label{eq:dimeulertransformevolve_linearpartition}
     M + \varphi{}L_I^G
 &=
     \underbrace{
@@ -4779,16 +4781,23 @@ partition~\eqref{eq:dimeulertransformevolve_lineardelta} as
     -
     \varphi
     \begin{bmatrix} 0 & 0 \\ 0 & C \end{bmatrix}
+    \underbrace{
     \begin{bmatrix} L_{0} \\ L_{1} \end{bmatrix}
+    }_L
     +
     \varphi
-    \begin{bmatrix} 0 & 0 \\ 0 & A + B \end{bmatrix}
+    \begin{bmatrix} 0 & 0 \\ 0 & \ii k_x A + \ii k_z B \end{bmatrix}
+    \underbrace{
     \begin{bmatrix} M_{00} & M_{01} \\ 0 & M_{11} \end{bmatrix}
+    }_M
 \end{align}
-using non-square $L_0$ and $L_1$.  Here, the $\left[P^G C^G\right]$-, $\left[P^G
-B^G\right]$-, and $\left[P^G\right]$-dependent Giles dense matrix products have
-been abbreviated to $A$, $B$, and $C$, respectively.  Renumbered appropriately,
-that $M_{11} = I$ holds for collocation-based operators permits showing
+with notably non-square $M_{01}$, $L_0$ and $L_1$.  Here, the $\left[P^G
+C^G\right]$-, $\left[P^G B^G\right]$-, and $\left[P^G\right]$-dependent Giles
+dense matrix products mapping collocation points to collocation points have been
+abbreviated to $A$, $B$, and $C$, respectively.  Wavenumber-dependence, beyond
+that shown from the convective terms $\ii k_x A$ and $\ii k_z B$, may also enter
+through $L$. That $M_{11} = I$ holds for collocation-based B-spline
+operators permits writing
 \begin{align}
     M + \varphi{}L_I^G
 &=
@@ -4799,14 +4808,24 @@ that $M_{11} = I$ holds for collocation-based operators permits showing
     \begin{bmatrix} L_{0} \\ L_{1} \end{bmatrix}
     +
     \varphi
-    \begin{bmatrix} 0 & 0 \\ 0 & A + B \end{bmatrix}.
+    \begin{bmatrix} 0 & 0 \\ 0 & \ii k_x A + \ii k_z B \end{bmatrix}
+\\
+&=
+    \label{eq:dimeulertransformevolve_linearfact}
+    \begin{bmatrix} I & 0 \\ 0 & I - C \end{bmatrix}
+    \left(M + \varphi{}L\right)
+    +
+    \begin{bmatrix}
+        0 & 0 \\
+        0 & C + \ii \varphi{} k_x A + \ii \varphi{} k_z B.
+    \end{bmatrix}
 \end{align}
-While the first and last terms have bandwidth no larger than $M+\varphi{}L$, the
-$\left(I-C\right)L_1$ product in the middle term may.  Mitigating this potential
-increase in matrix bandwidth is important for both implicit solve efficiency and
-for maximizing logic reuse to reduce verification effort.  Also, it would be
-disheartening to re-code, re-test, and re-tune the operator depicted in
-\autoref{fig:discreteimplicitop} just to handle one pesky boundary.
+The hidden constituent $\left(I-C\right)L_1$
+inside~\eqref{eq:dimeulertransformevolve_linearfact} increases the matrix
+bandwidth relative to the original operator recoverable by setting $A=B=C=0$.
+Mitigating this increased bandwidth is important for both solving efficiently
+and for reusing the considerable effort to implement $\left(M +
+\varphi{}L\right)$ as depicted in \autoref{fig:discreteimplicitop}.
 
 \section{Imposing a favorable streamwise pressure gradient}
 
