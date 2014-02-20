@@ -3676,6 +3676,7 @@ wavenumber independent operator requiring factorization only once per substep.
 \end{sidewaysfigure}
 
 \subsection{Implementation of the discretized implicit operator}
+\label{sec:bsmbsm}
 
 The discretized implicit operator $M+\varphi{}L$ depicted in
 figure~\ref{fig:discreteimplicitop} is a blocked square matrix with banded
@@ -3710,15 +3711,16 @@ $\mathtt{KU}=~\mathtt{S}\left(\mathtt{ku}+1\right)-1$ superdiagonals summing to
 overall bandwidth $\mathtt{KL} + 1 + \mathtt{KU} = \mathtt{S}\left(\mathtt{kl}
 + \mathtt{ku} + 2\right)-1$.  The reverse permutation vector has a simple
 closed form \[q^{-1}(i) = \left(i\bmod{}n\right)S + \lfloor{}i/n\rfloor{}.\]
-With $A_{i,j}$ in hand, the banded renumbering may formed using the
+With $A_{i,j}$ in hand, the banded renumbering may be formed using the
 relationships
-\begin{align*}
+\begin{align}
+    \label{eq:bsmbsm_renumbering}
        \left.A\right|_{i,j}
     &= \left.P A \trans{P}\right|_{q^{-1}(i),q^{-1}(j)}
     &
        \left.P A \trans{P}\right|_{i,j}
     &= \left.A\right|_{q(i),q(j)}.
-\end{align*}
+\end{align}
 This renumbering can be LU factorized in order $\mathtt{N}\left(\mathtt{KL} + 1
 + \mathtt{KU}\right)^2 =
 \mathtt{S}\,\mathtt{n}\left(\mathtt{S}\left(\mathtt{kl} + \mathtt{ku} +
@@ -4759,10 +4761,52 @@ conjunction with auxiliary buffers.
 Implementing $\left(M+\varphi{}L_I^G\right)^{-1}$ atop
 $\left(M+\varphi{}L\right)^{-1}$ is best done by modifying the boundary
 equations after $M+\varphi{}L$ is formed but before the matrix is factorized.
-Doing so requires using that, for a B-spline basis, $M$ contains only a single
-one in the boundary equations with all other entries being zero.
-%Rewriting~\eqref{eq:dimeulertransformevolve_lineardelta} as a partitioned
-%matrix isolating the interior
+These modifications take some care given the boundary-agnostic discrete operator
+assembly and factorization process described in section~\ref{sec:bsmbsm}. To
+illustrate, suppose only a single nonreflecting boundary is desired and that the
+associated boundary state coefficients are stored interleaved at the bottom of
+the state vector $\hat{V}$ per~\eqref{eq:bsmbsm_renumbering}. Then one can
+partition~\eqref{eq:dimeulertransformevolve_lineardelta} as
+\begin{align}
+    M + \varphi{}L_I^G
+&=
+    \underbrace{
+    \begin{bmatrix} M_{00} & M_{01} \\ 0 & M_{11} \end{bmatrix}
+    +
+    \varphi
+    \begin{bmatrix} L_{0} \\ L_{1} \end{bmatrix}
+    }_{M + \varphi{}L}
+    -
+    \varphi
+    \begin{bmatrix} 0 & 0 \\ 0 & C \end{bmatrix}
+    \begin{bmatrix} L_{0} \\ L_{1} \end{bmatrix}
+    +
+    \varphi
+    \begin{bmatrix} 0 & 0 \\ 0 & A + B \end{bmatrix}
+    \begin{bmatrix} M_{00} & M_{01} \\ 0 & M_{11} \end{bmatrix}
+\end{align}
+using non-square $L_0$ and $L_1$.  Here, the $\left[P^G C^G\right]$-, $\left[P^G
+B^G\right]$-, and $\left[P^G\right]$-dependent Giles dense matrix products have
+been abbreviated to $A$, $B$, and $C$, respectively.  Renumbered appropriately,
+that $M_{11} = I$ holds for collocation-based operators permits showing
+\begin{align}
+    M + \varphi{}L_I^G
+&=
+    \begin{bmatrix} M_{00} & M_{01} \\ 0 & I \end{bmatrix}
+    +
+    \varphi
+    \begin{bmatrix} I & 0 \\ 0 & I - C \end{bmatrix}
+    \begin{bmatrix} L_{0} \\ L_{1} \end{bmatrix}
+    +
+    \varphi
+    \begin{bmatrix} 0 & 0 \\ 0 & A + B \end{bmatrix}.
+\end{align}
+While the first and last terms have bandwidth no larger than $M+\varphi{}L$, the
+$\left(I-C\right)L_1$ product in the middle term may.  Mitigating this potential
+increase in matrix bandwidth is important for both implicit solve efficiency and
+for maximizing logic reuse to reduce verification effort.  Also, it would be
+disheartening to re-code, re-test, and re-tune the operator depicted in
+\autoref{fig:discreteimplicitop} just to handle one pesky boundary.
 
 \section{Imposing a favorable streamwise pressure gradient}
 
