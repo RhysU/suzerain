@@ -4690,15 +4690,11 @@ Evidently, Giles' conditions can be shoehorned into
 \autoref{sec:imextreatment}'s IMEX Runge--Kutta framework by modifying the
 action of any existing global operators $L$ and $N$ to obtain the
 boundary-specific $L_I^G$ and $N_I^G$ behavior described by
-equation~\eqref{eq:dimeulertransformevolve_nonlinear}. This treatment is
-suitable for purely explicit time advance where $L=0$. It may also be used when
-the streamwise and spanwise directions are not handled implicitly because the
-equation requires only wavenumber-independent modifications to $L$ to produce
-$L_E^G$. Conveniently, $N_E^G\left(\hat{V}\right)$ may be obtained from
-$N\left(\hat{V}\right)$ using only information available in Fourier space
-assuming that reference state $\bar{V}$ has already been gathered. The required
-$C^G$-, $B^G$-, and $P^G$-related matrices may be computed only once for this
-$\bar{V}$ and then cached for repeated use.
+equation~\eqref{eq:dimeulertransformevolve_nonlinear}. The required $C^G$-,
+$B^G$-, and $P^G$-related matrices may be computed only once for this $\bar{V}$
+and then cached for repeated use.  Conveniently, $N_E^G\left(\hat{V}\right)$ may
+be obtained from $N\left(\hat{V}\right)$ using only information available in
+Fourier space assuming that reference state $\bar{V}$ has already been gathered.
 
 \subsubsection{Implementation primarily within the linear implicit operator}
 \label{sec:nrbc_mostly_implicit}
@@ -4734,15 +4730,11 @@ linear operator $L$:
 }_{N_I^G\left(\hat{V}\right)}
 .
 \end{align}
-Now, $N_I^G(\hat{V})$ may be found from a straightforward,
-wavenumber-independent linear transformation of $N(\hat{V})$.  Unfortunately,
-$L_I^G$ requires more effort.
-
-Adhering to the low storage requirements from \autoref{sec:imextreatment},
-implementing $\left(M+\varphi{}L_I^G\right)\hat{V}$ in an $L$-agnostic way atop
-an existing routine accumulating $\left(M+\varphi{}L\right)\hat{V}$ out-of-place
-is best done by having the latter routine return $\varphi{}L\hat{V}$ so that the
-boundary action of $L_I^G$ relative to $L$ can be further accommodated:
+$N_I^G(\hat{V})$ may be found from a straightforward, wavenumber-independent
+linear transformation of $N(\hat{V})$. Accumulating product
+$\left(M+\varphi{}L_I^G\right)\hat{V}$ out-of-place in an $L$-agnostic way can
+be done by first accumulating $\left(M+\varphi{}L\right)\hat{V}$ and
+subsequently adjusting the boundary action:
 \begin{alignat}{10}
 \label{eq:dimeulertransformevolve_lineardelta}
 \left.\left(M+\varphi{}L_I^G\right) - \left(M+\varphi{}L\right)\right|_\text{boundary}
@@ -4750,21 +4742,9 @@ boundary action of $L_I^G$ relative to $L$ can be further accommodated:
   &{}+{} &&\ii &&\varphi{} k_z    &&{R^Y}^{-1} \left[V^L S\right]^{-1} &&\left[P^G B^G\right] &&\left[V^L S\right] {R^Y} & M& \\
   &{}-{} &&    &&\varphi{}        &&{R^Y}^{-1} \left[V^L S\right]^{-1} &&\left[P^G \phantom{B^G}   \right] &&\left[V^L S\right] {R^Y} & L&
 \end{alignat}
-The auxiliary work and storage required is small and scales like two times the
-number of equations as $\varphi{}L\hat{V}$ need only be returned for at most the
-two boundaries of $\hat{V}$.  No special handling is required for in-place
-application as it is currently implemented using out-of-place routines in
-conjunction with auxiliary buffers. Implementing
-$\left(M+\varphi{}L_I^G\right)^{-1}$ atop $\left(M+\varphi{}L\right)^{-1}$ is
-best done by modifying the boundary equations after $M+\varphi{}L$ is formed but
-before the matrix is factorized. These modifications take some care given the
-boundary-agnostic discrete operator assembly and factorization process described
-in \autoref{sec:bsmbsm}.
-
-To illustrate implementing $\left(M+\varphi{}L_I^G\right)^{-1}$, suppose only a
-single nonreflecting boundary is desired and that the associated boundary state
-coefficients are stored interleaved at the bottom of the state vector $\hat{V}$
-per~\eqref{eq:bsmbsm_renumbering}. Then one can
+To illustrate $L$-agnostic $\left(M+\varphi{}L_I^G\right)$ assembly, suppose the
+state coefficients at the nonreflecting boundary are interleaved at the bottom
+of vector $\hat{V}$ per~\eqref{eq:bsmbsm_renumbering}. Then one can
 partition~\eqref{eq:dimeulertransformevolve_lineardelta} as
 \begin{align}
     \label{eq:dimeulertransformevolve_linearpartition}
@@ -4792,10 +4772,8 @@ partition~\eqref{eq:dimeulertransformevolve_lineardelta} as
 with notably non-square $M_{01}$, $L_0$ and $L_1$.  Here, the $\left[P^G
 C^G\right]$-, $\left[P^G B^G\right]$-, and $\left[P^G\right]$-dependent Giles
 dense matrix products mapping collocation points to collocation points have been
-abbreviated to $A$, $B$, and $C$, respectively.  Wavenumber-dependence, beyond
-that shown from the convective terms $\ii k_x A$ and $\ii k_z B$, may also enter
-through $L$. That $M_{11} = I$ holds for collocation-based B-spline
-operators permits writing
+abbreviated to $A$, $B$, and $C$, respectively. Because $M_{11} = I$ holds for
+collocation-based B-spline operators,
 \begin{align}
     M + \varphi{}L_I^G
 &=
@@ -4815,63 +4793,9 @@ operators permits writing
     +
     \begin{bmatrix}
         0 & 0 \\
-        0 & C + \ii \varphi{} k_x A + \ii \varphi{} k_z B.
-    \end{bmatrix}
+        0 & C + \ii \varphi{} k_x A + \ii \varphi{} k_z B
+    \end{bmatrix}.
 \end{align}
-The hidden constituent $\left(I-C\right)L_1$
-inside~\eqref{eq:dimeulertransformevolve_linearfact} increases the matrix
-bandwidth relative to the original operator recoverable by setting $A=B=C=0$.
-Mitigating this increased bandwidth is necessary to maintain solver efficiency.
-One possibility for solving the problem $\hat{V} = \left(M +
-\varphi{}L_I^G\right) X$ capitalizing on identity
-\begin{align}
-    \begin{bmatrix} I & 0 \\ 0 & I - C \end{bmatrix}^{-1}
-   &=
-    \begin{bmatrix} I & 0 \\ 0 & \left(I - C\right)^{-1} \end{bmatrix}
-\end{align}
-is the straightforward, in-place-friendly approach
-\begin{align}
-    \begin{bmatrix} I & 0 \\ 0 & \left(I - C\right)^{-1} \end{bmatrix}
-    \hat{V}
-    &=
-    \begin{bmatrix} I & 0 \\ 0 & I - C \end{bmatrix}^{-1}
-    \left(M + \varphi{}L_I^G\right) X
-\\
-    &=
-    \left(
-        \left(M + \varphi{}L\right)
-        +
-        \begin{bmatrix} I & 0 \\ 0 & \left(I - C\right)^{-1} \end{bmatrix}
-        \begin{bmatrix}
-            0 & 0 \\
-            0 & C + \ii \varphi{} k_x A + \ii \varphi{} k_z B
-        \end{bmatrix}
-    \right)
-    X
-\\
-    &=
-    \label{eq:dimeulertransformevolve_linearsolve}
-    \left(
-        \left(M + \varphi{}L\right)
-        +
-        \begin{bmatrix}
-            0 & 0 \\
-            0 & \left(I-C\right)^{-1}
-                \left(C + \ii \varphi{} k_x A + \ii \varphi{} k_z B\right)
-        \end{bmatrix}
-    \right)
-    X
-\end{align}
-which suffers no increase in operator factorization bandwidth. The incremental
-cost consists of a handful of small, dense operations.
-Approach~\eqref{eq:dimeulertransformevolve_linearsolve} happily may reuse the
-considerable effort expended to verify the $M + \varphi{}L$ operator depicted in
-\autoref{fig:discreteimplicitop} when coded atop the solver machinery detailed
-in \autoref{sec:bsmbsm}. Lastly, if $L$ is wavenumber-independent and a
-lower-order nonreflecting boundary condition taking $k_x = k_z = 0$ adequate,
-the operator factorization and dense operations are wavenumber-independent too.
-
-\todo{Check that $I - C$ is invertible.  I'm concerned.}
 
 \section{Imposing a favorable streamwise pressure gradient}
 
