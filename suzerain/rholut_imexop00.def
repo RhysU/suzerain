@@ -31,6 +31,7 @@
 //
 // #define FUNCNAME00() /* Function name, e.g. suzerain_rholut_imexop_packc00 */
 // #define PACK(x)      /* suzerain_bsmbsm_ ## x ## pack{c,f}                 */
+// #define PTR(x)       /* suzerain_bsmbsm_ ## x ## pack{c,f}_ptr             */
 
 void
 FUNCNAME00()(
@@ -91,22 +92,16 @@ FUNCNAME00()(
     // equation indices are transposed in calls to PACK(...)(...) and we right
     // the transpose of the discrete operators by diagonal matrices.
 
-    // Prepare offset to the final column of buf to permit adjusting
-    // the accumulated operator to provide nonreflecting boundary conditions.
-    // "Enumerated" constants i and j track the active NRBC matrix element.
-    int bufupper_il, bufupper_iu;
-    complex_double * const bufupper = suzerain_gbmatrix_col(
-            A_T->n, A_T->n, A_T->kl, A_T->ku, buf, A_T->ld, sizeof(buf[0]),
-            A_T->n-1, &bufupper_il, &bufupper_iu);
+    // Prepare pointer to the final element of buf to permit capturing
+    // the operator-less-mass-matrices coefficients prior to assembly.
+    const complex_double * const bufupper = buf + suzerain_gbmatrix_offset(
+            A_T->ld, A_T->kl, A_T->ku, A_T->n-1, A_T->n-1);
+    complex_double phi_L[5*5] = { 0 };
 
     // Shorthand for common patterns below
 #   define REF(quantity) r->quantity, ld->quantity
 #   define PREAMBLE      'R', A_T->n, A_T->n, A_T->kl, A_T->ku
-#   define UPPER_C(i,j)                                     \
-        if (c) do {                                         \
-            for (int k = bufupper_il; k < bufupper_iu; ++k) \
-                bufupper[k] *= 1 - c[(i) + 5*(j)];          \
-        } while (0)
+#   define UPPER_C(i,j)  do { phi_L[(i) + 5*(j)] = phi*(*bufupper); } while (0)
 
     if (rho_E >= 0) { enum { i = 0 };  // Prepare total energy row
 
@@ -399,10 +394,108 @@ FUNCNAME00()(
 #   undef PREAMBLE
 #   undef UPPER_C
 
+    if (c) {
+
+        const int u[5] = {
+            suzerain_bsmbsm_qinv(A_T->S, A_T->n, (rho_E+1)*A_T->n - 1),
+            suzerain_bsmbsm_qinv(A_T->S, A_T->n, (rho_u+1)*A_T->n - 1),
+            suzerain_bsmbsm_qinv(A_T->S, A_T->n, (rho_v+1)*A_T->n - 1),
+            suzerain_bsmbsm_qinv(A_T->S, A_T->n, (rho_w+1)*A_T->n - 1),
+            suzerain_bsmbsm_qinv(A_T->S, A_T->n, (rho  +1)*A_T->n - 1)
+        };
+
+        if (rho_E >= 0) { enum { i = 0 };
+            if (rho_E >= 0) { enum { j = 0 };
+                *PTR(z)(A_T, u[j], u[i], patpt) -= c[0]*phi_L[ 0] + c[5]*phi_L[ 1] + c[10]*phi_L[ 2] + c[15]*phi_L[ 3] + c[20]*phi_L[ 4];
+            }
+            if (rho_u >= 0) { enum { j = 1 };
+                *PTR(z)(A_T, u[j], u[i], patpt) -= c[1]*phi_L[ 0] + c[6]*phi_L[ 1] + c[11]*phi_L[ 2] + c[16]*phi_L[ 3] + c[21]*phi_L[ 4];
+            }
+            if (rho_v >= 0) { enum { j = 2 };
+                *PTR(z)(A_T, u[j], u[i], patpt) -= c[2]*phi_L[ 0] + c[7]*phi_L[ 1] + c[12]*phi_L[ 2] + c[17]*phi_L[ 3] + c[22]*phi_L[ 4];
+            }
+            if (rho_w >= 0) { enum { j = 3 };
+                *PTR(z)(A_T, u[j], u[i], patpt) -= c[3]*phi_L[ 0] + c[8]*phi_L[ 1] + c[13]*phi_L[ 2] + c[18]*phi_L[ 3] + c[23]*phi_L[ 4];
+            }
+            if (rho   >= 0) { enum { j = 4 };
+                *PTR(z)(A_T, u[j], u[i], patpt) -= c[4]*phi_L[ 0] + c[9]*phi_L[ 1] + c[14]*phi_L[ 2] + c[19]*phi_L[ 3] + c[24]*phi_L[ 4];
+            }
+        }
+        if (rho_u >= 0) { enum { i = 1 };
+            if (rho_E >= 0) { enum { j = 0 };
+                *PTR(z)(A_T, u[j], u[i], patpt) -= c[0]*phi_L[ 5] + c[5]*phi_L[ 6] + c[10]*phi_L[ 7] + c[15]*phi_L[ 8] + c[20]*phi_L[ 9];
+            }
+            if (rho_u >= 0) { enum { j = 1 };
+                *PTR(z)(A_T, u[j], u[i], patpt) -= c[1]*phi_L[ 5] + c[6]*phi_L[ 6] + c[11]*phi_L[ 7] + c[16]*phi_L[ 8] + c[21]*phi_L[ 9];
+            }
+            if (rho_v >= 0) { enum { j = 2 };
+                *PTR(z)(A_T, u[j], u[i], patpt) -= c[2]*phi_L[ 5] + c[7]*phi_L[ 6] + c[12]*phi_L[ 7] + c[17]*phi_L[ 8] + c[22]*phi_L[ 9];
+            }
+            if (rho_w >= 0) { enum { j = 3 };
+                *PTR(z)(A_T, u[j], u[i], patpt) -= c[3]*phi_L[ 5] + c[8]*phi_L[ 6] + c[13]*phi_L[ 7] + c[18]*phi_L[ 8] + c[23]*phi_L[ 9];
+            }
+            if (rho   >= 0) { enum { j = 4 };
+                *PTR(z)(A_T, u[j], u[i], patpt) -= c[4]*phi_L[ 5] + c[9]*phi_L[ 6] + c[14]*phi_L[ 7] + c[19]*phi_L[ 8] + c[24]*phi_L[ 9];
+            }
+        }
+        if (rho_v >= 0) { enum { i = 2 };
+            if (rho_E >= 0) { enum { j = 0 };
+                *PTR(z)(A_T, u[j], u[i], patpt) -= c[0]*phi_L[10] + c[5]*phi_L[11] + c[10]*phi_L[12] + c[15]*phi_L[13] + c[20]*phi_L[14];
+            }
+            if (rho_u >= 0) { enum { j = 1 };
+                *PTR(z)(A_T, u[j], u[i], patpt) -= c[1]*phi_L[10] + c[6]*phi_L[11] + c[11]*phi_L[12] + c[16]*phi_L[13] + c[21]*phi_L[14];
+            }
+            if (rho_v >= 0) { enum { j = 2 };
+                *PTR(z)(A_T, u[j], u[i], patpt) -= c[2]*phi_L[10] + c[7]*phi_L[11] + c[12]*phi_L[12] + c[17]*phi_L[13] + c[22]*phi_L[14];
+            }
+            if (rho_w >= 0) { enum { j = 3 };
+                *PTR(z)(A_T, u[j], u[i], patpt) -= c[3]*phi_L[10] + c[8]*phi_L[11] + c[13]*phi_L[12] + c[18]*phi_L[13] + c[23]*phi_L[14];
+            }
+            if (rho   >= 0) { enum { j = 4 };
+                *PTR(z)(A_T, u[j], u[i], patpt) -= c[4]*phi_L[10] + c[9]*phi_L[11] + c[14]*phi_L[12] + c[19]*phi_L[13] + c[24]*phi_L[14];
+            }
+        }
+        if (rho_w >= 0) { enum { i = 3 };
+            if (rho_E >= 0) { enum { j = 0 };
+                *PTR(z)(A_T, u[j], u[i], patpt) -= c[0]*phi_L[15] + c[5]*phi_L[16] + c[10]*phi_L[17] + c[15]*phi_L[18] + c[20]*phi_L[19];
+            }
+            if (rho_u >= 0) { enum { j = 1 };
+                *PTR(z)(A_T, u[j], u[i], patpt) -= c[1]*phi_L[15] + c[6]*phi_L[16] + c[11]*phi_L[17] + c[16]*phi_L[18] + c[21]*phi_L[19];
+            }
+            if (rho_v >= 0) { enum { j = 2 };
+                *PTR(z)(A_T, u[j], u[i], patpt) -= c[2]*phi_L[15] + c[7]*phi_L[16] + c[12]*phi_L[17] + c[17]*phi_L[18] + c[22]*phi_L[19];
+            }
+            if (rho_w >= 0) { enum { j = 3 };
+                *PTR(z)(A_T, u[j], u[i], patpt) -= c[3]*phi_L[15] + c[8]*phi_L[16] + c[13]*phi_L[17] + c[18]*phi_L[18] + c[23]*phi_L[19];
+            }
+            if (rho   >= 0) { enum { j = 4 };
+                *PTR(z)(A_T, u[j], u[i], patpt) -= c[4]*phi_L[15] + c[9]*phi_L[16] + c[14]*phi_L[17] + c[19]*phi_L[18] + c[24]*phi_L[19];
+            }
+        }
+        if (rho   >= 0) { enum { i = 4 };
+            if (rho_E >= 0) { enum { j = 0 };
+                *PTR(z)(A_T, u[j], u[i], patpt) -= c[0]*phi_L[20] + c[5]*phi_L[21] + c[10]*phi_L[22] + c[15]*phi_L[23] + c[20]*phi_L[24];
+            }
+            if (rho_u >= 0) { enum { j = 1 };
+                *PTR(z)(A_T, u[j], u[i], patpt) -= c[1]*phi_L[20] + c[6]*phi_L[21] + c[11]*phi_L[22] + c[16]*phi_L[23] + c[21]*phi_L[24];
+            }
+            if (rho_v >= 0) { enum { j = 2 };
+                *PTR(z)(A_T, u[j], u[i], patpt) -= c[2]*phi_L[20] + c[7]*phi_L[21] + c[12]*phi_L[22] + c[17]*phi_L[23] + c[22]*phi_L[24];
+            }
+            if (rho_w >= 0) { enum { j = 3 };
+                *PTR(z)(A_T, u[j], u[i], patpt) -= c[3]*phi_L[20] + c[8]*phi_L[21] + c[13]*phi_L[22] + c[18]*phi_L[23] + c[23]*phi_L[24];
+            }
+            if (rho   >= 0) { enum { j = 4 };
+                *PTR(z)(A_T, u[j], u[i], patpt) -= c[4]*phi_L[20] + c[9]*phi_L[21] + c[14]*phi_L[22] + c[19]*phi_L[23] + c[24]*phi_L[24];
+            }
+        }
+    }
+
 }
 
 #undef FUNCNAME00
 #undef PACK
+#undef PTR
 
 /* vim: set ft=c:   */
 /* Local Variables: */

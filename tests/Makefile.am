@@ -13,6 +13,7 @@ dist_check_SCRIPTS  = # Append below
 noinst_HEADERS      = # Append below
 CLEANFILES          = # Append below
 TESTS               = # Append below
+XFAIL_TESTS         = # Append below
 
 noinst_HEADERS += test_tools.hpp
 
@@ -445,6 +446,8 @@ test_rholut_imexop00_LDADD      = ../suzerain/libsuzerain.la
 test_rholut_imexop00_LDADD     += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
 test_rholut_imexop00_LDADD     += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
 
+# TODO Redmine #2979 Determine how NRBC "c" should be rolled into operator
+XFAIL_TESTS                    += test_rholut_imexop00c
 TESTS                          += test_rholut_imexop00c
 EXTRA_PROGRAMS                 += test_rholut_imexop00c
 test_rholut_imexop00c_SOURCES   = test_rholut_imexop00.cpp
@@ -469,6 +472,7 @@ test_rholut_imexop_LDADD      = ../suzerain/libsuzerain.la
 test_rholut_imexop_LDADD     += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
 test_rholut_imexop_LDADD     += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
 
+# TODO Redmine #2979 Determine how NRBC "a" should be rolled into operator
 TESTS                        += test_rholut_imexopa
 EXTRA_PROGRAMS               += test_rholut_imexopa
 test_rholut_imexopa_SOURCES   = test_rholut_imexop.cpp
@@ -478,6 +482,7 @@ test_rholut_imexopa_LDADD     = ../suzerain/libsuzerain.la
 test_rholut_imexopa_LDADD    += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
 test_rholut_imexopa_LDADD    += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
 
+# TODO Redmine #2979 Determine how NRBC "b" should be rolled into operator
 TESTS                        += test_rholut_imexopb
 EXTRA_PROGRAMS               += test_rholut_imexopb
 test_rholut_imexopb_SOURCES   = test_rholut_imexop.cpp
@@ -487,6 +492,7 @@ test_rholut_imexopb_LDADD     = ../suzerain/libsuzerain.la
 test_rholut_imexopb_LDADD    += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
 test_rholut_imexopb_LDADD    += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
 
+# TODO Redmine #2979 Determine how NRBC "c" should be rolled into operator
 TESTS                        += test_rholut_imexopc
 EXTRA_PROGRAMS               += test_rholut_imexopc
 test_rholut_imexopc_SOURCES   = test_rholut_imexop.cpp
