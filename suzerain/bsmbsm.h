@@ -485,6 +485,7 @@ inline static float*
 suzerain_bsmbsm_spackc_ptr(const suzerain_bsmbsm *A, int qinv_i, int qinv_j,
                            float *papt)
 {
+    assert(suzerain_gbmatrix_in_band(A->KL, A->KU, qinv_i, qinv_j));
     return papt + suzerain_gbmatrix_offset(A->LD, A->KL, A->KU, qinv_i, qinv_j);
 }
 
@@ -493,6 +494,7 @@ inline static double*
 suzerain_bsmbsm_dpackc_ptr(const suzerain_bsmbsm *A, int qinv_i, int qinv_j,
                            double *papt)
 {
+    assert(suzerain_gbmatrix_in_band(A->KL, A->KU, qinv_i, qinv_j));
     return papt + suzerain_gbmatrix_offset(A->LD, A->KL, A->KU, qinv_i, qinv_j);
 }
 
@@ -501,6 +503,7 @@ inline static complex_float*
 suzerain_bsmbsm_cpackc_ptr(const suzerain_bsmbsm *A, int qinv_i, int qinv_j,
                            complex_float *papt)
 {
+    assert(suzerain_gbmatrix_in_band(A->KL, A->KU, qinv_i, qinv_j));
     return papt + suzerain_gbmatrix_offset(A->LD, A->KL, A->KU, qinv_i, qinv_j);
 }
 
@@ -509,6 +512,7 @@ inline static complex_double*
 suzerain_bsmbsm_zpackc_ptr(const suzerain_bsmbsm *A, int qinv_i, int qinv_j,
                            complex_double *papt)
 {
+    assert(suzerain_gbmatrix_in_band(A->KL, A->KU, qinv_i, qinv_j));
     return papt + suzerain_gbmatrix_offset(A->LD, A->KL, A->KU, qinv_i, qinv_j);
 }
 
@@ -624,6 +628,7 @@ inline static float*
 suzerain_bsmbsm_spackf_ptr(const suzerain_bsmbsm *A, int qinv_i, int qinv_j,
                            float *papt)
 {
+    assert(suzerain_gbmatrix_in_band(A->KL, A->KU, qinv_i, qinv_j));
     return papt + A->KL
         + suzerain_gbmatrix_offset(A->LD + A->KL, A->KL, A->KU, qinv_i, qinv_j);
 }
@@ -633,6 +638,7 @@ inline static double*
 suzerain_bsmbsm_dpackf_ptr(const suzerain_bsmbsm *A, int qinv_i, int qinv_j,
                            double *papt)
 {
+    assert(suzerain_gbmatrix_in_band(A->KL, A->KU, qinv_i, qinv_j));
     return papt + A->KL
         + suzerain_gbmatrix_offset(A->LD + A->KL, A->KL, A->KU, qinv_i, qinv_j);
 }
@@ -642,6 +648,7 @@ inline static complex_float*
 suzerain_bsmbsm_cpackf_ptr(const suzerain_bsmbsm *A, int qinv_i, int qinv_j,
                            complex_float *papt)
 {
+    assert(suzerain_gbmatrix_in_band(A->KL, A->KU, qinv_i, qinv_j));
     return papt + A->KL
         + suzerain_gbmatrix_offset(A->LD + A->KL, A->KL, A->KU, qinv_i, qinv_j);
 }
@@ -651,6 +658,7 @@ inline static complex_double*
 suzerain_bsmbsm_zpackf_ptr(const suzerain_bsmbsm *A, int qinv_i, int qinv_j,
                            complex_double *papt)
 {
+    assert(suzerain_gbmatrix_in_band(A->KL, A->KU, qinv_i, qinv_j));
     return papt + A->KL
         + suzerain_gbmatrix_offset(A->LD + A->KL, A->KL, A->KU, qinv_i, qinv_j);
 }
