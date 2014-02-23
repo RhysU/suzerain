@@ -36,9 +36,6 @@
 #include <suzerain/blas_et_al.h>
 #include <suzerain/bsmbsm.h>
 
-// TODO If this Redmine #2979 approach works, re-simplify gbmv routines.
-//      In particular, remove the final diagonal scaling factor capability.
-
 static void
 swap(complex_double * const a, complex_double * const b)
 {
