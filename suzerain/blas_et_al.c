@@ -994,8 +994,7 @@ suzerain_blas_sgbmv(
 {
     const int info = suzerain_gbmv_s(trans, m, n, kl, ku,
                                      alpha, a, lda, x, incx,
-                                     beta,          y, incy,
-                                     0);
+                                     beta,          y, incy);
     if (UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
     return info;
 }
@@ -1018,8 +1017,7 @@ suzerain_blas_dgbmv(
 {
     const int info = suzerain_gbmv_d(trans, m, n, kl, ku,
                                      alpha, a, lda, x, incx,
-                                     beta,          y, incy,
-                                     0);
+                                     beta,          y, incy);
     if (UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
     return info;
 }
@@ -1042,8 +1040,7 @@ suzerain_blas_cgbmv(
 {
     const int info = suzerain_gbmv_c(trans, m, n, kl, ku,
                                      alpha, a, lda, x, incx,
-                                     beta,          y, incy,
-                                     0);
+                                     beta,          y, incy);
     if (UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
     return info;
 }
@@ -1066,8 +1063,7 @@ suzerain_blas_zgbmv(
 {
     const int info = suzerain_gbmv_z(trans, m, n, kl, ku,
                                      alpha, a, lda, x, incx,
-                                     beta,          y, incy,
-                                     0);
+                                     beta,          y, incy);
     if (UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
     return info;
 }
@@ -1090,8 +1086,7 @@ suzerain_blas_cgbmv_s_c(
 {
     const int info = suzerain_gbmv_scc(trans, m, n, kl, ku,
                                        alpha, a, lda, x, incx,
-                                       beta,          y, incy,
-                                       0);
+                                       beta,          y, incy);
     if (UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
     return info;
 }
@@ -1114,8 +1109,7 @@ suzerain_blas_zgbmv_d_z(
 {
     const int info = suzerain_gbmv_dzz(trans, m, n, kl, ku,
                                        alpha, a, lda, x, incx,
-                                       beta,          y, incy,
-                                       0);
+                                       beta,          y, incy);
     if (UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
     return info;
 }
@@ -1138,8 +1132,7 @@ suzerain_blas_cgbmv_s_s(
 {
     const int info = suzerain_gbmv_ssc(trans, m, n, kl, ku,
                                        alpha, a, lda, x, incx,
-                                       beta,          y, incy,
-                                       0);
+                                       beta,          y, incy);
     if (UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
     return info;
 }
@@ -1162,8 +1155,7 @@ suzerain_blas_zgbmv_d_d(
 {
     const int info = suzerain_gbmv_ddz(trans, m, n, kl, ku,
                                        alpha, a, lda, x, incx,
-                                       beta,          y, incy,
-                                       0);
+                                       beta,          y, incy);
     if (UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
     return info;
 }

@@ -132,9 +132,9 @@
 // Provide externally callable logic dispatching to internal routines
 // ------------------------------------------------------------------
 
-#define FIXEDBW_CASE(z,num,prefix)                                  \
-    case num: return BOOST_PP_CAT(prefix,num)(                      \
-        trans, m, n, alpha, a, lda, x, incx, beta, y, incy, gamma);
+#define FIXEDBW_CASE(z,num,prefix)                           \
+    case num: return BOOST_PP_CAT(prefix,num)(               \
+        trans, m, n, alpha, a, lda, x, incx, beta, y, incy);
 
 int
 suzerain_gbmv_s(
@@ -150,8 +150,7 @@ suzerain_gbmv_s(
         const int incx,
         const float beta,
         float *y,
-        const int incy,
-        const float gamma)
+        const int incy)
 {
     // Dispatch to fixed bandwidth specialization for small bandwidth...
     if (kl == ku) {
@@ -164,8 +163,7 @@ suzerain_gbmv_s(
     // ...otherwise employ a general bandwidth implementation
     return suzerain_gbmv_internal_s(trans, m, n, kl, ku,
                                     alpha, a, lda, x, incx,
-                                    beta,          y, incy,
-                                    gamma);
+                                    beta,          y, incy);
 }
 
 int
@@ -182,8 +180,7 @@ suzerain_gbmv_ssc(
         const int incx,
         const complex_float beta,
         complex_float *y,
-        const int incy,
-        const float gamma)
+        const int incy)
 {
     // Dispatch to fixed bandwidth specialization for small bandwidth...
     if (kl == ku) {
@@ -196,8 +193,7 @@ suzerain_gbmv_ssc(
     // ...otherwise employ a general bandwidth implementation
     return suzerain_gbmv_internal_ssc(trans, m, n, kl, ku,
                                       alpha, a, lda, x, incx,
-                                      beta,          y, incy,
-                                      gamma);
+                                      beta,          y, incy);
 }
 
 int
@@ -214,8 +210,7 @@ suzerain_gbmv_scc(
         const int incx,
         const complex_float beta,
         complex_float *y,
-        const int incy,
-        const float gamma)
+        const int incy)
 {
     // Dispatch to fixed bandwidth specialization for small bandwidth...
     if (kl == ku) {
@@ -228,8 +223,7 @@ suzerain_gbmv_scc(
     // ...otherwise employ a general bandwidth implementation
     return suzerain_gbmv_internal_scc(trans, m, n, kl, ku,
                                       alpha, a, lda, x, incx,
-                                      beta,          y, incy,
-                                      gamma);
+                                      beta,          y, incy);
 }
 
 int
@@ -246,8 +240,7 @@ suzerain_gbmv_c(
         const int incx,
         const complex_float beta,
         complex_float *y,
-        const int incy,
-        const float gamma)
+        const int incy)
 {
     // Dispatch to fixed bandwidth specialization for small bandwidth...
     if (kl == ku) {
@@ -260,8 +253,7 @@ suzerain_gbmv_c(
     // ...otherwise employ a general bandwidth implementation
     return suzerain_gbmv_internal_c(trans, m, n, kl, ku,
                                     alpha, a, lda, x, incx,
-                                    beta,          y, incy,
-                                    gamma);
+                                    beta,          y, incy);
 }
 
 int
@@ -278,8 +270,7 @@ suzerain_gbmv_d(
         const int incx,
         const double beta,
         double *y,
-        const int incy,
-        const double gamma)
+        const int incy)
 {
     // Dispatch to fixed bandwidth specialization for small bandwidth...
     if (kl == ku) {
@@ -292,8 +283,7 @@ suzerain_gbmv_d(
     // ...otherwise employ a general bandwidth implementation
     return suzerain_gbmv_internal_d(trans, m, n, kl, ku,
                                     alpha, a, lda, x, incx,
-                                    beta,          y, incy,
-                                    gamma);
+                                    beta,          y, incy);
 }
 
 int
@@ -310,8 +300,7 @@ suzerain_gbmv_ddz(
         const int incx,
         const complex_double beta,
         complex_double *y,
-        const int incy,
-        const double gamma)
+        const int incy)
 {
     // Dispatch to fixed bandwidth specialization for small bandwidth...
     if (kl == ku) {
@@ -324,8 +313,7 @@ suzerain_gbmv_ddz(
     // ...otherwise employ a general bandwidth implementation
     return suzerain_gbmv_internal_ddz(trans, m, n, kl, ku,
                                       alpha, a, lda, x, incx,
-                                      beta,          y, incy,
-                                      gamma);
+                                      beta,          y, incy);
 }
 
 int
@@ -342,8 +330,7 @@ suzerain_gbmv_dzz(
         const int incx,
         const complex_double beta,
         complex_double *y,
-        const int incy,
-        const double gamma)
+        const int incy)
 {
     // Dispatch to fixed bandwidth specialization for small bandwidth...
     if (kl == ku) {
@@ -356,8 +343,7 @@ suzerain_gbmv_dzz(
     // ...otherwise employ a general bandwidth implementation
     return suzerain_gbmv_internal_dzz(trans, m, n, kl, ku,
                                       alpha, a, lda, x, incx,
-                                      beta,          y, incy,
-                                      gamma);
+                                      beta,          y, incy);
 }
 
 int
@@ -374,8 +360,7 @@ suzerain_gbmv_z(
         const int incx,
         const complex_double beta,
         complex_double *y,
-        const int incy,
-        const double gamma)
+        const int incy)
 {
     // Dispatch to fixed bandwidth specialization for small bandwidth...
     if (kl == ku) {
@@ -388,8 +373,7 @@ suzerain_gbmv_z(
     // ...otherwise employ a general bandwidth implementation
     return suzerain_gbmv_internal_z(trans, m, n, kl, ku,
                                     alpha, a, lda, x, incx,
-                                    beta,          y, incy,
-                                    gamma);
+                                    beta,          y, incy);
 }
 
 #else
