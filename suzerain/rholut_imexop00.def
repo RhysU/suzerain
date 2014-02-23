@@ -84,7 +84,6 @@ FUNCNAME00()(
     const double ginvPr   = s->gamma / s->Pr;
     const double ginvRePr = s->gamma / (s->Re * s->Pr);
 
-    // TODO Memset patpt to be uniformly zeros and remove zero fill operations.
     // We do not know the leading dimension associated with the definition of
     // PACK() so we must overwrite every possible submatrix within PATPT.
 
@@ -92,16 +91,9 @@ FUNCNAME00()(
     // equation indices are transposed in calls to PACK(...)(...) and we right
     // the transpose of the discrete operators by diagonal matrices.
 
-    // Prepare pointer to the final element of buf to permit capturing
-    // the operator-less-mass-matrices coefficients prior to assembly.
-    const complex_double * const bufupper = buf + suzerain_gbmatrix_offset(
-            A_T->ld, A_T->kl, A_T->ku, A_T->n-1, A_T->n-1);
-    complex_double phi_L[5*5] = { 0 };
-
     // Shorthand for common patterns below
 #   define REF(quantity) r->quantity, ld->quantity
 #   define PREAMBLE      'R', A_T->n, A_T->n, A_T->kl, A_T->ku
-#   define UPPER_C(i,j)  do { phi_L[(i) + 5*(j)] = phi*(*bufupper); } while (0)
 
     if (rho_E >= 0) { enum { i = 0 };  // Prepare total energy row
 
@@ -116,8 +108,6 @@ FUNCNAME00()(
                     ginvRePr,                    REF(nu),
                     D2, 1, w->ld, 1.0, buf, 1, A_T->ld);
 
-            UPPER_C(j, i);
-
             suzerain_blas_zgb_acc_d(
                     A_T->n, A_T->n, A_T->kl, A_T->ku,
                     1, M, w->ld, phi, buf, A_T->ld);
@@ -129,8 +119,6 @@ FUNCNAME00()(
             suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
                     Ma2*invRe*(1-ginvPr),        REF(nuux),
                     D2, 1, w->ld, 0.0, buf, 1, A_T->ld);
-
-            UPPER_C(j, i);
 
             PACK(z)(A_T, rho_u, rho_E, phi, buf, patpt);
         }
@@ -144,8 +132,6 @@ FUNCNAME00()(
                     Ma2*invRe*(ap43-ginvPr),     REF(nuuy),
                     D2, 1, w->ld, 1.0, buf, 1, A_T->ld);
 
-            UPPER_C(j, i);
-
             PACK(z)(A_T, rho_v, rho_E, phi, buf, patpt);
         }
 
@@ -153,8 +139,6 @@ FUNCNAME00()(
             suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
                     Ma2*invRe*(1-ginvPr),        REF(nuuz),
                     D2, 1, w->ld, 0.0, buf, 1, A_T->ld);
-
-            UPPER_C(j, i);
 
             PACK(z)(A_T, rho_w, rho_E, phi, buf, patpt);
         }
@@ -169,8 +153,6 @@ FUNCNAME00()(
                     -Ma2*invRe*ap13,             REF(nuuyuy),
                     ginvRePr/gm1,                REF(e_deltarho),
                     D2, 1, w->ld, 1.0, buf, 1, A_T->ld);
-
-            UPPER_C(j, i);
 
             PACK(z)(A_T, rho, rho_E, phi, buf, patpt);
         }
@@ -194,8 +176,6 @@ FUNCNAME00()(
                     invRe,                       REF(nu),
                     D2, 1, w->ld, 1.0, buf, 1, A_T->ld);
 
-            UPPER_C(j, i);
-
             suzerain_blas_zgb_acc_d(
                     A_T->n, A_T->n, A_T->kl, A_T->ku,
                     1, M, w->ld, phi, buf, A_T->ld);
@@ -207,8 +187,6 @@ FUNCNAME00()(
             suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
                     -1.0,                        REF(ux),
                     D1, 1, w->ld, 0.0, buf, 1, A_T->ld);
-
-            UPPER_C(j, i);
 
             PACK(z)(A_T, rho_v, rho_u, phi, buf, patpt);
         }
@@ -226,8 +204,6 @@ FUNCNAME00()(
                     -invRe,                      REF(nuux),
                     D2, 1, w->ld, 1.0, buf, 1, A_T->ld);
 
-            UPPER_C(j, i);
-
             PACK(z)(A_T, rho, rho_u, phi, buf, patpt);
         }
 
@@ -236,22 +212,14 @@ FUNCNAME00()(
     if (rho_v >= 0) { enum { i = 2 };  // Prepare wall-normal momentum row
 
         if (rho_E >= 0) { enum { j = 0 };
-            // Scale real-valued D1, sans phi, into complex-valued buf
-            for (int i = 0; i < A_T->ld*A_T->n; ++i) {
-                buf[i] = -gm1*invMa2*D1[i];
-            }
-
-            UPPER_C(j, i);
-
-            PACK(z)(A_T, rho_E, rho_v, phi, buf, patpt);
+            const complex_double coeff = -phi*gm1*invMa2;
+            PACK(zd)(A_T, rho_E, rho_v, coeff, D1, patpt);
         }
 
         if (rho_u >= 0) { enum { j = 1 };
             suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
                     gm1,                  REF(ux),
                     D1, 1, w->ld, 0.0, buf, 1, A_T->ld);
-
-            UPPER_C(j, i);
 
             PACK(z)(A_T, rho_u, rho_v, phi, buf, patpt);
         }
@@ -267,8 +235,6 @@ FUNCNAME00()(
                     ap43*invRe,           REF(nu),
                     D2, 1, w->ld, 1.0, buf, 1, A_T->ld);
 
-            UPPER_C(j, i);
-
             suzerain_blas_zgb_acc_d(
                     A_T->n, A_T->n, A_T->kl, A_T->ku,
                     1, M, w->ld, phi, buf, A_T->ld);
@@ -280,8 +246,6 @@ FUNCNAME00()(
             suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
                     gm1,                  REF(uz),
                     D1, 1, w->ld, 0.0, buf, 1, A_T->ld);
-
-            UPPER_C(j, i);
 
             PACK(z)(A_T, rho_w, rho_v, phi, buf, patpt);
         }
@@ -295,8 +259,6 @@ FUNCNAME00()(
             suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
                     -ap43*invRe,          REF(nuuy),
                     D2, 1, w->ld, 1.0, buf, 1, A_T->ld);
-
-            UPPER_C(j, i);
 
             PACK(z)(A_T, rho, rho_v, phi, buf, patpt);
         }
@@ -318,8 +280,6 @@ FUNCNAME00()(
                     -1.0,                        REF(uz),
                     D1, 1, w->ld, 0.0, buf, 1, A_T->ld);
 
-            UPPER_C(j, i);
-
             PACK(z)(A_T, rho_v, rho_w, phi, buf, patpt);
         }
 
@@ -333,8 +293,6 @@ FUNCNAME00()(
             suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
                     invRe,                       REF(nu),
                     D2, 1, w->ld, 1.0, buf, 1, A_T->ld);
-
-            UPPER_C(j, i);
 
             suzerain_blas_zgb_acc_d(
                     A_T->n, A_T->n, A_T->kl, A_T->ku,
@@ -352,8 +310,6 @@ FUNCNAME00()(
                     -invRe,                      REF(nuuz),
                     D2, 1, w->ld, 1.0, buf, 1, A_T->ld);
 
-            UPPER_C(j, i);
-
             PACK(z)(A_T, rho, rho_w, phi, buf, patpt);
         }
 
@@ -370,14 +326,8 @@ FUNCNAME00()(
         }
 
         if (rho_v >= 0) { enum { j = 2 };
-            // Scale real-valued D1, sans phi, into complex-valued buf
-            for (int i = 0; i < A_T->ld*A_T->n; ++i) {
-                buf[i] = -D1[i];
-            }
-
-            UPPER_C(j, i);
-
-            PACK(z )(A_T, rho_v, rho, phi, buf, patpt);
+            const complex_double coeff = -phi;
+            PACK(zd)(A_T, rho_v, rho, coeff, D1, patpt);
         }
 
         if (rho_w >= 0) { enum { j = 3 };
@@ -392,103 +342,73 @@ FUNCNAME00()(
 
 #   undef REF
 #   undef PREAMBLE
-#   undef UPPER_C
 
+    // When necessary, adjust upper boundary using provided NRBC matrix.
     if (c) {
 
-        const int u[5] = {
-            suzerain_bsmbsm_qinv(A_T->S, A_T->n, (rho_E+1)*A_T->n - 1),
-            suzerain_bsmbsm_qinv(A_T->S, A_T->n, (rho_u+1)*A_T->n - 1),
-            suzerain_bsmbsm_qinv(A_T->S, A_T->n, (rho_v+1)*A_T->n - 1),
-            suzerain_bsmbsm_qinv(A_T->S, A_T->n, (rho_w+1)*A_T->n - 1),
-            suzerain_bsmbsm_qinv(A_T->S, A_T->n, (rho  +1)*A_T->n - 1)
-        };
+        // TODO Generalize to fewer than five equations
+        assert(A_T->S == 5);
 
-        if (rho_E >= 0) { enum { i = 0 };
-            if (rho_E >= 0) { enum { j = 0 };
-                *PTR(z)(A_T, u[j], u[i], patpt) -= c[0]*phi_L[ 0] + c[5]*phi_L[ 1] + c[10]*phi_L[ 2] + c[15]*phi_L[ 3] + c[20]*phi_L[ 4];
+        /*
+         * Adjust PATPT so that it contains
+         *
+         *                   / I  0     \   / 0  0   \
+         *  (M + phi L)^T  * |          | + |        |
+         *                   \ 0  I-C^T /   \ 0  C^T /
+         *
+         * taking advantage of facts about M, D1, and D2 bandwidths when
+         * renumbered as done by the above packing operations. As C is 5x5 and
+         * D2 has three nonzero entries on the final row, that means we update
+         * the lower rightmost 15 x 5 submatrix of (M + phi L)^T which call "X":
+         *
+         *   /   \    /   \          / 0 \
+         *   | X | += | X | * -C^T + | 0 |
+         *   \   /    \   /          \C^T/
+         */
+
+        // TODO Avoid VLA and add requirements on the now-shadowed buf argument
+        // Zero the buffers' upper 10x5 block and copy C^T into final 5x5 block
+        complex_double buf[15 * 5];
+        for (int j = 0; j < 5; ++j) {
+            for (int i =  0; i < 10; ++i) {
+                buf[i + 15*j] = 0;
             }
-            if (rho_u >= 0) { enum { j = 1 };
-                *PTR(z)(A_T, u[j], u[i], patpt) -= c[1]*phi_L[ 0] + c[6]*phi_L[ 1] + c[11]*phi_L[ 2] + c[16]*phi_L[ 3] + c[21]*phi_L[ 4];
-            }
-            if (rho_v >= 0) { enum { j = 2 };
-                *PTR(z)(A_T, u[j], u[i], patpt) -= c[2]*phi_L[ 0] + c[7]*phi_L[ 1] + c[12]*phi_L[ 2] + c[17]*phi_L[ 3] + c[22]*phi_L[ 4];
-            }
-            if (rho_w >= 0) { enum { j = 3 };
-                *PTR(z)(A_T, u[j], u[i], patpt) -= c[3]*phi_L[ 0] + c[8]*phi_L[ 1] + c[13]*phi_L[ 2] + c[18]*phi_L[ 3] + c[23]*phi_L[ 4];
-            }
-            if (rho   >= 0) { enum { j = 4 };
-                *PTR(z)(A_T, u[j], u[i], patpt) -= c[4]*phi_L[ 0] + c[9]*phi_L[ 1] + c[14]*phi_L[ 2] + c[19]*phi_L[ 3] + c[24]*phi_L[ 4];
-            }
-        }
-        if (rho_u >= 0) { enum { i = 1 };
-            if (rho_E >= 0) { enum { j = 0 };
-                *PTR(z)(A_T, u[j], u[i], patpt) -= c[0]*phi_L[ 5] + c[5]*phi_L[ 6] + c[10]*phi_L[ 7] + c[15]*phi_L[ 8] + c[20]*phi_L[ 9];
-            }
-            if (rho_u >= 0) { enum { j = 1 };
-                *PTR(z)(A_T, u[j], u[i], patpt) -= c[1]*phi_L[ 5] + c[6]*phi_L[ 6] + c[11]*phi_L[ 7] + c[16]*phi_L[ 8] + c[21]*phi_L[ 9];
-            }
-            if (rho_v >= 0) { enum { j = 2 };
-                *PTR(z)(A_T, u[j], u[i], patpt) -= c[2]*phi_L[ 5] + c[7]*phi_L[ 6] + c[12]*phi_L[ 7] + c[17]*phi_L[ 8] + c[22]*phi_L[ 9];
-            }
-            if (rho_w >= 0) { enum { j = 3 };
-                *PTR(z)(A_T, u[j], u[i], patpt) -= c[3]*phi_L[ 5] + c[8]*phi_L[ 6] + c[13]*phi_L[ 7] + c[18]*phi_L[ 8] + c[23]*phi_L[ 9];
-            }
-            if (rho   >= 0) { enum { j = 4 };
-                *PTR(z)(A_T, u[j], u[i], patpt) -= c[4]*phi_L[ 5] + c[9]*phi_L[ 6] + c[14]*phi_L[ 7] + c[19]*phi_L[ 8] + c[24]*phi_L[ 9];
+            for (int i = 10; i < 15; ++i) {
+                buf[i + 15*j] = c[5*(i-10) + j];
             }
         }
-        if (rho_v >= 0) { enum { i = 2 };
-            if (rho_E >= 0) { enum { j = 0 };
-                *PTR(z)(A_T, u[j], u[i], patpt) -= c[0]*phi_L[10] + c[5]*phi_L[11] + c[10]*phi_L[12] + c[15]*phi_L[13] + c[20]*phi_L[14];
-            }
-            if (rho_u >= 0) { enum { j = 1 };
-                *PTR(z)(A_T, u[j], u[i], patpt) -= c[1]*phi_L[10] + c[6]*phi_L[11] + c[11]*phi_L[12] + c[16]*phi_L[13] + c[21]*phi_L[14];
-            }
-            if (rho_v >= 0) { enum { j = 2 };
-                *PTR(z)(A_T, u[j], u[i], patpt) -= c[2]*phi_L[10] + c[7]*phi_L[11] + c[12]*phi_L[12] + c[17]*phi_L[13] + c[22]*phi_L[14];
-            }
-            if (rho_w >= 0) { enum { j = 3 };
-                *PTR(z)(A_T, u[j], u[i], patpt) -= c[3]*phi_L[10] + c[8]*phi_L[11] + c[13]*phi_L[12] + c[18]*phi_L[13] + c[23]*phi_L[14];
-            }
-            if (rho   >= 0) { enum { j = 4 };
-                *PTR(z)(A_T, u[j], u[i], patpt) -= c[4]*phi_L[10] + c[9]*phi_L[11] + c[14]*phi_L[12] + c[19]*phi_L[13] + c[24]*phi_L[14];
-            }
-        }
-        if (rho_w >= 0) { enum { i = 3 };
-            if (rho_E >= 0) { enum { j = 0 };
-                *PTR(z)(A_T, u[j], u[i], patpt) -= c[0]*phi_L[15] + c[5]*phi_L[16] + c[10]*phi_L[17] + c[15]*phi_L[18] + c[20]*phi_L[19];
-            }
-            if (rho_u >= 0) { enum { j = 1 };
-                *PTR(z)(A_T, u[j], u[i], patpt) -= c[1]*phi_L[15] + c[6]*phi_L[16] + c[11]*phi_L[17] + c[16]*phi_L[18] + c[21]*phi_L[19];
-            }
-            if (rho_v >= 0) { enum { j = 2 };
-                *PTR(z)(A_T, u[j], u[i], patpt) -= c[2]*phi_L[15] + c[7]*phi_L[16] + c[12]*phi_L[17] + c[17]*phi_L[18] + c[22]*phi_L[19];
-            }
-            if (rho_w >= 0) { enum { j = 3 };
-                *PTR(z)(A_T, u[j], u[i], patpt) -= c[3]*phi_L[15] + c[8]*phi_L[16] + c[13]*phi_L[17] + c[18]*phi_L[18] + c[23]*phi_L[19];
-            }
-            if (rho   >= 0) { enum { j = 4 };
-                *PTR(z)(A_T, u[j], u[i], patpt) -= c[4]*phi_L[15] + c[9]*phi_L[16] + c[14]*phi_L[17] + c[19]*phi_L[18] + c[24]*phi_L[19];
+
+        // TODO Generalize for different equation ordering
+        assert(rho_E==0 && rho_u==1 && rho_v==2 && rho_w==3 && rho==4);
+
+        // Find upper left corner of "X" within PATPT using that the minimum
+        // among all valid scalar indices rho_{E,u,v,w} was zero by assumption
+        assert(A_T->n >= 3);
+        complex_double * const x = PTR(z)(
+                A_T,
+                suzerain_bsmbsm_qinv(A_T->S, A_T->n, A_T->n - 3),
+                suzerain_bsmbsm_qinv(A_T->S, A_T->n, A_T->n - 1),
+                patpt);
+
+        // Right multiply "X" by negative C^T accumulating into buf.
+        // That is, a (15 x 5) * (5 x 5) matmat with second arg transposed.
+        // This would be a nice mixed-scalar GEMM call, if available.
+        // The minus one adjustment to "x" makes the data look non-banded.
+        for (int k = 0; k < 5; ++k) {
+            for (int j = 0; j < 5; ++j) {
+                for (int i = 0; i < 15; ++i) {
+                    buf[i + 15*j] -= x[i + k*(A_T->LD - 1)] * c[j + 5*k];
+                }
             }
         }
-        if (rho   >= 0) { enum { i = 4 };
-            if (rho_E >= 0) { enum { j = 0 };
-                *PTR(z)(A_T, u[j], u[i], patpt) -= c[0]*phi_L[20] + c[5]*phi_L[21] + c[10]*phi_L[22] + c[15]*phi_L[23] + c[20]*phi_L[24];
-            }
-            if (rho_u >= 0) { enum { j = 1 };
-                *PTR(z)(A_T, u[j], u[i], patpt) -= c[1]*phi_L[20] + c[6]*phi_L[21] + c[11]*phi_L[22] + c[16]*phi_L[23] + c[21]*phi_L[24];
-            }
-            if (rho_v >= 0) { enum { j = 2 };
-                *PTR(z)(A_T, u[j], u[i], patpt) -= c[2]*phi_L[20] + c[7]*phi_L[21] + c[12]*phi_L[22] + c[17]*phi_L[23] + c[22]*phi_L[24];
-            }
-            if (rho_w >= 0) { enum { j = 3 };
-                *PTR(z)(A_T, u[j], u[i], patpt) -= c[3]*phi_L[20] + c[8]*phi_L[21] + c[13]*phi_L[22] + c[18]*phi_L[23] + c[23]*phi_L[24];
-            }
-            if (rho   >= 0) { enum { j = 4 };
-                *PTR(z)(A_T, u[j], u[i], patpt) -= c[4]*phi_L[20] + c[9]*phi_L[21] + c[14]*phi_L[22] + c[19]*phi_L[23] + c[24]*phi_L[24];
+
+        // Accumulate buffer back into X again making X look non-banded.
+        for (int j = 0; j < 5; ++j) {
+            for (int i = 0; i < 15; ++i) {
+                x[i + j*(A_T->LD - 1)] += buf[i + 15*j];
             }
         }
+
     }
 
 }

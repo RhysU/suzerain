@@ -446,8 +446,6 @@ test_rholut_imexop00_LDADD      = ../suzerain/libsuzerain.la
 test_rholut_imexop00_LDADD     += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
 test_rholut_imexop00_LDADD     += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
 
-# TODO Redmine #2979 Determine how NRBC "c" should be rolled into operator
-XFAIL_TESTS                    += test_rholut_imexop00c
 TESTS                          += test_rholut_imexop00c
 EXTRA_PROGRAMS                 += test_rholut_imexop00c
 test_rholut_imexop00c_SOURCES   = test_rholut_imexop00.cpp
