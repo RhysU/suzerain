@@ -111,6 +111,7 @@ suzerain_rholut_imexop_accumulate00(
 #   define PREAMBLE_N(op)  'T', w->n, w->kl[op], w->ku[op]
 #   define PREAMBLE_NN(op) 'T', w->n, w->n, w->kl[op], w->ku[op]
 
+    // Tracks operator action on the final "upper" coefficient w->n-1
     complex_double upper_phi_L_hatV[5] = { 0 };
 
     if (in_rho_E) { enum { i = 0 };  // Accumulate terms into out_rho_E
@@ -350,6 +351,13 @@ suzerain_rholut_imexop_accumulate00(
             1.0, w->D_T[M], w->ld, IN(rho), 1.0, OUT(rho));
     }
 
+#   undef PREAMBLE_NN
+#   undef PREAMBLE_N
+#   undef REF
+#   undef IN
+#   undef OUT
+
+    // When necessary, adjust upper boundary using provided NRBC matrix.
     if (c) {
 
         if (out_rho_E) {
@@ -393,12 +401,6 @@ suzerain_rholut_imexop_accumulate00(
         }
 
     }
-
-#   undef PREAMBLE_NN
-#   undef PREAMBLE_N
-#   undef REF
-#   undef IN
-#   undef OUT
 
 }
 

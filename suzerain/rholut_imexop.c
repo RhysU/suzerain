@@ -35,12 +35,14 @@
 #include <suzerain/common.h>
 #include <suzerain/blas_et_al.h>
 #include <suzerain/bsmbsm.h>
-#include <suzerain/gbdddddmv.h>
-#include <suzerain/gbddddmv.h>
-#include <suzerain/gbdddmv.h>
-#include <suzerain/gbddmv.h>
-#include <suzerain/gbdmv.h>
-#include <suzerain/gbmv.h>
+
+static void
+swap(complex_double * const a, complex_double * const b)
+{
+    const complex_double t = *a;
+    *a = *b;
+    *b = t;
+}
 
 void
 suzerain_rholut_imexop_accumulate(
@@ -117,242 +119,198 @@ suzerain_rholut_imexop_accumulate(
 #   define REF(quantity)       r->quantity, ld->quantity
 #   define PREAMBLE_N(op)      'T', w->n, w->kl[op], w->ku[op]
 #   define PREAMBLE_NN(op)     'T', w->n, w->n, w->kl[op], w->ku[op]
-#   define UPPER_C(i,j)        (c ? -c[(i) + 5*(j)] : 0)
-#   define UPPER_A(i,j,in,out) \
-        if (a) do { out[w->n-1] += phi*ikm*a[(i)+5*(j)]*in[w->n-1]; } while (0)
-#   define UPPER_B(i,j,in,out) \
-        if (b) do { out[w->n-1] += phi*ikn*b[(i)+5*(j)]*in[w->n-1]; } while (0)
+
+    // Tracks state and operator action on the final "upper" coefficient w->n-1
+    complex_double upper_phi_L_hatV[5] = { 0 };
+    complex_double       upper_hatV[5] = { 0 };
 
     if (in_rho_E) { enum { i = 0 };  // Accumulate terms into out_rho_E
 
         suzerain_blas_zscal(w->n, beta, OUT(rho_E));
 
+        swap(upper_phi_L_hatV + i, out_rho_E + w->n - 1);
+
         /* in_rho_E */ { enum { j = 0 };
-            suzerain_gbdddmv_dzz(PREAMBLE_N(M),
+            suzerain_blasext_zgbdddmv_d_z(PREAMBLE_N(M),
                 -phi*s->gamma*ikm,           REF(ux),
                 -phi*s->gamma*ikn,           REF(uz),
                 -phi*ginvRePr*(km2+kn2),     REF(nu),
-                w->D_T[M],  w->ld, IN(rho_E), 1.0, OUT(rho_E),
-                UPPER_C(j, i));
+                w->D_T[M],  w->ld, IN(rho_E), 1.0, OUT(rho_E));
 
-            suzerain_gbdmv_dzz(PREAMBLE_N(D1),
+            suzerain_blasext_zgbdmv_d_z(PREAMBLE_N(D1),
                 -phi*s->gamma,               REF(uy),
-                w->D_T[D1], w->ld, IN(rho_E), 1.0, OUT(rho_E),
-                UPPER_C(j, i));
+                w->D_T[D1], w->ld, IN(rho_E), 1.0, OUT(rho_E));
 
-            suzerain_gbdmv_dzz(PREAMBLE_N(D2),
+            suzerain_blasext_zgbdmv_d_z(PREAMBLE_N(D2),
                 phi*ginvRePr,                REF(nu),
-                w->D_T[D2], w->ld, IN(rho_E), 1.0, OUT(rho_E),
-                UPPER_C(j, i));
-
-            UPPER_A(j, i, in_rho_E, out_rho_E);
-            UPPER_B(j, i, in_rho_E, out_rho_E);
+                w->D_T[D2], w->ld, IN(rho_E), 1.0, OUT(rho_E));
         }
 
         if (in_rho_u) { enum { j = 1 };
             const double coeff_nuux
                 = Ma2*invRe*((ginvPr-ap43)*km2 + (ginvPr-1)*kn2);
-            suzerain_gbdddmv_dzz(PREAMBLE_N(M),
+            suzerain_blasext_zgbdddmv_d_z(PREAMBLE_N(M),
                 phi*coeff_nuux,              REF(nuux),
                 -phi*Ma2*invRe*ap13*km*kn,   REF(nuuz),
                 -phi*ikm,                    REF(e_divm),
-                w->D_T[M],  w->ld, IN(rho_u), 1.0, OUT(rho_E),
-                UPPER_C(j, i));
+                w->D_T[M],  w->ld, IN(rho_u), 1.0, OUT(rho_E));
 
-            suzerain_gbdmv_dzz(PREAMBLE_N(D1),
+            suzerain_blasext_zgbdmv_d_z(PREAMBLE_N(D1),
                 phi*Ma2*invRe*ap13*ikm,      REF(nuuy),
-                w->D_T[D1], w->ld, IN(rho_u), 1.0, OUT(rho_E),
-                UPPER_C(j, i));
+                w->D_T[D1], w->ld, IN(rho_u), 1.0, OUT(rho_E));
 
-            suzerain_gbdmv_dzz(PREAMBLE_N(D2),
+            suzerain_blasext_zgbdmv_d_z(PREAMBLE_N(D2),
                 phi*Ma2*invRe*(1-ginvPr),    REF(nuux),
-                w->D_T[D2], w->ld, IN(rho_u), 1.0, OUT(rho_E),
-                UPPER_C(j, i));
-
-            UPPER_A(j, i, in_rho_u, out_rho_E);
-            UPPER_B(j, i, in_rho_u, out_rho_E);
+                w->D_T[D2], w->ld, IN(rho_u), 1.0, OUT(rho_E));
         }
 
         if (in_rho_v) { enum { j = 2 };
             const double coeff_nuuy
                 = Ma2*invRe*(ginvPr-1)*(km2+kn2);
-            suzerain_gbdmv_dzz(PREAMBLE_N(M),
+            suzerain_blasext_zgbdmv_d_z(PREAMBLE_N(M),
                 phi*coeff_nuuy,              REF(nuuy),
-                w->D_T[M],  w->ld, IN(rho_v), 1.0, OUT(rho_E),
-                UPPER_C(j, i));
+                w->D_T[M],  w->ld, IN(rho_v), 1.0, OUT(rho_E));
 
-            suzerain_gbdddmv_dzz(PREAMBLE_N(D1),
+            suzerain_blasext_zgbdddmv_d_z(PREAMBLE_N(D1),
                 phi*Ma2*invRe*ap13*ikm,      REF(nuux),
                 phi*Ma2*invRe*ap13*ikn,      REF(nuuz),
                 -phi,                        REF(e_divm),
-                w->D_T[D1], w->ld, IN(rho_v), 1.0, OUT(rho_E),
-                UPPER_C(j, i));
+                w->D_T[D1], w->ld, IN(rho_v), 1.0, OUT(rho_E));
 
-            suzerain_gbdmv_dzz(PREAMBLE_N(D2),
+            suzerain_blasext_zgbdmv_d_z(PREAMBLE_N(D2),
                 phi*Ma2*invRe*(ap43-ginvPr), REF(nuuy),
-                w->D_T[D2], w->ld, IN(rho_v), 1.0, OUT(rho_E),
-                UPPER_C(j, i));
-
-            UPPER_A(j, i, in_rho_v, out_rho_E);
-            UPPER_B(j, i, in_rho_v, out_rho_E);
+                w->D_T[D2], w->ld, IN(rho_v), 1.0, OUT(rho_E));
         }
 
         if (in_rho_w) { enum { j = 3 };
             const double coeff_nuuz
                 = Ma2*invRe*((ginvPr-1)*km2 + (ginvPr-ap43)*kn2);
-            suzerain_gbdddmv_dzz(PREAMBLE_N(M),
+            suzerain_blasext_zgbdddmv_d_z(PREAMBLE_N(M),
                 -phi*Ma2*invRe*ap13*km*kn,   REF(nuux),
                 phi*coeff_nuuz,              REF(nuuz),
                 -phi*ikn,                    REF(e_divm),
-                w->D_T[M],  w->ld, IN(rho_w), 1.0, OUT(rho_E),
-                UPPER_C(j, i));
+                w->D_T[M],  w->ld, IN(rho_w), 1.0, OUT(rho_E));
 
-            suzerain_gbdmv_dzz(PREAMBLE_N(D1),
+            suzerain_blasext_zgbdmv_d_z(PREAMBLE_N(D1),
                 phi*Ma2*invRe*ap13*ikn,      REF(nuuy),
-                w->D_T[D1], w->ld, IN(rho_w), 1.0, OUT(rho_E),
-                UPPER_C(j, i));
+                w->D_T[D1], w->ld, IN(rho_w), 1.0, OUT(rho_E));
 
-            suzerain_gbdmv_dzz(PREAMBLE_N(D2),
+            suzerain_blasext_zgbdmv_d_z(PREAMBLE_N(D2),
                 phi*Ma2*invRe*(1-ginvPr),    REF(nuuz),
-                w->D_T[D2], w->ld, IN(rho_w), 1.0, OUT(rho_E),
-                UPPER_C(j, i));
-
-            UPPER_A(j, i, in_rho_w, out_rho_E);
-            UPPER_B(j, i, in_rho_w, out_rho_E);
+                w->D_T[D2], w->ld, IN(rho_w), 1.0, OUT(rho_E));
         }
 
         if (in_rho) { enum { j = 4 };
 
             // Mass terms done in 2 passes to avoid zgbdddddddmv_d.
             // Writing such a beast may provide a tiny speedup.
-            suzerain_gbddddmv_dzz(PREAMBLE_N(M),
+            suzerain_blasext_zgbddddmv_d_z(PREAMBLE_N(M),
                 phi*Ma2*invRe*(km2+kn2),     REF(nuu2),
                 phi*Ma2*invRe*ap13*km2,      REF(nuuxux),
                 phi*Ma2*invRe*ap13*2*km*kn,  REF(nuuxuz),
                 phi*Ma2*invRe*ap13*kn2,      REF(nuuzuz),
-                w->D_T[M],  w->ld, IN(rho), 1.0, OUT(rho_E),
-                UPPER_C(j, i));
-            suzerain_gbdddmv_dzz(PREAMBLE_N(M),
+                w->D_T[M],  w->ld, IN(rho), 1.0, OUT(rho_E));
+            suzerain_blasext_zgbdddmv_d_z(PREAMBLE_N(M),
                 -phi*ikm,                    REF(ex_gradrho),
                 -phi*ikn,                    REF(ez_gradrho),
                 -phi*ginvRePr/gm1*(km2+kn2), REF(e_deltarho),
-                w->D_T[M],  w->ld, IN(rho), 1.0, OUT(rho_E),
-                UPPER_C(j, i));
+                w->D_T[M],  w->ld, IN(rho), 1.0, OUT(rho_E));
 
-            suzerain_gbdddmv_dzz(PREAMBLE_N(D1),
+            suzerain_blasext_zgbdddmv_d_z(PREAMBLE_N(D1),
                 -phi*Ma2*invRe*ap13*2*ikm,   REF(nuuxuy),
                 -phi*Ma2*invRe*ap13*2*ikn,   REF(nuuyuz),
                 -phi,                        REF(ey_gradrho),
-                w->D_T[D1], w->ld, IN(rho), 1.0, OUT(rho_E),
-                UPPER_C(j, i));
+                w->D_T[D1], w->ld, IN(rho), 1.0, OUT(rho_E));
 
-            suzerain_gbdddmv_dzz(PREAMBLE_N(D2),
+            suzerain_blasext_zgbdddmv_d_z(PREAMBLE_N(D2),
                 -phi*Ma2*invRe,              REF(nuu2),
                 -phi*Ma2*invRe*ap13,         REF(nuuyuy),
                 phi*ginvRePr/gm1,            REF(e_deltarho),
-                w->D_T[D2], w->ld, IN(rho), 1.0, OUT(rho_E),
-                UPPER_C(j, i));
-
-            UPPER_A(j, i, in_rho, out_rho_E);
-            UPPER_B(j, i, in_rho, out_rho_E);
+                w->D_T[D2], w->ld, IN(rho), 1.0, OUT(rho_E));
         }
+
+        swap(upper_phi_L_hatV + i, out_rho_E + w->n - 1);
+        out_rho_E[w->n - 1] += upper_phi_L_hatV[i];
 
         suzerain_blas_zgbmv_d_z(PREAMBLE_NN(M),
             1.0, w->D_T[M], w->ld, IN(rho_E), 1.0, OUT(rho_E));
 
+        upper_hatV[i] = in_rho_E[w->n - 1];
     }
 
     if (in_rho_u) { enum { i = 1 };  // Accumulate terms into out_rho_u
 
         suzerain_blas_zscal(w->n, beta, OUT(rho_u));
 
-        if (in_rho_E) { enum { j = 0 };
-            suzerain_gbmv_dzz(PREAMBLE_NN(M),
-                -phi*gm1*invMa2*ikm, w->D_T[M], w->ld, IN(rho_E),
-                1.0, OUT(rho_u),
-                UPPER_C(j, i));
+        swap(upper_phi_L_hatV + i, out_rho_u + w->n - 1);
 
-            UPPER_A(j, i, in_rho_E, out_rho_u);
-            UPPER_B(j, i, in_rho_E, out_rho_u);
+        if (in_rho_E) { enum { j = 0 };
+            suzerain_blas_zgbmv_d_z(PREAMBLE_NN(M),
+                -phi*gm1*invMa2*ikm, w->D_T[M], w->ld, IN(rho_E),
+                1.0, OUT(rho_u));
         }
 
         /* in_rho_u */ { enum { j = 1 };
-            suzerain_gbdddmv_dzz(PREAMBLE_N(M),
+            suzerain_blasext_zgbdddmv_d_z(PREAMBLE_N(M),
                 phi*gm3*ikm,               REF(ux),
                 -phi*ikn,                  REF(uz),
                 -phi*invRe*(ap43*km2+kn2), REF(nu),
-                w->D_T[M],  w->ld, IN(rho_u), 1.0, OUT(rho_u),
-                UPPER_C(j, i));
+                w->D_T[M],  w->ld, IN(rho_u), 1.0, OUT(rho_u));
 
-            suzerain_gbdmv_dzz(PREAMBLE_N(D1),
+            suzerain_blasext_zgbdmv_d_z(PREAMBLE_N(D1),
                 -phi,                      REF(uy),
-                w->D_T[D1], w->ld, IN(rho_u), 1.0, OUT(rho_u),
-                UPPER_C(j, i));
+                w->D_T[D1], w->ld, IN(rho_u), 1.0, OUT(rho_u));
 
-            suzerain_gbdmv_dzz(PREAMBLE_N(D2),
+            suzerain_blasext_zgbdmv_d_z(PREAMBLE_N(D2),
                 phi*invRe,                 REF(nu),
-                w->D_T[D2], w->ld, IN(rho_u), 1.0, OUT(rho_u),
-                UPPER_C(j, i));
-
-            UPPER_A(j, i, in_rho_u, out_rho_u);
-            UPPER_B(j, i, in_rho_u, out_rho_u);
+                w->D_T[D2], w->ld, IN(rho_u), 1.0, OUT(rho_u));
         }
 
         if (in_rho_v) { enum { j = 2 };
-            suzerain_gbdmv_dzz(PREAMBLE_N(M),
+            suzerain_blasext_zgbdmv_d_z(PREAMBLE_N(M),
                 phi*gm1*ikm,               REF(uy),
-                w->D_T[M],  w->ld, IN(rho_v), 1.0, OUT(rho_u),
-                UPPER_C(j, i));
+                w->D_T[M],  w->ld, IN(rho_v), 1.0, OUT(rho_u));
 
-            suzerain_gbddmv_dzz(PREAMBLE_N(D1),
+            suzerain_blasext_zgbddmv_d_z(PREAMBLE_N(D1),
                 -phi,                      REF(ux),
                 phi*ap13*invRe*ikm,        REF(nu),
-                w->D_T[D1], w->ld, IN(rho_v), 1.0, OUT(rho_u),
-                UPPER_C(j, i));
-
-            UPPER_A(j, i, in_rho_v, out_rho_u);
-            UPPER_B(j, i, in_rho_v, out_rho_u);
+                w->D_T[D1], w->ld, IN(rho_v), 1.0, OUT(rho_u));
         }
 
         if (in_rho_w) { enum { j = 3 };
-            suzerain_gbdddmv_dzz(PREAMBLE_N(M),
+            suzerain_blasext_zgbdddmv_d_z(PREAMBLE_N(M),
                 -phi*ikn,                  REF(ux),
                  phi*gm1*ikm,              REF(uz),
                 -phi*ap13*invRe*km*kn,     REF(nu),
-                w->D_T[M],  w->ld, IN(rho_w), 1.0, OUT(rho_u),
-                UPPER_C(j, i));
-
-            UPPER_A(j, i, in_rho_w, out_rho_u);
-            UPPER_B(j, i, in_rho_w, out_rho_u);
+                w->D_T[M],  w->ld, IN(rho_w), 1.0, OUT(rho_u));
         }
 
         if (in_rho) { enum { j = 4 };
-            suzerain_gbdddddmv_dzz(PREAMBLE_N(M),
+            suzerain_blasext_zgbdddddmv_d_z(PREAMBLE_N(M),
                 -phi*0.5*gm1*ikm,          REF(u2),
                 phi*ikm,                   REF(uxux),
                 phi*ikn,                   REF(uxuz),
                 phi*invRe*(ap43*km2+kn2),  REF(nuux),
                 phi*ap13*invRe*km*kn,      REF(nuuz),
-                w->D_T[M],  w->ld, IN(rho), 1.0, OUT(rho_u),
-                UPPER_C(j, i));
+                w->D_T[M],  w->ld, IN(rho), 1.0, OUT(rho_u));
 
-            suzerain_gbddmv_dzz(PREAMBLE_N(D1),
+            suzerain_blasext_zgbddmv_d_z(PREAMBLE_N(D1),
                 phi,                       REF(uxuy),
                 -phi*ap13*invRe*ikm,       REF(nuuy),
-                w->D_T[D1], w->ld, IN(rho), 1.0, OUT(rho_u),
-                UPPER_C(j, i));
+                w->D_T[D1], w->ld, IN(rho), 1.0, OUT(rho_u));
 
-            suzerain_gbdmv_dzz(PREAMBLE_N(D2),
+            suzerain_blasext_zgbdmv_d_z(PREAMBLE_N(D2),
                 -phi*invRe,                REF(nuux),
-                w->D_T[D2], w->ld, IN(rho), 1.0, OUT(rho_u),
-                UPPER_C(j, i));
-
-            UPPER_A(j, i, in_rho, out_rho_u);
-            UPPER_B(j, i, in_rho, out_rho_u);
+                w->D_T[D2], w->ld, IN(rho), 1.0, OUT(rho_u));
         }
+
+        swap(upper_phi_L_hatV + i, out_rho_u + w->n - 1);
+        out_rho_u[w->n - 1] += upper_phi_L_hatV[i];
 
         suzerain_blas_zgbmv_d_z(PREAMBLE_NN(M),
             1.0, w->D_T[M], w->ld, IN(rho_u), 1.0, OUT(rho_u));
+
+        upper_hatV[i] = in_rho_u[w->n - 1];
 
     }
 
@@ -360,97 +318,78 @@ suzerain_rholut_imexop_accumulate(
 
         suzerain_blas_zscal(w->n, beta, OUT(rho_v));
 
-        if (in_rho_E) { enum { j = 0 };
-            suzerain_gbmv_dzz(PREAMBLE_NN(D1),
-                -phi*gm1*invMa2, w->D_T[D1], w->ld, IN(rho_E),
-                1.0, OUT(rho_v),
-                UPPER_C(j, i));
+        swap(upper_phi_L_hatV + i, out_rho_v + w->n - 1);
 
-            UPPER_A(j, i, in_rho_E, out_rho_v);
-            UPPER_B(j, i, in_rho_E, out_rho_v);
+        if (in_rho_E) { enum { j = 0 };
+            suzerain_blas_zgbmv_d_z(PREAMBLE_NN(D1),
+                -phi*gm1*invMa2, w->D_T[D1], w->ld, IN(rho_E),
+                1.0, OUT(rho_v));
         }
 
         if (in_rho_u) { enum { j = 1 };
-            suzerain_gbdmv_dzz(PREAMBLE_N(M),
+            suzerain_blasext_zgbdmv_d_z(PREAMBLE_N(M),
                 -phi*ikm,             REF(uy),
-                w->D_T[M],   w->ld, IN(rho_u), 1.0, OUT(rho_v),
-                UPPER_C(j, i));
+                w->D_T[M],   w->ld, IN(rho_u), 1.0, OUT(rho_v));
 
-            suzerain_gbddmv_dzz(PREAMBLE_N(D1),
+            suzerain_blasext_zgbddmv_d_z(PREAMBLE_N(D1),
                 phi*gm1,              REF(ux),
                 phi*ap13*invRe*ikm,   REF(nu),
-                w->D_T[D1],  w->ld, IN(rho_u), 1.0, OUT(rho_v),
-                UPPER_C(j, i));
-
-            UPPER_A(j, i, in_rho_u, out_rho_v);
-            UPPER_B(j, i, in_rho_u, out_rho_v);
+                w->D_T[D1],  w->ld, IN(rho_u), 1.0, OUT(rho_v));
         }
 
         /* in_rho_v */ { enum { j = 2 };
-            suzerain_gbdddmv_dzz(PREAMBLE_N(M),
+            suzerain_blasext_zgbdddmv_d_z(PREAMBLE_N(M),
                 -phi*ikm,             REF(ux),
                 -phi*ikn,             REF(uz),
                 -phi*invRe*(km2+kn2), REF(nu),
-                w->D_T[M],  w->ld, IN(rho_v), 1.0, OUT(rho_v),
-                UPPER_C(j, i));
+                w->D_T[M],  w->ld, IN(rho_v), 1.0, OUT(rho_v));
 
-            suzerain_gbdmv_dzz(PREAMBLE_N(D1),
+            suzerain_blasext_zgbdmv_d_z(PREAMBLE_N(D1),
                 phi*gm3,              REF(uy),
-                w->D_T[D1], w->ld, IN(rho_v), 1.0, OUT(rho_v),
-                UPPER_C(j, i));
+                w->D_T[D1], w->ld, IN(rho_v), 1.0, OUT(rho_v));
 
-            suzerain_gbdmv_dzz(PREAMBLE_N(D2),
+            suzerain_blasext_zgbdmv_d_z(PREAMBLE_N(D2),
                 phi*ap43*invRe,       REF(nu),
-                w->D_T[D2], w->ld, IN(rho_v), 1.0, OUT(rho_v),
-                UPPER_C(j, i));
-
-            UPPER_A(j, i, in_rho_v, out_rho_v);
-            UPPER_B(j, i, in_rho_v, out_rho_v);
+                w->D_T[D2], w->ld, IN(rho_v), 1.0, OUT(rho_v));
         }
 
         if (in_rho_w) { enum { j = 3 };
-            suzerain_gbdmv_dzz(PREAMBLE_N(M),
+            suzerain_blasext_zgbdmv_d_z(PREAMBLE_N(M),
                 -phi*ikn,             REF(uy),
-                w->D_T[M],   w->ld, IN(rho_w), 1.0, OUT(rho_v),
-                UPPER_C(j, i));
+                w->D_T[M],   w->ld, IN(rho_w), 1.0, OUT(rho_v));
 
-            suzerain_gbddmv_dzz(PREAMBLE_N(D1),
+            suzerain_blasext_zgbddmv_d_z(PREAMBLE_N(D1),
                 phi*gm1,              REF(uz),
                 phi*ap13*invRe*ikn,   REF(nu),
-                w->D_T[D1],  w->ld, IN(rho_w), 1.0, OUT(rho_v),
-                UPPER_C(j, i));
-
-            UPPER_A(j, i, in_rho_w, out_rho_v);
-            UPPER_B(j, i, in_rho_w, out_rho_v);
+                w->D_T[D1],  w->ld, IN(rho_w), 1.0, OUT(rho_v));
         }
 
         if (in_rho) { enum { j = 4 };
-            suzerain_gbdddmv_dzz(PREAMBLE_N(M),
+            suzerain_blasext_zgbdddmv_d_z(PREAMBLE_N(M),
                 phi*ikm,              REF(uxuy),
                 phi*ikn,              REF(uyuz),
                 phi*invRe*(km2+kn2),  REF(nuuy),
-                w->D_T[M],  w->ld, IN(rho), 1.0, OUT(rho_v),
-                UPPER_C(j, i));
+                w->D_T[M],  w->ld, IN(rho), 1.0, OUT(rho_v));
 
-            suzerain_gbddddmv_dzz(PREAMBLE_N(D1),
+            suzerain_blasext_zgbddddmv_d_z(PREAMBLE_N(D1),
                 -phi*0.5*gm1,         REF(u2),
                  phi,                 REF(uyuy),
                 -phi*ap13*invRe*ikm,  REF(nuux),
                 -phi*ap13*invRe*ikn,  REF(nuuz),
-                w->D_T[D1], w->ld, IN(rho), 1.0, OUT(rho_v),
-                UPPER_C(j, i));
+                w->D_T[D1], w->ld, IN(rho), 1.0, OUT(rho_v));
 
-            suzerain_gbdmv_dzz(PREAMBLE_N(D2),
+            suzerain_blasext_zgbdmv_d_z(PREAMBLE_N(D2),
                 -phi*ap43*invRe,      REF(nuuy),
-                w->D_T[D2], w->ld, IN(rho), 1.0, OUT(rho_v),
-                UPPER_C(j, i));
-
-            UPPER_A(j, i, in_rho, out_rho_v);
-            UPPER_B(j, i, in_rho, out_rho_v);
+                w->D_T[D2], w->ld, IN(rho), 1.0, OUT(rho_v));
         }
+
+        swap(upper_phi_L_hatV + i, out_rho_v + w->n - 1);
+        out_rho_v[w->n - 1] += upper_phi_L_hatV[i];
 
         suzerain_blas_zgbmv_d_z(PREAMBLE_NN(M),
             1.0, w->D_T[M], w->ld, IN(rho_v), 1.0, OUT(rho_v));
+
+        upper_hatV[i] = in_rho_v[w->n - 1];
 
     }
 
@@ -458,93 +397,75 @@ suzerain_rholut_imexop_accumulate(
 
         suzerain_blas_zscal(w->n, beta, OUT(rho_w));
 
-        if (in_rho_E) { enum { j = 0 };
-            suzerain_gbmv_dzz(PREAMBLE_NN(M),
-                -phi*gm1*invMa2*ikn, w->D_T[M], w->ld, IN(rho_E),
-                1.0, OUT(rho_w),
-                UPPER_C(j, i));
+        swap(upper_phi_L_hatV + i, out_rho_w + w->n - 1);
 
-            UPPER_A(j, i, in_rho_E, out_rho_w);
-            UPPER_B(j, i, in_rho_E, out_rho_w);
+        if (in_rho_E) { enum { j = 0 };
+            suzerain_blas_zgbmv_d_z(PREAMBLE_NN(M),
+                -phi*gm1*invMa2*ikn, w->D_T[M], w->ld, IN(rho_E),
+                1.0, OUT(rho_w));
         }
 
         if (in_rho_u) { enum { j = 1 };
-            suzerain_gbdddmv_dzz(PREAMBLE_N(M),
+            suzerain_blasext_zgbdddmv_d_z(PREAMBLE_N(M),
                  phi*gm1*ikn,              REF(ux),
                 -phi*ikm,                  REF(uz),
                 -phi*ap13*invRe*km*kn,     REF(nu),
-                w->D_T[M],  w->ld, IN(rho_u), 1.0, OUT(rho_w),
-                UPPER_C(j, i));
-
-            UPPER_A(j, i, in_rho_u, out_rho_w);
-            UPPER_B(j, i, in_rho_u, out_rho_w);
+                w->D_T[M],  w->ld, IN(rho_u), 1.0, OUT(rho_w));
         }
 
         if (in_rho_v) { enum { j = 2 };
-            suzerain_gbdmv_dzz(PREAMBLE_N(M),
+            suzerain_blasext_zgbdmv_d_z(PREAMBLE_N(M),
                 phi*gm1*ikn,               REF(uy),
-                w->D_T[M],  w->ld, IN(rho_v), 1.0, OUT(rho_w),
-                UPPER_C(j, i));
+                w->D_T[M],  w->ld, IN(rho_v), 1.0, OUT(rho_w));
 
-            suzerain_gbddmv_dzz(PREAMBLE_N(D1),
+            suzerain_blasext_zgbddmv_d_z(PREAMBLE_N(D1),
                 -phi,                      REF(uz),
                 phi*ap13*invRe*ikn,        REF(nu),
-                w->D_T[D1], w->ld, IN(rho_v), 1.0, OUT(rho_w),
-                UPPER_C(j, i));
-
-            UPPER_A(j, i, in_rho_v, out_rho_w);
-            UPPER_B(j, i, in_rho_v, out_rho_w);
+                w->D_T[D1], w->ld, IN(rho_v), 1.0, OUT(rho_w));
         }
 
         /* in_rho_w */ { enum { j = 3 };
-            suzerain_gbdddmv_dzz(PREAMBLE_N(M),
+            suzerain_blasext_zgbdddmv_d_z(PREAMBLE_N(M),
                 -phi*ikm,                  REF(ux),
                 phi*gm3*ikn,               REF(uz),
                 -phi*invRe*(km2+ap43*kn2), REF(nu),
-                w->D_T[M],  w->ld, IN(rho_w), 1.0, OUT(rho_w),
-                UPPER_C(j, i));
+                w->D_T[M],  w->ld, IN(rho_w), 1.0, OUT(rho_w));
 
-            suzerain_gbdmv_dzz(PREAMBLE_N(D1),
+            suzerain_blasext_zgbdmv_d_z(PREAMBLE_N(D1),
                 -phi,                      REF(uy),
-                w->D_T[D1], w->ld, IN(rho_w), 1.0, OUT(rho_w),
-                UPPER_C(j, i));
+                w->D_T[D1], w->ld, IN(rho_w), 1.0, OUT(rho_w));
 
-            suzerain_gbdmv_dzz(PREAMBLE_N(D2),
+            suzerain_blasext_zgbdmv_d_z(PREAMBLE_N(D2),
                 phi*invRe,                 REF(nu),
-                w->D_T[D2], w->ld, IN(rho_w), 1.0, OUT(rho_w),
-                UPPER_C(j, i));
-
-            UPPER_A(j, i, in_rho_w, out_rho_w);
-            UPPER_B(j, i, in_rho_w, out_rho_w);
+                w->D_T[D2], w->ld, IN(rho_w), 1.0, OUT(rho_w));
         }
 
         if (in_rho) { enum { j = 4 };
-            suzerain_gbdddddmv_dzz(PREAMBLE_N(M),
+            suzerain_blasext_zgbdddddmv_d_z(PREAMBLE_N(M),
                 -phi*0.5*gm1*ikn,          REF(u2),
                 phi*ikm,                   REF(uxuz),
                 phi*ikn,                   REF(uzuz),
                 phi*invRe*(km2+ap43*kn2),  REF(nuuz),
                 phi*ap13*invRe*km*kn,      REF(nuux),
-                w->D_T[M],  w->ld, IN(rho), 1.0, OUT(rho_w),
-                UPPER_C(j, i));
+                w->D_T[M],  w->ld, IN(rho), 1.0, OUT(rho_w));
 
-            suzerain_gbddmv_dzz(PREAMBLE_N(D1),
+            suzerain_blasext_zgbddmv_d_z(PREAMBLE_N(D1),
                  phi,                      REF(uyuz),
                 -phi*ap13*invRe*ikn,       REF(nuuy),
-                w->D_T[D1], w->ld, IN(rho), 1.0, OUT(rho_w),
-                UPPER_C(j, i));
+                w->D_T[D1], w->ld, IN(rho), 1.0, OUT(rho_w));
 
-            suzerain_gbdmv_dzz(PREAMBLE_N(D2),
+            suzerain_blasext_zgbdmv_d_z(PREAMBLE_N(D2),
                 -phi*invRe,                REF(nuuz),
-                w->D_T[D2], w->ld, IN(rho), 1.0, OUT(rho_w),
-                UPPER_C(j, i));
-
-            UPPER_A(j, i, in_rho, out_rho_w);
-            UPPER_B(j, i, in_rho, out_rho_w);
+                w->D_T[D2], w->ld, IN(rho), 1.0, OUT(rho_w));
         }
+
+        swap(upper_phi_L_hatV + i, out_rho_w + w->n - 1);
+        out_rho_w[w->n - 1] += upper_phi_L_hatV[i];
 
         suzerain_blas_zgbmv_d_z(PREAMBLE_NN(M),
             1.0, w->D_T[M], w->ld, IN(rho_w), 1.0, OUT(rho_w));
+
+        upper_hatV[i] = in_rho_w[w->n - 1];
 
     }
 
@@ -552,56 +473,183 @@ suzerain_rholut_imexop_accumulate(
 
         suzerain_blas_zscal(w->n, beta, OUT(rho));
 
+        swap(upper_phi_L_hatV + i, out_rho + w->n - 1);
+
         if (in_rho_E) { enum { j = 0 };
-            UPPER_A(j, i, in_rho_E, out_rho);
-            UPPER_B(j, i, in_rho_E, out_rho);
+            // NOP
         }
 
         if (in_rho_u) { enum { j = 1 };
-            suzerain_gbmv_dzz(PREAMBLE_NN(M),
-                -phi*ikm, w->D_T[M], w->ld, IN(rho_u),  1.0, OUT(rho),
-                UPPER_C(j, i));
-
-            UPPER_A(j, i, in_rho_u, out_rho);
-            UPPER_B(j, i, in_rho_u, out_rho);
+            suzerain_blas_zgbmv_d_z(PREAMBLE_NN(M),
+                -phi*ikm, w->D_T[M], w->ld, IN(rho_u),  1.0, OUT(rho));
         }
 
         if (in_rho_v) { enum { j = 2 };
-            suzerain_gbmv_dzz(PREAMBLE_NN(D1),
-                -phi,     w->D_T[D1], w->ld, IN(rho_v), 1.0, OUT(rho),
-                UPPER_C(j, i));
-
-            UPPER_A(j, i, in_rho_v, out_rho);
-            UPPER_B(j, i, in_rho_v, out_rho);
+            suzerain_blas_zgbmv_d_z(PREAMBLE_NN(D1),
+                -phi,     w->D_T[D1], w->ld, IN(rho_v), 1.0, OUT(rho));
         }
 
         if (in_rho_w) { enum { j = 3 };
-            suzerain_gbmv_dzz(PREAMBLE_NN(M),
-                -phi*ikn, w->D_T[M], w->ld, IN(rho_w),  1.0, OUT(rho),
-                UPPER_C(j, i));
-
-            UPPER_A(j, i, in_rho_w, out_rho);
-            UPPER_B(j, i, in_rho_w, out_rho);
+            suzerain_blas_zgbmv_d_z(PREAMBLE_NN(M),
+                -phi*ikn, w->D_T[M], w->ld, IN(rho_w),  1.0, OUT(rho));
         }
 
         /* rho */ { enum { j = 4 };
-            UPPER_A(j, i, in_rho, out_rho);
-            UPPER_B(j, i, in_rho, out_rho);
+            // NOP
         }
+
+        swap(upper_phi_L_hatV + i, out_rho + w->n - 1);
+        out_rho[w->n - 1] += upper_phi_L_hatV[i];
 
         suzerain_blas_zgbmv_d_z(PREAMBLE_NN(M),
             1.0, w->D_T[M], w->ld, IN(rho), 1.0, OUT(rho));
 
+        upper_hatV[i] = in_rho[w->n - 1];
     }
 
-#   undef UPPER_B
-#   undef UPPER_A
-#   undef UPPER_C
 #   undef PREAMBLE_NN
 #   undef PREAMBLE_N
 #   undef REF
 #   undef IN
 #   undef OUT
+
+    // When necessary, adjust upper boundary using provided NRBC matrices.
+    // TODO Reorder to avoid jumping between a, b, and c matrices.
+    if (a || b || c) {
+
+        if (out_rho_E) {
+            complex_double tmp = 0;
+            if (a) {
+                tmp += (ikm*phi)*( a[ 0]*upper_hatV[0]
+                                 + a[ 5]*upper_hatV[1]
+                                 + a[10]*upper_hatV[2]
+                                 + a[15]*upper_hatV[3]
+                                 + a[20]*upper_hatV[4]);
+            }
+            if (b) {
+                tmp += (ikn*phi)*( b[ 0]*upper_hatV[0]
+                                 + b[ 5]*upper_hatV[1]
+                                 + b[10]*upper_hatV[2]
+                                 + b[15]*upper_hatV[3]
+                                 + b[20]*upper_hatV[4]);
+            }
+            if (c) {
+                tmp -= c[ 0]*upper_phi_L_hatV[0]
+                     + c[ 5]*upper_phi_L_hatV[1]
+                     + c[10]*upper_phi_L_hatV[2]
+                     + c[15]*upper_phi_L_hatV[3]
+                     + c[20]*upper_phi_L_hatV[4];
+            }
+            out_rho_E[w->n-1] += tmp;
+        }
+
+        if (out_rho_u) {
+            complex_double tmp = 0;
+            if (a) {
+                tmp += (ikm*phi)*( a[ 1]*upper_hatV[0]
+                                 + a[ 6]*upper_hatV[1]
+                                 + a[11]*upper_hatV[2]
+                                 + a[16]*upper_hatV[3]
+                                 + a[21]*upper_hatV[4]);
+            }
+            if (b) {
+                tmp += (ikn*phi)*( b[ 1]*upper_hatV[0]
+                                 + b[ 6]*upper_hatV[1]
+                                 + b[11]*upper_hatV[2]
+                                 + b[16]*upper_hatV[3]
+                                 + b[21]*upper_hatV[4]);
+            }
+            if (c) {
+                tmp -= c[ 1]*upper_phi_L_hatV[0]
+                     + c[ 6]*upper_phi_L_hatV[1]
+                     + c[11]*upper_phi_L_hatV[2]
+                     + c[16]*upper_phi_L_hatV[3]
+                     + c[21]*upper_phi_L_hatV[4];
+            }
+            out_rho_u[w->n-1] += tmp;
+        }
+
+        if (out_rho_v) {
+            complex_double tmp = 0;
+            if (a) {
+                tmp += (ikm*phi)*( a[ 2]*upper_hatV[0]
+                                 + a[ 7]*upper_hatV[1]
+                                 + a[12]*upper_hatV[2]
+                                 + a[17]*upper_hatV[3]
+                                 + a[22]*upper_hatV[4]);
+            }
+            if (b) {
+                tmp += (ikn*phi)*( b[ 2]*upper_hatV[0]
+                                 + b[ 7]*upper_hatV[1]
+                                 + b[12]*upper_hatV[2]
+                                 + b[17]*upper_hatV[3]
+                                 + b[22]*upper_hatV[4]);
+            }
+            if (c) {
+                tmp -= c[ 2]*upper_phi_L_hatV[0]
+                     + c[ 7]*upper_phi_L_hatV[1]
+                     + c[12]*upper_phi_L_hatV[2]
+                     + c[17]*upper_phi_L_hatV[3]
+                     + c[22]*upper_phi_L_hatV[4];
+            }
+            out_rho_v[w->n-1] += tmp;
+        }
+
+        if (out_rho_w) {
+            complex_double tmp = 0;
+            if (a) {
+                tmp += (ikm*phi)*( a[ 3]*upper_hatV[0]
+                                 + a[ 8]*upper_hatV[1]
+                                 + a[13]*upper_hatV[2]
+                                 + a[18]*upper_hatV[3]
+                                 + a[23]*upper_hatV[4]);
+            }
+            if (b) {
+                tmp += (ikn*phi)*( b[ 3]*upper_hatV[0]
+                                 + b[ 8]*upper_hatV[1]
+                                 + b[13]*upper_hatV[2]
+                                 + b[18]*upper_hatV[3]
+                                 + b[23]*upper_hatV[4]);
+            }
+            if (c) {
+                tmp -= c[ 3]*upper_phi_L_hatV[0]
+                     + c[ 8]*upper_phi_L_hatV[1]
+                     + c[13]*upper_phi_L_hatV[2]
+                     + c[18]*upper_phi_L_hatV[3]
+                     + c[23]*upper_phi_L_hatV[4];
+            }
+            out_rho_w[w->n-1] += tmp;
+        }
+
+        if (out_rho) {
+            complex_double tmp = 0;
+            if (a) {
+                tmp += (ikm*phi)*( a[ 4]*upper_hatV[0]
+                                 + a[ 9]*upper_hatV[1]
+                                 + a[14]*upper_hatV[2]
+                                 + a[19]*upper_hatV[3]
+                                 + a[24]*upper_hatV[4]);
+            }
+            if (b) {
+                tmp += (ikn*phi)*( b[ 4]*upper_hatV[0]
+                                 + b[ 9]*upper_hatV[1]
+                                 + b[14]*upper_hatV[2]
+                                 + b[19]*upper_hatV[3]
+                                 + b[24]*upper_hatV[4]);
+            }
+            if (c) {
+                tmp -= c[ 4]*upper_phi_L_hatV[0]
+                     + c[ 9]*upper_phi_L_hatV[1]
+                     + c[14]*upper_phi_L_hatV[2]
+                     + c[19]*upper_phi_L_hatV[3]
+                     + c[24]*upper_phi_L_hatV[4];
+            }
+            out_rho[w->n-1] += tmp;
+        }
+
+
+    }
+
 }
 
 // suzerain_rholut_imexop_pack{c,f} differ trivially
