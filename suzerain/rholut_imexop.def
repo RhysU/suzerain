@@ -100,27 +100,9 @@ FUNCNAME()(
     // equation indices are transposed in calls to PACK(...)(...) and we right
     // multiply the transpose of the discrete operators by diagonal matrices.
 
-    // Prepare offset to the final column of buf to permit adjusting the
-    // accumulated operator to provide nonreflecting boundary conditions.
-    // UPPER_C must always proceed both UPPER_A and UPPER_B.
-    // "Enumerated" constants i and j track the active NRBC matrix element.
-    int bufupper_il, bufupper_iu;
-    complex_double * const bufupper = suzerain_gbmatrix_col(
-            A_T->n, A_T->n, A_T->kl, A_T->ku, buf, A_T->ld, sizeof(buf[0]),
-            A_T->n-1, &bufupper_il, &bufupper_iu);
-
     // Shorthand for common patterns below
 #   define REF(quantity) r->quantity, ld->quantity
 #   define PREAMBLE      'R', A_T->n, A_T->n, A_T->kl, A_T->ku
-#   define UPPER_C(i,j)                                     \
-        if (c) do {                                         \
-            for (int k = bufupper_il; k < bufupper_iu; ++k) \
-                bufupper[k] *= 1 - c[(i) + 5*(j)];          \
-        } while (0)
-#   define UPPER_A(i, j, f) \
-        if (a) do { bufupper[A_T->n-1] += f*ikm*a[(i)+5*(j)]; } while (0)
-#   define UPPER_B(i, j, f) \
-        if (b) do { bufupper[A_T->n-1] += f*ikn*b[(i)+5*(j)]; } while (0)
 
     if (rho_E >= 0) { enum { i = 0 }; // Prepare total energy row
 
@@ -140,10 +122,6 @@ FUNCNAME()(
             suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
                     ginvRePr,                    REF(nu),
                     D2, 1, w->ld, 1.0, buf, 1, A_T->ld);
-
-            UPPER_C(j, i);
-            UPPER_A(j, i, 1);
-            UPPER_B(j, i, 1);
 
             suzerain_blas_zgb_acc_d(
                     A_T->n, A_T->n, A_T->kl, A_T->ku,
@@ -169,10 +147,6 @@ FUNCNAME()(
                     Ma2*invRe*(1-ginvPr),        REF(nuux),
                     D2, 1, w->ld, 1.0, buf, 1, A_T->ld);
 
-            UPPER_C(j, i);
-            UPPER_A(j, i, 1);
-            UPPER_B(j, i, 1);
-
             PACK(z)(A_T, rho_u, rho_E, phi, buf, patpt);
         }
 
@@ -193,10 +167,6 @@ FUNCNAME()(
                     Ma2*invRe*(ap43-ginvPr),     REF(nuuy),
                     D2, 1, w->ld, 1.0, buf, 1, A_T->ld);
 
-            UPPER_C(j, i);
-            UPPER_A(j, i, 1);
-            UPPER_B(j, i, 1);
-
             PACK(z)(A_T, rho_v, rho_E, phi, buf, patpt);
         }
 
@@ -216,10 +186,6 @@ FUNCNAME()(
             suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
                     Ma2*invRe*(1-ginvPr),        REF(nuuz),
                     D2, 1, w->ld, 1.0, buf, 1, A_T->ld);
-
-            UPPER_C(j, i);
-            UPPER_A(j, i, 1);
-            UPPER_B(j, i, 1);
 
             PACK(z)(A_T, rho_w, rho_E, phi, buf, patpt);
         }
@@ -251,10 +217,6 @@ FUNCNAME()(
                     ginvRePr/gm1,                REF(e_deltarho),
                     D2, 1, w->ld, 1.0, buf, 1, A_T->ld);
 
-            UPPER_C(j, i);
-            UPPER_A(j, i, 1);
-            UPPER_B(j, i, 1);
-
             PACK(z)(A_T, rho, rho_E, phi, buf, patpt);
         }
 
@@ -267,10 +229,6 @@ FUNCNAME()(
             for (int k = 0; k < A_T->ld*A_T->n; ++k) {
                 buf[k] = -gm1*invMa2*ikm*M[k];
             }
-
-            UPPER_C(j, i);
-            UPPER_A(j, i, 1);
-            UPPER_B(j, i, 1);
 
             PACK(z)(A_T, rho_E, rho_u, phi, buf, patpt);
         }
@@ -292,10 +250,6 @@ FUNCNAME()(
                     invRe,                       REF(nu),
                     D2, 1, w->ld, 1.0, buf, 1, A_T->ld);
 
-            UPPER_C(j, i);
-            UPPER_A(j, i, 1);
-            UPPER_B(j, i, 1);
-
             suzerain_blas_zgb_acc_d(
                     A_T->n, A_T->n, A_T->kl, A_T->ku,
                     1, M, w->ld, phi, buf, A_T->ld);
@@ -312,11 +266,6 @@ FUNCNAME()(
                     -1.0,                        REF(ux),
                     ap13*invRe*ikm,              REF(nu),
                     D1, 1, w->ld, 1.0, buf, 1, A_T->ld);
-
-            UPPER_C(j, i);
-            UPPER_A(j, i, 1);
-            UPPER_B(j, i, 1);
-
             PACK(z)(A_T, rho_v, rho_u, phi, buf, patpt);
         }
 
@@ -326,10 +275,6 @@ FUNCNAME()(
                     -ikn,                        REF(ux),
                     -ap13*invRe*km*kn,           REF(nu),
                     M,  1, w->ld, 0.0, buf, 1, A_T->ld);
-
-            UPPER_C(j, i);
-            UPPER_A(j, i, 1);
-            UPPER_B(j, i, 1);
 
             PACK(z)(A_T, rho_w, rho_u, phi, buf, patpt);
         }
@@ -352,10 +297,6 @@ FUNCNAME()(
                     -invRe,                      REF(nuux),
                     D2, 1, w->ld, 1.0, buf, 1, A_T->ld);
 
-            UPPER_C(j, i);
-            UPPER_A(j, i, 1);
-            UPPER_B(j, i, 1);
-
             PACK(z)(A_T, rho, rho_u, phi, buf, patpt);
         }
 
@@ -369,10 +310,6 @@ FUNCNAME()(
                 buf[k] = -gm1*invMa2*D1[k];
             }
 
-            UPPER_C(j, i);
-            UPPER_A(j, i, 1);
-            UPPER_B(j, i, 1);
-
             PACK(z)(A_T, rho_E, rho_v, phi, buf, patpt);
         }
 
@@ -385,10 +322,6 @@ FUNCNAME()(
                     gm1,                  REF(ux),
                     ap13*invRe*ikm,       REF(nu),
                     D1, 1, w->ld, 1.0, buf, 1, A_T->ld);
-
-            UPPER_C(j, i);
-            UPPER_A(j, i, 1);
-            UPPER_B(j, i, 1);
 
             PACK(z)(A_T, rho_u, rho_v, phi, buf, patpt);
         }
@@ -410,10 +343,6 @@ FUNCNAME()(
                     ap43*invRe,           REF(nu),
                     D2, 1, w->ld, 1.0, buf, 1, A_T->ld);
 
-            UPPER_C(j, i);
-            UPPER_A(j, i, 1);
-            UPPER_B(j, i, 1);
-
             suzerain_blas_zgb_acc_d(
                     A_T->n, A_T->n, A_T->kl, A_T->ku,
                     1, M, w->ld, phi, buf, A_T->ld);
@@ -430,10 +359,6 @@ FUNCNAME()(
                     gm1,                  REF(uz),
                     ap13*invRe*ikn,       REF(nu),
                     D1, 1, w->ld, 1.0, buf, 1, A_T->ld);
-
-            UPPER_C(j, i);
-            UPPER_A(j, i, 1);
-            UPPER_B(j, i, 1);
 
             PACK(z)(A_T, rho_w, rho_v, phi, buf, patpt);
         }
@@ -456,10 +381,6 @@ FUNCNAME()(
                     -ap43*invRe,          REF(nuuy),
                     D2, 1, w->ld, 1.0, buf, 1, A_T->ld);
 
-            UPPER_C(j, i);
-            UPPER_A(j, i, 1);
-            UPPER_B(j, i, 1);
-
             PACK(z)(A_T, rho, rho_v, phi, buf, patpt);
         }
 
@@ -473,10 +394,6 @@ FUNCNAME()(
                 buf[k] = -gm1*invMa2*ikn*M[k];
             }
 
-            UPPER_C(j, i);
-            UPPER_A(j, i, 1);
-            UPPER_B(j, i, 1);
-
             PACK(z)(A_T, rho_E, rho_w, phi, buf, patpt);
         }
 
@@ -486,10 +403,6 @@ FUNCNAME()(
                     -ikm,                        REF(uz),
                     -ap13*invRe*km*kn,           REF(nu),
                     M,  1, w->ld, 0.0, buf, 1, A_T->ld);
-
-            UPPER_C(j, i);
-            UPPER_A(j, i, 1);
-            UPPER_B(j, i, 1);
 
             PACK(z)(A_T, rho_u, rho_w, phi, buf, patpt);
         }
@@ -503,10 +416,6 @@ FUNCNAME()(
                     -1.0,                        REF(uz),
                     ap13*invRe*ikn,              REF(nu),
                     D1, 1, w->ld, 1.0, buf, 1, A_T->ld);
-
-            UPPER_C(j, i);
-            UPPER_A(j, i, 1);
-            UPPER_B(j, i, 1);
 
             PACK(z)(A_T, rho_v, rho_w, phi, buf, patpt);
         }
@@ -527,10 +436,6 @@ FUNCNAME()(
             suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
                     invRe,                       REF(nu),
                     D2, 1, w->ld, 1.0, buf, 1, A_T->ld);
-
-            UPPER_C(j, i);
-            UPPER_A(j, i, 1);
-            UPPER_B(j, i, 1);
 
             suzerain_blas_zgb_acc_d(
                     A_T->n, A_T->n, A_T->kl, A_T->ku,
@@ -557,10 +462,6 @@ FUNCNAME()(
                     -invRe,                      REF(nuuz),
                     D2, 1, w->ld, 1.0, buf, 1, A_T->ld);
 
-            UPPER_C(j, i);
-            UPPER_A(j, i, 1);
-            UPPER_B(j, i, 1);
-
             PACK(z)(A_T, rho, rho_w, phi, buf, patpt);
         }
 
@@ -569,74 +470,29 @@ FUNCNAME()(
     if (rho >= 0) {  enum { i = 4 }; // Prepare density row
 
         if (rho_E >= 0) { enum { j = 0 };
-            memset(buf, 0, A_T->ld*A_T->n*sizeof(buf[0]));
-
-            // TODO Using packed BSMBSM matrix value access should be faster
-            UPPER_A(j, i, 1);
-            UPPER_B(j, i, 1);
-
-            PACK(z)(A_T, rho_E, rho, phi, buf, patpt);
+            PACK(z)(A_T, rho_E, rho, 0.0, NULL, patpt);
         }
 
         if (rho_u >= 0) { enum { j = 1 };
-            // Scale real-valued M, sans phi, into complex-valued buf
-            for (int k = 0; k < A_T->ld*A_T->n; ++k) {
-                buf[k] = -ikm*M[k];
-            }
-
-            UPPER_C(j, i);
-            UPPER_A(j, i, 1);
-            UPPER_B(j, i, 1);
-
-            PACK(z)(A_T, rho_u, rho, phi, buf, patpt);
+            PACK(zd)(A_T, rho_u, rho, -phi*ikm, M, patpt);
         }
 
         if (rho_v >= 0) { enum { j = 2 };
-            // Scale real-valued D1, sans phi, into complex-valued buf
-            for (int k = 0; k < A_T->ld*A_T->n; ++k) {
-                buf[k] = -D1[k];
-            }
-
-            UPPER_C(j, i);
-            UPPER_A(j, i, 1);
-            UPPER_B(j, i, 1);
-
-            PACK(z)(A_T, rho_v, rho, phi, buf, patpt);
+            PACK(zd)(A_T, rho_v, rho, -phi, D1, patpt);
         }
 
         if (rho_w >= 0) { enum { j = 3 };
-            // Scale real-valued M, sans phi, into complex-valued buf
-            for (int k = 0; k < A_T->ld*A_T->n; ++k) {
-                buf[k] = -ikn*M[k];
-            }
-
-            UPPER_C(j, i);
-            UPPER_A(j, i, 1);
-            UPPER_B(j, i, 1);
-
-            PACK(z)(A_T, rho_w, rho, phi, buf, patpt);
+            PACK(zd)(A_T, rho_w, rho, -phi*ikn, M, patpt);
         }
 
         /* rho */ { enum { j = 4 };
-            // Copy real-valued M into complex-valued buf
-            for (int k = 0; k < A_T->ld*A_T->n; ++k) {
-                buf[k] = M[k];
-            }
-
-            // TODO Using packed BSMBSM matrix value access should be faster
-            UPPER_A(j, i, phi);
-            UPPER_B(j, i, phi);
-
-            PACK(z)(A_T, rho,  rho, 1.0, buf, patpt);
+            PACK(zd)(A_T, rho,  rho, 1.0, M, patpt);
         }
 
     }
 
 #   undef REF
 #   undef PREAMBLE
-#   undef UPPER_C
-#   undef UPPER_A
-#   undef UPPER_B
 
 }
 
