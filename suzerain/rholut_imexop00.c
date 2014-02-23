@@ -90,8 +90,7 @@ suzerain_rholut_imexop_accumulate00(
     const double ginvRePr    = s->gamma / (s->Re * s->Pr);
 
     // Accumulate the requested portions of the M + \phi L operator.  Scale
-    // output by beta, accumulate non-mass contributions (including possibly
-    // scaling the final row in each submatrix by -c), and finally accumulate
+    // output by beta, accumulate non-mass contributions, and finally accumulate
     // the mass contributions.  Mass contributions come last as they are
     // expected to have magnitudes much larger than phi-- this helps to ensure
     // better rounding of \phi L contributions.

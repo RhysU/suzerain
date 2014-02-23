@@ -101,17 +101,15 @@ suzerain_rholut_imexop_accumulate(
     const double ginvRePr    = s->gamma / (s->Re * s->Pr);
 
     // Accumulate the requested portions of the M + \phi L operator.  Scale
-    // output by beta, accumulate non-mass contributions, and finally
-    // accumulate the mass contributions.  Mass contributions come last as they
-    // are expected to have magnitudes much larger than phi-- this helps to
-    // ensure better rounding of \phi L contributions.
+    // output by beta, accumulate non-mass contributions, and finally accumulate
+    // the mass contributions.  Mass contributions come last as they are
+    // expected to have magnitudes much larger than phi-- this helps to ensure
+    // better rounding of \phi L contributions.
 
     // Readable shorthand for the common code patterns appearing below
     //
     // Notice we need to account for suzerain_bsplineop_workspace storing the
     // transpose of the operators when we invoke suzerain_blaseext_* routines.
-    // The definitions of UPPER_A and UPPER_B abuse that the last row of
-    // the mass matrix contains only a single one in the final column.
     // "Enumerated" constants i and j track the active NRBC matrix element.
     enum { M = 0, D1 = 1, D2 = 2 };
 #   define IN(quantity)        in_##quantity,  1
