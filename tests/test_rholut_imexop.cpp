@@ -179,7 +179,7 @@ static void operator_consistency(const parameters& p)
     }
 
     // Form PAP^T (with size computations to check documentation is right)
-    const int bufsize  = n*(op.max_kl() + 1 + op.max_ku());
+    const int bufsize  = std::max(75, n*(op.max_kl() + 1 + op.max_ku()));
     const int paptsize = (S*n)*(S*(op.max_kl() + op.max_ku() + 2) - 1);
     const int lusize   = (S*n)*(S*(2*op.max_kl() + op.max_ku() + 3) - 2);
     suzerain_bsmbsm A = suzerain_bsmbsm_construct(

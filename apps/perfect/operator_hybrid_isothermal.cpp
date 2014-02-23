@@ -604,8 +604,8 @@ void operator_hybrid_isothermal::invert_mass_plus_scaled_operator(
                                         true,            /* enforce_lower */
                                         grid.two_sided() /* enforce_upper */);
 
-    // Prepare a scratch buffer for packc/packf usage
-    ArrayXXc buf(solver->ld, solver->n);
+    // Prepare a scratch buffer for packc/packf usage per its documentation
+    ArrayX1c buf(std::max(75, solver->ld*solver->n));
 
     // Iterate across local wavenumbers and "invert" operator "in-place"
     //

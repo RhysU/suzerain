@@ -277,7 +277,7 @@ suzerain_rholut_imexop_accumulate00(
  * @param[in]  rho   Order of contiguous density data within a
  *                   globally contiguous state vector.
  * @param[in]  buf   Working storage of size at least
- *                   <tt>w->n*(w->max_kl + 1 + w->max_ku)</tt>.
+ *                   <tt>max(75, w->n*(w->max_kl + 1 + w->max_ku))</tt>.
  * @param[out] A_T   Storage details for the BSMBSM matrix \c patpt.
  * @param[out] patpt Band storage of renumbered matrix
  *                   \f$PA^{\mbox{T}}P^{\mbox{T}}\f$ which must have
@@ -394,7 +394,7 @@ suzerain_rholut_imexop_packc00(
  * @param[in]  rho   Order of contiguous density data within a
  *                   globally contiguous state vector.
  * @param[in]  buf   Working storage of size at least
- *                   <tt>w->n*(w->max_kl + 1 + w->max_ku)</tt>.
+ *                   <tt>max(75, w->n*(w->max_kl + 1 + w->max_ku))</tt>.
  * @param[out] A_T   Storage details for the BSMBSM matrix \c patpt.
  * @param[out] patpt Band storage of renumbered matrix
  *                   \f$PA^{\mbox{T}}P^{\mbox{T}}\f$ which must have

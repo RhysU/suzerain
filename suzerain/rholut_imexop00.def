@@ -344,10 +344,14 @@ FUNCNAME00()(
 #   undef PREAMBLE
 
     // When necessary, adjust upper boundary using provided NRBC matrix.
+    // using buf[0]...buf[(15*5)-1] for working storage.
     if (c) {
 
         // TODO Generalize to fewer than five equations
         assert(A_T->S == 5);
+
+        // TODO Generalize for different equation ordering
+        assert(rho_E==0 && rho_u==1 && rho_v==2 && rho_w==3 && rho==4);
 
         /*
          * Adjust PATPT so that it contains
@@ -366,9 +370,8 @@ FUNCNAME00()(
          *   \   /    \   /          \C^T/
          */
 
-        // TODO Avoid VLA and add requirements on the now-shadowed buf argument
         // Zero the buffers' upper 10x5 block and copy C^T into final 5x5 block
-        complex_double buf[15 * 5];
+        // walking the buffer in linear fashion to improve locality.
         for (int j = 0; j < 5; ++j) {
             for (int i =  0; i < 10; ++i) {
                 buf[i + 15*j] = 0;
@@ -377,9 +380,6 @@ FUNCNAME00()(
                 buf[i + 15*j] = c[5*(i-10) + j];
             }
         }
-
-        // TODO Generalize for different equation ordering
-        assert(rho_E==0 && rho_u==1 && rho_v==2 && rho_w==3 && rho==4);
 
         // Find upper left corner of "X" within PATPT using that the minimum
         // among all valid scalar indices rho_{E,u,v,w} was zero by assumption
