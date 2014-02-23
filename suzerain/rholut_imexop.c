@@ -512,91 +512,35 @@ suzerain_rholut_imexop_accumulate(
 #   undef OUT
 
     // When necessary, adjust upper boundary using provided NRBC matrices
-    // attempting to re-use NRBC memory access as much as possible.
     if (a || b || c) {
         complex_double t[5] = { 0 };
         if (a) {
-            t[0] += (ikm*phi)*( a[ 0]*upper_hatV[0]
-                              + a[ 5]*upper_hatV[1]
-                              + a[10]*upper_hatV[2]
-                              + a[15]*upper_hatV[3]
-                              + a[20]*upper_hatV[4]);
-            t[1] += (ikm*phi)*( a[ 1]*upper_hatV[0]
-                              + a[ 6]*upper_hatV[1]
-                              + a[11]*upper_hatV[2]
-                              + a[16]*upper_hatV[3]
-                              + a[21]*upper_hatV[4]);
-            t[2] += (ikm*phi)*( a[ 2]*upper_hatV[0]
-                              + a[ 7]*upper_hatV[1]
-                              + a[12]*upper_hatV[2]
-                              + a[17]*upper_hatV[3]
-                              + a[22]*upper_hatV[4]);
-            t[3] += (ikm*phi)*( a[ 3]*upper_hatV[0]
-                              + a[ 8]*upper_hatV[1]
-                              + a[13]*upper_hatV[2]
-                              + a[18]*upper_hatV[3]
-                              + a[23]*upper_hatV[4]);
-            t[4] += (ikm*phi)*( a[ 4]*upper_hatV[0]
-                              + a[ 9]*upper_hatV[1]
-                              + a[14]*upper_hatV[2]
-                              + a[19]*upper_hatV[3]
-                              + a[24]*upper_hatV[4]);
+            for (int i = 0; i < 5; ++i) {
+                t[i] += (ikm*phi)*( a[i +  0]*upper_hatV[0]
+                                  + a[i +  5]*upper_hatV[1]
+                                  + a[i + 10]*upper_hatV[2]
+                                  + a[i + 15]*upper_hatV[3]
+                                  + a[i + 20]*upper_hatV[4]);
+            }
         }
         if (b) {
-            t[0] += (ikn*phi)*( b[ 0]*upper_hatV[0]
-                              + b[ 5]*upper_hatV[1]
-                              + b[10]*upper_hatV[2]
-                              + b[15]*upper_hatV[3]
-                              + b[20]*upper_hatV[4]);
-            t[1] += (ikn*phi)*( b[ 1]*upper_hatV[0]
-                              + b[ 6]*upper_hatV[1]
-                              + b[11]*upper_hatV[2]
-                              + b[16]*upper_hatV[3]
-                              + b[21]*upper_hatV[4]);
-            t[2] += (ikn*phi)*( b[ 2]*upper_hatV[0]
-                              + b[ 7]*upper_hatV[1]
-                              + b[12]*upper_hatV[2]
-                              + b[17]*upper_hatV[3]
-                              + b[22]*upper_hatV[4]);
-            t[3] += (ikn*phi)*( b[ 3]*upper_hatV[0]
-                              + b[ 8]*upper_hatV[1]
-                              + b[13]*upper_hatV[2]
-                              + b[18]*upper_hatV[3]
-                              + b[23]*upper_hatV[4]);
-            t[4] += (ikn*phi)*( b[ 4]*upper_hatV[0]
-                              + b[ 9]*upper_hatV[1]
-                              + b[14]*upper_hatV[2]
-                              + b[19]*upper_hatV[3]
-                              + b[24]*upper_hatV[4]);
+            for (int i = 0; i < 5; ++i) {
+                t[i] += (ikn*phi)*( b[i +  0]*upper_hatV[0]
+                                  + b[i +  5]*upper_hatV[1]
+                                  + b[i + 10]*upper_hatV[2]
+                                  + b[i + 15]*upper_hatV[3]
+                                  + b[i + 20]*upper_hatV[4]);
+            }
         }
         if (c) {
-            t[0] -= c[ 0]*upper_phi_L_hatV[0]
-                  + c[ 5]*upper_phi_L_hatV[1]
-                  + c[10]*upper_phi_L_hatV[2]
-                  + c[15]*upper_phi_L_hatV[3]
-                  + c[20]*upper_phi_L_hatV[4];
-            t[1] -= c[ 1]*upper_phi_L_hatV[0]
-                  + c[ 6]*upper_phi_L_hatV[1]
-                  + c[11]*upper_phi_L_hatV[2]
-                  + c[16]*upper_phi_L_hatV[3]
-                  + c[21]*upper_phi_L_hatV[4];
-            t[2] -= c[ 2]*upper_phi_L_hatV[0]
-                  + c[ 7]*upper_phi_L_hatV[1]
-                  + c[12]*upper_phi_L_hatV[2]
-                  + c[17]*upper_phi_L_hatV[3]
-                  + c[22]*upper_phi_L_hatV[4];
-            t[3] -= c[ 3]*upper_phi_L_hatV[0]
-                  + c[ 8]*upper_phi_L_hatV[1]
-                  + c[13]*upper_phi_L_hatV[2]
-                  + c[18]*upper_phi_L_hatV[3]
-                  + c[23]*upper_phi_L_hatV[4];
-            t[4] -= c[ 4]*upper_phi_L_hatV[0]
-                  + c[ 9]*upper_phi_L_hatV[1]
-                  + c[14]*upper_phi_L_hatV[2]
-                  + c[19]*upper_phi_L_hatV[3]
-                  + c[24]*upper_phi_L_hatV[4];
+            for (int i = 0; i < 5; ++i) {
+                t[i] -= c[i +  0]*upper_phi_L_hatV[0]
+                      + c[i +  5]*upper_phi_L_hatV[1]
+                      + c[i + 10]*upper_phi_L_hatV[2]
+                      + c[i + 15]*upper_phi_L_hatV[3]
+                      + c[i + 20]*upper_phi_L_hatV[4];
+            }
         }
-
         if (out_rho_E) { out_rho_E[w->n-1] += t[0]; }
         if (out_rho_u) { out_rho_u[w->n-1] += t[1]; }
         if (out_rho_v) { out_rho_v[w->n-1] += t[2]; }
