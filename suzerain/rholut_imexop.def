@@ -31,6 +31,7 @@
 //
 // #define FUNCNAME() /* Function name, e.g. suzerain_rholut_imexop_packc */
 // #define PACK(x)    /* suzerain_bsmbsm_ ## x ## pack{c,f}               */
+// #define PTR(x)     /* suzerain_bsmbsm_ ## x ## pack{c,f}_ptr           */
 
 void
 FUNCNAME()(
@@ -494,10 +495,95 @@ FUNCNAME()(
 #   undef REF
 #   undef PREAMBLE
 
+    // When necessary, adjust upper boundary using provided NRBC matrices.
+    if (a || b || c) {
+
+        // TODO Generalize to fewer than five equations
+        assert(A_T->S == 5);
+
+        /*
+         * Adjust PATPT so that it contains
+         *
+         *                   / I  0     \   / 0  0                           \
+         *  (M + phi L)^T  * |          | + |                                |
+         *                   \ 0  I-C^T /   \ 0  C^T + i k_x A^T + i k_z B^T /
+         *
+         * taking advantage of facts about M, D1, and D2 bandwidths when
+         * renumbered as done by the above packing operations. As C is 5x5 and
+         * D2 has three nonzero entries on the final row, that means we update
+         * the lower rightmost 15 x 5 submatrix of (M + phi L)^T which call "X":
+         *
+         *   /   \    /   \          / 0                          \
+         *   | X | += | X | * -C^T + | 0                          |
+         *   \   /    \   /          \C^T + i k_x A^T + i k_z B^T /
+         */
+
+        // TODO Avoid VLA and add requirements on the now-shadowed buf argument
+        // Zero the buffers' upper 10x5 block and copy C^T, ikm*phi*A^T, and
+        // ikn*phi*B^T as necessary into final 5x5 block.  Attempt made to
+        // walk the buffer in a back-and-forth fashion to improve locality.
+        complex_double buf[15 * 5];
+        for (int j = 0; j < 5; ++j) {
+            for (int i =  0; i < 15; ++i) {
+                buf[i + 15*j] = 0;                                 // Zero col
+            }
+            if (a) {
+                for (int i = 10; i < 15; ++i) {
+                    buf[i + 15*j] += ikm * phi * a[5*(i-10) + j];  // Add A^T
+                }
+            }
+            if (b) {
+                for (int i = 10; i < 15; ++i) {
+                    buf[i + 15*j] += ikn * phi * b[5*(i-10) + j];  // Add B^T
+                }
+            }
+            if (c) {
+                for (int i = 10; i < 15; ++i) {                    // Add C^T
+                    buf[i + 15*j] += c[5*(i-10) + j];
+                }
+            }
+        }
+
+        // TODO Generalize for different equation ordering
+        assert(rho_E==0 && rho_u==1 && rho_v==2 && rho_w==3 && rho==4);
+
+        // Find upper left corner of "X" within PATPT using that the minimum
+        // among all valid scalar indices rho_{E,u,v,w} was zero by assumption
+        assert(A_T->n >= 3);
+        complex_double * const x = PTR(z)(
+                A_T,
+                suzerain_bsmbsm_qinv(A_T->S, A_T->n, A_T->n - 3),
+                suzerain_bsmbsm_qinv(A_T->S, A_T->n, A_T->n - 1),
+                patpt);
+
+        // If needed, right multiply "X" by negative C^T accumulating into buf.
+        // That is, a (15 x 5) * (5 x 5) matmat with second arg transposed.
+        // This would be a nice mixed-scalar GEMM call, if available.
+        // The minus one adjustment to "x" makes the data look non-banded.
+        if (c) {
+            for (int k = 0; k < 5; ++k) {
+                for (int j = 0; j < 5; ++j) {
+                    for (int i = 0; i < 15; ++i) {
+                        buf[i + 15*j] -= x[i + k*(A_T->LD - 1)] * c[j + 5*k];
+                    }
+                }
+            }
+        }
+
+        // Accumulate buffer back into X again making X look non-banded.
+        for (int j = 0; j < 5; ++j) {
+            for (int i = 0; i < 15; ++i) {
+                x[i + j*(A_T->LD - 1)] += buf[i + 15*j];
+            }
+        }
+
+    }
+
 }
 
 #undef FUNCNAME
 #undef PACK
+#undef PTR
 
 /* vim: set ft=c:   */
 /* Local Variables: */
