@@ -49,13 +49,11 @@ STATIC int FUNCTION(
     const TYPE_Y alpha, const TYPE_D *       restrict d, const int ldd,
                         const TYPE_A *       restrict a,       int lda,
                         const TYPE_X * const restrict x, const int incx,
-    const TYPE_Y beta,        TYPE_Y * const restrict y, const int incy,
-    const TYPE_D gamma)
+    const TYPE_Y beta,        TYPE_Y * const restrict y, const int incy)
 {
     // Logic from http://www.netlib.org/blas/dgbmv.f revised
     // for zero-indexed, vectorization-ready code on GCC and Intel.
-    // Additional diagonal matrix logic added relative to gbmv.def,
-    // including permitting 1 + gamma factor on final row.
+    // Additional diagonal matrix logic added relative to gbmv.def.
 
     trans = toupper(trans);  // Simplifies case-insensitive checks
 
@@ -125,9 +123,7 @@ STATIC int FUNCTION(
     --lda;
 
     // Perform the banded matrix-vector accumulation
-    const TYPE_D gp1  = gamma + 1;
-    const int    klp1 = kl    + 1;
-    const int    nm1  = n     - 1;
+    const int klp1 = kl + 1;
 
     if (trans == 'N') {   // Form y := alpha*D*A*x + y...
 
@@ -138,7 +134,7 @@ STATIC int FUNCTION(
                 const int iu = ndxmin(n, j + klp1);
                 const TYPE_Y temp = alpha*x[jx];
                 for (int i = il; i < iu; ++i) {
-                    y[i] += temp*(i == nm1 ? gp1 : 1)*d[i*ldd]*a[i];
+                    y[i] += temp*d[i*ldd]*a[i];
                 }
                 jx += incx;
                 a += lda;
@@ -150,7 +146,7 @@ STATIC int FUNCTION(
                 const TYPE_Y temp = alpha*x[jx];
                 int iy = ky;
                 for (int i = il; i < iu; ++i) {
-                    y[iy] += temp*(i == nm1 ? gp1 : 1)*d[i*ldd]*a[i];
+                    y[iy] += temp*d[i*ldd]*a[i];
                     iy += incy;
                 }
                 jx += incx;
@@ -172,7 +168,7 @@ STATIC int FUNCTION(
                 for (int i = il; i < iu; ++i) {
                     temp += a[i]*x[i];
                 }
-                y[jy] += alpha*(j == nm1 ? gp1 : 1)*(*d)*temp;
+                y[jy] += alpha*(*d)*temp;
                 jy += incy;
                 a  += lda;
                 d  += ldd;
@@ -187,7 +183,7 @@ STATIC int FUNCTION(
                     temp += a[i]*x[ix];
                     ix += incx;
                 }
-                y[jy] += alpha*(j == nm1 ? gp1 : 1)*(*d)*temp;
+                y[jy] += alpha*(*d)*temp;
                 jy += incy;
                 if (j >= ku) {
                     kx += incx;
