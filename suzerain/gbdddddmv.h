@@ -39,8 +39,7 @@ extern "C" {
 
 /*!
  * \brief Compute \f$ y \leftarrow{} \left(\alpha_{0} D_0 + \alpha_{1} D_1 +
- * \alpha_{2} D_2 + \alpha_{3} D_3 + \alpha{4} D_4 \right) \begin{bmatrix} I & 0
- * \\ 0 & 1 + \gamma \end{bmatrix} A x + \beta{} y \f$.
+ * \alpha_{2} D_2 + \alpha_{3} D_3 + \alpha{4} D_4 \right) A x + \beta{} y \f$.
  *
  * Transposes of \f$ A \f$ can be taken using the \c trans parameter.
  *
@@ -71,7 +70,6 @@ extern "C" {
  * \param beta Multiplicative scalar \f$ \beta \f$.
  * \param y Vector to be added to product and to contain result.
  * \param incy Stride of vector \c y.
- * \param gamma Controls factor \f$ 1+\gamma \f$ scaling only the final row.
  *
  * \return Zero on success and a BLAS-like error code otherwise.
  * \see A BLAS reference for more details, especially for general
@@ -104,8 +102,7 @@ suzerain_gbdddddmv_s(
         const int incx,
         const float beta,
         float *y,
-        const int incy,
-        const float gamma);
+        const int incy);
 
 /*! \copydoc suzerain_gbdddddmv_s */
 int
@@ -135,14 +132,12 @@ suzerain_gbdddddmv_d(
         const int incx,
         const double beta,
         double *y,
-        const int incy,
-        const double gamma);
+        const int incy);
 
 /*!
  * \brief Compute \f$ y \leftarrow{} \left(\alpha_{0} D_0 + \alpha_{1} D_1 +
- * \alpha_{2} D_2 + \alpha_{3} D_{3} + \alpha_{4} D_{4} \right) \begin{bmatrix}
- * I & 0 \\ 0 & 1 + \gamma \end{bmatrix} A x + \beta{} y \f$ for complex
- * \f$\alpha{}\f$, \f$\beta\f$, and \f$y\f$ but real-valued \f$\gamma\f$,
+ * \alpha_{2} D_2 + \alpha_{3} D_{3} + \alpha_{4} D_{4} \right) A x + \beta{} y
+ * \f$ for complex \f$\alpha{}\f$, \f$\beta\f$, and \f$y\f$ but real-valued
  * \f$D_0\f$, \f$D_1\f$, \f$D_2\f$, \f$D_3\f$, \f$D_4\f$, \f$A\f$, and \f$x\f$.
  *
  * \copydetails suzerain_gbdddddmv_s
@@ -174,8 +169,7 @@ suzerain_gbdddddmv_ssc(
         const int incx,
         const complex_float beta,
         complex_float *y,
-        const int incy,
-        const float gamma);
+        const int incy);
 
 /*! \copydoc suzerain_gbdddddmv_ssc */
 int
@@ -205,16 +199,14 @@ suzerain_gbdddddmv_ddz(
         const int incx,
         const complex_double beta,
         complex_double *y,
-        const int incy,
-        const double gamma);
+        const int incy);
 
 
 /*!
  * \brief Compute \f$ y \leftarrow{} \left(\alpha_{0} D_0 + \alpha_{1} D_1 +
- * \alpha_{2} D_2 + \alpha_{3} D_{3} + \alpha_{4} D_{4} \right) \begin{bmatrix}
- * I & 0 \\ 0 & 1 + \gamma \end{bmatrix} A x + \beta{} y \f$ for complex
- * \f$\alpha{}\f$, \f$x\f$, \f$\beta\f$, and \f$y\f$ but real-valued
- * \f$\gamma\f$, \f$D_0\f$, \f$D_1\f$, \f$D_2\f$, \f$D_3\f$, \f$D_4\f$, and
+ * \alpha_{2} D_2 + \alpha_{3} D_{3} + \alpha_{4} D_{4} \right) A x + \beta{} y
+ * \f$ for complex \f$\alpha{}\f$, \f$x\f$, \f$\beta\f$, and \f$y\f$ but
+ * real-valued \f$D_0\f$, \f$D_1\f$, \f$D_2\f$, \f$D_3\f$, \f$D_4\f$, and
  * \f$A\f$.
  *
  * \copydetails suzerain_gbdddddmv_s
@@ -246,8 +238,7 @@ suzerain_gbdddddmv_scc(
         const int incx,
         const complex_float beta,
         complex_float *y,
-        const int incy,
-        const float gamma);
+        const int incy);
 
 /*! \copydoc suzerain_gbdddddmv_scc */
 int
@@ -277,8 +268,7 @@ suzerain_gbdddddmv_dzz(
         const int incx,
         const complex_double beta,
         complex_double *y,
-        const int incy,
-        const double gamma);
+        const int incy);
 
 #ifdef __cplusplus
 } /* extern "C" */
