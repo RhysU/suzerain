@@ -206,8 +206,7 @@ definition_filter::reset()
 }
 
 void definition_filter::save_filteropz(const esio_handle h,
-                                       const int n,
-                                       const char *location)
+                                       const int n)
 {
     // Only save filter op if hasn't been prepared yet
     if (SUZERAIN_UNLIKELY(!r)) {

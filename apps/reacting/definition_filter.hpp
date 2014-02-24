@@ -215,8 +215,7 @@ public:
 
     /** Save filter operators. */
     void save_filteropz(const esio_handle h,
-                        const int n,
-                        const char *location = "filter_operators");
+                        const int n);
 
 protected:
 
