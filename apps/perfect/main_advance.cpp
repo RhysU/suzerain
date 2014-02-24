@@ -478,7 +478,7 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
             }
         }
 
-        if (isothermal->upper_v > 0 && (boost::math::isinf)(scenario->Re)) {
+        if (isothermal->upper_v > 0 && !(boost::math::isinf)(scenario->Re)) {
             WARN0(who, "Nonreflecting viscous outflow boundary problematic"
                        << " (Redmine #2983)");
         }
