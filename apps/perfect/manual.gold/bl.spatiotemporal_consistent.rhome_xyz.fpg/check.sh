@@ -28,7 +28,7 @@ h5diff -r -c -v $excludes  "$@" "$SCRIPTDIR/initial.h5" initial.h5
 h5diff -r -c -v $excludes  "$@" "$SCRIPTDIR/initial0.h5" initial0.h5
 
 # Now advance in time and check the result
-"$perfect_advance" --explicit $(readlink -f initial0.h5) --status_nt=1 --advance_dt=0.000919
+"$perfect_advance" --implicit=rhome_xyz $(readlink -f initial0.h5) --status_nt=1 --advance_dt=0.000919 --max_dt=0.0000919
 h5diff -r -c -v $excludes  "$@" "$SCRIPTDIR/restart0.h5" restart0.h5
 
 echo Success for $case
