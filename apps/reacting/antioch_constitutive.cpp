@@ -345,7 +345,7 @@ antioch_constitutive::evaluate (const real_t  e,
                                 real_t& Cp) const
 {
     //WARN0("antioch_constitutive::evaluate is not fully functional yet!");
-
+    SUZERAIN_UNUSED(species); // TODO?
     SUZERAIN_TIMER_SCOPED("antioch evaluate");
 
     const real_t irho = 1.0/rho;
@@ -458,6 +458,7 @@ antioch_constitutive::evaluate (const real_t    e,
                                 real_t&   Cv,
                                 real_t&   Cp) const
 {
+    SUZERAIN_UNUSED(species);  // TODO?
     SUZERAIN_TIMER_SCOPED("antioch evaluate");
 
     const real_t irho = 1.0/rho;
@@ -545,11 +546,13 @@ antioch_constitutive::evaluate_pressure (const real_t    e,
                                          real_t&   T,
                                          real_t&   p) const
 {
+    SUZERAIN_UNUSED(species);  // TODO?
     SUZERAIN_TIMER_SCOPED("antioch evaluate");
 
     const real_t irho = 1.0/rho;
 
     const size_t Ns = this->Ns();
+    SUZERAIN_UNUSED(Ns);
 
     // Mixture gas constant
     const real_t R_mix = this->mixture->R(cs);
@@ -582,6 +585,7 @@ antioch_constitutive::evaluate_pressure_derivs_and_trans (const real_t    e,
                                                           real_t&   gamma,
                                                           real_t&   a) const
 {
+    SUZERAIN_UNUSED(species);  // TODO?
     SUZERAIN_TIMER_SCOPED("antioch ref quantities");
 
     const real_t irho = 1.0/rho;
@@ -709,6 +713,7 @@ antioch_constitutive::evaluate_for_nonreflecting (const real_t      T,
 
     // Gas constant of the diluter
     const real_t R0 = this->mixture->R(0);
+    SUZERAIN_UNUSED(R0);
 
     // Speed of sound(frozen)
     real_t af2 = (1.0 + R_mix/Cv)*R_mix*T;
