@@ -333,6 +333,8 @@ SPECIES_FUNCNAME()(
         suzerain_bsmbsm * const A_T,
         complex_double * const patpt)
 {
+    SUZERAIN_UNUSED(s);
+
     // When you modify this routine, you must also modify
     // suzerain_reacting_imexop_accumulate so that operator
     // accumulation-without-assembly and assembly match.  The test cases in
@@ -348,7 +350,8 @@ SPECIES_FUNCNAME()(
     const double * const D1 = w->D_T[1] - (w->max_ku - w->ku[1]);
     const double * const D2 = w->D_T[2] - (w->max_ku - w->ku[1]);
     assert(w->nderiv >= 2);         // Enough derivatives in workspace?
-    assert(A_T->ld == w->ld);         // Compatible storage?
+    assert(A_T->ld == w->ld);       // Compatible storage?
+    SUZERAIN_UNUSED(D1);
 
     // We do not know the leading dimension associated with the definition of
     // PACK() so we must overwrite every possible submatrix within PATPT.

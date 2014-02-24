@@ -115,7 +115,6 @@ suzerain_reacting_flow_imexop_accumulate(
     gbmv_t      *p_gbmv      = (gbmv_t *)      &        suzerain_blas_zgbmv_d_z;
     gbdmv_t     *p_gbdmv     = (gbdmv_t *)     &    suzerain_blasext_zgbdmv_d_z;
     gbddmv_t    *p_gbddmv    = (gbddmv_t *)    &   suzerain_blasext_zgbddmv_d_z;
-    gbdddmv_t   *p_gbdddmv   = (gbdddmv_t *)   &  suzerain_blasext_zgbdddmv_d_z;
 
     // ...but in the second case, treat x arguments as real with stride two.
     if (SUZERAIN_UNLIKELY(imagzero)) {
@@ -123,7 +122,6 @@ suzerain_reacting_flow_imexop_accumulate(
         p_gbmv      = (gbmv_t *)      &        suzerain_blas_zgbmv_d_d;
         p_gbdmv     = (gbdmv_t *)     &    suzerain_blasext_zgbdmv_d_d;
         p_gbddmv    = (gbddmv_t *)    &   suzerain_blasext_zgbddmv_d_d;
-        p_gbdddmv   = (gbdddmv_t *)   &  suzerain_blasext_zgbdddmv_d_d;
     }
 
     // Shorthand for the common pattern of providing "in_foo, inc" pairs.
@@ -352,6 +350,8 @@ suzerain_reacting_species_imexop_accumulate(
         const complex_double beta,
         complex_double *out_rho_s )
 {
+    SUZERAIN_UNUSED(s);
+
     // When you modify this routine, you must also modify reacting_imexop.def so
     // that operator accumulation-without-assembly and assembly match.  The
     // test cases in tests/test_reacting_imexop.cpp are invaluable in checking
@@ -404,16 +404,12 @@ suzerain_reacting_species_imexop_accumulate(
     int inc_in = 1;
     gbmv_t      *p_gbmv      = (gbmv_t *)      &        suzerain_blas_zgbmv_d_z;
     gbdmv_t     *p_gbdmv     = (gbdmv_t *)     &    suzerain_blasext_zgbdmv_d_z;
-    gbddmv_t    *p_gbddmv    = (gbddmv_t *)    &   suzerain_blasext_zgbddmv_d_z;
-    gbdddmv_t   *p_gbdddmv   = (gbdddmv_t *)   &  suzerain_blasext_zgbdddmv_d_z;
 
     // ...but in the second case, treat x arguments as real with stride two.
     if (SUZERAIN_UNLIKELY(imagzero)) {
         inc_in = 2;
         p_gbmv      = (gbmv_t *)      &        suzerain_blas_zgbmv_d_d;
         p_gbdmv     = (gbdmv_t *)     &    suzerain_blasext_zgbdmv_d_d;
-        p_gbddmv    = (gbddmv_t *)    &   suzerain_blasext_zgbddmv_d_d;
-        p_gbdddmv   = (gbdddmv_t *)   &  suzerain_blasext_zgbdddmv_d_d;
     }
 
     // Shorthand for the common pattern of providing "in_foo, inc" pairs.
@@ -435,6 +431,7 @@ suzerain_reacting_species_imexop_accumulate(
     static const int D1      = 1;
     static const int D2      = 2;
     const int        n       = w->n;
+    SUZERAIN_UNUSED(D1);
 
 
     suzerain_blas_zscal(n, beta, OUT(rho_s));
