@@ -439,13 +439,38 @@ driver::default_restart_interval(
         time_type& t,
         step_type&)
 {
-    real_t flowthrough_time = std::numeric_limits<real_t>::quiet_NaN();
-    if (grid && scenario) {
-        flowthrough_time =  grid->L.x()
-                         / (scenario->bulk_rho_u / scenario->bulk_rho);
+    static const char msg[] = "No known default_restart_interval at ";
+
+    // Compute a problem-aware flow through time independent of Ly
+    real_t velocity = std::numeric_limits<real_t>::quiet_NaN();
+    if (!grid) {
+        DEBUG0(who, msg << __FILE__ << ':' << __LINE__);
+    } else if (grid->two_sided()) {
+        if (!scenario) {
+            DEBUG0(who, msg << __FILE__ << ':' << __LINE__);
+        } else {
+            // Use channel approximate bulk velocity scale
+            velocity = scenario->bulk_rho_u / scenario->bulk_rho;
+        }
+    } else if (grid->one_sided()) {
+        if (sg->formulation.enabled() && sg->baseflow) {
+            // Use wall velocity from the baseflow as it is
+            // independent of the wall-normal domain size
+            largo_state freestream, dontcare;
+            sg->baseflow->conserved(0.0, freestream.as_is(),
+                                    dontcare.as_is(), dontcare.as_is());
+            velocity = freestream.u();
+        } else if (isothermal) {
+            // Use freestream reference when no baseflow available
+            velocity = isothermal->upper_u;
+        } else {
+            DEBUG0(who, msg << __FILE__ << ':' << __LINE__);
+        }
     }
-    if (boost::math::isnormal(flowthrough_time)) {
-        t = flowthrough_time;
+
+    // If we have a domain size and a velocity scale, compute a timescale
+    if (grid && boost::math::isnormal(velocity)) {
+        t = grid->N.x() / velocity;
     }
 }
 
