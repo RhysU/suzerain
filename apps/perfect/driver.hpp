@@ -204,8 +204,8 @@ protected:
             const esio_handle esioh);
 
     /**
-     * The default interval is a fractional flow through time per #grid
-     * and #scenario.
+     * The default interval is a fractional flow through time per #grid and
+     * possibly #scenario, #isothermal, and #sg.
      */
     virtual void default_restart_interval(time_type& t, step_type&);
 

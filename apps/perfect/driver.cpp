@@ -469,8 +469,10 @@ driver::default_restart_interval(
     }
 
     // If we have a domain size and a velocity scale, compute a timescale
+    // and default to saving eight restarts across that timescale.
+    // (e.g. in a channel resulting in 80 restarts in 10 flow throughs)
     if (grid && boost::math::isnormal(velocity)) {
-        t = grid->N.x() / velocity;
+        t = grid->N.x() / velocity / 8;
     }
 }
 
