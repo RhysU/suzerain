@@ -70,7 +70,7 @@ perfect_advance=(
     initial.h5
     -v
     --undriven=all         # Driving forces interfere with wall-normal pulses
-    --explicit             # TODO Eventually use ${OPER:=}
+    ${OPER:+$OPER}         # Permit runtime selection of time advance
 )
 perfect_summary=(
     $(readlink -f perfect_summary)
