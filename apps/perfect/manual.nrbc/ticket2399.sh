@@ -2,7 +2,7 @@
 set -eu
 
 ## A testing script for semi-automated investigation of non-reflecting boundary
-## conditions.  See discussion within Redmine tickets #2399 and #2957.
+## conditions.  See discussion within Redmine tickets #2399, #2957, and #2979.
 
 ## Somewhat or entirely unresolved details (with commentary):
 #    1) Attach a plot of some it-bounces-back-and-forth measurement as a
@@ -68,7 +68,6 @@ perfect_initial=(
 perfect_advance=(
     $(readlink -f perfect_advance)
     initial.h5
-    -v
     --undriven=all         # Driving forces interfere with wall-normal pulses
     ${OPER:+$OPER}         # Permit runtime selection of time advance
 )
@@ -88,23 +87,25 @@ run_case() {
 # Common case post-processing logic
 run_postproc() {
 
-    # Extract 0th, 1st, and 2nd derivatives of conserved state at the boundaries
-    grep bc.lower.d0 log.dat > lower.d0
-    grep bc.lower.d1 log.dat > lower.d1
-    grep bc.lower.d2 log.dat > lower.d2
-    grep bc.upper.d0 log.dat > upper.d0
-    grep bc.upper.d1 log.dat > upper.d1
-    grep bc.upper.d2 log.dat > upper.d2
-
-    # Post-process the entire collection of sample and restart files
-    shopt -s nullglob
-    ${perfect_summary[*]} -f summary.dat -o summary.h5 \
-                       sample*.h5 initial.h5 restart*.h5
+    # Plot 0th, 1st, and 2nd derivatives of conserved state at the boundaries
+    if hash gplot 2>/dev/null; then
+        gplot -o lower.d0.png -g bc.lower.d0 -x t -c -f i=6:10 bc.dat using 4:i w l
+        gplot -o lower.d1.png -g bc.lower.d1 -x t -c -f i=6:10 bc.dat using 4:i w l
+        gplot -o lower.d2.png -g bc.lower.d2 -x t -c -f i=6:10 bc.dat using 4:i w l
+        gplot -o upper.d0.png -g bc.upper.d0 -x t -c -f i=6:10 bc.dat using 4:i w l
+        gplot -o upper.d1.png -g bc.upper.d1 -x t -c -f i=6:10 bc.dat using 4:i w l
+        gplot -o upper.d2.png -g bc.upper.d2 -x t -c -f i=6:10 bc.dat using 4:i w l
+    fi
 
     # Display (hopefully) logarithmic decay of signal versus simulation time
     if hash gplot 2>/dev/null; then
         gplot -o L2.png -lc -f i=6:10 -x t -y L2 L2.dat using 4:i with lines
     fi
+
+    # Post-process the entire collection of sample and restart files
+    shopt -s nullglob
+    ${perfect_summary[*]} -f summary.dat -o summary.h5 \
+                       sample*.h5 initial.h5 restart*.h5
 
     # Summarize the overall field behavior in a manner that aids visual debugging
     if hash gplot 2>/dev/null; then
