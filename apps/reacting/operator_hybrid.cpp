@@ -155,8 +155,6 @@ void isothermal_hybrid_linear_operator::apply_mass_plus_scaled_operator(
     const int dNz  = grid.dN.z();
     const int dkbz = dgrid.local_wave_start.z();
     const int dkez = dgrid.local_wave_end.z();
-    const real_t twopioverLx = twopiover(grid.L.x());  // Weird looking...
-    const real_t twopioverLz = twopiover(grid.L.z());  // ...for FP control
 
     // Sidesteps assertions when local rank contains no wavespace information
     if (SUZERAIN_UNLIKELY(0U == state.shape()[1])) return;
@@ -292,8 +290,6 @@ void isothermal_hybrid_linear_operator::accumulate_mass_plus_scaled_operator(
     const int dNz  = grid.dN.z();
     const int dkbz = dgrid.local_wave_start.z();
     const int dkez = dgrid.local_wave_end.z();
-    const real_t twopioverLx = twopiover(grid.L.x());  // Weird looking...
-    const real_t twopioverLz = twopiover(grid.L.z());  // ...for FP control
 
     // Sidesteps assertions when local rank contains no wavespace information
     if (SUZERAIN_UNLIKELY(0U == input.shape()[1])) return;
@@ -425,12 +421,12 @@ class IsothermalNoSlipPATPTEnforcer
     // Computed once within constructor and then repeatedly used
     int rho[nsides], noslip[nsides][nmomentum], e[nsides];
 
+    // Precomputed coefficient based on the isothermal equation of state
+    real_t e_tot;
+
     // Number of wall BCs (must be 1 or 2 depending on channel or
     // boundary layer)
     int nwalls;
-
-    // Precomputed coefficient based on the isothermal equation of state
-    real_t e_tot;
 
     // Store velocity values in a vector to loop through components
     std::vector<real_t> velw;
@@ -580,12 +576,12 @@ class MassFractionPATPTEnforcer
     int rho_s[nsides];
     int Ny;
 
+    // Precomputed coefficient based on the isothermal equation of state
+    const std::vector<real_t>& wall_mass_fractions;
+
     // Number of wall BCs (must be 1 or 2 depending on channel or
     // boundary layer)
     int nwalls;
-
-    // Precomputed coefficient based on the isothermal equation of state
-    const std::vector<real_t>& wall_mass_fractions;
 
 public:
 
@@ -713,8 +709,6 @@ void isothermal_hybrid_linear_operator::invert_mass_plus_scaled_operator(
     const int dNz  = grid.dN.z();
     const int dkbz = dgrid.local_wave_start.z();
     const int dkez = dgrid.local_wave_end.z();
-    const real_t twopioverLx = twopiover(grid.L.x());  // Weird looking...
-    const real_t twopioverLz = twopiover(grid.L.z());  // ...for FP control
 
     // Sidesteps assertions when local rank contains no wavespace information
     if (SUZERAIN_UNLIKELY(0U == state.shape()[1])) return;
