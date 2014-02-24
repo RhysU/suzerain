@@ -274,6 +274,8 @@ void save(const esio_handle h,
           const specification_grid& grid,
           const char *location)
 {
+    SUZERAIN_UNUSED(cmods);  // TODO?
+
     // Only proceed if a manufactured solution is being provided
     if (!msoln) return;
 
@@ -334,10 +336,12 @@ static void NaNer(const std::string&, real_t& value)
 
 void load(const esio_handle h,
           shared_ptr<manufactured_solution>& msoln,
-	  const antioch_constitutive& cmods,
+          const antioch_constitutive& cmods,
           const specification_grid& grid,
           const char *location)
 {
+    SUZERAIN_UNUSED(cmods);  // TODO?
+
     // Only proceed if a manufactured solution is active in the restart
     int in_use = 0;
     esio_line_establish(h, 1, 0, 1); // All ranks load any data

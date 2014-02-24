@@ -219,9 +219,7 @@ std::vector<real_t> treatment_nonreflecting::apply_operator(
           real_t inv_a2  = 1 / a2;
 
     // Prepare oft-used scenario-related constants
-    const real_t chi        = dgrid.chi();
     const real_t half       = static_cast<real_t>(1) / 2;
-    const real_t inv_gamma  = 1 / gamma;
     const real_t gamma1     = gamma - 1;
     const real_t inv_gamma1 = 1 / gamma1;
 
@@ -361,11 +359,9 @@ std::vector<real_t> treatment_nonreflecting::apply_operator(
 
     // Wavenumber traversal modeled after those found in suzerain/diffwave.c
     // Ny previously declared
-    const int Nx   = grid.N.x();
     const int dNx  = grid.dN.x();
     const int dkbx = dgrid.local_wave_start.x();
     const int dkex = dgrid.local_wave_end.x();
-    const int Nz   = grid.N.z();
     const int dNz  = grid.dN.z();
     const int dkbz = dgrid.local_wave_start.z();
     const int dkez = dgrid.local_wave_end.z();
@@ -380,10 +376,12 @@ std::vector<real_t> treatment_nonreflecting::apply_operator(
     for (int n = dkbz; n < dkez; ++n) {
         const int wn = wavenumber(dNz, n);
         const real_t kn = twopioverLz*wn;
+        SUZERAIN_UNUSED(kn);
 
         for (int m = dkbx; m < dkex; ++m) {
             const int wm = wavenumber(dNx, m);
             const real_t km = twopioverLx*wm;
+            SUZERAIN_UNUSED(km);
 
             // Unpack upper boundary RHS into a contiguous buffer
             for (int f = 0; f < N.size(); ++f) {

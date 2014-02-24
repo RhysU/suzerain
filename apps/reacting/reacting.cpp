@@ -107,6 +107,12 @@ adjust_scenario(contiguous_state<4,complex_t> &swave,
                 const real_t old_gamma)
 {
     WARN0("suzerain::reacting::adjust_scenario is not supported yet for reacting flows.");
+    SUZERAIN_UNUSED(swave);
+    SUZERAIN_UNUSED(grid);
+    SUZERAIN_UNUSED(dgrid);
+    SUZERAIN_UNUSED(cop);
+    SUZERAIN_UNUSED(old_Ma);
+    SUZERAIN_UNUSED(old_gamma);
     return;
 
 //     // We are only prepared to handle a fixed number of fields in this routine
