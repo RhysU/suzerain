@@ -103,15 +103,15 @@ run_postproc() {
 
     # Display (hopefully) logarithmic decay of signal versus simulation time
     if hash gplot 2>/dev/null; then
-        gplot -p L2.png -lc -f i=6:10 -x t -y L2 L2.dat using 4:i with lines
+        gplot -o L2.png -lc -f i=6:10 -x t -y L2 L2.dat using 4:i with lines
     fi
 
     # Summarize the overall field behavior in a manner that aids visual debugging
     if hash gplot 2>/dev/null; then
-        gplot -3M -p bar_p.png   -t bar_p   -x t -y y summary.dat using '"t":"y":"bar_p"'
-        gplot -3M -p bar_rho.png -t bar_rho -x t -y y summary.dat using '"t":"y":"bar_rho"'
-        gplot -3M -p bar_T.png   -t bar_T   -x t -y y summary.dat using '"t":"y":"bar_T"'
-        gplot -3M -p bar_v.png   -t bar_v   -x t -y y summary.dat using '"t":"y":"bar_v"'
+        gplot -3M -o bar_p.png   -t bar_p   -x t -y y summary.dat using '"t":"y":"bar_p"'
+        gplot -3M -o bar_rho.png -t bar_rho -x t -y y summary.dat using '"t":"y":"bar_rho"'
+        gplot -3M -o bar_T.png   -t bar_T   -x t -y y summary.dat using '"t":"y":"bar_T"'
+        gplot -3M -o bar_v.png   -t bar_v   -x t -y y summary.dat using '"t":"y":"bar_v"'
     fi
 }
 
