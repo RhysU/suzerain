@@ -193,11 +193,11 @@ driver_base::summary_run(int argc, char **argv)
             }
             DEBUG0("Saving nondimensional quantities to " << outname);
 
-            // Write header followed by data values separated by blanks
+            // Write header followed by data values separated by blank lines
             ofstream ofs(outname.c_str());
             for (pool_type::const_iterator i = data.begin();
                  i != data.end(); ++i) {
-                i->second->write(ofs, data.begin() == i) << '\n' << endl;
+                i->second->write(ofs, data.begin() == i) << endl;
             }
             ofs.close();
 
@@ -265,10 +265,10 @@ driver_base::summary_run(int argc, char **argv)
         }
 
         if (use_stdout) {
-            // Write header followed by data values separated by blanks
+            // Write header followed by data values separated by blank lines
             for (pool_type::const_iterator i = pool.begin();
                  i != pool.end(); ++i) {
-                i->second->write(cout, pool.begin() == i) << '\n' << endl;
+                i->second->write(cout, pool.begin() == i) << endl;
             }
         }
 
@@ -277,7 +277,7 @@ driver_base::summary_run(int argc, char **argv)
             ofstream outf(datfile.c_str());
             for (pool_type::const_iterator i = pool.begin();
                  i != pool.end(); ++i) {
-                i->second->write(outf, pool.begin() == i) << '\n' << endl;
+                i->second->write(outf, pool.begin() == i) << endl;
             }
         }
 
