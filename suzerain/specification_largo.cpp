@@ -41,6 +41,8 @@ specification_largo::specification_largo(
     , grdelta(grdelta)
     , workspace(workspace)
     , baseflow()
+    , gramp_mean()
+    , gramp_rms()
 {
 }
 

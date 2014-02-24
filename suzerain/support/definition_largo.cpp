@@ -153,6 +153,15 @@ definition_largo::populate(
     if (!this->baseflow) {
         this->baseflow = that.baseflow;
     }
+
+    if ((this->gramp_mean.size() == 0)) {
+        TRACE0("Populating growth rate amplitude mean");
+        this->gramp_mean = that.gramp_mean;
+    }
+    if ((this->gramp_rms.size() == 0)) {
+        TRACE0("Populating growth rate amplitude rms");
+        this->gramp_rms = that.gramp_rms;
+    }
 }
 
 static bool maybe_override(const char*              name,
@@ -180,10 +189,21 @@ definition_largo::override(
     if (that.baseflow) {
         this->baseflow = that.baseflow;
     }
+    
+    if ((that.gramp_mean.size() > 0)) {
+        TRACE0("Overriding growth rate amplitude mean");
+        this->gramp_mean = that.gramp_mean;
+    }
+    if ((that.gramp_rms.size() > 0)) {
+        TRACE0("Overriding growth rate amplitude rms");
+        this->gramp_rms = that.gramp_rms;
+    }
 }
 
 static const char attr_base[]            = "coefficient_base";
 static const char attr_formulation[]     = "formulation";
+static const char location_gramp_mean[]  = "largo_gramp_mean";
+static const char location_gramp_rms[]   = "largo_gramp_rms";
 static const char location_baseflow_dx[] = "largo_baseflow_dx";
 static const char location_baseflow_dy[] = "largo_baseflow_dy";
 static const char location_baseflow[]    = "largo_baseflow";
@@ -391,6 +411,32 @@ definition_largo::save(
         SUZERAIN_ERROR_VOID_UNIMPLEMENTED();
 
     }
+
+    if (!this->gramp_mean.size() == 0) {
+        TRACE0("Saving growth rate amplitude mean");
+
+        // Write amplitude growth rate values for the mean (only master process)
+        const std::vector<real_t>& gm  = this->gramp_mean;
+        esio_line_establish(
+                h,
+                gm.size(), 0, procid == 0 ? gm.size() : 0);
+        esio_line_write(
+                h, location_gramp_mean, gm.data(), 0,
+                "Amplitude growth rates for the mean values");
+    }
+
+    if (!this->gramp_rms.size() == 0) {
+        TRACE0("Saving growth rate amplitude rms");
+
+        // Write amplitude growth rate values for the rms (only master process)
+        const std::vector<real_t>& gr  = this->gramp_rms;
+        esio_line_establish(
+                h,
+                gr.size(), 0, procid == 0 ? gr.size() : 0);
+        esio_line_write(
+                h, location_gramp_rms, gr.data(), 0,
+                "Amplitude growth rates for the rms values");
+    }
 }
 
 void
@@ -553,6 +599,28 @@ definition_largo::load(
         FATAL0("Attempt to load unknown baseflow description");
         SUZERAIN_ERROR_VOID_UNIMPLEMENTED();
 
+    }
+
+    TRACE0("Probing for amplitude growth rates for the mean");
+    if (ESIO_SUCCESS == esio_line_size(h, location_gramp_mean,
+                                        &neqns)) {
+        TRACE0("Loading growth rate amplitude coefficiets for the mean");
+        t.gramp_mean.resize(neqns);
+        esio_line_establish(
+                h, t.gramp_mean.size(), 0, t.gramp_mean.size());
+        esio_line_read(
+                h, location_gramp_mean, t.gramp_mean.data(), 0);
+    }
+
+    TRACE0("Probing for amplitude growth rates for the rms");
+    if (ESIO_SUCCESS == esio_line_size(h, location_gramp_rms,
+                                        &neqns)) {
+        TRACE0("Loading growth rate amplitude coefficiets for rms");
+        t.gramp_rms.resize(neqns);
+        esio_line_establish(
+                h, t.gramp_rms.size(), 0, t.gramp_rms.size());
+        esio_line_read(
+                h, location_gramp_rms, t.gramp_rms.data(), 0);
     }
 
     return this->populate(t, verbose);

@@ -1298,13 +1298,24 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                 dybase[Ns+4] = dyPbase;
                 dxbase[Ns+4] = dxPbase;
 
+                if (sgdef.gramp_mean.size() != 0){
+                    for (unsigned int ivar=0; ivar<sgdef.gramp_mean.size(); ivar++){
+                        grDA[ivar] = sgdef.gramp_mean[ivar];
+                    }
+                }
+
+                if (sgdef.gramp_rms.size() != 0){
+                    for (unsigned int ivar=0; ivar<sgdef.gramp_rms.size(); ivar++){
+                        grDArms[ivar] = sgdef.gramp_rms[ivar];
+                    }
+                }
+
                 if (base[0]>0) {
                     // growth rate of ru:
                     sgdef.baseflow->conserved(
                         0.0, &wall[0], &dywall[0], &dxwall[0]);
                     real_t wall_u     =   wall[1] / wall[0];
                     real_t wall_drudx = dxwall[1];
-                    grDA[1] = - wall_u * wall_drudx / (0.0 - wall_u);
 
                     // Auxiliary computations
                     real_t   base_u     =   base[1] /    base[0];

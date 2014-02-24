@@ -61,6 +61,11 @@ public:
     /** Baseflow information. */
     shared_ptr<baseflow_interface> baseflow;
 
+    /** Growth rate of amplitudes for the mean. */
+    std::vector<real_t> gramp_mean;
+
+    /** Growth rate of amplitudes for the rms. */
+    std::vector<real_t> gramp_rms;
 };
 
 } // namespace suzerain
