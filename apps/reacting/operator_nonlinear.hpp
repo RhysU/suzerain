@@ -700,12 +700,12 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             } // end X // end Z
 
 #ifndef NDEBUG
-            // Ensure that all accumulators saw a consistent number of samples
-            const size_t expected = boost::accumulators::count(acc[0]);
-            for (size_t k = 1; k < sizeof(acc)/sizeof(acc[0]); ++k) {
-                const size_t observed = boost::accumulators::count(acc[k]);
-                assert(expected == observed);
-            }
+//TODO//    // Ensure that all accumulators saw a consistent number of samples
+//TODO//    const size_t expected = boost::accumulators::count(acc[0]);
+//TODO//    for (size_t k = 1; k < sizeof(acc)/sizeof(acc[0]); ++k) {
+//TODO//        const size_t observed = boost::accumulators::count(acc[k]);
+//TODO//        assert(expected == observed);
+//TODO//    }
 #endif
 
             // Store sums into common block in preparation for MPI Allreduce
@@ -854,6 +854,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                     T, pr);
                 pr2    = pr * pr;
                 Tguess = T;
+                SUZERAIN_UNUSED(pr2);
 
                 // compute and accumulate 
                 const real_t inv_rho = 1 / sphys(ndx::rho, offset);
@@ -899,7 +900,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
     if (sgdef.formulation.enabled()) {
 
         // Assign mean and finish rms computation
-        for (int j = 0; j < Ny; ++j) {
+        for (size_t j = 0; j < Ny; ++j) {
             mean_p_values(j,0) = common.p ()[j] ;
             rms_p_values (j,0) = sqrt(
                 common.p2()[j] - common.p()[j] * common.p()[j]);
@@ -949,14 +950,14 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                 * o.dgrid.local_physical_extent.x();
             for (; offset < last_zxoffset; ++offset) {
 
-                for (int var = 0; var < state_count; ++var) {
+                for (size_t var = 0; var < state_count; ++var) {
                     acc[ndx::e+var](
                       pow((sphys(ndx::e+var, offset) - mean_values(j,var)),2));
                 }
             } // end X // end Z
 
             // Store sum into common block in preparation for MPI Reduce
-            for (int var = 0; var < state_count; ++var) {
+            for (size_t var = 0; var < state_count; ++var) {
                 rms_values(j,ndx::e+var) =
                     boost::accumulators::sum(acc[ndx::e+var]);
             }
@@ -970,8 +971,8 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
         rms_values *= o.dgrid.chi();
 
         // Finish rms computation
-        for (int var = 0; var < state_count; ++var) {
-            for (int j = 0; j < Ny; ++j) {
+        for (size_t var = 0; var < state_count; ++var) {
+            for (size_t j = 0; j < Ny; ++j) {
                 rms_values(j,var) = sqrt(rms_values(j,var));
                 // Copy the rms to the drms part of the storage in
                 // preparation to computing the rms derivative
@@ -1008,7 +1009,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                 * o.dgrid.local_physical_extent.x();
             for (; offset < last_zxoffset; ++offset) {
 
-                for (int var = 0; var < state_count; ++var) {
+                for (size_t var = 0; var < state_count; ++var) {
                     acc[ndx::e+var](
                       pow(sphys(ndx::e+var, offset),2)
                         / sphys(ndx::rho,   offset)) ;
@@ -1016,7 +1017,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             } // end X // end Z
 
             // Store sum into common block in preparation for MPI Reduce
-            for (int var = 0; var < state_count; ++var) {
+            for (size_t var = 0; var < state_count; ++var) {
                 rqq_values(j,ndx::e+var) =
                     boost::accumulators::sum(acc[ndx::e+var]);
             }
@@ -1030,8 +1031,8 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
         rqq_values *= o.dgrid.chi();
 
         // Finish rqq computation
-        for (int var = 0; var < state_count; ++var) {
-            for (int j = 0; j < Ny; ++j) {
+        for (size_t var = 0; var < state_count; ++var) {
+            for (size_t j = 0; j < Ny; ++j) {
                 // Copy the rqq to the drqq part of the storage in
                 // preparation to computing the rqq derivative
                 rqq_values(j,var+state_count) = rqq_values(j,var);
@@ -1076,7 +1077,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
         // term modifies the eigenvalues to (v-y*grDelta),
         // with v<<y*grDelta
         // FIXME: Maybe make a more formal and less obscure implementation
-        bool  sg_compute_top = (j != Ny-1);
+        bool  sg_compute_top = (static_cast<unsigned>(j) != Ny-1);
 
         // Iterate across the j-th ZX plane
         const int last_zxoffset = offset
@@ -1285,6 +1286,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                 real_t  dyPbase = 0;
                 real_t  dxPbase = 0;
                 real_t  dtPbase = 0;
+                SUZERAIN_UNUSED(dtPbase);
 
                 // Compute baseflow from coefficients
                 if (sgdef.baseflow) {
@@ -1316,6 +1318,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                         0.0, &wall[0], &dywall[0], &dxwall[0]);
                     real_t wall_u     =   wall[1] / wall[0];
                     real_t wall_drudx = dxwall[1];
+                    SUZERAIN_UNUSED(wall_drudx);
 
                     // Auxiliary computations
                     real_t   base_u     =   base[1] /    base[0];
@@ -1454,7 +1457,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                 src[2] = 0;
                 src[3] = 0;
                 src[4] = 0;
-                for (int s=1; s<Ns; s++){
+                for (unsigned int s=1; s<Ns; s++){
                     src[4+s] = 0;
                 }
 
