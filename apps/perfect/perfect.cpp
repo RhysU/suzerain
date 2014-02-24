@@ -1028,6 +1028,15 @@ void summarize_boundary_layer_nature(
         suzerain_bl_qoi         &qoi,
         suzerain_bl_pg          &pg)
 {
+    // Repeated warnings from this method are annoying, but I hate to
+    // summarily make them debug messages as they can be of genuine use
+    // during postprocessing and to understand why NaNs arise.
+    // TODO Permit library caller to specify warn once vs warn always
+#   define WARNONCE0(l, m)                                              \
+    do { static bool warn = true;                                       \
+        if (warn) { WARN0(l, m); warn = false; } else { DEBUG0(l, m); } \
+    } while (0);
+
     // Care taken to avoid any B-spline evaluation using NaN thicknesses
     // per Redmine #2940 as this can bring down a simulation from GSL_ERROR.
     using boost::math::isnan;
@@ -1054,8 +1063,9 @@ void summarize_boundary_layer_nature(
                             scenario.Re,
                             &wall,
                             &viscous)) {
-        WARN0("profile", "suzerain_bl_compute_viscous(...) returned "
-              << err << " (" << suzerain_strerror(err) << ")");
+        WARNONCE0("profile",
+                  "suzerain_bl_compute_viscous(...) returned "
+                  << err << " (" << suzerain_strerror(err) << ")");
     }
 
     // Prepare inviscid baseflow coefficients if necessary
@@ -1095,8 +1105,9 @@ void summarize_boundary_layer_nature(
                                 &thick,
                                 b.bw,
                                 b.dbw)) {
-            WARN0("profile", "suzerain_bl_compute_thicknesses(...) returned "
-                  << err << " (" << suzerain_strerror(err) << ")");
+            WARNONCE0("profile",
+                      "suzerain_bl_compute_thicknesses(...) returned "
+                      << err << " (" << suzerain_strerror(err) << ")");
         }
     } else {
         if (const int err = suzerain_bl_compute_thicknesses_baseflow(
@@ -1112,8 +1123,9 @@ void summarize_boundary_layer_nature(
                                 &thick,
                                 b.bw,
                                 b.dbw)) {
-            WARN0("profile", "suzerain_bl_compute_thicknesses_baseflow(...) "
-                  "returned " << err << " (" << suzerain_strerror(err) << ")");
+            WARNONCE0("profile",
+                      "suzerain_bl_compute_thicknesses_baseflow(...) returned "
+                      << err << " (" << suzerain_strerror(err) << ")");
         }
     }
 
@@ -1155,8 +1167,9 @@ void summarize_boundary_layer_nature(
                                 &edge99,
                                 &thick,
                                 &reynolds)) {
-            WARN0("profile", "suzerain_bl_compute_reynolds(...) returned "
-                  << err << " (" << suzerain_strerror(err) << ")");
+            WARNONCE0("profile",
+                      "suzerain_bl_compute_reynolds(...) returned "
+                      << err << " (" << suzerain_strerror(err) << ")");
         }
     } else {
         if (const int err = suzerain_bl_compute_reynolds_baseflow(
@@ -1174,8 +1187,9 @@ void summarize_boundary_layer_nature(
                                 &edge99,
                                 &reynolds,
                                 b.bw)) {
-            WARN0("profile", "suzerain_bl_compute_reynolds_baseflow(...) "
-                  "returned " << err << " (" << suzerain_strerror(err) << ")");
+            WARNONCE0("profile",
+                      "suzerain_bl_compute_reynolds_baseflow(...) returned "
+                      << err << " (" << suzerain_strerror(err) << ")");
         }
     }
 
@@ -1207,9 +1221,12 @@ void summarize_boundary_layer_nature(
                             edge_u__x,
                             &thick,
                             &pg)) {
-        WARN0("profile", "suzerain_bl_compute_pg(...) returned "
-              << err << " (" << suzerain_strerror(err) << ")");
+        WARNONCE0("profile",
+                  "suzerain_bl_compute_pg(...) returned "
+                  << err << " (" << suzerain_strerror(err) << ")");
     }
+
+#   undef WARNONCE0
 }
 
 void summarize_channel_nature(
