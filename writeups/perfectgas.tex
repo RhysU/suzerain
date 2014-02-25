@@ -479,13 +479,18 @@ Mixed spatiotemporal formulations employ both growth rate operators.
 
 Topalian's slow growth models require an inviscid base flow profile to permit
 emulating spatially inhomogeneous features like favorable pressure gradients.
-In addition to a one-dimensional, wall-normal solution to the Euler equations,
-this base flow profile includes slow streamwise derivative information.  A
-comprehensive base flow design process is detailed in the document
-\emph{Designing inviscid, perfect gas flow fields with prescribed pressure
-gradients and edge Mach numbers}.  Simpler zero pressure gradient cases employ a
-spatially uniform flow field lacking slow streamwise derivatives fixed by, e.g.,
-boundary layer edge conditions.
+In addition to a wall-normal, steady solution to the Euler equations and
+pressure details, this base flow profile includes slow streamwise derivative
+information.  That is, one supplies:
+\begin{align}
+    &\rho_i\!\left(y\right)                                &  &\rho                                u_i\!\left(y\right)  &  &\rho                                v_i\!\left(y\right)  &  &\rho                                w_i\!\left(y\right)  &  &\rho                                E_i\!\left(y\right)  &  &p_i\!\left(y\right)                                \\
+    \frac{\partial}{\partial{}y}&\rho_i\!\left(y\right)    &  \frac{\partial}{\partial{}y}&\rho    u_i\!\left(y\right)  &  \frac{\partial}{\partial{}y}&\rho    v_i\!\left(y\right)  &  \frac{\partial}{\partial{}y}&\rho    w_i\!\left(y\right)  &  \frac{\partial}{\partial{}y}&\rho    E_i\!\left(y\right)  &  \frac{\partial}{\partial{}y}&p_i\!\left(y\right)    \\
+    \frac{\partial}{\partial{}x_s}&\rho_i\!\left(y\right)  &  \frac{\partial}{\partial{}x_s}&\rho  u_i\!\left(y\right)  &  \frac{\partial}{\partial{}x_s}&\rho  v_i\!\left(y\right)  &  \frac{\partial}{\partial{}x_s}&\rho  w_i\!\left(y\right)  &  \frac{\partial}{\partial{}x_s}&\rho  E_i\!\left(y\right)  &  \frac{\partial}{\partial{}x_s}&p_i\!\left(y\right)
+\end{align}
+Zero pressure gradient cases employ a spatially uniform flow field fixed by,
+e.g., boundary layer edge conditions.  For nontrivial pressure gradients, A
+comprehensive process is given in the document \emph{Designing inviscid, perfect
+gas flow fields with prescribed pressure gradients and edge Mach numbers}.
 
 \subsection{Growth rate of the characteristic length scale}
 
