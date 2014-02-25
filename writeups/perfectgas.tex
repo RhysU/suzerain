@@ -572,15 +572,15 @@ rate~\eqref{eq:gramp_mean} to be
     \right)
     =
     \frac{
-                \frac{\partial}{\partial x_s}    p_{iw}
-        - R T_w \frac{\partial}{\partial x_s} \rho_{iw}
+          R T_w \frac{\partial}{\partial x_s} \rho_{iw}
+        -       \frac{\partial}{\partial x_s}    p_{iw}
     }{
-        p_{iw} - \rho_{iw} {R T_w}
+          {R T_w} \rho_{iw} - p_{iw}
     }
     .
 \end{align}
-For a no-slip wall with fixed blowing velocity $v_w$, the base flow informs the
-other rates to be
+For a no-slip wall with fixed blowing velocity $v_w$, the base flow also informs
+the momentum growth rates:
 \begin{align}
     \operatorname{gr}_{x_s}\!\left(\overline{\rho u}_{D}\right)
     &=
@@ -591,7 +591,7 @@ other rates to be
     }
     \\
     \operatorname{gr}_{x_s}\!\left(\overline{\rho v}_{D}\right)
-    &=
+    &\approx
     \frac{1}{{\rho v}_{iw} - \frac{p_{iw}}{R T_w} v_w}
     \left(
           \frac{\partial}{\partial x_s}         {\rho v}_{iw}
@@ -602,7 +602,7 @@ other rates to be
           R T_w \frac{\partial}{\partial x_s} {\rho v}_{iw}
         -   v_w \frac{\partial}{\partial x_s} {p     }_{iw}
     }{
-        R T_w {\rho v}_{iw} - p_{iw} v_w
+        R T_w {\rho v}_{iw} - v_w p_{iw}
     }
     \\
     \operatorname{gr}_{x_s}\!\left(\overline{\rho w}_{D}\right)
@@ -612,25 +612,25 @@ other rates to be
     }{
         {\rho w}_{iw}
     }
+    \\
+    \operatorname{gr}_{x_s}\!\left(\overline{\rho E}_{D}\right)
+    &\approx
+    \frac{1}{{\rho E}_{iw} - \frac{p_{iw}}{R T_w} E_w}
+    \left(
+          \frac{\partial}{\partial x_s}         {\rho E}_{iw}
+        - \frac{E_w}{R T_w} \frac{\partial}{\partial x_s} {p}_{iw}
+    \right)
+    =
+    \frac{
+          R T_w \frac{\partial}{\partial x_s} {\rho E}_{iw}
+        -   E_w \frac{\partial}{\partial x_s} {p     }_{iw}
+    }{
+        R T_w {\rho E}_{iw} - E_w p_{iw}
+    }
 \end{align}
-
-%The corresponding primitive growth rate is
-%then
-%\begin{align}
-%    \operatorname{gr}_{x}\!\left(\overline{\rho q}_{D}\right)
-%    &=
-%    \frac{1}{\overline{\rho q}_{D}}
-%    \frac{\partial \overline{\rho q}_D}{\partial x}
-%    =
-%    \frac{1}{\overline{\rho q}_{w} - \overline{\rho q}_{iw}}
-%    \left(
-%          \frac{\partial}{\partial x} \overline{\rho q}_{w}
-%        - \frac{\partial}{\partial x} \overline{\rho q}_{iw}
-%    \right)
-%    .
-%\end{align}
-
-
+Computing $\operatorname{gr}_{x_s}\!\left(\overline{\rho E}_{D}\right)$ requires
+using the equation of state~\eqref{eq:perfectgastotalenergy} to find $E_w =
+\frac{R T_w}{\gamma - 1} + \frac{1}{2} v_w^2$.
 
 \subsection{Growth rate of the root-mean-square defect amplitudes}
 
