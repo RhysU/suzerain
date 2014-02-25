@@ -453,58 +453,76 @@ procedure allows to simulate the turbulent flow at a specific stage of the
 development in space or time.  Examples of these procedures are the works of
 Spalart~\citep{Spalart1988Direct} for incompressible boundary layers, and of
 Venugopal~\citep{Venugopal2003} for channel flow with wall injection.
-\todo{Cite Victor's papers when available}
 
 In practice, all slow growth approach introduces source terms in the
 Navier--Stokes equations, where their functional forms are specific to the flow
 configuration that was homogenized and on various modeling assumptions.  These
 slow growth sources will be generically designated with $\Ssd$.
 
-Up to four classes of slow growth model parameters must be set when using the
-slow growth models developed by Victor Topalian.  The following subsections
-briefly discuss the associated model settings.  In them, the notation employs a
-logarithmic growth rate operator $\operatorname{gr}$ defined by
+Here, the slow growth models developed by Topalian et. al are chosen.
+\todo{Cite paper when available} Up to four classes of slow growth model
+parameters must be set when using the slow growth models developed by Victor
+Topalian.  The following subsections briefly discuss the associated model
+settings.  In them, the notation employs a logarithmic growth rate operator
+$\operatorname{gr}$ defined by
 \begin{align}
     \operatorname{gr}_{\bullet}\!\left(f\right) &=
     \frac{1}{f} \frac{\partial f}{\partial \bullet}
 \end{align}
-where $\bullet$ will be the fast timescale $t$, the slow timescale $t_s$, or the
-slowly spatially developing direction $x_s$.
-
-\subsection{Growth rate of the characteristic length scale}
-
-The scalar parameter
-\begin{align}
-    \operatorname{gr}_{t_s}\left(\Delta\right) &= \left(
-        % TODO Reconcile the lack of an \epsilon.
-        % Victor says it appears generally but that he often suppressed it.
-        \frac{1}{\Delta} \frac{\partial\Delta}{\partial t_s}
-    \right)_{t_s = T_s}
-\end{align}
-models the logarithmic slow time growth rate of a characteristic length scale
-$\Delta$ at some fixed slow time $T_s$.  Parameter
-$\operatorname{gr}_{t_s}\left(\Delta\right)$ appears throughout the slow growth
-sources and, in homogenized boundary layers, controls the boundary layer
-thickness.
+where $\bullet$ will be the slow timescale $t_s$ or the slowly spatially
+developing direction $x_s$.  The former arises from temporal homogenization
+approaches and while the latter appears because of  spatial homogenization.
+Mixed spatiotemporal formulations employ both growth rate operators.
 
 \subsection{Imposing a streamwise pressure gradient via an inviscid base flow}
 \label{seq:imposing_fpg}
 
-Some of Topalian's slow growth models accept an inviscid base flow profile to
-emulate spatially inhomogeneous features like favorable pressure gradients.
-When used, a wall-normal inviscid base flow profile and its slow streamwise
-derivatives must be specified.  A comprehensive base flow design process appears
-in the document \emph{Designing inviscid, perfect gas flow fields with
-prescribed pressure gradients and edge Mach numbers}.
+Topalian's slow growth models require an inviscid base flow profile to permit
+emulating spatially inhomogeneous features like favorable pressure gradients.
+In addition to a one-dimensional, wall-normal solution to the Euler equations,
+this base flow profile includes slow streamwise derivative information.  A
+comprehensive base flow design process is detailed in the document
+\emph{Designing inviscid, perfect gas flow fields with prescribed pressure
+gradients and edge Mach numbers}.  Simpler zero pressure gradient cases employ a
+spatially uniform flow field lacking slow streamwise derivatives fixed by, e.g.,
+boundary layer edge conditions.
+
+\subsection{Growth rate of the characteristic length scale}
+
+The parameters
+\begin{align}
+    \operatorname{gr}_{x_s}\!\left(\Delta\right) &= \left(
+        % TODO Reconcile the lack of an \epsilon.
+        % Victor says it appears generally but that he often suppressed it.
+        \frac{1}{\Delta} \frac{\partial\Delta}{\partial x_s}
+    \right)_{x_s = X_s}
+    &
+    \operatorname{gr}_{t_s}\!\left(\Delta\right) &= \left(
+        \frac{1}{\Delta} \frac{\partial\Delta}{\partial t_s}
+    \right)_{t_s = T_s}
+\end{align}
+model the logarithmic slow spatial growth rate of a characteristic length scale
+$\Delta$ at some fixed slow position $X_s$ or some fixed slow time $T_s$.  The
+inviscid base flow streamwise velocity at the wall, $u_{iw}$, relates the
+parameters per
+$
+    u_{iw}
+    \operatorname{gr}_{x_s}\!\left(\Delta\right)
+    =
+    \operatorname{gr}_{t_s}\!\left(\Delta\right)
+$.
+Parameters $\operatorname{gr}_{\bullet}\left(\Delta\right)$ appear throughout
+the slow growth sources and, in homogenized boundary layers, controls the
+boundary layer thickness.
+
 
 \subsection{Growth rate of the mean defect amplitudes}
 
-Topalian's slow growth sources $\Ssd_\rho$, $\Ssd_{\rho u}$, $\Ssd_{\rho v}$,
-$\Ssd_{\rho w}$, and $\Ssd_{\rho E}$ involve the growth rates for the amplitude
-of the mean defect denoted $\operatorname{gr}_{a}\!\left(\overline{\rho
-q}_{D}\right)$ for $q\in\left\{1,u,v,w,E\right\}$.  Here, ``defect'' refers to
-the difference between the mean flow being modeled and some chosen inviscid base
-flow profile.
+Slow growth sources $\Ssd_\rho$, $\Ssd_{\rho u}$, $\Ssd_{\rho v}$, $\Ssd_{\rho
+w}$, and $\Ssd_{\rho E}$ involve the growth rates for the amplitude of the mean
+defect denoted $\operatorname{gr}_{a}\!\left(\overline{\rho q}_{D}\right)$ for
+$q\in\left\{1,u,v,w,E\right\}$.  Here, ``defect'' refers to the difference
+between the mean flow being modeled and the chosen inviscid base flow.
 
 In spatially-homogenized flows with isothermal conditions, wall state in
 conjunction with the inviscid base flow at the wall may unambiguously supply the
