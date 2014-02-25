@@ -361,6 +361,9 @@ contains
       ! FIXME: if (ntvar_ /= 2) point to an error
     case ("k_omega")
       ! FIXME: if (ntvar_ /= 2) point to an error
+    case ("self-similar")
+      ! ntvar can have any value, all variables are
+      ! computed assuming self-similar evolution
     case default
       ! FIXME: RANS model not defined
     end select
@@ -921,8 +924,8 @@ contains
 
     ! 
     do it=1, ntvar_
-      auxp%fav_tvar (it) = mean(it)/auxp%mean_rho
-      auxp%dfav_tvar(it) = ddy_mean(it)/auxp%mean_rho &
+      auxp%fav_tvar (it) = mean(itvar0_+it-1)/auxp%mean_rho
+      auxp%dfav_tvar(it) = ddy_mean(itvar0_+it-1)/auxp%mean_rho &
       &                     - auxp%fav_tvar(it)/auxp%mean_rho * auxp%dmean_rho
       auxp%Xs_tvar  (it) = -0.0_WP - auxp%grx_DA_tvar(it) * (auxp%fav_tvar(it)-0.0_WP) + y * auxp%grx_delta * (auxp%dfav_tvar(it)-0.0_WP) 
       auxp%S_tvar   (it) = auxp%fav_U * auxp%Xs_tvar(it)
