@@ -310,7 +310,7 @@ program generic_bl_temporal_baseflow_f
 
     ! Init growth rates
     call largo_init     (generic_workspace, grDelta, grDA, grDArms)
-    call largo_init_rans(generic_workspace, grDAturb)
+!!$     call largo_init_rans(generic_workspace, grDAturb)
 
     ! Compute prestep values
     call largo_preStep_baseflow  (generic_workspace,   base,  dybase,  &
@@ -318,12 +318,12 @@ program generic_bl_temporal_baseflow_f
     call largo_preStep_sEta (generic_workspace, y, field,         &
                                            mean,  rms,  mean_rqq, &
                                           dmean, drms, dmean_rqq)
-    call largo_preStep_sEtaMean_rans (generic_workspace, y,         &
-                                                  meanTurb, dymeanTurb)
+!!$     call largo_preStep_sEtaMean_rans (generic_workspace, y,         &
+!!$                                                   meanTurb, dymeanTurb)
 
     ! Compute sources
     call largo_sEta      (generic_workspace, 0.0_WP, 1.0_WP, srcall(1))
-    call largo_sEta_rans (generic_workspace, 0.0_WP, 1.0_WP, srcturb(1))
+!!$     call largo_sEta_rans (generic_workspace, 0.0_WP, 1.0_WP, srcturb(1))
 
     ! Check all
     ASSERT(abs((srcall(1)/srcall_good(1))-1.0_WP) < tolerance )
@@ -334,9 +334,9 @@ program generic_bl_temporal_baseflow_f
     do is=1, ns
       ASSERT(abs((srcall(5+is)/srcall_good(5+is))-1.0_WP) < tolerance )
     end do
-    do it=1, ntvar
-      ASSERT(abs((srcturb(it)/srcturb_good(it))-1.0_WP) < tolerance )
-    end do
+!!$     do it=1, ntvar
+!!$       ASSERT(abs((srcturb(it)/srcturb_good(it))-1.0_WP) < tolerance )
+!!$     end do
 
     ! Deallocate workspace
     call largo_deallocate (generic_workspace)

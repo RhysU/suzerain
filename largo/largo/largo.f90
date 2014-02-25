@@ -124,6 +124,7 @@ contains
     case ("bl_temporal")
       ! Initialize number of variables
       lauxp%nvar = neq
+      lauxp%nvar_base = lauxp%nvar - lauxp%ntvar
 
       call largo_BL_temporal_allocate (lauxp%cp, lauxp%neq, lauxp%ns, &
         &     lauxp%ntvar, trim(fransmodel))
@@ -171,6 +172,7 @@ contains
     case ("bl_temporal_tensor-consistent")
       ! Initialize number of variables
       lauxp%nvar = neq
+      lauxp%nvar_base = lauxp%nvar - lauxp%ntvar
 
       call largo_BL_temporal_tconsistent_allocate (lauxp%cp, lauxp%neq, lauxp%ns)
       lauxp%largo_init            => largo_BL_temporal_tconsistent_init
@@ -200,7 +202,8 @@ contains
 
     case ("bl_spatiotemporal")
       ! Initialize number of variables
-      lauxp%nvar = neq + 1
+      lauxp%nvar      = neq + 1
+      lauxp%nvar_base = lauxp%nvar - lauxp%ntvar
 
       call largo_BL_spatiotemporal_allocate (lauxp%cp, lauxp%neq, lauxp%ns)
       lauxp%largo_init            => largo_BL_spatiotemporal_init
@@ -241,6 +244,7 @@ contains
     case ("bl_temporal_consistent")
       ! Initialize number of variables
       lauxp%nvar = neq
+      lauxp%nvar_base = lauxp%nvar - lauxp%ntvar
 
       call largo_BL_temporal_consistent_allocate (lauxp%cp, lauxp%neq, lauxp%ns)
       lauxp%largo_init             => largo_BL_temporal_consistent_init
@@ -271,9 +275,11 @@ contains
 
     case ("bl_spatiotemporal_consistent")
       ! Initialize number of variables
-      lauxp%nvar = neq + 1
+      lauxp%nvar      = neq + 1
+      lauxp%nvar_base = lauxp%nvar - lauxp%ntvar
 
-      call largo_BL_spatiotemporal_consistent_allocate (lauxp%cp, lauxp%neq, lauxp%ns)
+      call largo_BL_spatiotemporal_consistent_allocate (lauxp%cp, lauxp%neq, lauxp%ns, &
+        &     lauxp%ntvar, trim(fransmodel))
       lauxp%largo_init               => largo_BL_spatiotemporal_consistent_init
       lauxp%largo_finalize           => largo_BL_spatiotemporal_consistent_deallocate
       lauxp%largo_prestep_mean       => largo_BL_spatiotemporal_consistent_preStep_sEtaMean
@@ -300,6 +306,12 @@ contains
 
       lauxp%largo_init_wall_baseflow => largo_BL_spatiotemporal_consistent_init_wall_baseflow
       lauxp%largo_prestep_baseflow   => largo_BL_spatiotemporal_consistent_preStep_baseflow
+
+      ! RANS methods
+      lauxp%largo_get_ntvar_rans        => largo_BL_spatiotemporal_consistent_get_ntvar_rans
+      lauxp%largo_init_rans             => largo_BL_spatiotemporal_consistent_init_rans
+      lauxp%largo_prestep_setamean_rans => largo_BL_spatiotemporal_consistent_prestep_sEtaMean_rans
+      lauxp%largo_sources_mean_rans     => largo_BL_spatiotemporal_consistent_sEta_rans
 
     case default
       ! Unknown model causes workspace deallocation prompting c_null_ptr below
@@ -397,17 +409,20 @@ contains
 
 
   ! Generic interface init_rans, fortran
-  subroutine largo_init_rans(lcp, grDAturb) bind(C)
+  subroutine largo_init_rans(lcp, grDelta, grDA, grDArms) bind(C)
 
-    ! largo workspace C pointer
-    type(largo_ptr), intent(out)         :: lcp
-    real(WP), dimension(*), intent(in)   :: grDAturb
-    type(largo_type), pointer            :: lauxp
+    real(WP), intent(in), value         :: grDelta
+    real(WP), dimension(*), intent(in)  :: grDA
+    real(WP), dimension(*), intent(in)  :: grDArms
+    type(largo_ptr), intent(out)        :: lcp
+    type(largo_type), pointer           :: lauxp
 
     call c_f_pointer(lcp, lauxp)
 
     ! Invoke Fortran functionality using Fortran-ready model string
-    call lauxp%largo_init_rans(lauxp%cp, grDAturb(1:lauxp%ntvar))
+    call lauxp%largo_init_rans(lauxp%cp, grDelta,                 &
+                                         grDA     (1:lauxp%nvar), &
+                                         grDArms  (1:lauxp%nvar))
 
   end subroutine largo_init_rans
 
@@ -515,10 +530,10 @@ contains
     call c_f_pointer(lcp, lauxp)
     if (associated(lauxp%largo_prestep_baseflow)) then
       call lauxp%largo_prestep_baseflow(lauxp%cp,               &
-                                            base (1:lauxp%nvar), &
-                                        ddy_base (1:lauxp%nvar), &
-                                        ddt_base (1:lauxp%nvar), &
-                                        ddx_base (1:lauxp%nvar), &
+                                            base (1:lauxp%nvar_base), &
+                                        ddy_base (1:lauxp%nvar_base), &
+                                        ddt_base (1:lauxp%nvar_base), &
+                                        ddx_base (1:lauxp%nvar_base), &
                                         src_base (1:lauxp%neq))
     end if
 
@@ -558,10 +573,10 @@ contains
     call c_f_pointer(lcp, lauxp)
     if (associated(lauxp%largo_init_wall_baseflow)) then
       call lauxp%largo_init_wall_baseflow(lauxp%cp,               &
-                                            wall_base (1:lauxp%nvar), &
-                                        wall_ddy_base (1:lauxp%nvar), &
-                                        wall_ddt_base (1:lauxp%nvar), &
-                                        wall_ddx_base (1:lauxp%nvar), &
+                                            wall_base (1:lauxp%nvar_base), &
+                                        wall_ddy_base (1:lauxp%nvar_base), &
+                                        wall_ddt_base (1:lauxp%nvar_base), &
+                                        wall_ddx_base (1:lauxp%nvar_base), &
                                         wall_src_base (1:lauxp%neq))
     end if
 

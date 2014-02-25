@@ -40,9 +40,11 @@ module largo_workspace
 
 
   abstract interface
-    subroutine init_rans(cp, grDAturb)
+    subroutine init_rans(cp, grDelta, grDA, grDArms)
       import
-      real(WP), dimension(*), intent(in)    :: grDAturb
+      real(WP), intent(in)                  :: grDelta
+      real(WP), dimension(*), intent(in)    :: grDA
+      real(WP), dimension(*), intent(in)    :: grDArms
       type(largo_workspace_ptr), intent(in) :: cp
     end subroutine init_rans
   end interface
@@ -221,6 +223,9 @@ module largo_workspace
 
     ! Number of variables (includes pressure if relevant)
     integer(c_int) :: nvar = 0
+
+    ! Number of variables in baseflow fields (includes pressure if relevant)
+    integer(c_int) :: nvar_base = 0
 
     ! Number of turbulence variables
     integer(c_int) :: ntvar = 0

@@ -40,13 +40,13 @@ module largo_BL_temporal
   ! largo workspace type declaration
   type :: largo_BL_temporal_workspace_type
 
-    real(WP) :: gr_delta   = 1.0_WP
+    real(WP) :: grt_delta   = 1.0_WP
 
-    real(WP) :: Ts_rho    = 0.0_WP
-    real(WP) :: Ts_rhoU   = 0.0_WP
-    real(WP) :: Ts_rhoV   = 0.0_WP
-    real(WP) :: Ts_rhoW   = 0.0_WP
-    real(WP) :: Ts_rhoE   = 0.0_WP
+    real(WP) :: Ts_rho      = 0.0_WP
+    real(WP) :: Ts_rhoU     = 0.0_WP
+    real(WP) :: Ts_rhoV     = 0.0_WP
+    real(WP) :: Ts_rhoW     = 0.0_WP
+    real(WP) :: Ts_rhoE     = 0.0_WP
 
     real(WP) :: ygrms_rho   = 0.0_WP
     real(WP) :: ygrms_rhoU  = 0.0_WP
@@ -54,17 +54,17 @@ module largo_BL_temporal
     real(WP) :: ygrms_rhoW  = 0.0_WP
     real(WP) :: ygrms_rhoE  = 0.0_WP
 
-    real(WP) :: mean_rho   = 0.0_WP
-    real(WP) :: mean_rhoU  = 0.0_WP
-    real(WP) :: mean_rhoV  = 0.0_WP
-    real(WP) :: mean_rhoW  = 0.0_WP
-    real(WP) :: mean_rhoE  = 0.0_WP
+    real(WP) :: mean_rho    = 0.0_WP
+    real(WP) :: mean_rhoU   = 0.0_WP
+    real(WP) :: mean_rhoV   = 0.0_WP
+    real(WP) :: mean_rhoW   = 0.0_WP
+    real(WP) :: mean_rhoE   = 0.0_WP
 
-    real(WP) :: fluc_rho   = 0.0_WP
-    real(WP) :: fluc_rhoU  = 0.0_WP
-    real(WP) :: fluc_rhoV  = 0.0_WP
-    real(WP) :: fluc_rhoW  = 0.0_WP
-    real(WP) :: fluc_rhoE  = 0.0_WP
+    real(WP) :: fluc_rho    = 0.0_WP
+    real(WP) :: fluc_rhoU   = 0.0_WP
+    real(WP) :: fluc_rhoV   = 0.0_WP
+    real(WP) :: fluc_rhoW   = 0.0_WP
+    real(WP) :: fluc_rhoE   = 0.0_WP
 
     real(WP) :: TsRms_rho   = 0.0_WP
     real(WP) :: TsRms_rhoU  = 0.0_WP
@@ -79,53 +79,54 @@ module largo_BL_temporal
     real(WP), allocatable, dimension(:) :: TsRms_rhos
 
     ! baseflow variables
-    real(WP) :: base_rho      = 0.0_WP
-    real(WP) :: base_rhoU     = 0.0_WP
-    real(WP) :: base_rhoV     = 0.0_WP
-    real(WP) :: base_rhoW     = 0.0_WP
-    real(WP) :: base_rhoE     = 0.0_WP
+    real(WP) :: base_rho        = 0.0_WP
+    real(WP) :: base_rhoU       = 0.0_WP
+    real(WP) :: base_rhoV       = 0.0_WP
+    real(WP) :: base_rhoW       = 0.0_WP
+    real(WP) :: base_rhoE       = 0.0_WP
 
-    real(WP) :: ddy_base_rho  = 0.0_WP
-    real(WP) :: ddy_base_rhoU = 0.0_WP
-    real(WP) :: ddy_base_rhoV = 0.0_WP
-    real(WP) :: ddy_base_rhoW = 0.0_WP
-    real(WP) :: ddy_base_rhoE = 0.0_WP
+    real(WP) :: ddy_base_rho    = 0.0_WP
+    real(WP) :: ddy_base_rhoU   = 0.0_WP
+    real(WP) :: ddy_base_rhoV   = 0.0_WP
+    real(WP) :: ddy_base_rhoW   = 0.0_WP
+    real(WP) :: ddy_base_rhoE   = 0.0_WP
 
-    real(WP) :: ddt_base_rho  = 0.0_WP
-    real(WP) :: ddt_base_rhoU = 0.0_WP
-    real(WP) :: ddt_base_rhoV = 0.0_WP
-    real(WP) :: ddt_base_rhoW = 0.0_WP
-    real(WP) :: ddt_base_rhoE = 0.0_WP
+    real(WP) :: ddt_base_rho    = 0.0_WP
+    real(WP) :: ddt_base_rhoU   = 0.0_WP
+    real(WP) :: ddt_base_rhoV   = 0.0_WP
+    real(WP) :: ddt_base_rhoW   = 0.0_WP
+    real(WP) :: ddt_base_rhoE   = 0.0_WP
 
-    real(WP) :: src_base_rho  = 0.0_WP
-    real(WP) :: src_base_rhoU = 0.0_WP
-    real(WP) :: src_base_rhoV = 0.0_WP
-    real(WP) :: src_base_rhoW = 0.0_WP
-    real(WP) :: src_base_rhoE = 0.0_WP
+    real(WP) :: src_base_rho    = 0.0_WP
+    real(WP) :: src_base_rhoU   = 0.0_WP
+    real(WP) :: src_base_rhoV   = 0.0_WP
+    real(WP) :: src_base_rhoW   = 0.0_WP
+    real(WP) :: src_base_rhoE   = 0.0_WP
 
-    real(WP) :: gr_DA_rho     = 0.0_WP
-    real(WP) :: gr_DA_rhoU    = 0.0_WP
-    real(WP) :: gr_DA_rhoV    = 0.0_WP
-    real(WP) :: gr_DA_rhoW    = 0.0_WP
-    real(WP) :: gr_DA_rhoE    = 0.0_WP
+    real(WP) :: grt_DA_rho      = 0.0_WP
+    real(WP) :: grt_DA_rhoU     = 0.0_WP
+    real(WP) :: grt_DA_rhoV     = 0.0_WP
+    real(WP) :: grt_DA_rhoW     = 0.0_WP
+    real(WP) :: grt_DA_rhoE     = 0.0_WP
 
-    real(WP) :: gr_DA_rms_rho  = 0.0_WP
-    real(WP) :: gr_DA_rms_rhoU = 0.0_WP
-    real(WP) :: gr_DA_rms_rhoV = 0.0_WP
-    real(WP) :: gr_DA_rms_rhoW = 0.0_WP
-    real(WP) :: gr_DA_rms_rhoE = 0.0_WP
+    real(WP) :: grt_DA_rms_rho  = 0.0_WP
+    real(WP) :: grt_DA_rms_rhoU = 0.0_WP
+    real(WP) :: grt_DA_rms_rhoV = 0.0_WP
+    real(WP) :: grt_DA_rms_rhoW = 0.0_WP
+    real(WP) :: grt_DA_rms_rhoE = 0.0_WP
 
     real(WP), allocatable, dimension(:) :: base_rhos
     real(WP), allocatable, dimension(:) :: ddy_base_rhos
     real(WP), allocatable, dimension(:) :: ddt_base_rhos
     real(WP), allocatable, dimension(:) :: src_base_rhos
-    real(WP), allocatable, dimension(:) :: gr_DA_rhos
-    real(WP), allocatable, dimension(:) :: gr_DA_rms_rhos
+    real(WP), allocatable, dimension(:) :: grt_DA_rhos
+    real(WP), allocatable, dimension(:) :: grt_DA_rms_rhos
 
     ! RANS variables
     real(WP), allocatable, dimension(:) :: Ts_tvar
     real(WP), allocatable, dimension(:) :: mean_tvar
-    real(WP), allocatable, dimension(:) :: gr_DA_tvar
+    real(WP), allocatable, dimension(:) :: grt_DA_tvar
+    real(WP), allocatable, dimension(:) :: grt_DA_rms_tvar
 
   end type largo_BL_temporal_workspace_type
 
@@ -147,6 +148,9 @@ module largo_BL_temporal
 
   ! Number of tubulence variables
   integer(c_int) :: ntvar_  = 0
+
+  ! Index of first tubulence variable
+  integer(c_int) :: itvar0_  = 0
 
   ! Tolerance to consider rms = 0
   real(WP), parameter :: eps = 1.0E-10_WP
@@ -208,31 +212,32 @@ contains
     allocate(auxp)
 
     ! Initialize values
-    neq_   = neq
-    ns_    = ns
-    ntvar_ = ntvar
+    neq_    = neq
+    ns_     = ns
+    ntvar_  = ntvar
+    itvar0_ = 5 + ns_ + 1
 
     ! Allocate arrays for species
     if (ns_ > 0) then
-      allocate(auxp%Ts_rhos   (1:ns_))
-      allocate(auxp%ygrms_rhos (1:ns_))
-      allocate(auxp%mean_rhos  (1:ns_))
-      allocate(auxp%fluc_rhos  (1:ns_))
-      allocate(auxp%TsRms_rhos(1:ns_))
+      allocate(auxp%Ts_rhos        (1:ns_))
+      allocate(auxp%ygrms_rhos     (1:ns_))
+      allocate(auxp%mean_rhos      (1:ns_))
+      allocate(auxp%fluc_rhos      (1:ns_))
+      allocate(auxp%TsRms_rhos     (1:ns_))
 
-      allocate(auxp%base_rhos     (1:ns_))
-      allocate(auxp%ddy_base_rhos (1:ns_))
-      allocate(auxp%ddt_base_rhos (1:ns_))
-      allocate(auxp%src_base_rhos (1:ns_))
-      allocate(auxp%gr_DA_rhos    (1:ns_))
-      allocate(auxp%gr_DA_rms_rhos(1:ns_))
+      allocate(auxp%base_rhos      (1:ns_))
+      allocate(auxp%ddy_base_rhos  (1:ns_))
+      allocate(auxp%ddt_base_rhos  (1:ns_))
+      allocate(auxp%src_base_rhos  (1:ns_))
+      allocate(auxp%grt_DA_rhos    (1:ns_))
+      allocate(auxp%grt_DA_rms_rhos(1:ns_))
 
       auxp%base_rhos     = 0.0_WP
       auxp%ddy_base_rhos = 0.0_WP
       auxp%ddt_base_rhos = 0.0_WP
       auxp%src_base_rhos = 0.0_WP
-      auxp%gr_DA_rhos    = 0.0_WP
-      auxp%gr_DA_rms_rhos= 0.0_WP
+      auxp%grt_DA_rhos    = 0.0_WP
+      auxp%grt_DA_rms_rhos= 0.0_WP
     end if
 
     ! Check number of turbulence variables
@@ -251,18 +256,20 @@ contains
 
     ! Allocate arrays for turbulent variables
     if (ntvar_ > 0) then
-      allocate(auxp%Ts_tvar   (1:ntvar_))
-      allocate(auxp%mean_tvar  (1:ntvar_))
-      allocate(auxp%gr_DA_tvar (1:ntvar_))
+      allocate(auxp%Ts_tvar         (1:ntvar_))
+      allocate(auxp%mean_tvar       (1:ntvar_))
+      allocate(auxp%grt_DA_tvar     (1:ntvar_))
+      allocate(auxp%grt_DA_rms_tvar (1:ntvar_))
 
-      auxp%Ts_tvar     = 0.0_WP
-      auxp%mean_tvar    = 0.0_WP
-      auxp%gr_DA_tvar   = 0.0_WP
+      auxp%Ts_tvar         = 0.0_WP
+      auxp%mean_tvar       = 0.0_WP
+      auxp%grt_DA_tvar     = 0.0_WP
+      auxp%grt_DA_rms_tvar = 0.0_WP
     end if
 
     ! Initialize turbulence variables function pointers
     largo_BL_temporal_prestep_sEtaMean_rans => largo_bl_temporal_prestep_sEtaMean_rans_generic
-    largo_BL_temporal_sEta_rans                => largo_bl_temporal_sEta_rans_generic
+    largo_BL_temporal_sEta_rans             => largo_bl_temporal_sEta_rans_generic
 
     ! Get C pointer from Fortran pointer
     cp = c_loc(auxp)
@@ -278,23 +285,24 @@ contains
     call c_f_pointer(cp, auxp)
 
     ! Deallocate arrays for species
-    if (allocated(auxp%Ts_rhos      ))  deallocate(auxp%Ts_rhos      )
-    if (allocated(auxp%ygrms_rhos    ))  deallocate(auxp%ygrms_rhos    )
-    if (allocated(auxp%mean_rhos     ))  deallocate(auxp%mean_rhos     )
-    if (allocated(auxp%fluc_rhos     ))  deallocate(auxp%fluc_rhos     )
-    if (allocated(auxp%TsRms_rhos   ))  deallocate(auxp%TsRms_rhos   )
+    if (allocated(auxp%Ts_rhos         ))  deallocate(auxp%Ts_rhos        )
+    if (allocated(auxp%ygrms_rhos      ))  deallocate(auxp%ygrms_rhos     )
+    if (allocated(auxp%mean_rhos       ))  deallocate(auxp%mean_rhos      )
+    if (allocated(auxp%fluc_rhos       ))  deallocate(auxp%fluc_rhos      )
+    if (allocated(auxp%TsRms_rhos      ))  deallocate(auxp%TsRms_rhos     )
 
-    if (allocated(auxp%base_rhos     ))  deallocate(auxp%base_rhos     )
-    if (allocated(auxp%ddy_base_rhos ))  deallocate(auxp%ddy_base_rhos )
-    if (allocated(auxp%ddt_base_rhos ))  deallocate(auxp%ddt_base_rhos )
-    if (allocated(auxp%src_base_rhos ))  deallocate(auxp%src_base_rhos )
-    if (allocated(auxp%gr_DA_rhos    ))  deallocate(auxp%gr_DA_rhos    )
-    if (allocated(auxp%gr_DA_rms_rhos))  deallocate(auxp%gr_DA_rms_rhos)
+    if (allocated(auxp%base_rhos       ))  deallocate(auxp%base_rhos      )
+    if (allocated(auxp%ddy_base_rhos   ))  deallocate(auxp%ddy_base_rhos  )
+    if (allocated(auxp%ddt_base_rhos   ))  deallocate(auxp%ddt_base_rhos  )
+    if (allocated(auxp%src_base_rhos   ))  deallocate(auxp%src_base_rhos  )
+    if (allocated(auxp%grt_DA_rhos     ))  deallocate(auxp%grt_DA_rhos    )
+    if (allocated(auxp%grt_DA_rms_rhos ))  deallocate(auxp%grt_DA_rms_rhos)
 
     ! Deallocate arrays for RANS turbulence variables
-    if (allocated(auxp%Ts_tvar      ))  deallocate(auxp%Ts_tvar      )
-    if (allocated(auxp%mean_tvar     ))  deallocate(auxp%mean_tvar     )
-    if (allocated(auxp%gr_DA_tvar    ))  deallocate(auxp%gr_DA_tvar    )
+    if (allocated(auxp%Ts_tvar         ))  deallocate(auxp%Ts_tvar        )
+    if (allocated(auxp%mean_tvar       ))  deallocate(auxp%mean_tvar      )
+    if (allocated(auxp%grt_DA_tvar     ))  deallocate(auxp%grt_DA_tvar    )
+    if (allocated(auxp%grt_DA_rms_tvar ))  deallocate(auxp%grt_DA_rms_tvar)
 
     ! Deallocate array of derived types
     deallocate(auxp)
@@ -320,11 +328,11 @@ contains
   end subroutine largo_BL_temporal_get_ntvar_rans
 
 
-  subroutine largo_BL_temporal_init(cp, gr_delta, gr_DA, gr_DA_rms)
+  subroutine largo_BL_temporal_init(cp, grt_delta, grt_DA, grt_DA_rms)
 
-    real(WP), intent(in)                  :: gr_delta
-    real(WP), dimension(*), intent(in)    :: gr_DA
-    real(WP), dimension(*), intent(in)    :: gr_DA_rms
+    real(WP), intent(in)                  :: grt_delta
+    real(WP), dimension(*), intent(in)    :: grt_DA
+    real(WP), dimension(*), intent(in)    :: grt_DA_rms
     integer(c_int) :: is
     type(largo_workspace_ptr), intent(in) :: cp
     type(largo_BL_temporal_workspace_type), pointer   :: auxp
@@ -333,42 +341,51 @@ contains
     call c_f_pointer(cp, auxp)
 
     ! Set growth rates
-    auxp%gr_delta   = gr_delta
+    auxp%grt_delta   = grt_delta
 
-    auxp%gr_DA_rho  = gr_DA(irho )
-    auxp%gr_DA_rhoU = gr_DA(irhoU)
-    auxp%gr_DA_rhoV = gr_DA(irhoV)
-    auxp%gr_DA_rhoW = gr_DA(irhoW)
-    auxp%gr_DA_rhoE = gr_DA(irhoE)
+    auxp%grt_DA_rho  = grt_DA(irho )
+    auxp%grt_DA_rhoU = grt_DA(irhoU)
+    auxp%grt_DA_rhoV = grt_DA(irhoV)
+    auxp%grt_DA_rhoW = grt_DA(irhoW)
+    auxp%grt_DA_rhoE = grt_DA(irhoE)
 
-    auxp%gr_DA_rms_rho  = gr_DA_rms(irho )
-    auxp%gr_DA_rms_rhoU = gr_DA_rms(irhoU)
-    auxp%gr_DA_rms_rhoV = gr_DA_rms(irhoV)
-    auxp%gr_DA_rms_rhoW = gr_DA_rms(irhoW)
-    auxp%gr_DA_rms_rhoE = gr_DA_rms(irhoE)
+    auxp%grt_DA_rms_rho  = grt_DA_rms(irho )
+    auxp%grt_DA_rms_rhoU = grt_DA_rms(irhoU)
+    auxp%grt_DA_rms_rhoV = grt_DA_rms(irhoV)
+    auxp%grt_DA_rms_rhoW = grt_DA_rms(irhoW)
+    auxp%grt_DA_rms_rhoE = grt_DA_rms(irhoE)
 
     do is=1, ns_
-      auxp%gr_DA_rhos    (is) = gr_DA    (5+is)
-      auxp%gr_DA_rms_rhos(is) = gr_DA_rms(5+is)
+      auxp%grt_DA_rhos    (is) = grt_DA    (5+is)
+      auxp%grt_DA_rms_rhos(is) = grt_DA_rms(5+is)
     end do
 
   end subroutine largo_BL_temporal_init
 
 
   ! RANS initialization
-  subroutine largo_BL_temporal_init_rans(cp, gr_DA_tvar)
+  subroutine largo_BL_temporal_init_rans(cp, grt_delta, grt_DA, grt_DA_rms)
 
     ! largo workspace C pointer
+    real(WP), intent(in)                  :: grt_delta
+    real(WP), dimension(*), intent(in)    :: grt_DA
+    real(WP), dimension(*), intent(in)    :: grt_DA_rms
     type(largo_workspace_ptr), intent(in)            :: cp
-    real(WP), dimension(*), intent(in)               :: gr_DA_tvar
     type(largo_BL_temporal_workspace_type), pointer  :: auxp
     integer(c_int) :: it
+
+!!$     call largo_BL_temporal_init(cp, grt_delta          , &
+!!$                                     grt_DA    (1:neq_), &
+!!$                                     grt_DA_rms(1:neq_))
+
+    call largo_BL_temporal_init(cp, grt_delta, grt_DA, grt_DA_rms)
 
     ! Get Fortran pointer from C pointer
     call c_f_pointer(cp, auxp)
 
     do it=1, ntvar_
-      auxp%gr_DA_tvar (it) = gr_DA_tvar (it)
+      auxp%grt_DA_tvar     (it) = grt_DA     (itvar0_ + it -1)
+      auxp%grt_DA_rms_tvar (it) = grt_DA_rms (itvar0_ + it -1)
     end do
 
   end subroutine largo_BL_temporal_init_rans
@@ -443,15 +460,15 @@ contains
     auxp%mean_rhoW = mean(irhoW)
     auxp%mean_rhoE = mean(irhoE)
 
-    auxp%Ts_rho  = - auxp%ddt_base_rho  - auxp%gr_DA_rho  * (mean(irho )-auxp%base_rho ) + y * auxp%gr_delta * (ddy_mean(irho ) - auxp%ddy_base_rho ) + auxp%src_base_rho
-    auxp%Ts_rhoU = - auxp%ddt_base_rhoU - auxp%gr_DA_rhoU * (mean(irhoU)-auxp%base_rhoU) + y * auxp%gr_delta * (ddy_mean(irhoU) - auxp%ddy_base_rhoU) + auxp%src_base_rhoU
-    auxp%Ts_rhoV = - auxp%ddt_base_rhoV - auxp%gr_DA_rhoV * (mean(irhoV)-auxp%base_rhoV) + y * auxp%gr_delta * (ddy_mean(irhoV) - auxp%ddy_base_rhoV) + auxp%src_base_rhoV
-    auxp%Ts_rhoW = - auxp%ddt_base_rhoW - auxp%gr_DA_rhoW * (mean(irhoW)-auxp%base_rhoW) + y * auxp%gr_delta * (ddy_mean(irhoW) - auxp%ddy_base_rhoW) + auxp%src_base_rhoW
-    auxp%Ts_rhoE = - auxp%ddt_base_rhoE - auxp%gr_DA_rhoE * (mean(irhoE)-auxp%base_rhoE) + y * auxp%gr_delta * (ddy_mean(irhoE) - auxp%ddy_base_rhoE) + auxp%src_base_rhoE
+    auxp%Ts_rho  = - auxp%ddt_base_rho  - auxp%grt_DA_rho  * (mean(irho )-auxp%base_rho ) + y * auxp%grt_delta * (ddy_mean(irho ) - auxp%ddy_base_rho ) + auxp%src_base_rho
+    auxp%Ts_rhoU = - auxp%ddt_base_rhoU - auxp%grt_DA_rhoU * (mean(irhoU)-auxp%base_rhoU) + y * auxp%grt_delta * (ddy_mean(irhoU) - auxp%ddy_base_rhoU) + auxp%src_base_rhoU
+    auxp%Ts_rhoV = - auxp%ddt_base_rhoV - auxp%grt_DA_rhoV * (mean(irhoV)-auxp%base_rhoV) + y * auxp%grt_delta * (ddy_mean(irhoV) - auxp%ddy_base_rhoV) + auxp%src_base_rhoV
+    auxp%Ts_rhoW = - auxp%ddt_base_rhoW - auxp%grt_DA_rhoW * (mean(irhoW)-auxp%base_rhoW) + y * auxp%grt_delta * (ddy_mean(irhoW) - auxp%ddy_base_rhoW) + auxp%src_base_rhoW
+    auxp%Ts_rhoE = - auxp%ddt_base_rhoE - auxp%grt_DA_rhoE * (mean(irhoE)-auxp%base_rhoE) + y * auxp%grt_delta * (ddy_mean(irhoE) - auxp%ddy_base_rhoE) + auxp%src_base_rhoE
 
     do is=1, ns_
       auxp%mean_rhos(is) = mean(5+is)
-      auxp%Ts_rhos(is)  = - auxp%ddt_base_rhos(is)  - auxp%gr_DA_rhos(is)  * (mean(5+is)-auxp%base_rhos(is)) + y * auxp%gr_delta * (ddy_mean(5+is) - auxp%ddy_base_rhos(is)) + auxp%src_base_rhos(is)
+      auxp%Ts_rhos(is)  = - auxp%ddt_base_rhos(is)  - auxp%grt_DA_rhos(is)  * (mean(5+is)-auxp%base_rhos(is)) + y * auxp%grt_delta * (ddy_mean(5+is) - auxp%ddy_base_rhos(is)) + auxp%src_base_rhos(is)
     end do
 
   end subroutine largo_BL_temporal_preStep_sEtaMean
@@ -472,28 +489,28 @@ contains
     ! These ones depend on y only
     auxp%ygrms_rho  = 0.0_WP
     if (rms(irho ) > eps)  &
-       auxp%ygrms_rho  = y * auxp%gr_delta * ddy_rms(irho )/(rms(irho ))
+       auxp%ygrms_rho  = y * auxp%grt_delta * ddy_rms(irho )/(rms(irho ))
 
     auxp%ygrms_rhoU = 0.0_WP
     if (rms(irhoU) > eps)  &
-       auxp%ygrms_rhoU = y * auxp%gr_delta * ddy_rms(irhoU)/(rms(irhoU))
+       auxp%ygrms_rhoU = y * auxp%grt_delta * ddy_rms(irhoU)/(rms(irhoU))
 
     auxp%ygrms_rhoV = 0.0_WP
     if (rms(irhoV) > eps)  &
-       auxp%ygrms_rhoV = y * auxp%gr_delta * ddy_rms(irhoV)/(rms(irhoV))
+       auxp%ygrms_rhoV = y * auxp%grt_delta * ddy_rms(irhoV)/(rms(irhoV))
 
     auxp%ygrms_rhoW = 0.0_WP
     if (rms(irhoW) > eps)  &
-       auxp%ygrms_rhoW = y * auxp%gr_delta * ddy_rms(irhoW)/(rms(irhoW))
+       auxp%ygrms_rhoW = y * auxp%grt_delta * ddy_rms(irhoW)/(rms(irhoW))
 
     auxp%ygrms_rhoE = 0.0_WP
     if (rms(irhoE) > eps)  &
-       auxp%ygrms_rhoE = y * auxp%gr_delta * ddy_rms(irhoE)/(rms(irhoE))
+       auxp%ygrms_rhoE = y * auxp%grt_delta * ddy_rms(irhoE)/(rms(irhoE))
 
     do is=1, ns_
       auxp%ygrms_rhos(is) = 0.0_WP
       if (rms(5+is) > eps)  &
-         auxp%ygrms_rhos(is) = y * auxp%gr_delta * ddy_rms(5+is)/(rms(5+is))
+         auxp%ygrms_rhos(is) = y * auxp%grt_delta * ddy_rms(5+is)/(rms(5+is))
     end do
 
   end subroutine largo_BL_temporal_preStep_sEtaRms
@@ -515,15 +532,15 @@ contains
     auxp%fluc_rhoW = qflow(irhoW) - auxp%mean_rhoW
     auxp%fluc_rhoE = qflow(irhoE) - auxp%mean_rhoE
 
-    auxp%TsRms_rho  = auxp%fluc_rho  * (- auxp%gr_DA_rms_rho  + auxp%ygrms_rho )
-    auxp%TsRms_rhoU = auxp%fluc_rhoU * (- auxp%gr_DA_rms_rhoU + auxp%ygrms_rhoU)
-    auxp%TsRms_rhoV = auxp%fluc_rhoV * (- auxp%gr_DA_rms_rhoV + auxp%ygrms_rhoV)
-    auxp%TsRms_rhoW = auxp%fluc_rhoW * (- auxp%gr_DA_rms_rhoW + auxp%ygrms_rhoW)
-    auxp%TsRms_rhoE = auxp%fluc_rhoE * (- auxp%gr_DA_rms_rhoE + auxp%ygrms_rhoE)
+    auxp%TsRms_rho  = auxp%fluc_rho  * (- auxp%grt_DA_rms_rho  + auxp%ygrms_rho )
+    auxp%TsRms_rhoU = auxp%fluc_rhoU * (- auxp%grt_DA_rms_rhoU + auxp%ygrms_rhoU)
+    auxp%TsRms_rhoV = auxp%fluc_rhoV * (- auxp%grt_DA_rms_rhoV + auxp%ygrms_rhoV)
+    auxp%TsRms_rhoW = auxp%fluc_rhoW * (- auxp%grt_DA_rms_rhoW + auxp%ygrms_rhoW)
+    auxp%TsRms_rhoE = auxp%fluc_rhoE * (- auxp%grt_DA_rms_rhoE + auxp%ygrms_rhoE)
 
     do is=1, ns_
       auxp%fluc_rhos(is)  = qflow(5+is) - auxp%mean_rhos(is)
-      auxp%TsRms_rhos(is) = auxp%fluc_rhos(is) * (- auxp%gr_DA_rms_rhos(is) + auxp%ygrms_rhos(is))
+      auxp%TsRms_rhos(is) = auxp%fluc_rhos(is) * (- auxp%grt_DA_rms_rhos(is) + auxp%ygrms_rhos(is))
     end do
 
   end subroutine largo_BL_temporal_preStep_sEta_innerxz
@@ -584,7 +601,7 @@ contains
 
     do it=1, ntvar_
       auxp%mean_tvar(it) = mean(it)
-      auxp%Ts_tvar(it)  = - auxp%gr_DA_tvar(it)  * auxp%mean_tvar(it) + y * auxp%gr_delta * ddy_mean(it)
+      auxp%Ts_tvar(it)  = - auxp%grt_DA_tvar(it)  * auxp%mean_tvar(it) + y * auxp%grt_delta * ddy_mean(it)
     end do
 
   end subroutine largo_BL_temporal_preStep_sEtaMean_rans_generic

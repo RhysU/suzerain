@@ -42,7 +42,8 @@ program bl_temporal_baseflow_f
     real(WP), parameter               :: y       = 1.0_WP/ 10.0_WP
     real(WP), parameter               :: grDelta = 5.0_WP/100.0_WP
 
-    character(len=255), parameter     :: turbmodel = "k_epsilon"
+!!$     character(len=255), parameter     :: turbmodel = "k_epsilon"
+    character(len=255), parameter     :: turbmodel = "dns"
     integer(c_int), parameter         :: ntvar  = 2
 
     real(WP), dimension(neq), parameter :: &
@@ -322,8 +323,8 @@ program bl_temporal_baseflow_f
     call largo_BL_temporal_allocate (workspace, neq, ns, ntvar, turbmodel)
 
     ! Init growth rates
-    call largo_BL_temporal_init  (workspace, grDelta, grDA, grDArms)
-    call largo_BL_temporal_init_rans (workspace, grDAturb)
+    call largo_BL_temporal_init      (workspace, grDelta, grDA, grDArms)
+!!$     call largo_BL_temporal_init_rans (workspace, grDelta, grDA, grDArms)
 
     ! Compute prestep values
     call largo_BL_temporal_preStep_baseflow  (workspace,   base,  dybase,  &
@@ -331,12 +332,12 @@ program bl_temporal_baseflow_f
     call largo_BL_temporal_preStep_sEta (workspace, y, field,         &
                                                mean,  rms,  mean_rqq, &
                                               dmean, drms, dmean_rqq)
-    call largo_BL_temporal_preStep_sEtaMean_rans (workspace, y,         &
-                                                  meanTurb, dymeanTurb)
+!!$     call largo_BL_temporal_preStep_sEtaMean_rans (workspace, y,         &
+!!$                                                   meanTurb, dymeanTurb)
 
     ! Compute sources
     call largo_BL_temporal_sEta      (workspace, 0.0_WP, 1.0_WP, srcall (1))
-    call largo_BL_temporal_sEta_rans (workspace, 0.0_WP, 1.0_WP, srcturb(1))
+!!$     call largo_BL_temporal_sEta_rans (workspace, 0.0_WP, 1.0_WP, srcturb(1))
 
     ! Check all
     ASSERT(.not.any(isnan(srcall)))
@@ -350,11 +351,11 @@ program bl_temporal_baseflow_f
       ASSERT(abs((srcall(5+is)/srcall_good(5+is))-1.0_WP) < tolerance )
     end do
 #endif
-    ASSERT(.not.any(isnan(srcturb)))
+!!$     ASSERT(.not.any(isnan(srcturb)))
 #ifndef BASEFLOW_UNIFORM
-    do it=1, ntvar
-      ASSERT(abs((srcturb(it)/srcturb_good(it))-1.0_WP) < tolerance )
-    end do
+!!$     do it=1, ntvar
+!!$       ASSERT(abs((srcturb(it)/srcturb_good(it))-1.0_WP) < tolerance )
+!!$     end do
 #endif
 
     ! Deallocate workspace

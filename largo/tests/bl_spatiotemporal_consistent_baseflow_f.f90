@@ -240,7 +240,7 @@ program bl_spatiotemporal_consistent_baseflow_f
     srcall  = 0.0_WP
 
     ! Allocate workspace
-    call largo_BL_spatiotemporal_consistent_allocate (workspace, neq, ns)
+    call largo_BL_spatiotemporal_consistent_allocate (workspace, neq, ns, 0, "dns")
 
     ! Init growth rates
     call largo_BL_spatiotemporal_consistent_init  (workspace, grxDelta, grxDA, grxDArms)
@@ -321,7 +321,7 @@ program bl_spatiotemporal_consistent_baseflow_f
 
     ! Recompute using wrapper routines
     ! Allocate workspace (same pointer as before)
-    call largo_BL_spatiotemporal_consistent_allocate (workspace, neq, ns)
+    call largo_BL_spatiotemporal_consistent_allocate (workspace, neq, ns, 0, "dns")
 
     ! Init growth rates
     call largo_BL_spatiotemporal_consistent_init  (workspace, grxDelta, grxDA, grxDArms)

@@ -13,6 +13,29 @@ module largo_BL_spatiotemporal_consistent
 
   private
 
+  ! interface for rans prestep function
+  abstract interface
+    subroutine prestep_setamean_rans(cp, y, mean, ddy_mean)
+      import
+      real(WP), intent(in)                  :: y
+      real(WP), dimension(*), intent(in)    :: mean
+      real(WP), dimension(*), intent(in)    :: ddy_mean
+      type(largo_workspace_ptr), intent(in) :: cp
+    end subroutine prestep_setamean_rans
+  end interface
+
+
+  ! interface for rans source function
+  abstract interface
+    subroutine sourcevec_rans(cp, A, B, srcvec)
+      import
+      type(largo_workspace_ptr), intent(in)  :: cp
+      real(WP), intent(in)                   :: A, B
+      real(WP), dimension(*), intent(inout)  :: srcvec
+    end subroutine sourcevec_rans
+  end interface
+
+
   type :: largo_BL_spatiotemporal_consistent_workspace_type
 
     real(WP) :: gr_delta   = 1.0_WP
@@ -181,14 +204,27 @@ module largo_BL_spatiotemporal_consistent
 
     real(WP) :: wall_base_u   = 0.0_WP
 
-    real(WP), allocatable, dimension(:) :: base_cs
+    real(WP), allocatable, dimension(:) ::     base_cs
     real(WP), allocatable, dimension(:) :: ddy_base_cs
     real(WP), allocatable, dimension(:) :: ddx_base_cs
     real(WP), allocatable, dimension(:) :: src_base_cs
 
+    ! RANS variables
+    real(WP), allocatable, dimension(:) ::         Xs_tvar
+    real(WP), allocatable, dimension(:) ::        fav_tvar
+    real(WP), allocatable, dimension(:) ::       dfav_tvar
+    real(WP), allocatable, dimension(:) ::     grx_DA_tvar
+    real(WP), allocatable, dimension(:) :: grx_DA_rms_tvar
+    real(WP), allocatable, dimension(:) :: grt_DA_rms_tvar
+    real(WP), allocatable, dimension(:) ::          S_tvar
+
     integer(c_int) :: ip
+    integer(c_int) :: ip_base    ! there's no baseflow info for tvars
 
   end type largo_BL_spatiotemporal_consistent_workspace_type
+
+  procedure(prestep_setamean_rans), pointer :: largo_BL_spatiotemporal_consistent_prestep_sEtaMean_rans => NULL()
+  procedure(sourcevec_rans),        pointer :: largo_BL_spatiotemporal_consistent_sEta_rans             => NULL()
 
   integer(c_int), parameter :: irho  = 1
   integer(c_int), parameter :: irhoU = 2
@@ -204,6 +240,11 @@ module largo_BL_spatiotemporal_consistent
   ! Number of species
   integer(c_int) :: ns_  = 0
 
+  ! Number of tubulence variables
+  integer(c_int) :: ntvar_  = 0
+
+  ! Index of first tubulence variable
+  integer(c_int) :: itvar0_  = 0
 
   public  :: largo_BL_spatiotemporal_consistent_allocate
   public  :: largo_BL_spatiotemporal_consistent_deallocate
@@ -235,22 +276,32 @@ module largo_BL_spatiotemporal_consistent
   public  :: largo_BL_spatiotemporal_consistent_init_wall_baseflow
   public  :: largo_BL_spatiotemporal_consistent_preStep_baseflow
 
+  public  :: largo_BL_spatiotemporal_consistent_get_ntvar_rans
+  public  :: largo_BL_spatiotemporal_consistent_init_rans
+  public  :: largo_BL_spatiotemporal_consistent_prestep_sEtaMean_rans
+  public  :: largo_BL_spatiotemporal_consistent_sEta_rans
+
 contains
 
-  subroutine largo_BL_spatiotemporal_consistent_allocate(cp, neq, ns)
+  subroutine largo_BL_spatiotemporal_consistent_allocate(cp, neq, ns, ntvar, &
+                                                         ransmodel)
 
     type(largo_workspace_ptr), intent(out) :: cp
     ! neq=number of equations, might be needed later
     integer(c_int), intent(in)   :: neq
     integer(c_int), intent(in)   :: ns    ! number of species
+    integer(c_int), intent(in)   :: ntvar ! number of turbulence variables
+    character(len=*)                                                 :: ransmodel
     type(largo_BL_spatiotemporal_consistent_workspace_type), pointer :: auxp
 
     ! Allocate derived type variable
     allocate(auxp)
 
     ! Initialize values
-    neq_ = neq
-    ns_  = ns
+    neq_    = neq
+    ns_     = ns
+    ntvar_  = ntvar
+    itvar0_ = 5 + ns_ + 1
 
     ! Allocate arrays for species
     if (ns_ > 0) then
@@ -300,8 +351,48 @@ contains
       auxp%src_base_cs   = 0.0_WP
     end if
 
-    ! Pressure variable index
-    auxp%ip = 5 + ns_ + 1
+    ! Check number of turbulence variables
+    select case (trim(ransmodel))
+    case ("laminar", "dns")
+      ! FIXME: if (ntvar_ /= 0) point to an error
+    case ("turbulent_viscosity")
+      ! FIXME: if (ntvar_ /= 1) point to an error
+    case ("k_epsilon")
+      ! FIXME: if (ntvar_ /= 2) point to an error
+    case ("k_omega")
+      ! FIXME: if (ntvar_ /= 2) point to an error
+    case default
+      ! FIXME: RANS model not defined
+    end select
+
+    ! Allocate arrays for turbulent variables
+    if (ntvar_ > 0) then
+      allocate(auxp%Xs_tvar         (1:ntvar_))
+      allocate(auxp%fav_tvar        (1:ntvar_))
+      allocate(auxp%dfav_tvar       (1:ntvar_))
+      allocate(auxp%grx_DA_tvar     (1:ntvar_))
+      allocate(auxp%grx_DA_rms_tvar (1:ntvar_))
+      allocate(auxp%grt_DA_rms_tvar (1:ntvar_))
+      allocate(auxp%S_tvar          (1:ntvar_))
+
+      auxp%Xs_tvar         = 0.0_WP
+      auxp%fav_tvar        = 0.0_WP
+      auxp%dfav_tvar       = 0.0_WP
+      auxp%grx_DA_tvar     = 0.0_WP
+      auxp%grx_DA_rms_tvar = 0.0_WP
+      auxp%grt_DA_rms_tvar = 0.0_WP
+      auxp%S_tvar          = 0.0_WP
+    end if
+
+    ! Initialize turbulence variables function pointers
+    largo_BL_spatiotemporal_consistent_prestep_sEtaMean_rans &
+      & => largo_bl_spatiotemporal_consistent_prestep_sEtaMean_rans_gen
+    largo_BL_spatiotemporal_consistent_sEta_rans             &
+      & => largo_bl_spatiotemporal_consistent_sEta_rans_gen
+
+    ! Pressure variable indices
+    auxp%ip      = 5 + ns_ + ntvar_ + 1
+    auxp%ip_base = 5 + ns_ + 1
 
     ! Get C pointer from Fortran pointer
     cp = c_loc(auxp)
@@ -317,26 +408,35 @@ contains
     call c_f_pointer(cp, auxp)
 
     ! Deallocate arrays for species
-    if (allocated(auxp%Xs_cs        )) deallocate(auxp%Xs_cs        )
-    if (allocated(auxp%ffluc_cs     )) deallocate(auxp%ffluc_cs     )
-    if (allocated(auxp%fav_cs       )) deallocate(auxp%fav_cs       )
-    if (allocated(auxp%dfav_cs      )) deallocate(auxp%dfav_cs      )
-    if (allocated(auxp%field_cs     )) deallocate(auxp%field_cs     )
-    if (allocated(auxp%XsArms_cs    )) deallocate(auxp%XsArms_cs    )
-    if (allocated(auxp%Arms_cs      )) deallocate(auxp%Arms_cs      )
-    if (allocated(auxp%dArms_cs     )) deallocate(auxp%dArms_cs     )
-    if (allocated(auxp%ygArms_cs    )) deallocate(auxp%ygArms_cs    )
-    if (allocated(auxp%S_cs         )) deallocate(auxp%S_cs         )
-    if (allocated(auxp%SFull_cs     )) deallocate(auxp%SFull_cs     )
+    if (allocated(auxp%Xs_cs             )) deallocate(auxp%Xs_cs            )
+    if (allocated(auxp%ffluc_cs          )) deallocate(auxp%ffluc_cs         )
+    if (allocated(auxp%fav_cs            )) deallocate(auxp%fav_cs           )
+    if (allocated(auxp%dfav_cs           )) deallocate(auxp%dfav_cs          )
+    if (allocated(auxp%field_cs          )) deallocate(auxp%field_cs         )
+    if (allocated(auxp%XsArms_cs         )) deallocate(auxp%XsArms_cs        )
+    if (allocated(auxp%Arms_cs           )) deallocate(auxp%Arms_cs          )
+    if (allocated(auxp%dArms_cs          )) deallocate(auxp%dArms_cs         )
+    if (allocated(auxp%ygArms_cs         )) deallocate(auxp%ygArms_cs        )
+    if (allocated(auxp%S_cs              )) deallocate(auxp%S_cs             )
+    if (allocated(auxp%SFull_cs          )) deallocate(auxp%SFull_cs         )
 
-    if (allocated(auxp%grx_DA_cs    )) deallocate(auxp%grx_DA_cs    )
-    if (allocated(auxp%grt_DA_rms_cs)) deallocate(auxp%grt_DA_rms_cs)
-    if (allocated(auxp%grx_DA_rms_cs)) deallocate(auxp%grx_DA_rms_cs)
+    if (allocated(auxp%grx_DA_cs         )) deallocate(auxp%grx_DA_cs        )
+    if (allocated(auxp%grt_DA_rms_cs     )) deallocate(auxp%grt_DA_rms_cs    )
+    if (allocated(auxp%grx_DA_rms_cs     )) deallocate(auxp%grx_DA_rms_cs    )
 
-    if (allocated(auxp%base_cs      )) deallocate(auxp%base_cs      )
-    if (allocated(auxp%ddy_base_cs  )) deallocate(auxp%ddy_base_cs  )
-    if (allocated(auxp%ddx_base_cs  )) deallocate(auxp%ddx_base_cs  )
-    if (allocated(auxp%src_base_cs  )) deallocate(auxp%src_base_cs  )
+    if (allocated(auxp%base_cs           )) deallocate(auxp%base_cs          )
+    if (allocated(auxp%ddy_base_cs       )) deallocate(auxp%ddy_base_cs      )
+    if (allocated(auxp%ddx_base_cs       )) deallocate(auxp%ddx_base_cs      )
+    if (allocated(auxp%src_base_cs       )) deallocate(auxp%src_base_cs      )
+
+    ! Deallocate arrays for RANS turbulence variables
+    if (allocated(auxp%Xs_tvar           ))  deallocate(auxp%Xs_tvar         )
+    if (allocated(auxp%fav_tvar          ))  deallocate(auxp%fav_tvar        )
+    if (allocated(auxp%dfav_tvar         ))  deallocate(auxp%dfav_tvar       )
+    if (allocated(auxp%grx_DA_tvar       ))  deallocate(auxp%grx_DA_tvar     )
+    if (allocated(auxp%grx_DA_rms_tvar   ))  deallocate(auxp%grx_DA_rms_tvar )
+    if (allocated(auxp%grt_DA_rms_tvar   ))  deallocate(auxp%grt_DA_rms_tvar )
+    if (allocated(auxp%S_tvar            ))  deallocate(auxp%S_tvar          )
 
     ! Deallocate array of derived types
     deallocate(auxp)
@@ -345,6 +445,21 @@ contains
     cp = c_null_ptr
 
   end subroutine largo_BL_spatiotemporal_consistent_deallocate
+
+
+  ! get number of turbulence variables
+  subroutine largo_BL_spatiotemporal_consistent_get_ntvar_rans(cp, ntvar)
+
+    ! largo workspace C pointer
+    type(largo_workspace_ptr), intent(in)            :: cp
+    integer(c_int)           , intent(out)           :: ntvar
+
+!!$     ! Get Fortran pointer from C pointer
+!!$     call c_f_pointer(cp, auxp)
+
+    ntvar = ntvar_
+
+  end subroutine largo_BL_spatiotemporal_consistent_get_ntvar_rans
 
 
   subroutine largo_BL_spatiotemporal_consistent_init(cp, grx_delta, grx_DA, grx_DA_rms)
@@ -400,6 +515,35 @@ contains
     end if
 
   end subroutine largo_BL_spatiotemporal_consistent_init
+
+
+  ! RANS initialization
+  subroutine largo_BL_spatiotemporal_consistent_init_rans(cp, grx_delta, grx_DA, grx_DA_rms)
+
+    real(WP), intent(in)                             :: grx_delta
+    real(WP), dimension(*), intent(in)               :: grx_DA
+    real(WP), dimension(*), intent(in)               :: grx_DA_rms
+    type(largo_workspace_ptr), intent(in)            :: cp
+    type(largo_BL_spatiotemporal_consistent_workspace_type), pointer  :: auxp
+    integer(c_int) :: it
+
+    call largo_BL_spatiotemporal_consistent_init(cp, grx_delta, grx_DA, grx_DA_rms)
+
+    ! Get Fortran pointer from C pointer
+    call c_f_pointer(cp, auxp)
+
+    do it=1, ntvar_
+      auxp%grx_DA_tvar     (it) = grx_DA     (itvar0_ + it - 1)
+      auxp%grx_DA_rms_tvar (it) = grx_DA_rms (itvar0_ + it - 1)
+    end do
+
+    if (auxp%wall_base_u /= 0.0_WP) then
+      do it=1, ntvar_
+        auxp%grt_DA_rms_tvar(it) = grx_DA_rms(itvar0_+it-1) * auxp%wall_base_u
+      end do
+    end if
+
+  end subroutine largo_BL_spatiotemporal_consistent_init_rans
 
 
   subroutine largo_BL_spatiotemporal_consistent_init_wall_baseflow(cp,  &   
@@ -459,21 +603,21 @@ contains
       auxp%base_V   = base(irhoV)/base(irho )
       auxp%base_W   = base(irhoW)/base(irho )
       auxp%base_E   = base(irhoE)/base(irho )
-      auxp%base_p   = base(auxp%ip)
+      auxp%base_p   = base(auxp%ip_base)
 
       auxp%ddy_base_rho = ddy_base(irho )
       auxp%ddy_base_U   = ddy_base(irhoU)/base(irho ) - auxp%base_U/base(irho ) * ddy_base(irho )
       auxp%ddy_base_V   = ddy_base(irhoV)/base(irho ) - auxp%base_V/base(irho ) * ddy_base(irho )
       auxp%ddy_base_W   = ddy_base(irhoW)/base(irho ) - auxp%base_W/base(irho ) * ddy_base(irho )
       auxp%ddy_base_E   = ddy_base(irhoE)/base(irho ) - auxp%base_E/base(irho ) * ddy_base(irho )
-      auxp%ddy_base_p   = ddy_base(auxp%ip)
+      auxp%ddy_base_p   = ddy_base(auxp%ip_base)
 
       auxp%ddx_base_rho = ddx_base(irho )
       auxp%ddx_base_U   = ddx_base(irhoU)/base(irho ) - auxp%base_U/base(irho ) * ddx_base(irho )
       auxp%ddx_base_V   = ddx_base(irhoV)/base(irho ) - auxp%base_V/base(irho ) * ddx_base(irho )
       auxp%ddx_base_W   = ddx_base(irhoW)/base(irho ) - auxp%base_W/base(irho ) * ddx_base(irho )
       auxp%ddx_base_E   = ddx_base(irhoE)/base(irho ) - auxp%base_E/base(irho ) * ddx_base(irho )
-      auxp%ddx_base_p   = ddx_base(auxp%ip)
+      auxp%ddx_base_p   = ddx_base(auxp%ip_base)
     end if
 
 !!$     auxp%src_base_rho = src_base(irho )
@@ -761,6 +905,32 @@ contains
   end subroutine largo_BL_spatiotemporal_consistent_preStep_sEta
 
 
+  subroutine largo_BL_spatiotemporal_consistent_preStep_sEtaMean_rans_gen(cp, y, mean, ddy_mean)
+
+    real(WP), intent(in)                  :: y
+    real(WP), dimension(*), intent(in)    :: mean
+    real(WP), dimension(*), intent(in)    :: ddy_mean
+    type(largo_workspace_ptr), intent(in) :: cp
+    type(largo_BL_spatiotemporal_consistent_workspace_type), pointer   :: auxp
+    integer(c_int) :: it
+
+    call largo_BL_spatiotemporal_consistent_preStep_sEtaMean(cp, y, mean, ddy_mean)
+
+    ! Get Fortran pointer from C pointer
+    call c_f_pointer(cp, auxp)
+
+    ! 
+    do it=1, ntvar_
+      auxp%fav_tvar (it) = mean(it)/auxp%mean_rho
+      auxp%dfav_tvar(it) = ddy_mean(it)/auxp%mean_rho &
+      &                     - auxp%fav_tvar(it)/auxp%mean_rho * auxp%dmean_rho
+      auxp%Xs_tvar  (it) = -0.0_WP - auxp%grx_DA_tvar(it) * (auxp%fav_tvar(it)-0.0_WP) + y * auxp%grx_delta * (auxp%dfav_tvar(it)-0.0_WP) 
+      auxp%S_tvar   (it) = auxp%fav_U * auxp%Xs_tvar(it)
+    end do
+
+  end subroutine largo_BL_spatiotemporal_consistent_preStep_sEtaMean_rans_gen
+
+
 ! FIXME: Fix sources as per spatiotemporal
 #define DECLARE_SUBROUTINE(token)token (cp, A, B, src);\
   type(largo_workspace_ptr), intent(in)   :: cp;\
@@ -840,6 +1010,24 @@ contains
     end do
 
   end subroutine largo_BL_spatiotemporal_consistent_sEtaMean
+
+
+  subroutine largo_BL_spatiotemporal_consistent_sEta_rans_gen (cp, A, B, srcvec)
+    type(largo_workspace_ptr), intent(in)     :: cp
+    real(WP)       , intent(in)               :: A, B
+    real(WP), dimension(*), intent(inout)     :: srcvec
+    type(largo_BL_spatiotemporal_consistent_workspace_type), pointer       :: auxp
+    integer(c_int)                            :: it
+
+    call largo_BL_spatiotemporal_consistent_sEtaMean (cp, A, B, srcvec) 
+
+    call c_f_pointer(cp, auxp)
+    do it = 1, ntvar_
+       srcvec(itvar0_+it-1) = A * srcvec(itvar0_+it-1) + B * (auxp%mean_rho     * auxp%S_tvar(it) &
+      &                                                     + auxp%fav_tvar(it) * auxp%S_rho)
+    end do
+
+  end subroutine largo_BL_spatiotemporal_consistent_sEta_rans_gen
 
 
   subroutine DECLARE_SUBROUTINE(largo_BL_spatiotemporal_consistent_continuity_sEta_)
