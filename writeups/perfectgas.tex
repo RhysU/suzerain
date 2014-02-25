@@ -441,8 +441,9 @@ so further assume
   \label{eq:mukappa}
 \end{align}
 
-\section{Slow growth models}
+\section{Slow growth modeling}
 \label{sec:slowgrowthmodels}
+
 A useful approach when performing direct numerical simulation (DNS) on
 turbulent flow configurations where the flow develops in space or time is to
 perform a homogenization, using the assumption of slow variation (or slow
@@ -451,11 +452,97 @@ related to the fast variation of turbulent fluctuations.  This homogenization
 procedure allows to simulate the turbulent flow at a specific stage of the
 development in space or time.  Examples of these procedures are the works of
 Spalart~\citep{Spalart1988Direct} for incompressible boundary layers, and of
-Venugopal~\citep{Venugopal2003} for channel flow with wall injection.  In
-practice, the slow growth approach introduces source terms in the
+Venugopal~\citep{Venugopal2003} for channel flow with wall injection.
+\todo{Cite Victor's papers when available}
+
+In practice, all slow growth approach introduces source terms in the
 Navier--Stokes equations, where their functional forms are specific to the flow
 configuration that was homogenized and on various modeling assumptions.  These
 slow growth sources will be generically designated with $\Ssd$.
+
+Up to four classes of slow growth model parameters must be set when using the
+slow growth models developed by Victor Topalian.  The following subsections
+briefly discuss the associated model settings.  In them, the notation employs a
+logarithmic growth rate operator $\operatorname{gr}$ defined by
+\begin{align}
+    \operatorname{gr}_{\bullet}\!\left(f\right) &=
+    \frac{1}{f} \frac{\partial f}{\partial \bullet}
+\end{align}
+where $\bullet$ will be the slow timescale $t_s$, the fast timescale $t$, or the
+slowly spatially developing direction $x$.
+
+\subsection{Growth rate of the characteristic length scale}
+
+The scalar parameter
+\begin{align}
+    \operatorname{gr}_{t_s}\left(\Delta\right) &= \left(
+        \frac{\epsilon}{\Delta} \frac{\partial\Delta}{\partial t_s}
+    \right)_{t_s = T_s}
+\end{align}
+models the logarithmic slow time growth rate of a characteristic length scale
+$\Delta$ at some fixed slow time $T_s$.  Parameter
+$\operatorname{gr}_{t_s}\left(\Delta\right)$ appears throughout the slow growth
+sources and, in homogenized boundary layers, controls the boundary layer
+thickness.
+
+\subsection{Imposing a streamwise pressure gradient via an inviscid base flow}
+\label{seq:imposing_fpg}
+
+Some of Topalian's slow growth models accept an inviscid base flow profile to
+emulate spatially inhomogeneous features like favorable pressure gradients.
+When used, a wall-normal inviscid base flow profile and its streamwise
+derivatives must be specified as discussed in the document \emph{Designing
+inviscid, perfect gas flow fields with prescribed pressure gradients and edge
+Mach numbers}.
+
+\subsection{Growth rate of the mean defect amplitudes}
+
+Topalian's slow growth sources $\Ssd_\rho$, $\Ssd_{\rho u}$, and $\Ssd_{\rho E}$
+involve the growth rates for the amplitude of the mean defect denoted
+$\operatorname{gr}_{a}\!\left(\overline{\rho q}_{D}\right)$ for
+$q\in\left\{1,u,v,w,E\right\}$.  Here, the defect refers to the difference
+between the mean flow and the inviscid base flow profile.
+
+In spatially-homogenized flows with well-known wall conditions, wall state in
+conjunction with the inviscid base at the wall can sometimes unambiguously
+supply the required information.  That is, choosing
+\begin{align}
+    \operatorname{gr}_{x}\!\left(\overline{\rho q}_{D}\right)
+    &=
+    \frac{1}{\overline{\rho q}_{D}}
+    \frac{\partial \overline{\rho q}_D}{\partial x}
+    =
+    \frac{1}{\overline{\rho q}_{w} - \overline{\rho q}_{iw}}
+    \left(
+          \frac{\partial}{\partial x} \overline{\rho q}_{w}
+        - \frac{\partial}{\partial x} \overline{\rho q}_{iw}
+    \right)
+\end{align}
+where subscripts $w$ and $iw$ denotes wall state and inviscid base flow
+wall state, respectively.
+
+%The corresponding primitive growth rate is
+%then
+%\begin{align}
+%    \operatorname{gr}_{x}\!\left(\overline{\rho q}_{D}\right)
+%    &=
+%    \frac{1}{\overline{\rho q}_{D}}
+%    \frac{\partial \overline{\rho q}_D}{\partial x}
+%    =
+%    \frac{1}{\overline{\rho q}_{w} - \overline{\rho q}_{iw}}
+%    \left(
+%          \frac{\partial}{\partial x} \overline{\rho q}_{w}
+%        - \frac{\partial}{\partial x} \overline{\rho q}_{iw}
+%    \right)
+%    .
+%\end{align}
+
+
+
+\subsection{Growth rate of the root-mean-square defect amplitudes}
+
+Akin to the mean defect amplitude growth rates, their root-mean-square fluctuation
+growth may also be controlled.  These values are set to be zero.
 
 \section{Dimensional equations}
 \label{sec:dimensionalmodelequations}
@@ -4827,11 +4914,6 @@ collocation-based B-spline operators,
         0 & C + \ii \varphi{} k_x A + \ii \varphi{} k_z B
     \end{bmatrix}.
 \end{align}
-
-\section{Imposing a favorable streamwise pressure gradient}
-
-See \emph{Designing inviscid, perfect gas flow fields with
-prescribed pressure gradients and edge Mach numbers}.
 
 \chapter{In support of Favre-averaged Navier--Stokes modeling}
 \label{sec:supportFANS}
