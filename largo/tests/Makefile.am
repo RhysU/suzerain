@@ -62,6 +62,12 @@ bl_temporal_baseflow_uniform_f_SOURCES  = bl_temporal_baseflow_f.f90 testframewo
 bl_temporal_baseflow_uniform_f_FCFLAGS  = $(AM_FCFLAGS) $(FC_DEFINE)BASEFLOW_UNIFORM
 bl_temporal_baseflow_uniform_f_LDADD    = ../largo/liblargof.la
 
+## Temporal boundary layer, baseflow, fortran, rans
+TESTS                          += bl_temporal_baseflow_rans_f
+check_PROGRAMS                 += bl_temporal_baseflow_rans_f
+bl_temporal_baseflow_rans_f_SOURCES  = bl_temporal_baseflow_rans_f.f90 testframework.f90
+bl_temporal_baseflow_rans_f_LDADD    = ../largo/liblargof.la
+
 ## Temporal tensor consistent boundary layer, fortran
 TESTS                             += bl_temporal_tconsistent_f
 check_PROGRAMS                    += bl_temporal_tconsistent_f

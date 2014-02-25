@@ -596,12 +596,14 @@ contains
     type(largo_BL_temporal_workspace_type), pointer   :: auxp
     integer(c_int) :: it
 
+    call largo_BL_temporal_preStep_sEtaMean(cp, y, mean, ddy_mean)
+
     ! Get Fortran pointer from C pointer
     call c_f_pointer(cp, auxp)
 
     do it=1, ntvar_
-      auxp%mean_tvar(it) = mean(it)
-      auxp%Ts_tvar(it)  = - auxp%grt_DA_tvar(it)  * auxp%mean_tvar(it) + y * auxp%grt_delta * ddy_mean(it)
+      auxp%mean_tvar(it) = mean(itvar0_+it-1)
+      auxp%Ts_tvar(it)  = - auxp%grt_DA_tvar(it)  * auxp%mean_tvar(it) + y * auxp%grt_delta * ddy_mean(itvar0_+it-1)
     end do
 
   end subroutine largo_BL_temporal_preStep_sEtaMean_rans_generic
@@ -720,9 +722,11 @@ contains
     type(largo_BL_temporal_workspace_type), pointer       :: auxp
     integer(c_int)                            :: it
 
+    call largo_BL_temporal_sEtaMean (cp, A, B, srcvec) 
+
     call c_f_pointer(cp, auxp)
     do it = 1, ntvar_
-       srcvec(it) = A * srcvec(it) + B * auxp%Ts_tvar(it)
+       srcvec(itvar0_+it-1) = A * srcvec(itvar0_+it-1) + B * auxp%Ts_tvar(it)
     end do
 
   end subroutine largo_BL_temporal_sEta_rans_generic
