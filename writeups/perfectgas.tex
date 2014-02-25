@@ -468,15 +468,17 @@ logarithmic growth rate operator $\operatorname{gr}$ defined by
     \operatorname{gr}_{\bullet}\!\left(f\right) &=
     \frac{1}{f} \frac{\partial f}{\partial \bullet}
 \end{align}
-where $\bullet$ will be the slow timescale $t_s$, the fast timescale $t$, or the
-slowly spatially developing direction $x$.
+where $\bullet$ will be the fast timescale $t$, the slow timescale $t_s$, or the
+slowly spatially developing direction $x_s$.
 
 \subsection{Growth rate of the characteristic length scale}
 
 The scalar parameter
 \begin{align}
     \operatorname{gr}_{t_s}\left(\Delta\right) &= \left(
-        \frac{\epsilon}{\Delta} \frac{\partial\Delta}{\partial t_s}
+        % TODO Reconcile the lack of an \epsilon.
+        % Victor says it appears generally but that he often suppressed it.
+        \frac{1}{\Delta} \frac{\partial\Delta}{\partial t_s}
     \right)_{t_s = T_s}
 \end{align}
 models the logarithmic slow time growth rate of a characteristic length scale
@@ -490,36 +492,48 @@ thickness.
 
 Some of Topalian's slow growth models accept an inviscid base flow profile to
 emulate spatially inhomogeneous features like favorable pressure gradients.
-When used, a wall-normal inviscid base flow profile and its streamwise
-derivatives must be specified as discussed in the document \emph{Designing
-inviscid, perfect gas flow fields with prescribed pressure gradients and edge
-Mach numbers}.
+When used, a wall-normal inviscid base flow profile and its slow streamwise
+derivatives must be specified.  A comprehensive base flow design process appears
+in the document \emph{Designing inviscid, perfect gas flow fields with
+prescribed pressure gradients and edge Mach numbers}.
 
 \subsection{Growth rate of the mean defect amplitudes}
 
-Topalian's slow growth sources $\Ssd_\rho$, $\Ssd_{\rho u}$, and $\Ssd_{\rho E}$
-involve the growth rates for the amplitude of the mean defect denoted
-$\operatorname{gr}_{a}\!\left(\overline{\rho q}_{D}\right)$ for
-$q\in\left\{1,u,v,w,E\right\}$.  Here, the defect refers to the difference
-between the mean flow and the inviscid base flow profile.
+Topalian's slow growth sources $\Ssd_\rho$, $\Ssd_{\rho u}$, $\Ssd_{\rho v}$,
+$\Ssd_{\rho w}$, and $\Ssd_{\rho E}$ involve the growth rates for the amplitude
+of the mean defect denoted $\operatorname{gr}_{a}\!\left(\overline{\rho
+q}_{D}\right)$ for $q\in\left\{1,u,v,w,E\right\}$.  Here, ``defect'' refers to
+the difference between the mean flow being modeled and some chosen inviscid base
+flow profile.
 
-In spatially-homogenized flows with well-known wall conditions, wall state in
-conjunction with the inviscid base at the wall can sometimes unambiguously
-supply the required information.  That is, choosing
+In spatially-homogenized flows with isothermal conditions, wall state in
+conjunction with the inviscid base flow at the wall may unambiguously supply the
+required information.  The parameters are informed from
 \begin{align}
-    \operatorname{gr}_{x}\!\left(\overline{\rho q}_{D}\right)
+    \operatorname{gr}_{x_s}\!\left(\overline{\rho q}_{D}\right)
     &=
     \frac{1}{\overline{\rho q}_{D}}
-    \frac{\partial \overline{\rho q}_D}{\partial x}
+    \frac{\partial \overline{\rho q}_D}{\partial x_s}
     =
     \frac{1}{\overline{\rho q}_{w} - \overline{\rho q}_{iw}}
     \left(
-          \frac{\partial}{\partial x} \overline{\rho q}_{w}
-        - \frac{\partial}{\partial x} \overline{\rho q}_{iw}
+          \frac{\partial}{\partial x_s} \overline{\rho q}_{w}
+        - \frac{\partial}{\partial x_s} \overline{\rho q}_{iw}
     \right)
 \end{align}
-where subscripts $w$ and $iw$ denotes wall state and inviscid base flow
-wall state, respectively.
+where subscripts $w$ and $iw$ denotes wall state and inviscid base flow wall
+state, respectively.  From equation of state~\eqref{eq:perfectgaseos} and a
+wall-normal isobaric assumption, $\partial \bar{p} / \partial_y \approx 0$,
+\begin{align}
+    \bar{\rho}_w
+    &= \frac{\bar{p}_{ w}}{R \bar{T}_w}
+    \approx \frac{p_{iw}}{R \bar{T}_w}.
+\end{align}
+As $\partial \bar{T}_w / \partial x_s = 0$ for an isothermal wall,
+\begin{align}
+    \frac{\partial}{\partial x_s} \bar{\rho}_w
+    &\approx \frac{1}{R \bar{T}_w} \frac{\partial}{\partial x_s} p_{iw}.
+\end{align}
 
 %The corresponding primitive growth rate is
 %then
@@ -541,8 +555,11 @@ wall state, respectively.
 
 \subsection{Growth rate of the root-mean-square defect amplitudes}
 
-Akin to the mean defect amplitude growth rates, their root-mean-square fluctuation
-growth may also be controlled.  These values are set to be zero.
+Akin to the mean defect amplitude growth rates, their root-mean-square
+fluctuation growth may also be controlled.  In the absence of unambiguous
+modeling information, these parameters, denoted
+$\operatorname{gr}_{a}\!\left(\left(\rho q\right)^\text{rms}\right)$ for
+$q\in\left\{1,u,v,w,E\right\}$, are set to zero.
 
 \section{Dimensional equations}
 \label{sec:dimensionalmodelequations}
