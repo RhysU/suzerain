@@ -449,7 +449,7 @@ turbulent flow configurations where the flow develops in space or time is to
 perform a homogenization, using the assumption of slow variation (or slow
 growth) of the mean and root-mean-squared (RMS) fluctuating quantities as
 related to the fast variation of turbulent fluctuations.  This homogenization
-procedure allows to simulate the turbulent flow at a specific stage of the
+procedure allows simulating the turbulent flow at a specific stage of the
 development in space or time.  Examples of these procedures are the works of
 Spalart~\citep{Spalart1988Direct} for incompressible boundary layers, and of
 Venugopal~\citep{Venugopal2003} for channel flow with wall injection.
@@ -519,7 +519,6 @@ $.
 Parameters $\operatorname{gr}_{\bullet}\left(\Delta\right)$ appear throughout
 the slow growth sources and, in homogenized boundary layers, control the
 boundary layer thickness.
-
 
 \subsection{Growth rate of the mean defect amplitudes}
 
@@ -632,16 +631,73 @@ For a no-slip wall with fixed blowing velocity $v_w$, the base flow also informs
         R T_w {\rho E}_{iw} - E_w p_{iw}
     }
 \end{align}
-Computing $\operatorname{gr}_{x_s}\!\left(\overline{\rho E}_{D}\right)$ requires
-using~\eqref{eq:perfectgastotalenergy} to find $E_w = \frac{R T_w}{\gamma - 1} +
-\frac{1}{2} v_w^2$.
+Finding $\operatorname{gr}_{x_s}\!\left(\overline{\rho E}_{D}\right)$
+uses~\eqref{eq:perfectgastotalenergy} to fix $E_w = \frac{R T_w}{\gamma -
+1} + \frac{1}{2} v_w^2$.  The associated primitive growth rates are
+\begin{align}
+    \operatorname{gr}_{x_s}\!\left(\bar{u}_{D}\right)
+    &=
+    \frac{
+        \frac{\partial}{\partial x_s}          {u}_{iw}
+    }{
+        {u}_{iw}
+    }
+    &
+    \operatorname{gr}_{x_s}\!\left(\bar{v}_{D}\right)
+    &=
+    \frac{
+        \frac{\partial}{\partial x_s}          {v}_{iw}
+    }{
+        {v}_{iw} - v_w
+    }
+    &
+    \operatorname{gr}_{x_s}\!\left(\bar{w}_{D}\right)
+    &=
+    \frac{
+        \frac{\partial}{\partial x_s}          {w}_{iw}
+    }{
+        {w}_{iw}
+    }
+    &
+    \operatorname{gr}_{x_s}\!\left(\bar{E}_{D}\right)
+    &=
+    \frac{
+        \frac{\partial}{\partial x_s}          {E}_{iw}
+    }{
+        {E}_{iw} - E_w
+    }
+\end{align}
+where primitive derivatives are computed from the conservative base flow
+specification via smoothness,
+\begin{align}
+    %\frac{\partial}{\partial x_s} \bar{q}_w &= \frac{1}{\bar{\rho}_w}\left(
+    %      \frac{\partial}{\partial x_s} \overline{\rho q}_w
+    %    - \bar{q}_w \frac{\partial}{\partial x_s} \bar{\rho}_w
+    %\right)
+    %\approx
+    %%\frac{R T_w}{p_{iw}}\left(
+    %%      \frac{\partial}{\partial x_s} \overline{\rho q}_w
+    %%    - \frac{\bar{q}_w}{R T_w} \frac{\partial}{\partial x_s} p_{iw}
+    %%\right)
+    %%=
+    %\frac{1}{p_{iw}}\left(
+    %      R T_w \frac{\partial}{\partial x_s} \overline{\rho q}_w
+    %    - \bar{q}_w \frac{\partial}{\partial x_s} p_{iw}
+    %\right)
+    %\\
+    \frac{\partial}{\partial x_s} q_{iw} &= \frac{1}{\rho_{iw}}\left(
+          \frac{\partial}{\partial x_s} {\rho q}_{iw}
+        - q_{iw} \frac{\partial}{\partial x_s} \rho_{iw}
+    \right)
+    .
+\end{align}
 
-\subsection{Growth rate of the root-mean-square defect amplitudes}
+\subsection{Growth rate of the root-mean-square fluctuating defect amplitudes}
 
-Akin to the mean defect amplitude growth rates, their root-mean-square
-fluctuation growth may also be controlled.  In the absence of some unambiguous
-modeling ansatz, these parameters, denoted $\operatorname{gr}_{a}\!\left({\rho
-q}_\text{rms}\right)$ for $q\in\left\{1,u,v,w,E\right\}$, are set to zero.
+Akin to the mean growth rates, the root-mean-square fluctuating defect growth
+rates must also be specified.  Absent some unambiguous modeling ansatz, these
+parameters, denoted $\operatorname{gr}_{a}\!\left({\rho q}_\text{RMS}\right)$
+for $q\in\left\{1,u,v,w,E\right\}$, are taken to be zero.
 
 \section{Dimensional equations}
 \label{sec:dimensionalmodelequations}
