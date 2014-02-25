@@ -180,9 +180,7 @@ program bl_temporal_baseflow_rans_f
     ! Initialize srcmean and srcrms
     srcmean = 0.0_WP
 
-    ! Recompute using wrapper routines
-    ! and include RANS sources
-    ! Allocate workspace (same pointer as before)
+    ! Allocate workspace
     call largo_BL_temporal_allocate (workspace, neq, ns, ntvar, turbmodel)
 
     ! Init growth rates
@@ -208,7 +206,6 @@ program bl_temporal_baseflow_rans_f
       ASSERT(abs((srcmean(5+is)/srcmean_good(5+is))-1.0_WP) < tolerance )
     end do
     do it=1, ntvar
-      print *, srcmean(5+ns+it), srcmean_good(5+ns+it), (srcmean(5+ns+it)/srcmean_good(5+ns+it)-1.0_WP)
       ASSERT(abs((srcmean(5+ns+it)/srcmean_good(5+ns+it))-1.0_WP) < tolerance )
     end do
 #endif
