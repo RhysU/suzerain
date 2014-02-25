@@ -503,7 +503,7 @@ The parameters
 \end{align}
 model the logarithmic slow spatial growth rate of a characteristic length scale
 $\Delta$ at some fixed slow position $X_s$ or some fixed slow time $T_s$.  The
-inviscid base flow streamwise velocity at the wall, $u_{iw}$, relates the
+inviscid base flow streamwise velocity at a wall, $u_{iw}$, can relate the
 parameters per
 $
     u_{iw}
@@ -512,7 +512,7 @@ $
     \operatorname{gr}_{t_s}\!\left(\Delta\right)
 $.
 Parameters $\operatorname{gr}_{\bullet}\left(\Delta\right)$ appear throughout
-the slow growth sources and, in homogenized boundary layers, controls the
+the slow growth sources and, in homogenized boundary layers, control the
 boundary layer thickness.
 
 
@@ -524,33 +524,59 @@ defect denoted $\operatorname{gr}_{a}\!\left(\overline{\rho q}_{D}\right)$ for
 $q\in\left\{1,u,v,w,E\right\}$.  Here, ``defect'' refers to the difference
 between the mean flow being modeled and the chosen inviscid base flow.
 
-In spatially-homogenized flows with isothermal conditions, wall state in
-conjunction with the inviscid base flow at the wall may unambiguously supply the
-required information.  The parameters are informed from
+In spatially-homogenized flows with an isothermal wall condition, wall state in
+conjunction with the inviscid base flow may unambiguously supply the required
+information.  The parameters are informed from
 \begin{align}
     \operatorname{gr}_{x_s}\!\left(\overline{\rho q}_{D}\right)
     &=
     \frac{1}{\overline{\rho q}_{D}}
     \frac{\partial \overline{\rho q}_D}{\partial x_s}
     =
-    \frac{1}{\overline{\rho q}_{w} - \overline{\rho q}_{iw}}
+    \frac{1}{\overline{\rho q}_{w} - {\rho q}_{iw}}
     \left(
           \frac{\partial}{\partial x_s} \overline{\rho q}_{w}
-        - \frac{\partial}{\partial x_s} \overline{\rho q}_{iw}
+        - \frac{\partial}{\partial x_s}          {\rho q}_{iw}
     \right)
 \end{align}
 where subscripts $w$ and $iw$ denotes wall state and inviscid base flow wall
-state, respectively.  From equation of state~\eqref{eq:perfectgaseos} and a
-wall-normal isobaric assumption, $\partial \bar{p} / \partial_y \approx 0$,
+state, respectively.  From~\eqref{eq:perfectgaseos}, known constant wall
+temperature $T_w$, and the isobaric assumption $\partial \bar{p} / \partial_y
+\approx 0$,
 \begin{align}
     \bar{\rho}_w
-    &= \frac{\bar{p}_{ w}}{R \bar{T}_w}
-    \approx \frac{p_{iw}}{R \bar{T}_w}.
+    &= \frac{\bar{p}_{ w}}{R T_w}
+    \approx \frac{p_{iw}}{R T_w}.
 \end{align}
-As $\partial \bar{T}_w / \partial x_s = 0$ for an isothermal wall,
+Taking the slow spatial derivative one sees,
 \begin{align}
     \frac{\partial}{\partial x_s} \bar{\rho}_w
     &\approx \frac{1}{R \bar{T}_w} \frac{\partial}{\partial x_s} p_{iw}.
+\end{align}
+Therefore the inviscid base flow informs the density defect growth rate
+through
+\begin{align}
+    \operatorname{gr}_{x_s}\!\left(\bar{\rho}_{D}\right)
+    &=
+    \frac{1}{\bar{\rho}_{w} - {\rho}_{iw}}
+    \left(
+          \frac{\partial}{\partial x_s} \bar{\rho}_{w}
+        - \frac{\partial}{\partial x_s}     {\rho}_{iw}
+    \right)
+    \approx
+    \frac{1}{\frac{p_{iw}}{R T_w} - {\rho}_{iw}}
+    \left(
+          \frac{1}{R T_w} \frac{\partial}{\partial x_s} {p   }_{iw}
+        -                 \frac{\partial}{\partial x_s} {\rho}_{iw}
+    \right)
+    =
+    \frac{
+          \frac{\partial}{\partial x_s}    p_{iw}
+        - \frac{\partial}{\partial x_s} \rho_{iw}
+    }{
+        p_{iw} - \rho_{iw} {R T_w}
+    }
+    .
 \end{align}
 
 %The corresponding primitive growth rate is
