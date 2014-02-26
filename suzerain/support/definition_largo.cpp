@@ -604,7 +604,7 @@ definition_largo::load(
     TRACE0("Probing for amplitude growth rates for the mean");
     if (ESIO_SUCCESS == esio_line_size(h, location_gramp_mean,
                                         &neqns)) {
-        TRACE0("Loading growth rate amplitude coefficiets for the mean");
+        TRACE0("Loading growth rate amplitude coefficients for the mean");
         t.gramp_mean.resize(neqns);
         esio_line_establish(
                 h, t.gramp_mean.size(), 0, t.gramp_mean.size());
@@ -612,10 +612,10 @@ definition_largo::load(
                 h, location_gramp_mean, t.gramp_mean.data(), 0);
     }
 
-    TRACE0("Probing for amplitude growth rates for the rms");
+    TRACE0("Probing for amplitude growth rates for the RMS");
     if (ESIO_SUCCESS == esio_line_size(h, location_gramp_rms,
                                         &neqns)) {
-        TRACE0("Loading growth rate amplitude coefficiets for rms");
+        TRACE0("Loading growth rate amplitude coefficients for RMS");
         t.gramp_rms.resize(neqns);
         esio_line_establish(
                 h, t.gramp_rms.size(), 0, t.gramp_rms.size());
