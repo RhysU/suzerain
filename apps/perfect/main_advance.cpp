@@ -441,7 +441,7 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
             grDA.rho = (Tw * dxiw.rho - scenario->gamma * dxiw.p)
                      / (Tw *   iw.rho - scenario->gamma *   iw.p);
             if (sg->formulation.expects_conserved_growth_rates()) {
-                INFO(who, "Calculating conserved defect mean growth rates");
+                INFO0(who, "Calculating conserved defect mean growth rates");
                 grDA.mx = dxiw.mx / iw.mx;
                 grDA.my = (Tw * dxiw.my - scenario->gamma * vw * dxiw.p)
                         / (Tw *   iw.my - scenario->gamma * vw *   iw.p);
@@ -449,7 +449,7 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
                 grDA.e  = (Tw * dxiw.e  - scenario->gamma * Ew * dxiw.p)
                         / (Tw *   iw.e  - scenario->gamma * Ew *   iw.p);
             } else if (sg->formulation.expects_specific_growth_rates()) {
-                INFO(who, "Calculating primitive defect mean growth rates");
+                INFO0(who, "Calculating primitive defect mean growth rates");
                 // Primitive order matches conserved, hence weird assignments
                 // First lines compute derivative from conserved base flow
                 grDA.mx = (dxiw.mx - iw.u() * dxiw.rho) / iw.rho
