@@ -131,6 +131,12 @@ check_PROGRAMS                         += generic_bl_temporal_baseflow
 generic_bl_temporal_baseflow_SOURCES    = generic_bl_temporal_baseflow.c
 generic_bl_temporal_baseflow_LDADD      = ../largo/liblargo.la
 
+## Generic interface, temporal boundary layer, baseflow, rans, c
+TESTS                                     += generic_bl_temporal_baseflow_rans
+check_PROGRAMS                            += generic_bl_temporal_baseflow_rans
+generic_bl_temporal_baseflow_rans_SOURCES  = generic_bl_temporal_baseflow_rans.c
+generic_bl_temporal_baseflow_rans_LDADD    = ../largo/liblargof.la
+
 ## Generic interface, temporal tensor consistent boundary layer, c
 TESTS                                   += generic_bl_temporal_tconsistent
 check_PROGRAMS                          += generic_bl_temporal_tconsistent
