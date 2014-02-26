@@ -95,6 +95,7 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
 {
     using namespace std;
     using boost::math::isnan;
+    using boost::math::isfinite;
 
     // Storage for binary-specific options
     const support::definition_noise noisedef;
@@ -400,6 +401,114 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
             bu->x.resize(state_linear->shape()[0] + /* pressure */ 1);
             memcpy(bu->x.data(), freestream.as_is(), sizeof(freestream));
             sg->baseflow = bu;
+        }
+
+        // If a slow growth model is in use, compute defect growth rates.
+        // The gramp_{mean,rms} vectors should already have been zero-filled.
+        // All nondimensional expressions below in model document section 5.4.
+        // FIXME Redmine #2997 Resolve unresolved issues in the model document
+        // TODO Is a pressure growth rate required by the Largo API?
+        if (sg->formulation.enabled()) {
+
+            if (sg->gramp_mean.size()) {
+                INFO0(who, "Ignoring incoming, non-normative defect"
+                           " mean slow growth rates");
+            }
+            // TODO Is a pressure growth rate required by the Largo API?
+            sg->gramp_mean.assign(fields.size() + /*pressure*/1, 0.0);
+
+            INFO0(who, "Preparing to compute defect slow growth"
+                       " rates from wall state");
+            const real_t Tw = isothermal->lower_T;  // Brevity
+            const real_t vw = isothermal->lower_v;  // Brevity
+            if (vw) {
+                INFO0(who, "Computations use non-zero wall blowing velocity "
+                           << vw);
+            }
+            const real_t Ew = Tw / (scenario->gamma*(scenario->gamma - 1))
+                            + scenario->Ma*scenario->Ma*vw*vw / 2;
+            largo_state iw, dxiw;
+            if (sg->baseflow) {
+                largo_state dontcare;
+                sg->baseflow->conserved(
+                        0.0, iw.as_is(), dontcare.as_is(), dxiw.as_is());
+                sg->baseflow->pressure (
+                        0.0, iw.p, dontcare.p, dxiw.p); // as_is()
+            }
+
+            // Compute density, model-specific rates, and then pressure
+            largo_state grDA;
+            grDA.rho = (Tw * dxiw.rho - scenario->gamma * dxiw.p)
+                     / (Tw *   iw.rho - scenario->gamma *   iw.p);
+            if (sg->formulation.expects_conserved_growth_rates()) {
+                INFO(who, "Calculating conserved defect mean growth rates");
+                grDA.mx = dxiw.mx / iw.mx;
+                grDA.my = (Tw * dxiw.my - scenario->gamma * vw * dxiw.p)
+                        / (Tw *   iw.my - scenario->gamma * vw *   iw.p);
+                grDA.mz = dxiw.mz / iw.mz;
+                grDA.e  = (Tw * dxiw.e  - scenario->gamma * Ew * dxiw.p)
+                        / (Tw *   iw.e  - scenario->gamma * Ew *   iw.p);
+            } else if (sg->formulation.expects_specific_growth_rates()) {
+                INFO(who, "Calculating primitive defect mean growth rates");
+                // Primitive order matches conserved, hence weird assignments
+                // First lines compute derivative from conserved base flow
+                grDA.mx = (dxiw.mx - iw.u() * dxiw.rho) / iw.rho
+                        / (iw.u());
+                grDA.my = (dxiw.my - iw.v() * dxiw.rho) / iw.rho
+                        / (iw.v() - vw);
+                grDA.mz = (dxiw.mz - iw.w() * dxiw.rho) / iw.rho
+                        / (iw.w());
+                grDA.e  = (dxiw.e  - iw.E() * dxiw.rho) / iw.rho
+                        / (iw.E() - Ew);
+            } else {
+                FATAL0(who, "Sanity error in growth rate computations");
+                return EXIT_FAILURE;
+            }
+            grDA.p  = 0;
+
+            // Coerce any non-finite rates to be zero per goofy convention
+            for (size_t i = 0; i < sg->gramp_mean.size(); ++i) {
+                if (!(isfinite)(grDA.as_is()[i])) {
+                    DEBUG0(who, "Treating non-finite mean growth rate index "
+                               << i << " as zero");
+                    grDA.as_is()[i] = 0;
+                }
+            }
+
+            // Report any non-zero growth rates to the user
+#           define MAYBE_MENTION(var, name)                                 \
+                do if (var != 0) {                                          \
+                    INFO0(who, "Mean defect growth rate for " name << var); \
+                } while (0)
+            MAYBE_MENTION(grDA.rho, "density:              ");
+            if (sg->formulation.expects_conserved_growth_rates()) {
+                MAYBE_MENTION(grDA.mx,  "streamwise  momentum: ");
+                MAYBE_MENTION(grDA.my,  "wall-normal momentum: ");
+                MAYBE_MENTION(grDA.mz,  "spanwise momentum:    ");
+                MAYBE_MENTION(grDA.e,   "total energy:         ");
+            } else if (sg->formulation.expects_specific_growth_rates()) {
+                MAYBE_MENTION(grDA.mx,  "streamwise  velocity: ");
+                MAYBE_MENTION(grDA.my,  "wall-normal velocity: ");
+                MAYBE_MENTION(grDA.mz,  "spanwise velocity:    ");
+                MAYBE_MENTION(grDA.e,   "specific energy:      ");
+            } else {
+                FATAL0(who, "Sanity error in growth rate reporting");
+                return EXIT_FAILURE;
+            }
+            MAYBE_MENTION(grDA.p,   "pressure:             ");
+#undef      MAYBE_MENTION
+
+            // Finally set the rates into the slow growth specification
+            for (size_t i = 0; i < sg->gramp_mean.size(); ++i) {
+                sg->gramp_mean[i] = grDA.as_is()[i];
+            }
+
+            if (sg->gramp_rms.size()) {
+                INFO0(who, "Ignoring incoming, non-normative defect"
+                           " root-mean-square slow growth rates");
+            }
+            INFO0(who, "Disabling root-mean-square defect slow growth");
+            sg->gramp_rms.assign(sg->gramp_mean.size(), 0.0);
         }
 
         // If slow growth baseflow in use, obtain freestream from it.  Permits

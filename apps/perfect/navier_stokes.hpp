@@ -383,7 +383,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
     const real_t md_lambda2_z     = maxdiffconst * o.lambda2_z;
 
     // If necessary, perform globally-relevant initialization calls to Largo.
-    // Required only once but done every ZerothSubstep for robustness.
+    // Required only once but done every ZerothSubstep as a nod to modularity.
     largo_state basewall;
     if (ZerothSubstep && SlowTreatment == slowgrowth::largo) {
         largo_state dy, dx;
@@ -393,20 +393,10 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             sg.baseflow->pressure (
                     0.0, basewall.p, dy.p, dx.p); // as_is()
         }
-
-        largo_state grDA, grDArms;
-        if (!basewall.trivial()) {
-            grDA.mx = - basewall.u() * dx.mx / (0.0 - basewall.u());
-        }
-
-        // FIXME Ticket #2997 details changes required for tensor-consistency
-        //
-        // Key off sg.formulation.expects_conserved_growth_rates() or
-        //         sg.formulation.expects_specific_growth_rates() or
-        //         throw a fit.
+        assert(sg.gramp_mean.size());
+        assert(sg.gramp_rms .size());
         largo_init(sg.workspace, sg.grdelta,
-                   grDA.rescale(inv_Ma2), grDArms.rescale(inv_Ma2));
-
+                   &sg.gramp_mean[0], &sg.gramp_rms[0]);
         largo_state dt, src;
         largo_init_wall_baseflow(sg.workspace,
                                  basewall.rescale(inv_Ma2),

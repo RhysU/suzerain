@@ -45,8 +45,8 @@ void largo_allocate ( largo_workspace** work,
 
 void largo_init ( largo_workspace* work,
                   double  grDelta,
-                  double* grDA,
-                  double* grDArms );
+                  const double* grDA,
+                  const double* grDArms );
 
 void largo_init_rans ( largo_workspace* work,
                        double  grDelta,

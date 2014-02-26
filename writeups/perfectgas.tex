@@ -587,6 +587,11 @@ rate~\eqref{eq:gramp_mean} to be
     }
     .
 \end{align}
+%
+\todo{Victor ignores $v_w$; it degenerates weirdly when no blowing in base flow}
+\todo{Adding blowing to radial base flow adds $\partial_{x_s} v_w \neq 0$}
+\todo{Todd has suggested looking at the edge for the $\rho v$ defect}
+%
 If the wall is non-slip with fixed blowing velocity $v_w$, the base flow further
 informs:
 \begin{align}
@@ -696,7 +701,7 @@ specification via smoothness,
     \right)
     .
 \end{align}
-If a growth rates is undefined according to these expressions, it is taken to be
+If a growth rate is undefined according to these expressions, it is taken to be
 zero.  Common situations requiring this final clause include
 $\operatorname{gr}_{x_s}\!\left(\overline{\rho w}_D\right)$ when the base flow
 lacks a spanwise $w$ component and many of the conserved growth rates when there
@@ -1019,6 +1024,8 @@ results in \autoref{sec:slowgrowthgramp_mean}, one finds
     }
 \end{align}
 %
+\todo{Update with $v_w$ verdict from \autoref{sec:slowgrowthgramp_mean}}
+%
 \begin{align}
     \operatorname{gr}_{x_s}\!\left(\overline{\rho u}_{D}\right)
     &=
@@ -1098,7 +1105,8 @@ results in \autoref{sec:slowgrowthgramp_mean}, one finds
 \begin{align}
     E_w &= \frac{T_w}{\gamma\left(\gamma-1\right)} + \frac{\Mach^2}{2} v_w^2
 \end{align}
-where all variables are now nondimensional.
+If a growth rate is undefined according to these expressions, it is taken
+to be zero.
 
 \chapter{Discretization}
 \label{sec:discretization}
