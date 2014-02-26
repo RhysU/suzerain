@@ -498,6 +498,7 @@ perfect gas flow fields with prescribed pressure gradients and edge Mach
 numbers}.
 
 \subsection{Growth rate of the characteristic length scale}
+\label{sec:slowgrowthgrdelta}
 
 The two parameters
 \begin{align}
@@ -523,6 +524,7 @@ the slow growth sources and, in homogenized boundary layers, control the
 boundary layer thickness.
 
 \subsection{Growth rate of the mean defect amplitudes}
+\label{sec:slowgrowthgramp_mean}
 
 Slow growth sources $\Ssd_\rho$, $\Ssd_{\rho u}$, $\Ssd_{\rho v}$, $\Ssd_{\rho
 w}$, and $\Ssd_{\rho E}$ need growth rates for the amplitude of the mean defect
@@ -694,8 +696,8 @@ specification via smoothness,
     \right)
     .
 \end{align}
-If any of these individual results are undefined, it is taken to be zero.
-Common situations requiring this final clause include
+If a growth rates is undefined according to these expressions, it is taken to be
+zero.  Common situations requiring this final clause include
 $\operatorname{gr}_{x_s}\!\left(\overline{\rho w}_D\right)$ when the base flow
 lacks a spanwise $w$ component and many of the conserved growth rates when there
 is no temperature differential between $T_w$ and $p_{iw} / R \rho_{iw}$.
@@ -908,6 +910,7 @@ from the time variation terms for the spatial and temporal formulations
 respectively. Therefore, we set the reference slow growth dimensional quantities
 to be
 \begin{align}
+  \label{eq:slowgrowthrefs}
   {\Ssd_{\rho}}_0 &= \frac{\rho_{0}}{t_0}
   &
   {\Ssd_{\rho u}}_0 &= \frac{\rho_{0} u_0}{t_0}
@@ -917,7 +920,7 @@ to be
 
 
 \subsection{Nondimensional equations}
-\label{nondim_equations}
+\label{sec:nondim_equations}
 
 We employ the reference quantity relationships after multiplying the
 continuity, momentum, and energy equations by $\frac{t_{0}}{\rho_{0}}$,
@@ -994,7 +997,108 @@ Introducing a velocity reference $u_{0}$ separate from the sound speed $a_{0}$
 was not necessary from a dimensional standpoint.  Doing so is the origin of the
 $\Mach$ factors appearing above.  These add some minor complexity to the
 equations but greatly simplify investigating the physics in the various
-$\Mach\to{}0$ limits.
+$\Mach\to{}0$ limits.  This choice also eases isothermally translating a flow
+field from one code Mach number to another as the velocity scales independently
+from thermodynamics.
+
+\subsection{Slow growth model parameters}
+
+Some of the parameters from \autoref{sec:slowgrowthmodels} need to be rewritten
+using the thermodynamic reference values adopted above so that
+adopting~\eqref{eq:slowgrowthrefs} is sufficient.  In particular, from the
+results in \autoref{sec:slowgrowthgramp_mean}, one finds
+\begin{align}
+    \operatorname{gr}_{x_s}\!\left(\bar{\rho}_{D}\right)
+    &\approx
+    \frac{1}{l_0}
+    \frac{
+          T_w        \frac{\partial}{\partial x_s} \rho_{iw}
+        -     \gamma \frac{\partial}{\partial x_s}    p_{iw}
+    }{
+          T_w \rho_{iw} - \gamma p_{iw}
+    }
+\end{align}
+%
+\begin{align}
+    \operatorname{gr}_{x_s}\!\left(\overline{\rho u}_{D}\right)
+    &=
+    \frac{1}{l_0}
+    \frac{
+        \frac{\partial}{\partial x_s}          {\rho u}_{iw}
+    }{
+        {\rho u}_{iw}
+    }
+    &
+    \operatorname{gr}_{x_s}\!\left(\bar{u}_{D}\right)
+    &=
+    \frac{1}{l_0}
+    \frac{
+        \frac{\partial}{\partial x_s}          {u}_{iw}
+    }{
+        {u}_{iw}
+    }
+    \displaybreak[1]\\
+    \operatorname{gr}_{x_s}\!\left(\overline{\rho v}_{D}\right)
+    &\approx
+    \frac{1}{l_0}
+    \frac{
+                 T_w \frac{\partial}{\partial x_s} {\rho v}_{iw}
+        - \gamma v_w \frac{\partial}{\partial x_s} {p     }_{iw}
+    }{
+        T_w {\rho v}_{iw} - \gamma v_w p_{iw}
+    }
+    &
+    \operatorname{gr}_{x_s}\!\left(\bar{v}_{D}\right)
+    &=
+    \frac{1}{l_0}
+    \frac{
+        \frac{\partial}{\partial x_s}          {v}_{iw}
+    }{
+        {v}_{iw} - v_w
+    }
+    \displaybreak[1]\\
+    \operatorname{gr}_{x_s}\!\left(\overline{\rho w}_{D}\right)
+    &=
+    \frac{1}{l_0}
+    \frac{
+        \frac{\partial}{\partial x_s}          {\rho w}_{iw}
+    }{
+        {\rho w}_{iw}
+    }
+    &
+    \operatorname{gr}_{x_s}\!\left(\bar{w}_{D}\right)
+    &=
+    \frac{1}{l_0}
+    \frac{
+        \frac{\partial}{\partial x_s}          {w}_{iw}
+    }{
+        {w}_{iw}
+    }
+    \displaybreak[1]\\
+    \operatorname{gr}_{x_s}\!\left(\overline{\rho E}_{D}\right)
+    &\approx
+    \frac{1}{l_0}
+    \frac{
+                 T_w \frac{\partial}{\partial x_s} {\rho E}_{iw}
+        - \gamma E_w \frac{\partial}{\partial x_s} {p     }_{iw}
+    }{
+        T_w {\rho E}_{iw} - \gamma E_w p_{iw}
+    }
+    &
+    \operatorname{gr}_{x_s}\!\left(\bar{E}_{D}\right)
+    &=
+    \frac{1}{l_0}
+    \frac{
+        \frac{\partial}{\partial x_s}          {E}_{iw}
+    }{
+        {E}_{iw} - E_w
+    }
+\end{align}
+%
+\begin{align}
+    E_w &= \frac{T_w}{\gamma\left(\gamma-1\right)} + \frac{\Mach^2}{2} v_w^2
+\end{align}
+where all variables are now nondimensional.
 
 \chapter{Discretization}
 \label{sec:discretization}
@@ -2753,7 +2857,7 @@ $e=\rho{}E$ are used as the state variables within the computations.  Though it
 eliminates division and potentially allows for fully dealiased calculations,
 specific density $\sigma=1/\rho$ is not used because it would require a
 nonconservative mass equation.  When rewritten using the state variables the
-equations in \autoref{nondim_equations} become
+equations in \autoref{sec:nondim_equations} become
 \begin{subequations}
 \begin{align}
   \label{eq:state_continuity}
@@ -4510,7 +4614,8 @@ alternative state variables.
 The particular coordinate transformation Suzerain requires maps the
 nondimensional primitive state $U^*$ satisfying
 requirements~\eqref{eq:eulerprimnondim} to the conserved state $V^*$
-nondimensionalized per \autoref{sec:nondimrefq} and \autoref{nondim_equations}:
+nondimensionalized per \autoref{sec:nondimrefq} and
+\autoref{sec:nondim_equations}:
 \begin{align}
 \label{eq:eulerconsnondim}
 V^{*}
@@ -4896,24 +5001,23 @@ conditions.
 Slow growth models add homogenization-related forcing to the governing equations
 as discussed in \autoref{sec:slowgrowthmodels}.  These terms have the form
 \begin{align}
-    -y \Delta \frac{\partial \rho q}{\partial y}
+    -y \operatorname{gr}\!\left(\Delta\right) \frac{\partial}{\partial y} \rho q
     &=
-    \Delta \rho q
+    \operatorname{gr}\!\left(\Delta\right) \rho q
     -
     \frac{\partial}{\partial y}
-    \left(
-    y \Delta
-    \rho q
-    \right)
+    \left( y \operatorname{gr}\!\left(\Delta\right) \rho q \right)
 \end{align}
-for each scalar $q$ where $\Delta$ is some model-appropriate, positive-valued
-growth rate\todo{Cite Victor's paper when available}.  As shown, such terms may
-be split into a reaction term and a conserved flux.  Relative to the Euler
-equations, this conserved flux modifies the inviscid eigensystem to make the
-wall-normal eigenvalues $\bar{v}$ and $\bar{v}\pm\bar{a}$ become $\bar{v} - y
-\Delta$ and $\bar{v}\pm\bar{a} - y \Delta$.  Consequently, only subsonic inflow
-conditions are necessary to simulate homogenized boundary layers as $-y \Delta$
-dominates $\bar{v}$ at the $y=L_y$ boundary given reasonable $\Delta$ and $L_y$.
+for each scalar $q$ where $\Delta$ is a positive-valued growth rate discussed in
+\autoref{sec:slowgrowthgrdelta}.  As shown, such terms may be split into a
+reaction term and a conserved flux.  Relative to the Euler equations, this
+conserved flux modifies the inviscid eigensystem to make the wall-normal
+eigenvalues $\bar{v}$ and $\bar{v}\pm\bar{a}$ become $\bar{v} - y
+\operatorname{gr}\!\left(\Delta\right)$ and $\bar{v}\pm\bar{a} - y
+\operatorname{gr}\!\left(\Delta\right)$.  Consequently, only subsonic inflow
+conditions are necessary to simulate homogenized boundary layers as $-y
+\operatorname{gr}\!\left(\Delta\right)$ dominates $\bar{v}$ at the $y=L_y$
+boundary given a reasonable wall-normal domain extent.
 
 \citet{Poinsot1992Boundary} suggest two additional viscous conditions be
 supplied when Euler-derived conditions are applied to the Navier--Stokes
