@@ -414,7 +414,7 @@ contains
     real(WP), intent(in), value         :: grDelta
     real(WP), dimension(*), intent(in)  :: grDA
     real(WP), dimension(*), intent(in)  :: grDArms
-    type(largo_ptr), intent(out)        :: lcp
+    type(largo_ptr), value              :: lcp
     type(largo_type), pointer           :: lauxp
 
     call c_f_pointer(lcp, lauxp)

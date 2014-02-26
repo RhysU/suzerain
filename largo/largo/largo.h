@@ -44,31 +44,41 @@ void largo_allocate ( largo_workspace** work,
                       const char * ransmodel );
 
 void largo_init ( largo_workspace* work,
-                  double grDelta,
+                  double  grDelta,
                   double* grDA,
                   double* grDArms );
 
+void largo_init_rans ( largo_workspace* work,
+                       double  grDelta,
+                       double* grDA,
+                       double* grDArms );
+
 void largo_init_wall_baseflow ( largo_workspace* work,
-                                double*      wall,
+                                double*     wall,
                                 double* ddy_wall,
                                 double* ddt_wall,
                                 double* ddx_wall,
                                 double* src_wall );
 
 void largo_prestep_baseflow ( largo_workspace* work,
-                              double*      base,
+                              double*     base,
                               double* ddy_base,
                               double* ddt_base,
                               double* ddx_base,
                               double* src_base );
 
 void largo_prestep_setamean ( largo_workspace* work,
-                              double y,
+                              double  y,
                               double* mean,
                               double* ddy_mean );
 
+void largo_prestep_setamean_rans ( largo_workspace* work,
+                                   double  y,
+                                   double* mean,
+                                   double* ddy_mean );
+
 void largo_prestep_setarms ( largo_workspace* work,
-                             double y,
+                             double  y,
                              double* rms,
                              double* ddy_rms );
 
@@ -76,7 +86,7 @@ void largo_prestep_seta_innerxz ( largo_workspace* work,
                                   double* qflow );
 
 void largo_prestep_seta_innery ( largo_workspace* work,
-                                 double y,
+                                 double  y,
                                  double* mean,
                                  double* rms,
                                  double* mean_rqq,
@@ -85,7 +95,7 @@ void largo_prestep_seta_innery ( largo_workspace* work,
                                  double* ddy_mean_rqq );
 
 void largo_prestep_seta ( largo_workspace* work,
-                          double y,
+                          double  y,
                           double* qflow,
                           double* mean,
                           double* rms,
@@ -118,6 +128,7 @@ void largo_species_seta        ( largo_workspace* work, double A, double B, doub
 
 void largo_setamean            ( largo_workspace* work, double A, double B, double* src );
 void largo_seta                ( largo_workspace* work, double A, double B, double* src );
+void largo_seta_rans           ( largo_workspace* work, double A, double B, double* src );
 
 void largo_deallocate          ( largo_workspace** work);
 
