@@ -84,7 +84,6 @@ program bl_temporal_baseflow_rans_f
       &       2.0_WP/ 1000.0_WP,   &
       &       4.0_WP/  100.0_WP,   &
       &       2.0_WP/  100.0_WP    &
-
       /)
 
     real(WP), dimension(nvar), parameter :: &
