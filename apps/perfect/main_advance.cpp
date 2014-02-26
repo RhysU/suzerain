@@ -482,12 +482,12 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
                 } while (0)
             MAYBE_MENTION(grDA.rho, "density:              ");
             if (sg->formulation.expects_conserved_growth_rates()) {
-                MAYBE_MENTION(grDA.mx,  "streamwise  momentum: ");
+                MAYBE_MENTION(grDA.mx,  "streamwise momentum:  ");
                 MAYBE_MENTION(grDA.my,  "wall-normal momentum: ");
                 MAYBE_MENTION(grDA.mz,  "spanwise momentum:    ");
                 MAYBE_MENTION(grDA.e,   "total energy:         ");
             } else if (sg->formulation.expects_specific_growth_rates()) {
-                MAYBE_MENTION(grDA.mx,  "streamwise  velocity: ");
+                MAYBE_MENTION(grDA.mx,  "streamwise velocity:  ");
                 MAYBE_MENTION(grDA.my,  "wall-normal velocity: ");
                 MAYBE_MENTION(grDA.mz,  "spanwise velocity:    ");
                 MAYBE_MENTION(grDA.e,   "specific energy:      ");
