@@ -694,6 +694,11 @@ specification via smoothness,
     \right)
     .
 \end{align}
+If any of these individual results are undefined, it is taken to be zero.
+Common situations requiring this final clause include
+$\operatorname{gr}_{x_s}\!\left(\overline{\rho w}_D\right)$ when the base flow
+lacks a spanwise $w$ component and many of the conserved growth rates when there
+is no temperature differential between $T_w$ and $p_{iw} / R \rho_{iw}$.
 
 \subsection{Growth rate of the root-mean-square fluctuating defect amplitudes}
 
@@ -756,9 +761,10 @@ and assumptions, we arrive at the dimensional equations
   .
 \end{align}
 \end{subequations}
-Additionally, the dimensional slow growth model parameters discussed in
-\autoref{sec:slowgrowthmodels} are necessary when simulating homogenized
-boundary layers.
+When simulating a homogenized flow in which $\Ssd_\rho$, $\Ssd_{\rho u}$, and
+$\Ssd_{\rho E}$ are active, specifying the slow growth model parameters
+discussed in \autoref{sec:slowgrowthmodels} is additionally required to close
+the equations.
 
 \section{Nondimensionalization}
 \label{sec:nondim}
