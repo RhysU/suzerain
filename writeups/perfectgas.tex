@@ -444,27 +444,28 @@ so further assume
 \section{Slow growth modeling}
 \label{sec:slowgrowthmodels}
 
-A useful approach when performing direct numerical simulation (DNS) on
-turbulent flow configurations where the flow develops in space or time is to
-perform a homogenization, using the assumption of slow variation (or slow
-growth) of the mean and root-mean-squared (RMS) fluctuating quantities as
-related to the fast variation of turbulent fluctuations.  This homogenization
-procedure allows simulating the turbulent flow at a specific stage of the
-development in space or time.  Examples of these procedures are the works of
-Spalart~\citep{Spalart1988Direct} for incompressible boundary layers, and of
-Venugopal~\citep{Venugopal2003} for channel flow with wall injection.
+A useful approach when performing direct numerical simulation (DNS) on turbulent
+flow configurations where the flow develops in space or time is to perform a
+homogenization, using the assumption of slow variation (or slow growth) of the
+mean and root-mean-squared (RMS) fluctuating quantities as related to the fast
+variation of turbulent fluctuations.  Homogenization allows simulating the
+turbulent flow at a specific stage of its spatial or temporal development.  This
+technique has been used by \citet{Spalart1988Direct} for incompressible boundary
+layers and by \citet{Venugopal2003} for channel flow with wall injection.
+Suzerain requires homogenization techniques to permit simulating boundary layer
+problems using the spatially periodic discretization discussed in
+\autoref{sec:discretization}.
 
-In practice, all slow growth approach introduces source terms in the
+In practice, all slow growth approaches introduces source terms in the
 Navier--Stokes equations, where their functional forms are specific to the flow
-configuration that was homogenized and on various modeling assumptions.  These
-slow growth sources will be generically designated with $\Ssd$.
+configuration that has been homogenized and on various modeling assumptions.
+These slow growth sources will be generically designated with $\Ssd$.
 
-Here, the slow growth models developed by Topalian et. al are chosen.
-\todo{Cite paper when available} Up to four classes of slow growth model
-parameters must be set when using the slow growth models developed by Victor
-Topalian.  The following subsections briefly discuss the associated model
-settings.  In them, the notation employs a logarithmic growth rate operator
-$\operatorname{gr}$ defined by
+Here, we employ the slow growth models developed by~\citet{Topalian2013Direct}.
+\todo{Cite papers when available}  When applying these models, four classes of
+model parameters must be specified.  The following subsection discuss each class
+in turn.  In them, the notation employs a logarithmic growth rate operator
+defined by
 \begin{align}
     \operatorname{gr}_{\bullet}\!\left(f\right) &=
     \frac{1}{f} \frac{\partial f}{\partial \bullet}
@@ -477,24 +478,24 @@ Mixed spatiotemporal formulations employ both growth rate operators.
 \subsection{Imposing a streamwise pressure gradient via an inviscid base flow}
 \label{seq:imposing_fpg}
 
-Topalian's slow growth models require an inviscid base flow profile to permit
+The chosen slow growth models require an inviscid base flow profile to permit
 emulating spatially inhomogeneous features like favorable pressure gradients.
-In addition to a wall-normal, steady solution to the Euler equations and
-pressure details, this base flow profile includes slow streamwise derivative
-information.  That is, one supplies:
+In addition to a wall-normal, steady solution to the Euler equations, the
+profile includes pressure and slow streamwise derivative information.  That is,
+one supplies:
 \begin{align}
     &\rho_i\!\left(y\right)                                &  &\rho                                u_i\!\left(y\right)  &  &\rho                                v_i\!\left(y\right)  &  &\rho                                w_i\!\left(y\right)  &  &\rho                                E_i\!\left(y\right)  &  &p_i\!\left(y\right)                                \\
     \frac{\partial}{\partial{}y}&\rho_i\!\left(y\right)    &  \frac{\partial}{\partial{}y}&\rho    u_i\!\left(y\right)  &  \frac{\partial}{\partial{}y}&\rho    v_i\!\left(y\right)  &  \frac{\partial}{\partial{}y}&\rho    w_i\!\left(y\right)  &  \frac{\partial}{\partial{}y}&\rho    E_i\!\left(y\right)  &  \frac{\partial}{\partial{}y}&p_i\!\left(y\right)    \\
     \frac{\partial}{\partial{}x_s}&\rho_i\!\left(y\right)  &  \frac{\partial}{\partial{}x_s}&\rho  u_i\!\left(y\right)  &  \frac{\partial}{\partial{}x_s}&\rho  v_i\!\left(y\right)  &  \frac{\partial}{\partial{}x_s}&\rho  w_i\!\left(y\right)  &  \frac{\partial}{\partial{}x_s}&\rho  E_i\!\left(y\right)  &  \frac{\partial}{\partial{}x_s}&p_i\!\left(y\right)
 \end{align}
-Zero pressure gradient cases employ a spatially uniform flow field fixed by,
-e.g., boundary layer edge conditions.  For nontrivial pressure gradients, a
-comprehensive process is given in the document \emph{Designing inviscid, perfect
-gas flow fields with prescribed pressure gradients and edge Mach numbers}.
+Zero pressure gradient boundary layer cases employ a spatially uniform flow
+fixed by edge conditions.  For nontrivial pressure gradients, a comprehensive
+procedure is given in the document \emph{Designing inviscid, perfect gas flow
+fields with prescribed pressure gradients and edge Mach numbers}.
 
 \subsection{Growth rate of the characteristic length scale}
 
-The parameters
+The two parameters
 \begin{align}
     \operatorname{gr}_{x_s}\!\left(\Delta\right) &= \left(
         % TODO Reconcile the lack of an \epsilon.
@@ -508,7 +509,7 @@ The parameters
 \end{align}
 model the logarithmic slow spatial growth rate of a characteristic length scale
 $\Delta$ at some fixed slow position $X_s$ or some fixed slow time $T_s$.  The
-inviscid base flow streamwise velocity at a wall, $u_{iw}$, can relate the
+inviscid base flow streamwise velocity at a wall, $u_{iw}$, relates the
 parameters per
 $
     u_{iw}
@@ -524,13 +525,13 @@ boundary layer thickness.
 
 Slow growth sources $\Ssd_\rho$, $\Ssd_{\rho u}$, $\Ssd_{\rho v}$, $\Ssd_{\rho
 w}$, and $\Ssd_{\rho E}$ involve the growth rates for the amplitude of the mean
-defect denoted $\operatorname{gr}_{a}\!\left(\overline{\rho q}_{D}\right)$ for
-$q\in\left\{1,u,v,w,E\right\}$.  Here, ``defect'' refers to the difference
-between the mean flow being modeled and the chosen inviscid base flow.
+defect denoted $\operatorname{gr}_{x_s}\!\left(\overline{\rho q}_{D}\right)$ for
+$q\in\left\{1,u,v,w,E\right\}$.  ``Defect'' refers to the difference
+between the mean flow being modeled and the inviscid base flow, $\overline{\rho
+q} - {\rho q}_i$.
 
 In spatially-homogenized flows with an isothermal wall condition, wall state in
-conjunction with the inviscid base flow may unambiguously supply the required
-information.  The parameters are informed from
+conjunction with the inviscid base flow unambiguously informs these parameters:
 \begin{align}
     \label{eq:gramp_mean}
     \operatorname{gr}_{x_s}\!\left(\overline{\rho q}_{D}\right)
@@ -544,9 +545,9 @@ information.  The parameters are informed from
         - \frac{\partial}{\partial x_s}          {\rho q}_{iw}
     \right)
 \end{align}
-where subscripts $w$ and $iw$ denotes wall state and inviscid base flow wall
-state, respectively.  From~\eqref{eq:perfectgaseos}, known constant wall
-temperature $T_w$, and the isobaric assumption $\partial \bar{p} / \partial_y
+Here, subscripts $w$ and $iw$ denotes wall state and inviscid base flow wall
+state, respectively.  From~\eqref{eq:perfectgaseos}, given constant wall
+temperature $T_w$, and an isobaric assumption $\partial \bar{p} / \partial_y
 \approx 0$,
 \begin{align}
     \bar{\rho}_w
@@ -583,7 +584,8 @@ rate~\eqref{eq:gramp_mean} to be
     }
     .
 \end{align}
-For a no-slip wall with fixed blowing velocity $v_w$, the base flow also informs:
+If the wall is non-slip with fixed blowing velocity $v_w$, the base flow also
+informs:
 \begin{align}
     \operatorname{gr}_{x_s}\!\left(\overline{\rho u}_{D}\right)
     &=
@@ -631,7 +633,7 @@ For a no-slip wall with fixed blowing velocity $v_w$, the base flow also informs
         R T_w {\rho E}_{iw} - E_w p_{iw}
     }
 \end{align}
-Finding $\operatorname{gr}_{x_s}\!\left(\overline{\rho E}_{D}\right)$
+The expression for $\operatorname{gr}_{x_s}\!\left(\overline{\rho E}_{D}\right)$
 uses~\eqref{eq:perfectgastotalenergy} to fix $E_w = \frac{R T_w}{\gamma -
 1} + \frac{1}{2} v_w^2$.  The associated primitive growth rates are
 \begin{align}
@@ -696,7 +698,7 @@ specification via smoothness,
 
 Akin to the mean growth rates, the root-mean-square fluctuating defect growth
 rates must also be specified.  Absent some unambiguous modeling ansatz, these
-parameters, denoted $\operatorname{gr}_{a}\!\left({\rho q}_\text{RMS}\right)$
+parameters, denoted $\operatorname{gr}_{x_s}\!\left({\rho q}_\text{RMS}\right)$
 for $q\in\left\{1,u,v,w,E\right\}$, are taken to be zero.
 
 \section{Dimensional equations}
@@ -753,6 +755,9 @@ and assumptions, we arrive at the dimensional equations
   .
 \end{align}
 \end{subequations}
+Additionally, the dimensional slow growth model parameters discussed in
+\autoref{sec:slowgrowthmodels} are necessary when simulating homogenized
+boundary layers.
 
 \section{Nondimensionalization}
 \label{sec:nondim}
