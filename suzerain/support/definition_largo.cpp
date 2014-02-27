@@ -422,7 +422,8 @@ definition_largo::save(
                 gm.size(), 0, procid == 0 ? gm.size() : 0);
         esio_line_write(
                 h, location_gramp_mean, gm.data(), 0,
-                "Amplitude growth rates for the mean values");
+                "Amplitude growth rates for the mean values"
+                " stored per the formulation employed");
     }
 
     if (!this->gramp_rms.size() == 0) {
@@ -435,7 +436,8 @@ definition_largo::save(
                 gr.size(), 0, procid == 0 ? gr.size() : 0);
         esio_line_write(
                 h, location_gramp_rms, gr.data(), 0,
-                "Amplitude growth rates for the rms values");
+                "Amplitude growth rates for the rms values"
+                " stored per the formulation employed");
     }
 }
 
