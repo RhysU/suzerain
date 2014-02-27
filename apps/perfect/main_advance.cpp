@@ -407,14 +407,12 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
         // The gramp_{mean,rms} vectors should already have been zero-filled.
         // All nondimensional expressions below in model document section 5.4.
         // FIXME Redmine #2997 Resolve unresolved issues in the model document
-        // TODO Is a pressure growth rate required by the Largo API?
         if (sg->formulation.enabled()) {
 
             if (sg->gramp_mean.size()) {
                 INFO0(who, "Ignoring incoming, non-normative defect"
                            " mean slow growth rates");
             }
-            // TODO Is a pressure growth rate required by the Largo API?
             sg->gramp_mean.assign(fields.size() + /*pressure*/1, 0.0);
 
             INFO0(who, "Preparing to compute defect slow growth"
