@@ -533,7 +533,7 @@ $q\in\left\{1,u,v,w,E\right\}$.  ``Defect'' refers to the difference between the
 mean flow being modeled and the inviscid base flow, $\overline{\rho q} - {\rho
 q}_i$.
 
-In spatially-homogenized flows with an isothermal wall, boundary state in
+In spatially homogenized flows with an isothermal wall, boundary state in
 conjunction with the inviscid base flow unambiguously informs these rates:
 \begin{align}
     \label{eq:gramp_mean}
@@ -566,13 +566,13 @@ Therefore the inviscid base flow informs the density defect growth
 rate~\eqref{eq:gramp_mean} to be
 \begin{align}
     \operatorname{gr}_{x_s}\!\left(\bar{\rho}_{D}\right)
-    &=
-    \frac{1}{\bar{\rho}_{w} - {\rho}_{iw}}
-    \left(
-          \frac{\partial}{\partial x_s} \bar{\rho}_{w}
-        - \frac{\partial}{\partial x_s}     {\rho}_{iw}
-    \right)
-    \approx
+    %=
+    %\frac{1}{\bar{\rho}_{w} - {\rho}_{iw}}
+    %\left(
+    %      \frac{\partial}{\partial x_s} \bar{\rho}_{w}
+    %    - \frac{\partial}{\partial x_s}     {\rho}_{iw}
+    %\right)
+    &\approx
     \frac{1}{\frac{p_{iw}}{R T_w} - {\rho}_{iw}}
     \left(
           \frac{1}{R T_w} \frac{\partial}{\partial x_s} {p   }_{iw}
@@ -585,13 +585,32 @@ rate~\eqref{eq:gramp_mean} to be
     }{
           {R T_w} \rho_{iw} - p_{iw}
     }
+\end{align}
+which uses only the inviscid specification data per \autoref{seq:imposing_fpg}.
+Interestingly, further simplification yields
+\begin{align}
+    \operatorname{gr}_{x_s}\!\left(\bar{\rho}_{D}\right)
+    &\approx
+    \frac{
+          R T_w \frac{\partial}{\partial x_s}        \rho_{iw}
+        - R     \frac{\partial}{\partial x_s} T_{iw} \rho_{iw}
+    }{
+          R T_w \rho_{iw} - R T_{iw} \rho_{iw}
+    }
+    =
+    \frac{
+          \left( T_w - T_{iw} \right) \frac{\partial}{\partial x_s} \rho_{iw}
+        - \rho_{iw} \frac{\partial}{\partial x_s} T_{iw}
+    }{
+          \rho_{iw} \left( T_w - T_{iw} \right)
+    }
+    = \frac{ \frac{\partial}{\partial x_s} \rho_{iw} } { \rho_{iw} }
+    - \frac{\frac{\partial}{\partial x_s} T_{iw} }{T_w - T_{iw}}
     .
 \end{align}
 %
 \todo{Victor neglects $v_w$; it degenerates weirdly when no blowing in base flow}
-\todo{Adding blowing to radial base flow adds $\partial_{x_s} v_w \neq 0$}
 \todo{Todd has suggested looking at the edge for the $\rho v$ defect}
-\todo{Can these consistently give negative growth rates?  Is that kosher?}
 %
 If the wall is non-slip with fixed blowing velocity $v_w$, the base flow further
 informs:
