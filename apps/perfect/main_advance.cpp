@@ -464,9 +464,10 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
             }
 
             // Report any non-zero growth rates to the user
-#           define MAYBE_MENTION(var, name)                                 \
-                do if (var != 0) {                                          \
-                    INFO0(who, "Mean defect growth rate for " name << var); \
+#           define MAYBE_MENTION(var, name)                   \
+                do if (var != 0) {                            \
+                    INFO0(who, "Mean defect growth rate for " \
+                               << name << fullprec<>(var));   \
                 } while (0)
             MAYBE_MENTION(grDA.rho, "density:              ");
             if (sg->formulation.expects_conserved_growth_rates()) {
