@@ -569,7 +569,8 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
                 }
                 real_t minval = constrainer->physical[i]->shape.minCoeff();
                 real_t maxval = constrainer->physical[i]->shape.maxCoeff();
-                INFO0(who, "Constraint profile for " << ndx::identifier[i]
+                INFO0(who, "Constraint profile for "
+                            << setw(5) << left << ndx::identifier[i]
                             << " has range ["
                             << fullprec<>(minval) << ", "
                             << fullprec<>(maxval) << ']');
