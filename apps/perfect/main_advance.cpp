@@ -406,7 +406,7 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
         // If a slow growth model is in use, compute defect growth rates.
         // The gramp_{mean,rms} vectors should already have been zero-filled.
         // All nondimensional expressions below in model document section 5.4.
-        // FIXME Redmine #2997 Resolve unresolved issues in the model document
+        // Beware v_w used in wall-normal direction but used in energy result.
         if (sg->formulation.enabled()) {
 
             if (sg->gramp_mean.size()) {
@@ -417,14 +417,9 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
 
             INFO0(who, "Preparing to compute defect slow growth"
                        " rates from wall state");
-            const real_t Tw = isothermal->lower_T;  // Brevity
-            const real_t vw = isothermal->lower_v;  // Brevity
-            if (vw) {
-                INFO0(who, "Computations use non-zero wall blowing velocity "
-                           << vw);
-            }
+            const real_t Tw = isothermal->lower_T;      // Brevity
             const real_t Ew = Tw / (scenario->gamma*(scenario->gamma - 1))
-                            + scenario->Ma*scenario->Ma*vw*vw / 2;
+                            + pow(scenario->Ma * isothermal->lower_v, 2) / 2;
             largo_state iw, dxiw;
             if (sg->baseflow) {
                 largo_state dontcare;
@@ -434,15 +429,14 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
                         0.0, iw.p, dontcare.p, dxiw.p); // as_is()
             }
 
-            // Compute density, model-specific rates, and then pressure
+            // Compute density, model-specific rates, and last pressure
             largo_state grDA;
             grDA.rho = (Tw * dxiw.rho - scenario->gamma * dxiw.p)
                      / (Tw *   iw.rho - scenario->gamma *   iw.p);
             if (sg->formulation.expects_conserved_growth_rates()) {
                 INFO0(who, "Calculating conserved defect mean growth rates");
                 grDA.mx = dxiw.mx / iw.mx;
-                grDA.my = (Tw * dxiw.my - scenario->gamma * vw * dxiw.p)
-                        / (Tw *   iw.my - scenario->gamma * vw *   iw.p);
+                grDA.my = dxiw.my / iw.my;
                 grDA.mz = dxiw.mz / iw.mz;
                 grDA.e  = (Tw * dxiw.e  - scenario->gamma * Ew * dxiw.p)
                         / (Tw *   iw.e  - scenario->gamma * Ew *   iw.p);
@@ -450,19 +444,15 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
                 INFO0(who, "Calculating primitive defect mean growth rates");
                 // Primitive order matches conserved, hence weird assignments
                 // First lines compute derivative from conserved base flow
-                grDA.mx = (dxiw.mx - iw.u() * dxiw.rho) / iw.rho
-                        / (iw.u());
-                grDA.my = (dxiw.my - iw.v() * dxiw.rho) / iw.rho
-                        / (iw.v() - vw);
-                grDA.mz = (dxiw.mz - iw.w() * dxiw.rho) / iw.rho
-                        / (iw.w());
-                grDA.e  = (dxiw.e  - iw.E() * dxiw.rho) / iw.rho
-                        / (iw.E() - Ew);
+                grDA.mx = (dxiw.mx - iw.u()*dxiw.rho) / iw.rho / (iw.u()     );
+                grDA.my = (dxiw.my - iw.v()*dxiw.rho) / iw.rho / (iw.v()     );
+                grDA.mz = (dxiw.mz - iw.w()*dxiw.rho) / iw.rho / (iw.w()     );
+                grDA.e  = (dxiw.e  - iw.E()*dxiw.rho) / iw.rho / (iw.E() - Ew);
             } else {
                 FATAL0(who, "Sanity error in growth rate computations");
                 return EXIT_FAILURE;
             }
-            grDA.p  = 0;
+            grDA.p = 0;
 
             // Coerce any non-finite rates to be zero per goofy convention
             for (size_t i = 0; i < sg->gramp_mean.size(); ++i) {

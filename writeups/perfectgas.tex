@@ -549,10 +549,8 @@ conjunction with the inviscid base flow can inform these rates:
     \right)
 \end{align}
 Here, subscripts $w$ and $iw$ denotes wall state and inviscid base flow wall
-state, respectively.  Whenever a growth rate is undefined according to this
-definition, by convention it should be treated as zero.
-From~\eqref{eq:perfectgaseos}, known constant wall temperature $T_w$, and an
-isobaric assumption $\partial \bar{p} / \partial_y
+state, respectively.  From~\eqref{eq:perfectgaseos}, known constant wall
+temperature $T_w$, and an isobaric assumption $\partial \bar{p} / \partial_y
 \approx 0$,
 \begin{align}
     \bar{\rho}_w
@@ -612,6 +610,7 @@ Interestingly, further simplification yields
     - \frac{\frac{\partial}{\partial x_s} T_{iw} }{T_w - T_{iw}}
     .
 \end{align}
+%
 Considering now the momentum growth rates~\eqref{eq:gramp_mean} at a no-slip
 wall,
 \begin{align}
@@ -627,11 +626,11 @@ wall,
     &=
     \frac{ \frac{\partial}{\partial x_s} {\rho w}_{iw} }{ {\rho w}_{iw} }
 \end{align}
-Any possibly nonzero wall blowing velocity $v_w$ is neglected because
+Any nonzero wall blowing velocity $v_w$ has been neglected because
 straightforwardly mimicking~\eqref{eq:gramp_mean_rho},
 \begin{align}
     \label{eq:gramp_mean_rhov_alt}
-    \underset{\text{hypothetical}}
+    \underset{\text{rejected}}
              {\operatorname{gr}_{x_s}\!\left(\overline{\rho v}_{D}\right)}
     &\approx
     \frac{1}{{\rho v}_{iw} - \frac{p_{iw}}{R T_w} v_w}
@@ -650,14 +649,13 @@ straightforwardly mimicking~\eqref{eq:gramp_mean_rho},
 \end{align}
 behaves oddly on two accounts.  First, from it one
 recovers~\eqref{eq:gramp_mean_rho_simp} whenever the base flow is designed with
-transpiration wherein $v_{iw} = v_w \neq 0$ and $\frac{\partial}{\partial x_s}
-v_{iw} = 0$ will hold.  Second, whenever $v_{iw} = 0$ the limiting $v_w \to 0$
+transpiration as then both $v_{iw} = v_w \neq 0$ and $\frac{\partial}{\partial
+x_s} v_{iw} = 0$ hold.  Second, whenever $v_{iw} = 0$ its limiting $v_w \to 0$
 behavior is broken in the sense that one recovers
 $\left(\frac{\partial}{\partial x_s} {p}_{iw}\right) / p_{iw}$ for any $v_w \neq
 0$ but not when $v_w = 0$.
 %
-\todo{Todd has suggested modeling based on ${\rho v}_\text{i,edge}$, if possible.}
-%
+Pressing on, the total energy mean defect growth rate becomes
 \begin{align}
     \operatorname{gr}_{x_s}\!\left(\overline{\rho E}_{D}\right)
     &\approx
@@ -674,9 +672,12 @@ $\left(\frac{\partial}{\partial x_s} {p}_{iw}\right) / p_{iw}$ for any $v_w \neq
         R T_w {\rho E}_{iw} - E_w p_{iw}
     }
 \end{align}
-The expression for $\operatorname{gr}_{x_s}\!\left(\overline{\rho E}_{D}\right)$
-requires~\eqref{eq:perfectgastotalenergy} to fix $E_w = \frac{R T_w}{\gamma -
-1} + \frac{1}{2} v_w^2$.  The associated primitive growth rates are
+where wall blowing is now neither problematic nor neglected
+so~\eqref{eq:perfectgastotalenergy} fixes $E_w = \frac{R T_w}{\gamma - 1} +
+\frac{1}{2} v_w^2$ at the no-slip surface.
+%
+The primitive growth rates matching
+the preceding conserved quantity discourse are
 \begin{align}
     \operatorname{gr}_{x_s}\!\left(\bar{u}_{D}\right)
     &=
@@ -691,7 +692,7 @@ requires~\eqref{eq:perfectgastotalenergy} to fix $E_w = \frac{R T_w}{\gamma -
     \frac{
         \frac{\partial}{\partial x_s}          {v}_{iw}
     }{
-        {v}_{iw} - v_w
+        {v}_{iw}
     }
     &
     \operatorname{gr}_{x_s}\!\left(\bar{w}_{D}\right)
@@ -710,8 +711,8 @@ requires~\eqref{eq:perfectgastotalenergy} to fix $E_w = \frac{R T_w}{\gamma -
         {E}_{iw} - E_w
     }
 \end{align}
-where primitive derivatives are obtained from the conservative base flow
-specification via smoothness,
+where the primitive derivatives can be found from the conservative base flow
+specification using
 \begin{align}
     %\frac{\partial}{\partial x_s} \bar{q}_w &= \frac{1}{\bar{\rho}_w}\left(
     %      \frac{\partial}{\partial x_s} \overline{\rho q}_w
@@ -734,11 +735,11 @@ specification via smoothness,
     \right)
     .
 \end{align}
-% TODO
-% Common situations requiring this final clause include
-% $\operatorname{gr}_{x_s}\!\left(\overline{\rho w}_D\right)$ when the base flow
-% lacks a spanwise $w$ component and many of the conserved growth rates when there
-% is no temperature differential between $T_w$ and $p_{iw} / R \rho_{iw}$.
+Finally, whenever a growth rate is undefined according these expressions, by
+convention it is taken as zero.  Common situations requiring this final clause
+include the thermodynamic growth rates when $T_{iw} = T_w$ and the wall-normal
+and spanwise momentum and velocity rates when the base flow is trivial in those
+directions at the wall.
 
 \subsection{Growth rate of the root-mean-square fluctuating defect amplitudes}
 
@@ -1079,13 +1080,12 @@ results in \autoref{sec:slowgrowthgramp_mean}, one finds
     }
     \displaybreak[1]\\
     \operatorname{gr}_{x_s}\!\left(\overline{\rho v}_{D}\right)
-    &\approx
+    &=
     \frac{1}{l_0}
     \frac{
-                 T_w \frac{\partial}{\partial x_s} {\rho v}_{iw}
-        - \gamma v_w \frac{\partial}{\partial x_s} {p     }_{iw}
+        \frac{\partial}{\partial x_s}          {\rho v}_{iw}
     }{
-        T_w {\rho v}_{iw} - \gamma v_w p_{iw}
+        {\rho v}_{iw}
     }
     &
     \operatorname{gr}_{x_s}\!\left(\bar{v}_{D}\right)
@@ -1094,7 +1094,7 @@ results in \autoref{sec:slowgrowthgramp_mean}, one finds
     \frac{
         \frac{\partial}{\partial x_s}          {v}_{iw}
     }{
-        {v}_{iw} - v_w
+        {v}_{iw}
     }
     \displaybreak[1]\\
     \operatorname{gr}_{x_s}\!\left(\overline{\rho w}_{D}\right)
@@ -1138,8 +1138,8 @@ results in \autoref{sec:slowgrowthgramp_mean}, one finds
 \begin{align}
     E_w &= \frac{T_w}{\gamma\left(\gamma-1\right)} + \frac{\Mach^2}{2} v_w^2
 \end{align}
-If a growth rate is undefined according to these expressions, it is taken
-to be zero.
+By convention, if a growth rate is undefined according to these expressions, it
+is taken to be zero.
 
 \chapter{Discretization}
 \label{sec:discretization}
