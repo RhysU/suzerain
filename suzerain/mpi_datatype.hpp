@@ -88,128 +88,164 @@ struct datatype<volatile T, typename boost::enable_if<boost::mpl::and_<
 /** Specialized MPI_Datatype case for <tt>char</tt>s */
 template<>
 struct datatype<char> {
-    static const MPI_Datatype value = MPI_CHAR;
+    static const MPI_Datatype value;
     operator MPI_Datatype () const { return value; }
 };
+
+const MPI_Datatype datatype<char>::value = MPI_CHAR;
 
 /** Specialized MPI_Datatype case for <tt>signed char</tt>s */
 template<>
 struct datatype<signed char> {
-    static const MPI_Datatype value = MPI_SIGNED_CHAR;
+    static const MPI_Datatype value;
     operator MPI_Datatype () const { return value; }
 };
+
+const MPI_Datatype datatype<signed char>::value = MPI_SIGNED_CHAR;
 
 /** Specialized MPI_Datatype case for <tt>unsigned char</tt>s */
 template<>
 struct datatype<unsigned char> {
-    static const MPI_Datatype value = MPI_UNSIGNED_CHAR;
+    static const MPI_Datatype value;
     operator MPI_Datatype () const { return value; }
 };
+
+const MPI_Datatype datatype<unsigned char>::value = MPI_UNSIGNED_CHAR;
 
 /** Specialized MPI_Datatype case for <tt>signed short int</tt>s */
 template<>
 struct datatype<signed short int> {
-    static const MPI_Datatype value = MPI_SHORT;
+    static const MPI_Datatype value;
     operator MPI_Datatype () const { return value; }
 };
+
+const MPI_Datatype datatype<signed short int>::value = MPI_SHORT;
 
 /** Specialized MPI_Datatype case for <tt>signed int</tt>s */
 template<>
 struct datatype<signed int> {
-    static const MPI_Datatype value = MPI_INT;
+    static const MPI_Datatype value;
     operator MPI_Datatype () const { return value; }
 };
+
+const MPI_Datatype datatype<signed int>::value = MPI_INT;
 
 /** Specialized MPI_Datatype case for <tt>signed long int</tt>s */
 template<>
 struct datatype<signed long int> {
-    static const MPI_Datatype value = MPI_LONG;
+    static const MPI_Datatype value;
     operator MPI_Datatype () const { return value; }
 };
+
+const MPI_Datatype datatype<signed long int>::value = MPI_LONG;
 
 /** Specialized MPI_Datatype case for <tt>signed long long int</tt>s */
 template<>
 struct datatype<signed long long int> {
-    static const MPI_Datatype value = MPI_LONG_LONG;
+    static const MPI_Datatype value;
     operator MPI_Datatype () const { return value; }
 };
+
+const MPI_Datatype datatype<signed long long int>::value = MPI_LONG_LONG;
 
 /** Specialized MPI_Datatype case for <tt>unsigned short int</tt>s */
 template<>
 struct datatype<unsigned short int> {
-    static const MPI_Datatype value = MPI_UNSIGNED_SHORT;
+    static const MPI_Datatype value;
     operator MPI_Datatype () const { return value; }
 };
+
+const MPI_Datatype datatype<unsigned short int>::value = MPI_UNSIGNED_SHORT;
 
 /** Specialized MPI_Datatype case for <tt>unsigned int</tt>s */
 template<>
 struct datatype<unsigned int> {
-    static const MPI_Datatype value = MPI_UNSIGNED;
+    static const MPI_Datatype value;
     operator MPI_Datatype () const { return value; }
 };
+
+const MPI_Datatype datatype<unsigned int>::value = MPI_UNSIGNED;
 
 /** Specialized MPI_Datatype case for <tt>unsigned long int</tt>s */
 template<>
 struct datatype<unsigned long int> {
-    static const MPI_Datatype value = MPI_UNSIGNED_LONG;
+    static const MPI_Datatype value;
     operator MPI_Datatype () const { return value; }
 };
+
+const MPI_Datatype datatype<unsigned long int>::value = MPI_UNSIGNED_LONG;
 
 /** Specialized MPI_Datatype case for <tt>unsigned long long int</tt>s */
 template<>
 struct datatype<unsigned long long int> {
-    static const MPI_Datatype value = MPI_UNSIGNED_LONG_LONG;
+    static const MPI_Datatype value;
     operator MPI_Datatype () const { return value; }
 };
+
+const MPI_Datatype datatype<unsigned long long int>::value = MPI_UNSIGNED_LONG_LONG;
 
 /** Specialized MPI_Datatype case for <tt>float</tt>s */
 template<>
 struct datatype<float> {
-    static const MPI_Datatype value = MPI_FLOAT;
+    static const MPI_Datatype value;
     operator MPI_Datatype () const { return value; }
 };
+
+const MPI_Datatype datatype<float>::value = MPI_FLOAT;
 
 /** Specialized MPI_Datatype case for <tt>double</tt>s */
 template<>
 struct datatype<double> {
-    static const MPI_Datatype value = MPI_DOUBLE;
+    static const MPI_Datatype value;
     operator MPI_Datatype () const { return value; }
 };
+
+const MPI_Datatype datatype<double>::value = MPI_DOUBLE;
 
 /** Specialized MPI_Datatype case for <tt>long double</tt>s */
 template<>
 struct datatype<long double> {
-    static const MPI_Datatype value = MPI_LONG_DOUBLE;
+    static const MPI_Datatype value;
     operator MPI_Datatype () const { return value; }
 };
+
+const MPI_Datatype datatype<long double>::value = MPI_LONG_DOUBLE;
 
 /** Specialized MPI_Datatype case for <tt>std::complex<float></tt>s */
 template<>
 struct datatype<std::complex<float> > {
-    static const MPI_Datatype value = MPI_C_FLOAT_COMPLEX;
+    static const MPI_Datatype value;
     operator MPI_Datatype () const { return value; }
 };
+
+const MPI_Datatype datatype<std::complex<float> >::value = MPI_C_FLOAT_COMPLEX;
 
 /** Specialized MPI_Datatype case for <tt>std::complex<double></tt>s */
 template<>
 struct datatype<std::complex<double> > {
-    static const MPI_Datatype value = MPI_C_DOUBLE_COMPLEX;
+    static const MPI_Datatype value;
     operator MPI_Datatype () const { return value; }
 };
+
+const MPI_Datatype datatype<std::complex<double> >::value = MPI_C_DOUBLE_COMPLEX;
 
 /** Specialized MPI_Datatype case for <tt>std::complex<long double></tt>s */
 template<>
 struct datatype<std::complex<long double> > {
-    static const MPI_Datatype value = MPI_C_LONG_DOUBLE_COMPLEX;
+    static const MPI_Datatype value;
     operator MPI_Datatype () const { return value; }
 };
+
+const MPI_Datatype datatype<std::complex<long double> >::value = MPI_C_LONG_DOUBLE_COMPLEX;
 
 /** Specialized MPI_Datatype case for <tt>wchar_t</tt>s */
 template<>
 struct datatype<wchar_t> {
-    static const MPI_Datatype value = MPI_WCHAR;
+    static const MPI_Datatype value;
     operator MPI_Datatype () const { return value; }
 };
+
+const MPI_Datatype datatype<wchar_t>::value = MPI_WCHAR;
 
 /**
  * Perform MPI_Datatype lookup based on an argument.
