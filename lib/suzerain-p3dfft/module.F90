@@ -107,12 +107,14 @@
       integer,save :: gslab_csize(3,3), gslab_cstart(3,6), gslab_cend(3,6)
       integer(kind=8),save :: gmem_rstart(6), gmem_cstart(6)
 
-      public :: get_dims,p3dfft_setup,p3dfft_ftran_r2c,p3dfft_btran_c2r, &
-                 p3dfft_clean,print_buf,                                 &
-                 p3dfft_init_ghosts, update_rghosts,                     &
-                 update_cghosts, gr_ijk2i,                               &
-                 proc_id2coords, proc_coords2id,                         &
-                 gmem_rstart, gmem_cstart
+      public :: get_dims             ! FIXME Prefix with "p3dfft_"
+      public :: p3dfft_btran_c2r
+      public :: p3dfft_clean
+      public :: p3dfft_fftw_rigor
+      public :: p3dfft_ftran_r2c
+      public :: p3dfft_get_precision
+      public :: p3dfft_setup
+      public :: p3dfft_using_stride1
 
 !-------------------
       contains
