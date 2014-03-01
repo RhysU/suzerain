@@ -1,5 +1,6 @@
 //--------------------------------------------------------------------------
 //
+//
 // Copyright (C) 2011-2014 Rhys Ulerich
 // Copyright (C) 2012-2014 The PECOS Development Team
 // Please see http://pecos.ices.utexas.edu for more information on PECOS.
@@ -507,20 +508,22 @@ inline logger_type& get_logger(logger_type&, logger_type& child)
         LOGGING_DISPATCH(FATAL_ENABLE,LOGGING_PP_NARG("dummy",##__VA_ARGS__),##__VA_ARGS__)
 
 // Logging macros emitting messages as "root" only from rank zero.
-#define TRACE0_ARITY1(m) do{LOG4CXX_TRACE(::suzerain::support::logging::rankzero,m)}while(0)
-#define DEBUG0_ARITY1(m) do{LOG4CXX_DEBUG(::suzerain::support::logging::rankzero,m)}while(0)
-#define INFO0_ARITY1(m)  do{LOG4CXX_INFO( ::suzerain::support::logging::rankzero,m)}while(0)
-#define WARN0_ARITY1(m)  do{LOG4CXX_WARN( ::suzerain::support::logging::rankzero,m)}while(0)
-#define ERROR0_ARITY1(m) do{LOG4CXX_ERROR(::suzerain::support::logging::rankzero,m)}while(0)
-#define FATAL0_ARITY1(m) do{LOG4CXX_FATAL(::suzerain::support::logging::rankzero,m)}while(0)
+// Semicolons trip warnings on old log4cxx releases but necessary for trunk
+#define TRACE0_ARITY1(m) do{LOG4CXX_TRACE(::suzerain::support::logging::rankzero,m);}while(0)
+#define DEBUG0_ARITY1(m) do{LOG4CXX_DEBUG(::suzerain::support::logging::rankzero,m);}while(0)
+#define INFO0_ARITY1(m)  do{LOG4CXX_INFO( ::suzerain::support::logging::rankzero,m);}while(0)
+#define WARN0_ARITY1(m)  do{LOG4CXX_WARN( ::suzerain::support::logging::rankzero,m);}while(0)
+#define ERROR0_ARITY1(m) do{LOG4CXX_ERROR(::suzerain::support::logging::rankzero,m);}while(0)
+#define FATAL0_ARITY1(m) do{LOG4CXX_FATAL(::suzerain::support::logging::rankzero,m);}while(0)
 
 // Logging macros emitting messages from named loggers on rank zero.
-#define TRACE0_ARITY2(l,m) do{LOG4CXX_TRACE(::suzerain::support::logging::get_logger(l),m)}while(0)
-#define DEBUG0_ARITY2(l,m) do{LOG4CXX_DEBUG(::suzerain::support::logging::get_logger(l),m)}while(0)
-#define INFO0_ARITY2(l,m)  do{LOG4CXX_INFO( ::suzerain::support::logging::get_logger(l),m)}while(0)
-#define WARN0_ARITY2(l,m)  do{LOG4CXX_WARN( ::suzerain::support::logging::get_logger(l),m)}while(0)
-#define ERROR0_ARITY2(l,m) do{LOG4CXX_ERROR(::suzerain::support::logging::get_logger(l),m)}while(0)
-#define FATAL0_ARITY2(l,m) do{LOG4CXX_FATAL(::suzerain::support::logging::get_logger(l),m)}while(0)
+// Semicolons trip warnings on old log4cxx releases but necessary for trunk
+#define TRACE0_ARITY2(l,m) do{LOG4CXX_TRACE(::suzerain::support::logging::get_logger(l),m);}while(0)
+#define DEBUG0_ARITY2(l,m) do{LOG4CXX_DEBUG(::suzerain::support::logging::get_logger(l),m);}while(0)
+#define INFO0_ARITY2(l,m)  do{LOG4CXX_INFO( ::suzerain::support::logging::get_logger(l),m);}while(0)
+#define WARN0_ARITY2(l,m)  do{LOG4CXX_WARN( ::suzerain::support::logging::get_logger(l),m);}while(0)
+#define ERROR0_ARITY2(l,m) do{LOG4CXX_ERROR(::suzerain::support::logging::get_logger(l),m);}while(0)
+#define FATAL0_ARITY2(l,m) do{LOG4CXX_FATAL(::suzerain::support::logging::get_logger(l),m);}while(0)
 
 // Logging macros to check if particular logging levels are enabled.
 // Arity is off-by-one to handle limitation of LOGGING_PP_NARG
@@ -577,20 +580,22 @@ inline logger_type& get_logger(logger_type&, logger_type& child)
 #define FATAL_ENABLE_ARITY2(l) do{::suzerain::support::logging::get_logger(::suzerain::support::logging::allranks,l)->setLevel(::log4cxx::Level::getFatal());}while(0)
 
 // Logging macros emitting messages from all ranks with rank-specific names.
-#define TRACE_ARITY1(m) do{LOG4CXX_TRACE(::suzerain::support::logging::allranks,m)}while(0)
-#define DEBUG_ARITY1(m) do{LOG4CXX_DEBUG(::suzerain::support::logging::allranks,m)}while(0)
-#define INFO_ARITY1(m)  do{LOG4CXX_INFO( ::suzerain::support::logging::allranks,m)}while(0)
-#define WARN_ARITY1(m)  do{LOG4CXX_WARN( ::suzerain::support::logging::allranks,m)}while(0)
-#define ERROR_ARITY1(m) do{LOG4CXX_ERROR(::suzerain::support::logging::allranks,m)}while(0)
-#define FATAL_ARITY1(m) do{LOG4CXX_FATAL(::suzerain::support::logging::allranks,m)}while(0)
+// Semicolons trip warnings on old log4cxx releases but necessary for trunk
+#define TRACE_ARITY1(m) do{LOG4CXX_TRACE(::suzerain::support::logging::allranks,m);}while(0)
+#define DEBUG_ARITY1(m) do{LOG4CXX_DEBUG(::suzerain::support::logging::allranks,m);}while(0)
+#define INFO_ARITY1(m)  do{LOG4CXX_INFO( ::suzerain::support::logging::allranks,m);}while(0)
+#define WARN_ARITY1(m)  do{LOG4CXX_WARN( ::suzerain::support::logging::allranks,m);}while(0)
+#define ERROR_ARITY1(m) do{LOG4CXX_ERROR(::suzerain::support::logging::allranks,m);}while(0)
+#define FATAL_ARITY1(m) do{LOG4CXX_FATAL(::suzerain::support::logging::allranks,m);}while(0)
 
 // Logging macros emitting messages from named loggers on all ranks
-#define TRACE_ARITY2(l,m) do{LOG4CXX_TRACE(::suzerain::support::logging::get_logger(::suzerain::support::logging::allranks,l),m)}while(0)
-#define DEBUG_ARITY2(l,m) do{LOG4CXX_DEBUG(::suzerain::support::logging::get_logger(::suzerain::support::logging::allranks,l),m)}while(0)
-#define INFO_ARITY2(l,m)  do{LOG4CXX_INFO( ::suzerain::support::logging::get_logger(::suzerain::support::logging::allranks,l),m)}while(0)
-#define WARN_ARITY2(l,m)  do{LOG4CXX_WARN( ::suzerain::support::logging::get_logger(::suzerain::support::logging::allranks,l),m)}while(0)
-#define ERROR_ARITY2(l,m) do{LOG4CXX_ERROR(::suzerain::support::logging::get_logger(::suzerain::support::logging::allranks,l),m)}while(0)
-#define FATAL_ARITY2(l,m) do{LOG4CXX_FATAL(::suzerain::support::logging::get_logger(::suzerain::support::logging::allranks,l),m)}while(0)
+// Semicolons trip warnings on old log4cxx releases but necessary for trunk
+#define TRACE_ARITY2(l,m) do{LOG4CXX_TRACE(::suzerain::support::logging::get_logger(::suzerain::support::logging::allranks,l),m);}while(0)
+#define DEBUG_ARITY2(l,m) do{LOG4CXX_DEBUG(::suzerain::support::logging::get_logger(::suzerain::support::logging::allranks,l),m);}while(0)
+#define INFO_ARITY2(l,m)  do{LOG4CXX_INFO( ::suzerain::support::logging::get_logger(::suzerain::support::logging::allranks,l),m);}while(0)
+#define WARN_ARITY2(l,m)  do{LOG4CXX_WARN( ::suzerain::support::logging::get_logger(::suzerain::support::logging::allranks,l),m);}while(0)
+#define ERROR_ARITY2(l,m) do{LOG4CXX_ERROR(::suzerain::support::logging::get_logger(::suzerain::support::logging::allranks,l),m);}while(0)
+#define FATAL_ARITY2(l,m) do{LOG4CXX_FATAL(::suzerain::support::logging::get_logger(::suzerain::support::logging::allranks,l),m);}while(0)
 
 // Logging macros to check if particular logging levels are enabled.
 // Arity is off-by-one to handle limitation of LOGGING_PP_NARG
