@@ -107,11 +107,11 @@
       integer,save :: gslab_csize(3,3), gslab_cstart(3,6), gslab_cend(3,6)
       integer(kind=8),save :: gmem_rstart(6), gmem_cstart(6)
 
-      public :: get_dims             ! FIXME Prefix with "p3dfft_"
       public :: p3dfft_btran_c2r
       public :: p3dfft_clean
       public :: p3dfft_fftw_rigor
       public :: p3dfft_ftran_r2c
+      public :: p3dfft_get_dims
       public :: p3dfft_get_precision
       public :: p3dfft_setup
       public :: p3dfft_using_stride1
@@ -183,7 +183,7 @@
 !=====================================================
 ! Return array dimensions for either real-space (conf=1) or wavenumber-space(conf=2)
 !
-      subroutine get_dims(istart,iend,isize,conf)
+      subroutine p3dfft_get_dims(istart,iend,isize,conf)
 !=====================================================
 
       integer istart(3),iend(3),isize(3),conf
@@ -227,7 +227,7 @@
       endif
 
       endif
-      end subroutine get_dims
+      end subroutine p3dfft_get_dims
 
 ! =========================================================
       subroutine p3dfft_setup(dims,nx,ny,nz,overwrite)
@@ -1941,8 +1941,8 @@
 
         goverlap = goverlap_in
 
-        call get_dims(gproc_rstart, gproc_rend, gproc_rsize, 1)
-        call get_dims(gproc_cstart, gproc_cend, gproc_csize, 2)
+        call p3dfft_get_dims(gproc_rstart, gproc_rend, gproc_rsize, 1)
+        call p3dfft_get_dims(gproc_cstart, gproc_cend, gproc_csize, 2)
 
         if(     goverlap .gt. gproc_csize(1) &
            .or. goverlap .gt. gproc_csize(2) &

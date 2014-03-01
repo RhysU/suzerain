@@ -140,14 +140,14 @@ void pencil_grid_p3dfft::construct_(int Nx, int Ny, int Nz, int Pa, int Pb,
 
     // Retrieve information for local input and output pencils
     // P3DFFT uses int types; defensively ensure we do too
-    get_dims(local_physical_start.data(),
-             local_physical_end.data(),
-             local_physical_extent.data(),
-             1 /* physical */);
-    get_dims(local_wave_start.data(),
-             local_wave_end.data(),
-             local_wave_extent.data(),
-             2 /* wave */);
+    p3dfft_get_dims(local_physical_start.data(),
+                    local_physical_end.data(),
+                    local_physical_extent.data(),
+                    1 /* physical */);
+    p3dfft_get_dims(local_wave_start.data(),
+                    local_wave_end.data(),
+                    local_wave_extent.data(),
+                    2 /* wave */);
     // P3DFFT STRIDE1 physical space get_dims returns in (X, Z, Y) ordering
     // Suzerain's pencils require (X, Y, Z) ordering; flip Z and Y data
     std::swap(local_physical_start [1], local_physical_start [2]);

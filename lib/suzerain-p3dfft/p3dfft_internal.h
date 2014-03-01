@@ -72,7 +72,7 @@ extern void FORT_MOD_NAME(p3dfft_get_precision)(int *prec);
 /* Runtime logic */
 extern void FORT_MOD_NAME(p3dfft_fftw_rigor)(int *);
 extern void FORT_MOD_NAME(p3dfft_setup)(int *dims, int *nx, int *ny, int *nz, int *ow);
-extern void FORT_MOD_NAME(get_dims)(int *, int *, int *, int *);
+extern void FORT_MOD_NAME(p3dfft_get_dims)(int *, int *, int *, int *);
 extern void FORT_MOD_NAME(p3dfft_ftran_r2c)(P3DFFT_PRECISION *A, P3DFFT_PRECISION *B);
 extern void FORT_MOD_NAME(p3dfft_btran_c2r)(P3DFFT_PRECISION *A, P3DFFT_PRECISION *B);
 extern void FORT_MOD_NAME(ftran_r2c)(P3DFFT_PRECISION *A, P3DFFT_PRECISION *B);
@@ -129,9 +129,9 @@ void p3dfft_setup(int *dims, int nx, int ny, int nz, int overwrite)
 }
 
 inline
-void get_dims(int *start, int *end, int *size, int conf)
+void p3dfft_get_dims(int *start, int *end, int *size, int conf)
 {
-    FORT_MOD_NAME(get_dims)(start, end, size, &conf);
+    FORT_MOD_NAME(p3dfft_get_dims)(start, end, size, &conf);
 }
 
 inline
