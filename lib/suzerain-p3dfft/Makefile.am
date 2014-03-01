@@ -20,7 +20,7 @@ noinst_HEADERS = p3dfft_internal.h p3dfft_s.h p3dfft_d.h
 AM_CPPFLAGS     += $(FFTW3_CFLAGS)  # Make FFTW available for compilation
 AM_CPPFLAGS     += -DFFTW           # Always use FFTW for the FFTs
 AM_CPPFLAGS     += -DSTRIDE1        # Always use stride one packing option
-AM_LIBTOOLFLAGS  = --tag=CXX        # Link with C++ now as we'll do so later
+AM_LIBTOOLFLAGS  = --tag=FC         # Link with F90 to get Fortran MPI support
 
 # Build a convenience library containing our one-off version of P3DFFT 2.3.
 # The Fortran runtime libraries (i.e. $(FCLIBS)) are explicitly not added.
