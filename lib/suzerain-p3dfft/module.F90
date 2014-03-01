@@ -22,9 +22,9 @@
 
       module p3dfft
 
-      use mpi
-
       implicit none
+
+      include 'mpif.h'
 
       private
 
