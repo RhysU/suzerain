@@ -28,9 +28,10 @@ Applying TSM to the underlying model yields
     Var[f(x)] ~=       \sum_{ i } \sigma_{ii} f_{,i}^2(d)
                +    2  \sum_{i<j} \sigma_{ij} f_{,i}(d) f_{,j}(d)
 
-which are accurate to second- and first-order, respectively.  Here f_{,i}
+which are accurate to second- and first order, respectively.  Here f_{,i}
 denotes partial differentiation with respect to scalar component x_i and
 f_{,ij} denotes differentiation with respect to components x_i and x_j.
+Notice that the first order approximation to E[f(x)] is nothing but f(d).
 
 Taylor Series Methods are discussed at length by Hugh W. Coleman
 in "Experimentation, validation, and uncertainty analysis for
@@ -333,16 +334,19 @@ def mixed_partials(f, df=None):
     return ddf
 
 
-def prerequisites(f, df=None, ddf=None):
+def prerequisites(f, df=None, ddf=None, order=2):
     r'''
     Given a SymPy expression f or any string parsable as such by parse(),
     return a set wherein unique tuples represents moments necessary to
-    estimate E[f(x)] and Var[f(x)].
+    estimate E[f(x)] to first- or second order and Var[f(x)] to first order.
 
     >>> sorted(prerequisites('1 + x*y + log(x/y)'))
     []
 
     >>> sorted(prerequisites('f(x)*g(y) + a'))
+    [(f(x),), (f(x), f(x)), (f(x), g(y)), (g(y),), (g(y), g(y))]
+
+    >>> sorted(prerequisites('f(x)*g(y) + a', order=2))
     [(f(x),), (f(x), f(x)), (f(x), g(y)), (g(y),), (g(y), g(y))]
     '''
     f = parse(f)
@@ -355,7 +359,7 @@ def prerequisites(f, df=None, ddf=None):
     # removing those which can be eliminated by smoothness or symmetry.
     m = set()
 
-    # Quantities necessary to compute first-order Var[f(x)]
+    # Quantities necessary to compute first order Var[f(x)]
     if df is None:
         df = partials(f)
     # Term:          \sum_{ i } \sigma_{ii} f_{,i}^2(d)
@@ -372,24 +376,26 @@ def prerequisites(f, df=None, ddf=None):
                 m.add((s,))
             m.add(tuple(sorted([i, j])))     # Canonicalize
 
-    # Quantities necessary to compute second-order E[f(x)]
+    # Quantities necessary to compute first- or second order E[f(x)]
+    assert order == 1 or order == 2
     if ddf is None:
         ddf = mixed_partials(f, df)
     # Term:    f(d)
     for s in f.atoms(AppliedUndef):
         m.add((s,))
-    # Term: + (1/2) \sum_{ i } \sigma_{ii} f_{,ii}(d)
-    for i in ddf.keys():
-        if not ddf[i][i].is_zero:
-            for s in ddf[i][i].atoms(AppliedUndef):
-                m.add((s,))
-            m.add((i, i))                    # Canonical
-    # Term: +       \sum_{i<j} \sigma_{ij} f_{,ij}(d)
-    for (i, j) in itertools.combinations(ddf.keys(), 2):
-        if not ddf[i][j].is_zero:
-            for s in ddf[i][j].atoms(AppliedUndef):
-                m.add((s,))
-            m.add(tuple(sorted([i, j])))     # Canonicalize
+    if order > 1:
+        # Term: + (1/2) \sum_{ i } \sigma_{ii} f_{,ii}(d)
+        for i in ddf.keys():
+            if not ddf[i][i].is_zero:
+                for s in ddf[i][i].atoms(AppliedUndef):
+                    m.add((s,))
+                m.add((i, i))                    # Canonical
+        # Term: +       \sum_{i<j} \sigma_{ij} f_{,ij}(d)
+        for (i, j) in itertools.combinations(ddf.keys(), 2):
+            if not ddf[i][j].is_zero:
+                for s in ddf[i][j].atoms(AppliedUndef):
+                    m.add((s,))
+                m.add(tuple(sorted([i, j])))     # Canonicalize
 
     return m
 
@@ -428,9 +434,11 @@ class momentdict(collections.defaultdict):
         return ''.join(s)
 
 
-def expectation(f, ddf=None):
+def expectation(f, ddf=None, order=2):
     r'''
-    Prepare momentdict detailing the second-order approximation to E[f(x)].
+    Prepare momentdict detailing an approximation to E[f(x)].
+
+    Second order approximations are computed by default:
 
     >>> f, x = sympy.Function('f'), sympy.Symbol('x')
     >>> E = expectation(f(x)**2)
@@ -442,6 +450,13 @@ def expectation(f, ddf=None):
     >>> len(E), E[1], E[(f(x), g(x))]
     (2, f(x)*g(x), 1)
 
+    First order approximations may be explicitly requested:
+
+    >>> g = sympy.Function('g')
+    >>> E = expectation(f(x)*g(x), order=1)
+    >>> len(E), E[1], E[(f(x), g(x))]
+    (1, f(x)*g(x), 0)
+
     Non-functions are assumed to lack interesting correlations:
 
     >>> E = expectation(x**2 * f(x))
@@ -452,19 +467,21 @@ def expectation(f, ddf=None):
     if ddf is None:
         ddf = mixed_partials(f)
 
-    # Accumulate terms necessary to compute second-order E[f(x)]
+    # Accumulate terms necessary to compute first- or second order E[f(x)]
+    assert order == 1 or order == 2
     E = momentdict()
 
     # Term:    f(d)
     E[1] = f
-    # Term: + (1/2) \sum_{ i } \sigma_{ii} f_{,ii}(d)
-    for i in ddf.keys():
-        if not ddf[i][i].is_zero:
-            E[(i, i)] += (ddf[i][i] / 2).simplify()  # Canonical
-    # Term: +       \sum_{i<j} \sigma_{ij} f_{,ij}(d)
-    for (i, j) in itertools.combinations(ddf.keys(), 2):
-        if not ddf[i][j].is_zero:
-            E[tuple(sorted([i, j]))] += ddf[i][j]    # Canonicalize
+    if order > 1:
+        # Term: + (1/2) \sum_{ i } \sigma_{ii} f_{,ii}(d)
+        for i in ddf.keys():
+            if not ddf[i][i].is_zero:
+                E[(i, i)] += (ddf[i][i] / 2).simplify()  # Canonical
+        # Term: +       \sum_{i<j} \sigma_{ij} f_{,ij}(d)
+        for (i, j) in itertools.combinations(ddf.keys(), 2):
+            if not ddf[i][j].is_zero:
+                E[tuple(sorted([i, j]))] += ddf[i][j]    # Canonicalize
 
     return E
 
@@ -549,6 +566,13 @@ def main(argv):
                                                   source_format='free',
                                                   human=False)[2])
 
+    # Control order of the approximation to any used expectations
+    g = p.add_mutually_exclusive_group()
+    g.add_argument('-1', dest='order', action='store_const', const=1,
+                    help='employ 1st order approximation to the expectation')
+    g.add_argument('-2', dest='order', action='store_const', const=2,
+                    help='employ 2nd order approximation to the expectation')
+    p.set_defaults(order=2)
     # Add command-specific subparsers
     sp = p.add_subparsers(title='Operations to perform on declarations',
                           help='Exactly one operation must be supplied')
@@ -646,7 +670,7 @@ def command_pre(args):
     r'''Process the 'pre' command on behalf of main()'''
     prereqs = set()
     for qoi in args.f:
-        prereqs.update(prerequisites(args.syms[qoi]))
+        prereqs.update(prerequisites(args.syms[qoi], order=args.order))
     for prereq in sorted(prereqs):
         print('E', list(prereq), sep='')
 
@@ -654,7 +678,7 @@ def command_pre(args):
 def command_exp(args):
     r'''Process the 'exp' command on behalf of main()'''
     for qoi in args.f:
-        m = expectation(args.syms[qoi])
+        m = expectation(args.syms[qoi], order=args.order)
         print('E[', qoi, '] = (\n', m.__str__(args.style), ')\n', sep='')
 
 
