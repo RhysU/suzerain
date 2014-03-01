@@ -85,13 +85,13 @@ struct datatype<volatile T, typename boost::enable_if<boost::mpl::and_<
 > >::type>
     : public datatype<T> {};
 
-// Boilerplate common to the following template specializations
+// Boilerplate common to each template specialization
+// (static const member initialized in matching .cpp)
 #define SPECIALIZE(T,C)                                  \
     template<> struct datatype< T > {                    \
         static const MPI_Datatype value;                 \
         operator MPI_Datatype () const { return value; } \
-    };                                                   \
-    const MPI_Datatype datatype< T >::value = C
+    }
 
 // Template specializations translating from C++ to MPI_Datatypes
 SPECIALIZE(char,                      MPI_CHAR);

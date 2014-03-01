@@ -304,6 +304,7 @@ libbase_la_SOURCES       += inorder.c
 libbase_la_SOURCES       += l2.cpp
 libbase_la_SOURCES       += largo_formulation.cpp
 libbase_la_SOURCES       += mpi.cpp
+libbase_la_SOURCES       += mpi_datatype.cpp
 libbase_la_SOURCES       += ndx.cpp
 libbase_la_SOURCES       += operator_base.cpp
 libbase_la_SOURCES       += operator_hybrid_residual.cpp
