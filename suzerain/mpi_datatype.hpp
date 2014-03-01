@@ -250,14 +250,11 @@ const MPI_Datatype datatype<wchar_t>::value = MPI_WCHAR;
 /**
  * Perform MPI_Datatype lookup based on an argument.
  *
- * @param t Used to determine the appropriate MPI_Datatype.
- *
  * @return the MPI_Datatype corresponding to the type of \c t.
  */
 template<typename T>
-MPI_Datatype datatype_of(const T& t)
+MPI_Datatype datatype_of(const T&)
 {
-    SUZERAIN_UNUSED(t);
     return datatype<T>();
 }
 
