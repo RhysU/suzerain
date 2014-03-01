@@ -439,7 +439,7 @@ static void test_gbddddmv_ssc(const gbddddmzv_tc_type& t)
 
 static void test_gbddddmv_ddz(const gbddddmzv_tc_type& t)
 {
-    const double close_enough = numeric_limits<double>::epsilon()*t.n*t.n*500;
+    const double close_enough = numeric_limits<double>::epsilon()*t.n*t.n*2500;
     const int lend0 = t.ldd0 * t.n;
     const int lend1 = t.ldd1 * t.n;
     const int lend2 = t.ldd2 * t.n;
