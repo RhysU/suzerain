@@ -35,203 +35,178 @@ namespace suzerain {
 
 namespace mpi {
 
+// Strategy is to remove array, reference, and pointer modifiers to
+// obtain a possibly cv-qualified fundamental or complex type followed
+// by dispatching on MPI-compatible fundamental or complex types.
+
 /** Provides template-friendly lookup of MPI_Datatype constants */
 template< typename T, class Enable = void > struct datatype {
     BOOST_MPL_ASSERT_MSG(
         sizeof(T) == 0, SANITY_FAILURE_BASE_TEMPLATE_INSTANTIATED, (T));
 };
 
-/** Remove any pointer modifiers during MPI_Datatype lookups */
-template<typename T>
-struct datatype<T, typename boost::enable_if<boost::is_pointer<T> >::type>
-    : public datatype<typename boost::remove_pointer<T>::type> {};
-
-/** Remove any reference modifiers during MPI_Datatype lookups */
-template<typename T>
-struct datatype<T, typename boost::enable_if<boost::is_reference<T> >::type>
-    : public datatype<typename boost::remove_reference<T>::type> {};
-
-/** Remove any extent modifiers during MPI_Datatype lookups */
+/** Removes any extent modifiers during MPI_Datatype lookups */
 template<typename T>
 struct datatype<T, typename boost::enable_if<boost::is_array<T> >::type>
     : public datatype<typename boost::remove_extent<T>::type> {};
 
-/** Provides MPI_Datatype lookup for <tt>char</tt>s */
+/** Removes any reference modifiers during MPI_Datatype lookups */
 template<typename T>
-struct datatype<T, typename boost::enable_if<boost::is_same<
-    typename boost::remove_cv<T>::type,
-    char
-> >::type> {
+struct datatype<T, typename boost::enable_if<boost::is_reference<T> >::type>
+    : public datatype<typename boost::remove_reference<T>::type> {};
+
+/** Removes any pointer modifiers during MPI_Datatype lookups */
+template<typename T>
+struct datatype<T, typename boost::enable_if<boost::is_pointer<T> >::type>
+    : public datatype<typename boost::remove_pointer<T>::type> {};
+
+/** Removes any const or volatile modifiers on a fundamental MPI_Datatype */
+template<typename T>
+struct datatype<T, typename boost::enable_if<boost::is_fundamental<T> >::type>
+    : public datatype<typename boost::remove_cv<T>::type> {};
+
+/** Removes any const modifier on a complex MPI_Datatype */
+template<typename T>
+struct datatype<const T, typename boost::enable_if<boost::mpl::and_<
+    boost::is_complex<T>,
+    boost::mpl::not_<boost::is_array<T> >,
+    boost::mpl::not_<boost::is_reference<T> >,
+    boost::mpl::not_<boost::is_pointer<T> >
+> >::type>
+    : public datatype<T> {};
+
+/** Removes any volatile modifier on a complex MPI_Datatype */
+template<typename T>
+struct datatype<volatile T, typename boost::enable_if<boost::mpl::and_<
+    boost::is_complex<T>,
+    boost::mpl::not_<boost::is_array<T> >,
+    boost::mpl::not_<boost::is_reference<T> >,
+    boost::mpl::not_<boost::is_pointer<T> >
+> >::type>
+    : public datatype<T> {};
+
+/** Specialized MPI_Datatype case for <tt>char</tt>s */
+template<>
+struct datatype<char> {
     static const MPI_Datatype value = MPI_CHAR;
     operator MPI_Datatype () const { return value; }
 };
 
-/** Provides MPI_Datatype lookup for <tt>signed char</tt>s */
-template<typename T>
-struct datatype<T, typename boost::enable_if<boost::is_same<
-    typename boost::remove_cv<T>::type,
-    signed char
-> >::type> {
+/** Specialized MPI_Datatype case for <tt>signed char</tt>s */
+template<>
+struct datatype<signed char> {
     static const MPI_Datatype value = MPI_SIGNED_CHAR;
     operator MPI_Datatype () const { return value; }
 };
 
-/** Provides MPI_Datatype lookup for <tt>unsigned char</tt>s */
-template<typename T>
-struct datatype<T, typename boost::enable_if<boost::is_same<
-    typename boost::remove_cv<T>::type,
-    unsigned char
-> >::type> {
+/** Specialized MPI_Datatype case for <tt>unsigned char</tt>s */
+template<>
+struct datatype<unsigned char> {
     static const MPI_Datatype value = MPI_UNSIGNED_CHAR;
     operator MPI_Datatype () const { return value; }
 };
 
-/** Provides MPI_Datatype lookup for <tt>signed short int</tt>s */
-template<typename T>
-struct datatype<T, typename boost::enable_if<boost::is_same<
-    typename boost::remove_cv<T>::type,
-    signed short int
-> >::type> {
+/** Specialized MPI_Datatype case for <tt>signed short int</tt>s */
+template<>
+struct datatype<signed short int> {
     static const MPI_Datatype value = MPI_SHORT;
     operator MPI_Datatype () const { return value; }
 };
 
-/** Provides MPI_Datatype lookup for <tt>signed int</tt>s */
-template<typename T>
-struct datatype<T, typename boost::enable_if<boost::is_same<
-    typename boost::remove_cv<T>::type,
-    signed int
-> >::type> {
+/** Specialized MPI_Datatype case for <tt>signed int</tt>s */
+template<>
+struct datatype<signed int> {
     static const MPI_Datatype value = MPI_INT;
     operator MPI_Datatype () const { return value; }
 };
 
-/** Provides MPI_Datatype lookup for <tt>signed long int</tt>s */
-template<typename T>
-struct datatype<T, typename boost::enable_if<boost::is_same<
-    typename boost::remove_cv<T>::type,
-    signed long int
-> >::type> {
+/** Specialized MPI_Datatype case for <tt>signed long int</tt>s */
+template<>
+struct datatype<signed long int> {
     static const MPI_Datatype value = MPI_LONG;
     operator MPI_Datatype () const { return value; }
 };
 
-/** Provides MPI_Datatype lookup for <tt>signed long long int</tt>s */
-template<typename T>
-struct datatype<T, typename boost::enable_if<boost::is_same<
-    typename boost::remove_cv<T>::type,
-    signed long long int
-> >::type> {
+/** Specialized MPI_Datatype case for <tt>signed long long int</tt>s */
+template<>
+struct datatype<signed long long int> {
     static const MPI_Datatype value = MPI_LONG_LONG;
     operator MPI_Datatype () const { return value; }
 };
 
-/** Provides MPI_Datatype lookup for <tt>unsigned short int</tt>s */
-template<typename T>
-struct datatype<T, typename boost::enable_if<boost::is_same<
-    typename boost::remove_cv<T>::type,
-    unsigned short int
-> >::type> {
+/** Specialized MPI_Datatype case for <tt>unsigned short int</tt>s */
+template<>
+struct datatype<unsigned short int> {
     static const MPI_Datatype value = MPI_UNSIGNED_SHORT;
     operator MPI_Datatype () const { return value; }
 };
 
-/** Provides MPI_Datatype lookup for <tt>unsigned int</tt>s */
-template<typename T>
-struct datatype<T, typename boost::enable_if<boost::is_same<
-    typename boost::remove_cv<T>::type,
-    unsigned int
-> >::type> {
+/** Specialized MPI_Datatype case for <tt>unsigned int</tt>s */
+template<>
+struct datatype<unsigned int> {
     static const MPI_Datatype value = MPI_UNSIGNED;
     operator MPI_Datatype () const { return value; }
 };
 
-/** Provides MPI_Datatype lookup for <tt>unsigned long int</tt>s */
-template<typename T>
-struct datatype<T, typename boost::enable_if<boost::is_same<
-    typename boost::remove_cv<T>::type,
-    unsigned long int
-> >::type> {
+/** Specialized MPI_Datatype case for <tt>unsigned long int</tt>s */
+template<>
+struct datatype<unsigned long int> {
     static const MPI_Datatype value = MPI_UNSIGNED_LONG;
     operator MPI_Datatype () const { return value; }
 };
 
-/** Provides MPI_Datatype lookup for <tt>unsigned long long int</tt>s */
-template<typename T>
-struct datatype<T, typename boost::enable_if<boost::is_same<
-    typename boost::remove_cv<T>::type,
-    unsigned long long int
-> >::type> {
+/** Specialized MPI_Datatype case for <tt>unsigned long long int</tt>s */
+template<>
+struct datatype<unsigned long long int> {
     static const MPI_Datatype value = MPI_UNSIGNED_LONG_LONG;
     operator MPI_Datatype () const { return value; }
 };
 
-/** Provides MPI_Datatype lookup for <tt>float</tt>s */
-template<typename T>
-struct datatype<T, typename boost::enable_if<boost::is_same<
-    typename boost::remove_cv<T>::type,
-    float
-> >::type> {
+/** Specialized MPI_Datatype case for <tt>float</tt>s */
+template<>
+struct datatype<float> {
     static const MPI_Datatype value = MPI_FLOAT;
     operator MPI_Datatype () const { return value; }
 };
 
-/** Provides MPI_Datatype lookup for <tt>double</tt>s */
-template<typename T>
-struct datatype<T, typename boost::enable_if<boost::is_same<
-    typename boost::remove_cv<T>::type,
-    double
-> >::type> {
+/** Specialized MPI_Datatype case for <tt>double</tt>s */
+template<>
+struct datatype<double> {
     static const MPI_Datatype value = MPI_DOUBLE;
     operator MPI_Datatype () const { return value; }
 };
 
-/** Provides MPI_Datatype lookup for <tt>long double</tt>s */
-template<typename T>
-struct datatype<T, typename boost::enable_if<boost::is_same<
-    typename boost::remove_cv<T>::type,
-    long double
-> >::type> {
+/** Specialized MPI_Datatype case for <tt>long double</tt>s */
+template<>
+struct datatype<long double> {
     static const MPI_Datatype value = MPI_LONG_DOUBLE;
     operator MPI_Datatype () const { return value; }
 };
 
-/** Provides MPI_Datatype lookup for <tt>std::complex<float></tt>s */
-template<typename T>
-struct datatype<T, typename boost::enable_if<boost::is_same<
-    typename boost::remove_cv<T>::type,
-    std::complex<float>
-> >::type> {
+/** Specialized MPI_Datatype case for <tt>std::complex<float></tt>s */
+template<>
+struct datatype<std::complex<float> > {
     static const MPI_Datatype value = MPI_C_FLOAT_COMPLEX;
     operator MPI_Datatype () const { return value; }
 };
 
-/** Provides MPI_Datatype lookup for <tt>std::complex<double></tt>s */
-template<typename T>
-struct datatype<T, typename boost::enable_if<boost::is_same<
-    typename boost::remove_cv<T>::type,
-    std::complex<double>
-> >::type> {
+/** Specialized MPI_Datatype case for <tt>std::complex<double></tt>s */
+template<>
+struct datatype<std::complex<double> > {
     static const MPI_Datatype value = MPI_C_DOUBLE_COMPLEX;
     operator MPI_Datatype () const { return value; }
 };
 
-/** Provides MPI_Datatype lookup for <tt>std::complex<long double></tt>s */
-template<typename T>
-struct datatype<T, typename boost::enable_if<boost::is_same<
-    typename boost::remove_cv<T>::type,
-    std::complex<long double>
-> >::type> {
+/** Specialized MPI_Datatype case for <tt>std::complex<long double></tt>s */
+template<>
+struct datatype<std::complex<long double> > {
     static const MPI_Datatype value = MPI_C_LONG_DOUBLE_COMPLEX;
     operator MPI_Datatype () const { return value; }
 };
 
-/** Provides MPI_Datatype lookup for <tt>wchar_t</tt>s */
-template<typename T>
-struct datatype<T, typename boost::enable_if<boost::is_same<
-    typename boost::remove_cv<T>::type,
-    wchar_t
-> >::type> {
+/** Specialized MPI_Datatype case for <tt>wchar_t</tt>s */
+template<>
+struct datatype<wchar_t> {
     static const MPI_Datatype value = MPI_WCHAR;
     operator MPI_Datatype () const { return value; }
 };
