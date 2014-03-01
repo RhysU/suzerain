@@ -573,23 +573,24 @@ def main(argv):
     g.add_argument('-2', dest='order', action='store_const', const=2,
                     help='employ 2nd order approximation to the expectation')
     p.set_defaults(order=2)
+
     # Add command-specific subparsers
-    sp = p.add_subparsers(title='Operations to perform on declarations',
-                          help='Exactly one operation must be supplied')
-    sp_chk = sp.add_parser('chk', help='Run verification sanity checks',
-                           description='Run verification sanity checks')
-    sp_dec = sp.add_parser('dec', help='Output known declarations',
-                           description='Output known declarations')
-    sp_lib = sp.add_parser('lib', help='List undefined symbols in declarations',
+    sp = p.add_subparsers(title='subcommands, each possibly using declarations',
+                          metavar='')
+    sp_chk = sp.add_parser('chk', help='run verification sanity checks',
+                           description='run verification sanity checks')
+    sp_dec = sp.add_parser('dec', help='output known declarations',
+                           description='output known declarations')
+    sp_lib = sp.add_parser('lib', help='list undefined symbols in declarations',
                            description=prerequisites.__doc__,
                            formatter_class=RawDescriptionHelpFormatter)
-    sp_pre = sp.add_parser('pre', help='Prerequisites for E[f(x)], Var[f(x)]',
+    sp_pre = sp.add_parser('pre', help='list prerequisites for E[f(x)], Var[f(x)]',
                            description=prerequisites.__doc__,
                            formatter_class=RawDescriptionHelpFormatter)
-    sp_exp = sp.add_parser('exp', help='Tabulate terms in E[f(x)]',
+    sp_exp = sp.add_parser('exp', help='tabulate terms in E[f(x)]',
                            description=expectation.__doc__,
                            formatter_class=RawDescriptionHelpFormatter)
-    sp_var = sp.add_parser('var', help='Tabulate terms in Var[f(x)]',
+    sp_var = sp.add_parser('var', help='tabulate terms in Var[f(x)]',
                            description=variance.__doc__,
                            formatter_class=RawDescriptionHelpFormatter)
 
