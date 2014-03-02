@@ -146,7 +146,8 @@ compute_field_L2xyz(
 
     // Broadcast total2 and mean2 values to all processors
     //
-    // OpenMPI 1.6.5 hates broadcasting complex data but real values are okay.
+    // OpenMPI 1.6.5 hates broadcasting complex data but real values are okay:
+    // https://svn.open-mpi.org/trac/ompi/ticket/4323
     SUZERAIN_MPICHKR(MPI_Bcast(buf.data(),
             (sizeof(complex_t)/sizeof(real_t))*buf.size(),
             mpi::datatype<real_t>(), dgrid.rank_zero_zero_modes,
