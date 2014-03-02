@@ -145,9 +145,12 @@ compute_field_L2xyz(
     }
 
     // Broadcast total2 and mean2 values to all processors
+    //
+    // OpenMPI 1.6.5 hates broadcasting complex data but real values are okay.
     SUZERAIN_MPICHKR(MPI_Bcast(buf.data(),
-            buf.size(), mpi::datatype<complex_t>(),
-            dgrid.rank_zero_zero_modes, MPI_COMM_WORLD));
+            (sizeof(complex_t)/sizeof(real_t))*buf.size(),
+            mpi::datatype<real_t>(), dgrid.rank_zero_zero_modes,
+            MPI_COMM_WORLD));
 
     // Obtain fluctuating2 = total2 - mean2 and pack the return structure
     std::vector<field_L2xyz> retval(state.shape()[0]);
