@@ -21,6 +21,6 @@ excludes="--exclude-path /metadata_generated --exclude-path /bar_ke --exclude-pa
 "$perfect_initial" --Ny=32 initial.h5 --htdelta=2
 h5diff -r -c -v $excludes "$@" "$SCRIPTDIR/initial.h5" initial.h5
 "$perfect_advance" --explicit $(readlink -f initial.h5) --status_nt=1 --advance_dt=0.000919
-h5diff -r -c -v $excludes "$@" "$SCRIPTDIR/restart0.h5" restart0.h5
+h5diff -r -c -v $excludes "$@" "$SCRIPTDIR/restart00000.h5" restart00000.h5
 
 echo Success for $case
