@@ -26,8 +26,10 @@ banner "Preparation of physical-space version of wave-based test field${OPER:+ (
     cd $testdir
     run ../perfect_advance mms0.h5 ${DECOMP:-} $WIZ $OPER    \
                            --restart_destination "pmms#.h5"  \
+                           --restart_retain=1                \
                            --advance_nt=0 --restart_physical
     $perfect mms0.h5 --restart_destination "a#.h5" --advance_nt=0 \
+                     --restart_retain=1                           \
                      $WIZ ${DECOMP:-} --restart_physical
     differ --delta=5e-16 pmms0.h5 a0.h5
 )
@@ -36,6 +38,7 @@ banner "Idempotence of restarting from physical space without time advance${OPER
 (
     cd $testdir
     $perfect pmms0.h5 --restart_destination "a#.h5" --advance_nt=0 \
+                      --restart_retain=1                           \
                       ${DECOMP:-} $WIZ $P --restart_physical
     differ --delta=1e-15 pmms0.h5 a0.h5
 )
@@ -43,7 +46,8 @@ banner "Idempotence of restarting from physical space without time advance${OPER
 banner "Conversion from physical- to wave-based restart without time advance${OPER:+ ($OPER)}"
 (
     cd $testdir
-    $perfect pmms0.h5 --restart_destination "a#.h5" \
+    $perfect pmms0.h5 --restart_destination "a#.h5"   \
+                      --restart_retain=1              \
                       --advance_nt=0 $WIZ ${DECOMP:-}
     differ --delta=5e-15 mms0.h5 a0.h5
 )
@@ -54,10 +58,13 @@ banner "Equivalence of a field advanced both with and without a physical space r
 (
     cd $testdir
     $perfect pmms0.h5 --restart_destination "a#.h5" --advance_nt=2 $WIZ $P \
+                      --restart_retain=1                                   \
                       ${DECOMP:-} --restart_physical --max_dt=1e-5
     $perfect a0.h5    --restart_destination "b#.h5" --advance_nt=2 $WIZ $P \
+                      --restart_retain=1                                   \
                       ${DECOMP:-} --restart_physical --max_dt=1e-5
     $perfect pmms0.h5 --restart_destination "c#.h5" --advance_nt=4 $WIZ $P \
+                      --restart_retain=1                                   \
                       ${DECOMP:-} --restart_physical --max_dt=1e-5
     differ $exclude_datasets_bar --delta=6e-13 b0.h5 c0.h5
     # Paths like /bar_foo not checked as part of this test

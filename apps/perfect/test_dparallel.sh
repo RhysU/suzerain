@@ -9,8 +9,8 @@ source "`dirname $0`/test_setup.sh"
 
 # Shorthand for serial/parallel run truncating to only 1D problem
 # Such runs certainly stress the MPI pencil decomposition routines
-s_perfect="run  ../perfect_advance ${DECOMP:-} --Nx=1 --Nz=1"
-p_perfect="prun ../perfect_advance ${DECOMP:-} --Nx=1 --Nz=1"
+s_perfect="run  ../perfect_advance ${DECOMP:-} --Nx=1 --Nz=1 --restart_retain=1"
+p_perfect="prun ../perfect_advance ${DECOMP:-} --Nx=1 --Nz=1 --restart_retain=1"
 
 # These datasets are related to implicit forcing and only are meaningful when
 # using --advance_nt=N for N > 1.  They must be ignored for --advance_nt=0.
