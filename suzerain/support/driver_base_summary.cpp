@@ -246,9 +246,9 @@ driver_base::summary_run(int argc, char **argv)
             pool_type data(support::load_summary(h.get(), b));
 
             // Output status to the user so they don't think we're hung.
-            for (pool_type::const_iterator i = data.begin();
-                 i != data.end(); ++i) {
-                INFO0("Read sample for t = " << i->first
+            for (pool_type::const_iterator j = data.begin();
+                 j != data.end(); ++j) {
+                INFO0("Read sample for t = " << j->first
                       << " from " << filename);
             }
 
@@ -256,10 +256,10 @@ driver_base::summary_run(int argc, char **argv)
             pool.transfer(data);
 
             // Warn on any duplicate values which were not transfered
-            for (pool_type::const_iterator i = data.begin();
-                 i != data.end(); ++i) {
+            for (pool_type::const_iterator j = data.begin();
+                 j != data.end(); ++j) {
                 WARN0("Duplicate sample time "
-                      << i->first << " from " << filename << " ignored");
+                      << j->first << " from " << filename << " ignored");
             }
 
         }
