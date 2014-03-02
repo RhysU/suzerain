@@ -127,12 +127,9 @@ driver_base::driver_base(
     , restartdef(make_shared<definition_restart>(
                 /* metadata    */ "metadata.h5.XXXXXX",
                 /* uncommitted */ "uncommitted.h5.XXXXXX",
-                /* destination */ "restart#.h5",
-                /* retain      */ 1,
-                /* dt          */ 0,
-                /* nt          */ 0))
+                /* destination */ "restart#####.h5"))
     , statsdef(make_shared<definition_statistics>(
-                /* destination */ "sample#.h5"))
+                /* destination */ "sample#####.h5"))
     , timedef(make_shared<definition_time>(
                 /* advance_dt   */ 0,
                 /* advance_nt   */ 0,
