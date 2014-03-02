@@ -124,10 +124,14 @@ compute_field_L2xyz(
     total2 *= grid.L.x() * grid.L.z();
 
     // Reduce total2 sum onto processor housing the zero-zero mode using
-    // mean2 as a scratch buffer to simulate MPI_IN_PLACE
+    // mean2 as a scratch buffer to simulate MPI_IN_PLACE.
+    //
+    // Reduction operation is complex-valued, but OpenMPI pre-1.7.3 bombs unless
+    // we keep it real: https://svn.open-mpi.org/trac/ompi/ticket/3127.
     SUZERAIN_MPICHKR(MPI_Reduce(total2.data(), mean2.data(),
-            total2.size(), mpi::datatype<complex_t>(),
-            MPI_SUM, dgrid.rank_zero_zero_modes, MPI_COMM_WORLD));
+            (sizeof(complex_t)/sizeof(real_t))*total2.size(),
+            mpi::datatype<real_t>(), MPI_SUM,
+            dgrid.rank_zero_zero_modes, MPI_COMM_WORLD));
     total2 = mean2;
 
     // Compute the mean-only L^2 squared for each field using zero-zero modes
