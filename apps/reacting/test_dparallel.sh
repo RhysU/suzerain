@@ -10,8 +10,8 @@ source "`dirname $0`/test_setup.sh"
 # Shorthand for serial/parallel run truncating to only 1D problem
 # Such runs certainly stress the MPI pencil decomposition routines
 # TODO: Switch back to implicit once that capability is resurrected
-s_reacting="run  ../reacting_advance --explicit --Nx=1 --Nz=1"
-p_reacting="prun ../reacting_advance --explicit --Nx=1 --Nz=1"
+s_reacting="run  ../reacting_advance --explicit --Nx=1 --Nz=1 --restart_retain=1"
+p_reacting="prun ../reacting_advance --explicit --Nx=1 --Nz=1 --restart_retain=1"
 
 # These datasets are related to implicit forcing and only are meaningful when
 # using --advance_nt=N for N > 1.  They must be ignored for --advance_nt=0.
@@ -35,7 +35,7 @@ banner "Idempotence of serial versus degenerate parallel without time advance"
 (
     cd $testdir
     WIZ="--plan_wisdom=$(mktemp wisdom.XXXXXX)"
-    $s_reacting mms0.h5 --restart_destination "a#.h5" --advance_nt=0 $WIZ 
+    $s_reacting mms0.h5 --restart_destination "a#.h5" --advance_nt=0 $WIZ
     $p_reacting mms0.h5 --restart_destination "b#.h5" --advance_nt=0 $WIZ $P
     differ --use-system-epsilon $exclude_datasets a0.h5 b0.h5
 )

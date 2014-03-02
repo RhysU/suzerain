@@ -31,7 +31,8 @@ banner "Idempotence of restarting without time advance${OPER:+ ($OPER)}"
 (
     cd $testdir
     WIZ="--plan_wisdom=wisdom.init" # Prepared by test_setup.sh
-    $reacting multi0.h5 --restart_destination "a#.h5" --advance_nt=0 $WIZ $P
+    $reacting multi0.h5 --restart_destination "a#.h5" --advance_nt=0 $WIZ $P \
+                        --restart_retain=1
     differ $exclude_datasets multi0.h5 a0.h5
 )
 
@@ -39,9 +40,12 @@ banner "Equivalence of a field advanced both with and without a restart${OPER:+ 
 (
     cd $testdir
     WIZ="--plan_wisdom=$(mktemp wisdom.XXXXXX)"
-    $reacting multi0.h5 --restart_destination "a#.h5" --advance_nt=2 $WIZ $P
-    $reacting a0.h5   --restart_destination "b#.h5" --advance_nt=2 $WIZ $P
-    $reacting multi0.h5 --restart_destination "c#.h5" --advance_nt=4 $WIZ $P
+    $reacting multi0.h5 --restart_destination "a#.h5" --advance_nt=2 $WIZ $P \
+                        --restart_retain=1
+    $reacting a0.h5     --restart_destination "b#.h5" --advance_nt=2 $WIZ $P \
+                        --restart_retain=1
+    $reacting multi0.h5 --restart_destination "c#.h5" --advance_nt=4 $WIZ $P \
+                        --restart_retain=1
 
     # Ensure simulation time "/t" matches before bothering with anything else
     differ --use-system-epsilon --nan b0.h5 c0.h5 /t
@@ -53,9 +57,9 @@ banner "Upsample/downsample both homogeneous directions${OPER:+ ($OPER)}"
     cd $testdir
     WIZ="--plan_wisdom=$(mktemp wisdom.XXXXXX)"
     $reacting multi0.h5 --restart_destination "a#.h5" --advance_nt=0 $WIZ $P \
-                     --Nx=$((2*$Nx)) --Nz=$((3*$Nz))
-    $reacting a0.h5   --restart_destination "b#.h5" --advance_nt=0 $WIZ $P \
-                     --Nx=$((  $Nx)) --Nz=$((  $Nz))
+                        --restart_retain=1 --Nx=$((2*$Nx)) --Nz=$((3*$Nz))
+    $reacting a0.h5     --restart_destination "b#.h5" --advance_nt=0 $WIZ $P \
+                        --restart_retain=1 --Nx=$((  $Nx)) --Nz=$((  $Nz))
     differ $exclude_datasets multi0.h5 b0.h5
 )
 

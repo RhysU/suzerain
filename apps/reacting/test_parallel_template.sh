@@ -15,6 +15,7 @@ banner "Generating serial result for comparison purposes${OPER:+ ($OPER)}"
 (
     cd $testdir
     run ../reacting_advance $OPER mms0.h5 --restart_destination "serial#.h5" \
+                                          --restart_retain=1                 \
                                           $ADVANCE $WIZ
 )
 
@@ -29,6 +30,7 @@ banner "Equivalence of serial and parallel execution${OPER:+ ($OPER)}"
 (
     cd $testdir
     prun ../reacting_advance $OPER mms0.h5 --restart_destination "a#.h5" \
+                                           --restart_retain=1            \
                                            $ADVANCE $P $WIZ
     # Stricter tolerance performed first for non-/bar_foo quantities
     #differ $exclude_datasets_bar --delta=3e-13 --nan serial0.h5 a0.h5
