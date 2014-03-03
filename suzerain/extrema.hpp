@@ -40,26 +40,6 @@ class specification_grid;
 class pencil_grid;
 
 /**
- * Holds information on pointwise extrema within a scalar field.
- */
-struct field_extrema_xyz {
-
-    real_t min;  /**< Global pointwise minimum. */
-    real_t max;  /**< Global pointwise maximum. */
-
-};
-
-/**
- * Compute pointwise extrema for all given scalar fields.
- */
-std::vector<field_extrema_xyz>
-compute_field_extrema_xyz(
-        const contiguous_state<4,complex_t> &state,
-        const specification_grid& grid,
-        const pencil_grid& dgrid,
-        const bsplineop& gop);
-
-/**
  * Holds information on the pointwise extrema within a scalar field as a
  * function of wall-normal $y$ collocation point.
  */
@@ -71,28 +51,44 @@ struct field_extrema_xz {
 };
 
 /**
- * Compute pointwise extrema of all given scalar fields from \c state
- * represented as Fourier coefficients in $x$ and $z$ \e and B-spline
- * coefficients in $y$ at the B-spline collocation points defining the mass
- * operator in \c cop.
+ * Compute pointwise extrema of all given scalar fields from \c swave
+ * destroying \c swave in the process.
+ *
+ * Incoming fields are represented as Fourier coefficients in $x$ and $z$ \e and
+ * B-spline coefficients in $y$ at the B-spline collocation points defining the
+ * mass operator in \c cop.
  */
 std::vector<field_extrema_xz>
 compute_field_extrema_xz(
-        const contiguous_state<4,complex_t> &state,
+        contiguous_state<4,complex_t>& swave,
         const specification_grid& grid,
         const pencil_grid& dgrid,
         const bsplineop& cop);
 
 /**
- * Compute pointwise extrema of all given scalar fields from \c state
- * represented as Fourier coefficients in $x$ and $z$ \e but collocation point
- * values in $y$.
+ * Holds information on global extrema within a scalar field.
  */
-std::vector<field_extrema_xz>
-compute_field_extrema_xz(
-        const contiguous_state<4,complex_t> &state,
+struct field_extrema_xyz {
+
+    real_t min;  /**< Global pointwise minimum. */
+    real_t max;  /**< Global pointwise maximum. */
+
+};
+
+/**
+ * Compute pointwise extrema for all given scalar fields from \c swave
+ * destroying \c swave in the process.
+ *
+ * Incoming fields are represented as Fourier coefficients in $x$ and $z$ \e and
+ * B-spline coefficients in $y$ at the B-spline collocation points defining the
+ * mass operator in \c cop.
+ */
+std::vector<field_extrema_xyz>
+compute_field_extrema_xyz(
+        contiguous_state<4,complex_t>& swave,
         const specification_grid& grid,
-        const pencil_grid& dgrid);
+        const pencil_grid& dgrid,
+        const bsplineop& cop);
 
 } // end namespace suzerain
 
