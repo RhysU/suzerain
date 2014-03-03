@@ -34,10 +34,10 @@
 
 namespace suzerain {
 
+// Forward declarations
 class bsplineop;
 class specification_grid;
 class pencil_grid;
-
 
 /**
  * Holds information on pointwise extrema within a scalar field.

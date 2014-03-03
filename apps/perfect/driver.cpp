@@ -37,6 +37,7 @@
 #include <suzerain/operator_tools.hpp>
 #include <suzerain/profile.hpp>
 #include <suzerain/samples.hpp>
+#include <suzerain/state.hpp>
 #include <suzerain/support/logging.hpp>
 #include <suzerain/support/support.hpp>
 

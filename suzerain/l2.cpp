@@ -31,11 +31,14 @@
 
 #include <suzerain/l2.hpp>
 
-#include <suzerain/common.hpp>
+#include <suzerain/bspline.hpp>
 #include <suzerain/error.h>
 #include <suzerain/inorder.hpp>
 #include <suzerain/mpi_datatype.hpp>
 #include <suzerain/mpi.hpp>
+#include <suzerain/pencil_grid.hpp>
+#include <suzerain/specification_grid.hpp>
+#include <suzerain/state.hpp>
 
 namespace suzerain {
 

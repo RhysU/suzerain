@@ -29,12 +29,14 @@
  */
 
 #include <suzerain/common.hpp>
-#include <suzerain/bspline.hpp>
-#include <suzerain/pencil_grid.hpp>
-#include <suzerain/specification_grid.hpp>
-#include <suzerain/state.hpp>
+#include <suzerain/state_fwd.hpp>
 
 namespace suzerain {
+
+// Forward declarations
+class bsplineop;
+class pencil_grid;
+class specification_grid;
 
 /**
  * Holds information on the \f$L^2_{xyz}\f$ norm of a scalar field
