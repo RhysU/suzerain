@@ -296,7 +296,7 @@ void test_supersonic1()
     gsl_test_rel(fin.pp,   -0.112130507235967, tol, "%s final pp  ", __func__);
 
     // Does the pointwise solution satisfy the governing equations?
-    check_radialflow_residual (__func__, s, 100*GSL_DBL_EPSILON);
+    check_radialflow_residual (__func__, s, GSL_SQRT_DBL_EPSILON);
 
     // Test edge Mach and pressure gradient parameter computations
     // Expected results by notebooks/radialflow_qoi.m for delta = sqrt(3)
