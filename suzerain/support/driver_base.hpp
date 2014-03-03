@@ -776,6 +776,12 @@ protected:
     /** Should \ref log_status_bulk show headers? */
     bool log_status_bulk_header_shown;
 
+    /** Should \ref log_status_max show headers? */
+    bool log_status_max_header_shown;
+
+    /** Should \ref log_status_min show headers? */
+    bool log_status_min_header_shown;
+
     /**
      * Should \ref log_status_boundary_state show headers?  Index zero refers
      * to lower boundary state.  Index one refers to upper boundary state.

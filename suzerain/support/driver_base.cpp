@@ -147,6 +147,8 @@ driver_base::driver_base(
     , received_halt(false)
     , log_status_L2_header_shown(false)
     , log_status_bulk_header_shown(false)
+    , log_status_max_header_shown(false)
+    , log_status_min_header_shown(false)
     , log_boundary_layer_quantities_wall_header_shown(false)
     , log_boundary_layer_quantities_visc_header_shown(false)
     , log_boundary_layer_quantities_thick_header_shown(false)
@@ -185,6 +187,7 @@ driver_base::driver_base(
 std::string
 driver_base::log4cxx_config()
 {
+    // FIXME bulk.state, min.state, and max.state could be state.{bulk,min,max}.
     return super::log4cxx_config() + // Append to the default configuration
         "\n"
         "## Collect \"bc\" messages into only bc.dat mimicking LOG file behavior\n"
@@ -230,6 +233,24 @@ driver_base::log4cxx_config()
         "log4j.appender.L2.append=${log4j.appender.LOG.append}\n"
         "log4j.appender.L2.layout=${log4j.appender.LOG.layout}\n"
         "log4j.appender.L2.layout.ConversionPattern=${log4j.appender.LOG.layout.ConversionPattern}\n"
+        "\n"
+        "## Collect \"max\" messages into only max.dat mimicking LOG file behavior\n"
+        "log4j.logger.max=INHERITED, MAX\n"
+        "log4j.additivity.max=false\n"
+        "log4j.appender.MAX=${log4j.appender.LOG}\n"
+        "log4j.appender.MAX.filename=max.dat\n"
+        "log4j.appender.MAX.append=${log4j.appender.LOG.append}\n"
+        "log4j.appender.MAX.layout=${log4j.appender.LOG.layout}\n"
+        "log4j.appender.MAX.layout.ConversionPattern=${log4j.appender.LOG.layout.ConversionPattern}\n"
+        "\n"
+        "## Collect \"min\" messages into only min.dat mimicking LOG file behavior\n"
+        "log4j.logger.min=INHERITED, MIN\n"
+        "log4j.additivity.min=false\n"
+        "log4j.appender.MIN=${log4j.appender.LOG}\n"
+        "log4j.appender.MIN.filename=min.dat\n"
+        "log4j.appender.MIN.append=${log4j.appender.LOG.append}\n"
+        "log4j.appender.MIN.layout=${log4j.appender.LOG.layout}\n"
+        "log4j.appender.MIN.layout.ConversionPattern=${log4j.appender.LOG.layout.ConversionPattern}\n"
         "\n"
         "## Collect \"rms\" messages into rms.dat mimicking LOG file behavior\n"
         "log4j.logger.rms=INHERITED, RMS\n"
