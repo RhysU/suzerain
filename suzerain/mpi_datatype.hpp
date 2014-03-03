@@ -69,9 +69,11 @@ struct datatype<T, typename boost::enable_if<boost::is_fundamental<T> >::type>
 template<typename T>
 struct datatype<const T, typename boost::enable_if<boost::mpl::and_<
     boost::is_complex<T>,
-    boost::mpl::not_<boost::is_array<T> >,
-    boost::mpl::not_<boost::is_reference<T> >,
-    boost::mpl::not_<boost::is_pointer<T> >
+    boost::mpl::not_<boost::mpl::or_<
+        boost::is_array<T>,
+        boost::is_reference<T>,
+        boost::is_pointer<T>
+    > >
 > >::type>
     : public datatype<T> {};
 
@@ -79,9 +81,11 @@ struct datatype<const T, typename boost::enable_if<boost::mpl::and_<
 template<typename T>
 struct datatype<volatile T, typename boost::enable_if<boost::mpl::and_<
     boost::is_complex<T>,
-    boost::mpl::not_<boost::is_array<T> >,
-    boost::mpl::not_<boost::is_reference<T> >,
-    boost::mpl::not_<boost::is_pointer<T> >
+    boost::mpl::not_<boost::mpl::or_<
+        boost::is_array<T>,
+        boost::is_reference<T>,
+        boost::is_pointer<T>
+    > >
 > >::type>
     : public datatype<T> {};
 
