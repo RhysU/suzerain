@@ -61,10 +61,10 @@ compute_field_extrema_xz(
     ArrayXXr::ColsBlockXpr bufmax = buf.rightCols(swave.shape()[0]);
 
     // Initialize storage with "uninteresting" min and max values
-    // so ranks with "gaps" in portions of the domain do not
-    // modify the final Allreduce.
-    bufmin.setConstant(std::numeric_limits<ArrayXXr::Scalar>::max());
-    bufmax.setConstant(std::numeric_limits<ArrayXXr::Scalar>::min());
+    // so that the final Allreduce ignores contributions from
+    // ranks that have no business contributing to certain y_j.
+    bufmin.setConstant(+std::numeric_limits<ArrayXXr::Scalar>::infinity());
+    bufmax.setConstant(-std::numeric_limits<ArrayXXr::Scalar>::infinity());
 
     // For each field...
     operator_tools o(grid, dgrid, cop);
