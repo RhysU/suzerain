@@ -299,8 +299,8 @@ public:
     /**
      * Routine to output status, generally called via the timecontroller.
      *
-     * Invokes \ref log_state_bulk, \ref log_state_L2, \ref
-     * log_boundary_conditions, and \ref log_status_hook.
+     * Invokes \ref log_state_bulk, \ref log_state_L2, \ref log_state_extrema,
+     * \ref log_boundary_conditions, and \ref log_status_hook.
      *
      * @returns True if any active time advance should continue.
      *          False otherwise.
@@ -323,6 +323,16 @@ public:
     virtual void log_state_bulk(
             const std::string& timeprefix,
             const char * const name_bulk = "state.bulk");
+
+    /**
+     * Log messages containing global minimum and maximum state values.
+     *
+     * Messages are logged only when the grid can support fluctuations.
+     */
+    virtual void log_state_extrema(
+            const std::string& timeprefix,
+            const char * const name_min = "state.min",
+            const char * const name_max = "state.max");
 
     /**
      * Log messages containing state at the upper and lower boundaries.
@@ -770,8 +780,11 @@ protected:
      * @{
      */
 
-    /** Should \ref log_state_L2 show headers? */
+    /** Should \ref log_state_L2 show L2 headers? */
     bool log_state_L2_header_shown;
+
+    /** Should \ref log_state_L2 show RMS headers? */
+    bool log_state_RMS_header_shown;
 
     /** Should \ref log_state_bulk show headers? */
     bool log_state_bulk_header_shown;

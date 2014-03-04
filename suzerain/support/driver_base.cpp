@@ -38,6 +38,7 @@
 #include <suzerain/channel.h>
 #include <suzerain/countof.h>
 #include <suzerain/error.h>
+#include <suzerain/extrema.hpp>
 #include <suzerain/format.hpp>
 #include <suzerain/l2.hpp>
 #include <suzerain/mpi_datatype.hpp>
@@ -146,6 +147,7 @@ driver_base::driver_base(
     , received_teardown(true)
     , received_halt(false)
     , log_state_L2_header_shown(false)
+    , log_state_RMS_header_shown(false)
     , log_state_bulk_header_shown(false)
     , log_state_max_header_shown(false)
     , log_state_min_header_shown(false)
@@ -791,6 +793,7 @@ driver_base::log_status(
     // Log information about the various quantities of interest
     log_state_bulk(timeprefix);
     log_state_L2(timeprefix);
+    log_state_extrema(timeprefix);
     log_boundary_conditions(timeprefix);
 
     // Permit subclasses to dump arbitrary status information.  E.g. MMS error
@@ -799,6 +802,24 @@ driver_base::log_status(
     last_status_nt = nt; // Maintain last status time step
 
     return retval;
+}
+
+// Often-reused logic to show a "t nt field[0]::identifier..." header once
+static void
+maybe_timeprefix_fields_identifiers(driver_base& db,
+                                    const std::string& timeprefix,
+                                    logging::logger_type& log,
+                                    bool& shown)
+{
+    if (!shown) {
+        std::ostringstream msg;
+        msg << std::setw(timeprefix.size()) << db.build_timeprefix_description();
+        for (size_t k = 0; k < db.fields.size(); ++k) {
+            msg << ' ' << std::setw(fullprec<>::width) << db.fields[k].identifier;
+        }
+        INFO0(log, msg.str());
+        shown = true;
+    }
 }
 
 void
@@ -816,15 +837,11 @@ driver_base::log_state_L2(
     const bool nontrivial_rms_possible = grid->N.x() * grid->N.z() > 1;
 
     // Show headers only on first invocation
-    std::ostringstream msg;
-    if (!log_state_L2_header_shown) {
-        msg << std::setw(timeprefix.size()) << build_timeprefix_description();
-        for (size_t k = 0; k < fields.size(); ++k)
-            msg << ' ' << std::setw(fullprec<>::width) << fields[k].identifier;
-        INFO0(log_L2, msg.str());
-        if (nontrivial_rms_possible) INFO0(log_RMS, msg.str());
-        msg.str("");
-        log_state_L2_header_shown = true;
+    maybe_timeprefix_fields_identifiers(*this, timeprefix, log_L2,
+                                        log_state_L2_header_shown);
+    if (nontrivial_rms_possible) {
+        maybe_timeprefix_fields_identifiers(*this, timeprefix, log_RMS,
+                                            log_state_RMS_header_shown);
     }
 
     // Collective computation of the $L^2_{xyz}$ norms
@@ -833,6 +850,7 @@ driver_base::log_state_L2(
         = compute_field_L2xyz(*state_nonlinear, *grid, *dgrid, *gop);
 
     // Build and log L2 of mean conserved state
+    std::ostringstream msg;
     msg << timeprefix;
     for (size_t k = 0; k < result.size(); ++k) {
         msg << ' ' << fullprec<>(result[k].mean);
@@ -865,15 +883,8 @@ driver_base::log_state_bulk(
     if (!INFO_ENABLED(log_bulk)) return;
 
     // Show headers only on first invocation
-    std::ostringstream msg;
-    if (!log_state_bulk_header_shown) {
-        msg << std::setw(timeprefix.size()) << build_timeprefix_description();
-        for (size_t k = 0; k < fields.size(); ++k)
-            msg << ' ' << std::setw(fullprec<>::width) << fields[k].identifier;
-        INFO0(log_bulk, msg.str());
-        msg.str("");
-        log_state_bulk_header_shown = true;
-    }
+    maybe_timeprefix_fields_identifiers(*this, timeprefix, log_bulk,
+                                        log_state_bulk_header_shown);
 
     // Compute operator for finding bulk quantities from coefficients
     VectorXr bulkcoeff(b->n());
@@ -881,6 +892,7 @@ driver_base::log_state_bulk(
     bulkcoeff /= grid->L.y();
 
     // Prepare the status message and log it
+    std::ostringstream msg;
     msg << timeprefix;
     for (size_t k = 0; k < state_linear->shape()[0]; ++k) {
         Map<VectorXc> mean(
@@ -888,6 +900,51 @@ driver_base::log_state_bulk(
         msg << ' ' << fullprec<>(bulkcoeff.dot(mean.real()));
     }
     INFO(log_bulk, msg.str());
+}
+
+// FIXME Redmine #3056 load/save extrema from restart files
+// Otherwise, we now require undesirable parallel FFTs to get status!
+// FIXME Lazily recompute extrema only when necessary
+// Otherwise, saving restarts and statistics files forces recomputation
+void
+driver_base::log_state_extrema(
+        const std::string& timeprefix,
+        const char * const name_min,
+        const char * const name_max)
+{
+    // Fluctuations only make sense to log when either X or Z is nontrivial
+    const bool nontrivial_possible = grid->N.x() * grid->N.z() > 1;
+    if (!nontrivial_possible) return;
+
+    // Avoid computational cost when logging is disabled
+    logging::logger_type log_min = logging::get_logger(name_min);
+    logging::logger_type log_max = logging::get_logger(name_max);
+    if (!INFO0_ENABLED(log_min) && !INFO0_ENABLED(log_max)) return;
+
+    // Show headers only on first invocation
+    maybe_timeprefix_fields_identifiers(*this, timeprefix, log_min,
+                                        log_state_min_header_shown);
+    maybe_timeprefix_fields_identifiers(*this, timeprefix, log_max,
+                                        log_state_max_header_shown);
+
+    // Collective computation of the global extrema
+    state_nonlinear->assign_from(*state_linear);
+    const std::vector<field_extrema_xyz> result
+        = compute_field_extrema_xyz(*state_nonlinear, *grid, *dgrid, *cop);
+
+    // Build and log global minimum and maximum values
+    std::ostringstream msg;
+    msg << timeprefix;
+    for (size_t k = 0; k < result.size(); ++k) {
+        msg << ' ' << fullprec<>(result[k].min);
+    }
+    INFO0(log_min, msg.str());
+    msg.str("");
+    msg << timeprefix;
+    for (size_t k = 0; k < result.size(); ++k) {
+        msg << ' ' << fullprec<>(result[k].max);
+    }
+    INFO0(log_max, msg.str());
 }
 
 void
