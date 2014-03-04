@@ -299,8 +299,8 @@ public:
     /**
      * Routine to output status, generally called via the timecontroller.
      *
-     * Invokes \ref log_status_bulk, \ref log_status_L2, \ref
-     * log_status_boundary_state, and \ref log_status_hook.
+     * Invokes \ref log_state_bulk, \ref log_state_L2, \ref
+     * log_boundary_conditions, and \ref log_status_hook.
      *
      * @returns True if any active time advance should continue.
      *          False otherwise.
@@ -314,20 +314,20 @@ public:
      *
      * RMS fluctuations are only logged when the grid can support them.
      */
-    virtual void log_status_L2(
+    virtual void log_state_L2(
             const std::string& timeprefix,
-            const char * const name_L2  = "L2.mean",
-            const char * const name_rms = "rms.fluct");
+            const char * const name_L2  = "state.L2",
+            const char * const name_RMS = "state.RMS");
 
     /** Log messages containing bulk quantities. */
-    virtual void log_status_bulk(
+    virtual void log_state_bulk(
             const std::string& timeprefix,
-            const char * const name_bulk = "bulk.state");
+            const char * const name_bulk = "state.bulk");
 
     /**
      * Log messages containing state at the upper and lower boundaries.
      */
-    virtual void log_status_boundary_state(
+    virtual void log_boundary_conditions(
             const std::string& timeprefix);
 
     /**
@@ -368,7 +368,7 @@ public:
      * @param name_pg     Logging name for pressure gradient-related information.
      *                    If \c NULL, this message will not be logged.
      */
-    virtual void log_boundary_layer_quantities(
+    virtual void log_quantities_boundary_layer(
             const std::string& timeprefix,
             const suzerain_bl_local        * const wall,
             const suzerain_bl_viscous      * const viscous,
@@ -411,7 +411,7 @@ public:
      * @param name_qoi    Logging name for general quantities of interest.
      *                    If \c NULL, this message will not be logged.
      */
-    virtual void log_channel_quantities(
+    virtual void log_quantities_channel(
             const std::string& timeprefix,
             const suzerain_channel_local   * const wall,
             const suzerain_channel_viscous * const viscous,
@@ -770,69 +770,69 @@ protected:
      * @{
      */
 
-    /** Should \ref log_status_L2 show headers? */
-    bool log_status_L2_header_shown;
+    /** Should \ref log_state_L2 show headers? */
+    bool log_state_L2_header_shown;
 
-    /** Should \ref log_status_bulk show headers? */
-    bool log_status_bulk_header_shown;
+    /** Should \ref log_state_bulk show headers? */
+    bool log_state_bulk_header_shown;
 
-    /** Should \ref log_status_max show headers? */
-    bool log_status_max_header_shown;
+    /** Should \ref log_state_max show headers? */
+    bool log_state_max_header_shown;
 
-    /** Should \ref log_status_min show headers? */
-    bool log_status_min_header_shown;
+    /** Should \ref log_state_min show headers? */
+    bool log_state_min_header_shown;
 
     /**
-     * Should \ref log_status_boundary_state show headers?  Index zero refers
+     * Should \ref log_boundary_conditions show headers?  Index zero refers
      * to lower boundary state.  Index one refers to upper boundary state.
      */
-    array<bool,2> log_status_boundary_state_header_shown;
+    array<bool,2> log_boundary_conditions_header_shown;
 
-    /** Should \ref log_boundary_layer_quantities show wall headers? */
-    bool log_boundary_layer_quantities_wall_header_shown;
+    /** Should \ref log_quantities_boundary_layer show wall headers? */
+    bool log_quantities_boundary_layer_wall_header_shown;
 
-    /** Should \ref log_boundary_layer_quantities show viscous headers? */
-    bool log_boundary_layer_quantities_visc_header_shown;
+    /** Should \ref log_quantities_boundary_layer show viscous headers? */
+    bool log_quantities_boundary_layer_visc_header_shown;
 
-    /** Should \ref log_boundary_layer_quantities show thickness headers?
+    /** Should \ref log_quantities_boundary_layer show thickness headers?
      */
-    bool log_boundary_layer_quantities_thick_header_shown;
+    bool log_quantities_boundary_layer_thick_header_shown;
 
-    /** Should \ref log_boundary_layer_quantities show edge headers? */
-    bool log_boundary_layer_quantities_edge_header_shown;
+    /** Should \ref log_quantities_boundary_layer show edge headers? */
+    bool log_quantities_boundary_layer_edge_header_shown;
 
-    /** Should \ref log_boundary_layer_quantities show edge99 headers? */
-    bool log_boundary_layer_quantities_edge99_header_shown;
+    /** Should \ref log_quantities_boundary_layer show edge99 headers? */
+    bool log_quantities_boundary_layer_edge99_header_shown;
 
-    /** Should \ref log_boundary_layer_quantities show Reynolds headers? */
-    bool log_boundary_layer_quantities_Re_header_shown;
+    /** Should \ref log_quantities_boundary_layer show Reynolds headers? */
+    bool log_quantities_boundary_layer_Re_header_shown;
 
     /**
-     * Should \ref log_boundary_layer_quantities show general quantity of
+     * Should \ref log_quantities_boundary_layer show general quantity of
      * interest headers?
      */
-    bool log_boundary_layer_quantities_qoi_header_shown;
+    bool log_quantities_boundary_layer_qoi_header_shown;
 
     /**
-     * Should \ref log_boundary_layer_quantities show pressure gradient
+     * Should \ref log_quantities_boundary_layer show pressure gradient
      * headers?
      */
-    bool log_boundary_layer_quantities_pg_header_shown;
+    bool log_quantities_boundary_layer_pg_header_shown;
 
-    /** Should \ref log_channel_quantities show wall headers? */
-    bool log_channel_quantities_wall_header_shown;
+    /** Should \ref log_quantities_channel show wall headers? */
+    bool log_quantities_channel_wall_header_shown;
 
-    /** Should \ref log_channel_quantities show viscous headers? */
-    bool log_channel_quantities_visc_header_shown;
+    /** Should \ref log_quantities_channel show viscous headers? */
+    bool log_quantities_channel_visc_header_shown;
 
-    /** Should \ref log_channel_quantities show centerline headers? */
-    bool log_channel_quantities_center_header_shown;
+    /** Should \ref log_quantities_channel show centerline headers? */
+    bool log_quantities_channel_center_header_shown;
 
     /**
-     * Should \ref log_channel_quantities show general quantity of interest
+     * Should \ref log_quantities_channel show general quantity of interest
      * headers?
      */
-    bool log_channel_quantities_qoi_header_shown;
+    bool log_quantities_channel_qoi_header_shown;
 
     /** @} */
 

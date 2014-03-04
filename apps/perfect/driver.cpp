@@ -249,7 +249,7 @@ void driver::log_quantities_of_interest(
                                         reynolds, qoi, pg);
 
         // Log messages using application-agnostic superclass functionality
-        this->log_boundary_layer_quantities(timeprefix,
+        this->log_quantities_boundary_layer(timeprefix,
                                             &wall, &viscous, &thick,
                                             &edge, &edge99,
                                             &reynolds, &qoi, &pg);
@@ -265,7 +265,7 @@ void driver::log_quantities_of_interest(
                                  wall, viscous, center, qoi);
 
         // Log messages using application-agnostic superclass functionality
-        this->log_channel_quantities(timeprefix,
+        this->log_quantities_channel(timeprefix,
                                      &wall, &viscous, &center, &qoi);
 
     } else {

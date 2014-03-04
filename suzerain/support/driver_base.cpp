@@ -145,22 +145,22 @@ driver_base::driver_base(
     , controller()
     , received_teardown(true)
     , received_halt(false)
-    , log_status_L2_header_shown(false)
-    , log_status_bulk_header_shown(false)
-    , log_status_max_header_shown(false)
-    , log_status_min_header_shown(false)
-    , log_boundary_layer_quantities_wall_header_shown(false)
-    , log_boundary_layer_quantities_visc_header_shown(false)
-    , log_boundary_layer_quantities_thick_header_shown(false)
-    , log_boundary_layer_quantities_edge_header_shown(false)
-    , log_boundary_layer_quantities_edge99_header_shown(false)
-    , log_boundary_layer_quantities_Re_header_shown(false)
-    , log_boundary_layer_quantities_qoi_header_shown(false)
-    , log_boundary_layer_quantities_pg_header_shown(false)
-    , log_channel_quantities_wall_header_shown(false)
-    , log_channel_quantities_visc_header_shown(false)
-    , log_channel_quantities_center_header_shown(false)
-    , log_channel_quantities_qoi_header_shown(false)
+    , log_state_L2_header_shown(false)
+    , log_state_bulk_header_shown(false)
+    , log_state_max_header_shown(false)
+    , log_state_min_header_shown(false)
+    , log_quantities_boundary_layer_wall_header_shown(false)
+    , log_quantities_boundary_layer_visc_header_shown(false)
+    , log_quantities_boundary_layer_thick_header_shown(false)
+    , log_quantities_boundary_layer_edge_header_shown(false)
+    , log_quantities_boundary_layer_edge99_header_shown(false)
+    , log_quantities_boundary_layer_Re_header_shown(false)
+    , log_quantities_boundary_layer_qoi_header_shown(false)
+    , log_quantities_boundary_layer_pg_header_shown(false)
+    , log_quantities_channel_wall_header_shown(false)
+    , log_quantities_channel_visc_header_shown(false)
+    , log_quantities_channel_center_header_shown(false)
+    , log_quantities_channel_qoi_header_shown(false)
     , wtime_load_restart(std::numeric_limits<double>::quiet_NaN())
     , wtime_advance_start(std::numeric_limits<double>::quiet_NaN())
     , last_status_nt(std::numeric_limits<step_type>::max())
@@ -180,14 +180,13 @@ driver_base::driver_base(
 {
     using std::fill;
     fill(signal_received.begin(), signal_received.end(), 0);
-    fill(log_status_boundary_state_header_shown.begin(),
-         log_status_boundary_state_header_shown.end(), false);
+    fill(log_boundary_conditions_header_shown.begin(),
+         log_boundary_conditions_header_shown.end(), false);
 }
 
 std::string
 driver_base::log4cxx_config()
 {
-    // FIXME bulk.state, min.state, and max.state could be state.{bulk,min,max}.
     return super::log4cxx_config() + // Append to the default configuration
         "\n"
         "## Collect \"bc\" messages into only bc.dat mimicking LOG file behavior\n"
@@ -199,66 +198,32 @@ driver_base::log4cxx_config()
         "log4j.appender.BC.layout=${log4j.appender.LOG.layout}\n"
         "log4j.appender.BC.layout.ConversionPattern=${log4j.appender.LOG.layout.ConversionPattern}\n"
         "\n"
-        "## Collect \"bl\" messages into only bl.dat mimicking LOG file behavior\n"
-        "log4j.logger.bl=INHERITED, BL\n"
+        "## Collect \"bl\"   messages into only qoi.dat mimicking LOG file behavior\n"
+        "## Collect \"chan\" messages into only qoi.dat mimicking LOG file behavior\n"
+        "log4j.logger.bl=INHERITED, QOI\n"
         "log4j.additivity.bl=false\n"
-        "log4j.appender.BL=${log4j.appender.LOG}\n"
-        "log4j.appender.BL.filename=bl.dat\n"
-        "log4j.appender.BL.append=${log4j.appender.LOG.append}\n"
-        "log4j.appender.BL.layout=${log4j.appender.LOG.layout}\n"
-        "log4j.appender.BL.layout.ConversionPattern=${log4j.appender.LOG.layout.ConversionPattern}\n"
-        "\n"
-        "## Collect \"bulk\" messages into only bulk.dat mimicking LOG file behavior\n"
-        "log4j.logger.bulk=INHERITED, BULK\n"
-        "log4j.additivity.bulk=false\n"
-        "log4j.appender.BULK=${log4j.appender.LOG}\n"
-        "log4j.appender.BULK.filename=bulk.dat\n"
-        "log4j.appender.BULK.append=${log4j.appender.LOG.append}\n"
-        "log4j.appender.BULK.layout=${log4j.appender.LOG.layout}\n"
-        "log4j.appender.BULK.layout.ConversionPattern=${log4j.appender.LOG.layout.ConversionPattern}\n"
-        "\n"
-        "## Collect \"chan\" messages into only chan.dat mimicking LOG file behavior\n"
-        "log4j.logger.chan=INHERITED, CHAN\n"
+        "log4j.logger.chan=INHERITED, QOI\n"
         "log4j.additivity.chan=false\n"
-        "log4j.appender.CHAN=${log4j.appender.LOG}\n"
-        "log4j.appender.CHAN.filename=chan.dat\n"
-        "log4j.appender.CHAN.append=${log4j.appender.LOG.append}\n"
-        "log4j.appender.CHAN.layout=${log4j.appender.LOG.layout}\n"
-        "log4j.appender.CHAN.layout.ConversionPattern=${log4j.appender.LOG.layout.ConversionPattern}\n"
+        "log4j.appender.QOI=${log4j.appender.LOG}\n"
+        "log4j.appender.QOI.filename=qoi.dat\n"
+        "log4j.appender.QOI.append=${log4j.appender.LOG.append}\n"
+        "log4j.appender.QOI.layout=${log4j.appender.LOG.layout}\n"
+        "log4j.appender.QOI.layout.ConversionPattern=${log4j.appender.LOG.layout.ConversionPattern}\n"
         "\n"
-        "## Collect \"L2\" messages into L2.dat mimicking LOG file behavior\n"
-        "log4j.logger.L2=INHERITED, L2\n"
-        "log4j.appender.L2=${log4j.appender.LOG}\n"
-        "log4j.appender.L2.filename=L2.dat\n"
-        "log4j.appender.L2.append=${log4j.appender.LOG.append}\n"
-        "log4j.appender.L2.layout=${log4j.appender.LOG.layout}\n"
-        "log4j.appender.L2.layout.ConversionPattern=${log4j.appender.LOG.layout.ConversionPattern}\n"
+        "## Collect \"state\" messages into only state.dat mimicking LOG file behavior\n"
+        "log4j.logger.state=INHERITED, STATE\n"
+        "log4j.additivity.state=false\n"
+        "log4j.appender.STATE=${log4j.appender.LOG}\n"
+        "log4j.appender.STATE.filename=state.dat\n"
+        "log4j.appender.STATE.append=${log4j.appender.LOG.append}\n"
+        "log4j.appender.STATE.layout=${log4j.appender.LOG.layout}\n"
+        "log4j.appender.STATE.layout.ConversionPattern=${log4j.appender.LOG.layout.ConversionPattern}\n"
         "\n"
-        "## Collect \"max\" messages into only max.dat mimicking LOG file behavior\n"
-        "log4j.logger.max=INHERITED, MAX\n"
-        "log4j.additivity.max=false\n"
-        "log4j.appender.MAX=${log4j.appender.LOG}\n"
-        "log4j.appender.MAX.filename=max.dat\n"
-        "log4j.appender.MAX.append=${log4j.appender.LOG.append}\n"
-        "log4j.appender.MAX.layout=${log4j.appender.LOG.layout}\n"
-        "log4j.appender.MAX.layout.ConversionPattern=${log4j.appender.LOG.layout.ConversionPattern}\n"
+        "## Additionally ensure \"state.L2\" messages reach the CONSOLE and LOG\n"
+        "log4j.logger.state.L2=INHERITED, CONSOLE, LOG\n"
         "\n"
-        "## Collect \"min\" messages into only min.dat mimicking LOG file behavior\n"
-        "log4j.logger.min=INHERITED, MIN\n"
-        "log4j.additivity.min=false\n"
-        "log4j.appender.MIN=${log4j.appender.LOG}\n"
-        "log4j.appender.MIN.filename=min.dat\n"
-        "log4j.appender.MIN.append=${log4j.appender.LOG.append}\n"
-        "log4j.appender.MIN.layout=${log4j.appender.LOG.layout}\n"
-        "log4j.appender.MIN.layout.ConversionPattern=${log4j.appender.LOG.layout.ConversionPattern}\n"
-        "\n"
-        "## Collect \"rms\" messages into rms.dat mimicking LOG file behavior\n"
-        "log4j.logger.rms=INHERITED, RMS\n"
-        "log4j.appender.RMS=${log4j.appender.LOG}\n"
-        "log4j.appender.RMS.filename=rms.dat\n"
-        "log4j.appender.RMS.append=${log4j.appender.LOG.append}\n"
-        "log4j.appender.RMS.layout=${log4j.appender.LOG.layout}\n"
-        "log4j.appender.RMS.layout.ConversionPattern=${log4j.appender.LOG.layout.ConversionPattern}\n"
+        "## Additionally ensure \"state.RMS\" messages reach the CONSOLE and LOG\n"
+        "log4j.logger.state.RMS=INHERITED, CONSOLE, LOG\n"
     ;
 }
 
@@ -824,9 +789,9 @@ driver_base::log_status(
     SUZERAIN_TIMER_SCOPED("driver_base::log_status");
 
     // Log information about the various quantities of interest
-    log_status_bulk(timeprefix);
-    log_status_L2(timeprefix);
-    log_status_boundary_state(timeprefix);
+    log_state_bulk(timeprefix);
+    log_state_L2(timeprefix);
+    log_boundary_conditions(timeprefix);
 
     // Permit subclasses to dump arbitrary status information.  E.g. MMS error
     const bool retval = log_status_hook(timeprefix, t, nt);
@@ -837,29 +802,29 @@ driver_base::log_status(
 }
 
 void
-driver_base::log_status_L2(
+driver_base::log_state_L2(
         const std::string& timeprefix,
         const char * const name_L2,
-        const char * const name_rms)
+        const char * const name_RMS)
 {
     // Avoid computational cost when logging is disabled
     logging::logger_type log_L2  = logging::get_logger(name_L2);
-    logging::logger_type log_rms = logging::get_logger(name_rms);
-    if (!INFO0_ENABLED(log_L2) && !INFO0_ENABLED(log_rms)) return;
+    logging::logger_type log_RMS = logging::get_logger(name_RMS);
+    if (!INFO0_ENABLED(log_L2) && !INFO0_ENABLED(log_RMS)) return;
 
     // RMS fluctuations only make sense to log when either X or Z is nontrivial
     const bool nontrivial_rms_possible = grid->N.x() * grid->N.z() > 1;
 
     // Show headers only on first invocation
     std::ostringstream msg;
-    if (!log_status_L2_header_shown) {
+    if (!log_state_L2_header_shown) {
         msg << std::setw(timeprefix.size()) << build_timeprefix_description();
         for (size_t k = 0; k < fields.size(); ++k)
             msg << ' ' << std::setw(fullprec<>::width) << fields[k].identifier;
         INFO0(log_L2, msg.str());
-        if (nontrivial_rms_possible) INFO0(log_rms, msg.str());
+        if (nontrivial_rms_possible) INFO0(log_RMS, msg.str());
         msg.str("");
-        log_status_L2_header_shown = true;
+        log_state_L2_header_shown = true;
     }
 
     // Collective computation of the $L^2_{xyz}$ norms
@@ -877,18 +842,18 @@ driver_base::log_status_L2(
     // Build and log root-mean-squared-fluctuations of conserved state
     // RMS fluctuations are a scaling factor away from L2 fluctuations
     if (nontrivial_rms_possible) {
-        real_t rms_coeff = 1/std::sqrt(grid->L.x()*grid->L.y()*grid->L.z());
+        real_t RMS_coeff = 1/std::sqrt(grid->L.x()*grid->L.y()*grid->L.z());
         msg.str("");
         msg << timeprefix;
         for (size_t k = 0; k < result.size(); ++k) {
-            msg << ' ' << fullprec<>(rms_coeff*result[k].fluctuating);
+            msg << ' ' << fullprec<>(RMS_coeff*result[k].fluctuating);
         }
-        INFO0(log_rms, msg.str());
+        INFO0(log_RMS, msg.str());
     }
 }
 
 void
-driver_base::log_status_bulk(
+driver_base::log_state_bulk(
         const std::string& timeprefix,
         const char * const name_bulk)
 {
@@ -901,13 +866,13 @@ driver_base::log_status_bulk(
 
     // Show headers only on first invocation
     std::ostringstream msg;
-    if (!log_status_bulk_header_shown) {
+    if (!log_state_bulk_header_shown) {
         msg << std::setw(timeprefix.size()) << build_timeprefix_description();
         for (size_t k = 0; k < fields.size(); ++k)
             msg << ' ' << std::setw(fullprec<>::width) << fields[k].identifier;
         INFO0(log_bulk, msg.str());
         msg.str("");
-        log_status_bulk_header_shown = true;
+        log_state_bulk_header_shown = true;
     }
 
     // Compute operator for finding bulk quantities from coefficients
@@ -926,7 +891,7 @@ driver_base::log_status_bulk(
 }
 
 void
-driver_base::log_status_boundary_state(
+driver_base::log_boundary_conditions(
         const std::string& timeprefix)
 {
     // Only continue on the rank housing the zero-zero modes.
@@ -977,7 +942,7 @@ driver_base::log_status_boundary_state(
 
         // Show headers only on first invocation
         std::ostringstream msg;
-        if (!log_status_boundary_state_header_shown[l]) {
+        if (!log_boundary_conditions_header_shown[l]) {
             msg << std::setw(timeprefix.size())
                 << build_timeprefix_description();
             for (size_t k = 0; k < fields.size(); ++k) {
@@ -987,7 +952,7 @@ driver_base::log_status_boundary_state(
             for (size_t m = 0; m < SUZERAIN_COUNTOF(nick[l]); ++m) {
                 INFO(nick[l][m], msg.str());
             }
-            log_status_boundary_state_header_shown[l] = true;
+            log_boundary_conditions_header_shown[l] = true;
         }
 
         // Show mean boundary state on every invocation
@@ -1046,7 +1011,7 @@ void log_quantities_local_helper(
     }
 }
 
-void driver_base::log_boundary_layer_quantities(
+void driver_base::log_quantities_boundary_layer(
         const std::string& timeprefix,
         const suzerain_bl_local       * const wall,
         const suzerain_bl_viscous     * const viscous,
@@ -1073,13 +1038,13 @@ void driver_base::log_boundary_layer_quantities(
     std::ostringstream   msg; // Buffer to be repeatedly reused below
 
     log_quantities_local_helper(*this, timeprefix, wall, name_wall,
-                                log_boundary_layer_quantities_wall_header_shown,
+                                log_quantities_boundary_layer_wall_header_shown,
                                 msg);
 
     log = logging::get_logger(name_visc);
     if (log != NULL && INFO0_ENABLED(log)) {
-        if (!log_boundary_layer_quantities_visc_header_shown) {
-            log_boundary_layer_quantities_visc_header_shown = true;
+        if (!log_quantities_boundary_layer_visc_header_shown) {
+            log_quantities_boundary_layer_visc_header_shown = true;
             msg.str("");
             msg << setw(timeprefix.size()) << build_timeprefix_description()
                 << ' ' << setw(fullprec<>::width) << "delta_nu"
@@ -1101,8 +1066,8 @@ void driver_base::log_boundary_layer_quantities(
 
     log = logging::get_logger(name_thick);
     if (log != NULL && INFO0_ENABLED(log)) {
-        if (!log_boundary_layer_quantities_thick_header_shown) {
-            log_boundary_layer_quantities_thick_header_shown = true;
+        if (!log_quantities_boundary_layer_thick_header_shown) {
+            log_quantities_boundary_layer_thick_header_shown = true;
             msg.str("");
             msg << setw(timeprefix.size()) << build_timeprefix_description()
                 << ' ' << setw(fullprec<>::width) << "delta"
@@ -1125,17 +1090,17 @@ void driver_base::log_boundary_layer_quantities(
     }
 
     log_quantities_local_helper(*this, timeprefix, edge, name_edge,
-                                log_boundary_layer_quantities_edge_header_shown,
+                                log_quantities_boundary_layer_edge_header_shown,
                                 msg);
 
     log_quantities_local_helper(*this, timeprefix, edge99, name_edge99,
-                                log_boundary_layer_quantities_edge99_header_shown,
+                                log_quantities_boundary_layer_edge99_header_shown,
                                 msg);
 
     log = logging::get_logger(name_Re);
     if (log != NULL && INFO0_ENABLED(log)) {
-        if (!log_boundary_layer_quantities_Re_header_shown) {
-            log_boundary_layer_quantities_Re_header_shown = true;
+        if (!log_quantities_boundary_layer_Re_header_shown) {
+            log_quantities_boundary_layer_Re_header_shown = true;
             msg.str("");
             msg << setw(timeprefix.size()) << build_timeprefix_description()
                 << ' ' << setw(fullprec<>::width) << "Re_delta"
@@ -1159,8 +1124,8 @@ void driver_base::log_boundary_layer_quantities(
 
     log = logging::get_logger(name_qoi);
     if (log != NULL && INFO0_ENABLED(log)) {
-        if (!log_boundary_layer_quantities_qoi_header_shown) {
-            log_boundary_layer_quantities_qoi_header_shown = true;
+        if (!log_quantities_boundary_layer_qoi_header_shown) {
+            log_quantities_boundary_layer_qoi_header_shown = true;
             msg.str("");
             msg << setw(timeprefix.size()) << build_timeprefix_description()
                 << ' ' << setw(fullprec<>::width) << "cf"
@@ -1184,8 +1149,8 @@ void driver_base::log_boundary_layer_quantities(
 
     log = logging::get_logger(name_pg);
     if (pg != NULL && log != NULL && INFO0_ENABLED(log)) {
-        if (!log_boundary_layer_quantities_pg_header_shown) {
-            log_boundary_layer_quantities_pg_header_shown = true;
+        if (!log_quantities_boundary_layer_pg_header_shown) {
+            log_quantities_boundary_layer_pg_header_shown = true;
             msg.str("");
             msg << setw(timeprefix.size()) << build_timeprefix_description()
                 << ' ' << setw(fullprec<>::width) << "Clauser"
@@ -1208,7 +1173,7 @@ void driver_base::log_boundary_layer_quantities(
     }
 }
 
-void driver_base::log_channel_quantities(
+void driver_base::log_quantities_channel(
         const std::string& timeprefix,
         const suzerain_channel_local   * const wall,
         const suzerain_channel_viscous * const viscous,
@@ -1227,13 +1192,13 @@ void driver_base::log_channel_quantities(
     std::ostringstream   msg; // Buffer to be repeatedly reused below
 
     log_quantities_local_helper(*this, timeprefix, wall, name_wall,
-                                log_channel_quantities_wall_header_shown,
+                                log_quantities_channel_wall_header_shown,
                                 msg);
 
     log = logging::get_logger(name_visc);
     if (log != NULL && INFO0_ENABLED(log)) {
-        if (!log_channel_quantities_visc_header_shown) {
-            log_channel_quantities_visc_header_shown = true;
+        if (!log_quantities_channel_visc_header_shown) {
+            log_quantities_channel_visc_header_shown = true;
             msg.str("");
             msg << setw(timeprefix.size()) << build_timeprefix_description()
                 << ' ' << setw(fullprec<>::width) << "delta_nu"
@@ -1254,13 +1219,13 @@ void driver_base::log_channel_quantities(
     }
 
     log_quantities_local_helper(*this, timeprefix, center, name_center,
-                                log_channel_quantities_center_header_shown,
+                                log_quantities_channel_center_header_shown,
                                 msg);
 
     log = logging::get_logger(name_qoi);
     if (log != NULL && INFO0_ENABLED(log)) {
-        if (!log_channel_quantities_qoi_header_shown) {
-            log_channel_quantities_qoi_header_shown = true;
+        if (!log_quantities_channel_qoi_header_shown) {
+            log_quantities_channel_qoi_header_shown = true;
             msg.str("");
             msg << setw(timeprefix.size()) << build_timeprefix_description()
                 << ' ' << setw(fullprec<>::width) << "cf"
