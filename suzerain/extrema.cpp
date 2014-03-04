@@ -57,14 +57,14 @@ compute_field_extrema_xz(
     // Contiguous temporary storage for accumulating/broadcasting results
     // Each fast columns stores one wall-normal swaths of data for a scalar
     ArrayXXr buf(swave.shape()[1], 2*swave.shape()[0]);
-    ArrayXXr::ColsBlockXpr min = buf.leftCols (swave.shape()[0]);
-    ArrayXXr::ColsBlockXpr max = buf.rightCols(swave.shape()[0]);
+    ArrayXXr::ColsBlockXpr bufmin = buf.leftCols (swave.shape()[0]);
+    ArrayXXr::ColsBlockXpr bufmax = buf.rightCols(swave.shape()[0]);
 
     // Initialize storage with "uninteresting" min and max values
     // so ranks with "gaps" in portions of the domain do not
     // modify the final Allreduce.
-    min.setConstant(std::numeric_limits<ArrayXXr::Scalar>::max());
-    max.setConstant(std::numeric_limits<ArrayXXr::Scalar>::min());
+    bufmin.setConstant(std::numeric_limits<ArrayXXr::Scalar>::max());
+    bufmax.setConstant(std::numeric_limits<ArrayXXr::Scalar>::min());
 
     // For each field...
     operator_tools o(grid, dgrid, cop);
@@ -92,8 +92,8 @@ compute_field_extrema_xz(
 
                 // ...and tracking minimum value at this wall-normal spot
                 // being careful to preserve NaNs during local reduction.
-                min(j,f) = math::minnan(val, min(j,f));
-                max(j,f) = math::maxnan(val, max(j,f));
+                bufmin(j,f) = math::minnan(val, bufmin(j,f));
+                bufmax(j,f) = math::maxnan(val, bufmax(j,f));
 
             }
 
@@ -102,17 +102,17 @@ compute_field_extrema_xz(
     }
 
     // Allreduce the information in a single operation playing a (-max) trick
-    max *= -1;
+    bufmax *= -1;
     SUZERAIN_MPICHKR(MPI_Allreduce(MPI_IN_PLACE, buf.data(), buf.size(),
                                    mpi::datatype_of(buf.data()),
                                    MPI_MIN, MPI_COMM_WORLD));
-    max *= -1;
+    bufmax *= -1;
 
     // Copy the wall-normal profiles into the returned vector...
     std::vector<field_extrema_xz> retval(swave.shape()[0]);
     for (size_t f = 0; f < swave.shape()[0]; ++f) {
-        retval[f].min = min.col(f);
-        retval[f].max = max.col(f);
+        retval[f].min = bufmin.col(f);
+        retval[f].max = bufmax.col(f);
     }
 
     // ...and hope the compiler is smart enough to elide the copy.
