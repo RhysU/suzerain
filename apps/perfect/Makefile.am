@@ -3,34 +3,38 @@
 include ../Common.am
 
 ###
-### A convenience library for logic used across this subdirectory
+### A installed library bundling logic used across this subdirectory.
+### Installation reduces the footprint of installing multiple binaries.
 ###
 
-noinst_LTLIBRARIES    += libperfect.la
-libperfect_la_SOURCES  = common_block.cpp
-libperfect_la_SOURCES += common_block.hpp
-libperfect_la_SOURCES += definition_scenario.cpp
-libperfect_la_SOURCES += definition_scenario.hpp
-libperfect_la_SOURCES += driver.cpp
-libperfect_la_SOURCES += driver.hpp
-libperfect_la_SOURCES += linearize_type.hpp
-libperfect_la_SOURCES += manufactured_solution.cpp
-libperfect_la_SOURCES += manufactured_solution.hpp
-libperfect_la_SOURCES += navier_stokes.cpp
-libperfect_la_SOURCES += navier_stokes.hpp
-libperfect_la_SOURCES += nsctpl_rholut_fwd.hpp
-libperfect_la_SOURCES += nsctpl_rholut.hpp
-libperfect_la_SOURCES += operator_hybrid_isothermal.cpp
-libperfect_la_SOURCES += operator_hybrid_isothermal.hpp
-libperfect_la_SOURCES += operator_mass_isothermal.cpp
-libperfect_la_SOURCES += operator_mass_isothermal.hpp
-libperfect_la_SOURCES += operator_nonlinear.cpp
-libperfect_la_SOURCES += operator_nonlinear.hpp
-libperfect_la_SOURCES += perfect.cpp
-libperfect_la_SOURCES += perfect.hpp
-libperfect_la_SOURCES += slowgrowth_type.hpp
-libperfect_la_SOURCES += treatment_nonreflecting.cpp
-libperfect_la_SOURCES += treatment_nonreflecting.hpp
+lib_LTLIBRARIES                += libsuzerain_perfect.la
+libsuzerain_perfect_la_LDFLAGS  = -rpath $(libdir)
+libsuzerain_perfect_la_LDFLAGS += -release $(PACKAGE_VERSION)
+libsuzerain_perfect_la_LIBADD   = ../../suzerain/libsuzerain.la
+libsuzerain_perfect_la_SOURCES  = common_block.cpp
+libsuzerain_perfect_la_SOURCES += common_block.hpp
+libsuzerain_perfect_la_SOURCES += definition_scenario.cpp
+libsuzerain_perfect_la_SOURCES += definition_scenario.hpp
+libsuzerain_perfect_la_SOURCES += driver.cpp
+libsuzerain_perfect_la_SOURCES += driver.hpp
+libsuzerain_perfect_la_SOURCES += linearize_type.hpp
+libsuzerain_perfect_la_SOURCES += manufactured_solution.cpp
+libsuzerain_perfect_la_SOURCES += manufactured_solution.hpp
+libsuzerain_perfect_la_SOURCES += navier_stokes.cpp
+libsuzerain_perfect_la_SOURCES += navier_stokes.hpp
+libsuzerain_perfect_la_SOURCES += nsctpl_rholut_fwd.hpp
+libsuzerain_perfect_la_SOURCES += nsctpl_rholut.hpp
+libsuzerain_perfect_la_SOURCES += operator_hybrid_isothermal.cpp
+libsuzerain_perfect_la_SOURCES += operator_hybrid_isothermal.hpp
+libsuzerain_perfect_la_SOURCES += operator_mass_isothermal.cpp
+libsuzerain_perfect_la_SOURCES += operator_mass_isothermal.hpp
+libsuzerain_perfect_la_SOURCES += operator_nonlinear.cpp
+libsuzerain_perfect_la_SOURCES += operator_nonlinear.hpp
+libsuzerain_perfect_la_SOURCES += perfect.cpp
+libsuzerain_perfect_la_SOURCES += perfect.hpp
+libsuzerain_perfect_la_SOURCES += slowgrowth_type.hpp
+libsuzerain_perfect_la_SOURCES += treatment_nonreflecting.cpp
+libsuzerain_perfect_la_SOURCES += treatment_nonreflecting.hpp
 
 ##
 ## Applications
@@ -40,24 +44,27 @@ bin_PROGRAMS            += perfect_initial
 perfect_initial_SOURCES  = main_initial.cpp
 perfect_initial_SOURCES += main_initial_svnrev.c
 BUILT_SOURCES           += main_initial_svnrev.h
-perfect_initial_LDADD    = ./libperfect.la ../../suzerain/libsuzerain.la
-main_initial_svnrev.h: $(perfect_initial_SOURCES) $(libperfect_la_SOURCES)
+perfect_initial_LDADD    = libsuzerain_perfect.la
+main_initial_svnrev.h: $(perfect_initial_SOURCES)
+main_initial_svnrev.h: $(libsuzerain_perfect_la_SOURCES)
 	$(top_builddir)/build-aux/svnrev -n -o$@ "-f$(PACKAGE_VERSION).#" -i $?
 
 bin_PROGRAMS            += perfect_advance
 perfect_advance_SOURCES  = main_advance.cpp
 perfect_advance_SOURCES += main_advance_svnrev.c
 BUILT_SOURCES           += main_advance_svnrev.h
-perfect_advance_LDADD    = ./libperfect.la ../../suzerain/libsuzerain.la
-main_advance_svnrev.h: $(perfect_advance_SOURCES) $(libperfect_la_SOURCES)
+perfect_advance_LDADD    = libsuzerain_perfect.la
+main_advance_svnrev.h: $(perfect_advance_SOURCES)
+main_advance_svnrev.h: $(libsuzerain_perfect_la_SOURCES)
 	$(top_builddir)/build-aux/svnrev -n -o$@ "-f$(PACKAGE_VERSION).#" -i $?
 
 bin_PROGRAMS            += perfect_summary
 perfect_summary_SOURCES  = main_summary.cpp
 perfect_summary_SOURCES += main_summary_svnrev.c
 BUILT_SOURCES           += main_summary_svnrev.h
-perfect_summary_LDADD = ./libperfect.la ../../suzerain/libsuzerain.la
-main_summary_svnrev.h: $(main_summary_SOURCES) $(libperfect_la_SOURCES)
+perfect_summary_LDADD    = libsuzerain_perfect.la
+main_summary_svnrev.h: $(main_summary_SOURCES)
+main_summary_svnrev.h: $(libsuzerain_perfect_la_SOURCES)
 	$(top_builddir)/build-aux/svnrev -n -o$@ "-f$(PACKAGE_VERSION).#" -i $?
 
 ##
