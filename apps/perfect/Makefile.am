@@ -4,7 +4,8 @@ include ../Common.am
 
 ###
 ### A installed library bundling logic used across this subdirectory.
-### Installation reduces the footprint of installing multiple binaries.
+### Installation reduces the footprint of using multiple binaries,
+### and, more importantly, provides better RPATH semantics.
 ###
 
 lib_LTLIBRARIES                += libsuzerain_perfect.la

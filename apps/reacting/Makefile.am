@@ -12,21 +12,41 @@ if BUILD_REACTING
 AM_CPPFLAGS += $(ANTIOCH_CFLAGS)
 
 ###
-### Logic common to many different binaries within this subdirectory
+### A installed library bundling logic used across this subdirectory.
+### Installation reduces the footprint of using multiple binaries,
+### and, more importantly, provides better RPATH semantics.
 ###
 
-noinst_LTLIBRARIES     += libreacting.la
-libreacting_la_SOURCES  = antioch_constitutive.hpp     antioch_constitutive.cpp
-libreacting_la_SOURCES += definition_channel.hpp       definition_channel.cpp
-libreacting_la_SOURCES += definition_filter.hpp        definition_filter.cpp
-libreacting_la_SOURCES += driver.hpp                   driver.cpp
-libreacting_la_SOURCES += manufactured_solution.hpp    manufactured_solution.cpp
-libreacting_la_SOURCES += nsctpl_fwd.hpp               nsctpl.hpp
-libreacting_la_SOURCES += quantities.hpp               quantities.cpp
-libreacting_la_SOURCES += reacting.hpp                 reacting.cpp
-libreacting_la_SOURCES += reacting_ndx.hpp
-libreacting_la_SOURCES += treatment_nonreflecting.hpp  treatment_nonreflecting.cpp
-libreacting_la_LIBADD   = $(ANTIOCH_LIBS)
+lib_LTLIBRARIES                 += libsuzerain_reacting.la
+libsuzerain_reacting_la_LDFLAGS  = -rpath $(libdir)
+libsuzerain_reacting_la_LDFLAGS += -release $(PACKAGE_VERSION)
+libsuzerain_reacting_la_LIBADD   = ../../suzerain/libsuzerain.la
+libsuzerain_reacting_la_LIBADD  += $(ANTIOCH_LIBS)
+libsuzerain_reacting_la_SOURCES  = antioch_constitutive.cpp
+libsuzerain_reacting_la_SOURCES += antioch_constitutive.hpp
+libsuzerain_reacting_la_SOURCES += definition_channel.cpp
+libsuzerain_reacting_la_SOURCES += definition_channel.hpp
+libsuzerain_reacting_la_SOURCES += definition_filter.cpp
+libsuzerain_reacting_la_SOURCES += definition_filter.hpp
+libsuzerain_reacting_la_SOURCES += driver.cpp
+libsuzerain_reacting_la_SOURCES += driver.hpp
+libsuzerain_reacting_la_SOURCES += manufactured_solution.cpp
+libsuzerain_reacting_la_SOURCES += manufactured_solution.hpp
+libsuzerain_reacting_la_SOURCES += nsctpl_fwd.hpp
+libsuzerain_reacting_la_SOURCES += nsctpl.hpp
+libsuzerain_reacting_la_SOURCES += operator_explicit.cpp
+libsuzerain_reacting_la_SOURCES += operator_explicit.hpp
+libsuzerain_reacting_la_SOURCES += operator_hybrid.cpp
+libsuzerain_reacting_la_SOURCES += operator_hybrid.hpp
+libsuzerain_reacting_la_SOURCES += operator_nonlinear_fwd.hpp
+libsuzerain_reacting_la_SOURCES += operator_nonlinear.hpp
+libsuzerain_reacting_la_SOURCES += quantities.cpp
+libsuzerain_reacting_la_SOURCES += quantities.hpp
+libsuzerain_reacting_la_SOURCES += reacting.cpp
+libsuzerain_reacting_la_SOURCES += reacting.hpp
+libsuzerain_reacting_la_SOURCES += reacting_ndx.hpp
+libsuzerain_reacting_la_SOURCES += treatment_nonreflecting.cpp
+libsuzerain_reacting_la_SOURCES += treatment_nonreflecting.hpp
 
 ##
 ## Applications
@@ -36,19 +56,18 @@ bin_PROGRAMS          += reacting_init
 reacting_init_SOURCES  = main_init.cpp
 reacting_init_SOURCES += main_init_svnrev.c
 BUILT_SOURCES         += main_init_svnrev.h
-reacting_init_LDADD    = ./libreacting.la ../../suzerain/libsuzerain.la
-main_init_svnrev.h: $(reacting_init_SOURCES) $(libreacting_la_SOURCES)
+reacting_init_LDADD    = libsuzerain_reacting.la
+main_init_svnrev.h: $(reacting_init_SOURCES)
+main_init_svnrev.h: $(libsuzerain_reacting_la_SOURCES)
 	$(top_builddir)/build-aux/svnrev -n -o$@ "-f$(PACKAGE_VERSION).#" -i $?
 
 bin_PROGRAMS             += reacting_advance
 reacting_advance_SOURCES  = main_advance.cpp
-reacting_advance_SOURCES += operator_explicit.cpp       operator_explicit.hpp
-reacting_advance_SOURCES += operator_hybrid.cpp         operator_hybrid.hpp
-reacting_advance_SOURCES += operator_nonlinear_fwd.hpp  operator_nonlinear.hpp
 reacting_advance_SOURCES += main_advance_svnrev.c
 BUILT_SOURCES            += main_advance_svnrev.h
-reacting_advance_LDADD    = ./libreacting.la ../../suzerain/libsuzerain.la
-main_advance_svnrev.h: $(reacting_advance_SOURCES) $(libreacting_la_SOURCES)
+reacting_advance_LDADD    = libsuzerain_reacting.la
+main_advance_svnrev.h: $(reacting_advance_SOURCES)
+main_advance_svnrev.h: $(libsuzerain_reacting_la_SOURCES)
 	$(top_builddir)/build-aux/svnrev -n -o$@ "-f$(PACKAGE_VERSION).#" -i $?
 
 ##
@@ -102,7 +121,7 @@ dist_check_SCRIPTS                += test_antioch_constitutive.sh
 
 check_PROGRAMS                     = test_antioch_constitutive
 test_antioch_constitutive_SOURCES  = test_antioch_constitutive.cpp
-test_antioch_constitutive_LDADD    = ./libreacting.la ../../suzerain/libsuzerain.la
+test_antioch_constitutive_LDADD    = libsuzerain_reacting.la
 
 # Augment test environment for 'make check'.
 # One may override by manipulating $TESTS_ENVIRONMENT using the command line.
