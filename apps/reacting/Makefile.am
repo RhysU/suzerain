@@ -18,8 +18,7 @@ AM_CPPFLAGS += $(ANTIOCH_CFLAGS)
 ###
 
 lib_LTLIBRARIES                 += libsuzerain_reacting.la
-libsuzerain_reacting_la_LDFLAGS  = -rpath $(libdir)
-libsuzerain_reacting_la_LDFLAGS += -release $(PACKAGE_VERSION)
+libsuzerain_reacting_la_LDFLAGS  = -release $(PACKAGE_VERSION)
 libsuzerain_reacting_la_LIBADD   = ../../suzerain/libsuzerain.la
 libsuzerain_reacting_la_LIBADD  += $(ANTIOCH_LIBS)
 libsuzerain_reacting_la_SOURCES  = antioch_constitutive.cpp

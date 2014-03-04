@@ -185,8 +185,7 @@ nobase_pkginclude_HEADERS += version.hpp
 # the most-uncommon prerequisities first in the hope that introduction of
 # any system-wide /usr/lib, /usr/lib64, etc. is delayed as long as possible.
 lib_LTLIBRARIES          += libsuzerain.la
-libsuzerain_la_LDFLAGS    = -rpath $(libdir)
-libsuzerain_la_LDFLAGS   += -release $(PACKAGE_VERSION)
+libsuzerain_la_LDFLAGS    = -release $(PACKAGE_VERSION)
 libsuzerain_la_SOURCES    = version.cpp
 libsuzerain_la_CPPFLAGS   = $(AM_CPPFLAGS)
 libsuzerain_la_LIBADD     = libblasetal.la
@@ -197,9 +196,8 @@ libsuzerain_la_LIBADD    += libprecise.la
 libsuzerain_la_LIBADD    += libsupport.la
 libsuzerain_la_LIBADD    += $(ESIO_LIBS)
 libsuzerain_la_LIBADD    += $(UNDERLING_LIBS)
-libsuzerain_la_LIBADD    += $(top_builddir)/lib/suzerain-p3dfft/libsuzerain-p3dfft.la
-libsuzerain_la_LIBADD    += $(top_builddir)/largo/largo/liblargo.la
-libsuzerain_la_LIBADD    += $(FCLIBS)   # Should be after libsuzerain-p3dfft and largo
+libsuzerain_la_LIBADD    += ../lib/suzerain-p3dfft/libsuzerain_p3dfft.la
+libsuzerain_la_LIBADD    += ../largo/largo/liblargo.la
 libsuzerain_la_LIBADD    += $(FFTW3_MPI_THREADS_LIBS)
 libsuzerain_la_LIBADD    += $(GRVY_LIBS)
 libsuzerain_la_LIBADD    += $(BOOST_IOSTREAMS_LDFLAGS)

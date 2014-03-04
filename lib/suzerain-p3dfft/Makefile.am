@@ -20,11 +20,11 @@ noinst_HEADERS = p3dfft_internal.h p3dfft_s.h p3dfft_d.h
 AM_CPPFLAGS     += $(FFTW3_CFLAGS)  # Make FFTW available for compilation
 AM_CPPFLAGS     += -DFFTW           # Always use FFTW for the FFTs
 AM_CPPFLAGS     += -DSTRIDE1        # Always use stride one packing option
-AM_LIBTOOLFLAGS  = --tag=FC         # Link with F90 to get Fortran MPI support
+AM_LIBTOOLFLAGS  = --tag=FC         # Link with Fortran toolchain
 
-# Build a convenience library containing our one-off version of P3DFFT 2.3.
-# The Fortran runtime libraries (i.e. $(FCLIBS)) are explicitly not added.
-noinst_LTLIBRARIES             = libsuzerain-p3dfft.la
+# Install a convenience library containing our one-off version of P3DFFT 2.3.
+lib_LTLIBRARIES                = libsuzerain_p3dfft.la
+libsuzerain_p3dfft_la_LDFLAGS  = -release $(PACKAGE_VERSION)
 libsuzerain_p3dfft_la_SOURCES  = fft_exec.F90
 libsuzerain_p3dfft_la_SOURCES += fft_init.F90
 libsuzerain_p3dfft_la_SOURCES += fft_spec.F90
