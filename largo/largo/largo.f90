@@ -243,10 +243,11 @@ contains
 
     case ("bl_temporal_consistent")
       ! Initialize number of variables
-      lauxp%nvar = neq
+      lauxp%nvar      = neq
       lauxp%nvar_base = lauxp%nvar - lauxp%ntvar
 
-      call largo_BL_temporal_consistent_allocate (lauxp%cp, lauxp%neq, lauxp%ns)
+      call largo_BL_temporal_consistent_allocate (lauxp%cp, lauxp%neq, lauxp%ns, &
+        &     lauxp%ntvar, trim(fransmodel))
       lauxp%largo_init             => largo_BL_temporal_consistent_init
       lauxp%largo_finalize         => largo_BL_temporal_consistent_deallocate
       lauxp%largo_prestep_mean     => largo_BL_temporal_consistent_preStep_sEtaMean
@@ -272,6 +273,12 @@ contains
       lauxp%largo_all_sources      => largo_BL_temporal_consistent_sEta
 
       lauxp%largo_prestep_baseflow => largo_BL_temporal_consistent_preStep_baseflow
+
+      ! RANS methods
+      lauxp%largo_get_ntvar_rans        => largo_BL_temporal_consistent_get_ntvar_rans
+      lauxp%largo_init_rans             => largo_BL_temporal_consistent_init_rans
+      lauxp%largo_prestep_setamean_rans => largo_BL_temporal_consistent_prestep_sEtaMean_rans
+      lauxp%largo_sources_mean_rans     => largo_BL_temporal_consistent_sEta_rans
 
     case ("bl_spatiotemporal_consistent")
       ! Initialize number of variables

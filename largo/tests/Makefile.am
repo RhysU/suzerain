@@ -87,6 +87,12 @@ bl_temporal_consistent_baseflow_uniform_f_SOURCES  = bl_temporal_consistent_base
 bl_temporal_consistent_baseflow_uniform_f_FCFLAGS  = $(AM_FCFLAGS) $(FC_DEFINE)BASEFLOW_UNIFORM
 bl_temporal_consistent_baseflow_uniform_f_LDADD    = ../largo/liblargof.la
 
+## Temporal new consistent boundary layer, baseflow, rans, fortran
+TESTS                                          += bl_temporal_consistent_baseflow_rans_f
+check_PROGRAMS                                 += bl_temporal_consistent_baseflow_rans_f
+bl_temporal_consistent_baseflow_rans_f_SOURCES  = bl_temporal_consistent_baseflow_rans_f.f90 testframework.f90
+bl_temporal_consistent_baseflow_rans_f_LDADD    = ../largo/liblargof.la
+
 ## Spatiotemporal boundary layer, baseflow, fortran
 TESTS                                += bl_spatiotemporal_baseflow_f
 check_PROGRAMS                       += bl_spatiotemporal_baseflow_f
@@ -148,6 +154,12 @@ TESTS                                           += generic_bl_temporal_consisten
 check_PROGRAMS                                  += generic_bl_temporal_consistent_baseflow
 generic_bl_temporal_consistent_baseflow_SOURCES  = generic_bl_temporal_consistent_baseflow.c
 generic_bl_temporal_consistent_baseflow_LDADD    = ../largo/liblargo.la
+
+## Generic interface, temporal consistent boundary layer, baseflow, rans, c
+TESTS                                                += generic_bl_temporal_consistent_baseflow_rans
+check_PROGRAMS                                       += generic_bl_temporal_consistent_baseflow_rans
+generic_bl_temporal_consistent_baseflow_rans_SOURCES  = generic_bl_temporal_consistent_baseflow_rans.c
+generic_bl_temporal_consistent_baseflow_rans_LDADD    = ../largo/liblargo.la
 
 ## Generic interface, spatiotemporal boundary layer, baseflow, c
 TESTS                                        += generic_bl_spatiotemporal_baseflow

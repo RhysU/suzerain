@@ -219,7 +219,7 @@ program bl_temporal_consistent_baseflow_f
     srcfull = 0.0_WP
 
     ! Allocate workspace
-    call largo_BL_temporal_consistent_allocate (workspace, neq, ns)
+    call largo_BL_temporal_consistent_allocate (workspace, neq, ns, 0, "dns")
 
     ! Init growth rates
     call largo_BL_temporal_consistent_init  (workspace, grDelta, grDA, grDArms)
@@ -287,7 +287,7 @@ program bl_temporal_consistent_baseflow_f
     srcfull = 0.0_WP
 
     ! Allocate workspace
-    call largo_BL_temporal_consistent_allocate (workspace, neq, ns)
+    call largo_BL_temporal_consistent_allocate (workspace, neq, ns, 0, "dns")
 
     ! Init growth rates
     call largo_BL_temporal_consistent_init  (workspace, grDelta, grDA, grDArms)
