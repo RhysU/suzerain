@@ -61,6 +61,9 @@ dnl Ordering very specific: AX_CC_MAXOPT usage is fragile
 dnl ------------------------------------------------------
 AC_LANG_PUSH([C])
 AC_PROG_CC
+M_PROG_CC_C_O
+AM_PROG_AR
+AX_APPEND_LINK_FLAGS([-Wl,--as-needed],[LDFLAGS])
 AC_OPENMP
 AX_PROG_CC_C99_CFLAGS(,AC_MSG_ERROR([Compiler cannot support ISO C99]))
 AX_COMPILER_VENDOR
