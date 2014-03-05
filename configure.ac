@@ -66,10 +66,11 @@ AM_PROG_AR
 AC_OPENMP
 AX_PROG_CC_C99_CFLAGS(,AC_MSG_ERROR([Compiler cannot support ISO C99]))
 AX_COMPILER_VENDOR
-dnl TODO Avoid overlinking. On GNU, using MKL with --as-needed is problematic
-dnl if "$ax_cv_c_compiler_vendor" != "gnu"; then
-dnl     AX_APPEND_LINK_FLAGS([-Wl,--as-needed],[LDFLAGS])
-dnl fi
+dnl TODO get AX_APPEND_LINK_FLAGS([-Wl,--as-needed],[LDFLAGS]) working
+case $ax_cv_c_compiler_vendor in dnl Avoid overlinking when possible
+  *)   :                         dnl Using --as-needed with MKL breaks
+       ;;
+esac
 if test "x$ax_enable_debug" != "xyes"; then
     dnl Determine good optimization flags for C and store in CFLAGS_MAXOPT
     CFLAGS_pre_AX_CC_MAXOPT=${CFLAGS}
