@@ -45,8 +45,13 @@ class pencil_grid;
  */
 struct field_extrema_xz {
 
-    ArrayXr min;  /**< Pointwise minimum versus collocation point index. */
-    ArrayXr max;  /**< Pointwise maximum versus collocation point index. */
+    ArrayXr min;   /**< Pointwise minimum versus collocation point index. */
+    ArrayXr max;   /**< Pointwise maximum versus collocation point index. */
+
+    ArrayXi imin;  /**< Global x-index of minimum. */
+    ArrayXi imax;  /**< Global x-index of maximum. */
+    ArrayXi kmin;  /**< Global z-index of minimum. */
+    ArrayXi kmax;  /**< Global z-index of maximum. */
 
 };
 
@@ -72,6 +77,13 @@ struct field_extrema_xyz {
 
     real_t min;  /**< Global pointwise minimum. */
     real_t max;  /**< Global pointwise maximum. */
+
+    int imin;  /**< Global x-index of minimum. */
+    int imax;  /**< Global x-index of maximum. */
+    int jmin;  /**< Global y-index of minimum. */
+    int jmax;  /**< Global y-index of maximum. */
+    int kmin;  /**< Global z-index of minimum. */
+    int kmax;  /**< Global z-index of maximum. */
 
 };
 

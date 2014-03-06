@@ -331,8 +331,14 @@ public:
      */
     virtual void log_state_extrema(
             const std::string& timeprefix,
-            const char * const name_min = "state.min",
-            const char * const name_max = "state.max");
+            const char * const name_min  = "state.min",
+            const char * const name_xmin = "state.xmin",
+            const char * const name_ymin = "state.ymin",
+            const char * const name_zmin = "state.zmin",
+            const char * const name_max  = "state.max",
+            const char * const name_xmax = "state.xmax",
+            const char * const name_ymax = "state.ymax",
+            const char * const name_zmax = "state.zmax");
 
     /**
      * Log messages containing state at the upper and lower boundaries.
@@ -792,8 +798,26 @@ protected:
     /** Should \ref log_state_max show headers? */
     bool log_state_max_header_shown;
 
+    /** Should \ref log_state_xmax show headers? */
+    bool log_state_xmax_header_shown;
+
+    /** Should \ref log_state_ymax show headers? */
+    bool log_state_ymax_header_shown;
+
+    /** Should \ref log_state_zmax show headers? */
+    bool log_state_zmax_header_shown;
+
     /** Should \ref log_state_min show headers? */
     bool log_state_min_header_shown;
+
+    /** Should \ref log_state_xmin show headers? */
+    bool log_state_xmin_header_shown;
+
+    /** Should \ref log_state_ymin show headers? */
+    bool log_state_ymin_header_shown;
+
+    /** Should \ref log_state_zmin show headers? */
+    bool log_state_zmin_header_shown;
 
     /**
      * Should \ref log_boundary_conditions show headers?  Index zero refers

@@ -41,6 +41,11 @@
 
 namespace suzerain {
 
+struct val_index {
+  double val;    /**< Value. */
+  int    index;  /**< Global xz index. */
+};
+
 std::vector<field_extrema_xz>
 compute_field_extrema_xz(
         contiguous_state<4,complex_t>& swave,
@@ -52,19 +57,27 @@ compute_field_extrema_xz(
 
     // Contiguous temporary storage for accumulating/broadcasting results
     // Each fast columns stores one wall-normal swaths of data for a scalar
-    ArrayXXr buf(swave.shape()[1], 2*swave.shape()[0]);
-    ArrayXXr::ColsBlockXpr bufmin = buf.leftCols (swave.shape()[0]);
-    ArrayXXr::ColsBlockXpr bufmax = buf.rightCols(swave.shape()[0]);
+    int ny = boost::numeric_cast<int>(swave.shape()[1]);
+    int nf = boost::numeric_cast<int>(swave.shape()[0]);
+    int buf2size = ny * 2*nf;
+    suzerain::scoped_array<val_index> buf2(new val_index[buf2size]);
 
     // Initialize storage with "uninteresting" min and max values
     // so that the final Allreduce ignores contributions from
     // ranks that have no business contributing to certain y_j.
-    bufmin.setConstant(+std::numeric_limits<ArrayXXr::Scalar>::infinity());
-    bufmax.setConstant(-std::numeric_limits<ArrayXXr::Scalar>::infinity());
+    for (int i = 0; i < buf2size/2; ++i) {
+        buf2[i].val   = +std::numeric_limits<real_t>::infinity();
+        buf2[i].index = 0;
+    }
+    for (int i = buf2size/2; i < buf2size; ++i) {
+        buf2[i].val   = -std::numeric_limits<real_t>::infinity();
+        buf2[i].index = 0;
+    }
 
     // For each field...
     operator_tools o(grid, dgrid, cop);
     physical_view<> sphys(dgrid, swave);
+    int dNx = dgrid.global_physical_extent.x();
     for (int f = 0; f < boost::numeric_cast<int>(swave.shape()[0]); ++f) {
 
         // Transform to physical space (dealiasing along the way)...
@@ -78,18 +91,39 @@ compute_field_extrema_xz(
             ++j) {
 
             // Loop over X and Z...
-            const int last_zxoffset = offset
-                                    + dgrid.local_physical_extent.z()
-                                    * dgrid.local_physical_extent.x();
-            for (; offset < last_zxoffset; ++offset) {
+            for (int k = o.dgrid.local_physical_start.z();
+                k < o.dgrid.local_physical_end.z();
+                ++k) {
 
-                // Retrieve scalar-valued state at point...
-                const real_t val = sphys(f, offset);
+                for (int i = o.dgrid.local_physical_start.x();
+                    i < o.dgrid.local_physical_end.x();
+                    ++i, /* NB */ ++offset) {
 
-                // ...and tracking minimum value at this wall-normal spot
-                // being careful to preserve NaNs during local reduction.
-                bufmin(j,f) = math::minnan(val, bufmin(j,f));
-                bufmax(j,f) = math::maxnan(val, bufmax(j,f));
+                    int xz_global_offset = i + k * dNx;
+
+                    // Retrieve scalar-valued state at point...
+                    const real_t val = sphys(f, offset);
+
+                    // ...and tracking minimum value at this wall-normal spot
+                    // being careful to preserve NaNs during local reduction.
+
+                    // minimum value
+                    if (val >= buf2[j+f*ny].val) {
+                        // do nothing
+                    } else {
+                        buf2[j+f*ny].val   = val;
+                        buf2[j+f*ny].index = xz_global_offset;
+                    }
+
+                    // maximum value
+                    if (val <= buf2[j+(f+nf)*ny].val) {
+                        // do nothing
+                    } else {
+                        buf2[j+(f+nf)*ny].val   = val;
+                        buf2[j+(f+nf)*ny].index = xz_global_offset;
+                    }
+
+                }
 
             }
 
@@ -98,17 +132,41 @@ compute_field_extrema_xz(
     }
 
     // Allreduce the information in a single operation playing a (-max) trick
-    bufmax *= -1;
-    SUZERAIN_MPICHKR(MPI_Allreduce(MPI_IN_PLACE, buf.data(), buf.size(),
-                                   mpi::datatype_of(buf.data()),
-                                   MPI_MIN, MPI_COMM_WORLD));
-    bufmax *= -1;
+    for (int i = buf2size/2+1; i < buf2size; ++i) {
+        buf2[i].val *= -1;
+    }
+    SUZERAIN_MPICHKR(MPI_Allreduce(MPI_IN_PLACE, &buf2[0], buf2size,
+                                   MPI_DOUBLE_INT,
+                                   MPI_MINLOC, MPI_COMM_WORLD));
+    for (int i = buf2size/2+1; i < buf2size; ++i) {
+        buf2[i].val *= -1;
+    }
 
     // Copy the wall-normal profiles into the returned vector...
     std::vector<field_extrema_xz> retval(swave.shape()[0]);
-    for (size_t f = 0; f < swave.shape()[0]; ++f) {
-        retval[f].min = bufmin.col(f);
-        retval[f].max = bufmax.col(f);
+    for (int f = 0; f < nf; ++f) {
+        retval[f].min.resize(ny);
+        retval[f].max.resize(ny);
+        retval[f].imin.resize(ny);
+        retval[f].imax.resize(ny); 
+        retval[f].kmin.resize(ny);
+        retval[f].kmax.resize(ny); 
+
+        for (int j = 0; j < ny; ++j) {
+            // value
+            retval[f].min(j)  = buf2[    f *ny + j].val;
+            retval[f].max(j)  = buf2[(nf+f)*ny + j].val;
+
+            // x-index =  xz_global % dNx
+            retval[f].imin(j) = buf2[    f *ny + j].index % dNx;
+            retval[f].imax(j) = buf2[(nf+f)*ny + j].index % dNx;
+
+            // z-index = (xz_global - i-index) / dNx
+            retval[f].kmin(j) = (buf2[    f *ny + j].index 
+                                 - retval[f].imin(j)) / dNx;
+            retval[f].kmax(j) = (buf2[(nf+f)*ny + j].index 
+                                 - retval[f].imax(j)) / dNx;
+        }
     }
 
     // ...and hope the compiler is smart enough to elide the copy.
@@ -129,11 +187,34 @@ compute_field_extrema_xyz(
         = compute_field_extrema_xz(swave, grid, dgrid, cop);
 
     // Reduce the wall-normal profiles down to a single value
-    // TODO Does this honor NaNs correctly?
     std::vector<field_extrema_xyz> retval(wallnormal.size());
+    int ny = boost::numeric_cast<int>(swave.shape()[1]);
     for (size_t f = 0; f < swave.shape()[0]; ++f) {
-        retval[f].min = wallnormal[f].min.minCoeff();
-        retval[f].max = wallnormal[f].max.maxCoeff();
+        retval[f].min   = +std::numeric_limits<real_t>::infinity();
+        retval[f].max   = -std::numeric_limits<real_t>::infinity();
+
+        for (int j = 0; j < ny; ++j) {
+
+            // minimum value
+            if (wallnormal[f].min(j) >= retval[f].min) {
+                // do nothing
+            } else {
+                retval[f].min  = wallnormal[f].min(j);
+                retval[f].imin = wallnormal[f].imin(j);
+                retval[f].jmin = j;
+                retval[f].kmin = wallnormal[f].kmin(j);
+            }
+
+            // maximum value
+            if (wallnormal[f].max(j) <= retval[f].max) {
+                // do nothing
+            } else {
+                retval[f].max  = wallnormal[f].max(j);
+                retval[f].imax = wallnormal[f].imax(j);
+                retval[f].jmax = j;
+                retval[f].kmax = wallnormal[f].kmax(j);
+            }
+        }
     }
 
     return retval;

@@ -905,23 +905,52 @@ driver_base::log_state_bulk(
 void
 driver_base::log_state_extrema(
         const std::string& timeprefix,
-        const char * const name_min,
-        const char * const name_max)
+        const char * const name_min  ,
+        const char * const name_xmin ,
+        const char * const name_ymin ,
+        const char * const name_zmin ,
+        const char * const name_max  ,
+        const char * const name_xmax ,
+        const char * const name_ymax ,
+        const char * const name_zmax )
 {
     // Fluctuations only make sense to log when either X or Z is nontrivial
     const bool nontrivial_possible = grid->N.x() * grid->N.z() > 1;
     if (!nontrivial_possible) return;
 
     // Avoid computational cost when logging is disabled
-    logging::logger_type log_min = logging::get_logger(name_min);
-    logging::logger_type log_max = logging::get_logger(name_max);
-    if (!INFO0_ENABLED(log_min) && !INFO0_ENABLED(log_max)) return;
+    logging::logger_type log_min  = logging::get_logger(name_min);
+    logging::logger_type log_xmin = logging::get_logger(name_xmin);
+    logging::logger_type log_ymin = logging::get_logger(name_ymin);
+    logging::logger_type log_zmin = logging::get_logger(name_zmin);
+    logging::logger_type log_max  = logging::get_logger(name_max);
+    logging::logger_type log_xmax = logging::get_logger(name_xmax);
+    logging::logger_type log_ymax = logging::get_logger(name_ymax);
+    logging::logger_type log_zmax = logging::get_logger(name_zmax);
+
+    if (!INFO0_ENABLED(log_min ) && !INFO0_ENABLED(log_max ) &&
+        !INFO0_ENABLED(log_xmin) && !INFO0_ENABLED(log_xmax) &&
+        !INFO0_ENABLED(log_ymin) && !INFO0_ENABLED(log_ymax) &&
+        !INFO0_ENABLED(log_zmin) && !INFO0_ENABLED(log_zmax)) return;
 
     // Show headers only on first invocation
     maybe_timeprefix_fields_identifiers(*this, timeprefix, log_min,
                                         log_state_min_header_shown);
+    maybe_timeprefix_fields_identifiers(*this, timeprefix, log_xmin,
+                                        log_state_xmin_header_shown);
+    maybe_timeprefix_fields_identifiers(*this, timeprefix, log_ymin,
+                                        log_state_ymin_header_shown);
+    maybe_timeprefix_fields_identifiers(*this, timeprefix, log_zmin,
+                                        log_state_zmin_header_shown);
+
     maybe_timeprefix_fields_identifiers(*this, timeprefix, log_max,
                                         log_state_max_header_shown);
+    maybe_timeprefix_fields_identifiers(*this, timeprefix, log_xmax,
+                                        log_state_xmax_header_shown);
+    maybe_timeprefix_fields_identifiers(*this, timeprefix, log_ymax,
+                                        log_state_ymax_header_shown);
+    maybe_timeprefix_fields_identifiers(*this, timeprefix, log_zmax,
+                                        log_state_zmax_header_shown);
 
     // Collective computation of the global extrema
     state_nonlinear->assign_from(*state_linear);
@@ -931,16 +960,53 @@ driver_base::log_state_extrema(
     // Build and log global minimum and maximum values
     std::ostringstream msg;
     msg << timeprefix;
-    for (size_t k = 0; k < result.size(); ++k) {
-        msg << ' ' << fullprec<>(result[k].min);
+    for (size_t f = 0; f < result.size(); ++f) {
+        msg << ' ' << fullprec<>(result[f].min);
     }
     INFO0(log_min, msg.str());
     msg.str("");
     msg << timeprefix;
-    for (size_t k = 0; k < result.size(); ++k) {
-        msg << ' ' << fullprec<>(result[k].max);
+    for (size_t f = 0; f < result.size(); ++f) {
+        msg << ' ' << fullprec<>(grid->x(result[f].imin));
+    }
+    INFO0(log_xmin, msg.str());
+    msg.str("");
+    msg << timeprefix;
+    for (size_t f = 0; f < result.size(); ++f) {
+        msg << ' ' << fullprec<>(b->collocation_point(result[f].jmin));
+    }
+    INFO0(log_ymin, msg.str());
+    msg.str("");
+    msg << timeprefix;
+    for (size_t f = 0; f < result.size(); ++f) {
+        msg << ' ' << fullprec<>(grid->z(result[f].kmin));
+    }
+    INFO0(log_zmin, msg.str());
+    msg.str("");
+    msg << timeprefix;
+    for (size_t f = 0; f < result.size(); ++f) {
+        msg << ' ' << fullprec<>(result[f].max);
     }
     INFO0(log_max, msg.str());
+    msg.str("");
+    msg << timeprefix;
+    for (size_t f = 0; f < result.size(); ++f) {
+        msg << ' ' << fullprec<>(grid->x(result[f].imax));
+    }
+    INFO0(log_xmax, msg.str());
+    msg.str("");
+    msg << timeprefix;
+    for (size_t f = 0; f < result.size(); ++f) {
+        msg << ' ' << fullprec<>(b->collocation_point(result[f].jmax));
+    }
+    INFO0(log_ymax, msg.str());
+    msg.str("");
+    msg << timeprefix;
+    for (size_t f = 0; f < result.size(); ++f) {
+        msg << ' ' << fullprec<>(grid->z(result[f].kmax));
+    }
+    INFO0(log_zmax, msg.str());
+    msg.str("");
 }
 
 void
