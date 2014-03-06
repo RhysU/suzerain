@@ -3,56 +3,54 @@ digraph g {
     rankdir=LR;
     style=filled;     // DEBUG
     color=lightgrey;  // DEBUG
-    splines=ortho;
-
+    splines=curved;
 
     subgraph cluster_0 {
-        r        [shape=point,  xlabel=<r> ];
-        sum2     [shape=circle, label=<&#931;> ];
+        r        [shape=point,  xlabel=<r>];
+        sum2     [shape=circle, label=<&#931;>];
         Ii       [shape=box,    label=<1 / (s Ti)>];
     }
 
     subgraph cluster_1 {
         D        [shape=box,    label=<s Td>];
         filter   [shape=box,    label=<1 / (1 + s Tf)>];
-
     }
 
     subgraph cluster_2 {
-        yi       [shape=point,  xlabel=<y> ];
-        sum1     [shape=circle, label=<&#931;> ];
+        sum1     [shape=circle, label=<&#931;>];
         gain     [shape=box,    label=<kp>];
-        v        [shape=point,  xlabel=<v> ];
+        v        [shape=point];
         actuator [shape=rect,   label=<u(s) / v(s)>];
 
-        u        [shape=point,  xlabel=<u> ];
-        process  [shape=rect,   label=<P(s)>       ];
-        yo       [shape=point,  xlabel=<y> ];
+        u        [shape=point,  label=<u>];
+        process  [shape=rect,   label=<P(s)>];
     }
 
-    subgraph cluster_3 {
-        It       [shape=box,    label=<1 / (s Tt)>];
-        sum3     [shape=circle, label=<&#931;> ];
-    }
+    y        [shape=point];
+    It       [shape=box,    label=<1 / (s Tt)>];
+    sum3     [shape=circle, label=<&#931;>];
 
-
-    actuator -> u        [];
-    D        -> sum1     [];
+    actuator -> u        [arrowhead=none, headlabel=<u>];
     filter   -> D        [label=<f>];
-    gain     -> v        [];
-    Ii       -> sum1     [];
-    sum1     -> It       [dir=back];
-    process  -> yo       [];
-    r        -> sum2     [];
-    sum1     -> gain     [];
-    sum2     -> Ii       [];
-    It       -> sum3     [dir=back];
+    gain     -> v        [arrowhead=none, headlabel=<v>];
     u        -> process  [];
-    sum3     -> u        [dir=back];
-    v        -> sum3     [];
     v        -> actuator [];
-    yi       -> filter   [];
-    yi       -> sum1     [headlabel=<&#8722;>];
-    yi       -> sum2     [headlabel=<&#8722;>];
+
+    D        -> sum1     [];
+    sum1     -> It       [dir=back];
+    Ii       -> sum1     [];
+    sum1     -> gain     [];
+
+    r        -> sum2     [];
+    sum2     -> Ii       [label=<e>];
+
+    It       -> sum3     [dir=back, label=<es>];
+    sum3     -> u        [dir=back];
+    v        -> sum3     [headlabel=<&#8722;>];
+
+    process  -> y        [arrowhead=none, label=<y>, weight=2];
+    filter   -> y        [dir=back, sametail="y"];
+    sum1     -> y        [dir=back, sametail="y", taillabel=<&#8722;>];
+    sum2     -> y        [dir=back, sametail="y", taillabel=<&#8722;>];
 
 }
