@@ -716,7 +716,7 @@ protected:
     /**
      * Compute default status output intervals.
      *
-     * By default, this is one-fourth the frequency of any non-zero, non-NaN
+     * By default, this is one-sixteenth the frequency of any non-zero, non-NaN
      * value returned by \ref default_statistics_interval.
      *
      * \copydetails default_restart_interval(time_type&,step_type&)

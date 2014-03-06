@@ -246,6 +246,7 @@ driver::load_statistics_hook(
     return super::load_statistics_hook(esioh);
 }
 
+// TODO Update to match similar logic within apps/perfect/driver.cpp
 void
 driver::default_restart_interval(
         time_type& t,

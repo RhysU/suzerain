@@ -1764,13 +1764,13 @@ driver_base::default_status_interval(
     step_type tmp_nt = 0;
     default_statistics_interval(tmp_dt, tmp_nt);
 
-    // Output status one-fourth as often as we write statistics
+    // Output status one-sixteenth as often as we write statistics
     if (boost::math::isnormal(tmp_dt)) {
-        dt = tmp_dt / 4;
+        dt = tmp_dt / 16;
     }
     if (tmp_nt) {
         using std::min;
-        nt = min(tmp_nt / 4, static_cast<step_type>(1));
+        nt = min(tmp_nt / 16, static_cast<step_type>(1));
     }
 }
 

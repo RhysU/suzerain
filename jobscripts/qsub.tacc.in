@@ -30,7 +30,7 @@ test "${S_RT:=0}" -lt 0 && S_RT=0
 : ${BINARY=@bindir@/perfect_advance}
 : ${INPUT=@pkgdatadir@/fields/channel_k08.h5}  # Use SCRATCH or WORK
 : ${ADVANCE=}
-: ${STATUS=--status_nt=100}
+: ${STATUS=}
 : ${DECOMP=--Pa=$(expr $NSLOTS / $NHOSTS)}
 : ${OPTIONS=}
 : ${PLANNING=--plan_wisdom=$HOME/.wisdom --rigor_fft=patient}
