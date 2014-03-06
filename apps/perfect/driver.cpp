@@ -440,6 +440,8 @@ driver::default_restart_interval(
         time_type& t,
         step_type&)
 {
+    // TODO When no driving bulk velocity, check for driving wall conditions
+
     static const char msg[] = "No known default_restart_interval at ";
 
     // Compute a problem-aware flow through time independent of Ly
