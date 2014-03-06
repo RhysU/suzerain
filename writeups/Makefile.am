@@ -32,7 +32,7 @@ perfectgas.dvi perfectgas.pdf: inhomogeneity1.eps inhomogeneity2.eps
 baseflow.dvi   radialflow.pdf: nozzle_subsonic.eps nozzle_supersonic.eps
 
 # Images, Source Data, References, etc.
-EXTRA_DIST  = astrommurray1011.eps helm.dot
+EXTRA_DIST  = astrommurray1011.eps helm.dot help.eps help.svg
 EXTRA_DIST += cev_summary1.eps cev_summary2.eps cev_summary_fpg.eps
 EXTRA_DIST += nozzle_schematic.eps nozzle_subsonic.eps nozzle_supersonic.eps
 EXTRA_DIST += inhomogeneity1.gz inhomogeneity1.eps
