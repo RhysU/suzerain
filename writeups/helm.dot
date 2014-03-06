@@ -1,39 +1,58 @@
 digraph g {
 
-  rankdir=LR;
+    rankdir=LR;
+    style=filled;     // DEBUG
+    color=lightgrey;  // DEBUG
+    splines=ortho;
 
-  actuator [shape=rect,   label=<u(s) / v(s)>];
-  D        [shape=box,    label=<s Td>];
-  filter   [shape=box,    label=<1 / (1 + s Tf)>];
-  gain     [shape=box,    label=<kp>];
-  Ii       [shape=box,    label=<1 / (s Ti)>];
-  It       [shape=box,    label=<1 / (s Tt)>];
-  process  [shape=rect,   label=<P(s)>       ];
-  r        [shape=point,  xlabel=<r> ];
-  sum1     [shape=circle, label=<&#931;> ];
-  sum2     [shape=circle, label=<&#931;> ];
-  sum3     [shape=circle, label=<&#931;> ];
-  u        [shape=point,  xlabel=<u> ];
-  v        [shape=point,  xlabel=<v> ];
-  y        [shape=point,  xlabel=<y> ];
 
-  actuator -> u        [];
-  D        -> filter   [dir=back];
-  gain     -> v        [];
-  Ii       -> sum1     [];
-  It       -> sum3     [dir=back];
-  process  -> y        [];
-  r        -> sum2     [];
-  sum1     -> D        [dir=back];
-  sum1     -> gain     [];
-  sum1     -> It       [dir=back];
-  sum2     -> Ii       [];
-  sum3     -> v        [dir=back, taillabel=<&#8722;>];
-  u        -> process  [];
-  u        -> sum3     [];
-  v        -> actuator [];
-  y        -> filter   [];
-  y        -> sum1     [headlabel=<&#8722;>];
-  y        -> sum2     [headlabel=<&#8722;>];
+    subgraph cluster_0 {
+        r        [shape=point,  xlabel=<r> ];
+        sum2     [shape=circle, label=<&#931;> ];
+        Ii       [shape=box,    label=<1 / (s Ti)>];
+    }
+
+    subgraph cluster_1 {
+        D        [shape=box,    label=<s Td>];
+        filter   [shape=box,    label=<1 / (1 + s Tf)>];
+
+    }
+
+    subgraph cluster_2 {
+        yi       [shape=point,  xlabel=<y> ];
+        sum1     [shape=circle, label=<&#931;> ];
+        gain     [shape=box,    label=<kp>];
+        v        [shape=point,  xlabel=<v> ];
+        actuator [shape=rect,   label=<u(s) / v(s)>];
+
+        u        [shape=point,  xlabel=<u> ];
+        process  [shape=rect,   label=<P(s)>       ];
+        yo       [shape=point,  xlabel=<y> ];
+    }
+
+    subgraph cluster_3 {
+        It       [shape=box,    label=<1 / (s Tt)>];
+        sum3     [shape=circle, label=<&#931;> ];
+    }
+
+
+    actuator -> u        [];
+    D        -> sum1     [];
+    filter   -> D        [label=<f>];
+    gain     -> v        [];
+    Ii       -> sum1     [];
+    sum1     -> It       [dir=back];
+    process  -> yo       [];
+    r        -> sum2     [];
+    sum1     -> gain     [];
+    sum2     -> Ii       [];
+    It       -> sum3     [dir=back];
+    u        -> process  [];
+    sum3     -> u        [dir=back];
+    v        -> sum3     [];
+    v        -> actuator [];
+    yi       -> filter   [];
+    yi       -> sum1     [headlabel=<&#8722;>];
+    yi       -> sum2     [headlabel=<&#8722;>];
 
 }
