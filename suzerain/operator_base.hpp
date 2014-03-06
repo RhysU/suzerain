@@ -61,7 +61,7 @@ public:
      */
     real_t x(std::size_t i) const
     {
-        return i * grid.L.x() / grid.dN.x() - grid.L.x() / 2;
+        return grid.x(i);
     }
 
     /**
@@ -78,7 +78,7 @@ public:
      */
     real_t z(std::size_t k) const
     {
-        return k * grid.L.z() / grid.dN.z() - grid.L.z() / 2;
+        return grid.z(k);
     }
 
     /**

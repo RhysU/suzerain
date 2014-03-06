@@ -198,6 +198,25 @@ public:
 
     /** @copydoc DAFz(real_t) */
     specification_grid& DAFz(const std::string& factor);
+
+    /**
+     * Return the <tt>i</tt>th \c globally-indexed x collocation point,
+     * taking into account the chosen dealiasing factors.
+     */
+    real_t x(std::size_t i) const
+    {
+        return (i * L.x()) / dN.x() - L.x() / 2;
+    }
+
+    /**
+     * Return the <tt>k</tt>th \c globally-indexed z collocation point,
+     * taking into account the chosen dealiasing factors.
+     */
+    real_t z(std::size_t k) const
+    {
+        return (k * L.z()) / dN.z() - L.z() / 2;
+    }
+
 };
 
 } // namespace suzerain
