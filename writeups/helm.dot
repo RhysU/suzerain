@@ -3,32 +3,27 @@ digraph g {
     rankdir=LR;
     style=filled;     // DEBUG
     color=lightgrey;  // DEBUG
-    splines=curved;
 
     subgraph cluster_0 {
-        r        [shape=point,  xlabel=<r>];
-        sum2     [shape=circle, label=<&#931;>];
-        Ii       [shape=box,    label=<1 / (s Ti)>];
+        D      [shape=record, label=<s Td>];
+        filter [shape=record, label=<1 / (1 + s Tf)>];
     }
 
     subgraph cluster_1 {
-        D        [shape=box,    label=<s Td>];
-        filter   [shape=box,    label=<1 / (1 + s Tf)>];
+        r     [shape=point];
+        sumIt [shape=circle, label=<&#931;>];
+        Ii    [shape=record, label="1 / (s Ti)"];
     }
 
-    subgraph cluster_2 {
-        sum1     [shape=circle, label=<&#931;>];
-        gain     [shape=box,    label=<kp>];
-        v        [shape=point];
-        actuator [shape=rect,   label=<u(s) / v(s)>];
-
-        u        [shape=point,  label=<u>];
-        process  [shape=rect,   label=<P(s)>];
-    }
-
+    sum_gain [shape=circle, label=<&#931;>];
+    gain     [shape=record, label=<kp>];
+    v        [shape=point];
+    actuator [shape=record, label=<u(s) / v(s)>];
+    u        [shape=point,  label=<u>];
+    process  [shape=record, label=<P(s)>];
     y        [shape=point];
-    It       [shape=box,    label=<1 / (s Tt)>];
-    sum3     [shape=circle, label=<&#931;>];
+    It       [shape=record, label=<1 / (s Tt)>];
+    sum_es   [shape=circle, label=<&#931;>];
 
     actuator -> u        [arrowhead=none, headlabel=<u>];
     filter   -> D        [label=<f>];
@@ -36,21 +31,21 @@ digraph g {
     u        -> process  [];
     v        -> actuator [];
 
-    D        -> sum1     [];
-    sum1     -> It       [dir=back];
-    Ii       -> sum1     [];
-    sum1     -> gain     [];
+    D        -> sum_gain [];
+    It       -> sum_gain [];
+    Ii       -> sum_gain [];
+    sum_gain -> gain     [];
 
-    r        -> sum2     [];
-    sum2     -> Ii       [label=<e>];
+    r        -> sumIt    [label=<r>];
+    sumIt    -> Ii       [label=<e>];
 
-    It       -> sum3     [dir=back, label=<es>];
-    sum3     -> u        [dir=back];
-    v        -> sum3     [headlabel=<&#8722;>];
+    It       -> sum_es   [dir=back, label=<es>];
+    sum_es   -> u        [dir=back];
+    v        -> sum_es   [headlabel=<&#8722;>];
 
     process  -> y        [arrowhead=none, label=<y>, weight=2];
-    filter   -> y        [dir=back, sametail="y"];
-    sum1     -> y        [dir=back, sametail="y", taillabel=<&#8722;>];
-    sum2     -> y        [dir=back, sametail="y", taillabel=<&#8722;>];
+    filter   -> y        [dir=back, tailport=se];
+    sum_gain -> y        [dir=back, taillabel=<&#8722;>];
+    sumIt    -> y        [dir=back, taillabel=<&#8722;>];
 
 }
