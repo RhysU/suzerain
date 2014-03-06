@@ -11,7 +11,8 @@ digraph g {
 
     subgraph cluster_1 {
         r     [shape=point];
-        sumIt [shape=circle, label=<&#931;>];
+        sum_e [shape=circle, label=<&#931;>];
+        e     [shape=point];
         Ii    [shape=record, label=<(T<SUB>i</SUB>&thinsp;s)<SUP>-1</SUP>>];
     }
 
@@ -19,7 +20,7 @@ digraph g {
     gain     [shape=record, label=<k<SUB>p</SUB>>];
     v        [shape=point];
     actuator [shape=record, label=<<SUP>u(s)</SUP>&frasl;<SUB>v(s)</SUB>>];
-    u        [shape=point,  label=<u>];
+    u        [shape=point];
     process  [shape=record, label=<P(s)>];
     y        [shape=point];
     It       [shape=record, label=<(T<SUB>t</SUB>&thinsp;s)<SUP>-1</SUP>>];
@@ -36,16 +37,18 @@ digraph g {
     Ii       -> sum_gain [];
     sum_gain -> gain     [];
 
-    r        -> sumIt    [label=<r>];
-    sumIt    -> Ii       [label=<e>];
+    r        -> sum_e    [label=<r>];
+    sum_e    -> e        [arrowhead=none, headlabel=<e>];
+    e        -> Ii       [];
+
+    e        -> sum_gain [];
 
     It       -> sum_es   [dir=back, label=<e<SUB>s</SUB>>];
     sum_es   -> u        [dir=back];
     v        -> sum_es   [headlabel=<&#8722;>];
 
-    process  -> y        [arrowhead=none, label=<y>, weight=2];
-    filter   -> y        [dir=back, tailport=se];
-    sum_gain -> y        [dir=back, taillabel=<&#8722;>];
-    sumIt    -> y        [dir=back, taillabel=<&#8722;>];
+    process  -> y        [arrowhead=none, label=<y>, weight=1];
+    filter   -> y        [dir=back];
+    sum_e    -> y        [dir=back, taillabel=<&#8722;>];
 
 }
