@@ -29,10 +29,6 @@
  * @copydoc error.h
  */
 
-#ifdef HAVE_CONFIG_H
-#include <suzerain/config.h>
-#endif
-
 #include <suzerain/error.h>
 
 #include <suzerain/common.h>

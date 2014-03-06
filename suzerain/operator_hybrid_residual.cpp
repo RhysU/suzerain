@@ -25,10 +25,6 @@
  * @copydoc operator_hybrid_residual.hpp
  */
 
-#ifdef HAVE_CONFIG_H
-#include <suzerain/config.h>
-#endif
-
 #include <suzerain/operator_hybrid_residual.hpp>
 #include <suzerain/multi_array.hpp>
 #include <suzerain/state.hpp>

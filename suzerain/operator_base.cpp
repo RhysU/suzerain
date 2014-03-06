@@ -25,10 +25,6 @@
  * @copydoc operator_base.hpp
  */
 
-#ifdef HAVE_CONFIG_H
-#include <suzerain/config.h>
-#endif
-
 #include <suzerain/operator_base.hpp>
 
 namespace suzerain {

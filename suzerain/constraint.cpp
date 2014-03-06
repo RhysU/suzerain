@@ -25,10 +25,6 @@
  * @copydoc constraint.hpp
  */
 
-#ifdef HAVE_CONFIG_H
-#include <suzerain/config.h>
-#endif
-
 #include <suzerain/constraint.hpp>
 
 #include <suzerain/bspline.hpp>

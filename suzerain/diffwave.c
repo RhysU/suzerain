@@ -26,10 +26,6 @@
  * @copydoc diffwave.h
  */
 
-#ifdef HAVE_CONFIG_H
-#include <suzerain/config.h>
-#endif
-
 #include <suzerain/diffwave.h>
 
 #include <gsl/gsl_sf_pow_int.h>

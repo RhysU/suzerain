@@ -25,10 +25,6 @@
  * Implementation of \ref driver_base::summary_run.
  */
 
-#ifdef HAVE_CONFIG_H
-#include <suzerain/config.h>
-#endif
-
 #include <suzerain/support/driver_base.hpp>
 
 #include <esio/esio.h>

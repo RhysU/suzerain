@@ -25,10 +25,6 @@
  * @copydoc specification_arsel.hpp
  */
 
-#ifdef HAVE_CONFIG_H
-#include <suzerain/config.h>
-#endif
-
 #include <suzerain/specification_arsel.hpp>
 
 #include <suzerain/ar.hpp>

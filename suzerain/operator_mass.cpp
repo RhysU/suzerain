@@ -25,10 +25,6 @@
  * @copydoc operator_mass.hpp
  */
 
-#ifdef HAVE_CONFIG_H
-#include <suzerain/config.h>
-#endif
-
 #include <suzerain/operator_mass.hpp>
 
 #include <suzerain/pencil_grid.hpp>

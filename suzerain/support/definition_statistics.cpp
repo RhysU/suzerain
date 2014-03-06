@@ -25,10 +25,6 @@
  * @copydoc definition_statistics.hpp
  */
 
-#ifdef HAVE_CONFIG_H
-#include <suzerain/config.h>
-#endif
-
 #include <suzerain/support/definition_statistics.hpp>
 
 #include <suzerain/exprparse.hpp>

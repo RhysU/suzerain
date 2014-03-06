@@ -25,10 +25,6 @@
  * @copydoc definition_signal.hpp
  */
 
-#ifdef HAVE_CONFIG_H
-#include <suzerain/config.h>
-#endif
-
 #include <suzerain/support/definition_signal.hpp>
 
 #include <suzerain/error.h>

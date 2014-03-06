@@ -26,10 +26,6 @@
  * @copydoc htstretch.h
  */
 
-#ifdef HAVE_CONFIG_H
-#include <suzerain/config.h>
-#endif
-
 #include <suzerain/htstretch.h>
 
 #include <gsl/gsl_errno.h>

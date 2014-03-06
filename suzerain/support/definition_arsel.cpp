@@ -25,10 +25,6 @@
  * @copydoc definition_noise.hpp
  */
 
-#ifdef HAVE_CONFIG_H
-#include <suzerain/config.h>
-#endif
-
 #include <suzerain/support/definition_arsel.hpp>
 
 #include <boost/version.hpp>

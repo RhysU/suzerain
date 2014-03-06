@@ -33,10 +33,6 @@
 
 #if !defined(BOOST_PP_IS_ITERATING) || !BOOST_PP_IS_ITERATING
 
-#ifdef HAVE_CONFIG_H
-#include <suzerain/config.h>
-#endif
-
 #include <suzerain/gbdmv.h>
 
 #include <suzerain/common.h>

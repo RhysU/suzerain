@@ -25,15 +25,12 @@
  * @copydoc version.hpp
  */
 
-#ifdef HAVE_CONFIG_H
-#include <suzerain/config.h>
-#endif
+#include <suzerain/version.hpp>
 
-#include <string>
 #include <sstream>
 
+#include <suzerain/suzerain-config.h>
 #include <suzerain/suzerain-revision.h>
-#include <suzerain/version.hpp>
 
 namespace suzerain {
 
@@ -50,7 +47,7 @@ std::string version(const std::string &application_name,
         || (application_name.empty() && !application_version.empty())) {
         oss << " written using ";
     }
-    oss << PACKAGE_NAME << ' ' << SUZERAIN_REVISION_STR
+    oss << SUZERAIN_PACKAGE_NAME << ' ' << SUZERAIN_REVISION_STR
         << " ("
 #if defined(__INTEL_COMPILER)
         << "Intel "

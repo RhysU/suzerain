@@ -25,10 +25,6 @@
  * @copydoc radialflow.h
  */
 
-#ifdef HAVE_CONFIG_H
-#include <suzerain/config.h>
-#endif
-
 #include <suzerain/radialflow.h>
 
 #include <gsl/gsl_errno.h>

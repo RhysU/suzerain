@@ -25,10 +25,6 @@
  * @copydoc specification_grid.hpp
  */
 
-#ifdef HAVE_CONFIG_H
-#include <suzerain/config.h>
-#endif
-
 #include <suzerain/specification_grid.hpp>
 
 #include <suzerain/exprparse.hpp>

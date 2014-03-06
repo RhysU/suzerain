@@ -25,10 +25,6 @@
  * @copydoc bsmbsm_solver.hpp
  */
 
-#ifdef HAVE_CONFIG_H
-#include <suzerain/config.h>
-#endif
-
 #include <suzerain/bsmbsm_solver.hpp>
 
 #include <suzerain/blas_et_al.h>

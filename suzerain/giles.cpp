@@ -25,10 +25,6 @@
  * @copydoc giles.hpp
  */
 
-#ifdef HAVE_CONFIG_H
-#include <suzerain/config.h>
-#endif
-
 #include <suzerain/giles.hpp>
 
 #include <suzerain/ndx.hpp>

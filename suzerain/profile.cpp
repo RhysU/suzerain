@@ -25,10 +25,6 @@
  * @copydoc profile.hpp
  */
 
-#ifdef HAVE_CONFIG_H
-#include <suzerain/config.h>
-#endif
-
 #include <suzerain/profile.hpp>
 
 #include <suzerain/samples.hpp>

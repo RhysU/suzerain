@@ -25,10 +25,6 @@
  * @copydoc pencil_grid.hpp
  */
 
-#ifdef HAVE_CONFIG_H
-#include <suzerain/config.h>
-#endif
-
 #include <suzerain/pencil_grid.hpp>
 
 #ifdef SUZERAIN_HAVE_P3DFFT
@@ -60,7 +56,7 @@ int pencil_grid::compute_rank_zero_zero_modes_() const
     return buf[0];
 }
 
-#ifdef HAVE_P3DFFT ///////////////////////////////////////////////////////////
+#ifdef SUZERAIN_HAVE_P3DFFT
 
 const char * pencil_grid_p3dfft::implementation() const
 {
@@ -197,10 +193,10 @@ void pencil_grid_p3dfft::transform_physical_to_wave_(real_t * inout) const
     p3dfft_ftran_r2c(inout, inout);
 }
 
-#endif // HAVE_P3DFFT ////////////////////////////////////////////////////////
+#endif /* SUZERAIN_HAVE_P3DFFT */
 
 
-#ifdef HAVE_UNDERLING ////////////////////////////////////////////////////////
+#ifdef SUZERAIN_HAVE_UNDERLING
 
 pencil_grid_underling::~pencil_grid_underling()
 {
@@ -363,7 +359,7 @@ pencil_grid_underling::construct_(int Nx, int Ny, int Nz, int Pa, int Pb,
     rank_zero_zero_modes = compute_rank_zero_zero_modes_();
 }
 
-#endif // HAVE_UNDERLING /////////////////////////////////////////////////////
+#endif /* SUZERAIN_HAVE_UNDERLING */
 
 
 } // namespace suzerain

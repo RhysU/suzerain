@@ -25,10 +25,6 @@
  * @copydoc operator_mass_isothermal.hpp
  */
 
-#ifdef HAVE_CONFIG_H
-#include <suzerain/config.h>
-#endif
-
 #include <suzerain/operator_mass_isothermal.hpp>
 
 #include <suzerain/inorder.hpp>

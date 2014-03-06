@@ -25,10 +25,6 @@
  * @copydoc filterop.h
  */
 
-#ifdef HAVE_CONFIG_H
-#include <suzerain/config.h>
-#endif
-
 #include <suzerain/filterop.h>
 
 #include <suzerain/common.h>

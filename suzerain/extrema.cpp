@@ -25,10 +25,6 @@
  * @copydoc extrema.hpp
  */
 
-#ifdef HAVE_CONFIG_H
-#include <suzerain/config.h>
-#endif
-
 #include <suzerain/extrema.hpp>
 
 #include <suzerain/bspline.hpp>

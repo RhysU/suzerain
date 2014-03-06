@@ -25,10 +25,6 @@
  * @copydoc largo_formulation.hpp
  */
 
-#ifdef HAVE_CONFIG_H
-#include <suzerain/config.h>
-#endif
-
 #include <suzerain/largo_formulation.hpp>
 
 #include <boost/assign/list_of.hpp>

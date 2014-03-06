@@ -25,10 +25,6 @@
  * @copydoc channel.h
  */
 
-#ifdef HAVE_CONFIG_H
-#include <suzerain/config.h>
-#endif
-
 #include <suzerain/channel.h>
 
 #include <gsl/gsl_math.h>

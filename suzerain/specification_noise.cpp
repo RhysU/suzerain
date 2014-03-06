@@ -25,10 +25,6 @@
  * @copydoc specification_noise.hpp
  */
 
-#ifdef HAVE_CONFIG_H
-#include <suzerain/config.h>
-#endif
-
 #include <suzerain/specification_noise.hpp>
 
 namespace suzerain {

@@ -12,10 +12,6 @@
  * \copydoc helm.h
  */
 
-#ifdef HAVE_CONFIG_H
-#include <suzerain/config.h>
-#endif
-
 #include <suzerain/helm.h>
 
 // C99 extern declaration for static inline function

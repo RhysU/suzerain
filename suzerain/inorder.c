@@ -26,10 +26,6 @@
  * @copydoc inorder.h
  */
 
-#ifdef HAVE_CONFIG_H
-#include <suzerain/config.h>
-#endif
-
 #include <suzerain/inorder.h>
 
 #include <suzerain/common.h>

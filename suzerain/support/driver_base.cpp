@@ -25,10 +25,6 @@
  * @copydoc driver_base.hpp
  */
 
-#ifdef HAVE_CONFIG_H
-#include <suzerain/config.h>
-#endif
-
 #include <suzerain/support/driver_base.hpp>
 
 #include <esio/esio.h>

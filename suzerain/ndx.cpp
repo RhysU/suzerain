@@ -25,10 +25,6 @@
  * @copydoc ndx.hpp
  */
 
-#ifdef HAVE_CONFIG_H
-#include <suzerain/config.h>
-#endif
-
 #include <suzerain/ndx.hpp>
 
 namespace suzerain {

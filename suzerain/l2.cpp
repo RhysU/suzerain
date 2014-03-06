@@ -25,10 +25,6 @@
  * @copydoc l2.hpp
  */
 
-#ifdef HAVE_CONFIG_H
-#include <suzerain/config.h>
-#endif
-
 #include <suzerain/l2.hpp>
 
 #include <suzerain/bspline.hpp>

@@ -25,10 +25,6 @@
  * @copydoc specification_largo.hpp
  */
 
-#ifdef HAVE_CONFIG_H
-#include <suzerain/config.h>
-#endif
-
 #include <suzerain/specification_largo.hpp>
 
 namespace suzerain {

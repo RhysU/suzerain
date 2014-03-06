@@ -25,10 +25,6 @@
  * @copydoc baseflow.hpp
  */
 
-#ifdef HAVE_CONFIG_H
-#include <suzerain/config.h>
-#endif
-
 #include <suzerain/baseflow.hpp>
 
 #include <gsl/gsl_poly.h>

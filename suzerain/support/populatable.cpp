@@ -25,10 +25,6 @@
  * @copydoc populatable.hpp
  */
 
-#ifdef HAVE_CONFIG_H
-#include <suzerain/config.h>
-#endif
-
 #include <suzerain/support/populatable.hpp>
 
 namespace suzerain {

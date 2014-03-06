@@ -25,10 +25,6 @@
  * @copydoc definition_base.hpp
  */
 
-#ifdef HAVE_CONFIG_H
-#include <suzerain/config.h>
-#endif
-
 #include <suzerain/support/overridable.hpp>
 
 namespace suzerain {

@@ -25,11 +25,9 @@
  * @copydoc program_options.hpp
  */
 
-#ifdef HAVE_CONFIG_H
-#include <suzerain/config.h>
-#endif
 #include <suzerain/support/program_options.hpp>
 
+// TODO These includes are ordered funkily.
 #include <cerrno>
 #include <cstdlib>
 #include <boost/test/utils/nullstream.hpp>

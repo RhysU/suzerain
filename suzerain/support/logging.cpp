@@ -25,7 +25,7 @@
  * @copydoc logging.hpp
  */
 
-// HAVE_CONFIG_H, suzerain/config.h, and suzerain/common.hpp not present
+// Includes suzerain/config.h and suzerain/common.hpp not present
 // as this code should be useful in a broader, non-Suzerain context.
 
 #include "logging.hpp"

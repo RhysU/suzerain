@@ -25,10 +25,6 @@
  * @copydoc cev.hpp
  */
 
-#ifdef HAVE_CONFIG_H
-#include <suzerain/config.h>
-#endif
-
 #include <suzerain/cev.hpp>
 
 #include <gsl/gsl_spline.h>

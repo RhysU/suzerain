@@ -26,10 +26,6 @@
  * @copydoc rholut_imexop.h
  */
 
-#ifdef HAVE_CONFIG_H
-#include <suzerain/config.h>
-#endif
-
 #include <suzerain/rholut_imexop.h>
 
 #include <suzerain/common.h>

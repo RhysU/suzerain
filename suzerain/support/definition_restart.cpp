@@ -25,10 +25,6 @@
  * @copydoc definition_restart.hpp
  */
 
-#ifdef HAVE_CONFIG_H
-#include <suzerain/config.h>
-#endif
-
 #include <suzerain/support/definition_restart.hpp>
 
 #include <suzerain/exprparse.hpp>

@@ -25,10 +25,6 @@
  * @copydoc mpi.hpp
  */
 
-#ifdef HAVE_CONFIG_H
-#include <suzerain/config.h>
-#endif
-
 #include <suzerain/mpi.hpp>
 
 namespace suzerain {

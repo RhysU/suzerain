@@ -25,10 +25,6 @@
  * @copydoc definition_grid.hpp
  */
 
-#ifdef HAVE_CONFIG_H
-#include <suzerain/config.h>
-#endif
-
 #include <suzerain/support/definition_grid.hpp>
 
 #include <esio/esio.h>

@@ -25,10 +25,6 @@
  * @copydoc bl.h
  */
 
-#ifdef HAVE_CONFIG_H
-#include <suzerain/config.h>
-#endif
-
 #include <suzerain/bl.h>
 
 #include <gsl/gsl_bspline.h>

@@ -26,10 +26,6 @@
  * @copydoc svehla.h
  */
 
-#ifdef HAVE_CONFIG_H
-#include <suzerain/config.h>
-#endif
-
 #include <suzerain/svehla.h>
 
 #include <gsl/gsl_const_mksa.h>

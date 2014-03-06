@@ -26,10 +26,6 @@
  * @copydoc reacting_imexop.h
  */
 
-#ifdef HAVE_CONFIG_H
-#include <suzerain/config.h>
-#endif
-
 #include <suzerain/reacting_imexop.h>
 
 #include <suzerain/common.h>

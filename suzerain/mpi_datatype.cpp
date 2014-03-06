@@ -25,10 +25,6 @@
  * @copydoc mpi_datatype.cpp
  */
 
-#ifdef HAVE_CONFIG_H
-#include <suzerain/config.h>
-#endif
-
 #include <suzerain/mpi_datatype.hpp>
 
 namespace suzerain {
