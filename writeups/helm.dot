@@ -6,23 +6,23 @@ digraph g {
 
     subgraph cluster_0 {
         D      [shape=record, label=<T<SUB>d</SUB>&thinsp;s>];
-        filter [shape=record, label=<1 / (1 + T<SUB>f</SUB>&thinsp;s)>];
+        filter [shape=record, label=<(1 + T<SUB>f</SUB>&thinsp;s)<SUP>-1</SUP>>];
     }
 
     subgraph cluster_1 {
         r     [shape=point];
         sumIt [shape=circle, label=<&#931;>];
-        Ii    [shape=record, label=<1 / (T<SUB>i</SUB>&thinsp;s)>];
+        Ii    [shape=record, label=<(T<SUB>i</SUB>&thinsp;s)<SUP>-1</SUP>>];
     }
 
     sum_gain [shape=circle, label=<&#931;>];
-    gain     [shape=record, label=<kp>];
+    gain     [shape=record, label=<k<SUB>p</SUB>>];
     v        [shape=point];
-    actuator [shape=record, label=<u(s) / v(s)>];
+    actuator [shape=record, label=<<SUP>u(s)</SUP>&frasl;<SUB>v(s)</SUB>>];
     u        [shape=point,  label=<u>];
     process  [shape=record, label=<P(s)>];
     y        [shape=point];
-    It       [shape=record, label=<1 / (T<SUB>t</SUB>&thinsp;s)>];
+    It       [shape=record, label=<(T<SUB>t</SUB>&thinsp;s)<SUP>-1</SUP>>];
     sum_es   [shape=circle, label=<&#931;>];
 
     actuator -> u        [arrowhead=none, headlabel=<u>];
