@@ -2,8 +2,6 @@ digraph g {
 
     rankdir=LR;
     style=invis;
-    ranksep=0.35;
-    nodesep=0.22;
 
     subgraph cluster_0 {
         e     [shape=point];
