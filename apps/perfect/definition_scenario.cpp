@@ -284,17 +284,28 @@ definition_scenario::load(
     esio_line_read(h, name_Re,         &t.Re,         0);
     esio_line_read(h, name_Ma,         &t.Ma,         0);
     esio_line_read(h, name_Pr,         &t.Pr,         0);
-    esio_line_read(h, name_bulk_rho,   &t.bulk_rho,   0);
-    esio_line_read(h, name_bulk_rho_u, &t.bulk_rho_u, 0);
+    if (ESIO_NOTFOUND != esio_line_size(h, name_bulk_rho, NULL)) {
+        esio_line_read(h, name_bulk_rho, &t.bulk_rho, 0);
+    } else {
+        WARN0(desc_bulk_rho << " not found therefore defaulting to NaN");
+        t.bulk_rho = std::numeric_limits<real_t>::quiet_NaN();
+    }
+    if (ESIO_NOTFOUND != esio_line_size(h, name_bulk_rho_u, NULL)) {
+        esio_line_read(h, name_bulk_rho_u, &t.bulk_rho_u, 0);
+    } else {
+        WARN0(desc_bulk_rho_u << " not found therefore defaulting NaN");
+        t.bulk_rho_u = std::numeric_limits<real_t>::quiet_NaN();
+    }
     if (ESIO_NOTFOUND != esio_line_size(h, name_bulk_rho_E, NULL)) {
         esio_line_read(h, name_bulk_rho_E, &t.bulk_rho_E, 0);
     } else {
-        INFO0(desc_bulk_rho_E << " not found; defaulting to disabled");
+        WARN0(desc_bulk_rho_E << " not found therefore defaulting NaN");
         t.bulk_rho_E = std::numeric_limits<real_t>::quiet_NaN();
     }
     esio_line_read(h, name_alpha,      &t.alpha,      0);
     esio_line_read(h, name_beta,       &t.beta,       0);
     esio_line_read(h, name_gamma,      &t.gamma,      0);
+
     this->populate(t, verbose);  // Prefer this to incoming
 }
 
