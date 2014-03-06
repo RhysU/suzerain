@@ -5,14 +5,14 @@ digraph g {
     color=lightgrey;  // DEBUG
 
     subgraph cluster_0 {
-        D      [shape=record, label=<s Td>];
-        filter [shape=record, label=<1 / (1 + s Tf)>];
+        D      [shape=record, label=<T<SUB>d</SUB>&thinsp;s>];
+        filter [shape=record, label=<1 / (1 + T<SUB>f</SUB>&thinsp;s)>];
     }
 
     subgraph cluster_1 {
         r     [shape=point];
         sumIt [shape=circle, label=<&#931;>];
-        Ii    [shape=record, label="1 / (s Ti)"];
+        Ii    [shape=record, label=<1 / (T<SUB>i</SUB>&thinsp;s)>];
     }
 
     sum_gain [shape=circle, label=<&#931;>];
@@ -22,7 +22,7 @@ digraph g {
     u        [shape=point,  label=<u>];
     process  [shape=record, label=<P(s)>];
     y        [shape=point];
-    It       [shape=record, label=<1 / (s Tt)>];
+    It       [shape=record, label=<1 / (T<SUB>t</SUB>&thinsp;s)>];
     sum_es   [shape=circle, label=<&#931;>];
 
     actuator -> u        [arrowhead=none, headlabel=<u>];
@@ -39,7 +39,7 @@ digraph g {
     r        -> sumIt    [label=<r>];
     sumIt    -> Ii       [label=<e>];
 
-    It       -> sum_es   [dir=back, label=<es>];
+    It       -> sum_es   [dir=back, label=<e<SUB>s</SUB>>];
     sum_es   -> u        [dir=back];
     v        -> sum_es   [headlabel=<&#8722;>];
 
