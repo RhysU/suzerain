@@ -246,19 +246,88 @@ driver::load_statistics_hook(
     return super::load_statistics_hook(esioh);
 }
 
-// TODO Update to match similar logic within apps/perfect/driver.cpp
+// Please review and possibly synchronize apps/perfect/driver.cpp when changing
 void
 driver::default_restart_interval(
         time_type& t,
         step_type&)
 {
-    real_t flowthrough_time = std::numeric_limits<real_t>::quiet_NaN();
-    if (grid && chdef) {
-        flowthrough_time =  grid->L.x()
-                         / (chdef->bulk_rho_u / chdef->bulk_rho);
+    using std::max;
+    using std::abs;
+
+    // Look for the largest magnitude, problem-dependent, macro velocity scale
+    real_t velocity = std::numeric_limits<real_t>::quiet_NaN();
+
+    // In a channel...
+    if (grid && grid->two_sided()) {
+
+        // ...any approximate bulk velocity from a driving force...
+        if (chdef) {
+
+            if ((boost::math::isnan)(chdef->bulk_rho)) {
+                TRACE0(who, "No bulk density scale available so assuming 1");
+                velocity = max(velocity,
+                               abs(chdef->bulk_rho_u) / /*rho*/ 1);
+            } else {
+                velocity = max(velocity,
+                               abs(chdef->bulk_rho_u) / chdef->bulk_rho);
+            }
+
+        }
+
+        // ...may be trumped by driving the upper and lower walls.
+        if (isothermal) {
+            velocity = max(velocity, abs(isothermal->upper_u));
+            velocity = max(velocity, abs(isothermal->lower_u));
+        }
+
     }
-    if (boost::math::isnormal(flowthrough_time)) {
-        t = flowthrough_time;
+
+    // On a plate...
+    if (grid && grid->one_sided()) {
+
+        if (sgdef->formulation.enabled() && sgdef->baseflow && fields.size()) {
+
+            // ...prefer wall velocity from inviscid baseflow as freestream
+            // surrogate as it is independent of the wall-normal domain size...
+            const size_t nvalues = fields.size() + /*pressure*/1;
+            std::vector<real_t> buf(3 * nvalues);
+            sgdef->baseflow->conserved(0.0,               // wall
+                                       &buf[0*nvalues],   // base
+                                       &buf[1*nvalues],   // dybase
+                                       &buf[2*nvalues]);  // dxbase
+            const real_t base_rho   = buf[0];
+            const real_t base_rho_u = buf[1];
+            if (base_rho > 0) {
+                velocity = max(velocity, abs(base_rho_u) / base_rho);
+            } else {
+                TRACE0(who, "Trivial baseflow detected; using upper velocity");
+                velocity = max(velocity, abs(isothermal->upper_u));
+            }
+
+        } else if (isothermal) {
+            // ...taking freestream reference if-and-only-if no baseflow...
+            velocity = max(velocity, abs(isothermal->upper_u));
+        }
+
+        // ...and permit a driven lower wall velocity to trump.
+        if (isothermal) {
+            velocity = max(velocity, abs(isothermal->lower_u));
+        }
+
+    }
+
+    // If we have a domain size and a velocity scale, compute a timescale
+    // and default to saving eight restarts across that timescale.
+    // (e.g. in a channel resulting in 80 restarts in 10 flow throughs)
+    if (boost::math::isnormal(velocity)) {
+        if (grid) {
+            t = (grid->L.x() / velocity) / 8;
+        } else {
+            DEBUG0(who, "No grid details for default_restart_interval");
+        }
+    } else {
+        DEBUG0(who, "No macro scale velocity for default_restart_interval");
     }
 }
 
