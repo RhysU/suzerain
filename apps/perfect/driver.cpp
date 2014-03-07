@@ -435,6 +435,7 @@ driver::load_statistics_hook(
     return super::load_statistics_hook(esioh);
 }
 
+// TODO Reduce code duplication between here and apps/reacting/driver.hpp.
 void
 driver::default_restart_interval(
         time_type& t,
@@ -474,9 +475,9 @@ driver::default_restart_interval(
     // On a plate...
     if (grid && grid->one_sided()) {
 
-        // ...prefer wall velocity from the inviscid baseflow as a surrogate of
-        // freestream as it is independent of the wall-normal domain size...
         if (sg->formulation.enabled() && sg->baseflow) {
+            // ...prefer wall velocity from inviscid baseflow as freestream
+            // surrogate as it is independent of the wall-normal domain size...
             largo_state freestream, dontcare;
             sg->baseflow->conserved(0.0, freestream.as_is(),
                                     dontcare.as_is(), dontcare.as_is());
