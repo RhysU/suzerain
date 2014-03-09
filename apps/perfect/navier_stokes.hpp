@@ -900,12 +900,12 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
 
             largo_prestep_seta_innery(sg.workspace,
                                       o.y(j),
-                                      mean        .rescale(inv_Ma2),
-                                      rms_        .rescale(inv_Ma2),
-                                      mean_rqq    .rescale(inv_Ma2),
-                                      ddy_mean    .rescale(inv_Ma2),
-                                      ddy_rms_    .rescale(inv_Ma2),
-                                      ddy_mean_rqq.rescale(inv_Ma2));
+                                      mean        .rescale(inv_Ma2        ),
+                                      rms_        .rescale(inv_Ma2        ),
+                                      mean_rqq    .rescale(inv_Ma2*inv_Ma2),
+                                      ddy_mean    .rescale(inv_Ma2        ),
+                                      ddy_rms_    .rescale(inv_Ma2        ),
+                                      ddy_mean_rqq.rescale(inv_Ma2*inv_Ma2));
         }
 
         // Precompute subtractive slow growth velocity for wall-normal
