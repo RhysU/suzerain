@@ -338,18 +338,18 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
 
     // Now that conserved state is Fourier in X and Z but collocation in Y,
     // if slow growth forcing is active...
-    std::vector<field_L2xz> rms(0);
+    std::vector<field_L2xz> meanrms(0);
     if (SlowTreatment == slowgrowth::largo) {
         SUZERAIN_TIMER_SCOPED("root-mean-square of state");
 
         // ...collectively compute L^2_{xz} of state at each collocation point
-        rms = compute_field_L2xz(swave, o.grid, o.dgrid);
+        meanrms = compute_field_L2xz(swave, o.grid, o.dgrid);
 
         // ...and rescale results to convert to root-mean-square (RMS) values.
         const real_t rms_adjust = 1 / sqrt(o.grid.L.x() * o.grid.L.z());
-        for (size_t i = 0; i < rms.size(); ++i) {
-            rms[i].mean        *= rms_adjust;
-            rms[i].fluctuating *= rms_adjust;
+        for (size_t i = 0; i < meanrms.size(); ++i) {
+            meanrms[i].mean        *= rms_adjust;
+            meanrms[i].fluctuating *= rms_adjust;
         }
     }
 
@@ -692,24 +692,24 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
     }
 
     // Slow growth requires mean pressure and pressure fluctuation details.
-    // Abuse vector 'rms' to store the information after conserved state.
+    // Abuse vector 'meanrms' to store the information after conserved state.
     // The RMS of fluctuating pressure computation is numerically noisy
     // hence forcing a non-negative difference prior to the square root.
     if (SlowTreatment == slowgrowth::largo) {
-        rms.resize(rms.size() + 1);
-        rms.back().mean        = common.p();
-        rms.back().fluctuating = (  common.p2()
-                                  - common.p().square() ).max(0).sqrt();
+        meanrms.resize(meanrms.size() + 1);
+        meanrms.back().mean        = common.p();
+        meanrms.back().fluctuating = (  common.p2()
+                                      - common.p().square() ).max(0).sqrt();
     }
 
     // Slow growth requires wall-normal derivative of every RMS quantity
-    std::vector<field_L2xz> rms_y(rms.size());
+    std::vector<field_L2xz> meanrms_y(meanrms.size());
     if (SlowTreatment == slowgrowth::largo) {
         SUZERAIN_TIMER_SCOPED("root-mean-square state derivatives");
         ArrayX2r tmp(Ny, 2);
-        std::vector<field_L2xz>::const_iterator src = rms.begin();
-        std::vector<field_L2xz>::const_iterator end = rms.end();
-        std::vector<field_L2xz>::      iterator dst = rms_y.begin();
+        std::vector<field_L2xz>::const_iterator src = meanrms.begin();
+        std::vector<field_L2xz>::const_iterator end = meanrms.end();
+        std::vector<field_L2xz>::      iterator dst = meanrms_y.begin();
         for (/*just above*/; src != end; ++src, ++dst) {
             tmp.col(0) = (*src).mean;
             tmp.col(1) = (*src).fluctuating;
@@ -860,39 +860,39 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             SUZERAIN_TIMER_SCOPED("calling largo_prestep_seta_innery");
 
             // Repack Y-dependent mean profiles into a form consumable by Largo
-            assert(rms.size() == swave_count + 1); // State plus pressure
-            largo_state mean(rms[ndx::e  ].mean[j],
-                             rms[ndx::mx ].mean[j],
-                             rms[ndx::my ].mean[j],
-                             rms[ndx::mz ].mean[j],
-                             rms[ndx::rho].mean[j],
-                             rms.back()   .mean[j]);
-            largo_state rms_(rms[ndx::e  ].fluctuating[j], // Sorry for name...
-                             rms[ndx::mx ].fluctuating[j], // ... 'rms' taken.
-                             rms[ndx::my ].fluctuating[j],
-                             rms[ndx::mz ].fluctuating[j],
-                             rms[ndx::rho].fluctuating[j],
-                             rms.back()   .fluctuating[j]);
-            largo_state ddy_mean(rms_y[ndx::e  ].mean[j],
-                                 rms_y[ndx::mx ].mean[j],
-                                 rms_y[ndx::my ].mean[j],
-                                 rms_y[ndx::mz ].mean[j],
-                                 rms_y[ndx::rho].mean[j],
-                                 rms_y.back()   .mean[j]);
-            largo_state ddy_rms_(rms_y[ndx::e  ].fluctuating[j],
-                                 rms_y[ndx::mx ].fluctuating[j],
-                                 rms_y[ndx::my ].fluctuating[j],
-                                 rms_y[ndx::mz ].fluctuating[j],
-                                 rms_y[ndx::rho].fluctuating[j],
-                                 rms_y.back()   .fluctuating[j]);
+            assert(meanrms.size() == swave_count + 1); // State plus pressure
+            largo_state mean    (meanrms  [ndx::e  ].mean[j],
+                                 meanrms  [ndx::mx ].mean[j],
+                                 meanrms  [ndx::my ].mean[j],
+                                 meanrms  [ndx::mz ].mean[j],
+                                 meanrms  [ndx::rho].mean[j],
+                                 meanrms  .back()   .mean[j]);
+            largo_state ddy_mean(meanrms_y[ndx::e  ].mean[j],
+                                 meanrms_y[ndx::mx ].mean[j],
+                                 meanrms_y[ndx::my ].mean[j],
+                                 meanrms_y[ndx::mz ].mean[j],
+                                 meanrms_y[ndx::rho].mean[j],
+                                 meanrms_y.back()   .mean[j]);
+            largo_state rms     (meanrms  [ndx::e  ].fluctuating[j],
+                                 meanrms  [ndx::mx ].fluctuating[j],
+                                 meanrms  [ndx::my ].fluctuating[j],
+                                 meanrms  [ndx::mz ].fluctuating[j],
+                                 meanrms  [ndx::rho].fluctuating[j],
+                                 meanrms  .back()   .fluctuating[j]);
+            largo_state ddy_rms (meanrms_y[ndx::e  ].fluctuating[j],
+                                 meanrms_y[ndx::mx ].fluctuating[j],
+                                 meanrms_y[ndx::my ].fluctuating[j],
+                                 meanrms_y[ndx::mz ].fluctuating[j],
+                                 meanrms_y[ndx::rho].fluctuating[j],
+                                 meanrms_y.back()   .fluctuating[j]);
 
             // The remaining bits are accessed differently from RMS details
-            largo_state mean_rqq(common.rhoEE()[j],        // Notice pressure
-                                 common.rhouu()[j],        // entry is NaN as
-                                 common.rhovv()[j],        // it is allegedly
-                                 common.rhoww()[j],        // unused.  This
-                                 common.rho()  [j],        // NaN makes sure.
-                                 numeric_limits<real_t>::quiet_NaN());
+            largo_state mean_rqq    (common.rhoEE()[j],    // Notice pressure
+                                     common.rhouu()[j],    // entry is NaN as
+                                     common.rhovv()[j],    // it is allegedly
+                                     common.rhoww()[j],    // unused.  This
+                                     common.rho()  [j],    // NaN makes sure.
+                                     numeric_limits<real_t>::quiet_NaN());
             largo_state ddy_mean_rqq(rqq_y(j, ndx::e  ),   // Ditto re: NaN
                                      rqq_y(j, ndx::mx ),
                                      rqq_y(j, ndx::my ),
@@ -903,10 +903,10 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             largo_prestep_seta_innery(sg.workspace,
                                       o.y(j),
                                       mean        .rescale(inv_Ma2        ),
-                                      rms_        .rescale(inv_Ma2        ),
+                                      rms         .rescale(inv_Ma2        ),
                                       mean_rqq    .rescale(inv_Ma2*inv_Ma2),
                                       ddy_mean    .rescale(inv_Ma2        ),
-                                      ddy_rms_    .rescale(inv_Ma2        ),
+                                      ddy_rms     .rescale(inv_Ma2        ),
                                       ddy_mean_rqq.rescale(inv_Ma2*inv_Ma2));
         }
 
