@@ -345,11 +345,14 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
         // ...collectively compute L^2_{xz} of state at each collocation point
         meanrms = compute_field_L2xz(swave, o.grid, o.dgrid);
 
-        // ...and rescale results to convert to root-mean-square (RMS) values.
+        // ...and rescale to convert to root-mean-square (RMS) fluctuations
+        // (mean L2 values are uninteresting so also defensively NaN storage).
         const real_t rms_adjust = 1 / sqrt(o.grid.L.x() * o.grid.L.z());
         for (size_t i = 0; i < meanrms.size(); ++i) {
-            meanrms[i].mean        *= rms_adjust;
             meanrms[i].fluctuating *= rms_adjust;
+#ifndef NDEBUG
+            meanrms[i].mean.setConstant(numeric_limits<real_t>::quiet_NaN());
+#endif
         }
     }
 
@@ -691,8 +694,22 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
 
     }
 
-    // Slow growth requires mean pressure and pressure fluctuation details.
-    // Abuse vector 'meanrms' to store the information after conserved state.
+    // Slow growth requires mean conserved state at collocation points.
+    // Abuse unused pieces within 'meanrms' to avoid allocating more storage.
+    // Information can be cheaply, locally reconstructed after above traversal.
+    if (SlowTreatment == slowgrowth::largo) {
+        meanrms[ndx::e  ].mean = common.p() / (gamma - 1)
+                               + (Ma*Ma / 2)*(  common.rhouu()
+                                              + common.rhovv()
+                                              + common.rhoww());
+        meanrms[ndx::mx ].mean = common.rho() * common.u();
+        meanrms[ndx::my ].mean = common.rho() * common.v();
+        meanrms[ndx::mz ].mean = common.rho() * common.w();
+        meanrms[ndx::rho].mean = common.rho();
+    }
+
+    // Slow growth requires mean pressure and pressure fluctuation profiles.
+    // Further abuse 'meanrms' to store the information after conserved state.
     // The RMS of fluctuating pressure computation is numerically noisy
     // hence forcing a non-negative difference prior to the square root.
     if (SlowTreatment == slowgrowth::largo) {
@@ -725,6 +742,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
     }
 
     // Tensorially-consistent slow growth requires derivatives of "rqq" values
+    // TODO Avoid "rqq" collection overhead when non-consistent models used.
     ArrayX5r rqq_y;
     assert(rqq_y.cols() == swave_count);
     if (SlowTreatment == slowgrowth::largo) {
