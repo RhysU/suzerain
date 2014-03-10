@@ -693,11 +693,13 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
 
     // Slow growth requires mean pressure and pressure fluctuation details.
     // Abuse vector 'rms' to store the information after conserved state.
-    // This RMS of fluctuating pressure computation can be numerically noisy.
+    // The RMS of fluctuating pressure computation is numerically noisy
+    // hence forcing a non-negative difference prior to the square root.
     if (SlowTreatment == slowgrowth::largo) {
         rms.resize(rms.size() + 1);
         rms.back().mean        = common.p();
-        rms.back().fluctuating = (common.p2() - common.p().square()).sqrt();
+        rms.back().fluctuating = (  common.p2()
+                                  - common.p().square() ).max(0).sqrt();
     }
 
     // Slow growth requires wall-normal derivative of every RMS quantity
