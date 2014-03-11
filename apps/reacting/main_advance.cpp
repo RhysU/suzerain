@@ -415,6 +415,11 @@ suzerain::reacting::driver_advance::run(int argc, char **argv)
         if ((isnan)(sgdef->grdelta)) {
             WARN0(who, "Slow growth rate grdelta is NaN");
         }
+        if (sgdef->ignore_rms) {
+            // TODO Permit option by modifying operator_nonlinear.hpp.
+            FATAL0(who, "Debugging option 'ignore_rms' is not supported");
+            return EXIT_FAILURE;
+        }
     }
 
     // Use --undriven as a testing- and debugging-related tool.
