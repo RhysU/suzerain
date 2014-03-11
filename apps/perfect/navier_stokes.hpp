@@ -799,7 +799,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
 
             // When a nontrivial inviscid base flow is present, compute
             // model-appropriate residual so that it might be eradicated.  The
-            // base flow is intended to be stationary so any residual it is a
+            // base flow is intended to be stationary so any residual is a
             // numerical artifact and not part of the intended problem.
             largo_state dt, src;
             if (!base.trivial()) {
