@@ -66,6 +66,13 @@ public:
 
     /** Growth rate of amplitudes for the rms. */
     std::vector<real_t> gramp_rms;
+
+    /**
+     * Should computations ignore RMS fluctuations?
+     * Meant as a debugging tool emphatically \e not preserved across restarts.
+     */
+    bool ignore_rms;
+
 };
 
 } // namespace suzerain

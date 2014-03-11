@@ -39,6 +39,7 @@ specification_largo::specification_largo(
     , baseflow()
     , gramp_mean()
     , gramp_rms()
+    , ignore_rms(false)
 {
 }
 
