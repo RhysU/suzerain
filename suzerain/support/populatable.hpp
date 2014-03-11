@@ -37,7 +37,7 @@ namespace suzerain {
 namespace support {
 
 /**
- * Abstract interface indicating details may be populated from another instance.
+ * Abstract interface indicating data may be populated from another instance.
  */
 template <class Derived>
 class populatable
@@ -93,6 +93,16 @@ bool maybe_populate(const char* name,
                     const char* description,
                           int&  destination,
                     const int&  source,
+                    const bool  verbose);
+
+/**
+ * If \c destination is \c false, populate it with the value from \c source.
+ * @copydetails maybe_populate(const char*,const char*,real_t&,const real_t&,const bool)
+ */
+bool maybe_populate(const char* name,
+                    const char* description,
+                          bool& destination,
+                    const bool& source,
                     const bool  verbose);
 
 /**@}*/

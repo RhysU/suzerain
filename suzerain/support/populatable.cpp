@@ -31,13 +31,17 @@ namespace suzerain {
 
 namespace support {
 
-// For maybe_XXX_impl to indicates a \c real_t is a default value
+// For maybe_XXX_impl to indicate a \c real_t is a default value
 static bool default_value_real_t(const real_t& v)
 { return (boost::math::isnan)(v); }
 
-// For maybe_XXX_impl to indicates an \c int is a default value
+// For maybe_XXX_impl to indicate an \c int is a default value
 static bool default_value_int(const int& v)
 { return v == 0; }
+
+// For maybe_XXX_impl to indicate a \c bool is a default value
+static bool default_value_int(const bool& v)
+{ return v == false; }
 
 bool
 maybe_populate(const char*   name,
@@ -56,6 +60,18 @@ maybe_populate(const char* name,
                const char* description,
                      int&  destination,
                const int&  source,
+               const bool  verbose)
+{
+    return internal::maybe_populate_impl(
+            name, description, destination, source,
+            verbose, &default_value_int);
+}
+
+bool
+maybe_populate(const char* name,
+               const char* description,
+                     bool& destination,
+               const bool& source,
                const bool  verbose)
 {
     return internal::maybe_populate_impl(
