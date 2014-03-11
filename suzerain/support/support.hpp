@@ -39,6 +39,7 @@
 
 #include <suzerain/common.hpp>
 #include <suzerain/exprparse.hpp>
+#include <suzerain/extrema.hpp>
 #include <suzerain/state_fwd.hpp>
 #include <suzerain/support/esio_fwd.hpp>
 
@@ -50,6 +51,7 @@ class bsplineop;
 class bsplineop_lu;
 class pencil_grid;
 class samples;
+class specification_grid;
 class summary;
 
 /**
@@ -57,6 +59,9 @@ class summary;
  * applications.
  */
 namespace support {
+
+// Forward declarations
+class field;
 
 /**
  * Default log4cxx configuration to use when none found in environment.
@@ -206,6 +211,48 @@ load_samples(const esio_handle h,
              samples& s,
              const char* const prefix  = "bar_",
              const char* const sizeper = "bar_rho");
+
+/**
+ * Save min and max for each field in a file using name \c min_prefix
+ * and \c max_prefix, as well as their x and z coordinates with \c minx_prefix,
+ * \c maxx_prefix, \c minz_prefix, and \c maxc_prefix. Save as well the
+ * global fraction of negative values using \c fneg_prefix.
+ *
+ * @return True if all sampled quantities could be saved.  False otherwise.
+ */
+bool
+save_extrema(const esio_handle h,
+             const std::vector<field>& fields,
+             const std::vector<field_extrema_xz>& extrema,
+             const specification_grid& grid,
+             const char* const min_prefix  = "min_",
+             const char* const minx_prefix = "minx_",
+             const char* const minz_prefix = "minz_",
+             const char* const max_prefix  = "max_",
+             const char* const maxx_prefix = "maxx_",
+             const char* const maxz_prefix = "maxz_",
+             const char* const fneg_prefix = "fneg_");
+
+/**
+ * Load min and max for each field in a file using name \c min_prefix
+ * and \c max_prefix, as well as their x and z coordinates with \c minx_prefix,
+ * \c maxx_prefix, \c minz_prefix, and \c maxc_prefix. Load as well the
+ * global fraction of negative values using \c fneg_prefix. Statistics not
+ * present in the file are considered to be all NaNs. 
+ *
+ * @return True if all sampled quantities could be loaded.  False otherwise.
+ */
+bool
+load_extrema(const esio_handle h,
+             const std::vector<field>& fields,
+             std::vector<field_extrema_xz>& extrema,
+             const char* const min_prefix  = "min_",
+             const char* const minx_prefix = "minx_",
+             const char* const minz_prefix = "minz_",
+             const char* const max_prefix  = "max_",
+             const char* const maxx_prefix = "maxx_",
+             const char* const maxz_prefix = "maxz_",
+             const char* const fneg_prefix = "fneg_");
 
 // TODO Separate into prepare_summary(samples&) and load_summary(esio_handle)
 // TODO Recognize and load multiple summaries from the file

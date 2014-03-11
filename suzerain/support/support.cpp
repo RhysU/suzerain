@@ -51,8 +51,10 @@
 #include <suzerain/rngstream.hpp>
 #include <suzerain/samples.hpp>
 #include <suzerain/shared_range.hpp>
+#include <suzerain/specification_grid.hpp>
 #include <suzerain/state.hpp>
 #include <suzerain/summary.hpp>
+#include <suzerain/support/field.hpp>
 #include <suzerain/support/logging.hpp>
 #include <suzerain/validation.hpp>
 
@@ -718,9 +720,214 @@ load_samples(const esio_handle h,
     return success;
 }
 
+// Helper for the save_extrema(...) implementation
+class extrema_saver
+{
+public:
+
+    extrema_saver(const std::string& who,
+                  const esio_handle  esioh,
+                  const std::string& prefix)
+        : who(who), esioh(esioh), prefix(prefix) {}
+
+    // TODO Add a third argument to possibly provide extended comment to ESIO
+    template< typename EigenArray >
+    bool
+    operator()(const std::string& name, const EigenArray& dat) const
+    {
+        int procid;
+        esio_handle_comm_rank(esioh, &procid);
+        esio_plane_establish(esioh,
+                             dat.cols(), 0, (procid == 0 ? dat.cols() : 0),
+                             dat.rows(), 0, (procid == 0 ? dat.rows() : 0));
+
+        std::string key(prefix);
+        key.append(name);
+        return ESIO_SUCCESS == esio_plane_write(
+                   esioh, key.c_str(), dat.data(), 0, 0,
+                   "Sample quantity stored using row-major indices (Function"
+                   " value, sample number)");
+    }
+
+private:
+
+    std::string who;
+    esio_handle esioh;
+    std::string prefix;
+
+};
+
+// Helper for the load_samples(...) implementation
+class extrema_loader
+{
+public:
+
+    extrema_loader(const std::string& who,
+                   const esio_handle esioh,
+                   const std::string& prefix)
+        : who(who), esioh(esioh), prefix(prefix) {}
+
+    template< typename EigenArray >
+    bool
+    operator()(const std::string& name, const EigenArray& dat_) const
+    {
+
+        // http://eigen.tuxfamily.org/dox/TopicFunctionTakingEigenTypes.html
+        EigenArray& dat = const_cast<EigenArray&>(dat_);
+
+        int procid;
+        esio_handle_comm_rank(esioh, &procid);
+
+        std::string key(prefix);
+        key.append(name);
+
+        int bglobal, aglobal;
+        if (ESIO_SUCCESS == esio_plane_size(esioh, key.c_str(),
+                                            &bglobal, &aglobal)
+            && (EigenArray::ColsAtCompileTime == Dynamic
+                || dat.cols() == bglobal)) 
+        {
+            dat.resize(aglobal, bglobal);
+            esio_plane_establish(esioh,
+                                 bglobal, 0, (procid == 0 ? bglobal : 0),
+                                 aglobal, 0, (procid == 0 ? aglobal : 0));
+            return ESIO_SUCCESS == esio_plane_read(
+                       esioh, key.c_str(), dat.data(), 0, 0);
+        } else {
+            WARN0(who, "Unable to load " << key
+                  << " for nscalar = " << dat.cols());
+            dat.fill(std::numeric_limits <
+                     typename EigenArray::Scalar >::quiet_NaN());
+            return false;
+        }
+    }
+
+private:
+
+    std::string who;
+    esio_handle esioh;
+    std::string prefix;
+
+};
+
+bool
+save_extrema(const esio_handle h,
+             const std::vector<field>& fields,
+             const std::vector<field_extrema_xz>& e,
+             const specification_grid& grid,
+             const char* const minf_prefix,
+             const char* const minx_prefix,
+             const char* const minz_prefix,
+             const char* const maxf_prefix,
+             const char* const maxx_prefix,
+             const char* const maxz_prefix,
+             const char* const fneg_prefix)
+{
+    bool retval = false;
+    if (e.size()) {
+        extrema_saver ffmin(who, h, minf_prefix);
+        extrema_saver fxmin(who, h, minx_prefix);
+        extrema_saver fzmin(who, h, minz_prefix);
+        extrema_saver ffmax(who, h, maxf_prefix);
+        extrema_saver fxmax(who, h, maxx_prefix);
+        extrema_saver fzmax(who, h, maxz_prefix);
+        extrema_saver ffneg(who, h, fneg_prefix);
+
+        retval = true;
+        for (std::size_t f=0; f<e.size(); ++f) {
+
+            const int ny = e[f].imin.size();
+            ArrayXr dummy(e[f].imin.size());
+
+            retval = retval && ffmin(fields[f].identifier, e[f].min);
+
+            for (int j=0; j<ny; ++j){
+                dummy(j) = grid.x(e[f].imin(j));
+            }
+            retval = retval && fxmin(fields[f].identifier, dummy);
+
+            for (int j=0; j<ny; ++j){
+                dummy(j) = grid.z(e[f].kmin(j));
+            }
+            retval = retval && fzmin(fields[f].identifier, dummy);
+
+            retval = retval && ffmax(fields[f].identifier, e[f].max);
+
+            for (int j=0; j<ny; ++j){
+                dummy(j) = grid.x(e[f].imax(j));
+            }
+            retval = retval && fxmax(fields[f].identifier, dummy);
+
+            for (int j=0; j<ny; ++j){
+                dummy(j) = grid.z(e[f].kmax(j));
+            }
+            retval = retval && fzmax(fields[f].identifier, dummy);
+
+            retval = retval && ffneg(fields[f].identifier, e[f].fneg);
+        }
+    } else {
+        WARN0(who, "No min extrema quantities saved--"
+              " trivial storage needs detected");
+        retval = true; // Warning occurs but behavior was "successful".
+    }
+    return retval;
+}
+
+bool
+load_extrema(const esio_handle h,
+             const std::vector<field>& fields,
+             std::vector<field_extrema_xz>& e,
+             const char* const min_prefix  ,
+             const char* const minx_prefix ,
+             const char* const minz_prefix ,
+             const char* const max_prefix  ,
+             const char* const maxx_prefix ,
+             const char* const maxz_prefix ,
+             const char* const fneg_prefix )
+{
+    extrema_loader ffmin(who, h, min_prefix );
+    extrema_loader fxmin(who, h, minx_prefix);
+    extrema_loader fzmin(who, h, minz_prefix);
+    extrema_loader ffmax(who, h, max_prefix );
+    extrema_loader fxmax(who, h, maxx_prefix);
+    extrema_loader fzmax(who, h, maxz_prefix);
+    extrema_loader ffneg(who, h, fneg_prefix);
+
+    // Were any samples loaded from file?
+    bool retval = true;
+
+    int bglobal, aglobal;
+    for (std::size_t f=0; f<e.size(); ++f) {
+       // check for each field
+        std::string location(min_prefix);
+        location.append(fields[f].identifier);
+        if (ESIO_SUCCESS == esio_plane_size(h, 
+                  location.c_str(), &bglobal, &aglobal)) {
+
+            //// FIXME Need to trasform coordinates to global indices
+            //// to complete the implementation  #3071
+            //retval = retval && ffmin(fields[f].identifier, e[f].min);
+            //retval = retval && fxmin(fields[f].identifier, e[f].imin);
+            //retval = retval && fzmin(fields[f].identifier, e[f].kmin);
+            //retval = retval && ffmax(fields[f].identifier, e[f].max);
+            //retval = retval && fxmax(fields[f].identifier, e[f].imax);
+            //retval = retval && fzmax(fields[f].identifier, e[f].kmax);
+            //retval = retval && ffneg(fields[f].identifier, e[f].fneg);
+            retval = false;
+
+        } else {
+            WARN0(who, "No sampled quantities loaded--"
+                  " unable to anticipate storage needs");
+            retval = false;
+        }
+    }
+
+    return retval;
+}
+
+
 std::auto_ptr<boost::ptr_map<real_t, summary> >
-load_summary(const esio_handle h,
-             shared_ptr<bspline> target)
+load_summary(const esio_handle h, shared_ptr<bspline> target)
 {
     boost::ptr_map<real_t, summary> retval;
     const char * const path = esio_file_path(h);

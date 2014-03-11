@@ -78,3 +78,16 @@ do
     exclude_datasets_bar="$exclude_datasets_bar --exclude-path=$dset"
 done
 exclude_datasets_bar=$(echo $exclude_datasets_bar | tr -d '\n' | tr -s ' ')
+
+# Exclude tests for location of max, min, and negative fraction of rho_v.
+# When these values are machine zeros, small noise from different 
+# parallel setups during regression test can produce largely different
+# min and max locations (hence, differences here cannot be overcome by
+# increasing the tolerance during the test).
+# Redmine #3063
+exclude_datasets_maxminloc=""
+exclude_datasets_maxminloc+=" --exclude-path=/minx_rho_v "
+exclude_datasets_maxminloc+=" --exclude-path=/minz_rho_v "
+exclude_datasets_maxminloc+=" --exclude-path=/maxx_rho_v "
+exclude_datasets_maxminloc+=" --exclude-path=/maxz_rho_v "
+exclude_datasets_maxminloc+=" --exclude-path=/fneg_rho_v "

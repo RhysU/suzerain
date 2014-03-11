@@ -29,6 +29,7 @@
  */
 
 #include <suzerain/common.hpp>
+#include <suzerain/extrema.hpp>
 #include <suzerain/lowstorage.hpp>
 #include <suzerain/support/application_base.hpp>
 #include <suzerain/support/definition_restart.hpp>
@@ -338,7 +339,8 @@ public:
             const char * const name_max  = "state.max",
             const char * const name_xmax = "state.xmax",
             const char * const name_ymax = "state.ymax",
-            const char * const name_zmax = "state.zmax");
+            const char * const name_zmax = "state.zmax",
+            const char * const name_fneg = "state.fneg");
 
     /**
      * Log messages containing state at the upper and lower boundaries.
@@ -819,6 +821,9 @@ protected:
     /** Should \ref log_state_zmin show headers? */
     bool log_state_zmin_header_shown;
 
+    /** Should \ref log_state_fneg show headers? */
+    bool log_state_fneg_header_shown;
+
     /**
      * Should \ref log_boundary_conditions show headers?  Index zero refers
      * to lower boundary state.  Index one refers to upper boundary state.
@@ -887,6 +892,14 @@ protected:
 
     /** Tracks last time a statistics sample file was written successfully */
     step_type last_statistics_saved_nt;
+
+    // FIXME: Carry extrema time? #3071
+    /**
+     * Maintains instantaneously sampled wall-normal extrema quantities.  
+     * Member \c extrema.t tracks the last time statistics were computed 
+     * and is used as a mechanism to avoid expensive recomputations.  
+     */
+    std::vector<field_extrema_xz>  extrema;
 
 private:
 

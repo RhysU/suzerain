@@ -55,16 +55,21 @@ compute_field_extrema_xz(
 {
     // State enters as coefficients in X, Y, and Z stored swave[F][Y][X][Z]
 
+    // TODO Consider using std::vector for auto-zeroed buffer storage
     // Contiguous temporary storage for accumulating/broadcasting results
     // Each fast columns stores one wall-normal swaths of data for a scalar
-    int ny = boost::numeric_cast<int>(swave.shape()[1]);
-    int nf = boost::numeric_cast<int>(swave.shape()[0]);
-    int buf2size = ny * 2*nf;
+    const int ny = boost::numeric_cast<int>(swave.shape()[1]);
+    const int nf = boost::numeric_cast<int>(swave.shape()[0]);
+    const int buf2size = ny * 2*nf;
     suzerain::scoped_array<val_index> buf2(new val_index[buf2size]);
+    // Storage for negatives fraction
+    const int bufnsize = ny * nf;
+    suzerain::scoped_array<real_t>    bufn(new real_t   [bufnsize]);
 
     // Initialize storage with "uninteresting" min and max values
     // so that the final Allreduce ignores contributions from
     // ranks that have no business contributing to certain y_j.
+    // extrema
     for (int i = 0; i < buf2size/2; ++i) {
         buf2[i].val   = +std::numeric_limits<real_t>::infinity();
         buf2[i].index = 0;
@@ -73,11 +78,16 @@ compute_field_extrema_xz(
         buf2[i].val   = -std::numeric_limits<real_t>::infinity();
         buf2[i].index = 0;
     }
+    // negatives
+    for (int i = 0; i < bufnsize; ++i) {
+        bufn[i] = 0.;
+    }
 
     // For each field...
     operator_tools o(grid, dgrid, cop);
     physical_view<> sphys(dgrid, swave);
-    int dNx = dgrid.global_physical_extent.x();
+    const int dNx = dgrid.global_physical_extent.x();
+    const int dNz = dgrid.global_physical_extent.z();
     for (int f = 0; f < boost::numeric_cast<int>(swave.shape()[0]); ++f) {
 
         // Transform to physical space (dealiasing along the way)...
@@ -123,6 +133,11 @@ compute_field_extrema_xz(
                         buf2[j+(f+nf)*ny].index = xz_global_offset;
                     }
 
+                    // count of negative values
+                    if (val < 0.) {
+                        bufn[j+f*ny] += 1.;
+                    }
+
                 }
 
             }
@@ -132,14 +147,22 @@ compute_field_extrema_xz(
     }
 
     // Allreduce the information in a single operation playing a (-max) trick
-    for (int i = buf2size/2+1; i < buf2size; ++i) {
+    for (int i = buf2size/2; i < buf2size; ++i) {
         buf2[i].val *= -1;
     }
     SUZERAIN_MPICHKR(MPI_Allreduce(MPI_IN_PLACE, &buf2[0], buf2size,
                                    MPI_DOUBLE_INT,
                                    MPI_MINLOC, MPI_COMM_WORLD));
-    for (int i = buf2size/2+1; i < buf2size; ++i) {
+    for (int i = buf2size/2; i < buf2size; ++i) {
         buf2[i].val *= -1;
+    }
+
+    // Allreduce the negatives and compute fraction of points
+    SUZERAIN_MPICHKR(MPI_Allreduce(MPI_IN_PLACE, &bufn[0], bufnsize,
+                                   mpi::datatype_of(bufn[0]),
+                                   MPI_SUM, MPI_COMM_WORLD));
+    for (int i = 0; i < bufnsize; ++i) {
+        bufn[i] = bufn[i] / (dNx * dNz * ny);
     }
 
     // Copy the wall-normal profiles into the returned vector...
@@ -151,6 +174,7 @@ compute_field_extrema_xz(
         retval[f].imax.resize(ny); 
         retval[f].kmin.resize(ny);
         retval[f].kmax.resize(ny); 
+        retval[f].fneg.resize(ny); 
 
         for (int j = 0; j < ny; ++j) {
             // value
@@ -166,6 +190,9 @@ compute_field_extrema_xz(
                                  - retval[f].imin(j)) / dNx;
             retval[f].kmax(j) = (buf2[(nf+f)*ny + j].index 
                                  - retval[f].imax(j)) / dNx;
+
+            // negatives
+            retval[f].fneg(j) = bufn[    f *ny + j];
         }
     }
 
@@ -192,6 +219,7 @@ compute_field_extrema_xyz(
     for (size_t f = 0; f < swave.shape()[0]; ++f) {
         retval[f].min   = +std::numeric_limits<real_t>::infinity();
         retval[f].max   = -std::numeric_limits<real_t>::infinity();
+        retval[f].fneg  =  0.;
 
         for (int j = 0; j < ny; ++j) {
 
@@ -214,6 +242,10 @@ compute_field_extrema_xyz(
                 retval[f].jmax = j;
                 retval[f].kmax = wallnormal[f].kmax(j);
             }
+
+            // negatives
+            retval[f].fneg  += wallnormal[f].fneg(j);
+
         }
     }
 

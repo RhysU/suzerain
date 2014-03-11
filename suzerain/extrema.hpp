@@ -53,6 +53,7 @@ struct field_extrema_xz {
     ArrayXi kmin;  /**< Global z-index of minimum. */
     ArrayXi kmax;  /**< Global z-index of maximum. */
 
+    ArrayXr fneg;  /**< Global fraction of negative values. */
 };
 
 /**
@@ -85,6 +86,7 @@ struct field_extrema_xyz {
     int kmin;  /**< Global z-index of minimum. */
     int kmax;  /**< Global z-index of maximum. */
 
+    real_t fneg;  /**< Global fraction of negative values. */
 };
 
 /**

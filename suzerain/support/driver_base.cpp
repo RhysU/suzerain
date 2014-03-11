@@ -912,7 +912,8 @@ driver_base::log_state_extrema(
         const char * const name_max  ,
         const char * const name_xmax ,
         const char * const name_ymax ,
-        const char * const name_zmax )
+        const char * const name_zmax ,
+        const char * const name_fneg )
 {
     // Fluctuations only make sense to log when either X or Z is nontrivial
     const bool nontrivial_possible = grid->N.x() * grid->N.z() > 1;
@@ -927,11 +928,13 @@ driver_base::log_state_extrema(
     logging::logger_type log_xmax = logging::get_logger(name_xmax);
     logging::logger_type log_ymax = logging::get_logger(name_ymax);
     logging::logger_type log_zmax = logging::get_logger(name_zmax);
+    logging::logger_type log_fneg = logging::get_logger(name_fneg);
 
     if (!INFO0_ENABLED(log_min ) && !INFO0_ENABLED(log_max ) &&
         !INFO0_ENABLED(log_xmin) && !INFO0_ENABLED(log_xmax) &&
         !INFO0_ENABLED(log_ymin) && !INFO0_ENABLED(log_ymax) &&
-        !INFO0_ENABLED(log_zmin) && !INFO0_ENABLED(log_zmax)) return;
+        !INFO0_ENABLED(log_zmin) && !INFO0_ENABLED(log_zmax) &&
+        !INFO0_ENABLED(log_fneg)) return;
 
     // Show headers only on first invocation
     maybe_timeprefix_fields_identifiers(*this, timeprefix, log_min,
@@ -951,6 +954,9 @@ driver_base::log_state_extrema(
                                         log_state_ymax_header_shown);
     maybe_timeprefix_fields_identifiers(*this, timeprefix, log_zmax,
                                         log_state_zmax_header_shown);
+
+    maybe_timeprefix_fields_identifiers(*this, timeprefix, log_fneg,
+                                        log_state_fneg_header_shown);
 
     // Collective computation of the global extrema
     state_nonlinear->assign_from(*state_linear);
@@ -1006,6 +1012,12 @@ driver_base::log_state_extrema(
         msg << ' ' << fullprec<>(grid->z(result[f].kmax));
     }
     INFO0(log_zmax, msg.str());
+    msg.str("");
+    msg << timeprefix;
+    for (size_t f = 0; f < result.size(); ++f) {
+        msg << ' ' << fullprec<>(result[f].fneg);
+    }
+    INFO0(log_fneg, msg.str());
     msg.str("");
 }
 
@@ -1710,6 +1722,13 @@ driver_base::save_statistics_hook(
     // For example:
     //     perfect::store(esioh, samples);
 
+    // FIXME: choose between computed and cached extrema stats #3071
+    state_nonlinear->assign_from(*state_linear);
+    extrema = 
+        compute_field_extrema_xz(*state_nonlinear, *grid, *dgrid, *cop);
+
+    save_extrema(esioh, fields, extrema, *grid);
+
     return true;
 }
 
@@ -1721,6 +1740,8 @@ driver_base::load_statistics_hook(
 
     // For example:
     //     perfect::load(esioh, samples);
+    //
+    // FIXME: Add load_extrema method #3071
 }
 
 bool
