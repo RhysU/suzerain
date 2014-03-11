@@ -142,23 +142,7 @@ driver_base::driver_base(
     , controller()
     , received_teardown(true)
     , received_halt(false)
-    , log_state_L2_header_shown(false)
-    , log_state_RMS_header_shown(false)
-    , log_state_bulk_header_shown(false)
-    , log_state_max_header_shown(false)
-    , log_state_min_header_shown(false)
-    , log_quantities_boundary_layer_wall_header_shown(false)
-    , log_quantities_boundary_layer_visc_header_shown(false)
-    , log_quantities_boundary_layer_thick_header_shown(false)
-    , log_quantities_boundary_layer_edge_header_shown(false)
-    , log_quantities_boundary_layer_edge99_header_shown(false)
-    , log_quantities_boundary_layer_Re_header_shown(false)
-    , log_quantities_boundary_layer_qoi_header_shown(false)
-    , log_quantities_boundary_layer_pg_header_shown(false)
-    , log_quantities_channel_wall_header_shown(false)
-    , log_quantities_channel_visc_header_shown(false)
-    , log_quantities_channel_center_header_shown(false)
-    , log_quantities_channel_qoi_header_shown(false)
+    , header_shown()
     , wtime_load_restart(std::numeric_limits<double>::quiet_NaN())
     , wtime_advance_start(std::numeric_limits<double>::quiet_NaN())
     , last_status_nt(std::numeric_limits<step_type>::max())
@@ -178,8 +162,6 @@ driver_base::driver_base(
 {
     using std::fill;
     fill(signal_received.begin(), signal_received.end(), 0);
-    fill(log_boundary_conditions_header_shown.begin(),
-         log_boundary_conditions_header_shown.end(), false);
 }
 
 std::string
@@ -834,10 +816,10 @@ driver_base::log_state_L2(
 
     // Show headers only on first invocation
     maybe_timeprefix_fields_identifiers(*this, timeprefix, log_L2,
-                                        log_state_L2_header_shown);
+                                        header_shown[name_L2]);
     if (nontrivial_rms_possible) {
         maybe_timeprefix_fields_identifiers(*this, timeprefix, log_RMS,
-                                            log_state_RMS_header_shown);
+                                            header_shown[name_RMS]);
     }
 
     // Collective computation of the $L^2_{xyz}$ norms
@@ -880,7 +862,7 @@ driver_base::log_state_bulk(
 
     // Show headers only on first invocation
     maybe_timeprefix_fields_identifiers(*this, timeprefix, log_bulk,
-                                        log_state_bulk_header_shown);
+                                        header_shown[name_bulk]);
 
     // Compute operator for finding bulk quantities from coefficients
     VectorXr bulkcoeff(b->n());
@@ -938,25 +920,25 @@ driver_base::log_state_extrema(
 
     // Show headers only on first invocation
     maybe_timeprefix_fields_identifiers(*this, timeprefix, log_min,
-                                        log_state_min_header_shown);
+                                        header_shown[name_min]);
     maybe_timeprefix_fields_identifiers(*this, timeprefix, log_xmin,
-                                        log_state_xmin_header_shown);
+                                        header_shown[name_xmin]);
     maybe_timeprefix_fields_identifiers(*this, timeprefix, log_ymin,
-                                        log_state_ymin_header_shown);
+                                        header_shown[name_ymin]);
     maybe_timeprefix_fields_identifiers(*this, timeprefix, log_zmin,
-                                        log_state_zmin_header_shown);
+                                        header_shown[name_zmin]);
 
     maybe_timeprefix_fields_identifiers(*this, timeprefix, log_max,
-                                        log_state_max_header_shown);
+                                        header_shown[name_max]);
     maybe_timeprefix_fields_identifiers(*this, timeprefix, log_xmax,
-                                        log_state_xmax_header_shown);
+                                        header_shown[name_xmax]);
     maybe_timeprefix_fields_identifiers(*this, timeprefix, log_ymax,
-                                        log_state_ymax_header_shown);
+                                        header_shown[name_ymax]);
     maybe_timeprefix_fields_identifiers(*this, timeprefix, log_zmax,
-                                        log_state_zmax_header_shown);
+                                        header_shown[name_zmax]);
 
     maybe_timeprefix_fields_identifiers(*this, timeprefix, log_fneg,
-                                        log_state_fneg_header_shown);
+                                        header_shown[name_fneg]);
 
     // Collective computation of the global extrema
     state_nonlinear->assign_from(*state_linear);
@@ -1071,23 +1053,12 @@ driver_base::log_boundary_conditions(
                                   values.col(k).data(), 1u);
         }
 
-        // Show headers only on first invocation
+        // Show mean boundary state on every invocation, possibly with headers
         std::ostringstream msg;
-        if (!log_boundary_conditions_header_shown[l]) {
-            msg << std::setw(timeprefix.size())
-                << build_timeprefix_description();
-            for (size_t k = 0; k < fields.size(); ++k) {
-                msg << ' ' << std::setw(fullprec<>::width)
-                           << fields[k].identifier;
-            }
-            for (size_t m = 0; m < SUZERAIN_COUNTOF(nick[l]); ++m) {
-                INFO(nick[l][m], msg.str());
-            }
-            log_boundary_conditions_header_shown[l] = true;
-        }
-
-        // Show mean boundary state on every invocation
         for (size_t m = 0; m < (unsigned) values.rows(); ++m) {
+            maybe_timeprefix_fields_identifiers(
+                    *this, timeprefix, nick[l][m],
+                    header_shown[nick[l][m]->getName()]);
             msg.str("");
             msg << timeprefix;
             for (size_t k = 0; k < fields.size(); ++k) {
@@ -1169,13 +1140,13 @@ void driver_base::log_quantities_boundary_layer(
     std::ostringstream   msg; // Buffer to be repeatedly reused below
 
     log_quantities_local_helper(*this, timeprefix, wall, name_wall,
-                                log_quantities_boundary_layer_wall_header_shown,
-                                msg);
+                                header_shown[name_wall], msg);
 
     log = logging::get_logger(name_visc);
     if (log != NULL && INFO0_ENABLED(log)) {
-        if (!log_quantities_boundary_layer_visc_header_shown) {
-            log_quantities_boundary_layer_visc_header_shown = true;
+        bool& log_header_shown = header_shown[log->getName()];
+        if (!log_header_shown) {
+            log_header_shown = true;
             msg.str("");
             msg << setw(timeprefix.size()) << build_timeprefix_description()
                 << ' ' << setw(fullprec<>::width) << "delta_nu"
@@ -1197,8 +1168,9 @@ void driver_base::log_quantities_boundary_layer(
 
     log = logging::get_logger(name_thick);
     if (log != NULL && INFO0_ENABLED(log)) {
-        if (!log_quantities_boundary_layer_thick_header_shown) {
-            log_quantities_boundary_layer_thick_header_shown = true;
+        bool& log_header_shown = header_shown[log->getName()];
+        if (!log_header_shown) {
+            log_header_shown = true;
             msg.str("");
             msg << setw(timeprefix.size()) << build_timeprefix_description()
                 << ' ' << setw(fullprec<>::width) << "delta"
@@ -1221,17 +1193,16 @@ void driver_base::log_quantities_boundary_layer(
     }
 
     log_quantities_local_helper(*this, timeprefix, edge, name_edge,
-                                log_quantities_boundary_layer_edge_header_shown,
-                                msg);
+                                header_shown[name_edge], msg);
 
     log_quantities_local_helper(*this, timeprefix, edge99, name_edge99,
-                                log_quantities_boundary_layer_edge99_header_shown,
-                                msg);
+                                header_shown[name_edge99], msg);
 
     log = logging::get_logger(name_Re);
     if (log != NULL && INFO0_ENABLED(log)) {
-        if (!log_quantities_boundary_layer_Re_header_shown) {
-            log_quantities_boundary_layer_Re_header_shown = true;
+        bool& log_header_shown = header_shown[log->getName()];
+        if (!log_header_shown) {
+            log_header_shown = true;
             msg.str("");
             msg << setw(timeprefix.size()) << build_timeprefix_description()
                 << ' ' << setw(fullprec<>::width) << "Re_delta"
@@ -1255,8 +1226,9 @@ void driver_base::log_quantities_boundary_layer(
 
     log = logging::get_logger(name_qoi);
     if (log != NULL && INFO0_ENABLED(log)) {
-        if (!log_quantities_boundary_layer_qoi_header_shown) {
-            log_quantities_boundary_layer_qoi_header_shown = true;
+        bool& log_header_shown = header_shown[log->getName()];
+        if (!log_header_shown) {
+            log_header_shown = true;
             msg.str("");
             msg << setw(timeprefix.size()) << build_timeprefix_description()
                 << ' ' << setw(fullprec<>::width) << "cf"
@@ -1280,8 +1252,9 @@ void driver_base::log_quantities_boundary_layer(
 
     log = logging::get_logger(name_pg);
     if (pg != NULL && log != NULL && INFO0_ENABLED(log)) {
-        if (!log_quantities_boundary_layer_pg_header_shown) {
-            log_quantities_boundary_layer_pg_header_shown = true;
+        bool& log_header_shown = header_shown[log->getName()];
+        if (!log_header_shown) {
+            log_header_shown = true;
             msg.str("");
             msg << setw(timeprefix.size()) << build_timeprefix_description()
                 << ' ' << setw(fullprec<>::width) << "Clauser"
@@ -1323,13 +1296,13 @@ void driver_base::log_quantities_channel(
     std::ostringstream   msg; // Buffer to be repeatedly reused below
 
     log_quantities_local_helper(*this, timeprefix, wall, name_wall,
-                                log_quantities_channel_wall_header_shown,
-                                msg);
+                                header_shown[name_wall], msg);
 
     log = logging::get_logger(name_visc);
     if (log != NULL && INFO0_ENABLED(log)) {
-        if (!log_quantities_channel_visc_header_shown) {
-            log_quantities_channel_visc_header_shown = true;
+        bool& log_header_shown = header_shown[log->getName()];
+        if (!log_header_shown) {
+            log_header_shown = true;
             msg.str("");
             msg << setw(timeprefix.size()) << build_timeprefix_description()
                 << ' ' << setw(fullprec<>::width) << "delta_nu"
@@ -1350,13 +1323,13 @@ void driver_base::log_quantities_channel(
     }
 
     log_quantities_local_helper(*this, timeprefix, center, name_center,
-                                log_quantities_channel_center_header_shown,
-                                msg);
+                                header_shown[name_center], msg);
 
     log = logging::get_logger(name_qoi);
     if (log != NULL && INFO0_ENABLED(log)) {
-        if (!log_quantities_channel_qoi_header_shown) {
-            log_quantities_channel_qoi_header_shown = true;
+        bool& log_header_shown = header_shown[log->getName()];
+        if (!log_header_shown) {
+            log_header_shown = true;
             msg.str("");
             msg << setw(timeprefix.size()) << build_timeprefix_description()
                 << ' ' << setw(fullprec<>::width) << "cf"

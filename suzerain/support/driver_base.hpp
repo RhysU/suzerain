@@ -782,101 +782,11 @@ protected:
     bool received_halt;
 
     /**
-     * Flags tracking of whether or not headers should be shown on particular
-     * log messages. The default implementation disables these headers after the
-     * first time each one is logged.
-     * @{
+     * Tracking of whether headers have been shown for particular log messages.
+     * Keys are logging-related header names, e.g. "state.RMS", with the value
+     * indicating if the header has been output.
      */
-
-    /** Should \ref log_state_L2 show L2 headers? */
-    bool log_state_L2_header_shown;
-
-    /** Should \ref log_state_L2 show RMS headers? */
-    bool log_state_RMS_header_shown;
-
-    /** Should \ref log_state_bulk show headers? */
-    bool log_state_bulk_header_shown;
-
-    /** Should \ref log_state_max show headers? */
-    bool log_state_max_header_shown;
-
-    /** Should \ref log_state_xmax show headers? */
-    bool log_state_xmax_header_shown;
-
-    /** Should \ref log_state_ymax show headers? */
-    bool log_state_ymax_header_shown;
-
-    /** Should \ref log_state_zmax show headers? */
-    bool log_state_zmax_header_shown;
-
-    /** Should \ref log_state_min show headers? */
-    bool log_state_min_header_shown;
-
-    /** Should \ref log_state_xmin show headers? */
-    bool log_state_xmin_header_shown;
-
-    /** Should \ref log_state_ymin show headers? */
-    bool log_state_ymin_header_shown;
-
-    /** Should \ref log_state_zmin show headers? */
-    bool log_state_zmin_header_shown;
-
-    /** Should \ref log_state_fneg show headers? */
-    bool log_state_fneg_header_shown;
-
-    /**
-     * Should \ref log_boundary_conditions show headers?  Index zero refers
-     * to lower boundary state.  Index one refers to upper boundary state.
-     */
-    array<bool,2> log_boundary_conditions_header_shown;
-
-    /** Should \ref log_quantities_boundary_layer show wall headers? */
-    bool log_quantities_boundary_layer_wall_header_shown;
-
-    /** Should \ref log_quantities_boundary_layer show viscous headers? */
-    bool log_quantities_boundary_layer_visc_header_shown;
-
-    /** Should \ref log_quantities_boundary_layer show thickness headers?
-     */
-    bool log_quantities_boundary_layer_thick_header_shown;
-
-    /** Should \ref log_quantities_boundary_layer show edge headers? */
-    bool log_quantities_boundary_layer_edge_header_shown;
-
-    /** Should \ref log_quantities_boundary_layer show edge99 headers? */
-    bool log_quantities_boundary_layer_edge99_header_shown;
-
-    /** Should \ref log_quantities_boundary_layer show Reynolds headers? */
-    bool log_quantities_boundary_layer_Re_header_shown;
-
-    /**
-     * Should \ref log_quantities_boundary_layer show general quantity of
-     * interest headers?
-     */
-    bool log_quantities_boundary_layer_qoi_header_shown;
-
-    /**
-     * Should \ref log_quantities_boundary_layer show pressure gradient
-     * headers?
-     */
-    bool log_quantities_boundary_layer_pg_header_shown;
-
-    /** Should \ref log_quantities_channel show wall headers? */
-    bool log_quantities_channel_wall_header_shown;
-
-    /** Should \ref log_quantities_channel show viscous headers? */
-    bool log_quantities_channel_visc_header_shown;
-
-    /** Should \ref log_quantities_channel show centerline headers? */
-    bool log_quantities_channel_center_header_shown;
-
-    /**
-     * Should \ref log_quantities_channel show general quantity of interest
-     * headers?
-     */
-    bool log_quantities_channel_qoi_header_shown;
-
-    /** @} */
+    std::map<std::string,bool> header_shown;
 
     /** Wall time elapsed during loading of state from the restart file */
     double wtime_load_restart;
