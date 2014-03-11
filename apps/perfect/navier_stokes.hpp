@@ -725,7 +725,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
     // Slow growth requires wall-normal derivative of every RMS quantity
     std::vector<field_L2xz> meanrms_y(meanrms.size());
     if (SlowTreatment == slowgrowth::largo) {
-        SUZERAIN_TIMER_SCOPED("root-mean-square state derivatives");
+        SUZERAIN_TIMER_SCOPED("mean and root-mean-square derivatives");
         ArrayX2r tmp(Ny, 2);
         std::vector<field_L2xz>::const_iterator src = meanrms.begin();
         std::vector<field_L2xz>::const_iterator end = meanrms.end();
@@ -749,7 +749,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
     ArrayX5r rqq_y;
     assert(rqq_y.cols() == swave_count);
     if (SlowTreatment == slowgrowth::largo) {
-        SUZERAIN_TIMER_SCOPED("derivatives of rqq quantities");
+        SUZERAIN_TIMER_SCOPED("rqq quantity derivatives");
         rqq_y.resize(Ny, NoChange);
 
         rqq_y.col(ndx::e  ) = common.rhoEE();  // TODO Unpleasant access order
@@ -880,7 +880,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
         if (SlowTreatment == slowgrowth::largo) {
             SUZERAIN_TIMER_SCOPED("calling largo_prestep_seta_innery");
 
-            // Repack Y-dependent mean profiles into a form consumable by Largo
+            // Repack Y-dependent profiles into a form consumable by Largo
             assert(meanrms.size() == swave_count + 1); // State plus pressure
             largo_state mean    (meanrms  [ndx::e  ].mean[j],
                                  meanrms  [ndx::mx ].mean[j],
@@ -907,7 +907,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                                  meanrms_y[ndx::rho].fluctuating[j],
                                  meanrms_y.back()   .fluctuating[j]);
 
-            // The remaining bits are accessed differently from RMS details
+            // The "rqq" bits are accessed differently from RMS details
             largo_state mean_rqq    (common.rhoEE()[j],    // Notice pressure
                                      common.rhouu()[j],    // entry is NaN as
                                      common.rhovv()[j],    // it is allegedly
