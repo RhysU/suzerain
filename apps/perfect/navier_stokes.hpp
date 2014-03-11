@@ -921,6 +921,12 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                                      rqq_y(j, ndx::rho),
                                      numeric_limits<real_t>::quiet_NaN());
 
+            // If requested, ignore RMS fluctuations as a debugging tool.
+            if (SUZERAIN_UNLIKELY(sg.ignore_rms)) {
+                rms.zero();
+                ddy_rms.zero();
+            }
+
             largo_prestep_seta_innery(sg.workspace,
                                       o.y(j),
                                       mean        .rescale(inv_Ma2        ),
