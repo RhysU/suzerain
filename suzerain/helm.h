@@ -18,28 +18,116 @@
 extern "C" {
 #endif
 
-// TODO Document the continuous time and discretized equations
-// FIXME Check claims on no filtering with Tf = 1
-
-/** \file
- * \brief A header-only C99 proportional-integral-derivative (PID) controller.
+/**
+ * \file
+ * A header-only PID controller based largely on <a
+ * href="http://www.cds.caltech.edu/~murray/amwiki/index.php/PID_Control">
+ * Chapter 10</a> of <a href="http://www.worldcat.org/isbn/0691135762">Astrom
+ * and Murray</a>.
  *
- * This controller features
+ * This proportional-integral-derivative (PID) controller features
  * <ul>
  *   <li>low pass filtering of the process derivative,</li>
  *   <li>windup protection,</li>
  *   <li>automatic reset on actuator saturation,</li>
  *   <li>anti-kick on setpoint change using "derivative on measurement",</li>
  *   <li>incremental output for bumpless manual-to-automatic transitions,</li>
- *   <li>single, unified controller gain parameter</li>
+ *   <li>a unified controller gain parameter,</li>
  *   <li>exposure of all independent physical time scales, and</li>
  *   <li>the ability to accommodate varying sample rate.</li>
  * </ul>
- * The design and nomenclature is based largely on on Figure 10.11 of <a
- * href="http://www.worldcat.org/isbn/9781400828739">Feedback Systems</a> by
- * Astrom and Murray.
+ * \image html  helm.png "Block diagram for the controller"
+ * \image latex helm.eps "Block diagram for the controller" width=\textwidth
  *
- * Sample written with nomenclature from \ref helm_state and \ref helm_steady:
+ * Let \f$f\f$ be a first-order, low-pass filtered version of controlled process
+ * output \f$y\f$ governed by
+ * \f{align}{
+ *     \frac{\mathrm{d}}{\mathrm{d}t} f &= \frac{y - f}{T_f}
+ * \f}
+ * where \f$T_f\f$ is a filter time scale.  Then, in the time domain and
+ * expressed in positional form, the control signal \f$v\f$ evolves according to
+ * \f{align}{
+ *     v(t) &= k_p \, e(t)
+ *           + k_i \int_0^t e(t) \,\mathrm{d}t
+ *           + k_t \int_0^t e_s(t) \,\mathrm{d}t
+ *           - k_d \frac{\mathrm{d}}{\mathrm{d}t} f(t)
+ *     \\
+ *          &= k_p \left[
+ *                 e(t)
+ *               + \frac{1}{T_i} \int_0^t e(t) \,\mathrm{d}t
+ *               + \frac{1}{T_t} \int_0^t e_s(t) \,\mathrm{d}t
+ *               - T_d \frac{\mathrm{d}}{\mathrm{d}t} f(t)
+ *             \right]
+ *     \\
+ *          &= k_p \left[
+ *                 \left(r(t) - y(t)\right)
+ *               + \frac{1}{T_i} \int_0^t \left(r(t) - y(t)\right) \,\mathrm{d}t
+ *               + \frac{1}{T_t} \int_0^t \left(u(t) - v(t)\right) \,\mathrm{d}t
+ *               + \frac{T_d}{T_f}\left(f(t) - y(t)\right)
+ *             \right]
+ * \f}
+ * where \f$u\f$ is the actuator position and \f$r\f$ is the desired reference
+ * or "setpoint" value.  Constants \f$T_i\f$, \f$T_t\f$, and \f$T_d\f$ are the
+ * integral, automatic reset, and derivative time scales while \f$k_p\f$
+ * specifies the unified gain.  Differentiating one finds the "incremental" form
+ * written for continuous time,
+ * \f{align}{
+ *     \frac{\mathrm{d}}{\mathrm{d}t} v(t) &= k_p \left[
+ *               - \frac{\mathrm{d}}{\mathrm{d}t} y(t)
+ *               + \frac{r(t) - y(t)}{T_i}
+ *               + \frac{u(t) - v(t)}{T_t}
+ *               + \frac{T_d}{T_f}\left(
+ *                   \frac{\mathrm{d}}{\mathrm{d}t} f(t)
+ *                 - \frac{\mathrm{d}}{\mathrm{d}t} y(t)
+ *                 \right)
+ *             \right]
+ *             .
+ * \f}
+ * Here, to avoid controller kick on instantaneous reference value changes, we
+ * assume \f$\frac{\mathrm{d}}{\mathrm{d}t} r(t) = 0\f$.  This assumption is
+ * sometimes called "derivative on measurement" in reference to neglecting the
+ * non-measured portion of the error derivative
+ * \f$\frac{\mathrm{d}}{\mathrm{d}t} e(t)\f$.
+ *
+ * Obtaining a discrete time evoluation equation is straightforward.  Multiply
+ * the above continuous result by the time differential, substitute first
+ * order backward differences, and incorporate the low-pass filter in a
+ * consistent fashion.  One then finds the following:
+ * \f{align}{
+ *     {\mathrm{d}t}_i &= t_i - t_{i-1}
+ * \f}
+ * \f{align}{
+ *     f(t_i) &= \frac{ {\mathrm{d}t}_i\,y(t_i) + T_f\,f(t_{i-1}) }
+ *                 { T_f + {\mathrm{d}t}_i }
+ *             = \alpha y(t_i) + (1 - \alpha) f_{i-1}
+ *               \quad\text{with }
+ *               \alpha=\frac{{\mathrm{d}t}_i}{T_f + {\mathrm{d}t}_i}
+ * \f}
+ * \f{align}{
+ *     {\mathrm{d}f}_i &= f(t_i) - f(t_{i-1})
+ *                      = \alpha\left( y(t_i) - f(t_{i-1}) \right)
+ * \f}
+ * \f{align}{
+ *     {\mathrm{d}y}_i &= y(t_i) - y(t_{i-1})
+ * \f}
+ * \f{align}{
+ *     {\mathrm{d}v}_i &= k_p \left[
+ *                 {\mathrm{d}t}_i \left(
+ *                   \frac{r(t_i) - y(t_i)}{T_i}
+ *                 + \frac{u(t_i) - v(t_i)}{T_t}
+ *                 \right)
+ *               + \frac{T_d}{T_f}\left(
+ *                   {\mathrm{d}f}_i - {\mathrm{d}y}_i
+ *                 \right)
+ *               - {\mathrm{d}y}_i
+ *             \right]
+ * \f}
+ * where notice \f$f(t)\f$ is nothing but an exponential weighted moving average
+ * of \f$y(t)\f$ that permits varying the sampling rate.  An implementation
+ * needs only to track two pieces of state, namely \f$f(t_{i-1})\f$ and
+ * \f$y(t_{i-1})\f$, across time steps.
+ *
+ * Sample written with nomenclature from helm_state() and helm_steady():
  * \code
  *   struct helm_state h;
  *
@@ -76,69 +164,70 @@ extern "C" {
  */
 
 /**
- * State for an incremental PID controller, including all tuning parameters.
+ * Tuning parameters and internal state for an incremental PID controller.
+ *
+ * Gain #kp has units of \f$u_0 / y_0\f$ where \f$u_0\f$ and \f$y_0\f$
+ * are the natural actuator and process observable signals, respectively.
+ * Parameter #Tt has units of time multiplied by \f$u_0 / y_0\f$.
+ * Parameters #Td, #Tf, and #Ti possess units of time.  Time units are
+ * fixed by the scaling provided in the \c dt argument to helm_steady().
  */
 struct helm_state
 {
-    /**
-     * Controller tuning parameters.
-     *
-     * Gain has units of <code>u0 / y0</code>.
-     * Tt has units of time multiplied by <code>u0 / y0</code>.
-     * All other time scales possess units of time.
-     *
-     * Setting a time scale to \c INFINITY disables the associated term.
-     * 
-     * @{
-     */
-    double kp;  /**< Proportional gain modifying P, I, and D terms.  */
-    double Td;  /**< Time scale governing derivative action.         */
-    double Tf;  /**< Time scale filtering process observable for D.  */
-    double Ti;  /**< Time scale governing integral action.           */
-    double Tt;  /**< Time scale governing automatic reset.           */
-    /**@}*/
-
-    /**
-     * Internal state maintained between calls to \ref steady(...)
-     * @{
-     */
-    double y;   /**< Tracks instantaneous process observable. */
-    double f;   /**< Tracks filtered process observable.      */
-    /**@}*/
+    double kp;  /**< Proportional gain modifying P, I, and D terms.    */
+    double Td;  /**< Time scale governing derivative action.
+                     Set to zero to disable derivative control.        */
+    double Tf;  /**< Time scale filtering process observable for D.
+                     Set to infinity to disable observable filtering.  */
+    double Ti;  /**< Time scale governing integral action.
+                     Set to infinity to disable integral control.      */
+    double Tt;  /**< Time scale governing automatic reset.
+                     Set to infinity to disable automatic reset.       */
+    double y;   /**< Internal tracking of the process observable.      */
+    double f;   /**< Internal tracking the filtered process.           */
 };
 
 /**
  * \brief Reset all tuning parameters, but \e not transient state.
  *
- * Resets gain to one and  disables filtering, integral action, and derivative
- * action.  Enable those terms by setting the associated time scales.
+ * Resets gain to one and disables filtering, integral action, and derivative
+ * action.  Enable those terms by setting their associated time scales.
+ *
+ * \param[in,out] h Houses tuning parameters to be reset.
+ * \return Argument \c h to permit call chaining.
  */
 static inline
-void
+struct helm_state *
 helm_reset(struct helm_state * const h)
 {
     h->kp = 1;        // Unit gain
-    h->Td = INFINITY; // No derivative action
-    h->Tf = 1;        // No filtering
+    h->Td = 0;        // No derivative action
+    h->Tf = INFINITY; // No filtering
     h->Ti = INFINITY; // No integral action
     h->Tt = INFINITY; // No automatic reset
+    return h;
 }
 
 /**
- * \brief Forget any transient state, but \e not tuning parameters.
+ * \brief Reset any transient state, but \e not tuning parameters.
  *
  * Necessary to achieve bumpless manual-to-automatic transitions
- * before calling to \ref helm_steady after a period of manual control.
+ * before calling to helm_steady() after a period of manual control,
+ * including \e before the first call to helm_steady().
+ *
+ * \param[in,out] h Houses transient state to be reset.
+ * \return Argument \c h to permit call chaining.
  */
 static inline
-void
+struct helm_state *
 helm_approach(struct helm_state * const h)
 {
-    assert(h->Td > 0);
-    assert(h->Tf > 0);
-    assert(h->Ti > 0);
-    assert(h->Tt > 0);
+    assert(h->Td >= 0);
+    assert(h->Tf >  0);
+    assert(h->Ti >  0);
+    assert(h->Tt >  0);
     h->f = NAN;
+    return h;
 }
 
 /**
@@ -152,6 +241,7 @@ helm_approach(struct helm_state * const h)
  * \param[in]     y  Observed process output to drive to \c r.
  *
  * \return Incremental suggested change to control signal \c v.
+ * \see Overview of \ref helm.h for the discrete evolution equations.
  */
 static inline
 double
@@ -162,7 +252,7 @@ helm_steady(struct helm_state * const h,
             const double v,
             const double y)
 {
-    double dy, df, dv = 0;
+    double dv = 0;
 
     if (!isnan(y)) {                      // Avoid driving blind
 
@@ -171,8 +261,10 @@ helm_steady(struct helm_state * const h,
             h->f = y;
         }
 
-        dy  = y - h->y;                   // Backward difference for y
-        df  = (dt / h->Tf)*(y - h->f);    // Filtered difference for y
+        double a, df, dy;
+        a   = dt / (h->Tf + dt);          // Convex combination parameter alpha
+        df  = a*(y - h->f);               // Filtered difference for y
+        dy  =    y - h->y ;               // Backward difference for y
         dv += (r - y) / h->Ti;            // Action from integral control
         dv += (u - v) / h->Tt;            // Action from automatic reset
         dv *= dt;                         // Scale integral actions by time step
@@ -180,8 +272,8 @@ helm_steady(struct helm_state * const h,
         dv += /*dr=0*/ - dy;              // Action from proporational control
         dv *= h->kp;                      // Scale by unified gain parameter
 
-        h->y  = y;                        // Track observable for next call
-        h->f += df;                       // Track filter for next call
+        h->y  = y;                        // Update observable for next call
+        h->f += df;                       // Update filter for next call
     }
 
     return dv;

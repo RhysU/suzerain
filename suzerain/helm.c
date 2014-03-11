@@ -9,22 +9,19 @@
 //--------------------------------------------------------------------------
 
 /** \file
- * \copydoc helm.h
+ * C99 extern declarations for state inline functions within \ref helm.h
  */
 
-#include <suzerain/helm.h>
+#include "helm.h"
 
-// C99 extern declaration for static inline function
 extern
-void
+struct helm_state *
 helm_reset(struct helm_state * const h);
 
-// C99 extern declaration for static inline function
 extern
-void
+struct helm_state *
 helm_approach(struct helm_state * const h);
 
-// C99 extern declaration for static inline function
 extern
 double
 helm_steady(struct helm_state * const h,
