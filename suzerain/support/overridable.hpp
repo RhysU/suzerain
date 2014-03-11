@@ -37,7 +37,7 @@ namespace suzerain {
 namespace support {
 
 /**
- * Abstract interface indicating details may be overridden from another instance.
+ * Abstract interface indicating data may be overridden from another instance.
  */
 template <typename Derived>
 class overridable
@@ -93,6 +93,16 @@ bool maybe_override(const char* name,
                     const char* description,
                           int&  destination,
                     const int&  source,
+                    const bool  verbose);
+
+/**
+ * If \c source is not false, override \c destination with its value.
+ * @copydetails maybe_override(const char*,const char*,real_t&,const real_t&,const bool)
+ */
+bool maybe_override(const char* name,
+                    const char* description,
+                          bool& destination,
+                    const bool& source,
                     const bool  verbose);
 
 /**@}*/
