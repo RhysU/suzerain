@@ -198,15 +198,18 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
     state_type &auxw = *_auxw_ptr;                                   // Brevity
 
     // Sanity check incoming swave's and auxw's shape and contiguity
-    SUZERAIN_ENSURE(swave.shape()[0] == swave_count);
-    SUZERAIN_ENSURE(swave.shape()[1] == (unsigned) o.dgrid.local_wave_extent.y());
-    SUZERAIN_ENSURE(swave.shape()[2] == (unsigned) o.dgrid.local_wave_extent.x());
-    SUZERAIN_ENSURE(swave.shape()[3] == (unsigned) o.dgrid.local_wave_extent.z());
-    SUZERAIN_ENSURE((unsigned) swave.strides()[1] == 1u);
-    SUZERAIN_ENSURE((unsigned) swave.strides()[2] == swave.shape()[1]);
-    SUZERAIN_ENSURE((unsigned) swave.strides()[3] == swave.shape()[1]*swave.shape()[2]);
-    SUZERAIN_ENSURE(equal(swave.shape()   + 1, swave.shape()   + 4, auxw.shape()   + 1));
-    SUZERAIN_ENSURE(equal(swave.strides() + 1, swave.strides() + 4, auxw.strides() + 1));
+    SUZERAIN_ENSURE((int) swave.shape()[0] == swave_count);
+    SUZERAIN_ENSURE((int) swave.shape()[1] == o.dgrid.local_wave_extent.y());
+    SUZERAIN_ENSURE((int) swave.shape()[2] == o.dgrid.local_wave_extent.x());
+    SUZERAIN_ENSURE((int) swave.shape()[3] == o.dgrid.local_wave_extent.z());
+    SUZERAIN_ENSURE(swave.strides()[1] == (int) 1);
+    SUZERAIN_ENSURE(swave.strides()[2] == (int) swave.shape()[1]);
+    SUZERAIN_ENSURE(swave.strides()[3] == (int) ( swave.shape()[1]
+                                                 *swave.shape()[2]));
+    SUZERAIN_ENSURE(equal(swave.shape()   + 1, swave.shape()   + 4,
+                          auxw.shape()    + 1));
+    SUZERAIN_ENSURE(equal(swave.strides() + 1, swave.strides() + 4,
+                          auxw.strides()  + 1));
     const size_t Ny = swave.shape()[1];
 
     // Prepare common-block-like storage used to pass details from N to L.
