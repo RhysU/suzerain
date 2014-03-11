@@ -48,11 +48,14 @@ union largo_state
 public:
 
     /** Initialize with all zeros such that \ref trivial() holds. */
-    largo_state() { std::memset(this, 0, sizeof(largo_state)); }
+    largo_state()
+        : rho(0.0), mx(0.0), my(0.0), mz(0.0), e(0.0), p(0.0)
+    {}
 
     /** Initialize with scalars per order of suzerain:ndx::type. */
     largo_state(double e, double mx, double my, double mz, double rho, double p)
-        : rho(rho), mx(mx), my(my), mz(mz), e(e), p(p) {}
+        : rho(rho), mx(mx), my(my), mz(mz), e(e), p(p)
+    {}
 
     // Storage directly accessible through public members
     struct {
@@ -81,10 +84,18 @@ public:
     /** Is the state identically zero? */
     bool trivial() const
     {
-        using namespace std;
+        using std::abs;
 #pragma warning(push,disable:1572)
         return 0 == abs(rho) + abs(mx) + abs(my) + abs(mz) + abs(e) + abs(p);
 #pragma warning(pop)
+    }
+
+    /** Fill state with zeros causing <code>trivial() == true</code>. */
+    largo_state& zero()
+    {
+        using std::memset;
+        memset(this, 0, sizeof(largo_state));
+        return *this;
     }
 
     /**
