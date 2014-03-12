@@ -28,6 +28,10 @@ fields_DATA += spatiotemporal_consistent_1e-1_k06.h5           # ZPG
 fields_DATA += spatiotemporal_consistent_1e-1_pexi-1e-2_k06.h5 # FPG
 fields_DATA += spatiotemporal_consistent_5e-2_pexi-1e-2_k06.h5 # FPG
 
+# Coarse-but-turbulent fields suitable for development or production spin-up
+# Beware these employ bulk viscosity ('/alpha') to permit coarse grids!
+fields_DATA += coarse3D.channel.h5
+
 # Legacy fields for checking backwards-compatibility of restarting
 noinst_DATA += legacy_r22804.h5
 noinst_DATA += legacy_r38808.h5
