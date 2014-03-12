@@ -34,6 +34,13 @@ fields_DATA += coarse3D.channel.h5
 fields_DATA += coarse3D.couette.h5
 fields_DATA += coarse3D.couette.forced.h5
 
+# Mean profiles for coarse3D.* so one might see what one is about to use
+# Using postproc/gplot is recommended to interrogate this data.  For example,
+# 	gplot coarse3D.channel.mean.gz using '"y":"bar_u"' with linespoints
+noinst_DATA += coarse3D.channel.mean.gz
+noinst_DATA += coarse3D.couette.mean.gz
+noinst_DATA += coarse3D.couette.forced.mean.gz
+
 # Legacy fields for checking backwards-compatibility of restarting
 noinst_DATA += legacy_r22804.h5
 noinst_DATA += legacy_r38808.h5
