@@ -31,6 +31,7 @@ fields_DATA += spatiotemporal_consistent_5e-2_pexi-1e-2_k06.h5 # FPG
 # Coarse-but-turbulent fields suitable for development or production spin-up
 # Beware these employ bulk viscosity ('/alpha') to permit coarse grids!
 fields_DATA += coarse3D.channel.h5
+fields_DATA += coarse3D.couette.forced.h5
 
 # Legacy fields for checking backwards-compatibility of restarting
 noinst_DATA += legacy_r22804.h5
