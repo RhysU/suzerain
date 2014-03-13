@@ -343,14 +343,14 @@ suzerain_bl_enthalpy_thickness(
  * data.
  */
 typedef struct suzerain_bl_thicknesses {
-    double delta;     /**< Boundary layer thickness \f$\delta\f$.     */
+    double delta;     /**< Boundary layer thickness \f$\delta\f$.      */
     double delta1;    /**< Displacement thickness \f$\delta_1\f$
-                           (sometimes written \f$\delta^\ast\f$).     */
+                           (sometimes written \f$\delta^\ast\f$).      */
     double delta2;    /**< Momentum thickness \f$\delta_2\f$
-                           (sometimes written \f$\theta\f$).          */
-    double delta3;    /**< Energy thickness \f$\delta_3\f$ .          */
-    double deltaH0;   /**< Enthalpy thickness \f$\delta_{H_0}\f$.     */
-    double delta99;   /**< Velocity-based thickness \f$delta_{99}\f$. */
+                           (sometimes written \f$\theta\f$).           */
+    double delta3;    /**< Energy thickness \f$\delta_3\f$ .           */
+    double deltaH0;   /**< Enthalpy thickness \f$\delta_{H_0}\f$.      */
+    double delta99;   /**< Velocity-based thickness \f$\delta_{99}\f$. */
 } suzerain_bl_thicknesses;
 
 /**
@@ -401,7 +401,7 @@ typedef struct suzerain_bl_reynolds {
     double deltaH0;   /**< Reynolds number based on enthalpy
                            thickness \f$\delta_{H_0}\f$. */
     double delta99;   /**< Reynolds number per velocity-based
-                           thickness \f$delta_{99}\f$. */
+                           thickness \f$\delta_{99}\f$. */
 } suzerain_bl_reynolds;
 
 /**
