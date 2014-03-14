@@ -911,22 +911,26 @@ stagnation region.
 
 General boundary layer quantities are plotted in Figure~\ref{fig:cev_summary1}.
 Only a few of the plotted quantities are relevant to finding a matching inviscid
-base flow.  The ratio of specific heats $\gamma$ and edge Mach number
-$\Mach[e]{}$ are taken from the boundary layer edge at distance $\delta$ from
-the heat shield surface. The edge-to-wall temperature ratio $T_e/T_w$ captures
-the coldness of the wall relative to edge conditions.   When nondimensional $T_e
-= 1$ is prescribed, as is done automatically when choosing $\Mach = \Mach[e]$
-for~\eqref{eq:cartEuler} along with selecting reference $a_0^2 = \gamma R T_0$,
-the ratio may be used to fix the viscous isothermal wall condition $T_w$. Though
-present in the CEV simulations and depicted here, heat shield curvature and wall
-blowing are neglected.
+base flow.  For simplicity, the ratio of specific heats $\gamma$ is fixed at
+$1.40$, a commonly-used value for air bounded by the depicted $\gamma_e$ and
+$\gamma_w$.  The edge Mach number $\Mach[e]{}$ is taken from the boundary layer
+edge at distance $\delta$ from the heat shield surface.  The edge-to-wall
+temperature ratio $T_e/T_w$ captures the coldness of the wall relative to edge
+conditions.   When nondimensional $T_e = 1$ is prescribed, as is done
+automatically when choosing $\Mach = \Mach[e]$ for~\eqref{eq:cartEuler} along
+with selecting reference $a_0^2 = \gamma R T_0$, the ratio may be used to fix
+the viscous isothermal wall condition $T_w$. Though present in the CEV
+simulations and depicted here, heat shield curvature and wall blowing are
+neglected.
 
 \begin{figure}[p]
   \centering
   \includegraphics[height=0.92\textheight]{cev_summary1}
   \caption{
     \label{fig:cev_summary1}
-    Boundary layer conditions from the fully laminar CEV symmetry plane
+    Boundary layer conditions from the fully laminar CEV symmetry plane.
+    Despite varying $\gamma$ being depicted, the matching process uses
+    $\gamma=1.40$.
   }
 \end{figure}
 
@@ -951,8 +955,8 @@ $\frac{\partial\delta}{\partial\xi}$.
   }
 \end{figure}
 
-Conditions $\gamma_e$, $\Mach[e]{}$, $p_{e,\xi}$, and $T_e/T_w$ taken from the
-surface-normal rays of Figure~\ref{fig:cev_symplane} were fed into
+Fixed $\gamma=1.40$ and varying $\Mach[e]{}$, $p_{e,\xi}$, and $T_e/T_w$ taken
+from the surface-normal rays of Figure~\ref{fig:cev_symplane} were fed into
 Listing~\ref{lst:octave_nozzle_match} to produce a family of inviscid base flow
 solutions. As these base flows are intended to be used in a simulation with
 roughly nondimensional unit thickness and edge density, $\delta=1$ and
@@ -972,13 +976,13 @@ computed output at $R=\sqrt{R_0^2+\delta^2}$ are tabulated below.
  ,every odd row/.style={before row={\rowcolor[gray]{0.95}}}
  ,columns={dstag,gamma_e,Ma_edge,p_exi,Ma0,R0,uR,pR,T_w}
  ,columns/dstag/.style=  {fixed,fixed zerofill,precision=3,dec sep align,column name=\makecell{Arc\\length}}
- ,columns/gamma_e/.style={fixed,fixed zerofill,precision=4,dec sep align,column name=$\gamma_e$}
+ ,columns/gamma_e/.style={fixed,fixed zerofill,precision=2,dec sep align,column name=$\gamma$}
  ,columns/Ma_edge/.style={fixed,fixed zerofill,precision=4,dec sep align,column name=$\Mach[e]{}$}
  ,columns/p_exi/.style=  {fixed,fixed zerofill,precision=6,dec sep align,column name=$p_{e,\xi}$}
  ,columns/Ma0/.style=    {fixed,fixed zerofill,precision=6,dec sep align,column name=$\Mach[0]{}$}
  ,columns/R0/.style=     {fixed,fixed zerofill,precision=3,dec sep align,column name=$R_0$}
- ,columns/uR/.style=     {fixed,fixed zerofill,precision=5,dec sep align,column name=$u\!\left(R\right)$}
- ,columns/pR/.style=     {fixed,fixed zerofill,precision=4,dec sep align,column name=$p\!\left(R\right)$}
+ ,columns/uR/.style=     {fixed,fixed zerofill,precision=6,dec sep align,column name=$u\!\left(R\right)$}
+ ,columns/pR/.style=     {fixed,fixed zerofill,precision=6,dec sep align,column name=$p\!\left(R\right)$}
  ,columns/T_w/.style=    {fixed,fixed zerofill,precision=4,dec sep align,column name=\makecell{Viscous\\$T_w$}}
 ]{notebooks/cev_iss_lam.out}
 \end{centering}

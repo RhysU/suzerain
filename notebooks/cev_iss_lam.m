@@ -4,9 +4,10 @@
 pkg load dataframe
 d = dataframe('cev_iss_lam.in');
 
-% Solve each problem with delta fixed to be one
+% Solve each problem with delta=1.00 and gamma=1.40
+d.gamma_e = 1.40;
 [Ma0 R0 R uR rhoR pR] = cellfun(@radialflow_match,
-                                num2cell(ones(rows(d),1)),
+                                num2cell(1.00*ones(rows(d),1)),
                                 num2cell(d.gamma_e),
                                 num2cell(d.Ma_edge),
                                 num2cell(d.p_exi),
