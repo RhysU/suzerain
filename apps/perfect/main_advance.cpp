@@ -155,18 +155,48 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
         implicit = "none";
     }
 
+    // Explicit incoming arguments may be used to trump cevisslam settings.
+    // For example, --cevisslam=4.134 --radialflow_pexi=0.
+    // Modification of scenario required before calling adjust_scenario()
     if (options.variables().count("cevisslam")) {
-        INFO0("Mimicking scenario " << cevisslam
-              << " meters leeward of the laminar CEV stagnation point");
-        double T_ratio;
+        INFO0(who, "Mimicking scenario " << cevisslam << " meters leeward"
+                   " of the laminar CEV ISS return stagnation point");
+        double gamme, gammaw, Mae, Pre, Prw, pexi, T_ratio;
         cev::iss_laminar(cevisslam,
-                         scenario->gamma,  // Notice modification before...
-                         scenario->Ma,     // ...call to adjust_scenario().
-                         rad->pexi,
-                         T_ratio);
-        INFO0("Adjusting lower temperature to reproduce CEV T_e / T_w  = "
-              << T_ratio);
-        isothermal->lower_T = 1 / T_ratio;     // Edge temperature is 1.
+                         gamme, gammaw, Mae, Pre, Prw, pexi, T_ratio);
+        {
+            INFO0(who, "Neglecting CEV edge gamma:             " << gamme);
+            INFO0(who, "Neglecting CEV wall gamma:             " << gammaw);
+            // scenario->gamma preserved from CLI or restart
+        }
+        if (options.variables().count("Ma")) {
+            WARN0(who, "Overriding CEV edge Mach number:       " << Mae);
+            // scenario->Ma preserved from explicitly-given option
+        } else {
+            INFO0(who, "Setting CEV edge Mach number:          " << Mae);
+            scenario->Ma = Mae;
+        }
+        {
+            INFO0(who, "Neglecting CEV edge Prandtl number:    " << Pre);
+            INFO0(who, "Neglecting CEV wall Prandtl number:    " << Prw);
+            // scenario->Pr preserved from CLI or restart
+        }
+        if (options.variables().count("radialflow_pexi")) {
+            WARN0(who, "Overriding CEV pressure gradient pexi: " << pexi);
+            // rad->pexi preserved from explicitly-given option
+        } else {
+            INFO0(who, "Setting CEV pressure gradient pexi:    " << pexi);
+            rad->pexi = pexi;
+        }
+        if (options.variables().count("lower_T")) {
+            WARN0(who, "Overriding CEV temperature ratio:      " << T_ratio);
+            // isothermal->upper_T preserved from CLI or restart
+            // isothermal->lower_T preserved from explicitly-given option
+        } else {
+            INFO0(who, "Setting CEV temperature ratio:         " << T_ratio);
+            isothermal->upper_T = 1;
+            isothermal->lower_T = 1 / T_ratio;
+        }
     }
 
     if (positional.size() != 1) {

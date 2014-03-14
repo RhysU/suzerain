@@ -45,7 +45,10 @@ namespace cev {
  *
  * @param dstag   Leeward distance from the stagnation point in meters.
  * @param gammae  Ratio of specific heats at the boundary layer edge.
- * @param Mae     Edge mach number.
+ * @param gammaw  Ratio of specific heats at the wall.
+ * @param Mae     Mach number at the boundary layer edge.
+ * @param Pre     Prandtl number at the boundary layer edge.
+ * @param Prw     Prandtl number at the wall.
  * @param pexi    The inviscid-friendly pressure parameter
  *                \f$p_{e,x}^\ast = \frac{\delta}{\rho_e u_e^2}
  *                \frac{\partial p}{\partial x}\f$.
@@ -56,7 +59,10 @@ namespace cev {
 int iss_laminar(
     const double dstag,
     double& gammae,
+    double& gammaw,
     double& Mae,
+    double& Pre,
+    double& Prw,
     double& pexi,
     double& T_ratio);
 
