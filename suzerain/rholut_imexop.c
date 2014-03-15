@@ -553,10 +553,12 @@ suzerain_rholut_imexop_accumulate(
 #define FUNCNAME()   suzerain_rholut_imexop_packc
 #define PACK(x)      suzerain_bsmbsm_ ## x ## packc
 #define PTR(x)       suzerain_bsmbsm_ ## x ## packc_ptr
+#define PACKC
 #include "rholut_imexop.def"
 
 // suzerain_rholut_imexop_packf
 #define FUNCNAME()   suzerain_rholut_imexop_packf
 #define PACK(x)      suzerain_bsmbsm_ ## x ## packf
 #define PTR(x)       suzerain_bsmbsm_ ## x ## packf_ptr
+#define PACKF
 #include "rholut_imexop.def"
