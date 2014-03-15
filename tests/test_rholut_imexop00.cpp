@@ -167,8 +167,8 @@ static void operator_consistency(const parameters& p)
     // Fill all working storage with NaNs, invoke suzerain_rholut_imexop_packc,
     // and be sure we get a matrix lacking NaNs on the band as a result.
     using suzerain::complex::NaN;
-    fill(buf.get(),  buf.get()  + bufsize,  NaN<real_t>());
-    fill(papt.get(), papt.get() + paptsize, NaN<real_t>());
+    fill(buf.get(),  buf.get()  + bufsize,  NaN<complex_t>());
+    fill(papt.get(), papt.get() + paptsize, NaN<complex_t>());
     suzerain_rholut_imexop_packc00(phi, &s, &r, &ld, op.get(),
                                    0, 1, 2, 3, 4, buf.get(), &A, papt.get(),
                                    c55.get());
