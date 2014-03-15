@@ -28,6 +28,7 @@
 #include "driver.hpp"
 
 #include <suzerain/diffwave.hpp>
+#include <suzerain/error.h>
 #include <suzerain/format.hpp>
 #include <suzerain/l2.hpp>
 #include <suzerain/support/logging.hpp>
@@ -326,12 +327,23 @@ driver::default_restart_interval(
 
     }
 
-    // If we have a domain size and a velocity scale, compute a timescale
-    // and default to saving eight restarts across that timescale.
-    // (e.g. in a channel resulting in 80 restarts in 10 flow throughs)
+    // Have a domain size and a velocity?  Let's use the matching time scale.
     if (boost::math::isnormal(velocity)) {
         if (grid) {
-            t = (grid->L.x() / velocity) / 8;
+            t = grid->L.x() / velocity;
+            if        (grid->two_sided()) {
+                // Eight restarts per flow through in a channel giving 80
+                // restarts in 10 flow throughs, a reasonable channel simulation
+                // duration.
+                t /= 8;
+            } else if (grid->one_sided()) {
+                // Two restarts per flow through in a boundary layer giving 20
+                // restarts in 10 flow throughs and, across O(50) flow throughs
+                // for a simulation campaign, O(100) restart files.
+                t /= 2;
+            } else {
+                SUZERAIN_ERROR_VOID_UNIMPLEMENTED();
+            }
         } else {
             DEBUG0(who, "No grid details for default_restart_interval");
         }
