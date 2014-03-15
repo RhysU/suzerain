@@ -186,10 +186,11 @@ FUNCTION(
             } else MAYBE_XERBLA(info < 0)
         }
 
-        while (++*siter < smax && *res > tol) {
+        while (*siter < smax && *res > tol) {
 
             // Perform one step of mixed precision iterative refinement
             // updating norm computations r = b - op(A) x and possibly tol
+            *siter += 1;
             info = DDEMOTE(n, r);
             MAYBE_XERBLA(info)
             info = SGBTRS(trans, n, kl, ku, 1,
@@ -242,10 +243,11 @@ double_precision_attempt:
             MAYBE_XERBLA(info < 0) else if (UNLIKELY(info > 0)) { return info; }
         }
 
-        while (++*diter < dmax && *res > tol) {
+        while (*diter < dmax && *res > tol) {
 
             // Perform one step of double precision iterative refinement
             // updating norm computations r = b - op(A) x and possibly tol
+            *diter += 1;
             info = DGBTRS(trans, n, kl, ku, 1, afb, ldafb, ipiv, r, n);
             MAYBE_XERBLA(info)
             DAXPY(n, 1.0, r, inc, x, inc);
