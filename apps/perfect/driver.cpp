@@ -435,13 +435,21 @@ driver::load_statistics_hook(
     return super::load_statistics_hook(esioh);
 }
 
-// TODO Reduce code duplication between here and apps/reacting/driver.hpp.
+// Heavy-handed, but I seemingly cannot get Intel to cooperator otherwise.
+// I want non-NaNs to be preferred to NaNs within this max operation.
+static
+real_t maxmf(const real_t a, const real_t b)
+{
+    return (boost::math::isnan)(a) ? b
+         : (boost::math::isnan)(b) ? a
+         : std::max(a, b);
+}
+
 void
 driver::default_restart_interval(
         time_type& t,
         step_type&)
 {
-    using std::max;
     using std::abs;
 
     // Look for the largest magnitude, problem-dependent, macro velocity scale
@@ -455,19 +463,19 @@ driver::default_restart_interval(
 
             if ((boost::math::isnan)(scenario->bulk_rho)) {
                 TRACE0(who, "No bulk density scale available so assuming 1");
-                velocity = max(abs(scenario->bulk_rho_u) / /*rho*/ 1,
-                               velocity);
+                velocity = maxmf(abs(scenario->bulk_rho_u) / /*rho*/ 1,
+                                 velocity);
             } else {
-                velocity = max(abs(scenario->bulk_rho_u) / scenario->bulk_rho,
-                               velocity);
+                velocity = maxmf(abs(scenario->bulk_rho_u) / scenario->bulk_rho,
+                                 velocity);
             }
 
         }
 
         // ...may be trumped by driving the upper and lower walls.
         if (isothermal) {
-            velocity = max(abs(isothermal->upper_u), velocity);
-            velocity = max(abs(isothermal->lower_u), velocity);
+            velocity = maxmf(abs(isothermal->upper_u), velocity);
+            velocity = maxmf(abs(isothermal->lower_u), velocity);
         }
 
     }
@@ -481,15 +489,15 @@ driver::default_restart_interval(
             largo_state freestream, dontcare;
             sg->baseflow->conserved(0.0, freestream.as_is(),
                                     dontcare.as_is(), dontcare.as_is());
-            velocity = max(abs(freestream.u()), velocity);
+            velocity = maxmf(abs(freestream.u()), velocity);
         } else if (isothermal) {
             // ...taking freestream reference if-and-only-if no baseflow...
-            velocity = max(abs(isothermal->upper_u), velocity);
+            velocity = maxmf(abs(isothermal->upper_u), velocity);
         }
 
         // ...and permit a driven lower wall velocity to trump.
         if (isothermal) {
-            velocity = max(abs(isothermal->lower_u), velocity);
+            velocity = maxmf(abs(isothermal->lower_u), velocity);
         }
 
     }
