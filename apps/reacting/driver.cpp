@@ -265,20 +265,20 @@ driver::default_restart_interval(
         if (chdef) {
 
             if ((boost::math::isnan)(chdef->bulk_rho)) {
-                TRACE0(who, "No bulk density scale available so assuming 1");
-                velocity = max(velocity,
-                               abs(chdef->bulk_rho_u) / /*rho*/ 1);
+                WARN0(who, "No bulk density scale available so assuming 1");
+                velocity = max(abs(chdef->bulk_rho_u) / /*rho*/ 1,
+                               velocity);
             } else {
-                velocity = max(velocity,
-                               abs(chdef->bulk_rho_u) / chdef->bulk_rho);
+                velocity = max(abs(chdef->bulk_rho_u) / chdef->bulk_rho,
+                               velocity);
             }
 
         }
 
         // ...may be trumped by driving the upper and lower walls.
         if (isothermal) {
-            velocity = max(velocity, abs(isothermal->upper_u));
-            velocity = max(velocity, abs(isothermal->lower_u));
+            velocity = max(abs(isothermal->upper_u), velocity);
+            velocity = max(abs(isothermal->lower_u), velocity);
         }
 
     }
@@ -299,20 +299,20 @@ driver::default_restart_interval(
             const real_t base_rho   = buf[0];
             const real_t base_rho_u = buf[1];
             if (base_rho > 0) {
-                velocity = max(velocity, abs(base_rho_u) / base_rho);
+                velocity = max(abs(base_rho_u) / base_rho, velocity);
             } else {
                 TRACE0(who, "Trivial baseflow detected; using upper velocity");
-                velocity = max(velocity, abs(isothermal->upper_u));
+                velocity = max(abs(isothermal->upper_u), velocity);
             }
 
         } else if (isothermal) {
             // ...taking freestream reference if-and-only-if no baseflow...
-            velocity = max(velocity, abs(isothermal->upper_u));
+            velocity = max(abs(isothermal->upper_u), velocity);
         }
 
         // ...and permit a driven lower wall velocity to trump.
         if (isothermal) {
-            velocity = max(velocity, abs(isothermal->lower_u));
+            velocity = max(abs(isothermal->lower_u), velocity);
         }
 
     }

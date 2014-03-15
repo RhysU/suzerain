@@ -455,19 +455,19 @@ driver::default_restart_interval(
 
             if ((boost::math::isnan)(scenario->bulk_rho)) {
                 TRACE0(who, "No bulk density scale available so assuming 1");
-                velocity = max(velocity,
-                               abs(scenario->bulk_rho_u) / /*rho*/ 1);
+                velocity = max(abs(scenario->bulk_rho_u) / /*rho*/ 1,
+                               velocity);
             } else {
-                velocity = max(velocity,
-                               abs(scenario->bulk_rho_u) / scenario->bulk_rho);
+                velocity = max(abs(scenario->bulk_rho_u) / scenario->bulk_rho,
+                               velocity);
             }
 
         }
 
         // ...may be trumped by driving the upper and lower walls.
         if (isothermal) {
-            velocity = max(velocity, abs(isothermal->upper_u));
-            velocity = max(velocity, abs(isothermal->lower_u));
+            velocity = max(abs(isothermal->upper_u), velocity);
+            velocity = max(abs(isothermal->lower_u), velocity);
         }
 
     }
@@ -481,15 +481,15 @@ driver::default_restart_interval(
             largo_state freestream, dontcare;
             sg->baseflow->conserved(0.0, freestream.as_is(),
                                     dontcare.as_is(), dontcare.as_is());
-            velocity = max(velocity, abs(freestream.u()));
+            velocity = max(abs(freestream.u()), velocity);
         } else if (isothermal) {
             // ...taking freestream reference if-and-only-if no baseflow...
-            velocity = max(velocity, abs(isothermal->upper_u));
+            velocity = max(abs(isothermal->upper_u), velocity);
         }
 
         // ...and permit a driven lower wall velocity to trump.
         if (isothermal) {
-            velocity = max(velocity, abs(isothermal->lower_u));
+            velocity = max(abs(isothermal->lower_u), velocity);
         }
 
     }
