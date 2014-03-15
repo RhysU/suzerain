@@ -186,6 +186,23 @@ static void operator_consistency(const parameters& p)
         }
     }
 
+    // Check that packf assembly produces the same result as packc assembly.
+    // Else, switching from --solver=zgbsvx to --solver=zgbsv breaks badly.
+    // Added due to Redmine #3073 where --solver=zgbsv with NRBC was NaNing.
+    {
+        suzerain_bsmbsm AF;
+        const int packfsize = (S*n)*(S*(2*op.max_kl() + op.max_ku() + 3) - 2);
+        suzerain::scoped_array<complex_t> packf(new complex_t[packfsize]);
+        fill(packf.get(), packf.get() + packfsize, NaN<complex_t>());
+        suzerain_rholut_imexop_packf00(phi, &s, &r, &ld, op.get(),
+                                       0, 1, 2, 3, 4, buf.get(), &AF, packf.get(),
+                                       c55.get());
+        CHECK_GBMATRIX_CLOSE(
+            S*n, S*n, A .KL, A .KU, &papt [   0],  A .LD,
+            S*n, S*n, AF.KL, AF.KU, &packf[AF.KL], AF.LD + AF.KL,
+            std::sqrt(std::numeric_limits<real_t>::epsilon()));
+    }
+
     // Factor LU = PAP^T and solve (LU)^{-1} B2 = B1
     suzerain::scoped_array<complex_t> lu(new complex_t[(A.LD + A.KL)*A.N]);
     fill(lu.get(), lu.get() + lusize, NaN<real_t>());
