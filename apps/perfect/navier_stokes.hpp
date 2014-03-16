@@ -882,59 +882,74 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
 
             // Repack Y-dependent profiles into a form consumable by Largo
             assert(meanrms.size() == swave_count + 1); // State plus pressure
-            largo_state mean    (meanrms  [ndx::e  ].mean[j],
-                                 meanrms  [ndx::mx ].mean[j],
-                                 meanrms  [ndx::my ].mean[j],
-                                 meanrms  [ndx::mz ].mean[j],
-                                 meanrms  [ndx::rho].mean[j],
-                                 meanrms  .back()   .mean[j]);
-            largo_state ddy_mean(meanrms_y[ndx::e  ].mean[j],
-                                 meanrms_y[ndx::mx ].mean[j],
-                                 meanrms_y[ndx::my ].mean[j],
-                                 meanrms_y[ndx::mz ].mean[j],
-                                 meanrms_y[ndx::rho].mean[j],
-                                 meanrms_y.back()   .mean[j]);
-            largo_state rms     (meanrms  [ndx::e  ].fluctuating[j],
-                                 meanrms  [ndx::mx ].fluctuating[j],
-                                 meanrms  [ndx::my ].fluctuating[j],
-                                 meanrms  [ndx::mz ].fluctuating[j],
-                                 meanrms  [ndx::rho].fluctuating[j],
-                                 meanrms  .back()   .fluctuating[j]);
-            largo_state ddy_rms (meanrms_y[ndx::e  ].fluctuating[j],
-                                 meanrms_y[ndx::mx ].fluctuating[j],
-                                 meanrms_y[ndx::my ].fluctuating[j],
-                                 meanrms_y[ndx::mz ].fluctuating[j],
-                                 meanrms_y[ndx::rho].fluctuating[j],
-                                 meanrms_y.back()   .fluctuating[j]);
+            largo_state mean  (meanrms  [ndx::e  ].mean[j],
+                               meanrms  [ndx::mx ].mean[j],
+                               meanrms  [ndx::my ].mean[j],
+                               meanrms  [ndx::mz ].mean[j],
+                               meanrms  [ndx::rho].mean[j],
+                               meanrms  .back()   .mean[j]);
+            largo_state mean_y(meanrms_y[ndx::e  ].mean[j],
+                               meanrms_y[ndx::mx ].mean[j],
+                               meanrms_y[ndx::my ].mean[j],
+                               meanrms_y[ndx::mz ].mean[j],
+                               meanrms_y[ndx::rho].mean[j],
+                               meanrms_y.back()   .mean[j]);
+            largo_state rms   (meanrms  [ndx::e  ].fluctuating[j],
+                               meanrms  [ndx::mx ].fluctuating[j],
+                               meanrms  [ndx::my ].fluctuating[j],
+                               meanrms  [ndx::mz ].fluctuating[j],
+                               meanrms  [ndx::rho].fluctuating[j],
+                               meanrms  .back()   .fluctuating[j]);
+            largo_state rms_y (meanrms_y[ndx::e  ].fluctuating[j],
+                               meanrms_y[ndx::mx ].fluctuating[j],
+                               meanrms_y[ndx::my ].fluctuating[j],
+                               meanrms_y[ndx::mz ].fluctuating[j],
+                               meanrms_y[ndx::rho].fluctuating[j],
+                               meanrms_y.back()   .fluctuating[j]);
 
             // The "rqq" bits are accessed differently from RMS details
-            largo_state mean_rqq    (common.rhoEE()[j],    // Notice pressure
-                                     common.rhouu()[j],    // entry is NaN as
-                                     common.rhovv()[j],    // it is allegedly
-                                     common.rhoww()[j],    // unused.  This
-                                     common.rho()  [j],    // NaN makes sure.
-                                     numeric_limits<real_t>::quiet_NaN());
-            largo_state ddy_mean_rqq(rqq_y(j, ndx::e  ),   // Ditto re: NaN
-                                     rqq_y(j, ndx::mx ),
-                                     rqq_y(j, ndx::my ),
-                                     rqq_y(j, ndx::mz ),
-                                     rqq_y(j, ndx::rho),
-                                     numeric_limits<real_t>::quiet_NaN());
+            largo_state mean_rqq  (common.rhoEE()[j],    // Notice pressure
+                                   common.rhouu()[j],    // entry is NaN as
+                                   common.rhovv()[j],    // it is allegedly
+                                   common.rhoww()[j],    // unused.  This
+                                   common.rho()  [j],    // NaN makes sure.
+                                   numeric_limits<real_t>::quiet_NaN());
+            largo_state mean_rqq_y(rqq_y(j, ndx::e  ),   // Ditto re: NaN
+                                   rqq_y(j, ndx::mx ),
+                                   rqq_y(j, ndx::my ),
+                                   rqq_y(j, ndx::mz ),
+                                   rqq_y(j, ndx::rho),
+                                   numeric_limits<real_t>::quiet_NaN());
 
-            // If requested, ignore RMS fluctuations as a debugging tool.
-            if (SUZERAIN_UNLIKELY(sg.ignore_rms)) {
+            // If requested, have Largo ignore all fluctuations (for debugging)
+            if (SUZERAIN_UNLIKELY(sg.ignore_fluctuations)) {
+                // Hide RMS fluctuations from Largo
                 rms.zero();
-                ddy_rms.zero();
+                rms_y.zero();
+
+                // Have "rqq" quantities reflect only the mean profile
+                mean_rqq.rho     = mean.rho;
+                mean_rqq.mx      = mean.mx * mean.u();
+                mean_rqq.my      = mean.my * mean.v();
+                mean_rqq.mz      = mean.mz * mean.w();
+                mean_rqq.e       = mean.e  * mean.E();
+
+                // Have "rqq" derivatives reflect only the mean profile
+                mean_rqq_y.rho = mean_y.rho;
+                mean_rqq_y.mx  = mean.u()*(2*mean_y.mx - mean.u()*mean_y.rho);
+                mean_rqq_y.mx  = mean.v()*(2*mean_y.my - mean.v()*mean_y.rho);
+                mean_rqq_y.mx  = mean.w()*(2*mean_y.mz - mean.w()*mean_y.rho);
+                mean_rqq_y.e   = mean.E()*(2*mean_y.e  - mean.E()*mean_y.rho);
             }
 
             largo_prestep_seta_innery(sg.workspace,
                                       o.y(j),
-                                      mean        .rescale(inv_Ma2        ),
-                                      rms         .rescale(inv_Ma2        ),
-                                      mean_rqq    .rescale(inv_Ma2*inv_Ma2),
-                                      ddy_mean    .rescale(inv_Ma2        ),
-                                      ddy_rms     .rescale(inv_Ma2        ),
-                                      ddy_mean_rqq.rescale(inv_Ma2*inv_Ma2));
+                                      mean      .rescale(inv_Ma2        ),
+                                      rms       .rescale(inv_Ma2        ),
+                                      mean_rqq  .rescale(inv_Ma2*inv_Ma2),
+                                      mean_y    .rescale(inv_Ma2        ),
+                                      rms_y     .rescale(inv_Ma2        ),
+                                      mean_rqq_y.rescale(inv_Ma2*inv_Ma2));
         }
 
         // Precompute subtractive slow growth velocity for wall-normal

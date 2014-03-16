@@ -63,15 +63,18 @@ definition_largo::definition_largo()
 }
 
 // Strings used in options_description and populate/override/save/load.
-static const char name_formulation[] = "formulation";
-static const char name_grdelta[]     = "grdelta";
-static const char name_ignore_rms[]  = "ignore_rms";
+static const char name_formulation[]          = "formulation";
+static const char name_grdelta[]              = "grdelta";
+static const char name_ignore_fluctuations[]  = "ignore_fluctuations";
 
 // Descriptions used in options_description and populate/override/save/load.
-static const char desc_formulation[] = "Name of the slow growth formulation";
-static const char desc_grdelta[]     = "Growth rate of reference thickness (Delta)";
-static const char desc_ignore_rms[]  = "Should slow growth forcing ignore RMS fluctuations?"
-                                       "  Meant for debugging and not preserved across restarts.";
+static const char desc_formulation[]
+    = "Name of the slow growth formulation";
+static const char desc_grdelta[]
+    = "Growth rate of reference thickness (Delta)";
+static const char desc_ignore_fluctuations[]
+    = "Should slow growth forcing ignore all fluctuations?"
+    "  Meant for debugging and not preserved across restarts.";
 
 boost::program_options::options_description
 definition_largo::options_description()
@@ -104,9 +107,9 @@ definition_largo::options_description()
      ->default_value(largo_formulation::disable.name())
      ->notifier(bind(&parse_formulation, _1, &formulation)),
      largo_formulation_help.str().c_str())
-    ("largo_ignore_rms",
-     bool_switch(&ignore_rms)->default_value(ignore_rms),
-     desc_ignore_rms)
+    ("largo_ignore_fluctuations",
+     bool_switch(&ignore_fluctuations)->default_value(ignore_fluctuations),
+     desc_ignore_fluctuations)
     ;
 
     // Complicated add_options() calls done to allow changing the default value
@@ -152,7 +155,7 @@ definition_largo::populate(
     maybe_populate(name_ ## mem, desc_ ## mem, this->mem, that.mem, verbose)
     CALL_MAYBE_POPULATE(formulation);
     CALL_MAYBE_POPULATE(grdelta);
-    CALL_MAYBE_POPULATE(ignore_rms);
+    CALL_MAYBE_POPULATE(ignore_fluctuations);
 #undef CALL_MAYBE_POPULATE
     if (!this->baseflow) {
         this->baseflow = that.baseflow;
@@ -189,7 +192,7 @@ definition_largo::override(
     maybe_override(name_ ## mem, desc_ ## mem, this->mem, that.mem, verbose)
     CALL_MAYBE_OVERRIDE(formulation);
     CALL_MAYBE_OVERRIDE(grdelta);
-    CALL_MAYBE_OVERRIDE(ignore_rms);
+    CALL_MAYBE_OVERRIDE(ignore_fluctuations);
 #undef CALL_MAYBE_OVERRIDE
     if (that.baseflow) {
         this->baseflow = that.baseflow;
@@ -445,7 +448,7 @@ definition_largo::save(
                 " stored per the formulation employed");
     }
 
-    TRACE0("Runtime flag " << name_ignore_rms << "is never saved");
+    TRACE0("Runtime flag " << name_ignore_fluctuations << "is never saved");
 }
 
 void
@@ -632,7 +635,7 @@ definition_largo::load(
                 h, location_gramp_rms, t.gramp_rms.data(), 0);
     }
 
-    TRACE0("Runtime flag " << name_ignore_rms << "is never loaded");
+    TRACE0("Runtime flag " << name_ignore_fluctuations << "is never loaded");
 
     return this->populate(t, verbose);
 }

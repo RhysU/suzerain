@@ -68,10 +68,10 @@ public:
     std::vector<real_t> gramp_rms;
 
     /**
-     * Should computations ignore RMS fluctuations?
+     * Should slow growth computations ignore all fluctuations?
      * Meant as a debugging tool emphatically \e not preserved across restarts.
      */
-    bool ignore_rms;
+    bool ignore_fluctuations;
 
 };
 

@@ -273,8 +273,8 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
         if ((isnan)(sg->grdelta)) {
             WARN0(who, "Slow growth rate grdelta is NaN");
         }
-        if (sg->ignore_rms) {
-            WARN0(who, "Debugging option 'ignore_rms' is active");
+        if (sg->ignore_fluctuations) {
+            WARN0(who, "Debugging option 'ignore_fluctuations' is active");
         }
     }
 
