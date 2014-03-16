@@ -744,9 +744,8 @@ contains
     real(WP), dimension(*), intent(in) :: dmean_rqq
     type(largo_workspace_ptr), intent(in)        :: cp
 
-
-    call largo_BL_temporal_consistent_preStep_sEtaMean(cp, y, mean, ddy_mean)
-    call largo_BL_temporal_consistent_preStep_sEta_(cp, y, rms, mean_rqq, ddy_rms, dmean_rqq)
+    ! Delegate to Y then XZ routines to ensure their behavior reproduced
+    call largo_BL_temporal_consistent_preStep_sEta_innery(cp, y, mean, rms, mean_rqq, ddy_mean, ddy_rms, dmean_rqq)
     call largo_BL_temporal_consistent_preStep_sEta_innerxz(cp, qflow)
 
   end subroutine largo_BL_temporal_consistent_preStep_sEta
