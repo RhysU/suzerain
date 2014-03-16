@@ -763,7 +763,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             tmp = rqq_y.col(i);
             o.masslu()->solve(tmp.cols(), tmp.data(),
                               tmp.innerStride(), tmp.outerStride());
-            o.cop.accumulate(0, 1.0, tmp.data(), tmp.innerStride(),
+            o.cop.accumulate(1, 1.0, tmp.data(), tmp.innerStride(),
                                 0.0, rqq_y.col(i).data(), 1);
         }
     }
