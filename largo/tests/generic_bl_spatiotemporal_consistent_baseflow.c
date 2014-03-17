@@ -241,27 +241,27 @@ FCT_BGN()
           double srcmean [] = \
           { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
 
-          double srcall  [] = \
+          double srcfull  [] = \
           { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
 
           double srcmean_good [] = \
-          { -    31.0/    8000.0,     \
-            - 17927.0/    3680.0,     \
-            -   803.0/ 1840000.0,     \
-            -  4789.0/  184000.0,     \
-            -548600.0/      23.0,     \
-            -   447.0/  287500.0,     \
-            -  4249.0/ 4600000.0
+          { -   773.0/  200000.0,     \
+            - 89543.0/   18400.0,     \
+            - 20029.0/46000000.0,     \
+            - 23899.0/  920000.0,     \
+            -547450.0/      23.0,     \
+            - 17857.0/11500000.0,     \
+            - 10611.0/11500000.0
           };
 
-          double srcall_good  [] = \
-          { -      341.0/       80000.0, \
-            -   978763.0/      184000.0, \
-            - 35720497.0/   460000000.0, \
-            -    71333.0/      575000.0, \
-            - 56932639.0/        2300.0, \
-            - 32061997.0/ 23000000000.0, \
-            -  4023811.0/  5750000000.0  \
+          double srcfull_good [] = \
+          { -     1701.0/      400000.0, \
+            -   977843.0/      184000.0, \
+            - 35720037.0/   460000000.0, \
+            -   285217.0/     2300000.0, \
+            - 56817639.0/        2300.0, \
+            - 32015997.0/ 23000000000.0, \
+            -  4018061.0/  5750000000.0  \
           };
 
           const double tolerance = 1.0E-12;
@@ -296,12 +296,12 @@ FCT_BGN()
           largo_species_setamean    (work, 0.0, 1.0, &srcmean[5-0]);
 
           // Compute full sources;
-          largo_continuity_seta     (work, 0.0, 1.0, &srcall [1-1]);
-          largo_xmomentum_seta      (work, 0.0, 1.0, &srcall [2-1]);
-          largo_ymomentum_seta      (work, 0.0, 1.0, &srcall [3-1]);
-          largo_zmomentum_seta      (work, 0.0, 1.0, &srcall [4-1]);
-          largo_energy_seta         (work, 0.0, 1.0, &srcall [5-1]);
-          largo_species_seta        (work, 0.0, 1.0, &srcall [5-0]);
+          largo_continuity_seta     (work, 0.0, 1.0, &srcfull [1-1]);
+          largo_xmomentum_seta      (work, 0.0, 1.0, &srcfull [2-1]);
+          largo_ymomentum_seta      (work, 0.0, 1.0, &srcfull [3-1]);
+          largo_zmomentum_seta      (work, 0.0, 1.0, &srcfull [4-1]);
+          largo_energy_seta         (work, 0.0, 1.0, &srcfull [5-1]);
+          largo_species_seta        (work, 0.0, 1.0, &srcfull [5-0]);
 
           // Deallocate workspace
           largo_deallocate (&work);
@@ -320,14 +320,14 @@ FCT_BGN()
 
           // Check full source
           // Tolerance for energy source adjusted manually
-          fct_chk_eq_dbl(srcall[1-1]     , srcall_good[1-1]);
-          fct_chk_eq_dbl(srcall[2-1]/100., srcall_good[2-1]/100.);
-          fct_chk_eq_dbl(srcall[3-1]     , srcall_good[3-1]);
-          fct_chk_eq_dbl(srcall[4-1]     , srcall_good[4-1]);
-          fct_chk_eq_dbl(srcall[5-1]/100., srcall_good[5-1]/100.);
+          fct_chk_eq_dbl(srcfull[1-1]     , srcfull_good[1-1]);
+          fct_chk_eq_dbl(srcfull[2-1]/100., srcfull_good[2-1]/100.);
+          fct_chk_eq_dbl(srcfull[3-1]     , srcfull_good[3-1]);
+          fct_chk_eq_dbl(srcfull[4-1]     , srcfull_good[4-1]);
+          fct_chk_eq_dbl(srcfull[5-1]/100., srcfull_good[5-1]/100.);
           for (unsigned int is=0; is < ns; ++is)
           {
-            fct_chk_eq_dbl(srcall[5+is]  , srcall_good[5+is]);
+            fct_chk_eq_dbl(srcfull[5+is]  , srcfull_good[5+is]);
           }
 
 
@@ -352,18 +352,18 @@ FCT_BGN()
                                           dmean,  drms, dmean_rqq);
 
           // Compute sources using wrapper method;
-          largo_seta (work, 0.0, 1.0, &srcall[1-1]);
+          largo_seta (work, 0.0, 1.0, &srcfull[1-1]);
 
           // Check sources
           // Tolerance for energy source adjusted manually
-          fct_chk_eq_dbl(srcall[1-1]       , srcall_good[1-1]);
-          fct_chk_eq_dbl(srcall[2-1]/100.0 , srcall_good[2-1]/100.0);
-          fct_chk_eq_dbl(srcall[3-1]       , srcall_good[3-1]);
-          fct_chk_eq_dbl(srcall[4-1]       , srcall_good[4-1]);
-          fct_chk_eq_dbl(srcall[5-1]/10000., srcall_good[5-1]/10000.);
+          fct_chk_eq_dbl(srcfull[1-1]       , srcfull_good[1-1]);
+          fct_chk_eq_dbl(srcfull[2-1]/100.0 , srcfull_good[2-1]/100.0);
+          fct_chk_eq_dbl(srcfull[3-1]       , srcfull_good[3-1]);
+          fct_chk_eq_dbl(srcfull[4-1]       , srcfull_good[4-1]);
+          fct_chk_eq_dbl(srcfull[5-1]/10000., srcfull_good[5-1]/10000.);
           for (unsigned int is=0; is < ns; ++is)
           {
-            fct_chk_eq_dbl(srcall[5+is]    , srcall_good[5+is]);
+            fct_chk_eq_dbl(srcfull[5+is]    , srcfull_good[5+is]);
           }
 
           // Deallocate workspace

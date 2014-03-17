@@ -205,28 +205,28 @@ program bl_spatiotemporal_consistent_baseflow_f
 
     real(WP), dimension(neq)            :: srcmean
     real(WP), dimension(neq)            :: srcrms
-    real(WP), dimension(neq)            :: srcall
+    real(WP), dimension(neq)            :: srcfull
 
     real(WP), dimension(neq), parameter :: &
       srcmean_good = (/              &
-      &  -    31.0_WP/    8000.0_WP,  &
-      &  - 17927.0_WP/    3680.0_WP,  &
-      &  -   803.0_WP/ 1840000.0_WP,  &
-      &  -  4789.0_WP/  184000.0_WP,  &
-      &  -548600.0_WP/      23.0_WP,  &
-      &  -   447.0_WP/  287500.0_WP,  &
-      &  -  4249.0_WP/ 4600000.0_WP   &
+      &  -   773.0_WP/  200000.0_WP,  &
+      &  - 89543.0_WP/   18400.0_WP,  &
+      &  - 20029.0_WP/46000000.0_WP,  &
+      &  - 23899.0_WP/  920000.0_WP,  &
+      &  -547450.0_WP/      23.0_WP,  &
+      &  - 17857.0_WP/11500000.0_WP,  &
+      &  - 10611.0_WP/11500000.0_WP   &
       /)
 
     real(WP), dimension(neq), parameter :: &
-      srcall_good  = (/                 &
-      &  -      341.0_WP/       80000.0_WP , &
-      &  -   978763.0_WP/      184000.0_WP , &
-      &  - 35720497.0_WP/   460000000.0_WP , &
-      &  -    71333.0_WP/      575000.0_WP , &
-      &  - 56932639.0_WP/        2300.0_WP , &
-      &  - 32061997.0_WP/ 23000000000.0_WP , &
-      &  -  4023811.0_WP/  5750000000.0_WP   &
+      srcfull_good  = (/                 &
+      &  -     1701.0_WP/      400000.0_WP , &
+      &  -   977843.0_WP/      184000.0_WP , &
+      &  - 35720037.0_WP/   460000000.0_WP , &
+      &  -   285217.0_WP/     2300000.0_WP , &
+      &  - 56817639.0_WP/        2300.0_WP , &
+      &  - 32015997.0_WP/ 23000000000.0_WP , &
+      &  -  4018061.0_WP/  5750000000.0_WP   &
       /)
 
     real(WP), parameter :: tolerance = 1.0E-14
@@ -237,7 +237,7 @@ program bl_spatiotemporal_consistent_baseflow_f
 
     ! Initialize srcmean and srcrms
     srcmean = 0.0_WP
-    srcall  = 0.0_WP
+    srcfull = 0.0_WP
 
     ! Allocate workspace
     call largo_BL_spatiotemporal_consistent_allocate (workspace, neq, ns, 0, "dns")
@@ -275,12 +275,12 @@ program bl_spatiotemporal_consistent_baseflow_f
 !    end do
 
     ! Compute rms sources
-    call largo_BL_spatiotemporal_consistent_continuity_sEta_    (workspace, 0.0_WP, 1.0_WP, srcall (1))
-    call largo_BL_spatiotemporal_consistent_xMomentum_sEta_     (workspace, 0.0_WP, 1.0_WP, srcall (2))
-    call largo_BL_spatiotemporal_consistent_yMomentum_sEta_     (workspace, 0.0_WP, 1.0_WP, srcall (3))
-    call largo_BL_spatiotemporal_consistent_zMomentum_sEta_     (workspace, 0.0_WP, 1.0_WP, srcall (4))
-    call largo_BL_spatiotemporal_consistent_energy_sEta_        (workspace, 0.0_WP, 1.0_WP, srcall (5))
-    call largo_BL_spatiotemporal_consistent_species_sEta_       (workspace, 0.0_WP, 1.0_WP, srcall (6))
+    call largo_BL_spatiotemporal_consistent_continuity_sEta_    (workspace, 0.0_WP, 1.0_WP, srcfull (1))
+    call largo_BL_spatiotemporal_consistent_xMomentum_sEta_     (workspace, 0.0_WP, 1.0_WP, srcfull (2))
+    call largo_BL_spatiotemporal_consistent_yMomentum_sEta_     (workspace, 0.0_WP, 1.0_WP, srcfull (3))
+    call largo_BL_spatiotemporal_consistent_zMomentum_sEta_     (workspace, 0.0_WP, 1.0_WP, srcfull (4))
+    call largo_BL_spatiotemporal_consistent_energy_sEta_        (workspace, 0.0_WP, 1.0_WP, srcfull (5))
+    call largo_BL_spatiotemporal_consistent_species_sEta_       (workspace, 0.0_WP, 1.0_WP, srcfull (6))
 
 !    do is=1, ns
 !      call largo_BL_spatiotemporal_consistent_species_sEtaRms (workspace, 0.0_WP, 1.0_WP, srcrms(5+is), is)
@@ -301,17 +301,17 @@ program bl_spatiotemporal_consistent_baseflow_f
 #endif
 
     ! Check all part
-    if (any(isnan(srcall))) write (error_unit, *) "srcall: ", srcall
-    ASSERT(.not.any(isnan(srcall)))
+    if (any(isnan(srcfull))) write (error_unit, *) "srcfull: ", srcfull
+    ASSERT(.not.any(isnan(srcfull)))
 #ifndef BASEFLOW_UNIFORM
-    ASSERT(abs((srcall(1) /srcall_good(1))-1.0_WP)  < tolerance )
-    ASSERT(abs((srcall(2) /srcall_good(2))-1.0_WP)  < tolerance )
-    ASSERT(abs((srcall(3) /srcall_good(3))-1.0_WP)  < tolerance )
-    ASSERT(abs((srcall(4) /srcall_good(4))-1.0_WP)  < tolerance )
-    ASSERT(abs((srcall(5) /srcall_good(5))-1.0_WP)  < tolerance )
+    ASSERT(abs((srcfull(1) /srcfull_good(1))-1.0_WP)  < tolerance )
+    ASSERT(abs((srcfull(2) /srcfull_good(2))-1.0_WP)  < tolerance )
+    ASSERT(abs((srcfull(3) /srcfull_good(3))-1.0_WP)  < tolerance )
+    ASSERT(abs((srcfull(4) /srcfull_good(4))-1.0_WP)  < tolerance )
+    ASSERT(abs((srcfull(5) /srcfull_good(5))-1.0_WP)  < tolerance )
     do is=1, ns
-      print *, srcall(is+5), srcall_good(5+is)
-      ASSERT(abs((srcall(5+is)/srcall_good(5+is))-1.0_WP) < tolerance )
+      print *, srcfull(is+5), srcfull_good(5+is)
+      ASSERT(abs((srcfull(5+is)/srcfull_good(5+is))-1.0_WP) < tolerance )
     end do
 #endif
 
@@ -343,19 +343,19 @@ program bl_spatiotemporal_consistent_baseflow_f
                                               dmean, drms, dmean_rqq)
 
     ! Compute sources
-    call largo_BL_spatiotemporal_consistent_sEta (workspace, 0.0_WP, 1.0_WP, srcall(1))
+    call largo_BL_spatiotemporal_consistent_sEta (workspace, 0.0_WP, 1.0_WP, srcfull(1))
 
     ! Check all
-    if (any(isnan(srcall))) write (error_unit, *) "srcall: ", srcall
-    ASSERT(.not.any(isnan(srcall)))
+    if (any(isnan(srcfull))) write (error_unit, *) "srcfull: ", srcfull
+    ASSERT(.not.any(isnan(srcfull)))
 #ifndef BASEFLOW_UNIFORM
-    ASSERT(abs((srcall(1)/srcall_good(1))-1.0_WP) < tolerance )
-    ASSERT(abs((srcall(2)/srcall_good(2))-1.0_WP) < tolerance )
-    ASSERT(abs((srcall(3)/srcall_good(3))-1.0_WP) < tolerance )
-    ASSERT(abs((srcall(4)/srcall_good(4))-1.0_WP) < tolerance )
-    ASSERT(abs((srcall(5)/srcall_good(5))-1.0_WP) < tolerance )
+    ASSERT(abs((srcfull(1)/srcfull_good(1))-1.0_WP) < tolerance )
+    ASSERT(abs((srcfull(2)/srcfull_good(2))-1.0_WP) < tolerance )
+    ASSERT(abs((srcfull(3)/srcfull_good(3))-1.0_WP) < tolerance )
+    ASSERT(abs((srcfull(4)/srcfull_good(4))-1.0_WP) < tolerance )
+    ASSERT(abs((srcfull(5)/srcfull_good(5))-1.0_WP) < tolerance )
     do is=1, ns
-      ASSERT(abs((srcall(5+is)/srcall_good(5+is))-1.0_WP) < tolerance )
+      ASSERT(abs((srcfull(5+is)/srcfull_good(5+is))-1.0_WP) < tolerance )
     end do
 #endif
 
