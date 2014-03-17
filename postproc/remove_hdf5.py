@@ -52,6 +52,7 @@ def main(argv=None):
                 return 0
         if len(args) < 2:
             print >>sys.stderr, "Too few arguments.  See --help."
+            return 1
     except Usage, err:
         print >>sys.stderr, err.msg
         return 2
