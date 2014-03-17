@@ -14,6 +14,7 @@ postproc_SCRIPTS += plot_status.py
 postproc_SCRIPTS += remove_hdf5.py
 postproc_SCRIPTS += rename_hdf5.py
 postproc_SCRIPTS += sgr2suz.py
+postproc_SCRIPTS += summary_surf.py
 
 # Required for AX_AM_MACROS
 @INC_AMINCLUDE@
