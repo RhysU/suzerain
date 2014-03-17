@@ -122,18 +122,7 @@ compute_field_L2xyz(
     }
     total2 *= grid.L.x() * grid.L.z();
 
-    // Reduce total2 sum onto processor housing the zero-zero mode using
-    // mean2 as a scratch buffer to simulate MPI_IN_PLACE.
-    //
-    // Reduction operation is complex-valued, but OpenMPI pre-1.7.3 bombs unless
-    // we keep it real: https://svn.open-mpi.org/trac/ompi/ticket/3127.
-    SUZERAIN_MPICHKR(MPI_Reduce(total2.data(), mean2.data(),
-            (sizeof(complex_t)/sizeof(real_t))*total2.size(),
-            mpi::datatype<real_t>(), MPI_SUM,
-            dgrid.rank_zero_zero_modes, MPI_COMM_WORLD));
-    total2 = mean2;
-
-    // Compute the mean-only L^2 squared for each field using zero-zero modes
+    // Compute the mean contributions to each L^2_xyz norm squared.
     if (dgrid.has_zero_zero_modes()) {
         for (size_t k = 0; k < state.shape()[0]; ++k) {
             const complex_t * u_mn = &state[k][0][0][0];
@@ -141,16 +130,19 @@ compute_field_L2xyz(
             mean2[k] = blas::dot(grid.N.y(), u_mn, 1, tmp.data(), 1);
         }
         mean2 *= grid.L.x() * grid.L.z();
+    } else {
+        mean2.setZero();
     }
 
-    // Broadcast total2 and mean2 values to all processors
+    // Allreduce total2 and mean2 simultaneously.
+    // (Though it moves more overall data, Allreduce chosen as Redmine #3079
+    // suspected a race-related hang from earlier Reduce/Bcast implementation).
     //
-    // OpenMPI 1.6.5 hates broadcasting complex data but real values are okay:
-    // https://svn.open-mpi.org/trac/ompi/ticket/4323
-    SUZERAIN_MPICHKR(MPI_Bcast(buf.data(),
+    // Reduction operation is complex-valued, but OpenMPI pre-1.7.3 can bomb
+    // unless we keep it real: https://svn.open-mpi.org/trac/ompi/ticket/3127.
+    SUZERAIN_MPICHKR(MPI_Allreduce(MPI_IN_PLACE, buf.data(),
             (sizeof(complex_t)/sizeof(real_t))*buf.size(),
-            mpi::datatype<real_t>(), dgrid.rank_zero_zero_modes,
-            MPI_COMM_WORLD));
+            mpi::datatype<real_t>(), MPI_SUM, MPI_COMM_WORLD));
 
     // Obtain fluctuating2 = total2 - mean2 and pack the return structure
     std::vector<field_L2xyz> retval(state.shape()[0]);
@@ -249,14 +241,7 @@ compute_field_L2xz(
     }
     total2 *= grid.L.x() * grid.L.z();
 
-    // Reduce total2 sum onto processor housing the zero-zero mode using
-    // mean2 as a scratch buffer to simulate MPI_IN_PLACE
-    SUZERAIN_MPICHKR(MPI_Reduce(total2.data(), mean2.data(),
-            total2.size(), mpi::datatype<real_t>(),
-            MPI_SUM, dgrid.rank_zero_zero_modes, MPI_COMM_WORLD));
-    total2 = mean2;
-
-    // Compute the mean-only L^2 squared for each field using zero-zero modes
+    // Compute the mean contributions to each L^2_xyz norm squared.
     if (dgrid.has_zero_zero_modes()) {
         for (size_t k = 0; k < state.shape()[0]; ++k) {
             const complex_t * u_mn = &state[k][0][0][0];
@@ -264,12 +249,15 @@ compute_field_L2xz(
             mean2.col(k) = tmp.cwiseAbs2();
         }
         mean2 *= grid.L.x() * grid.L.z();
+    } else {
+        mean2.setZero();
     }
 
-    // Broadcast total2 and mean2 values to all processors
-    SUZERAIN_MPICHKR(MPI_Bcast(buf.data(),
-            buf.size(), mpi::datatype<real_t>(),
-            dgrid.rank_zero_zero_modes, MPI_COMM_WORLD));
+    // Allreduce total2 and mean2 simultaneously.
+    // (Though it moves more overall data, Allreduce chosen as Redmine #3079
+    // suspected a race-related hang from earlier Reduce/Bcast implementation).
+    SUZERAIN_MPICHKR(MPI_Allreduce(MPI_IN_PLACE, buf.data(),
+            buf.size(), mpi::datatype<real_t>(), MPI_SUM, MPI_COMM_WORLD));
 
     // Obtain fluctuating2 = total2 - mean2 and pack the return structure
     std::vector<field_L2xz> retval(state.shape()[0]);
@@ -359,26 +347,22 @@ compute_field_L2xz(
     }
     total2 *= grid.L.x() * grid.L.z();
 
-    // Reduce total2 sum onto processor housing the zero-zero mode using
-    // mean2 as a scratch buffer to simulate MPI_IN_PLACE
-    SUZERAIN_MPICHKR(MPI_Reduce(total2.data(), mean2.data(),
-            total2.size(), mpi::datatype<real_t>(),
-            MPI_SUM, dgrid.rank_zero_zero_modes, MPI_COMM_WORLD));
-    total2 = mean2;
-
-    // Compute the mean-only L^2 squared for each field using zero-zero modes
+    // Compute the mean contributions to each L^2_xyz norm squared.
     if (dgrid.has_zero_zero_modes()) {
         for (size_t k = 0; k < state.shape()[0]; ++k) {
             Map<const ArrayXc> u_mn(&state[k][0][0][0], grid.N.y());
             mean2.col(k) = u_mn.cwiseAbs2();
         }
         mean2 *= grid.L.x() * grid.L.z();
+    } else {
+        mean2.setZero();
     }
 
-    // Broadcast total2 and mean2 values to all processors
-    SUZERAIN_MPICHKR(MPI_Bcast(buf.data(),
-            buf.size(), mpi::datatype<real_t>(),
-            dgrid.rank_zero_zero_modes, MPI_COMM_WORLD));
+    // Allreduce total2 and mean2 simultaneously.
+    // (Though it moves more overall data, Allreduce chosen as Redmine #3079
+    // suspected a race-related hang from earlier Reduce/Bcast implementation).
+    SUZERAIN_MPICHKR(MPI_Allreduce(MPI_IN_PLACE, buf.data(), buf.size(),
+            mpi::datatype<real_t>(), MPI_SUM, MPI_COMM_WORLD));
 
     // Obtain fluctuating2 = total2 - mean2 and pack the return structure
     std::vector<field_L2xz> retval(state.shape()[0]);
