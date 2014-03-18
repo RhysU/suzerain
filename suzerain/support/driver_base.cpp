@@ -982,40 +982,23 @@ driver_base::log_boundary_conditions(
     if (!dgrid->has_zero_zero_modes()) return;
 
     // Named loggers for lower/upper state at the 0th, 1st, and 2nd derivatives
-    logging::logger_type nick[2][3] = {
-        {
-            logging::get_logger("bc.lower.d0"),
-            logging::get_logger("bc.lower.d1"),
-            logging::get_logger("bc.lower.d2"),
-        },
-        {
-            logging::get_logger("bc.upper.d0"),
-            logging::get_logger("bc.upper.d1"),
-            logging::get_logger("bc.upper.d2"),
-        }
+    static const char * nick[2][3] = {
+        { "bc.lower.d0", "bc.lower.d1", "bc.lower.d2" },
+        { "bc.upper.d0", "bc.upper.d1", "bc.upper.d2" }
     };
 
     // Indices at the lower and upper walls
     size_t bc[2] = { 0, state_linear->shape()[1] - 1 };
     assert(SUZERAIN_COUNTOF(bc) == SUZERAIN_COUNTOF(nick));
 
-    // Buffer for state evaluation and derivatives (but allocation delayed)
-    Array3Xc values;                                     // Complex!
+    // Buffer for state evaluation and derivatives
+    Array3Xc values(values.rows(), fields.size());
     assert(values.rows() == SUZERAIN_COUNTOF(nick[0]));  // Consistency
 
     for (size_t l = 0; l < SUZERAIN_COUNTOF(bc); ++l) {
 
-        // Avoid computational cost when logging is disabled
-        bool necessary = false;
-        for (size_t m = 0; m < SUZERAIN_COUNTOF(nick[l]); ++m) {
-            necessary |= INFO_ENABLED(nick[l][m]);
-        }
-        if (!necessary) continue;
-
-        // Ensure value buffer is adequately-sized and evaluate the 0th, 1st,
-        // and 2nd derivatives of all state.  B-spline recursion used instead
-        // of matrix operators because of locality of reference.
-        values.resize(values.rows(), fields.size());
+        // Evaluate 0th, 1st, and 2nd derivatives of all state.  B-spline
+        // recursion used instead of matrix operators for memory locality.
         SUZERAIN_ENSURE((unsigned) state_linear->strides()[1] == 1u);
         for (size_t k = 0; k < fields.size(); ++k) {
             b->linear_combination(values.rows() - 1,
@@ -1028,8 +1011,7 @@ driver_base::log_boundary_conditions(
         std::ostringstream msg;
         for (size_t m = 0; m < (unsigned) values.rows(); ++m) {
             maybe_timeprefix_fields_identifiers(
-                    *this, timeprefix, nick[l][m],
-                    header_shown[nick[l][m]->getName()]);
+                    *this, timeprefix, nick[l][m], header_shown[nick[l][m]]);
             msg.str("");
             msg << timeprefix;
             for (size_t k = 0; k < fields.size(); ++k) {
