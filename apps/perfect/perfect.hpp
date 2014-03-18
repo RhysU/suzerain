@@ -28,14 +28,6 @@
  * Support logic for the perfect gas application.
  */
 
-#ifdef HAVE_UNDERLING
-#include <fftw3.h>
-#include <fftw3-mpi.h>
-#include <underling/error.h>
-#include <underling/underling.hpp>
-#include <underling/underling_fftw.hpp>
-#endif
-
 #include <suzerain/common.hpp>
 #include <suzerain/state_fwd.hpp>
 

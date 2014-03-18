@@ -27,6 +27,14 @@
 
 #include <suzerain/support/support.hpp>
 
+#include <fftw3.h>
+#ifdef SUZERAIN_HAVE_UNDERLING
+# include <fftw3-mpi.h>
+# include <underling/error.h>
+# include <underling/underling.hpp>
+# include <underling/underling_fftw.hpp>
+#endif
+
 #include <esio/esio.h>
 #include <esio/error.h>
 #include <gsl/gsl_errno.h>
@@ -126,7 +134,7 @@ mpi_abort_on_error_handler_esio(const char* reason,
                                       error_code, "ESIO", esio_strerror(error_code));
 }
 
-#ifdef HAVE_UNDERLING
+#ifdef SUZERAIN_HAVE_UNDERLING
 void
 mpi_abort_on_error_handler_underling(const char* reason,
                                      const char* file,

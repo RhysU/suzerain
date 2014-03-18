@@ -29,11 +29,14 @@
 
 #include <esio/esio.h>
 #include <esio/error.h>
-#ifdef HAVE_UNDERLING
 #include <fftw3.h>
-#include <fftw3-mpi.h>
-#include <underling/underling.h>
-#include <underling/error.h>
+#ifdef SUZERAIN_HAVE_UNDERLING
+# include <fftw3-mpi.h>
+# include <underling/underling.h>
+# include <underling/error.h>
+#endif
+#ifdef SUZERAIN_HAVE_MKL
+# include <mkl.h>
 #endif
 
 #include <suzerain/countof.h>
@@ -96,7 +99,15 @@ application_base::initialize(int argc, char **argv)
     atexit((void (*) ()) MPI_Finalize);              // ...finalize at exit
     logging::initialize(MPI_COMM_WORLD,              // Initialize logging
                         this->log4cxx_config().c_str());
-#ifdef HAVE_UNDERLING
+#ifdef SUZERAIN_HAVE_MKL                             // Finalize MKL at exit
+#if INTEL_MKL_VERSION < 110002
+    atexit(MKL_FreeBuffers);
+#else
+    atexit(mkl_free_buffers);
+#endif
+#endif
+    atexit(fftw_forget_wisdom);                      // Finalize FFTW at exit
+#ifdef SUZERAIN_HAVE_UNDERLING
     underling_init(&argc, &argv, 0);                 // Initialize underling...
     atexit(&underling_cleanup);                      // ...finalize at exit
 #endif
@@ -105,7 +116,7 @@ application_base::initialize(int argc, char **argv)
     gsl_set_error_handler      (&mpi_abort_on_error_handler_gsl      );
     suzerain_set_error_handler (&mpi_abort_on_error_handler_suzerain );
     esio_set_error_handler     (&mpi_abort_on_error_handler_esio     );
-#ifdef HAVE_UNDERLING
+#ifdef SUZERAIN_HAVE_UNDERLING
     underling_set_error_handler(&mpi_abort_on_error_handler_underling);
 #endif
 
@@ -116,11 +127,11 @@ application_base::initialize(int argc, char **argv)
     if (fftwdef) {
         options.add_definition(*fftwdef);
         options.add_options()
-#if defined(SUZERAIN_HAVE_P3DFFT)
+#ifdef SUZERAIN_HAVE_P3DFFT
             ("p3dfft",    boost::program_options::bool_switch(&use_p3dfft),
                         "Use P3DFFT for MPI-parallel FFTs")
 #endif
-#if defined(SUZERAIN_HAVE_UNDERLING)
+#ifdef SUZERAIN_HAVE_UNDERLING
             ("underling", boost::program_options::bool_switch(&use_underling),
                         "Use underling for MPI-parallel FFTs")
 #endif

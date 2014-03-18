@@ -28,15 +28,6 @@
  * Support logic with complex prerequisites spanning multiple applications
  */
 
-#include <fftw3.h>
-#include <fftw3-mpi.h>
-
-#ifdef HAVE_UNDERLING
-#include <underling/error.h>
-#include <underling/underling.hpp>
-#include <underling/underling_fftw.hpp>
-#endif
-
 #include <suzerain/common.hpp>
 #include <suzerain/exprparse.hpp>
 #include <suzerain/extrema.hpp>

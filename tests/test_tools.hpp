@@ -33,11 +33,7 @@
 #include <suzerain/gbmatrix.h>
 #include <suzerain/multi_array.hpp>
 
-#ifdef HAVE_CONFIG_H
-#include <suzerain/config.h>
-#endif
-
-#ifdef HAVE_MKL
+#ifdef SUZERAIN_HAVE_MKL
 #include <mkl.h>
 #endif
 
