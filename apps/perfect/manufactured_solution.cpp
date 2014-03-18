@@ -31,6 +31,7 @@
 #include <esio/error.h>
 
 #include <suzerain/blas_et_al.hpp>
+#include <suzerain/bspline.hpp>
 #include <suzerain/error.h>
 #include <suzerain/ndx.hpp>
 #include <suzerain/operator_base.hpp>
@@ -140,6 +141,14 @@ manufactured_solution::isothermal_flat_plate()
 {
     nsctpl_rholut::isothermal_flat_plate(*this);
     return *this;
+}
+
+void
+manufactured_solution::populate(
+        const manufactured_solution& that,
+        const bool verbose)
+{
+    SUZERAIN_ERROR_VOID_UNIMPLEMENTED();  // FIXME
 }
 
 /** Helper for save(...,shared_ptr<manufactured_solution>&,...). */

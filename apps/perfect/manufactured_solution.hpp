@@ -30,9 +30,9 @@
 
 #include <suzerain/common.hpp>
 #include <suzerain/state_fwd.hpp>
-#include <suzerain/bspline.hpp>
 #include <suzerain/support/definition_base.hpp>
 #include <suzerain/support/esio_fwd.hpp>
+#include <suzerain/support/populatable.hpp>
 
 SUZERAIN_GCC_DIAG_OFF(unused-parameter);
 SUZERAIN_GCC_DIAG_OFF(unused-variable);
@@ -43,8 +43,10 @@ SUZERAIN_GCC_DIAG_ON(unused-parameter);
 namespace suzerain {
 
 // Forward declarations
-class specification_grid;
+class bspline;
+class bsplineop;
 class pencil_grid;
+class specification_grid;
 
 namespace perfect {
 
@@ -65,6 +67,7 @@ class definition_scenario;
  */
 class manufactured_solution
     : public virtual support::definition_base
+    , public virtual support::populatable<manufactured_solution>
     , public nsctpl_rholut::manufactured_solution<real_t>
 {
 public:
@@ -105,6 +108,11 @@ public:
 
     /** @copydoc support::definition_base::options_description() */
     virtual boost::program_options::options_description options_description();
+
+    /** @copydoc support::populatable::populate */
+    virtual void populate(
+            const manufactured_solution& that,
+            const bool verbose = false);
 
 private:
 
