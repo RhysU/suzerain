@@ -845,8 +845,14 @@ driver_base::log_state_bulk(
         const std::string& timeprefix,
         const char * const name_bulk)
 {
-    // Only continue on the rank housing the zero-zero modes
-    if (!dgrid->has_zero_zero_modes()) return;
+    // Only continue on the rank housing the zero-zero modes...
+    //...which currently must also be rank zero for logging purposes.
+    if (dgrid->has_zero_zero_modes()) {
+        if (suzerain::mpi::comm_rank(MPI_COMM_WORLD) != 0)
+            SUZERAIN_ERROR_VOID_UNIMPLEMENTED();
+    } else {
+        return;
+    }
 
     // Show headers only on first invocation
     maybe_timeprefix_fields_identifiers(*this, timeprefix, name_bulk,
@@ -865,7 +871,7 @@ driver_base::log_state_bulk(
                 (*state_linear)[k].origin(), state_linear->shape()[1]);
         msg << ' ' << fullprec<>(bulkcoeff.dot(mean.real()));
     }
-    INFO(name_bulk, msg.str());
+    INFO0(name_bulk, msg.str());
 }
 
 // FIXME Redmine #3056 load/save extrema from restart files
@@ -978,8 +984,14 @@ void
 driver_base::log_boundary_conditions(
         const std::string& timeprefix)
 {
-    // Only continue on the rank housing the zero-zero modes.
-    if (!dgrid->has_zero_zero_modes()) return;
+    // Only continue on the rank housing the zero-zero modes...
+    //...which currently must also be rank zero for logging purposes.
+    if (dgrid->has_zero_zero_modes()) {
+        if (suzerain::mpi::comm_rank(MPI_COMM_WORLD) != 0)
+            SUZERAIN_ERROR_VOID_UNIMPLEMENTED();
+    } else {
+        return;
+    }
 
     // Named loggers for lower/upper state at the 0th, 1st, and 2nd derivatives
     static const char * nick[2][3] = {
@@ -1017,7 +1029,7 @@ driver_base::log_boundary_conditions(
                 using std::abs;
                 msg << ' ' << fullprec<>(abs(values(m,k)));
             }
-            INFO(nick[l][m], msg.str());
+            INFO0(nick[l][m], msg.str());
         }
     }
 }
