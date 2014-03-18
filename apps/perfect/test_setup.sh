@@ -22,7 +22,7 @@ fi
 # $(testdir) has already been created by test_infrastructure.sh for scratch use
 
 # We save the initial wisdom in $testdir for possible reuse (ticket #2515)
-banner "Creating initial channel flow field to use for tests"
+banner "Creating initial channel flow field for use by tests"
 declare -r  Re=100
 declare -r  Ma=1.15
 declare -ir Nx=4
@@ -91,3 +91,11 @@ exclude_datasets_maxminloc+=" --exclude-path=/minz_rho_v "
 exclude_datasets_maxminloc+=" --exclude-path=/maxx_rho_v "
 exclude_datasets_maxminloc+=" --exclude-path=/maxz_rho_v "
 exclude_datasets_maxminloc+=" --exclude-path=/fneg_rho_v "
+
+
+# Notice htdelta is negated to get a one-sided domain with one-sided MMS
+banner "Creating initial boundary layer field for use by tests"
+runq ./perfect_initial "$testdir/ibl0.h5" --mms=0 --Re=$Re --Ma=$Ma          \
+                       --Nx=$Nx --Ny=$Ny --k=$k --htdelta=-$htdelta --Nz=$Nz \
+                       ${DECOMP:-} "--plan_wisdom=$testdir/wisdom.init"
+chmod +r "$testdir/ibl0.h5"
