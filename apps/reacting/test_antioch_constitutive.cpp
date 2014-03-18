@@ -659,4 +659,4 @@ int main(int argc, char **argv)
     return etot;
 }
 
-#endif // HAVE_ANTIOCH
+#endif // SUZERAIN_HAVE_ANTIOCH

@@ -739,4 +739,4 @@ antioch_constitutive::evaluate_for_nonreflecting (const real_t      T,
 
 } // namespace suzerain
 
-#endif // HAVE_ANTIOCH
+#endif // SUZERAIN_HAVE_ANTIOCH
