@@ -779,10 +779,11 @@ driver_base::log_status(
 }
 
 // Often-reused logic to show a "t nt field[0]::identifier..." header once
+template <class Logger>
 static void
 maybe_timeprefix_fields_identifiers(driver_base& db,
                                     const std::string& timeprefix,
-                                    logging::logger_type& log,
+                                    Logger& log,
                                     bool& shown)
 {
     if (!shown) {
