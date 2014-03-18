@@ -50,27 +50,40 @@ namespace perfect {
 const std::string manufactured_solution::default_caption(
         "Manufactured solution parameters");
 
+/** Helper for NaNing values within a \ref manufactured_solution. */
+static void NaNer(const std::string&, real_t& value)
+{
+    value = std::numeric_limits<real_t>::quiet_NaN();
+}
+
 manufactured_solution::manufactured_solution()
     : caption(default_caption)
 {
+    this->foreach_parameter(&NaNer);
 }
 
 manufactured_solution::manufactured_solution(
         const std::string& caption)
     : caption(caption)
 {
+    this->foreach_parameter(&NaNer);
 }
 
-/** Helper for manufactured_solution::finish_construction(). */
 static void option_adder(
         boost::program_options::options_description_easy_init easy_init,
         const char *description,
         const std::string &name,
         real_t &value)
 {
-    easy_init(name.c_str(),
-              boost::program_options::value(&value)->default_value(value),
-              description);
+    if ((boost::math::isnan)(value)) {
+        easy_init(name.c_str(),
+                  boost::program_options::value(&value),
+                  description);
+    } else {
+        easy_init(name.c_str(),
+                  boost::program_options::value(&value)->default_value(value),
+                  description);
+    }
 }
 
 boost::program_options::options_description
@@ -202,12 +215,6 @@ attribute_loader(const esio_handle &h,
     esio_attribute_read(h, location, name.c_str(), &value);
 }
 
-/** Helper for NaNing values within a \ref manufactured_solution. */
-static void NaNer(const std::string&, real_t& value)
-{
-    value = std::numeric_limits<real_t>::quiet_NaN();
-}
-
 void load(const esio_handle h,
           shared_ptr<manufactured_solution>& msoln,
           const definition_scenario& scenario,
@@ -227,11 +234,9 @@ void load(const esio_handle h,
 
     DEBUG0("Loading manufactured_solution parameters");
 
-    // Allocate storage and defensively NaN every parameter not explicitly
-    // loaded below.  Protects us against accidentally missing new solution
-    // parameters.
+    // Allocate storage which defensively NaNs everything not loaded below.
+    // Protects us against accidentally missing new solution parameters.
     msoln.reset(new manufactured_solution());
-    msoln->foreach_parameter(&NaNer);
 
     // Non-scenario solution parameters are stored as attributes under location
     using boost::bind;
