@@ -1084,10 +1084,6 @@ void driver_base::log_quantities_boundary_layer(
 {
     using std::setw;
 
-    // FIXME Below relative to INFO0
-    // Only rank zero pays to prepare the output, others short circuit.
-    if (!dgrid->has_zero_zero_modes()) return;
-
     log_quantities_local_helper(*this, timeprefix, wall, name_wall,
                                 header_shown[name_wall]);
 
@@ -1235,10 +1231,6 @@ void driver_base::log_quantities_channel(
         const char * const name_qoi)
 {
     using std::setw;          // Brevity
-
-    // FIXME Below relative to INFO0
-    // Only rank zero pays to prepare the output, others short circuit.
-    if (!dgrid->has_zero_zero_modes()) return;
 
     log_quantities_local_helper(*this, timeprefix, wall, name_wall,
                                 header_shown[name_wall]);
