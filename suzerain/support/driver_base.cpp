@@ -768,13 +768,9 @@ driver_base::log_status(
 
     SUZERAIN_TIMER_SCOPED("driver_base::log_status");
 
-    // Log information about the various quantities of interest
-    log_state_bulk(timeprefix);
-    log_state_L2(timeprefix);
-    log_state_extrema(timeprefix);
-    log_boundary_conditions(timeprefix);
-
-    // Permit subclasses to dump arbitrary status information.  E.g. MMS error
+    // Permit subclasses to dump arbitrary status information
+    // (for example, logging method of manufactured solution error)
+    // either before, after, or in lieu of driver_base::log_status_hook.
     const bool retval = log_status_hook(timeprefix, t, nt);
 
     last_status_nt = nt; // Maintain last status time step
@@ -1592,9 +1588,14 @@ driver_base::log_status_hook(
         const real_t t,
         const std::size_t nt)
 {
-    SUZERAIN_UNUSED(timeprefix);
     SUZERAIN_UNUSED(t);
     SUZERAIN_UNUSED(nt);
+
+    // Log information about physics-independent quantities of interest
+    log_state_bulk(timeprefix);
+    log_state_L2(timeprefix);
+    log_state_extrema(timeprefix);
+    log_boundary_conditions(timeprefix);
 
     return true;
 }

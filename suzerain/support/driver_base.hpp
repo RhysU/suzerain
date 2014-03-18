@@ -298,10 +298,8 @@ public:
     virtual int build_timeprefix_mantissa_digits() const;
 
     /**
-     * Routine to output status, generally called via the timecontroller.
-     *
-     * Invokes \ref log_state_bulk, \ref log_state_L2, \ref log_state_extrema,
-     * \ref log_boundary_conditions, and \ref log_status_hook.
+     * Routine to output status invoking \ref log_status_hook,
+     * generally called via the timecontroller.
      *
      * @returns True if any active time advance should continue.
      *          False otherwise.
@@ -579,11 +577,15 @@ public:
 protected:
 
     /**
-     * Hook permitting subclasses to output additional status information.
-     * Invoked at the end of \ref log_status.
+     * Hook permitting subclasses to output status information which is
+     * invoked at the end of \ref log_status.
+     *
+     * Invokes \ref log_state_bulk, \ref log_state_L2, \ref log_state_extrema,
+     * \ref log_boundary_conditions, and \ref log_status_hook.
      *
      * Subclasses should override this method adding any desired functionality
-     * either before or after invoking the superclass implementation.
+     * either before, after, or in lieu of invoking the superclass
+     * implementation.
      *
      * @returns True if any active time advance should continue.
      *          False otherwise.
