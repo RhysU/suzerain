@@ -512,7 +512,7 @@ suzerain_rholut_imexop_accumulate(
         complex_double t[5] = { 0 };
         if (a) {
             for (int i = 0; i < 5; ++i) {
-                t[i] += (ikm*phi)*( a[i +  0]*upper_hatV[0]
+                t[i] -= (ikm*phi)*( a[i +  0]*upper_hatV[0]
                                   + a[i +  5]*upper_hatV[1]
                                   + a[i + 10]*upper_hatV[2]
                                   + a[i + 15]*upper_hatV[3]
@@ -521,7 +521,7 @@ suzerain_rholut_imexop_accumulate(
         }
         if (b) {
             for (int i = 0; i < 5; ++i) {
-                t[i] += (ikn*phi)*( b[i +  0]*upper_hatV[0]
+                t[i] -= (ikn*phi)*( b[i +  0]*upper_hatV[0]
                                   + b[i +  5]*upper_hatV[1]
                                   + b[i + 10]*upper_hatV[2]
                                   + b[i + 15]*upper_hatV[3]

@@ -515,7 +515,7 @@ FUNCNAME()(
          *
          *                   / I  0     \   / 0  0                           \
          *  (M + phi L)^T  * |          | + |                                |
-         *                   \ 0  I-C^T /   \ 0  C^T + i k_x A^T + i k_z B^T /
+         *                   \ 0  I-C^T /   \ 0  C^T - i k_x A^T - i k_z B^T /
          *
          * taking advantage of facts about M, D1, and D2 bandwidths when
          * renumbered as done by the above packing operations. As C is 5x5 and
@@ -524,11 +524,11 @@ FUNCNAME()(
          *
          *   /   \    /   \          / 0                          \
          *   | X | += | X | * -C^T + | 0                          |
-         *   \   /    \   /          \C^T + i k_x A^T + i k_z B^T /
+         *   \   /    \   /          \C^T - i k_x A^T - i k_z B^T /
          */
 
-        // Zero the buffers' upper 10x5 block and copy C^T, ikm*phi*A^T, and
-        // ikn*phi*B^T as necessary into final 5x5 block.  Attempt made to
+        // Zero the buffers' upper 10x5 block and copy C^T, -ikm*phi*A^T, and
+        // -ikn*phi*B^T as necessary into final 5x5 block.  Attempt made to
         // walk the buffer in a back-and-forth fashion to improve locality.
         for (int j = 0; j < 5; ++j) {
             for (int i =  0; i < 15; ++i) {
@@ -536,12 +536,12 @@ FUNCNAME()(
             }
             if (a) {
                 for (int i = 10; i < 15; ++i) {
-                    buf[i + 15*j] += ikm * phi * a[5*(i-10) + j];  // Add A^T
+                    buf[i + 15*j] -= ikm * phi * a[5*(i-10) + j];  // Add A^T
                 }
             }
             if (b) {
                 for (int i = 10; i < 15; ++i) {
-                    buf[i + 15*j] += ikn * phi * b[5*(i-10) + j];  // Add B^T
+                    buf[i + 15*j] -= ikn * phi * b[5*(i-10) + j];  // Add B^T
                 }
             }
             if (c) {

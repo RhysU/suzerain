@@ -38,10 +38,10 @@
  * results according to
  * \f{align*}{
  *   \left(M+\varphi{}L_I^G\right)\hat{V} - \left(M+\varphi{}L\right)\hat{V}
- *   &{}= \ii \varphi{} k_x \, {R^Y}^{-1} \left[V^L S\right]^{-1}
+ *   &{}=-\ii \varphi{} k_x \, {R^Y}^{-1} \left[V^L S\right]^{-1}
  *                             \left[P^G C^G\right] \left[V^L S\right] {R^Y}
  *                             \,M\,\hat{V} \\
- *   &{}+ \ii \varphi{} k_z    {R^Y}^{-1} \left[V^L S\right]^{-1}
+ *   &{}- \ii \varphi{} k_z    {R^Y}^{-1} \left[V^L S\right]^{-1}
  *                             \left[P^G B^G\right] \left[V^L S\right] {R^Y}
  *                             \,M\,\hat{V} \\
  *   &{}-                      {R^Y}^{-1} \left[V^L S\right]^{-1}
