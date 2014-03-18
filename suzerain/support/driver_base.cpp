@@ -1096,7 +1096,7 @@ void driver_base::log_quantities_boundary_layer(
                                 header_shown[name_wall], msg);
 
     log = logging::get_logger(name_visc);
-    if (log != NULL && INFO0_ENABLED(log)) {
+    if (log != NULL) {
         bool& log_header_shown = header_shown[log->getName()];
         if (!log_header_shown) {
             log_header_shown = true;
@@ -1120,7 +1120,7 @@ void driver_base::log_quantities_boundary_layer(
     }
 
     log = logging::get_logger(name_thick);
-    if (log != NULL && INFO0_ENABLED(log)) {
+    if (log != NULL) {
         bool& log_header_shown = header_shown[log->getName()];
         if (!log_header_shown) {
             log_header_shown = true;
@@ -1152,7 +1152,7 @@ void driver_base::log_quantities_boundary_layer(
                                 header_shown[name_edge99], msg);
 
     log = logging::get_logger(name_Re);
-    if (log != NULL && INFO0_ENABLED(log)) {
+    if (log != NULL) {
         bool& log_header_shown = header_shown[log->getName()];
         if (!log_header_shown) {
             log_header_shown = true;
@@ -1178,7 +1178,7 @@ void driver_base::log_quantities_boundary_layer(
     }
 
     log = logging::get_logger(name_qoi);
-    if (log != NULL && INFO0_ENABLED(log)) {
+    if (log != NULL) {
         bool& log_header_shown = header_shown[log->getName()];
         if (!log_header_shown) {
             log_header_shown = true;
@@ -1204,7 +1204,7 @@ void driver_base::log_quantities_boundary_layer(
     }
 
     log = logging::get_logger(name_pg);
-    if (pg != NULL && log != NULL && INFO0_ENABLED(log)) {
+    if (pg != NULL) {
         bool& log_header_shown = header_shown[log->getName()];
         if (!log_header_shown) {
             log_header_shown = true;
@@ -1252,7 +1252,7 @@ void driver_base::log_quantities_channel(
                                 header_shown[name_wall], msg);
 
     log = logging::get_logger(name_visc);
-    if (log != NULL && INFO0_ENABLED(log)) {
+    if (log != NULL) {
         bool& log_header_shown = header_shown[log->getName()];
         if (!log_header_shown) {
             log_header_shown = true;
@@ -1279,7 +1279,7 @@ void driver_base::log_quantities_channel(
                                 header_shown[name_center], msg);
 
     log = logging::get_logger(name_qoi);
-    if (log != NULL && INFO0_ENABLED(log)) {
+    if (log != NULL) {
         bool& log_header_shown = header_shown[log->getName()];
         if (!log_header_shown) {
             log_header_shown = true;
