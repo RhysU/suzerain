@@ -14,7 +14,7 @@ WIZ="--plan_wisdom=$(mktemp "$testdir/wisdom.XXXXXX")"
 banner "Generating serial result for comparison purposes${OPER:+ ($OPER)}"
 (
     cd $testdir
-    run ../perfect_advance mms0.h5 $OPER --restart_destination "serial#.h5" \
+    run ../perfect_advance ich0.h5 $OPER --restart_destination "serial#.h5" \
                                          --restart_retain=1                 \
                                          $ADVANCE $WIZ ${DECOMP:-}
 )
@@ -29,7 +29,7 @@ eval "$METACASE"
 banner "Equivalence of serial and parallel execution${OPER:+ ($OPER)}"
 (
     cd $testdir
-    prun ../perfect_advance mms0.h5 $OPER --restart_destination "a#.h5" \
+    prun ../perfect_advance ich0.h5 $OPER --restart_destination "a#.h5" \
                                           --restart_retain=1            \
                                           $ADVANCE $P $WIZ ${DECOMP:-}
     # Stricter tolerance performed first for non-/bar_foo quantities

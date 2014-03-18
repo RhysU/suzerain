@@ -14,7 +14,7 @@ WIZ="--plan_wisdom=$(mktemp "$testdir/wisdom.XXXXXX")"
 banner "Generating default implicit solve result for comparison purposes"
 (
     cd $testdir
-    ../perfect_advance $OPER $ADVANCE $WIZ mms0.h5   \
+    ../perfect_advance $OPER $ADVANCE $WIZ ich0.h5   \
                        --restart_destination "a#.h5" \
                        --restart_retain=1
 )
@@ -34,7 +34,7 @@ banner "Similarity of solver specification ${SPECIFICATION:+ ($SPECIFICATION)}"
 (
     cd $testdir
     ../perfect_advance $OPER ${DECOMP:-} $ADVANCE $WIZ --solver=$SPECIFICATION  \
-                       mms0.h5 --restart_destination "b#.h5" --restart_retain=1
+                       ich0.h5 --restart_destination "b#.h5" --restart_retain=1
 
     # Ensure simulation time "/t" matches before bothering with anything else
     differ --use-system-epsilon --nan a0.h5 b0.h5 /t

@@ -19,37 +19,37 @@ eval "$METACASE"
 # rounding-related discrepancies due to FFT kernel differences (ticket #2515).
 WIZ="--plan_wisdom=$(mktemp "$testdir/wisdom.XXXXXX")"
 
-# Prepare pmms0.h5 in serial, then in parallel, and ensure both match
-# pmms0.h5 restart file is used in the tests that follow
+# Prepare pich0.h5 in serial, then in parallel, and ensure both match
+# pich0.h5 restart file is used in the tests that follow
 banner "Preparation of physical-space version of wave-based test field${OPER:+ ($OPER)}"
 (
     cd $testdir
-    run ../perfect_advance mms0.h5 ${DECOMP:-} $WIZ $OPER    \
-                           --restart_destination "pmms#.h5"  \
+    run ../perfect_advance ich0.h5 ${DECOMP:-} $WIZ $OPER    \
+                           --restart_destination "pich#.h5"  \
                            --restart_retain=1                \
                            --advance_nt=0 --restart_physical
-    $perfect mms0.h5 --restart_destination "a#.h5" --advance_nt=0 \
+    $perfect ich0.h5 --restart_destination "a#.h5" --advance_nt=0 \
                      --restart_retain=1                           \
                      $WIZ ${DECOMP:-} --restart_physical
-    differ --delta=5e-16 pmms0.h5 a0.h5
+    differ --delta=5e-16 pich0.h5 a0.h5
 )
 
 banner "Idempotence of restarting from physical space without time advance${OPER:+ ($OPER)}"
 (
     cd $testdir
-    $perfect pmms0.h5 --restart_destination "a#.h5" --advance_nt=0 \
+    $perfect pich0.h5 --restart_destination "a#.h5" --advance_nt=0 \
                       --restart_retain=1                           \
                       ${DECOMP:-} $WIZ $P --restart_physical
-    differ --delta=1e-15 pmms0.h5 a0.h5
+    differ --delta=1e-15 pich0.h5 a0.h5
 )
 
 banner "Conversion from physical- to wave-based restart without time advance${OPER:+ ($OPER)}"
 (
     cd $testdir
-    $perfect pmms0.h5 --restart_destination "a#.h5"   \
+    $perfect pich0.h5 --restart_destination "a#.h5"   \
                       --restart_retain=1              \
                       --advance_nt=0 $WIZ ${DECOMP:-}
-    differ --delta=5e-15 mms0.h5 a0.h5
+    differ --delta=5e-15 ich0.h5 a0.h5
 )
 
 banner "Equivalence of a field advanced both with and without a physical space restart${OPER:+ ($OPER)}"
@@ -57,13 +57,13 @@ banner "Equivalence of a field advanced both with and without a physical space r
 # timesteps necessarily magnifying O(epsilon) restart errors
 (
     cd $testdir
-    $perfect pmms0.h5 --restart_destination "a#.h5" --advance_nt=2 $WIZ $P \
+    $perfect pich0.h5 --restart_destination "a#.h5" --advance_nt=2 $WIZ $P \
                       --restart_retain=1                                   \
                       ${DECOMP:-} --restart_physical --max_dt=1e-5
     $perfect a0.h5    --restart_destination "b#.h5" --advance_nt=2 $WIZ $P \
                       --restart_retain=1                                   \
                       ${DECOMP:-} --restart_physical --max_dt=1e-5
-    $perfect pmms0.h5 --restart_destination "c#.h5" --advance_nt=4 $WIZ $P \
+    $perfect pich0.h5 --restart_destination "c#.h5" --advance_nt=4 $WIZ $P \
                       --restart_retain=1                                   \
                       ${DECOMP:-} --restart_physical --max_dt=1e-5
     differ $exclude_datasets_bar --delta=6e-13 b0.h5 c0.h5

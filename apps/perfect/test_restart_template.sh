@@ -30,20 +30,20 @@ banner "Idempotence of restarting without time advance${OPER:+ ($OPER)}"
 (
     cd $testdir
     WIZ="--plan_wisdom=wisdom.init" # Prepared by test_setup.sh
-    $perfect mms0.h5 --restart_destination "a#.h5" --advance_nt=0 $WIZ $P \
+    $perfect ich0.h5 --restart_destination "a#.h5" --advance_nt=0 $WIZ $P \
                      --restart_retain=1
-    differ $exclude_datasets mms0.h5 a0.h5
+    differ $exclude_datasets ich0.h5 a0.h5
 )
 
 banner "Equivalence of a field advanced both with and without a restart${OPER:+ ($OPER)}"
 (
     cd $testdir
     WIZ="--plan_wisdom=$(mktemp wisdom.XXXXXX)"
-    $perfect mms0.h5 --restart_destination "a#.h5" --advance_nt=2 $WIZ $P \
+    $perfect ich0.h5 --restart_destination "a#.h5" --advance_nt=2 $WIZ $P \
                      --restart_retain=1
     $perfect a0.h5   --restart_destination "b#.h5" --advance_nt=2 $WIZ $P \
                      --restart_retain=1
-    $perfect mms0.h5 --restart_destination "c#.h5" --advance_nt=4 $WIZ $P \
+    $perfect ich0.h5 --restart_destination "c#.h5" --advance_nt=4 $WIZ $P \
                      --restart_retain=1
 
     # Ensure simulation time "/t" matches before bothering with anything else
@@ -55,49 +55,49 @@ banner "Upsample/downsample both homogeneous directions${OPER:+ ($OPER)}"
 (
     cd $testdir
     WIZ="--plan_wisdom=$(mktemp wisdom.XXXXXX)"
-    $perfect mms0.h5 --restart_destination "a#.h5" --advance_nt=0 $WIZ $P \
+    $perfect ich0.h5 --restart_destination "a#.h5" --advance_nt=0 $WIZ $P \
                      --restart_retain=1                                   \
                      --Nx=$((2*$Nx)) --Nz=$((3*$Nz))
     $perfect a0.h5   --restart_destination "b#.h5" --advance_nt=0 $WIZ $P \
                      --restart_retain=1                                   \
                      --Nx=$((  $Nx)) --Nz=$((  $Nz))
-    differ $exclude_datasets mms0.h5 b0.h5
+    differ $exclude_datasets ich0.h5 b0.h5
 )
 
 banner "Upsample/downsample inhomogeneous direction order${OPER:+ ($OPER)}"
 (
     cd $testdir
     WIZ="--plan_wisdom=$(mktemp wisdom.XXXXXX)"
-    $perfect mms0.h5 --restart_destination "a#.h5" --advance_nt=0 $WIZ $P \
+    $perfect ich0.h5 --restart_destination "a#.h5" --advance_nt=0 $WIZ $P \
                      --restart_retain=1                                   \
                      --k=$(($k+1))
     $perfect a0.h5   --restart_destination "b#.h5" --advance_nt=0 $WIZ $P \
                      --restart_retain=1                                   \
                      --k=$(($k  ))
     # Chosen tolerances are wholly empirical and represent nothing deep
-    differ $exclude_datasets --delta=5e-5 mms0.h5 b0.h5 /rho
-    differ $exclude_datasets --delta=3e-4 mms0.h5 b0.h5 /rho_u
-    differ $exclude_datasets --delta=5e-5 mms0.h5 b0.h5 /rho_v
-    differ $exclude_datasets --delta=6e-5 mms0.h5 b0.h5 /rho_w
-    differ $exclude_datasets --delta=7e-4 mms0.h5 b0.h5 /rho_E
+    differ $exclude_datasets --delta=5e-5 ich0.h5 b0.h5 /rho
+    differ $exclude_datasets --delta=3e-4 ich0.h5 b0.h5 /rho_u
+    differ $exclude_datasets --delta=5e-5 ich0.h5 b0.h5 /rho_v
+    differ $exclude_datasets --delta=6e-5 ich0.h5 b0.h5 /rho_w
+    differ $exclude_datasets --delta=7e-4 ich0.h5 b0.h5 /rho_E
 )
 
 banner "Upsample/downsample inhomogeneous direction NDOF and htdelta${OPER:+ ($OPER)}"
 (
     cd $testdir
     WIZ="--plan_wisdom=$(mktemp wisdom.XXXXXX)"
-    $perfect mms0.h5 --restart_destination "a#.h5" --advance_nt=0 $WIZ $P \
+    $perfect ich0.h5 --restart_destination "a#.h5" --advance_nt=0 $WIZ $P \
                      --restart_retain=1                                   \
                      --Ny=$((2*$Ny)) --htdelta=$(($htdelta+1))
     $perfect a0.h5   --restart_destination "b#.h5" --advance_nt=0 $WIZ $P \
                      --restart_retain=1                                   \
                      --Ny=$((  $Ny)) --htdelta=$(($htdelta  ))
     # Chosen tolerances are wholly empirical and represent nothing deep
-    differ $exclude_datasets --delta=6e-6 mms0.h5 b0.h5 /rho
-    differ $exclude_datasets --delta=1e-4 mms0.h5 b0.h5 /rho_u
-    differ $exclude_datasets --delta=7e-6 mms0.h5 b0.h5 /rho_v
-    differ $exclude_datasets --delta=3e-5 mms0.h5 b0.h5 /rho_w
-    differ $exclude_datasets --delta=2e-4 mms0.h5 b0.h5 /rho_E
+    differ $exclude_datasets --delta=6e-6 ich0.h5 b0.h5 /rho
+    differ $exclude_datasets --delta=1e-4 ich0.h5 b0.h5 /rho_u
+    differ $exclude_datasets --delta=7e-6 ich0.h5 b0.h5 /rho_v
+    differ $exclude_datasets --delta=3e-5 ich0.h5 b0.h5 /rho_w
+    differ $exclude_datasets --delta=2e-4 ich0.h5 b0.h5 /rho_E
 )
 
 done
