@@ -1033,7 +1033,7 @@ void log_quantities_local_helper(
 {
     using std::setw;
 
-    if (name != NULL) {
+    if (name) {
         std::ostringstream msg;
         if (!header_shown) {
             header_shown = true;
@@ -1048,8 +1048,8 @@ void log_quantities_local_helper(
                 << ' ' << setw(fullprec<>::width) << "u"
                 << ' ' << setw(fullprec<>::width) << "v";
             INFO0(name, msg.str());
+            msg.str("");
         }
-        msg.str("");
         msg << timeprefix
             << ' ' << fullprec<>(local->a)
             << ' ' << fullprec<>(local->gamma)
@@ -1082,46 +1082,42 @@ void driver_base::log_quantities_boundary_layer(
         const char * const name_qoi,
         const char * const name_pg)
 {
+    using std::setw;
+
     // Only rank zero pays to prepare the output, others short circuit.
     if (!dgrid->has_zero_zero_modes()) return;
-
-    using std::setw;          // Brevity
-    logging::logger_type log; // Logging pointer to be repeatedly set
-    std::ostringstream   msg; // Buffer to be repeatedly reused below
 
     log_quantities_local_helper(*this, timeprefix, wall, name_wall,
                                 header_shown[name_wall]);
 
-    log = logging::get_logger(name_visc);
-    if (log != NULL) {
-        bool& log_header_shown = header_shown[log->getName()];
+    if (const char * const name = name_visc) {   // Evil, but helps avoid typos
+        std::ostringstream msg;
+        bool& log_header_shown = header_shown[name];
         if (!log_header_shown) {
             log_header_shown = true;
-            msg.str("");
             msg << setw(timeprefix.size()) << build_timeprefix_description()
                 << ' ' << setw(fullprec<>::width) << "delta_nu"
                 << ' ' << setw(fullprec<>::width) << "tau_w"
                 << ' ' << setw(fullprec<>::width) << "u_tau"
                 << ' ' << setw(fullprec<>::width) << "Bq"
                 << ' ' << setw(fullprec<>::width) << "v_wallplus";
-            INFO0(log, msg.str());
+            INFO0(name, msg.str());
+            msg.str("");
         }
-        msg.str("");
         msg << timeprefix
             << ' ' << fullprec<>(viscous->delta_nu)
             << ' ' << fullprec<>(viscous->tau_w)
             << ' ' << fullprec<>(viscous->u_tau)
             << ' ' << fullprec<>(qoi->Bq)
             << ' ' << fullprec<>(qoi->v_wallplus);
-        INFO0(log, msg.str());
+        INFO0(name, msg.str());
     }
 
-    log = logging::get_logger(name_thick);
-    if (log != NULL) {
-        bool& log_header_shown = header_shown[log->getName()];
+    if (const char * const name = name_thick) {
+        std::ostringstream msg;
+        bool& log_header_shown = header_shown[name];
         if (!log_header_shown) {
             log_header_shown = true;
-            msg.str("");
             msg << setw(timeprefix.size()) << build_timeprefix_description()
                 << ' ' << setw(fullprec<>::width) << "delta"
                 << ' ' << setw(fullprec<>::width) << "delta1"
@@ -1129,9 +1125,9 @@ void driver_base::log_quantities_boundary_layer(
                 << ' ' << setw(fullprec<>::width) << "delta3"
                 << ' ' << setw(fullprec<>::width) << "deltaH0"
                 << ' ' << setw(fullprec<>::width) << "delta99";
-            INFO0(log, msg.str());
+            INFO0(name, msg.str());
+            msg.str("");
         }
-        msg.str("");
         msg << timeprefix
             << ' ' << fullprec<>(thick->delta)
             << ' ' << fullprec<>(thick->delta1)
@@ -1139,7 +1135,7 @@ void driver_base::log_quantities_boundary_layer(
             << ' ' << fullprec<>(thick->delta3)
             << ' ' << fullprec<>(thick->deltaH0)
             << ' ' << fullprec<>(thick->delta99);
-        INFO0(log, msg.str());
+        INFO0(name, msg.str());
     }
 
     log_quantities_local_helper(*this, timeprefix, edge, name_edge,
@@ -1148,12 +1144,11 @@ void driver_base::log_quantities_boundary_layer(
     log_quantities_local_helper(*this, timeprefix, edge99, name_edge99,
                                 header_shown[name_edge99]);
 
-    log = logging::get_logger(name_Re);
-    if (log != NULL) {
-        bool& log_header_shown = header_shown[log->getName()];
+    if (const char * const name = name_Re) {
+        std::ostringstream msg;
+        bool& log_header_shown = header_shown[name];
         if (!log_header_shown) {
             log_header_shown = true;
-            msg.str("");
             msg << setw(timeprefix.size()) << build_timeprefix_description()
                 << ' ' << setw(fullprec<>::width) << "Re_delta"
                 << ' ' << setw(fullprec<>::width) << "Re_delta1"
@@ -1161,9 +1156,9 @@ void driver_base::log_quantities_boundary_layer(
                 << ' ' << setw(fullprec<>::width) << "Re_delta3"
                 << ' ' << setw(fullprec<>::width) << "Re_deltaH0"
                 << ' ' << setw(fullprec<>::width) << "Re_delta99";
-            INFO0(log, msg.str());
+            INFO0(name, msg.str());
+            msg.str("");
         }
-        msg.str("");
         msg << timeprefix
             << ' ' << fullprec<>(reynolds->delta)
             << ' ' << fullprec<>(reynolds->delta1)
@@ -1171,15 +1166,14 @@ void driver_base::log_quantities_boundary_layer(
             << ' ' << fullprec<>(reynolds->delta3)
             << ' ' << fullprec<>(reynolds->deltaH0)
             << ' ' << fullprec<>(reynolds->delta99);
-        INFO0(log, msg.str());
+        INFO0(name, msg.str());
     }
 
-    log = logging::get_logger(name_qoi);
-    if (log != NULL) {
-        bool& log_header_shown = header_shown[log->getName()];
+    if (const char * const name = name_qoi) {
+        std::ostringstream msg;
+        bool& log_header_shown = header_shown[name];
         if (!log_header_shown) {
             log_header_shown = true;
-            msg.str("");
             msg << setw(timeprefix.size()) << build_timeprefix_description()
                 << ' ' << setw(fullprec<>::width) << "cf"
                 << ' ' << setw(fullprec<>::width) << "Ma_e"
@@ -1187,9 +1181,9 @@ void driver_base::log_quantities_boundary_layer(
                 << ' ' << setw(fullprec<>::width) << "ratio_rho"
                 << ' ' << setw(fullprec<>::width) << "ratio_nu"
                 << ' ' << setw(fullprec<>::width) << "ratio_T";
-            INFO0(log, msg.str());
+            INFO0(name, msg.str());
+            msg.str("");
         }
-        msg.str("");
         msg << timeprefix
             << ' ' << fullprec<>(qoi->cf)
             << ' ' << fullprec<>(qoi->Ma_e)
@@ -1197,33 +1191,34 @@ void driver_base::log_quantities_boundary_layer(
             << ' ' << fullprec<>(qoi->ratio_rho)
             << ' ' << fullprec<>(qoi->ratio_nu)
             << ' ' << fullprec<>(qoi->ratio_T);
-        INFO0(log, msg.str());
+        INFO0(name, msg.str());
     }
 
-    log = logging::get_logger(name_pg);
-    if (pg != NULL) {
-        bool& log_header_shown = header_shown[log->getName()];
-        if (!log_header_shown) {
-            log_header_shown = true;
-            msg.str("");
-            msg << setw(timeprefix.size()) << build_timeprefix_description()
-                << ' ' << setw(fullprec<>::width) << "Clauser"
-                << ' ' << setw(fullprec<>::width) << "Lambda_n"
-                << ' ' << setw(fullprec<>::width) << "Launder_e"
-                << ' ' << setw(fullprec<>::width) << "Launder_w"
-                << ' ' << setw(fullprec<>::width) << "Pohlhausen"
-                << ' ' << setw(fullprec<>::width) << "p_ex";
-            INFO0(log, msg.str());
+    if (pg) {
+        if (const char * const name = name_pg) {
+            std::ostringstream msg;
+            bool& log_header_shown = header_shown[name];
+            if (!log_header_shown) {
+                log_header_shown = true;
+                msg << setw(timeprefix.size()) << build_timeprefix_description()
+                    << ' ' << setw(fullprec<>::width) << "Clauser"
+                    << ' ' << setw(fullprec<>::width) << "Lambda_n"
+                    << ' ' << setw(fullprec<>::width) << "Launder_e"
+                    << ' ' << setw(fullprec<>::width) << "Launder_w"
+                    << ' ' << setw(fullprec<>::width) << "Pohlhausen"
+                    << ' ' << setw(fullprec<>::width) << "p_ex";
+                INFO0(name, msg.str());
+                msg.str("");
+            }
+            msg << timeprefix
+                << ' ' << fullprec<>(pg->Clauser)
+                << ' ' << fullprec<>(pg->Lambda_n)
+                << ' ' << fullprec<>(pg->Launder_e)
+                << ' ' << fullprec<>(pg->Launder_w)
+                << ' ' << fullprec<>(pg->Pohlhausen)
+                << ' ' << fullprec<>(pg->p_ex);
+            INFO0(name, msg.str());
         }
-        msg.str("");
-        msg << timeprefix
-            << ' ' << fullprec<>(pg->Clauser)
-            << ' ' << fullprec<>(pg->Lambda_n)
-            << ' ' << fullprec<>(pg->Launder_e)
-            << ' ' << fullprec<>(pg->Launder_w)
-            << ' ' << fullprec<>(pg->Pohlhausen)
-            << ' ' << fullprec<>(pg->p_ex);
-        INFO0(log, msg.str());
     }
 }
 
