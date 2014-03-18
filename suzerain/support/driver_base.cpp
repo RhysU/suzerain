@@ -1084,6 +1084,7 @@ void driver_base::log_quantities_boundary_layer(
 {
     using std::setw;
 
+    // FIXME Below relative to INFO0
     // Only rank zero pays to prepare the output, others short circuit.
     if (!dgrid->has_zero_zero_modes()) return;
 
@@ -1233,49 +1234,46 @@ void driver_base::log_quantities_channel(
         const char * const name_center,
         const char * const name_qoi)
 {
+    using std::setw;          // Brevity
+
+    // FIXME Below relative to INFO0
     // Only rank zero pays to prepare the output, others short circuit.
     if (!dgrid->has_zero_zero_modes()) return;
-
-    using std::setw;          // Brevity
-    logging::logger_type log; // Logging pointer to be repeatedly set
-    std::ostringstream   msg; // Buffer to be repeatedly reused below
 
     log_quantities_local_helper(*this, timeprefix, wall, name_wall,
                                 header_shown[name_wall]);
 
-    log = logging::get_logger(name_visc);
-    if (log != NULL) {
-        bool& log_header_shown = header_shown[log->getName()];
+    if (const char * const name = name_visc) {
+        std::ostringstream msg;
+        bool& log_header_shown = header_shown[name];
         if (!log_header_shown) {
             log_header_shown = true;
-            msg.str("");
             msg << setw(timeprefix.size()) << build_timeprefix_description()
                 << ' ' << setw(fullprec<>::width) << "delta_nu"
                 << ' ' << setw(fullprec<>::width) << "tau_w"
                 << ' ' << setw(fullprec<>::width) << "u_tau"
                 << ' ' << setw(fullprec<>::width) << "Bq"
                 << ' ' << setw(fullprec<>::width) << "v_wallplus";
-            INFO0(log, msg.str());
+            INFO0(name, msg.str());
+            msg.str("");
         }
-        msg.str("");
         msg << timeprefix
             << ' ' << fullprec<>(viscous->delta_nu)
             << ' ' << fullprec<>(viscous->tau_w)
             << ' ' << fullprec<>(viscous->u_tau)
             << ' ' << fullprec<>(qoi->Bq)
             << ' ' << fullprec<>(qoi->v_wallplus);
-        INFO0(log, msg.str());
+        INFO0(name, msg.str());
     }
 
     log_quantities_local_helper(*this, timeprefix, center, name_center,
                                 header_shown[name_center]);
 
-    log = logging::get_logger(name_qoi);
-    if (log != NULL) {
-        bool& log_header_shown = header_shown[log->getName()];
+    if (const char * const name = name_qoi) {
+        std::ostringstream msg;
+        bool& log_header_shown = header_shown[name];
         if (!log_header_shown) {
             log_header_shown = true;
-            msg.str("");
             msg << setw(timeprefix.size()) << build_timeprefix_description()
                 << ' ' << setw(fullprec<>::width) << "cf"
                 << ' ' << setw(fullprec<>::width) << "Ma_c"
@@ -1283,9 +1281,9 @@ void driver_base::log_quantities_channel(
                 << ' ' << setw(fullprec<>::width) << "Pr_w"
                 << ' ' << setw(fullprec<>::width) << "Re_c"
                 << ' ' << setw(fullprec<>::width) << "Re_tau";
-            INFO0(log, msg.str());
+            INFO0(name, msg.str());
+            msg.str("");
         }
-        msg.str("");
         msg << timeprefix
             << ' ' << fullprec<>(qoi->cf)
             << ' ' << fullprec<>(qoi->Ma_c)
@@ -1293,7 +1291,7 @@ void driver_base::log_quantities_channel(
             << ' ' << fullprec<>(qoi->Pr_w)
             << ' ' << fullprec<>(qoi->Re_c)
             << ' ' << fullprec<>(qoi->Re_tau);
-        INFO0(log, msg.str());
+        INFO0(name, msg.str());
     }
 }
 
