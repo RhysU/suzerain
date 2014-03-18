@@ -36,7 +36,7 @@ def main(argv=None):
     title = None
     try:
         try:
-            opts, args = getopt.getopt(argv[1:], "ht", ["help"])
+            opts, args = getopt.getopt(argv[1:], "ht:", ["help"])
         except getopt.error, msg:
             raise Usage(msg)
         for o, a in opts:
