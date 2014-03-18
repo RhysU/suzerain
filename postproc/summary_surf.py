@@ -10,6 +10,7 @@ Each DATASET must have extents matching the /y and /t dataset sizes.
 """
 import getopt
 import h5py
+import matplotlib
 import matplotlib.pyplot as plt
 import mpl_toolkits.mplot3d
 import numpy as np
@@ -19,12 +20,18 @@ class Usage(Exception):
     def __init__(self, msg):
         self.msg = msg
 
-def surf(y, t, ytplane):
+def surface(y, t, ytplane, kwargs={}):
     fig = plt.figure()
-    ax  = fig.add_subplot(111, projection='3d')
+    ax  = fig.gca(projection='3d')
     Y,T = np.meshgrid(y, t)
-    ax.plot_surface(Y, T, ytplane)
-    return ax
+    surf = ax.plot_surface(Y, T, ytplane,
+                           vmin=np.min(ytplane), vmax=np.max(ytplane),
+                           **kwargs)
+    if 'cmap' in kwargs:
+        cbar = fig.colorbar(surf)
+    else:
+        cbar = None
+    return (fig, ax, surf, cbar)
 
 def main(argv=None):
 
@@ -61,7 +68,12 @@ def main(argv=None):
     y      = h5file['/y']
     t      = h5file['/t']
     for dataset in args[1:]:
-        ax = surf(y, t, h5file[dataset])
+        fig, ax, surf, cbar = surface(y, t, h5file[dataset], {
+                                       'cstride'  : 1
+                                     , 'rstride'  : 1
+                                     , 'cmap'     : matplotlib.cm.RdBu_r
+                                     , 'linewidth': 0
+                                     })
         ax.set_xlabel('Wall-normal distance')
         ax.set_ylabel('Simulation time')
         if title:
