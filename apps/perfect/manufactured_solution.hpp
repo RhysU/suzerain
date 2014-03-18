@@ -32,6 +32,7 @@
 #include <suzerain/state_fwd.hpp>
 #include <suzerain/support/definition_base.hpp>
 #include <suzerain/support/esio_fwd.hpp>
+#include <suzerain/support/overridable.hpp>
 #include <suzerain/support/populatable.hpp>
 
 SUZERAIN_GCC_DIAG_OFF(unused-parameter);
@@ -67,6 +68,7 @@ class definition_scenario;
  */
 class manufactured_solution
     : public virtual support::definition_base
+    , public virtual support::overridable<manufactured_solution>
     , public virtual support::populatable<manufactured_solution>
     , public nsctpl_rholut::manufactured_solution<real_t>
 {
@@ -108,6 +110,11 @@ public:
 
     /** @copydoc support::definition_base::options_description() */
     virtual boost::program_options::options_description options_description();
+
+    /** @copydoc support::populatable::override */
+    virtual void override(
+            const manufactured_solution& that,
+            const bool verbose = false);
 
     /** @copydoc support::populatable::populate */
     virtual void populate(
