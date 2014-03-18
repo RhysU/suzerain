@@ -889,43 +889,26 @@ driver_base::log_state_extrema(
     const bool nontrivial_possible = grid->N.x() * grid->N.z() > 1;
     if (!nontrivial_possible) return;
 
-    // Avoid computational cost when logging is disabled
-    logging::logger_type log_min  = logging::get_logger(name_min);
-    logging::logger_type log_xmin = logging::get_logger(name_xmin);
-    logging::logger_type log_ymin = logging::get_logger(name_ymin);
-    logging::logger_type log_zmin = logging::get_logger(name_zmin);
-    logging::logger_type log_max  = logging::get_logger(name_max);
-    logging::logger_type log_xmax = logging::get_logger(name_xmax);
-    logging::logger_type log_ymax = logging::get_logger(name_ymax);
-    logging::logger_type log_zmax = logging::get_logger(name_zmax);
-    logging::logger_type log_fneg = logging::get_logger(name_fneg);
-
-    if (!INFO0_ENABLED(log_min ) && !INFO0_ENABLED(log_max ) &&
-        !INFO0_ENABLED(log_xmin) && !INFO0_ENABLED(log_xmax) &&
-        !INFO0_ENABLED(log_ymin) && !INFO0_ENABLED(log_ymax) &&
-        !INFO0_ENABLED(log_zmin) && !INFO0_ENABLED(log_zmax) &&
-        !INFO0_ENABLED(log_fneg)) return;
-
     // Show headers only on first invocation
-    maybe_timeprefix_fields_identifiers(*this, timeprefix, log_min,
+    maybe_timeprefix_fields_identifiers(*this, timeprefix, name_min,
                                         header_shown[name_min]);
-    maybe_timeprefix_fields_identifiers(*this, timeprefix, log_xmin,
+    maybe_timeprefix_fields_identifiers(*this, timeprefix, name_xmin,
                                         header_shown[name_xmin]);
-    maybe_timeprefix_fields_identifiers(*this, timeprefix, log_ymin,
+    maybe_timeprefix_fields_identifiers(*this, timeprefix, name_ymin,
                                         header_shown[name_ymin]);
-    maybe_timeprefix_fields_identifiers(*this, timeprefix, log_zmin,
+    maybe_timeprefix_fields_identifiers(*this, timeprefix, name_zmin,
                                         header_shown[name_zmin]);
 
-    maybe_timeprefix_fields_identifiers(*this, timeprefix, log_max,
+    maybe_timeprefix_fields_identifiers(*this, timeprefix, name_max,
                                         header_shown[name_max]);
-    maybe_timeprefix_fields_identifiers(*this, timeprefix, log_xmax,
+    maybe_timeprefix_fields_identifiers(*this, timeprefix, name_xmax,
                                         header_shown[name_xmax]);
-    maybe_timeprefix_fields_identifiers(*this, timeprefix, log_ymax,
+    maybe_timeprefix_fields_identifiers(*this, timeprefix, name_ymax,
                                         header_shown[name_ymax]);
-    maybe_timeprefix_fields_identifiers(*this, timeprefix, log_zmax,
+    maybe_timeprefix_fields_identifiers(*this, timeprefix, name_zmax,
                                         header_shown[name_zmax]);
 
-    maybe_timeprefix_fields_identifiers(*this, timeprefix, log_fneg,
+    maybe_timeprefix_fields_identifiers(*this, timeprefix, name_fneg,
                                         header_shown[name_fneg]);
 
     // Collective computation of the global extrema
@@ -939,55 +922,55 @@ driver_base::log_state_extrema(
     for (size_t f = 0; f < result.size(); ++f) {
         msg << ' ' << fullprec<>(result[f].min);
     }
-    INFO0(log_min, msg.str());
+    INFO0(name_min, msg.str());
     msg.str("");
     msg << timeprefix;
     for (size_t f = 0; f < result.size(); ++f) {
         msg << ' ' << fullprec<>(grid->x(result[f].imin));
     }
-    INFO0(log_xmin, msg.str());
+    INFO0(name_xmin, msg.str());
     msg.str("");
     msg << timeprefix;
     for (size_t f = 0; f < result.size(); ++f) {
         msg << ' ' << fullprec<>(b->collocation_point(result[f].jmin));
     }
-    INFO0(log_ymin, msg.str());
+    INFO0(name_ymin, msg.str());
     msg.str("");
     msg << timeprefix;
     for (size_t f = 0; f < result.size(); ++f) {
         msg << ' ' << fullprec<>(grid->z(result[f].kmin));
     }
-    INFO0(log_zmin, msg.str());
+    INFO0(name_zmin, msg.str());
     msg.str("");
     msg << timeprefix;
     for (size_t f = 0; f < result.size(); ++f) {
         msg << ' ' << fullprec<>(result[f].max);
     }
-    INFO0(log_max, msg.str());
+    INFO0(name_max, msg.str());
     msg.str("");
     msg << timeprefix;
     for (size_t f = 0; f < result.size(); ++f) {
         msg << ' ' << fullprec<>(grid->x(result[f].imax));
     }
-    INFO0(log_xmax, msg.str());
+    INFO0(name_xmax, msg.str());
     msg.str("");
     msg << timeprefix;
     for (size_t f = 0; f < result.size(); ++f) {
         msg << ' ' << fullprec<>(b->collocation_point(result[f].jmax));
     }
-    INFO0(log_ymax, msg.str());
+    INFO0(name_ymax, msg.str());
     msg.str("");
     msg << timeprefix;
     for (size_t f = 0; f < result.size(); ++f) {
         msg << ' ' << fullprec<>(grid->z(result[f].kmax));
     }
-    INFO0(log_zmax, msg.str());
+    INFO0(name_zmax, msg.str());
     msg.str("");
     msg << timeprefix;
     for (size_t f = 0; f < result.size(); ++f) {
         msg << ' ' << fullprec<>(result[f].fneg);
     }
-    INFO0(log_fneg, msg.str());
+    INFO0(name_fneg, msg.str());
     msg.str("");
 }
 
