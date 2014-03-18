@@ -845,15 +845,11 @@ driver_base::log_state_bulk(
         const std::string& timeprefix,
         const char * const name_bulk)
 {
-    // Only continue on the rank housing the zero-zero modes...
+    // Only continue on the rank housing the zero-zero modes
     if (!dgrid->has_zero_zero_modes()) return;
 
-    // ...and when logging is enabled.  Notice INFO not INFO0 is used.
-    logging::logger_type log_bulk = logging::get_logger(name_bulk);
-    if (!INFO_ENABLED(log_bulk)) return;
-
     // Show headers only on first invocation
-    maybe_timeprefix_fields_identifiers(*this, timeprefix, log_bulk,
+    maybe_timeprefix_fields_identifiers(*this, timeprefix, name_bulk,
                                         header_shown[name_bulk]);
 
     // Compute operator for finding bulk quantities from coefficients
@@ -869,7 +865,7 @@ driver_base::log_state_bulk(
                 (*state_linear)[k].origin(), state_linear->shape()[1]);
         msg << ' ' << fullprec<>(bulkcoeff.dot(mean.real()));
     }
-    INFO(log_bulk, msg.str());
+    INFO(name_bulk, msg.str());
 }
 
 // FIXME Redmine #3056 load/save extrema from restart files
