@@ -803,19 +803,14 @@ driver_base::log_state_L2(
         const char * const name_L2,
         const char * const name_RMS)
 {
-    // Avoid computational cost when logging is disabled
-    logging::logger_type log_L2  = logging::get_logger(name_L2);
-    logging::logger_type log_RMS = logging::get_logger(name_RMS);
-    if (!INFO0_ENABLED(log_L2) && !INFO0_ENABLED(log_RMS)) return;
-
     // RMS fluctuations only make sense to log when either X or Z is nontrivial
     const bool nontrivial_rms_possible = grid->N.x() * grid->N.z() > 1;
 
     // Show headers only on first invocation
-    maybe_timeprefix_fields_identifiers(*this, timeprefix, log_L2,
+    maybe_timeprefix_fields_identifiers(*this, timeprefix, name_L2,
                                         header_shown[name_L2]);
     if (nontrivial_rms_possible) {
-        maybe_timeprefix_fields_identifiers(*this, timeprefix, log_RMS,
+        maybe_timeprefix_fields_identifiers(*this, timeprefix, name_RMS,
                                             header_shown[name_RMS]);
     }
 
@@ -830,7 +825,7 @@ driver_base::log_state_L2(
     for (size_t k = 0; k < result.size(); ++k) {
         msg << ' ' << fullprec<>(result[k].mean);
     }
-    INFO0(log_L2, msg.str());
+    INFO0(name_L2, msg.str());
 
     // Build and log root-mean-squared-fluctuations of conserved state
     // RMS fluctuations are a scaling factor away from L2 fluctuations
@@ -841,7 +836,7 @@ driver_base::log_state_L2(
         for (size_t k = 0; k < result.size(); ++k) {
             msg << ' ' << fullprec<>(RMS_coeff*result[k].fluctuating);
         }
-        INFO0(log_RMS, msg.str());
+        INFO0(name_RMS, msg.str());
     }
 }
 
