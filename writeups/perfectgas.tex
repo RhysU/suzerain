@@ -4897,11 +4897,12 @@ implicit advance per \autoref{sec:timediscretization},
   \frac{\partial}{\partial{}t}
   \hat{V}
 &\approx
+  -
   \ii k_x
   \left[P^G C^G V^L S\right]
   R^Y
   \hat{V}
-  +
+  -
   \ii k_z
   \left[P^G B^G V^L S\right]
   R^Y
@@ -4919,11 +4920,12 @@ values).  When another representation is chosen for state, one should use
   M \frac{\partial}{\partial{}t}
   \hat{V}
 &\approx
+  -
   \ii k_x
   \left[P^G C^G V^L S\right]
   R^Y
   M \hat{V}
-  +
+  -
   \ii k_z
   \left[P^G B^G V^L S\right]
   R^Y
@@ -4987,7 +4989,7 @@ terms,
     +
     \chi N(\hat{V})
   \right)
-\\ &{}+
+\\ &{}-
   \left(
     \ii k_x \left[P^G C^G\right]
     +
@@ -5012,7 +5014,7 @@ Moving the nonsingular characteristic projection to the right hand side,
     +
     \chi N(\hat{V})
   \right)
-\\ &{}+
+\\ &{}-
   {R^Y}^{-1}
   \left[V^L S\right]^{-1}
   \left(
@@ -5104,7 +5106,7 @@ Rearranging \eqref{eq:dimeulertransformevolve_general} one obtains
   \left[V^L S\right]^{-1}
   \left(
     \chi^{-1}
-    \left( \ii k_x \left[P^G C^G\right] + \ii k_z \left[P^G B^G\right] \right)
+    \left(- \ii k_x \left[P^G C^G\right] - \ii k_z \left[P^G B^G\right] \right)
     \left[V^L S\right] R^Y M
     \hat{V}
     +
@@ -5139,7 +5141,7 @@ linear operator $L$:
   {R^Y}^{-1}
   \left[V^L S\right]^{-1}
   \left(
-    \left( \ii k_x \left[P^G C^G\right] + \ii k_z \left[P^G B^G\right] \right)
+    \left(- \ii k_x \left[P^G C^G\right] - \ii k_z \left[P^G B^G\right] \right)
     \left[V^L S\right] R^Y M
     +
     \left[I-P^G\right] \left[V^L S\right] R^Y
@@ -5166,9 +5168,9 @@ subsequently adjusting the boundary action:
 \begin{alignat}{10}
 \label{eq:dimeulertransformevolve_lineardelta}
 \left.\left(M+\varphi{}L_I^G\right) - \left(M+\varphi{}L\right)\right|_\text{boundary}
-  &={}   &&\ii &&\varphi{} k_x \, &&{R^Y}^{-1} \left[V^L S\right]^{-1} &&\left[P^G C^G\right] &&\left[V^L S\right] {R^Y} & M& \\
-  &{}+{} &&\ii &&\varphi{} k_z    &&{R^Y}^{-1} \left[V^L S\right]^{-1} &&\left[P^G B^G\right] &&\left[V^L S\right] {R^Y} & M& \\
-  &{}-{} &&    &&\varphi{}        &&{R^Y}^{-1} \left[V^L S\right]^{-1} &&\left[P^G \phantom{B^G}   \right] &&\left[V^L S\right] {R^Y} & L&
+  &= {}-&&\ii &&\varphi{} k_x \, &&{R^Y}^{-1} \left[V^L S\right]^{-1} &&\left[P^G C^G\right] &&\left[V^L S\right] {R^Y} & M& \\
+  &\,{}-&&\ii &&\varphi{} k_z    &&{R^Y}^{-1} \left[V^L S\right]^{-1} &&\left[P^G B^G\right] &&\left[V^L S\right] {R^Y} & M& \\
+  &\,{}-&&    &&\varphi{}        &&{R^Y}^{-1} \left[V^L S\right]^{-1} &&\left[P^G \phantom{B^G}   \right] &&\left[V^L S\right] {R^Y} & L&
 \end{alignat}
 To illustrate $L$-agnostic $\left(M+\varphi{}L_I^G\right)$ assembly, suppose the
 state coefficients at the nonreflecting boundary are interleaved at the bottom
@@ -5192,7 +5194,7 @@ partition~\eqref{eq:dimeulertransformevolve_lineardelta} as
     }_L
     +
     \varphi
-    \begin{bmatrix} 0 & 0 \\ 0 & \ii k_x A + \ii k_z B \end{bmatrix}
+    \begin{bmatrix} 0 & 0 \\ 0 & - \ii k_x A - \ii k_z B \end{bmatrix}
     \underbrace{
     \begin{bmatrix} M_{00} & M_{01} \\ 0 & M_{11} \end{bmatrix}
     }_M
@@ -5212,7 +5214,7 @@ collocation-based B-spline operators,
     \begin{bmatrix} L_{0} \\ L_{1} \end{bmatrix}
     +
     \varphi
-    \begin{bmatrix} 0 & 0 \\ 0 & \ii k_x A + \ii k_z B \end{bmatrix}
+    \begin{bmatrix} 0 & 0 \\ 0 & - \ii k_x A - \ii k_z B \end{bmatrix}
 \\
 &=
     \label{eq:dimeulertransformevolve_linearfact}
@@ -5221,7 +5223,7 @@ collocation-based B-spline operators,
     +
     \begin{bmatrix}
         0 & 0 \\
-        0 & C + \ii \varphi{} k_x A + \ii \varphi{} k_z B
+        0 & C - \ii \varphi{} k_x A - \ii \varphi{} k_z B
     \end{bmatrix}.
 \end{align}
 
