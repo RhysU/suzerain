@@ -143,12 +143,42 @@ manufactured_solution::isothermal_flat_plate()
     return *this;
 }
 
+class populate_helper
+{
+    manufactured_solution *dst;
+    const manufactured_solution *src;
+    bool verbose;
+
+public:
+
+    populate_helper(manufactured_solution *dst,
+                    const manufactured_solution *src,
+                    bool verbose)
+        : dst(dst)
+        , src(src)
+        , verbose(verbose)
+    {}
+
+    void operator()(const std::string& name, real_t& dstValue) const
+    {
+        // Effectively offsetof for POD members within manufactured_solution
+        const std::ptrdiff_t offset = reinterpret_cast<char *>(&dstValue)
+                                    - reinterpret_cast<char *>(dst      );
+        const real_t * const srcValue = reinterpret_cast<const real_t *>(
+              reinterpret_cast<const char *>(src) + offset);
+
+        using support::maybe_populate;
+        maybe_populate(name.c_str(), "", dstValue, *srcValue, verbose);
+    }
+};
+
 void
 manufactured_solution::populate(
         const manufactured_solution& that,
         const bool verbose)
 {
-    SUZERAIN_ERROR_VOID_UNIMPLEMENTED();  // FIXME
+    populate_helper helper(this, &that, verbose);
+    this->foreach_parameter(helper);
 }
 
 /** Helper for save(...,shared_ptr<manufactured_solution>&,...). */
