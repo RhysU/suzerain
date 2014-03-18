@@ -397,11 +397,18 @@ antioch_constitutive::evaluate (const real_t  e,
     if (Ns>1) {
         // Species eqn source terms
         std::vector<real_t> omega_dot(Ns);
+        std::vector<real_t> molar_densities_nonnegative = molar_densities;
+        for (size_t i=0; i<Ns; ++i) {
+            if (molar_densities_nonnegative[i] < 0.) {
+                molar_densities_nonnegative[i] = 0.;
+            }
+        }
 #if ANTIOCH_VERSION_AT_LEAST(0,0,4)
-        this->kinetics->compute_mass_sources(T, molar_densities,
+        this->kinetics->compute_mass_sources(T, molar_densities_nonnegative,
                                              h_RT_minus_s_R, omega_dot);
 #else
-        this->kinetics->compute_mass_sources(T, rho, R_mix, Y, molar_densities,
+        this->kinetics->compute_mass_sources(T, rho, R_mix, Y, 
+	                                     molar_densities_nonnegative,
                                              h_RT_minus_s_R, omega_dot);
 #endif
         for (size_t i=0; i<Ns; ++i) om[i] = omega_dot[i];
@@ -495,11 +502,18 @@ antioch_constitutive::evaluate (const real_t    e,
     // TODO: Set up antioch to avoid this if (i.e., make call to kinetics ok)
     if (Ns>1) {
         // Species eqn source terms
+        VectorXr molar_densities_nonnegative = molar_densities;
+        for (size_t i=0; i<Ns; ++i) {
+            if (molar_densities_nonnegative[i] < 0.) {
+                molar_densities_nonnegative[i] = 0.;
+            }
+        }
 #if ANTIOCH_VERSION_AT_LEAST(0,0,4)
-        this->kinetics->compute_mass_sources(T, molar_densities,
+        this->kinetics->compute_mass_sources(T, molar_densities_nonnegative,
                                              h_RT_minus_s_R, om);
 #else
-        this->kinetics->compute_mass_sources(T, rho, R_mix, cs, molar_densities,
+        this->kinetics->compute_mass_sources(T, rho, R_mix, cs, 
+	                                     molar_densities_nonnegative,
                                              h_RT_minus_s_R, om);
 #endif
     } else {
