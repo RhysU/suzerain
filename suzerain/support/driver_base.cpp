@@ -1008,11 +1008,10 @@ driver_base::log_boundary_conditions(
         }
 
         // Show mean boundary state on every invocation, possibly with headers
-        std::ostringstream msg;
         for (size_t m = 0; m < (unsigned) values.rows(); ++m) {
             maybe_timeprefix_fields_identifiers(
                     *this, timeprefix, nick[l][m], header_shown[nick[l][m]]);
-            msg.str("");
+            std::ostringstream msg;
             msg << timeprefix;
             for (size_t k = 0; k < fields.size(); ++k) {
                 using std::abs;
@@ -1030,16 +1029,14 @@ void log_quantities_local_helper(
         const std::string&  timeprefix,
         const Local * const local,
         const char  * const name,
-        bool&               header_shown,
-        std::ostringstream& msg)
+        bool&               header_shown)
 {
     using std::setw;
-    logging::logger_type log = logging::get_logger(name);
 
-    if (log != NULL && INFO0_ENABLED(log)) {
+    if (name != NULL) {
+        std::ostringstream msg;
         if (!header_shown) {
             header_shown = true;
-            msg.str("");
             msg << setw(timeprefix.size())
                 << driver.build_timeprefix_description()
                 << ' ' << setw(fullprec<>::width) << "a"
@@ -1050,7 +1047,7 @@ void log_quantities_local_helper(
                 << ' ' << setw(fullprec<>::width) << "T"
                 << ' ' << setw(fullprec<>::width) << "u"
                 << ' ' << setw(fullprec<>::width) << "v";
-            INFO0(log, msg.str());
+            INFO0(name, msg.str());
         }
         msg.str("");
         msg << timeprefix
@@ -1062,7 +1059,7 @@ void log_quantities_local_helper(
             << ' ' << fullprec<>(local->T)
             << ' ' << fullprec<>(local->u)
             << ' ' << fullprec<>(local->v);
-        INFO0(log, msg.str());
+        INFO0(name, msg.str());
     }
 }
 
@@ -1093,7 +1090,7 @@ void driver_base::log_quantities_boundary_layer(
     std::ostringstream   msg; // Buffer to be repeatedly reused below
 
     log_quantities_local_helper(*this, timeprefix, wall, name_wall,
-                                header_shown[name_wall], msg);
+                                header_shown[name_wall]);
 
     log = logging::get_logger(name_visc);
     if (log != NULL) {
@@ -1146,10 +1143,10 @@ void driver_base::log_quantities_boundary_layer(
     }
 
     log_quantities_local_helper(*this, timeprefix, edge, name_edge,
-                                header_shown[name_edge], msg);
+                                header_shown[name_edge]);
 
     log_quantities_local_helper(*this, timeprefix, edge99, name_edge99,
-                                header_shown[name_edge99], msg);
+                                header_shown[name_edge99]);
 
     log = logging::get_logger(name_Re);
     if (log != NULL) {
@@ -1249,7 +1246,7 @@ void driver_base::log_quantities_channel(
     std::ostringstream   msg; // Buffer to be repeatedly reused below
 
     log_quantities_local_helper(*this, timeprefix, wall, name_wall,
-                                header_shown[name_wall], msg);
+                                header_shown[name_wall]);
 
     log = logging::get_logger(name_visc);
     if (log != NULL) {
@@ -1276,7 +1273,7 @@ void driver_base::log_quantities_channel(
     }
 
     log_quantities_local_helper(*this, timeprefix, center, name_center,
-                                header_shown[name_center], msg);
+                                header_shown[name_center]);
 
     log = logging::get_logger(name_qoi);
     if (log != NULL) {
