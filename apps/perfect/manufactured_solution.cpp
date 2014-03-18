@@ -168,7 +168,8 @@ public:
               reinterpret_cast<const char *>(src) + offset);
 
         using support::maybe_populate;
-        maybe_populate(name.c_str(), "", dstValue, *srcValue, verbose);
+        maybe_populate(name.c_str(), "Manufactured solution parameter",
+                       dstValue, *srcValue, verbose);
     }
 };
 

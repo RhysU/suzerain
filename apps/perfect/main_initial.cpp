@@ -142,7 +142,6 @@ suzerain::perfect::driver_init::run(int argc, char **argv)
     msoln = make_shared<manufactured_solution>(
             manufactured_solution::default_caption
             + " (active only when --mms supplied)");
-    msoln->isothermal_channel();
 
     // Establish binary-specific options
     bool clobber;
@@ -270,6 +269,19 @@ suzerain::perfect::driver_init::run(int argc, char **argv)
     if (options.variables().count("mms")) {
 
         INFO0(who, "Manufactured solution will be initialized at t = " << mms);
+        manufactured_solution problem;
+        if (grid->two_sided()) {
+            INFO0(who, "Solution per nsctpl_rholut::isothermal_channel");
+            problem.isothermal_channel();
+        } else if (grid->one_sided()) {
+            INFO0(who, "Solution per nsctpl_rholut::isothermal_flat_plate");
+            problem.isothermal_flat_plate();
+        } else {
+            FATAL0(who, "Sanity error in manufactured problem selection");
+            return EXIT_FAILURE;
+        }
+        msoln->populate(problem, true);
+
         INFO0(who, "Disabling bulk rho, rho_u, and rho_E constraints"
                    " due to manufactured solution use");
         scenario->bulk_rho   = numeric_limits<real_t>::quiet_NaN();
