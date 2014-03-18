@@ -27,19 +27,10 @@
 #include <gsl/gsl_machine.h>
 #include <gsl/gsl_test.h>
 
-#ifdef HAVE_CONFIG_H
-#include <suzerain/config.h>
-#endif
-
-#ifdef HAVE_MKL
-#include <mkl.h>
-#endif
-
 #ifdef SUZERAIN_HAVE_MKL
+#include <mkl.h>
 #include <mkl_service.h>
 #endif
-
-#include <suzerain/common.h>
 
 static
 void
