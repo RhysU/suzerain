@@ -157,18 +157,16 @@ module largo_BL_temporal_consistent
     real(WP) :: ddt_base_W   = 0.0_WP
     real(WP) :: ddt_base_E   = 0.0_WP
 
-    ! FIXME: Flow volumetric sources should be added by
-    !        the user, they are not being added here.
-    !real(WP) :: src_base_rho = 0.0_WP
-    !real(WP) :: src_base_U   = 0.0_WP
-    !real(WP) :: src_base_V   = 0.0_WP
-    !real(WP) :: src_base_W   = 0.0_WP
-    !real(WP) :: src_base_E   = 0.0_WP
+    real(WP) :: src_base_rho  = 0.0_WP
+    real(WP) :: src_base_rhoU = 0.0_WP
+    real(WP) :: src_base_rhoV = 0.0_WP
+    real(WP) :: src_base_rhoW = 0.0_WP
+    real(WP) :: src_base_rhoE = 0.0_WP
 
     real(WP), allocatable, dimension(:) :: base_cs
     real(WP), allocatable, dimension(:) :: ddy_base_cs
     real(WP), allocatable, dimension(:) :: ddt_base_cs
-    real(WP), allocatable, dimension(:) :: src_base_cs
+    real(WP), allocatable, dimension(:) :: src_base_rhos
 
     ! RANS variables
     real(WP), allocatable, dimension(:) ::         Ts_tvar
@@ -276,7 +274,7 @@ contains
       allocate(auxp%base_cs      (1:ns_))
       allocate(auxp%ddy_base_cs  (1:ns_))
       allocate(auxp%ddt_base_cs  (1:ns_))
-      allocate(auxp%src_base_cs  (1:ns_))
+      allocate(auxp%src_base_rhos(1:ns_))
 
       auxp%Arms_cs      = 0.0_WP
       auxp%dArms_cs     = 0.0_WP
@@ -285,7 +283,7 @@ contains
       auxp%base_cs      = 0.0_WP
       auxp%ddy_base_cs  = 0.0_WP
       auxp%ddt_base_cs  = 0.0_WP
-      auxp%src_base_cs  = 0.0_WP
+      auxp%src_base_rhos= 0.0_WP
     end if
 
     ! Check number of turbulence variables
@@ -356,7 +354,7 @@ contains
     if (allocated(auxp%base_cs    ))  deallocate(auxp%base_cs     )
     if (allocated(auxp%ddy_base_cs )) deallocate(auxp%ddy_base_cs )
     if (allocated(auxp%ddt_base_cs )) deallocate(auxp%ddt_base_cs )
-    if (allocated(auxp%src_base_cs )) deallocate(auxp%src_base_cs )
+    if (allocated(auxp%src_base_rhos)) deallocate(auxp%src_base_rhos )
 
     ! Deallocate arrays for RANS turbulence variables
     if (allocated(auxp%Ts_tvar           ))  deallocate(auxp%Ts_tvar         )
@@ -489,17 +487,17 @@ contains
     end if
 
 
-!!$     auxp%src_base_rho = src_base(irho )
-!!$     auxp%src_base_U   = src_base(irhoU)
-!!$     auxp%src_base_V   = src_base(irhoV)
-!!$     auxp%src_base_W   = src_base(irhoW)
-!!$     auxp%src_base_E   = src_base(irhoE)
-!!$
+    auxp%src_base_rho  = src_base(irho )
+    auxp%src_base_rhoU = src_base(irhoU)
+    auxp%src_base_rhoV = src_base(irhoV)
+    auxp%src_base_rhoW = src_base(irhoW)
+    auxp%src_base_rhoE = src_base(irhoE)
+
     do is=1, ns_
       auxp%base_cs    (is) =     base(5+is)/base(irho )
       auxp%ddy_base_cs(is) = ddy_base(5+is)/base(irho ) - base(5+is)/base(irho )**2 * ddy_base(irho )
       auxp%ddt_base_cs(is) = ddt_base(5+is)/base(irho ) - base(5+is)/base(irho )**2 * ddt_base(irho )
-!!$       auxp%src_base_cs(is) = src_base(5+is)
+      auxp%src_base_rhos(is) = src_base(5+is)
     end do
 
   end subroutine largo_BL_temporal_consistent_preStep_baseflow
@@ -784,31 +782,31 @@ contains
   call c_f_pointer(cp, auxp)\
 
   subroutine DECLARE_SUBROUTINE(largo_BL_temporal_consistent_continuity_sEtaMean)
-    src = A * src + B * auxp%Ts_rho
+    src = A * src + B * ( auxp%Ts_rho + auxp%src_base_rho )
   end subroutine largo_BL_temporal_consistent_continuity_sEtaMean
 
 
   subroutine DECLARE_SUBROUTINE(largo_BL_temporal_consistent_xMomentum_sEtaMean)
     src = A * src + B * (  auxp%mean_rho * auxp%Ts_U &
-      &                  + auxp%fav_U    * auxp%Ts_rho  )
+      &                  + auxp%fav_U    * auxp%Ts_rho + auxp%src_base_rhoU )
   end subroutine largo_BL_temporal_consistent_xMomentum_sEtaMean
 
 
   subroutine DECLARE_SUBROUTINE(largo_BL_temporal_consistent_yMomentum_sEtaMean)
     src = A * src + B * (  auxp%mean_rho * auxp%Ts_V &
-      &                  + auxp%fav_V    * auxp%Ts_rho  )
+      &                  + auxp%fav_V    * auxp%Ts_rho + auxp%src_base_rhoV )
   end subroutine largo_BL_temporal_consistent_yMomentum_sEtaMean
 
 
   subroutine DECLARE_SUBROUTINE(largo_BL_temporal_consistent_zMomentum_sEtaMean)
     src = A * src + B * (  auxp%mean_rho * auxp%Ts_W &
-      &                  + auxp%fav_W    * auxp%Ts_rho  )
+      &                  + auxp%fav_W    * auxp%Ts_rho + auxp%src_base_rhoW )
   end subroutine largo_BL_temporal_consistent_zMomentum_sEtaMean
 
 
   subroutine DECLARE_SUBROUTINE(largo_BL_temporal_consistent_energy_sEtaMean)
     src = A * src + B * (  auxp%mean_rho * auxp%Ts_E &
-      &                  + auxp%fav_E    * auxp%Ts_rho  )
+      &                  + auxp%fav_E    * auxp%Ts_rho + auxp%src_base_rhoE )
   end subroutine largo_BL_temporal_consistent_energy_sEtaMean
 
 
@@ -821,7 +819,7 @@ contains
 
     call c_f_pointer(cp, auxp)
     src = A * src + B * (  auxp%mean_rho   * auxp%Ts_cs(is) &
-      &                  + auxp%fav_cs(is) * auxp%Ts_rho  )
+      &                  + auxp%fav_cs(is) * auxp%Ts_rho + auxp%src_base_rhos(is) )
   end subroutine largo_BL_temporal_consistent_ispecies_sEtaMean
 
 
@@ -875,31 +873,31 @@ contains
 
 
   subroutine DECLARE_SUBROUTINE(largo_BL_temporal_consistent_continuity_sEta_)
-    src = A * src + B * auxp%TsFull_rho
+    src = A * src + B * ( auxp%TsFull_rho + auxp%src_base_rho )
   end subroutine largo_BL_temporal_consistent_continuity_sEta_
 
 
   subroutine DECLARE_SUBROUTINE(largo_BL_temporal_consistent_xMomentum_sEta_)
     src = A * src + B * (  auxp%field_rho * auxp%TsFull_U &
-      &                  + auxp%field_U   * auxp%TsFull_rho  )
+      &                  + auxp%field_U   * auxp%TsFull_rho + auxp%src_base_rhoU )
   end subroutine largo_BL_temporal_consistent_xMomentum_sEta_
 
 
   subroutine DECLARE_SUBROUTINE(largo_BL_temporal_consistent_yMomentum_sEta_)
     src = A * src + B * (  auxp%field_rho * auxp%TsFull_V &
-      &                  + auxp%field_V   * auxp%TsFull_rho  )
+      &                  + auxp%field_V   * auxp%TsFull_rho + auxp%src_base_rhoV )
   end subroutine largo_BL_temporal_consistent_yMomentum_sEta_
 
 
   subroutine DECLARE_SUBROUTINE(largo_BL_temporal_consistent_zMomentum_sEta_)
     src = A * src + B * (  auxp%field_rho * auxp%TsFull_W &
-      &                  + auxp%field_W   * auxp%TsFull_rho  )
+      &                  + auxp%field_W   * auxp%TsFull_rho + auxp%src_base_rhoW )
   end subroutine largo_BL_temporal_consistent_zMomentum_sEta_
 
 
   subroutine DECLARE_SUBROUTINE(largo_BL_temporal_consistent_energy_sEta_)
     src = A * src + B * (  auxp%field_rho * auxp%TsFull_E &
-      &                  + auxp%field_E   * auxp%TsFull_rho  )
+      &                  + auxp%field_E   * auxp%TsFull_rho + auxp%src_base_rhoE )
   end subroutine largo_BL_temporal_consistent_energy_sEta_
 
 
@@ -912,7 +910,8 @@ contains
 
     call c_f_pointer(cp, auxp)
     src = A * src + B * (  auxp%field_rho    * auxp%TsFull_cs(is) &
-      &                  + auxp%field_cs(is) * auxp%TsFull_rho  )
+      &                  + auxp%field_cs(is) * auxp%TsFull_rho    &
+      &                  + auxp%src_base_rhos(is) )
   end subroutine largo_BL_temporal_consistent_ispecies_sEta_
 
 
