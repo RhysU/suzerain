@@ -570,17 +570,15 @@ contains
     call c_f_pointer(cp, auxp)
 
     ! Compute \mean{ru"u"} for each u component and for energy
-    auxp%rhoupup  = mean_rqq(irhoU) &
-      &          - auxp%mean_rho * auxp%fav_u**2
+    ! In a continuous setting, these must be nonnegative so
+    ! enforce that constraint discretely to increase robustness.
+    auxp%rhoupup  = max(0.0_WP, mean_rqq(irhoU) - auxp%mean_rho * auxp%fav_u**2)
 
-    auxp%rhovpvp  = mean_rqq(irhoV) &
-      &          - auxp%mean_rho * auxp%fav_v**2
+    auxp%rhovpvp  = max(0.0_WP, mean_rqq(irhoV) - auxp%mean_rho * auxp%fav_v**2)
 
-    auxp%rhowpwp  = mean_rqq(irhoW) &
-      &          - auxp%mean_rho * auxp%fav_w**2
+    auxp%rhowpwp  = max(0.0_WP, mean_rqq(irhoW) - auxp%mean_rho * auxp%fav_w**2)
 
-    auxp%rhoEpEp  = mean_rqq(irhoE) &
-      &          - auxp%mean_rho * auxp%fav_E**2
+    auxp%rhoEpEp  = max(0.0_WP, mean_rqq(irhoE) - auxp%mean_rho * auxp%fav_E**2)
 
     ! Compute d(\mean{ru"u"})/dy for each u component and for enegry
     auxp%drhoupup = dmean_rqq(irhoU) &
