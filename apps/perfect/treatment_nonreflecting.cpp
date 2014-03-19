@@ -158,10 +158,10 @@ treatment_nonreflecting::apply_operator(
             // The imaginary unit has already been included within i_stash.
             Vector5c tmp;
             tmp.noalias()  = ImPG_VL_S_RY.cast<complex_t>() * N;
-            tmp.noalias() += kn
+            tmp.noalias() -= kn
                            * PG_BG_VL_S_RY_by_chi.cast<complex_t>()
                            * i_stash.col((m - dkbx) + mu*(n - dkbz));
-            tmp.noalias() += km
+            tmp.noalias() -= km
                            * PG_CG_VL_S_RY_by_chi.cast<complex_t>()
                            * i_stash.col((m - dkbx) + mu*(n - dkbz));
             N.noalias()    = inv_VL_S_RY.cast<complex_t>() * tmp;
