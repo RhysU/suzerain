@@ -200,6 +200,7 @@ m4_append([AC_LANG(Fortran)],[
     ac_compile="./libtool --mode=compile --tag=FC $ac_compile"
     ac_link="./libtool --mode=link --tag=FC $ac_link"
 ])[]dnl
+AC_LIB_LTDL
 AC_CACHE_SAVE
 
 dnl ------------------------------------------------
