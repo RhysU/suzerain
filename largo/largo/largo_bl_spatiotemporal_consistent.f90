@@ -621,7 +621,6 @@ contains
       auxp%ddx_base_p   = ddx_base(auxp%ip_base)
     end if
 
-!!$ FIXME Handle appropriately per Redmine ticket #3078
     auxp%src_base_rho  = src_base(irho )
     auxp%src_base_rhoU = src_base(irhoU)
     auxp%src_base_rhoV = src_base(irhoV)
