@@ -5,7 +5,8 @@ Produce surface plots for each named DATASET in the file H5SUMMARY.
 Options:
     -c CSTRIDE    Downsample by providing cstride=CSTRIDE to plot_surface
     -h            Display this help message and exit
-    -l LINEWIDTH  Set a non-zero linewidth=LINEWIDTH to plot_surface.
+    -l LINEWIDTH  Set a non-zero linewidth=LINEWIDTH to plot_surface
+    -o OUTSUFFIX  Save the output file DATASET.OUTSUFFIX instead of displaying
     -r RSTRIDE    Downsample by providing rstride=RSTRIDE to plot_surface
     -t TITLE      Set the specified plot title
 
@@ -44,13 +45,14 @@ def main(argv=None):
         argv = sys.argv
 
     # Parse and check incoming command line arguments
-    title     = None
     cstride   = 1
-    rstride   = 1
     linewidth = 0
+    outsuffix = None
+    rstride   = 1
+    title     = None
     try:
         try:
-            opts, args = getopt.getopt(argv[1:], "c:hl:r:t:", ["help"])
+            opts, args = getopt.getopt(argv[1:], "c:hl:o:r:t:", ["help"])
         except getopt.error, msg:
             raise Usage(msg)
         for o, a in opts:
@@ -61,6 +63,8 @@ def main(argv=None):
                 return 0
             elif o == "-l":
                 linewidth = int(a)
+            elif o == "-o":
+                outsuffix = a
             elif o == "-r":
                 rstride = int(a)
             elif o == "-t":
@@ -91,9 +95,12 @@ def main(argv=None):
         ax.set_ylabel('Simulation time')
         if title:
             ax.set_title(title)
+        if outsuffix:
+            fig.savefig(dataset+'.'+outsuffix)
+            plt.close(fig)
 
-    plt.tight_layout()
-    plt.show()
+    if not outsuffix:
+        plt.show()
 
     # Pop interactive mode
     plt.interactive(was_interactive)
