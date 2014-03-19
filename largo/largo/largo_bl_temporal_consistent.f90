@@ -338,30 +338,30 @@ contains
     call c_f_pointer(cp, auxp)
 
     ! Deallocate arrays for species
-    if (allocated(auxp%Ts_cs))        deallocate(auxp%Ts_cs       )
-    if (allocated(auxp%ffluc_cs))     deallocate(auxp%ffluc_cs    )
-    if (allocated(auxp%fav_cs))       deallocate(auxp%fav_cs      )
-    if (allocated(auxp%dfav_cs))      deallocate(auxp%dfav_cs     )
-    if (allocated(auxp%field_cs))     deallocate(auxp%field_cs    )
-    if (allocated(auxp%TsArms_cs))    deallocate(auxp%TsArms_cs   )
-    if (allocated(auxp%Arms_cs))      deallocate(auxp%Arms_cs     )
-    if (allocated(auxp%dArms_cs))     deallocate(auxp%dArms_cs    )
-    if (allocated(auxp%ygArms_cs))    deallocate(auxp%ygArms_cs   )
-    if (allocated(auxp%TsFull_cs))    deallocate(auxp%TsFull_cs   )
-    if (allocated(auxp%gr_DA_cs))     deallocate(auxp%gr_DA_cs    )
-    if (allocated(auxp%gr_DA_rms_cs)) deallocate(auxp%gr_DA_rms_cs)
+    if (allocated(auxp%Ts_cs        )) deallocate(auxp%Ts_cs         )
+    if (allocated(auxp%ffluc_cs     )) deallocate(auxp%ffluc_cs      )
+    if (allocated(auxp%fav_cs       )) deallocate(auxp%fav_cs        )
+    if (allocated(auxp%dfav_cs      )) deallocate(auxp%dfav_cs       )
+    if (allocated(auxp%field_cs     )) deallocate(auxp%field_cs      )
+    if (allocated(auxp%TsArms_cs    )) deallocate(auxp%TsArms_cs     )
+    if (allocated(auxp%Arms_cs      )) deallocate(auxp%Arms_cs       )
+    if (allocated(auxp%dArms_cs     )) deallocate(auxp%dArms_cs      )
+    if (allocated(auxp%ygArms_cs    )) deallocate(auxp%ygArms_cs     )
+    if (allocated(auxp%TsFull_cs    )) deallocate(auxp%TsFull_cs     )
+    if (allocated(auxp%gr_DA_cs     )) deallocate(auxp%gr_DA_cs      )
+    if (allocated(auxp%gr_DA_rms_cs )) deallocate(auxp%gr_DA_rms_cs  )
 
-    if (allocated(auxp%base_cs    ))  deallocate(auxp%base_cs     )
-    if (allocated(auxp%ddy_base_cs )) deallocate(auxp%ddy_base_cs )
-    if (allocated(auxp%ddt_base_cs )) deallocate(auxp%ddt_base_cs )
+    if (allocated(auxp%base_cs      )) deallocate(auxp%base_cs       )
+    if (allocated(auxp%ddy_base_cs  )) deallocate(auxp%ddy_base_cs   )
+    if (allocated(auxp%ddt_base_cs  )) deallocate(auxp%ddt_base_cs   )
     if (allocated(auxp%src_base_rhos)) deallocate(auxp%src_base_rhos )
 
     ! Deallocate arrays for RANS turbulence variables
-    if (allocated(auxp%Ts_tvar           ))  deallocate(auxp%Ts_tvar         )
-    if (allocated(auxp%fav_tvar          ))  deallocate(auxp%fav_tvar        )
-    if (allocated(auxp%dfav_tvar         ))  deallocate(auxp%dfav_tvar       )
-    if (allocated(auxp%grt_DA_tvar       ))  deallocate(auxp%grt_DA_tvar     )
-    if (allocated(auxp%grt_DA_rms_tvar   ))  deallocate(auxp%grt_DA_rms_tvar )
+    if (allocated(auxp%Ts_tvar        ))  deallocate(auxp%Ts_tvar         )
+    if (allocated(auxp%fav_tvar       ))  deallocate(auxp%fav_tvar        )
+    if (allocated(auxp%dfav_tvar      ))  deallocate(auxp%dfav_tvar       )
+    if (allocated(auxp%grt_DA_tvar    ))  deallocate(auxp%grt_DA_tvar     )
+    if (allocated(auxp%grt_DA_rms_tvar))  deallocate(auxp%grt_DA_rms_tvar )
 
     ! Deallocate array of derived types
     deallocate(auxp)
@@ -494,9 +494,9 @@ contains
     auxp%src_base_rhoE = src_base(irhoE)
 
     do is=1, ns_
-      auxp%base_cs    (is) =     base(5+is)/base(irho )
-      auxp%ddy_base_cs(is) = ddy_base(5+is)/base(irho ) - base(5+is)/base(irho )**2 * ddy_base(irho )
-      auxp%ddt_base_cs(is) = ddt_base(5+is)/base(irho ) - base(5+is)/base(irho )**2 * ddt_base(irho )
+      auxp%base_cs      (is) =     base(5+is)/base(irho)
+      auxp%ddy_base_cs  (is) = ddy_base(5+is)/base(irho) - base(5+is)/base(irho)**2 * ddy_base(irho)
+      auxp%ddt_base_cs  (is) = ddt_base(5+is)/base(irho) - base(5+is)/base(irho)**2 * ddt_base(irho)
       auxp%src_base_rhos(is) = src_base(5+is)
     end do
 
