@@ -88,7 +88,7 @@ suzerain::reacting::driver_advance::run(int argc, char **argv)
     // Storage for binary-specific options
     const support::definition_noise noisedef;
     string solver_spec(static_cast<string>(suzerain::specification_zgbsv()));
-    string filter_spec("none");
+    string filter_spec("viscous");
     string undriven;
 
     // Register binary-specific options
@@ -127,7 +127,7 @@ suzerain::reacting::driver_advance::run(int argc, char **argv)
         common_block.linearization = linearize::none;
     }
 
-    // Select type of filtering to use (default none)
+    // Select type of filtering to use (default viscous)
     const bool use_filter =  options.variables().count("filter");
 
     if (use_filter) {
@@ -143,7 +143,7 @@ suzerain::reacting::driver_advance::run(int argc, char **argv)
             return EXIT_FAILURE;
         }
     } else {
-        common_block.filter_treatment = filter::none;
+        common_block.filter_treatment = filter::viscous;
     }
 
     if (positional.size() != 1) {
