@@ -264,6 +264,7 @@ contains
     type(largo_workspace_ptr), intent(in) :: cp
     type(largo_BL_temporal_tconsistent_workspace_type), pointer   :: auxp
 
+!!$ FIXME Redmine #3078: Is this logic unnecessary or unimplemented?
 !!$     ! Get Fortran pointer from C pointer
 !!$     call c_f_pointer(cp, auxp)
 !!$
