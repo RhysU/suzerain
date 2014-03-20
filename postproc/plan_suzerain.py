@@ -12,7 +12,9 @@ Options:
       --CPUh_performance                Cluster performance (CPU hours per million points per thousand timesteps, default is 170)
       --delta_factor                    Factor to scale the boundary layer thickness (default is 1)
       --y1_plus_tgt                     Target location of first break point in plus units (default is 0.6)
-      --Dy_edge_over_delta_star_tgt     Target mesh refinement at the boundary layer edge (Dy over displacement thickness, default is 0.15)
+      --Dy_edge_over_delta_ref_tgt      Target mesh refinement at the boundary layer edge (Dy over reference thickness, default is 0.15 of displacement thickness)
+                                        NOTE: former option --Dy_edge_over_delta_star_tgt remains valid for backwards compatilibity
+      --use_theta_reference             Use momentum thickness as reference thickness as outer resolution measure (default is False)
       --samples_per_turnover            Target number of samples per turnover (default is 10)
 
 """
@@ -185,7 +187,13 @@ def getplan(hdf5file, dt):
     theta = 0
     for j in xrange(0,Ny):
         theta += rho_u_col[j,0] / rhoU_edge * (1 - bar_u_col[j,0] / U_edge) * i_weights[j,0]
- 
+
+    # Pick thickness as reference for edge resolution
+    if use_theta_reference :
+        delta_ref_resolution = theta
+    else:
+        delta_ref_resolution = delta_star
+
     # Computed parameters
     Re_delta_star = rho_inf * U_inf * delta_star / mu_inf
     Re_theta      = rho_inf * U_inf * theta      / mu_inf
@@ -279,12 +287,12 @@ def getplan(hdf5file, dt):
       # now evaluate if for this grid the criterion for dymax is satisfied
       for j in xrange(0,ny_mid):
         if (y_grid[j,0] < delta_tgt):
-          Dy_edge_over_delta_star_mid = Dy_vec[j,0] / delta_star
+          Dy_edge_over_delta_ref_mid = Dy_vec[j,0] / delta_ref_resolution
         else:
           break
 
-      Dy_max_over_delta_star_mid = (max(Dy_vec) / delta_star)[0]
-      err_ny = (Dy_edge_over_delta_star_mid-Dy_edge_over_delta_star_tgt)/Dy_edge_over_delta_star_mid
+      Dy_max_over_delta_ref_mid = (max(Dy_vec) / delta_star)[0]
+      err_ny = (Dy_edge_over_delta_ref_mid-Dy_edge_over_delta_ref_tgt)/Dy_edge_over_delta_ref_mid
       # if the dy at edge is larger than the target, 
       # increase the number of points,
       # decrease otherwise
@@ -330,7 +338,11 @@ def getplan(hdf5file, dt):
     print 'Dx_over_delta_nu_tgt        = ', Dx_over_delta_nu_tgt 
     print 'Dz_over_delta_nu_tgt        = ', Dz_over_delta_nu_tgt
     print 'y1_plus_tgt                 = ', y1_plus_tgt
-    print 'Dy_edge_over_delta_star_tgt = ', Dy_edge_over_delta_star_tgt
+    if (use_theta_reference):
+        print 'Reference outer thickness   = ', 'theta'
+    else:
+        print 'Reference outer thickness   = ', 'delta_star'
+    print 'Dy_edge_over_delta_ref_tgt  = ', Dy_edge_over_delta_ref_tgt
     print
     print 'Run setup and cost parameters'
     print 'htdelta                     = ', htdelta
@@ -341,8 +353,8 @@ def getplan(hdf5file, dt):
     print 'Ny_tgt                      = ', Ny_tgt
     print 'Nz_tgt                      = ', Nz_tgt
     print 'y1_plus                     = ', y1_plus_mid
-    print 'Dy_edge_over_delta_star     = ', Dy_edge_over_delta_star_mid
-    print 'Dy_max_over_delta_star      = ', Dy_max_over_delta_star_mid
+    print 'Dy_edge_over_delta_ref      = ', Dy_edge_over_delta_ref_mid
+    print 'Dy_max_over_delta_ref       = ', Dy_max_over_delta_ref_mid
     print 'Np_million                  = ', Np / 1.0e6
     print 'CPUh/Np(10^6)/Nt(10^3)      = ', CPUh_performance
     print 'CPUh/turnover               = ', CPUh_turnover_tgt
@@ -367,8 +379,9 @@ def main(argv=None):
     global CPUh_performance
     global delta_factor
     global y1_plus_tgt
-    global Dy_edge_over_delta_star_tgt
+    global Dy_edge_over_delta_ref_tgt
     global samples_per_turnover 
+    global use_theta_reference
 
     dt                          =    0
     Lx_over_delta_tgt           =   10.0
@@ -379,8 +392,9 @@ def main(argv=None):
     CPUh_performance            =  170
     delta_factor                =    1.0
     y1_plus_tgt                 =    0.6
-    Dy_edge_over_delta_star_tgt =    0.15
+    Dy_edge_over_delta_ref_tgt  =    0.15
     samples_per_turnover        =   10
+    use_theta_reference         =    False
 
     # Parse and check incoming command line arguments
     try:
@@ -397,7 +411,9 @@ def main(argv=None):
                          , "delta_factor="
                          , "y1_plus_tgt="
                          , "Dy_edge_over_delta_star_tgt="
+                         , "Dy_edge_over_delta_ref_tgt="
                          , "samples_per_turnover="
+                         , "use_theta_reference"
                          ])
         except getopt.error, msg:
             raise Usage(msg)
@@ -423,10 +439,14 @@ def main(argv=None):
                 delta_factor = float(a)
             if o in ("--y1_plus_tgt"):
                 y1_plus_tgt = float(a)
-            if o in ("--Dy_edge_over_delta_star_tgt"):
-                Dy_edge_over_delta_star_tgt = float(a)
+            # keep "delta_star" option for backwards-compatibility 
+            if (o in ("--Dy_edge_over_delta_star_tgt") or
+                o in ("--Dy_edge_over_delta_ref_tgt" )   ): 
+                Dy_edge_over_delta_ref_tgt = float(a)
             if o in ("--samples_per_turnover"):
                 samples_per_turnover = float(a)
+            if o in ("--use_theta_reference"):
+                use_theta_reference = True
         if len(args) < 1:
             print >>sys.stderr, "Incorrect number of arguments.  See --help."
             return 2
