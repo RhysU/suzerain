@@ -88,7 +88,7 @@ def main(argv=None):
         fig, ax, surf, cbar = surface(y, t, h5file[dataset], {
                                        'cstride'  : cstride
                                      , 'rstride'  : rstride
-                                     , 'cmap'     : matplotlib.cm.RdBu_r
+                                     , 'cmap'     : matplotlib.cm.RdYlBu_r
                                      , 'linewidth': linewidth
                                      })
         ax.set_xlabel('Wall-normal distance')
