@@ -1,0 +1,18 @@
+# Automake fragment for automatic revision management
+# Depend on .revisionstr to trigger automatic rebuilds
+
+# Requires support with $(top_srcdir)/Makefile.am
+REVISIONSTR := -DREVISIONSTR=\"$(shell cd $(top_srcdir) && ./build-aux/version-gen .version-dist .version)\"
+
+# Update the timestamp on .revisionstr only when the content changes
+.PHONY: .revisionstr
+all:    .revisionstr
+.revisionstr:
+	@(echo $(REVISIONSTR) | diff $@ - >/dev/null) || echo $(REVISIONSTR) > $@
+
+# Remove the .revisionstr breadcrumbs on distribution
+dist-hook: revisionstr-dist-hook
+revisionstr-dist-hook:
+	rm -f .revisionstr
+
+# vim: set ft=automake:

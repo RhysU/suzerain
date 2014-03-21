@@ -26,12 +26,13 @@ lib_LTLIBRARIES           = # Append below
 nobase_pkginclude_HEADERS = # Append below
 noinst_LTLIBRARIES        = # Append below
 
+# Depend on .revisionstr to rebuild on revision change
+include $(top_srcdir)/revisionstr.am
+AM_CPPFLAGS += $(REVISIONSTR)
+
 # MPI-based compilation and linking
 CXX = @MPICXX@
 CC  = @MPICC@
-
-# Version management.  Depend on $(top_srcdir)/.version to safely use.
-REVISIONSTR = $(shell cd $(top_srcdir) && ./build-aux/version-gen .version-dist .version)
 
 AM_CPPFLAGS += $(OPENMP_CPPFLAGS) #pragma
 AM_CXXFLAGS += $(OPENMP_CXXFLAGS) #omp
@@ -180,7 +181,6 @@ nobase_pkginclude_HEADERS += version.hpp
 # any system-wide /usr/lib, /usr/lib64, etc. is delayed as long as possible.
 lib_LTLIBRARIES          += libsuzerain.la
 libsuzerain_la_LDFLAGS    = -release $(PACKAGE_VERSION)
-libsuzerain_la_CPPFLAGS   = $(AM_CPPFLAGS) -DREVISIONSTR=\"$(REVISIONSTR)\"
 libsuzerain_la_SOURCES    = version.cpp
 libsuzerain_la_LIBADD     = libblasetal.la
 libsuzerain_la_LIBADD    += libbspline.la
