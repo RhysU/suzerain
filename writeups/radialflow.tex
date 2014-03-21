@@ -909,25 +909,25 @@ stagnation region.
   }
 \end{figure}
 
-General boundary layer quantities are plotted in Figure~\ref{fig:cev_summary1}.
-Only a few of the plotted quantities are relevant to finding a matching inviscid
-base flow.  For simplicity, the ratio of specific heats $\gamma$ is fixed at
-$1.40$, a commonly-used value for air bounded by the depicted $\gamma_e$ and
-$\gamma_w$.  The edge Mach number $\Mach[e]{}$ is taken from the boundary layer
-edge at distance $\delta$ from the heat shield surface.  The edge-to-wall
-temperature ratio $T_e/T_w$ captures the coldness of the wall relative to edge
-conditions.   When nondimensional $T_e = 1$ is prescribed, as is done
-automatically when choosing $\Mach = \Mach[e]$ for~\eqref{eq:cartEuler} along
-with selecting reference $a_0^2 = \gamma R T_0$, the ratio may be used to fix
-the viscous isothermal wall condition $T_w$. Though present in the CEV
-simulations and depicted here, heat shield curvature and wall blowing are
-neglected.
+General boundary layer quantities are plotted in
+Figure~\ref{fig:cevisslam_summary1}.  Only a few of the plotted quantities are
+relevant to finding a matching inviscid base flow.  For simplicity, the ratio of
+specific heats $\gamma$ is fixed at $1.40$, a commonly-used value for air
+bounded by the depicted $\gamma_e$ and $\gamma_w$.  The edge Mach number
+$\Mach[e]{}$ is taken from the boundary layer edge at distance $\delta$ from the
+heat shield surface.  The edge-to-wall temperature ratio $T_e/T_w$ captures the
+coldness of the wall relative to edge conditions.   When nondimensional $T_e =
+1$ is prescribed, as is done automatically when choosing $\Mach = \Mach[e]$
+for~\eqref{eq:cartEuler} along with selecting reference $a_0^2 = \gamma R T_0$,
+the ratio may be used to fix the viscous isothermal wall condition $T_w$. Though
+present in the CEV simulations and depicted here, heat shield curvature and wall
+blowing are neglected.
 
 \begin{figure}[p]
   \centering
-  \includegraphics[height=0.92\textheight]{cev_summary1}
+  \includegraphics[height=0.92\textheight]{cevisslam_summary1}
   \caption{
-    \label{fig:cev_summary1}
+    \label{fig:cevisslam_summary1}
     Boundary layer conditions from the fully laminar CEV symmetry plane.
     Despite varying $\gamma$ being depicted, the matching process uses
     $\gamma=1.40$.
@@ -935,7 +935,7 @@ neglected.
 \end{figure}
 
 The observed favorable pressure gradient boundary layer nature is quantified in
-Figure~\ref{fig:cev_summary_fpg} in a variety of ways.  Of all of these
+Figure~\ref{fig:cevisslam_summary_fpg} in a variety of ways.  Of all of these
 nondimensional results, $p_{e,\xi}$ is the only quantity with a directly
 computable inviscid analog when a target viscous boundary layer thickness
 $\delta$ is supplied.  The other nondimensional pressure gradient parameters,
@@ -946,9 +946,9 @@ $\frac{\partial\delta}{\partial\xi}$.
 
 \begin{figure}[p]
   \centering
-  \includegraphics[height=0.92\textheight]{cev_summary_fpg}
+  \includegraphics[height=0.92\textheight]{cevisslam_summary_fpg}
   \caption{
-    \label{fig:cev_summary_fpg}
+    \label{fig:cevisslam_summary_fpg}
     Pressure gradient conditions from the fully laminar CEV symmetry plane.
     Numerical differentiation artifacts are problematic in quantities $\Lambda$
     and $K_s$.
