@@ -3,6 +3,7 @@
 
 # Requires support with $(top_srcdir)/Makefile.am
 REVISIONSTR := -DREVISIONSTR=\"$(shell cd $(top_srcdir) && ./build-aux/version-gen .version-dist .version)\"
+AM_CPPFLAGS += $(REVISIONSTR)
 
 # Update the timestamp on .revisionstr only when the content changes
 BUILT_SOURCES: .revisionstr

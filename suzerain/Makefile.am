@@ -28,7 +28,6 @@ noinst_LTLIBRARIES        = # Append below
 
 # Depend on .revisionstr to rebuild on revision change
 include $(top_srcdir)/revisionstr.am
-AM_CPPFLAGS += $(REVISIONSTR)
 
 # MPI-based compilation and linking
 CXX = @MPICXX@

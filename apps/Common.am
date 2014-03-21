@@ -29,7 +29,6 @@ CC  = @MPICC@
 
 # Depend on .revisionstr to rebuild on revision change
 include $(top_srcdir)/revisionstr.am
-AM_CPPFLAGS += $(REVISIONSTR)
 
 AM_CPPFLAGS += $(OPENMP_CPPFLAGS) #pragma
 AM_CXXFLAGS += $(OPENMP_CXXFLAGS) #omp
