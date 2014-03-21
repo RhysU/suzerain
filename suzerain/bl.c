@@ -66,9 +66,9 @@ suzerain_bl_compute_viscous(
     // details why and how how these scaling factors appear.  Provided that
     // they are addressed here, they don't "leak" into other computations.
     const double sqrt_code_Re = sqrt(code_Re);
-    viscous->tau_w    /= code_Re;
-    viscous->u_tau    /= sqrt_code_Re;
-    viscous->delta_nu /= sqrt_code_Re;
+    viscous->tau_w    /= code_Re;                // Now nondim by [ rho0 u0^2 ]
+    viscous->u_tau    /= sqrt_code_Re;           // Now nondim by [ u0        ]
+    viscous->delta_nu /= sqrt_code_Re;           // Now nondim by [ l0        ]
 
     return SUZERAIN_SUCCESS;
 }
