@@ -30,21 +30,15 @@ noinst_LTLIBRARIES        = # Append below
 CXX = @MPICXX@
 CC  = @MPICC@
 
+# Version management.  Depend on $(top_srcdir)/.version to safely use.
+REVISIONSTR = $(shell cd $(top_srcdir) && ./build-aux/version-gen .version-dist .version)
+
 AM_CPPFLAGS += $(OPENMP_CPPFLAGS) #pragma
 AM_CXXFLAGS += $(OPENMP_CXXFLAGS) #omp
 AM_FCFLAGS  += $(OPENMP_FCFLAGS)  #partytime
 AM_LDFLAGS  += $(OPENMP_CXXFLAGS) #excellent
 
 BUILT_SOURCES += suzerain-config.h
-BUILT_SOURCES += suzerain-revision.h
-
-suzerain-revision.h: $(srcdir)/*.h                            \
-                     $(srcdir)/*.c                            \
-                     $(srcdir)/*.hpp  $(srcdir)/support/*.hpp \
-                     $(srcdir)/*.cpp  $(srcdir)/support/*.cpp \
-                     $(srcdir)/*.def                          \
-                     $(srcdir)/Makefile*
-	$(top_builddir)/build-aux/svnrev -n -o$@ -mSUZERAIN_REVISION_ "-f$(PACKAGE_VERSION).#" -i $?
 
 # Public API headers
 nobase_pkginclude_HEADERS += allocator.hpp
@@ -169,7 +163,6 @@ nobase_pkginclude_HEADERS += support/program_options.hpp
 nobase_pkginclude_HEADERS += support/savable.hpp
 nobase_pkginclude_HEADERS += support/support.hpp
 nobase_pkginclude_HEADERS += suzerain-config.h
-nobase_pkginclude_HEADERS += suzerain-revision.h
 nobase_pkginclude_HEADERS += svehla.h
 nobase_pkginclude_HEADERS += timecontroller.hpp
 nobase_pkginclude_HEADERS += timers.h
@@ -187,8 +180,8 @@ nobase_pkginclude_HEADERS += version.hpp
 # any system-wide /usr/lib, /usr/lib64, etc. is delayed as long as possible.
 lib_LTLIBRARIES          += libsuzerain.la
 libsuzerain_la_LDFLAGS    = -release $(PACKAGE_VERSION)
+libsuzerain_la_CPPFLAGS   = $(AM_CPPFLAGS) -DREVISIONSTR=\"$(REVISIONSTR)\"
 libsuzerain_la_SOURCES    = version.cpp
-libsuzerain_la_CPPFLAGS   = $(AM_CPPFLAGS)
 libsuzerain_la_LIBADD     = libblasetal.la
 libsuzerain_la_LIBADD    += libbspline.la
 libsuzerain_la_LIBADD    += libbase.la

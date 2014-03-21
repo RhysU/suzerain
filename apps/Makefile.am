@@ -13,14 +13,10 @@ noinst_PROGRAMS      += conservation
 conservation_SOURCES  = conservation.cpp
 conservation_LDADD    = ../suzerain/libsuzerain.la
 
-bin_PROGRAMS              += pencil_grid_bench
-pencil_grid_bench_LDADD    = ../suzerain/libsuzerain.la
-pencil_grid_bench_SOURCES  = pencil_grid_bench.cpp
-pencil_grid_bench_SOURCES += pencil_grid_bench_svnrev.c
-
-BUILT_SOURCES += pencil_grid_bench_svnrev.h
-pencil_grid_bench_svnrev.h: $(pencil_grid_bench_SOURCES)
-	$(top_builddir)/build-aux/svnrev -n -o$@ "-f$(PACKAGE_VERSION).#" -i $?
+bin_PROGRAMS               += pencil_grid_bench
+pencil_grid_bench_LDADD     = ../suzerain/libsuzerain.la
+pencil_grid_bench_SOURCES   = pencil_grid_bench.cpp
+pencil_grid_bench_CPPFLAGS  = $(AM_CPPFLAGS) -DREVISIONSTR=\"$(REVISIONSTR)\"
 
 ##
 ## Common test infrastructure and tests

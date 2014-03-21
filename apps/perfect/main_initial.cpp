@@ -22,7 +22,7 @@
 //--------------------------------------------------------------------------
 
 /** @file
- * Application executing \ref suzerain::perfect::driver_init::run.
+ * Application executing \ref suzerain::perfect::driver_initial::run.
  */
 
 #include <esio/esio.h>
@@ -44,12 +44,14 @@
 
 #pragma warning(disable:1419)
 
-namespace suzerain { namespace perfect {
+namespace suzerain {
+
+namespace perfect {
 
 /** Application for initializing new restart files. */
-struct driver_init : public driver
+struct driver_initial : public driver
 {
-    driver_init(const std::string& revstr)
+    driver_initial()
         : driver("Compressible, perfect gas simulation initialization",
                  "RESTART-FILE",
 "Initializes channel flow profile per --npower option unless --Re_x is\n"
@@ -57,7 +59,7 @@ struct driver_init : public driver
 "The Blasius solution will uniquely fix both --upper_u and --upper_v.\n"
 "Boundary layers homogenized by Largo employ a linear ramp in v.\n"
 "When in doubt, please read through the source code.\n",
-                 revstr)
+                 REVISIONSTR)
         , who("initial")
     {}
 
@@ -73,10 +75,9 @@ private:
     std::string who;
 };
 
-} /* namespace perfect */ } /* namespace suzerain */
+} // namespace perfect
 
-// Provided by main_initial_svnrev.{c,h} so revstr updates are merely relinking
-extern "C" const char revstr[];
+} // namespace suzerain
 
 /** Provides parsing and validation of several options. */
 static void
@@ -90,13 +91,13 @@ parse_nonnegative(const std::string& s, suzerain::real_t *t, const char *n)
 /** Instantiate and invoke the application. */
 int main(int argc, char **argv)
 {
-    suzerain::perfect::driver_init app(revstr);
+    suzerain::perfect::driver_initial app;
     return app.run(argc, argv);
 }
 
 /** The logic executed by main(). */
 int
-suzerain::perfect::driver_init::run(int argc, char **argv)
+suzerain::perfect::driver_initial::run(int argc, char **argv)
 {
     using boost::math::constants::pi;
     using boost::math::tgamma;

@@ -59,11 +59,11 @@ namespace perfect {
 /** Application for initializing new restart files. */
 struct driver_advance : public driver
 {
-    driver_advance(const std::string& revstr)
+    driver_advance()
         : driver("Compressible, perfect gas simulation time advancement",
                  "RESTART-FILE",
                  "",
-                 revstr)
+                 REVISIONSTR)
         , who("advance")
     {}
 
@@ -80,13 +80,10 @@ private:
 
 } // namespace suzerain
 
-// Provided by main_advance_svnrev.{c,h} so revstr updates are merely relinking
-extern "C" const char revstr[];
-
 /** Instantiate and invoke the application */
 int main(int argc, char **argv)
 {
-    suzerain::perfect::driver_advance app(revstr);
+    suzerain::perfect::driver_advance app;
     return app.run(argc, argv);
 }
 

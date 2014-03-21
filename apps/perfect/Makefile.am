@@ -40,32 +40,20 @@ libsuzerain_perfect_la_SOURCES += treatment_nonreflecting.hpp
 ## Applications
 ##
 
-bin_PROGRAMS            += perfect_initial
-perfect_initial_SOURCES  = main_initial.cpp
-perfect_initial_SOURCES += main_initial_svnrev.c
-BUILT_SOURCES           += main_initial_svnrev.h
-perfect_initial_LDADD    = libsuzerain_perfect.la
-main_initial_svnrev.h: $(perfect_initial_SOURCES)
-main_initial_svnrev.h: $(libsuzerain_perfect_la_SOURCES)
-	$(top_builddir)/build-aux/svnrev -n -o$@ "-f$(PACKAGE_VERSION).#" -i $?
+bin_PROGRAMS             += perfect_initial
+perfect_initial_SOURCES   = main_initial.cpp
+perfect_initial_LDADD     = libsuzerain_perfect.la
+perfect_initial_CPPFLAGS  = $(AM_CPPFLAGS) -DREVISIONSTR=\"$(REVISIONSTR)\"
 
-bin_PROGRAMS            += perfect_advance
-perfect_advance_SOURCES  = main_advance.cpp
-perfect_advance_SOURCES += main_advance_svnrev.c
-BUILT_SOURCES           += main_advance_svnrev.h
-perfect_advance_LDADD    = libsuzerain_perfect.la
-main_advance_svnrev.h: $(perfect_advance_SOURCES)
-main_advance_svnrev.h: $(libsuzerain_perfect_la_SOURCES)
-	$(top_builddir)/build-aux/svnrev -n -o$@ "-f$(PACKAGE_VERSION).#" -i $?
+bin_PROGRAMS             += perfect_advance
+perfect_advance_SOURCES   = main_advance.cpp
+perfect_advance_LDADD     = libsuzerain_perfect.la
+perfect_advance_CPPFLAGS  = $(AM_CPPFLAGS) -DREVISIONSTR=\"$(REVISIONSTR)\"
 
-bin_PROGRAMS            += perfect_summary
-perfect_summary_SOURCES  = main_summary.cpp
-perfect_summary_SOURCES += main_summary_svnrev.c
-BUILT_SOURCES           += main_summary_svnrev.h
-perfect_summary_LDADD    = libsuzerain_perfect.la
-main_summary_svnrev.h: $(main_summary_SOURCES)
-main_summary_svnrev.h: $(libsuzerain_perfect_la_SOURCES)
-	$(top_builddir)/build-aux/svnrev -n -o$@ "-f$(PACKAGE_VERSION).#" -i $?
+bin_PROGRAMS             += perfect_summary
+perfect_summary_SOURCES   = main_summary.cpp
+perfect_summary_LDADD     = libsuzerain_perfect.la
+perfect_summary_CPPFLAGS  = $(AM_CPPFLAGS) -DREVISIONSTR=\"$(REVISIONSTR)\"
 
 ##
 ## Tests for perfect gas applications

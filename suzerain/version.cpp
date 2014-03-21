@@ -30,7 +30,6 @@
 #include <sstream>
 
 #include <suzerain/suzerain-config.h>
-#include <suzerain/suzerain-revision.h>
 
 namespace suzerain {
 
@@ -47,7 +46,7 @@ std::string version(const std::string &application_name,
         || (application_name.empty() && !application_version.empty())) {
         oss << " written using ";
     }
-    oss << SUZERAIN_PACKAGE_NAME << ' ' << SUZERAIN_REVISION_STR
+    oss << SUZERAIN_PACKAGE_NAME << ' ' << REVISIONSTR
         << " ("
 #if defined(__INTEL_COMPILER)
         << "Intel "

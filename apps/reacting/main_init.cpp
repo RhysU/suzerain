@@ -37,16 +37,18 @@
 
 #pragma warning(disable:1419)
 
-namespace suzerain { namespace reacting {
+namespace suzerain {
+
+namespace reacting {
 
 /** Application for initializing new restart files. */
 struct driver_init : public driver
 {
-    driver_init(const std::string& revstr)
+    driver_init()
         : driver("Compressible, reacting flow simulation initialization",
                  "RESTART-FILE",
                  "",
-                 revstr)
+                 REVISIONSTR)
         , who("init")
     {}
 
@@ -59,15 +61,14 @@ private:
     std::string who;
 };
 
-} /* namespace reacting */ } /* namespace suzerain */
+} // namespace reacting
 
-// Provided by main_init_svnrev.{c,h} so revstr updates are merely relinking
-extern "C" const char revstr[];
+} // namespace suzerain
 
 /** Instantiate and invoke the application */
 int main(int argc, char **argv)
 {
-    suzerain::reacting::driver_init app(revstr);
+    suzerain::reacting::driver_init app;
     return app.run(argc, argv);
 }
 

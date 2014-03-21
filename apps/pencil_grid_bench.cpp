@@ -32,11 +32,6 @@
 #include <suzerain/support/application_base.hpp>
 #include <suzerain/support/logging.hpp>
 
-// Provided by pencil_grid_bench_svnrev.{c,h} to speed recompilation
-#pragma warning(push,disable:1419)
-extern "C" const char revstr[];
-#pragma warning(pop)
-
 using namespace suzerain;
 
 static real_t sample_field(const real_t x, const real_t y, const real_t z)
@@ -58,7 +53,7 @@ int main(int argc, char **argv)
     // Instantiate application_base instance and set desired defaults
     support::application_base app(
             "Benchmark parallel FFTs implemented using suzerain::pencil_grid",
-            /* No arguments */ "", /* No further description*/ "", revstr);
+            /* No arguments */ "", /* No further description*/ "", REVISIONSTR);
     app.grid->htdelta = 0;
     app.grid->k       = 4;
     app.grid->L.x()   = 8 * boost::math::constants::pi<real_t>();

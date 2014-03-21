@@ -1,7 +1,9 @@
 ## Process this file with automake to produce Makefile.in
 ACLOCAL_AMFLAGS  = -I m4
 AUTOMAKE_OPTIONS = foreign
+BUILT_SOURCES    = # Append below
 CLEANFILES       = # Append below
+EXTRA_DIST       = # Append below
 
 # Build toplevel directory in serial
 # http://www.gnu.org/software/automake/manual/make/Special-Targets.html
@@ -20,7 +22,7 @@ SUBDIRS = lib largo build-aux suzerain $(MAYBE_TESTS_SUBDIR) fields apps \
 # Distribute these directories:
 DIST_SUBDIRS = lib largo build-aux suzerain tests fields apps \
                writeups jobscripts preproc postproc
-EXTRA_DIST   = AUTHORS astylerc bootstrap COPYING $(DX_CONFIG)
+EXTRA_DIST  += AUTHORS astylerc bootstrap COPYING $(DX_CONFIG)
 EXTRA_DIST  += notebooks # Entire directory contents
 
 # Eliminate .svn and/or .git directories in dist tarball
@@ -65,6 +67,20 @@ libtool: $(LIBTOOL_DEPS)
 
 # Required for AX_PROG_DOXYGEN
 include doxygen.am
+
+##
+## Version number management using build-aux/version-gen modifying ideas from
+## https://lists.gnu.org/archive/html/autoconf/2009-12/msg00056.html
+## and those embedded within build-aux/version-gen itself.  That mailing
+## list suggests more robust tarball procedures worth eventually adopting.
+##
+EXTRA_DIST    += .version
+BUILT_SOURCES += $(srcdir)/.version
+$(srcdir)/.version: configure.ac
+	echo $(VERSION) >$@-t && mv $@-t $@
+dist-hook: dist-hook-version-dist
+dist-hook-version-dist:
+	echo $(VERSION) >$(distdir)/.version-dist
 
 # -------------------------------------------
 # Optional support for code coverage analysis

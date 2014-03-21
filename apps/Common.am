@@ -27,6 +27,9 @@ TESTS               = # Append elsewhere
 CXX = @MPICXX@
 CC  = @MPICC@
 
+# Version management.  Depend on $(top_srcdir)/.version to safely use.
+REVISIONSTR = $(shell cd $(top_srcdir) && ./build-aux/version-gen .version-dist .version)
+
 AM_CPPFLAGS += $(OPENMP_CPPFLAGS) #pragma
 AM_CXXFLAGS += $(OPENMP_CXXFLAGS) #omp
 AM_FCFLAGS  += $(OPENMP_FCFLAGS)  #partytime

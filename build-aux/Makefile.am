@@ -15,13 +15,9 @@ AUX_DIST += missing
 AUX_DIST += mkinstalldirs
 AUX_DIST += test-driver
 AUX_DIST += tex-it
+AUX_DIST += version-gen
 
 MAINTAINERCLEANFILES = $(AUX_DIST)
-
-# Why isn't noinst_PROGRAMS automatically building svnrev on 'make dist'?
-dist-hook:         svnrev
-noinst_PROGRAMS += svnrev
-svnrev_SOURCES   = svnrev.c svnrev.h
 
 # Required for AX_AM_MACROS
 @INC_AMINCLUDE@

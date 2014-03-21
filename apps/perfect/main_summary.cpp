@@ -39,11 +39,11 @@ namespace perfect {
 /** Summarize mean statistics for one or more restart files. */
 struct driver_summary : public driver
 {
-    driver_summary(const std::string& revstr)
+    driver_summary()
         : driver("Compressible, perfect gas simulation summarization",
                  driver_base::summary_argument_synopsis,
                  driver_base::summary_description,
-                 revstr)
+                 REVISIONSTR)
     {
         // Almost none of the common application/driver infrastructure is used:
         isothermal.reset();  // No monkeying with boundary conditions...
@@ -71,12 +71,9 @@ private:
 
 } // namespace suzerain
 
-// Provided by main_summary_svnrev.{c,h} to speed recompilation
-extern "C" const char revstr[];
-
 /** Instantiate and invoke the application. */
 int main(int argc, char **argv)
 {
-    suzerain::perfect::driver_summary app(revstr);
+    suzerain::perfect::driver_summary app;
     return app.run(argc, argv);
 }
