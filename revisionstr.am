@@ -5,10 +5,9 @@
 REVISIONSTR := -DREVISIONSTR=\"$(shell cd $(top_srcdir) && ./build-aux/version-gen .version-dist .version)\"
 
 # Update the timestamp on .revisionstr only when the content changes
-.PHONY: .revisionstr
-all:    .revisionstr
+BUILT_SOURCES: .revisionstr
 .revisionstr:
-	@(echo $(REVISIONSTR) | diff $@ - 2>/dev/null) || echo $(REVISIONSTR) > $@
+	@echo $(REVISIONSTR) | diff $@ - 2>/dev/null || echo $(REVISIONSTR) > $@
 
 # Remove the .revisionstr breadcrumbs on clean or distribution
 dist-hook:   revisionstr-clean

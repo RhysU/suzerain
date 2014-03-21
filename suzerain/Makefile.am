@@ -200,6 +200,7 @@ libsuzerain_la_LIBADD    += $(BOOST_PROGRAM_OPTIONS_LDFLAGS)
 libsuzerain_la_LIBADD    += $(BOOST_PROGRAM_OPTIONS_LIBS)
 libsuzerain_la_LIBADD    += $(GSL_LIBS)  # Includes MKL via BLAS hooks
 libsuzerain_la_LIBADD    += $(LOG4CXX_LIBS)
+version.lo:                 .revisionstr
 
 # BLAS and LAPACK wrappers, including custom BLAS- and LAPACK-like kernels.
 # These routines ("BLAS et. al.") should be directly usable elsewhere
