@@ -8,11 +8,10 @@ REVISIONSTR := -DREVISIONSTR=\"$(shell cd $(top_srcdir) && ./build-aux/version-g
 .PHONY: .revisionstr
 all:    .revisionstr
 .revisionstr:
-	@(echo $(REVISIONSTR) | diff $@ - >/dev/null) || echo $(REVISIONSTR) > $@
+	@(echo $(REVISIONSTR) | diff $@ - 2>/dev/null) || echo $(REVISIONSTR) > $@
 
-# Remove the .revisionstr breadcrumbs on distribution
-dist-hook: revisionstr-dist-hook
-revisionstr-dist-hook:
-	rm -f .revisionstr
-
-# vim: set ft=automake:
+# Remove the .revisionstr breadcrumbs on clean or distribution
+dist-hook:   revisionstr-clean
+clean-local: revisionstr-clean
+revisionstr-clean:
+	@rm -f .revisionstr
