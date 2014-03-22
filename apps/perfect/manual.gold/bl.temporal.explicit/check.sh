@@ -14,9 +14,10 @@ case=$(basename "$SCRIPTDIR")
 rmmkcd "gold/$case"
 exec 1> >(tee ./output) 2>&1
 
-#Exclusion of bar_ke post-r43126 represents laziness in updating gold files
-#Exclusion of bar_p  post-r43655 represents laziness in updating gold files
-excludes="--exclude-path /metadata_generated --exclude-path /bar_ke --exclude-path /bar_p"
+for dataset in /metadata_generated
+do
+    excludes+=" --exclude-path $dataset"
+done
 
 "$perfect_initial" initial.h5 --k=6 --Nx=1 --Ny=36 --Nz=1 --htdelta=-3 --Re=3000 --Ma=1.5 --Pr=0.7 --Ly=1 --Re_x=3000 --largo_formulation=temporal --largo_grdelta=1e-1
 h5diff -r -c -v $excludes "$@" "$SCRIPTDIR/initial.h5" initial.h5
