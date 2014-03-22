@@ -43,14 +43,17 @@ libsuzerain_perfect_la_SOURCES += treatment_nonreflecting.hpp
 bin_PROGRAMS             += perfect_initial
 perfect_initial_SOURCES   = main_initial.cpp
 perfect_initial_LDADD     = libsuzerain_perfect.la
+perfect_initial_CPPFLAGS  = $(AM_CPPFLAGS) $(REVISIONSTR)
 
 bin_PROGRAMS             += perfect_advance
 perfect_advance_SOURCES   = main_advance.cpp
 perfect_advance_LDADD     = libsuzerain_perfect.la
+perfect_advance_CPPFLAGS  = $(AM_CPPFLAGS) $(REVISIONSTR)
 
 bin_PROGRAMS             += perfect_summary
 perfect_summary_SOURCES   = main_summary.cpp
 perfect_summary_LDADD     = libsuzerain_perfect.la
+perfect_summary_CPPFLAGS  = $(AM_CPPFLAGS) $(REVISIONSTR)
 
 ##
 ## Tests for perfect gas applications

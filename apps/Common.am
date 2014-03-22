@@ -27,7 +27,8 @@ TESTS               = # Append elsewhere
 CXX = @MPICXX@
 CC  = @MPICC@
 
-# Depend on .revisionstr to rebuild on revision change
+# Depend on .revisionstr to rebuild whenever revision changes
+# Get $(REVISIONSTR) into target CPPFLAGS to use the macro.
 include $(top_srcdir)/revisionstr.am
 
 AM_CPPFLAGS += $(OPENMP_CPPFLAGS) #pragma

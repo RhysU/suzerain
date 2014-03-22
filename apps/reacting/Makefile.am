@@ -54,10 +54,12 @@ libsuzerain_reacting_la_SOURCES += treatment_nonreflecting.hpp
 bin_PROGRAMS              += reacting_init
 reacting_init_SOURCES      = main_init.cpp
 reacting_init_LDADD        = libsuzerain_reacting.la
+reacting_init_CPPFLAGS     = $(AM_CPPFLAGS) $(REVISIONSTR)
 
 bin_PROGRAMS              += reacting_advance
 reacting_advance_SOURCES   = main_advance.cpp
 reacting_advance_LDADD     = libsuzerain_reacting.la
+reacting_advance_CPPFLAGS  = $(AM_CPPFLAGS) $(REVISIONSTR)
 
 ##
 ## Tests for reacting flow applications

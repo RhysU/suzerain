@@ -26,7 +26,8 @@ lib_LTLIBRARIES           = # Append below
 nobase_pkginclude_HEADERS = # Append below
 noinst_LTLIBRARIES        = # Append below
 
-# Depend on .revisionstr to rebuild on revision change
+# Depend on .revisionstr to rebuild whenever revision changes
+# Get $(REVISIONSTR) into target CPPFLAGS to use the macro.
 include $(top_srcdir)/revisionstr.am
 
 # MPI-based compilation and linking
@@ -180,7 +181,6 @@ nobase_pkginclude_HEADERS += version.hpp
 # any system-wide /usr/lib, /usr/lib64, etc. is delayed as long as possible.
 lib_LTLIBRARIES          += libsuzerain.la
 libsuzerain_la_LDFLAGS    = -release $(PACKAGE_VERSION)
-libsuzerain_la_SOURCES    = version.cpp
 libsuzerain_la_LIBADD     = libblasetal.la
 libsuzerain_la_LIBADD    += libbspline.la
 libsuzerain_la_LIBADD    += libbase.la
@@ -199,6 +199,8 @@ libsuzerain_la_LIBADD    += $(BOOST_PROGRAM_OPTIONS_LDFLAGS)
 libsuzerain_la_LIBADD    += $(BOOST_PROGRAM_OPTIONS_LIBS)
 libsuzerain_la_LIBADD    += $(GSL_LIBS)  # Includes MKL via BLAS hooks
 libsuzerain_la_LIBADD    += $(LOG4CXX_LIBS)
+libsuzerain_la_CPPFLAGS   = $(AM_CPPFLAGS) $(REVISIONSTR)
+libsuzerain_la_SOURCES    = version.cpp
 version.lo:                 .revisionstr
 
 # BLAS and LAPACK wrappers, including custom BLAS- and LAPACK-like kernels.
@@ -362,7 +364,6 @@ libsupport_la_SOURCES       += support/overridable.cpp
 libsupport_la_SOURCES       += support/populatable.cpp
 libsupport_la_SOURCES       += support/program_options.cpp
 libsupport_la_SOURCES       += support/support.cpp
-EXTRA_libsupport_la_SOURCES  =
 
 # Clean up from Intel Compiler's -prof-gen output
 CLEANFILES += pgopti.spi pgopti.spl *.dyn *.dpi

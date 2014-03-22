@@ -16,6 +16,7 @@ conservation_LDADD    = ../suzerain/libsuzerain.la
 bin_PROGRAMS               += pencil_grid_bench
 pencil_grid_bench_LDADD     = ../suzerain/libsuzerain.la
 pencil_grid_bench_SOURCES   = pencil_grid_bench.cpp
+pencil_grid_bench_CPPFLAGS  = $(AM_CPPFLAGS) $(REVISIONSTR)
 
 ##
 ## Common test infrastructure and tests
