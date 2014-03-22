@@ -66,9 +66,11 @@ AM_PROG_AR
 AC_OPENMP
 AX_PROG_CC_C99_CFLAGS(,AC_MSG_ERROR([Compiler cannot support ISO C99]))
 AX_COMPILER_VENDOR
-dnl TODO get AX_APPEND_LINK_FLAGS([-Wl,--as-needed],[LDFLAGS]) working
-case $ax_cv_c_compiler_vendor in dnl Avoid overlinking when possible
-  *)   :                         dnl Using --as-needed with MKL breaks
+case $ax_cv_c_compiler_vendor in dnl Options to help with overlinking
+  *)   AX_APPEND_LINK_FLAGS([-Wl,--as-needed],[LD_AS_NEEDED])
+       AC_SUBST([LD_AS_NEEDED])
+       AX_APPEND_LINK_FLAGS([-Wl,--no-as-needed],[LD_NO_AS_NEEDED])
+       AC_SUBST([LD_NO_AS_NEEDED])
        ;;
 esac
 if test "x$ax_enable_debug" != "xyes"; then
