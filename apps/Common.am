@@ -8,20 +8,23 @@ AM_CPPFLAGS        += $(FFTW3_THREADS_CFLAGS) $(MKL_CFLAGS) $(GSL_CFLAGS)
 AM_CPPFLAGS        += $(LOG4CXX_CFLAGS) $(BOOST_CPPFLAGS)
 AM_CPPFLAGS        += $(EIGEN_CFLAGS) $(GRVY_CFLAGS) $(ESIO_CFLAGS)
 AM_CPPFLAGS        += -I$(top_builddir)/largo -I$(top_srcdir)/largo
+AM_LDFLAGS          = $(LD_AS_NEEDED)
+AM_LDFLAGS         += $(BOOST_PROGRAM_OPTIONS_LDFLAGS)
+AM_LDFLAGS         += $(MKL_LDFLAGS)
 
-AM_CXXFLAGS         = # Append elsewhere
-AM_FCFLAGS          = # Append elsewhere
-AM_LDFLAGS          = # Append elsewhere
-bin_PROGRAMS        = # Append elsewhere
-BUILT_SOURCES       = # Append elsewhere
-CLEANFILES          = # Append elsewhere
-dist_check_SCRIPTS  = # Append elsewhere
-EXTRA_DIST          = # Append elsewhere
-EXTRA_PROGRAMS      = # Append elsewhere
-lib_LTLIBRARIES     = # Append elsewhere
-noinst_LTLIBRARIES  = # Append elsewhere
-noinst_PROGRAMS     = # Append elsewhere
-TESTS               = # Append elsewhere
+# Append to these as necessary
+AM_CXXFLAGS         =
+AM_FCFLAGS          =
+bin_PROGRAMS        =
+BUILT_SOURCES       =
+CLEANFILES          =
+dist_check_SCRIPTS  =
+EXTRA_DIST          =
+EXTRA_PROGRAMS      =
+lib_LTLIBRARIES     =
+noinst_LTLIBRARIES  =
+noinst_PROGRAMS     =
+TESTS               =
 
 # MPI-based compilation and linking
 CXX = @MPICXX@

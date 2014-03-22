@@ -181,6 +181,7 @@ nobase_pkginclude_HEADERS += version.hpp
 # any system-wide /usr/lib, /usr/lib64, etc. is delayed as long as possible.
 lib_LTLIBRARIES          += libsuzerain.la
 libsuzerain_la_LDFLAGS    = -release $(PACKAGE_VERSION)
+libsuzerain_la_LDFLAGS   += $(LD_AS_NEEDED)
 libsuzerain_la_LIBADD     = libblasetal.la
 libsuzerain_la_LIBADD    += libbspline.la
 libsuzerain_la_LIBADD    += libbase.la
@@ -197,7 +198,11 @@ libsuzerain_la_LIBADD    += $(BOOST_IOSTREAMS_LDFLAGS)
 libsuzerain_la_LIBADD    += $(BOOST_IOSTREAMS_LIBS)
 libsuzerain_la_LIBADD    += $(BOOST_PROGRAM_OPTIONS_LDFLAGS)
 libsuzerain_la_LIBADD    += $(BOOST_PROGRAM_OPTIONS_LIBS)
-libsuzerain_la_LIBADD    += $(GSL_LIBS)  # Includes MKL via BLAS hooks
+# Includes MKL via GSL BLAS hooks making it sensitive to --as-needed
+libsuzerain_la_LIBADD    += $(LD_NO_AS_NEEDED)
+libsuzerain_la_LIBADD    += $(GSL_LIBS)
+libsuzerain_la_LIBADD    += $(LD_AS_NEEDED)
+#
 libsuzerain_la_LIBADD    += $(LOG4CXX_LIBS)
 libsuzerain_la_CPPFLAGS   = $(AM_CPPFLAGS) $(REVISIONSTR)
 libsuzerain_la_SOURCES    = version.cpp

@@ -9,7 +9,7 @@ include ../Common.am
 ###
 
 lib_LTLIBRARIES                += libsuzerain_perfect.la
-libsuzerain_perfect_la_LDFLAGS  = -release $(PACKAGE_VERSION)
+libsuzerain_perfect_la_LDFLAGS  = $(AM_LDFLAGS) -release $(PACKAGE_VERSION)
 libsuzerain_perfect_la_LIBADD   = ../../suzerain/libsuzerain.la
 libsuzerain_perfect_la_SOURCES  = common_block.cpp
 libsuzerain_perfect_la_SOURCES += common_block.hpp
