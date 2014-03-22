@@ -14,7 +14,10 @@ case=$(basename "$SCRIPTDIR")
 rmmkcd "gold/$case"
 exec 1> >(tee ./output) 2>&1
 
-excludes="--exclude-path /metadata_generated"
+for dataset in /metadata_generated
+do
+    excludes+=" --exclude-path $dataset"
+done
 
 # Initialize the appropriate boundary layer grid lacking the radial flow settings
 "$perfect_initial" initial.h5 --k=6 --Nx=1 --Ny=36 --Nz=1 --htdelta=-3 --Re=3000 --Ma=1.5 --Pr=0.7 --Ly=1 --Re_x=3000 --largo_formulation=spatiotemporal_consistent --largo_grdelta=1e-1
