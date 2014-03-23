@@ -37,7 +37,7 @@ fields_DATA += coarse3D.bl.isothermal.zpg.h5
 
 # Mean profiles for coarse3D.* so one might see what one is about to use
 # Using postproc/gplot is recommended to interrogate this data.  For example,
-# 	gplot -c coarse3D.\*.mean.gz using '"y":"bar_u"' with linespoints
+#     gplot -c using '"y":"bar_u"' with linespoints ::: coarse3D.*.mean.gz
 noinst_DATA += coarse3D.channel.mean.gz
 noinst_DATA += coarse3D.couette.mean.gz
 noinst_DATA += coarse3D.couette.forced.mean.gz
