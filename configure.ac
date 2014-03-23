@@ -66,13 +66,6 @@ AM_PROG_AR
 AC_OPENMP
 AX_PROG_CC_C99_CFLAGS(,AC_MSG_ERROR([Compiler cannot support ISO C99]))
 AX_COMPILER_VENDOR
-case $ax_cv_c_compiler_vendor in dnl Options to help with overlinking
-  *)   AX_APPEND_LINK_FLAGS([-Wl,--as-needed],[LD_AS_NEEDED])
-       AC_SUBST([LD_AS_NEEDED])
-       AX_APPEND_LINK_FLAGS([-Wl,--no-as-needed],[LD_NO_AS_NEEDED])
-       AC_SUBST([LD_NO_AS_NEEDED])
-       ;;
-esac
 if test "x$ax_enable_debug" != "xyes"; then
     dnl Determine good optimization flags for C and store in CFLAGS_MAXOPT
     CFLAGS_pre_AX_CC_MAXOPT=${CFLAGS}
@@ -203,6 +196,32 @@ m4_append([AC_LANG(Fortran)],[
     ac_link="./libtool --mode=link --tag=FC $ac_link"
 ])[]dnl
 AC_CACHE_SAVE
+
+dnl ------------------------------------------------
+dnl Attempt to reduce overlinking
+dnl ------------------------------------------------
+case $ax_cv_c_compiler_vendor in
+  *)   AX_APPEND_LINK_FLAGS([-Wl,--as-needed],[LD_AS_NEEDED])
+       AC_SUBST([LD_AS_NEEDED])
+       AX_APPEND_LINK_FLAGS([-Wl,--no-as-needed],[LD_NO_AS_NEEDED])
+       AC_SUBST([LD_NO_AS_NEEDED])
+       ;;
+esac
+AC_ARG_ENABLE(interlib-deps,
+    [AC_HELP_STRING([--enable-interlib-deps],
+                    [enable libtool inter-library dependencies])],
+    [enable_interlib_deps="$enableval"],
+    [enable_interlib_deps="no"])
+AC_MSG_NOTICE([enable inter-library dependencies: $enable_interlib_deps])
+if test "${enable_interlib_deps}" == "yes"; then
+    link_all_deplibs=yes
+    link_all_deplibs_CXX=yes
+    link_all_deplibs_FC=yes
+else
+    link_all_deplibs=no
+    link_all_deplibs_CXX=no
+    link_all_deplibs_FC=no
+fi
 
 dnl ------------------------------------------------
 dnl MPI toolchain checks
