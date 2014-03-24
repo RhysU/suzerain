@@ -434,13 +434,13 @@ suzerain_bl_compute_reynolds(
     // see the suzerain_bl_viscous struct declaration to check their scaling.
     reynolds->delta   = edge->rho   * edge->u   * thick->delta   / edge->mu
                       * code_Re;
-    reynolds->delta1  = edge->rho   * edge->u   * thick->delta1  / edge->mu
+    reynolds->delta1  = edge99->rho * edge99->u * thick->delta1  / edge->mu
                       * code_Re;
-    reynolds->delta2  = edge->rho   * edge->u   * thick->delta2  / edge->mu
+    reynolds->delta2  = edge99->rho * edge99->u * thick->delta2  / edge->mu
                       * code_Re;
-    reynolds->delta3  = edge->rho   * edge->u   * thick->delta3  / edge->mu
+    reynolds->delta3  = edge99->rho * edge99->u * thick->delta3  / edge->mu
                       * code_Re;
-    reynolds->deltaH0 = edge->rho   * edge->u   * thick->deltaH0 / edge->mu
+    reynolds->deltaH0 = edge99->rho * edge99->u * thick->deltaH0 / edge->mu
                       * code_Re;
     reynolds->delta99 = edge99->rho * edge99->u * thick->delta99 / edge99->mu
                       * code_Re;
@@ -454,7 +454,7 @@ suzerain_bl_compute_qoi(
         const double code_Re,
         const suzerain_bl_local       * const wall,
         const suzerain_bl_viscous     * const viscous,
-        const suzerain_bl_local       * const edge,
+        const suzerain_bl_local       * const edge99,
         const suzerain_bl_thicknesses * const thick,
               suzerain_bl_qoi         * const qoi)
 {
@@ -464,11 +464,11 @@ suzerain_bl_compute_qoi(
     // quantity and the final line being any needed "code unit" correction.
     // Notice viscous->tau_w and viscous->u_tau already account for code_Re;
     // see the suzerain_bl_viscous struct declaration to check their scaling.
-    qoi->cf          = 2 * viscous->tau_w / edge->rho / square(edge->u)
+    qoi->cf          = 2 * viscous->tau_w / edge99->rho / square(edge99->u)
                      * 1;
-    qoi->gamma_e     = edge->gamma
+    qoi->gamma_e     = edge99->gamma
                      * 1;
-    qoi->Ma_e        = edge->u / edge->a
+    qoi->Ma_e        = edge99->u / edge99->a
                      * code_Ma;
     qoi->Ma_tau      = viscous->u_tau / wall->a
                      * code_Ma;
@@ -476,11 +476,11 @@ suzerain_bl_compute_qoi(
     qoi->Bq          = - (wall->mu * wall->T__y)
                      / (qoi->Pr_w * wall->rho * viscous->u_tau * wall->T)
                      / code_Re;
-    qoi->ratio_nu    = (edge->mu / edge->rho) / (wall->mu / wall->rho)
+    qoi->ratio_nu    = (edge99->mu / edge99->rho) / (wall->mu / wall->rho)
                      * 1;
-    qoi->ratio_rho   = edge->rho / wall->rho
+    qoi->ratio_rho   = edge99->rho / wall->rho
                      * 1;
-    qoi->ratio_T     = edge->T / wall->T
+    qoi->ratio_T     = edge99->T / wall->T
                      * 1;
     qoi->shapefactor = thick->delta1 / thick->delta2
                      * 1;
@@ -496,29 +496,32 @@ suzerain_bl_compute_pg(
         const double code_Re,
         const suzerain_bl_local       * const wall,
         const suzerain_bl_viscous     * const viscous,
-        const suzerain_bl_local       * const edge,
-        const double                          edge_p__x,
-        const double                          edge_u__x,
+        const suzerain_bl_local       * const edge99,
+        const double                          edge99_p__x,
+        const double                          edge99_u__x,
         const suzerain_bl_thicknesses * const thick,
               suzerain_bl_pg          * const pg)
 {
     FILL_WITH_NANS(pg);
 
-    // Nondimensional quantities are computed with the first line being the
-    // quantity and the second line being any needed "code unit" correction.
+    // Nondimensional quantities are computed with the earlier lines being the
+    // quantity and the final line being any needed "code unit" correction.
     // Notice viscous->tau_w and viscous->u_tau already account for code_Re;
     // see the suzerain_bl_viscous struct declaration to check their scaling.
-    pg->Clauser      = thick->delta1 / viscous->tau_w * edge_p__x
+    pg->Clauser      = thick->delta1 / viscous->tau_w * edge99_p__x
                      / square(code_Ma);
-    pg->Launder_e    = edge->mu * edge_u__x / edge->rho / square(edge->u)
+    pg->Launder_e    = edge99->mu * edge99_u__x
+                     / edge99->rho / square(edge99->u)
                      / code_Re;
-    pg->Launder_w    = wall->mu * edge_u__x / edge->rho / square(edge->u)
+    pg->Launder_w    = wall->mu * edge99_u__x / edge99->rho / square(edge99->u)
                      / code_Re;
-    pg->Lambda_n     = - thick->delta / viscous->tau_w * edge_p__x
+    pg->Lambda_n     = - thick->delta / viscous->tau_w * edge99_p__x
                      / square(code_Ma);
-    pg->p_ex         = thick->delta / edge->rho / square(edge->u) * edge_p__x
+    pg->p_ex         = thick->delta / edge99->rho
+                     / square(edge99->u) * edge99_p__x
                      / square(code_Ma);
-    pg->Pohlhausen   = square(thick->delta) * edge->rho / edge->mu * edge_u__x
+    pg->Pohlhausen   = square(thick->delta) * edge99->rho
+                     / edge99->mu * edge99_u__x
                      * code_Re;
 
     return SUZERAIN_SUCCESS;
@@ -983,7 +986,7 @@ suzerain_bl_compute_reynolds_baseflow(
     // Nondimensional quantities are computed with the first line being the
     // quantity and the final line being any needed "code unit" correction.
 
-    // Re_delta1 from integrand_reynolds_displacement, edge->mu, code_Re
+    // Re_delta1 from integrand_reynolds_displacement, edge99->mu, code_Re
     {
         params_reynolds_displacement params = {
             .vis_rhou   = coeffs_vis_rhou,
@@ -1000,11 +1003,11 @@ suzerain_bl_compute_reynolds_baseflow(
         int tmp = gsl_integration_qagp(&F, pts, npts, epsabs, epsrel,
                                        limit, iw, &reynolds->delta1, &abserr);
         gsl_set_error_handler(h);                                 // Pop
-        reynolds->delta1 *= code_Re / edge->mu;
+        reynolds->delta1 *= code_Re / edge99->mu;
         if (status == SUZERAIN_SUCCESS) status = tmp;
     }
 
-    // Re_delta2 from integrand_reynolds_momentum, edge->mu, code_Re
+    // Re_delta2 from integrand_reynolds_momentum, edge99->mu, code_Re
     {
         params_reynolds_momentum params = {
             .vis_rhou    = coeffs_vis_rhou,
@@ -1022,11 +1025,11 @@ suzerain_bl_compute_reynolds_baseflow(
         int tmp = gsl_integration_qagp(&F, pts, npts, epsabs, epsrel,
                                        limit, iw, &reynolds->delta2, &abserr);
         gsl_set_error_handler(h);                                 // Pop
-        reynolds->delta2 *= code_Re / edge->mu;
+        reynolds->delta2 *= code_Re / edge99->mu;
         if (status == SUZERAIN_SUCCESS) status = tmp;
     }
 
-    // Re_delta3 from integrand_reynolds_energy, edge->mu, code_Re
+    // Re_delta3 from integrand_reynolds_energy, edge99->mu, code_Re
     {
         params_reynolds_energy params = {
             .vis_ke      = coeffs_vis_ke,
@@ -1045,11 +1048,11 @@ suzerain_bl_compute_reynolds_baseflow(
         int tmp = gsl_integration_qagp(&F, pts, npts, epsabs, epsrel,
                                        limit, iw, &reynolds->delta3, &abserr);
         gsl_set_error_handler(h);                                 // Pop
-        reynolds->delta3 *= code_Re / edge->mu;
+        reynolds->delta3 *= code_Re / edge99->mu;
         if (status == SUZERAIN_SUCCESS) status = tmp;
     }
 
-    // Re_deltaH0 from integrand_reynolds_enthalpy, edge->mu, code_Re
+    // Re_deltaH0 from integrand_reynolds_enthalpy, edge99->mu, code_Re
     {
         params_reynolds_enthalpy params = {
             .vis_H0      = coeffs_vis_H0,
@@ -1067,7 +1070,7 @@ suzerain_bl_compute_reynolds_baseflow(
         int tmp = gsl_integration_qagp(&F, pts, npts, epsabs, epsrel,
                                        limit, iw, &reynolds->deltaH0, &abserr);
         gsl_set_error_handler(h);                                 // Pop
-        reynolds->deltaH0 *= code_Re / edge->mu;
+        reynolds->deltaH0 *= code_Re / edge99->mu;
         if (status == SUZERAIN_SUCCESS) status = tmp;
     }
 

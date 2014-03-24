@@ -1195,20 +1195,22 @@ void summarize_boundary_layer_nature(
 
     // Compute general quantities of interest
     suzerain_bl_compute_qoi(scenario.Ma, scenario.Re,
-                            &wall, &viscous, &edge, &thick, &qoi);
+                            &wall, &viscous, &edge99, &thick, &qoi);
 
     // Mean pressure and streamwise velocity gradients come from slow growth
-    double edge_p__x = 0, edge_u__x = 0;
+    double edge99_p__x = 0, edge99_u__x = 0;
     if (sg && sg->formulation.enabled() && sg->baseflow) {
-        const double delta = thick.delta;
-        if (SUZERAIN_UNLIKELY((isnan)(delta))) {
-            edge_p__x = edge_u__x = std::numeric_limits<real_t>::quiet_NaN();
+        const double delta99 = thick.delta99;
+        if (SUZERAIN_UNLIKELY((isnan)(delta99))) {
+            edge99_p__x = edge99_u__x = std::numeric_limits<real_t>::quiet_NaN();
         } else {
             largo_state base, dy, dx; // as_is()
-            sg->baseflow->conserved(delta, base.as_is(), dy.as_is(), dx.as_is());
-            sg->baseflow->pressure(delta, base.p, dy.p, dx.p);
-            edge_p__x = dx.p;                                       // Direct
-            edge_u__x = (dx.mx - dx.mx/base.rho*dx.rho) / base.rho; // Chained
+            sg->baseflow->conserved(delta99,
+                                    base.as_is(), dy.as_is(), dx.as_is());
+            sg->baseflow->pressure (delta99,
+                                    base.p, dy.p, dx.p);
+            edge99_p__x = dx.p;                                       // Direct
+            edge99_u__x = (dx.mx - dx.mx/base.rho*dx.rho) / base.rho; // Chained
         }
     }
     if (const int err = suzerain_bl_compute_pg(
@@ -1216,9 +1218,9 @@ void summarize_boundary_layer_nature(
                             scenario.Re,
                             &wall,
                             &viscous,
-                            &edge,
-                            edge_p__x,
-                            edge_u__x,
+                            &edge99,
+                            edge99_p__x,
+                            edge99_u__x,
                             &thick,
                             &pg)) {
         WARNONCE0("profile",
