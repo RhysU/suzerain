@@ -1333,26 +1333,30 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                          dtbase[ivar] = wall_u * dxbase[ivar];
                     }
 
-                    // sources from baseflow
-                    // rho
-                    srcbase[0]  = dtbase[0];
-                    srcbase[0] += dybase[2];
+                    // FIXME: Add option and code baseflow sources for 
+                    //        temporal and spatil formulations
+                    //
+                    // // sources from baseflow -- temporal formulations
+                    //
+                    // // rho
+                    // srcbase[0]  = dtbase[0];
+                    // srcbase[0] += dybase[2];
 
-                    // rho_u
-                    srcbase[1]  = dtbase[1];
-                    srcbase[1] += base_u * dybase[2] + base_v * dybase[1] - base_v * base_u * dybase[0];
+                    // // rho_u
+                    // srcbase[1]  = dtbase[1];
+                    // srcbase[1] += base_u * dybase[2] + base_v * dybase[1] - base_v * base_u * dybase[0];
 
-                    // rho_v
-                    srcbase[2]  = dtbase[2];
-                    srcbase[2] += base_v * dybase[2] + base_v * dybase[2] - base_v * base_v * dybase[0] + dyPbase;
+                    // // rho_v
+                    // srcbase[2]  = dtbase[2];
+                    // srcbase[2] += base_v * dybase[2] + base_v * dybase[2] - base_v * base_v * dybase[0] + dyPbase;
 
-                    // rho_w
-                    srcbase[3]  = dtbase[3];
-                    srcbase[3] += base_w * dybase[2] + base_v * dybase[3] - base_v * base_w * dybase[0];
+                    // // rho_w
+                    // srcbase[3]  = dtbase[3];
+                    // srcbase[3] += base_w * dybase[2] + base_v * dybase[3] - base_v * base_w * dybase[0];
 
-                    // rho_E
-                    srcbase[4]  = dtbase[4];
-                    srcbase[4] += base_H * dybase[2] + base_v * dybase_rH - base_v * base_H * dybase[0];
+                    // // rho_E
+                    // srcbase[4]  = dtbase[4];
+                    // srcbase[4] += base_H * dybase[2] + base_v * dybase_rH - base_v * base_H * dybase[0];
 
                     // rho_s
                     for (unsigned int ivar=1; ivar<Ns; ivar++){
