@@ -21,7 +21,8 @@ for dataset in /bar_ke /bar_p /metadata_generated \
                /maxz_rho  /maxz_rho_E  /maxz_rho_u  /maxz_rho_v  /maxz_rho_w \
                /min_rho   /min_rho_E   /min_rho_u   /min_rho_v   /min_rho_w  \
                /minx_rho  /minx_rho_E  /minx_rho_u  /minx_rho_v  /minx_rho_w \
-               /minz_rho  /minz_rho_E  /minz_rho_u  /minz_rho_v  /minz_rho_w
+               /minz_rho  /minz_rho_E  /minz_rho_u  /minz_rho_v  /minz_rho_w \
+               /bar_C2rho /bar_C2rhoE  /bar_C2rhou  /bar_C2rhou  /bar_C2rhow /bar_C2rhou_dot_u
 do
     excludes+=" --exclude-path $dataset"
 done

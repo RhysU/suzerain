@@ -14,7 +14,8 @@ case=$(basename "$SCRIPTDIR")
 rmmkcd "gold/$case"
 exec 1> >(tee ./output) 2>&1
 
-for dataset in /metadata_generated
+for dataset in /metadata_generated \
+               /bar_C2rho /bar_C2rhoE /bar_C2rhou /bar_C2rhou /bar_C2rhow /bar_C2rhou_dot_u
 do
     excludes+=" --exclude-path $dataset"
 done

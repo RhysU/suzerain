@@ -124,32 +124,35 @@ driver::compute_statistics(
 
     // Obtain mean quantities computed via implicit forcing (when possible)
     if (common_block.means.rows() == mean.storage.rows()) {
-        mean.f().col(0)     = common_block.fx();
-        mean.f().col(1)     = common_block.fy();
-        mean.f().col(2)     = common_block.fz();
-        mean.f_dot_u()      = common_block.f_dot_u();
-        mean.qb()           = common_block.qb();
-        mean.CrhoE()        = common_block.CrhoE();
-        mean.Crhou().col(0) = common_block.Crhou();
-        mean.Crhou().col(1) = common_block.Crhov();
-        mean.Crhou().col(2) = common_block.Crhow();
-        mean.Crho()         = common_block.Crho();
-        mean.Crhou_dot_u()  = common_block.Crhou_dot_u();
+        mean.f().col(0)      = common_block.fx();
+        mean.f().col(1)      = common_block.fy();
+        mean.f().col(2)      = common_block.fz();
+        mean.f_dot_u()       = common_block.f_dot_u();
+        mean.qb()            = common_block.qb();
+        mean.CrhoE()         = common_block.CrhoE();
+        mean.C2rhoE()        = common_block.C2rhoE();
+        mean.Crhou() .col(0) = common_block.Crhou();
+        mean.C2rhou().col(0) = common_block.C2rhou();
+        mean.Crhou() .col(1) = common_block.Crhov();
+        mean.C2rhou().col(1) = common_block.C2rhov();
+        mean.Crhou() .col(2) = common_block.Crhow();
+        mean.C2rhou().col(2) = common_block.C2rhow();
+        mean.Crho()          = common_block.Crho();
+        mean.C2rho()         = common_block.C2rho();
+        mean.Crhou_dot_u()   = common_block.Crhou_dot_u();
+        mean.C2rhou_dot_u()  = common_block.C2rhou_dot_u();
+
+        // Convert values at collocation points to expansion coefficients
+        bsplineop_lu mass(*cop);
+        mass.opform_mass(*cop);
+        mass.factor();
+        mass.solve(quantities::nscalars::implicit,
+                   mean.storage.middleCols<quantities::nscalars::implicit>(
+                       quantities::start::implicit).data(),
+                   mean.storage.innerStride(), mean.storage.outerStride());
     } else {
         WARN0(who, "Could not obtain mean quantities set by implicit forcing");
-        mean.storage.middleCols<quantities::nscalars::implicit>(
-                quantities::start::implicit).setConstant(
-                    std::numeric_limits<real_t>::quiet_NaN());
     }
-
-    // Convert implicit values at collocation points to expansion coefficients
-    bsplineop_lu mass(*cop);
-    mass.opform_mass(*cop);
-    mass.factor();
-    mass.solve(quantities::nscalars::implicit,
-               mean.storage.middleCols<quantities::nscalars::implicit>(
-                   quantities::start::implicit).data(),
-               mean.storage.innerStride(), mean.storage.outerStride());
 }
 
 bool

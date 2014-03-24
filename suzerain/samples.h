@@ -130,24 +130,30 @@
  * generally computed during implicit forcing.
  * \copydetails SUZERAIN_SAMPLES_WAVE
  */
-#define SUZERAIN_SAMPLES_IMPLICIT                                                                                                   \
-      (( SrhoE,       (( SrhoE,       "Reynolds-averaged total energy contributions due to slow growth forcing"                  )) \
-    ))(( Srhou,       (( Srhou,       "Reynolds-averaged streamwise momentum contributions due to slow growth forcing"           )) \
-                      (( Srhov,       "Reynolds-averaged wall-normal momentum contributions due to slow growth forcing"          )) \
-                      (( Srhow,       "Reynolds-averaged spanwise momentum contributions due to slow growth forcing"             )) \
-    ))(( Srho,        (( Srho,        "Reynolds-averaged mass contributions due to slow growth forcing"                          )) \
-    ))(( Srhou_dot_u, (( Srhou_dot_u, "Reynolds-averaged energy contribution due to slow growth forcing work"                    )) \
-    ))(( f,           (( fx,          "Reynolds-averaged x-component of the momentum forcing"                                    )) \
-                      (( fy,          "Reynolds-averaged y-component of the momentum forcing"                                    )) \
-                      (( fz,          "Reynolds-averaged z-component of the momentum forcing"                                    )) \
-    ))(( f_dot_u,     (( f_dot_u,     "Reynolds-averaged energy contribution due to momentum forcing work"                       )) \
-    ))(( qb,          (( qb,          "Reynolds-averaged volumetric energy forcing"                                              )) \
-    ))(( CrhoE,       (( CrhoE,       "Reynolds-averaged total energy contributions due to various integral constraints"         )) \
-    ))(( Crhou,       (( Crhou,       "Reynolds-averaged streamwise momentum contributions due to various integral constraints"  )) \
-                      (( Crhov,       "Reynolds-averaged wall-normal momentum contributions due to various integral constraints" )) \
-                      (( Crhow,       "Reynolds-averaged spanwise momentum contributions due to various integral constraints"    )) \
-    ))(( Crho,        (( Crho,        "Reynolds-averaged mass contributions due to various integral constraints"                 )) \
-    ))(( Crhou_dot_u, (( Crhou_dot_u, "Reynolds-averaged energy contribution due to work by various integral constraints"        )) \
+#define SUZERAIN_SAMPLES_IMPLICIT                                                                                                    \
+      (( SrhoE,        (( SrhoE,       "Reynolds-averaged total energy contributions due to slow growth forcing"                   )) \
+    ))(( Srhou,        (( Srhou,       "Reynolds-averaged streamwise momentum contributions due to slow growth forcing"            )) \
+                       (( Srhov,       "Reynolds-averaged wall-normal momentum contributions due to slow growth forcing"           )) \
+                       (( Srhow,       "Reynolds-averaged spanwise momentum contributions due to slow growth forcing"              )) \
+    ))(( Srho,         (( Srho,        "Reynolds-averaged mass contributions due to slow growth forcing"                           )) \
+    ))(( Srhou_dot_u,  (( Srhou_dot_u, "Reynolds-averaged energy contribution due to slow growth forcing work"                     )) \
+    ))(( f,            (( fx,          "Reynolds-averaged x-component of the momentum forcing"                                     )) \
+                       (( fy,          "Reynolds-averaged y-component of the momentum forcing"                                     )) \
+                       (( fz,          "Reynolds-averaged z-component of the momentum forcing"                                     )) \
+    ))(( f_dot_u,      (( f_dot_u,     "Reynolds-averaged energy contribution due to momentum forcing work"                        )) \
+    ))(( qb,           (( qb,          "Reynolds-averaged volumetric energy forcing"                                               )) \
+    ))(( CrhoE,        (( CrhoE,       "Reynolds-averaged total energy contributions due to integral constraints"                  )) \
+    ))(( Crhou,        (( Crhou,       "Reynolds-averaged streamwise momentum contributions due to integral constraints"           )) \
+                       (( Crhov,       "Reynolds-averaged wall-normal momentum contributions due to integral constraints"          )) \
+                       (( Crhow,       "Reynolds-averaged spanwise momentum contributions due to integral constraints"             )) \
+    ))(( Crho,         (( Crho,        "Reynolds-averaged mass contributions due to integral constraints"                          )) \
+    ))(( Crhou_dot_u,  (( Crhou_dot_u, "Reynolds-averaged energy contribution due to work by integral constraints"                 )) \
+    ))(( C2rhoE,       (( C2rhoE,       "Reynolds-averaged squared total energy contributions due to integral constraints"         )) \
+    ))(( C2rhou,       (( C2rhou,       "Reynolds-averaged squared streamwise momentum contributions due to integral constraints"  )) \
+                       (( C2rhov,       "Reynolds-averaged squared wall-normal momentum contributions due to integral constraints" )) \
+                       (( C2rhow,       "Reynolds-averaged squared spanwise momentum contributions due to integral constraints"    )) \
+    ))(( C2rho,        (( C2rho,        "Reynolds-averaged squared mass contributions due to integral constraints"                 )) \
+    ))(( C2rhou_dot_u, (( C2rhou_dot_u, "Reynolds-averaged squared energy contribution due to work by integral constraints"        )) \
     ))
 
 /**

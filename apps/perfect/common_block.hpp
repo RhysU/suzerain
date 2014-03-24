@@ -49,7 +49,7 @@ class operator_common_block
     typedef Array<real_t, Dynamic, 16, ColMajor> means_type;
 
     /** Type of the contiguous storage housing all implicit quantities */
-    typedef Array<real_t, Dynamic, 17, ColMajor> implicits_type;
+    typedef Array<real_t, Dynamic, 23, ColMajor> implicits_type;
 
     /** Type of the contiguous storage housing all reference quantities */
     typedef Array<real_t, 35, Dynamic, ColMajor> refs_type;
@@ -182,21 +182,34 @@ public:
      * \li \c CrhoE The \e linear operator accumulates the time-step-specific
      *     temporal mean of the implicit \f$\mathscr{C}_{\rho{}E}\f$ term in
      *     the energy equation.
+     * \li \c C2rhoE The \e linear operator accumulates the time-step-specific
+     *     temporal mean of the quantity \f$\mathscr{C}^2_{\rho{}E}\f$.
      * \li \c Crhou The \e linear operator accumulates the time-step-specific
      *     temporal mean of the implicit \f$\mathscr{C}_{\rho{}u}\f$ term in
      *     the streamwise (x) momentum equation.
+     * \li \c C2rhou The \e linear operator accumulates the time-step-specific
+     *     temporal mean of the quantity \f$\mathscr{C}^2_{\rho{}u}\f$.
      * \li \c Crhov The \e linear operator accumulates the time-step-specific
      *     temporal mean of the implicit \f$\mathscr{C}_{\rho{}v}\f$ term in
      *     the wall-normal (y) momentum equation.
+     * \li \c C2rhov The \e linear operator accumulates the time-step-specific
+     *     temporal mean of the quantity \f$\mathscr{C}^2_{\rho{}v}\f$.
      * \li \c Crhow The \e linear operator accumulates the time-step-specific
      *     temporal mean of the implicit \f$\mathscr{C}_{\rho{}w}\f$ term in
      *     the spanwise momentum equation.
+     * \li \c C2rhow The \e linear operator accumulates the time-step-specific
+     *     temporal mean of the quantity \f$\mathscr{C}^2_{\rho{}w}\f$.
      * \li \c Crho The \e linear operator accumulates the time-step-specific
      *     temporal mean of the implicit \f$\mathscr{C}_{\rho{}}\f$ term in the
      *     density equation.
+     * \li \c C2rho The \e linear operator accumulates the time-step-specific
+     *     temporal mean of the quantity \f$\mathscr{C}^2_{\rho{}}\f$.
      * \li \c Crhou_dot_u The \e linear operator accumulates the
      *     time-step-specific temporal mean of the implicit
      *     \f$\mathscr{C}_{\rho{}u}\cdot{}u\f$ term in the energy equation.
+     * \li \c C2rhou_dot_u The \e linear operator accumulates the
+     *     time-step-specific temporal mean of the quantity
+     *     \f$\mathscr{C}^2_{\rho{}u}\cdot{}u\f$.
      *
      * "Time-step-specific temporal means" are time averages taken across a
      * single time step of quantities which vary on each substep.  Each
@@ -215,44 +228,56 @@ public:
     /** Type returned by the non-const implicit quantity accessors. */
     typedef implicits_type::ColXpr implicit_type;
 
-    implicit_type       SrhoE()             { return implicits.col( 0); }
-    implicit_type       Srhou()             { return implicits.col( 1); }
-    implicit_type       Srhov()             { return implicits.col( 2); }
-    implicit_type       Srhow()             { return implicits.col( 3); }
-    implicit_type       Srho()              { return implicits.col( 4); }
-    implicit_type       Srhou_dot_u()       { return implicits.col( 5); }
-    implicit_type       fx()                { return implicits.col( 6); }
-    implicit_type       fy()                { return implicits.col( 7); }
-    implicit_type       fz()                { return implicits.col( 8); }
-    implicit_type       f_dot_u()           { return implicits.col( 9); }
-    implicit_type       qb()                { return implicits.col(10); }
-    implicit_type       CrhoE()             { return implicits.col(11); }
-    implicit_type       Crhou()             { return implicits.col(12); }
-    implicit_type       Crhov()             { return implicits.col(13); }
-    implicit_type       Crhow()             { return implicits.col(14); }
-    implicit_type       Crho()              { return implicits.col(15); }
-    implicit_type       Crhou_dot_u()       { return implicits.col(16); }
+    implicit_type       SrhoE()              { return implicits.col( 0); }
+    implicit_type       Srhou()              { return implicits.col( 1); }
+    implicit_type       Srhov()              { return implicits.col( 2); }
+    implicit_type       Srhow()              { return implicits.col( 3); }
+    implicit_type       Srho()               { return implicits.col( 4); }
+    implicit_type       Srhou_dot_u()        { return implicits.col( 5); }
+    implicit_type       fx()                 { return implicits.col( 6); }
+    implicit_type       fy()                 { return implicits.col( 7); }
+    implicit_type       fz()                 { return implicits.col( 8); }
+    implicit_type       f_dot_u()            { return implicits.col( 9); }
+    implicit_type       qb()                 { return implicits.col(10); }
+    implicit_type       CrhoE()              { return implicits.col(11); }
+    implicit_type       C2rhoE()             { return implicits.col(12); }
+    implicit_type       Crhou()              { return implicits.col(13); }
+    implicit_type       C2rhou()             { return implicits.col(14); }
+    implicit_type       Crhov()              { return implicits.col(15); }
+    implicit_type       C2rhov()             { return implicits.col(16); }
+    implicit_type       Crhow()              { return implicits.col(17); }
+    implicit_type       C2rhow()             { return implicits.col(18); }
+    implicit_type       Crho()               { return implicits.col(19); }
+    implicit_type       C2rho()              { return implicits.col(20); }
+    implicit_type       Crhou_dot_u()        { return implicits.col(21); }
+    implicit_type       C2rhou_dot_u()       { return implicits.col(22); }
 
     /** Type returned by the const implicit quantity accessors. */
     typedef implicits_type::ConstColXpr const_implicit_type;
 
-    const_implicit_type SrhoE()       const { return implicits.col( 0); }
-    const_implicit_type Srhou()       const { return implicits.col( 1); }
-    const_implicit_type Srhov()       const { return implicits.col( 2); }
-    const_implicit_type Srhow()       const { return implicits.col( 3); }
-    const_implicit_type Srho()        const { return implicits.col( 4); }
-    const_implicit_type Srhou_dot_u() const { return implicits.col( 5); }
-    const_implicit_type fx()          const { return implicits.col( 6); }
-    const_implicit_type fy()          const { return implicits.col( 7); }
-    const_implicit_type fz()          const { return implicits.col( 8); }
-    const_implicit_type f_dot_u()     const { return implicits.col( 9); }
-    const_implicit_type qb()          const { return implicits.col(10); }
-    const_implicit_type CrhoE()       const { return implicits.col(11); }
-    const_implicit_type Crhou()       const { return implicits.col(12); }
-    const_implicit_type Crhov()       const { return implicits.col(13); }
-    const_implicit_type Crhow()       const { return implicits.col(14); }
-    const_implicit_type Crho()        const { return implicits.col(15); }
-    const_implicit_type Crhou_dot_u() const { return implicits.col(16); }
+    const_implicit_type SrhoE()        const { return implicits.col( 0); }
+    const_implicit_type Srhou()        const { return implicits.col( 1); }
+    const_implicit_type Srhov()        const { return implicits.col( 2); }
+    const_implicit_type Srhow()        const { return implicits.col( 3); }
+    const_implicit_type Srho()         const { return implicits.col( 4); }
+    const_implicit_type Srhou_dot_u()  const { return implicits.col( 5); }
+    const_implicit_type fx()           const { return implicits.col( 6); }
+    const_implicit_type fy()           const { return implicits.col( 7); }
+    const_implicit_type fz()           const { return implicits.col( 8); }
+    const_implicit_type f_dot_u()      const { return implicits.col( 9); }
+    const_implicit_type qb()           const { return implicits.col(10); }
+    const_implicit_type CrhoE()        const { return implicits.col(11); }
+    const_implicit_type C2rhoE()       const { return implicits.col(12); }
+    const_implicit_type Crhou()        const { return implicits.col(13); }
+    const_implicit_type C2rhou()       const { return implicits.col(14); }
+    const_implicit_type Crhov()        const { return implicits.col(15); }
+    const_implicit_type C2rhov()       const { return implicits.col(16); }
+    const_implicit_type Crhow()        const { return implicits.col(17); }
+    const_implicit_type C2rhow()       const { return implicits.col(18); }
+    const_implicit_type Crho()         const { return implicits.col(19); }
+    const_implicit_type C2rho()        const { return implicits.col(20); }
+    const_implicit_type Crhou_dot_u()  const { return implicits.col(21); }
+    const_implicit_type C2rhou_dot_u() const { return implicits.col(22); }
 
     /** @} */
 

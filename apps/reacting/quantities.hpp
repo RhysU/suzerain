@@ -132,9 +132,13 @@ public:
     ((f_dot_u,           1))  /* scalar           */ \
     ((qb,                1))  /* scalar           */ \
     ((CrhoE,             1))  /* scalar           */ \
+    ((C2rhoE,            1))  /* scalar           */ \
     ((Crhou,             3))  /* vector           */ \
+    ((C2rhou,            3))  /* vector           */ \
     ((Crho,              1))  /* scalar           */ \
-    ((Crhou_dot_u,       1))  /* scalar           */
+    ((C2rho,             1))  /* scalar           */ \
+    ((Crhou_dot_u,       1))  /* scalar           */ \
+    ((C2rhou_dot_u,      1))  /* scalar           */
 
 /** A Boost.Preprocessor sequence of tuples of all sampled quantities. */
 #define SUZERAIN_REACTING_FLOW_QUANTITIES      \

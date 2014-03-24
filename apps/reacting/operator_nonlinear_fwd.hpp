@@ -87,7 +87,7 @@ enum type {
 class operator_common_block
 {
     /** Type of the contiguous storage housing all mean quantities */
-    typedef Array<real_t, Dynamic, 22, ColMajor> means_type;
+    typedef Array<real_t, Dynamic, 28, ColMajor> means_type;
 
 
     /** Type of the contiguous storage housing all reference quantities */
@@ -166,21 +166,34 @@ public:
      * \li \c CrhoE The \e linear operator accumulates the time-step-specific
      *     temporal mean of the implicit \f$\mathscr{C}_{\rho{}E}\f$ term in
      *     the energy equation.
+     * \li \c C2rhoE The \e linear operator accumulates the time-step-specific
+     *     temporal mean of the quantity \f$\mathscr{C}^2_{\rho{}E}\f$.
      * \li \c Crhou The \e linear operator accumulates the time-step-specific
      *     temporal mean of the implicit \f$\mathscr{C}_{\rho{}u}\f$ term in
      *     the streamwise (x) momentum equation.
+     * \li \c C2rhou The \e linear operator accumulates the time-step-specific
+     *     temporal mean of the quantity \f$\mathscr{C}^2_{\rho{}u}\f$.
      * \li \c Crhov The \e linear operator accumulates the time-step-specific
      *     temporal mean of the implicit \f$\mathscr{C}_{\rho{}v}\f$ term in
      *     the wall-normal (y) momentum equation.
+     * \li \c C2rhov The \e linear operator accumulates the time-step-specific
+     *     temporal mean of the quantity \f$\mathscr{C}^2_{\rho{}v}\f$.
      * \li \c Crhow The \e linear operator accumulates the time-step-specific
      *     temporal mean of the implicit \f$\mathscr{C}_{\rho{}w}\f$ term in
      *     the spanwise momentum equation.
+     * \li \c C2rhow The \e linear operator accumulates the time-step-specific
+     *     temporal mean of the quantity \f$\mathscr{C}^2_{\rho{}w}\f$.
      * \li \c Crho The \e linear operator accumulates the time-step-specific
      *     temporal mean of the implicit \f$\mathscr{C}_{\rho{}}\f$ term in the
      *     density equation.
+     * \li \c C2rho The \e linear operator accumulates the time-step-specific
+     *     temporal mean of the quantity \f$\mathscr{C}^2_{\rho{}}\f$.
      * \li \c Crhou_dot_u The \e linear operator accumulates the
      *     time-step-specific temporal mean of the implicit
      *     \f$\mathscr{C}_{\rho{}u}\cdot{}u\f$ term in the energy equation.
+     * \li \c C2rhou_dot_u The \e linear operator accumulates the
+     *     time-step-specific temporal mean of the quantity
+     *     \f$\mathscr{C}^2_{\rho{}u}\cdot{}u\f$.
      *
      * "Time-step-specific temporal means" are time averages taken across
      * a single time step of quantities which vary on each substep.
@@ -202,54 +215,66 @@ public:
     /** Type returned by the non-const mean quantity accessors. */
     typedef means_type::ColXpr mean_type;
 
-    mean_type       u()                 { return means.col( 0); }
-    mean_type       v()                 { return means.col( 1); }
-    mean_type       w()                 { return means.col( 2); }
-    mean_type       SrhoE()             { return means.col( 3); }
-    mean_type       Srhou()             { return means.col( 4); }
-    mean_type       Srhov()             { return means.col( 5); }
-    mean_type       Srhow()             { return means.col( 6); }
-    mean_type       Srho()              { return means.col( 7); }
-    mean_type       Srhou_dot_u()       { return means.col( 8); }
-    mean_type       fx()                { return means.col( 9); }
-    mean_type       fy()                { return means.col(10); }
-    mean_type       fz()                { return means.col(11); }
-    mean_type       f_dot_u()           { return means.col(12); }
-    mean_type       qb()                { return means.col(13); }
-    mean_type       CrhoE()             { return means.col(14); }
-    mean_type       Crhou()             { return means.col(15); }
-    mean_type       Crhov()             { return means.col(16); }
-    mean_type       Crhow()             { return means.col(17); }
-    mean_type       Crho()              { return means.col(18); }
-    mean_type       Crhou_dot_u()       { return means.col(19); }
-    mean_type       p()                 { return means.col(20); }
-    mean_type       p2()                { return means.col(21); }
+    mean_type       u()                  { return means.col( 0); }
+    mean_type       v()                  { return means.col( 1); }
+    mean_type       w()                  { return means.col( 2); }
+    mean_type       SrhoE()              { return means.col( 3); }
+    mean_type       Srhou()              { return means.col( 4); }
+    mean_type       Srhov()              { return means.col( 5); }
+    mean_type       Srhow()              { return means.col( 6); }
+    mean_type       Srho()               { return means.col( 7); }
+    mean_type       Srhou_dot_u()        { return means.col( 8); }
+    mean_type       fx()                 { return means.col( 9); }
+    mean_type       fy()                 { return means.col(10); }
+    mean_type       fz()                 { return means.col(11); }
+    mean_type       f_dot_u()            { return means.col(12); }
+    mean_type       qb()                 { return means.col(13); }
+    mean_type       CrhoE()              { return means.col(14); }
+    mean_type       C2rhoE()             { return means.col(15); }
+    mean_type       Crhou()              { return means.col(16); }
+    mean_type       C2rhou()             { return means.col(17); }
+    mean_type       Crhov()              { return means.col(18); }
+    mean_type       C2rhov()             { return means.col(19); }
+    mean_type       Crhow()              { return means.col(20); }
+    mean_type       C2rhow()             { return means.col(21); }
+    mean_type       Crho()               { return means.col(22); }
+    mean_type       C2rho()              { return means.col(23); }
+    mean_type       Crhou_dot_u()        { return means.col(24); }
+    mean_type       C2rhou_dot_u()       { return means.col(25); }
+    mean_type       p()                  { return means.col(26); }
+    mean_type       p2()                 { return means.col(27); }
 
     /** Type returned by the const mean quantity accessors. */
     typedef means_type::ConstColXpr const_mean_type;
 
-    const_mean_type u()           const { return means.col( 0); }
-    const_mean_type v()           const { return means.col( 1); }
-    const_mean_type w()           const { return means.col( 2); }
-    const_mean_type SrhoE()       const { return means.col( 3); }
-    const_mean_type Srhou()       const { return means.col( 4); }
-    const_mean_type Srhov()       const { return means.col( 5); }
-    const_mean_type Srhow()       const { return means.col( 6); }
-    const_mean_type Srho()        const { return means.col( 7); }
-    const_mean_type Srhou_dot_u() const { return means.col( 8); }
-    const_mean_type fx()          const { return means.col( 9); }
-    const_mean_type fy()          const { return means.col(10); }
-    const_mean_type fz()          const { return means.col(11); }
-    const_mean_type f_dot_u()     const { return means.col(12); }
-    const_mean_type qb()          const { return means.col(13); }
-    const_mean_type CrhoE()       const { return means.col(14); }
-    const_mean_type Crhou()       const { return means.col(15); }
-    const_mean_type Crhov()       const { return means.col(16); }
-    const_mean_type Crhow()       const { return means.col(17); }
-    const_mean_type Crho()        const { return means.col(18); }
-    const_mean_type Crhou_dot_u() const { return means.col(19); }
-    const_mean_type p()           const { return means.col(20); }
-    const_mean_type p2()          const { return means.col(21); }
+    const_mean_type u()            const { return means.col( 0); }
+    const_mean_type v()            const { return means.col( 1); }
+    const_mean_type w()            const { return means.col( 2); }
+    const_mean_type SrhoE()        const { return means.col( 3); }
+    const_mean_type Srhou()        const { return means.col( 4); }
+    const_mean_type Srhov()        const { return means.col( 5); }
+    const_mean_type Srhow()        const { return means.col( 6); }
+    const_mean_type Srho()         const { return means.col( 7); }
+    const_mean_type Srhou_dot_u()  const { return means.col( 8); }
+    const_mean_type fx()           const { return means.col( 9); }
+    const_mean_type fy()           const { return means.col(10); }
+    const_mean_type fz()           const { return means.col(11); }
+    const_mean_type f_dot_u()      const { return means.col(12); }
+    const_mean_type qb()           const { return means.col(13); }
+    const_mean_type CrhoE()        const { return means.col(14); }
+    const_mean_type C2rhoE()       const { return means.col(15); }
+    const_mean_type Crhou()        const { return means.col(16); }
+    const_mean_type C2rhou()       const { return means.col(17); }
+    const_mean_type Crhov()        const { return means.col(18); }
+    const_mean_type C2rhov()       const { return means.col(19); }
+    const_mean_type Crhow()        const { return means.col(20); }
+    const_mean_type C2rhow()       const { return means.col(21); }
+    const_mean_type Crho()         const { return means.col(22); }
+    const_mean_type C2rho()        const { return means.col(23); }
+    const_mean_type Crhou_dot_u()  const { return means.col(24); }
+    const_mean_type C2rhou_dot_u() const { return means.col(25); }
+    const_mean_type p()            const { return means.col(26); }
+    const_mean_type p2()           const { return means.col(27); }
 
     /** @} */
 
