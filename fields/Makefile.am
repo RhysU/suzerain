@@ -1,8 +1,8 @@
 ## Process this file with automake to produce Makefile.in
 
 fieldsdir   = $(pkgdatadir)/fields
-fields_DATA = # Data installed by 'make check'
-noinst_DATA = # Data kept with distribution but not installed
+fields_DATA = # Practially-useful data installed with Suzerain
+noinst_DATA = # Test-related data kept with distribution but not installed
 
 # Steady state laminar channel flow fields at a variety of orders
 fields_DATA += channel_k06.h5
@@ -47,10 +47,10 @@ fields_DATA += coarse3D.bl.isothermal.zpg.h5
 # Mean profiles for some of coarse3D.* so one might see what one is using.
 # Using postproc/gplot is recommended to interrogate this data.  For example,
 #     gplot -c using '"y":"bar_u"' with linespoints ::: coarse3D.*.mean.gz
-noinst_DATA += coarse3D.channel.mean.gz
-noinst_DATA += coarse3D.couette.mean.gz
-noinst_DATA += coarse3D.couette.forced.mean.gz
-noinst_DATA += coarse3D.bl.isothermal.zpg.mean.gz
+fields_DATA += coarse3D.channel.mean.gz
+fields_DATA += coarse3D.couette.mean.gz
+fields_DATA += coarse3D.couette.forced.mean.gz
+fields_DATA += coarse3D.bl.isothermal.zpg.mean.gz
 
 # Legacy fields for checking backwards-compatibility of restarting
 noinst_DATA += legacy_r22804.h5
