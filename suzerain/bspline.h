@@ -226,8 +226,8 @@ suzerain_bspline_crossing(
  * @param[in]  nderiv The derivative to integrate.
  * @param[out] coeffs Real-valued coefficients \f$ \gamma_{i} \f$.
  * @param[in]  inc Stride between elements of \c coeffs.
- * @param[in]  lo The lower integration bound \f$x_\mbox{lo}$.
- * @param[in]  hi The upper integration bound \f$x_\mbox{hi}$.
+ * @param[in]  lo The lower integration bound \f$x_\mbox{lo}\f$.
+ * @param[in]  hi The upper integration bound \f$x_\mbox{hi}\f$.
  * @param[in]  dB Temporary storage to use of size <tt>w->k</tt> by
  *             no less than <tt>nderiv + 1</tt>.
  * @param[in]  w Workspace to use (which sets the integration bounds).
