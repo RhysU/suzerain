@@ -541,7 +541,7 @@ take_samples(const definition_scenario &scenario,
              const real_t t)
 {
     // State enters method as coefficients in X, Y, and Z directions
-    SUZERAIN_TIMER_SCOPED("take_samples");
+    SUZERAIN_TIMER_SCOPED("perfect::take_samples");
 
     // Shorthand for the operator_tools member(s) commonly used
     const pencil_grid &dgrid = otool.dgrid;
@@ -885,7 +885,7 @@ take_profile(const definition_scenario &scenario,
              contiguous_state<4,complex_t> &swave)
 {
     // State enters method as coefficients in X, Y, and Z directions
-    SUZERAIN_TIMER_SCOPED("take_profile");
+    SUZERAIN_TIMER_SCOPED("perfect::take_profile");
 
     // Shorthand for the operator_tools member(s) commonly used
     const pencil_grid &dgrid = otool.dgrid;
