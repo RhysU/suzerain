@@ -52,7 +52,7 @@ typedef struct {
     double *uy;         /**< \f$ C^{u_y}                \f$ */
     double *uz;         /**< \f$ C^{u_z}                \f$ */
     double *uxuy;       // TODO: Doxygen
-    double *uzuy;
+    double *uyuz;
     double *p_ru;
     double *p_rw;
     double *p_rE;
@@ -78,7 +78,7 @@ typedef struct {
     int uy;             /**< \copydoc suzerain_reacting_imexop_ref::uy         */
     int uz;             /**< \copydoc suzerain_reacting_imexop_ref::uz         */
     int uxuy;           // TODO: Doxygen
-    int uzuy;
+    int uyuz;
     int p_ru;
     int p_rw;
     int p_rE;

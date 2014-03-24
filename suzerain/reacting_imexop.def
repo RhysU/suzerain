@@ -293,7 +293,7 @@ FLOW_FUNCNAME()(
         if (rho  >= 0) {
 
             suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
-                     phi,                        REF(uzuy),
+                     phi,                        REF(uyuz),
                     D1, 1, w->ld, 0.0, buf, 1, A_T->ld);
 
             PACK(z)(A_T, rho, rho_w, 1.0, buf, patpt);

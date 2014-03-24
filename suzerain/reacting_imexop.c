@@ -301,7 +301,7 @@ suzerain_reacting_flow_imexop_accumulate(
         if (LIKELY(in_rho)) {
 
             (*p_gbdmv)(trans, n, w->kl[D1], w->ku[D1],
-                 phi,                      REF(uzuy),
+                 phi,                      REF(uyuz),
                 w->D_T[D1], w->ld, IN(rho), 1.0, OUT(rho_w));
 
         }

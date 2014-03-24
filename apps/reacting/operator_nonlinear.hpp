@@ -577,7 +577,8 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             ++j) {
 
             // Prepare logical indices using a struct for scoping (e.g. ref::ux).
-            struct ref { enum { ux, uy, uz, uxuy, uzuy,
+            struct ref { enum { ux, uy, uz,
+                                uxux, uxuy, uxuz, uyuy, uyuz, uzuz,
                                 p_ru, p_rw, p_rE,
                                 vp_ru, vp_rw, vp_rE,
                                 Cmy_rho, Ce_rho, Ce_rv,
@@ -655,8 +656,12 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                 acc[ref::ux     ](u.x());
                 acc[ref::uy     ](u.y());
                 acc[ref::uz     ](u.z());
+                acc[ref::uxux   ](u.x()*u.x());
                 acc[ref::uxuy   ](u.x()*u.y());
-                acc[ref::uzuy   ](u.z()*u.y());
+                acc[ref::uxuz   ](u.x()*u.z());
+                acc[ref::uyuy   ](u.y()*u.y());
+                acc[ref::uyuz   ](u.y()*u.z());
+                acc[ref::uzuz   ](u.z()*u.z());
 
                 // ...and pressure/equation of state related quantities...
                 acc[ref::p_ru](p_m.x());
@@ -713,8 +718,12 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             common.ref_ux        ()[j] = sum(acc[ref::ux        ]);
             common.ref_uy        ()[j] = sum(acc[ref::uy        ]);
             common.ref_uz        ()[j] = sum(acc[ref::uz        ]);
+            common.ref_uxux      ()[j] = sum(acc[ref::uxux      ]);
             common.ref_uxuy      ()[j] = sum(acc[ref::uxuy      ]);
-            common.ref_uzuy      ()[j] = sum(acc[ref::uzuy      ]);
+            common.ref_uxuz      ()[j] = sum(acc[ref::uxuz      ]);
+            common.ref_uyuy      ()[j] = sum(acc[ref::uyuy      ]);
+            common.ref_uyuz      ()[j] = sum(acc[ref::uyuz      ]);
+            common.ref_uzuz      ()[j] = sum(acc[ref::uzuz      ]);
             common.ref_p_ru      ()[j] = sum(acc[ref::p_ru      ]);
             common.ref_p_rw      ()[j] = sum(acc[ref::p_rw      ]);
             common.ref_p_rE      ()[j] = sum(acc[ref::p_rE      ]);
@@ -754,12 +763,18 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                 MPI_SUM, MPI_COMM_WORLD));
         common.refs *= o.dgrid.chi();
 
-        // Copy mean velocity information into common.{u, v, w}()
-        common.u () = common.ref_ux();
-        common.v () = common.ref_uy();
-        common.w () = common.ref_uz();
-        common.p () = common.ref_p ();
-        common.p2() = common.ref_p2();
+        // Copy mean velocity information into common.{u, v, w, etc.}()
+        common.u () = common.ref_ux  ();
+        common.v () = common.ref_uy  ();
+        common.w () = common.ref_uz  ();
+        common.uu() = common.ref_uxux();
+        common.uv() = common.ref_uxuy();
+        common.uw() = common.ref_uxuz();
+        common.vv() = common.ref_uyuy();
+        common.vw() = common.ref_uyuz();
+        common.ww() = common.ref_uzuz();
+        common.p () = common.ref_p   ();
+        common.p2() = common.ref_p2  ();
 
         // Compute species specific total energy and store in
         // common.etots_upper
@@ -801,9 +816,8 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             j < o.dgrid.local_physical_end.y();
             ++j) {
 
-            summing_accumulator_type ux;
-            summing_accumulator_type uy;
-            summing_accumulator_type uz;
+            summing_accumulator_type ux, uy, uz;
+            summing_accumulator_type uxux, uxuy, uxuz, uyuy, uyuz, uzuz;
             summing_accumulator_type p;
             summing_accumulator_type p2;
 
@@ -844,33 +858,40 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                     cs(s) = irho * species(s);
                 }
 
-                // ... temperature
-                real_t   T;
-
-                // ... pressure-related quantities
-                real_t pr, pr2;
+                // ... temperature and pressure-related quantities
+                real_t T, pr;
                 cmods.evaluate_pressure(
                     e, m, rho, species, cs, Tguess,
                     T, pr);
-                pr2    = pr * pr;
                 Tguess = T;
-                SUZERAIN_UNUSED(pr2);
 
                 // compute and accumulate 
-                const real_t inv_rho = 1 / sphys(ndx::rho, offset);
-                ux(inv_rho * sphys(ndx::mx, offset));
-                uy(inv_rho * sphys(ndx::my, offset));
-                uz(inv_rho * sphys(ndx::mz, offset));
+                const Vector3r u = m / sphys(ndx::rho, offset);
+                ux(u.x());
+                uy(u.y());
+                uz(u.z());
+                uxux(u.x()*u.x());
+                uxuy(u.x()*u.y());
+                uxuz(u.x()*u.z());
+                uyuy(u.y()*u.y());
+                uyuz(u.y()*u.z());
+                uzuz(u.z()*u.z());
                 p (pr);
                 p2(pr * pr);
             } // end X // end Z
 
             // Store sum into common block in preparation for MPI Reduce
-            common.u ()[j] = boost::accumulators::sum(ux);
-            common.v ()[j] = boost::accumulators::sum(uy);
-            common.w ()[j] = boost::accumulators::sum(uz);
-            common.p ()[j] = boost::accumulators::sum(p );
-            common.p2()[j] = boost::accumulators::sum(p2);
+            common.u ()[j] = boost::accumulators::sum(ux  );
+            common.v ()[j] = boost::accumulators::sum(uy  );
+            common.w ()[j] = boost::accumulators::sum(uz  );
+            common.uu()[j] = boost::accumulators::sum(uxux);
+            common.uv()[j] = boost::accumulators::sum(uxuy);
+            common.uw()[j] = boost::accumulators::sum(uxuz);
+            common.vv()[j] = boost::accumulators::sum(uyuy);
+            common.vw()[j] = boost::accumulators::sum(uyuz);
+            common.ww()[j] = boost::accumulators::sum(uzuz);
+            common.p ()[j] = boost::accumulators::sum(p   );
+            common.p2()[j] = boost::accumulators::sum(p2  );
 
         } // end Y
 
