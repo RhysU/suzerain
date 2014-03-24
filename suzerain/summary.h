@@ -50,9 +50,9 @@
  * A Boost.Preprocessor sequence of tuples of grid-related details.
  * Each tuple contains a name and a description.
  */
-#define SUZERAIN_SUMMARY_GRID                                                                         \
-    ((t,            "Simulation time"                                                              )) \
-    ((y,            "Wall-normal collocation point locations"                                      ))
+#define SUZERAIN_SUMMARY_GRID                         \
+    ((t, "Simulation time"                         )) \
+    ((y, "Wall-normal collocation point locations" ))
 
 /**
  * A Boost.Preprocessor sequence of tuples of directly-sampled quantity
