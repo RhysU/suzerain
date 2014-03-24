@@ -385,57 +385,101 @@ treatment<CommonBlock>::invert_mass_plus_scaled_operator(
     // because our post-processing routines will account for Mach^2 factor.
     //
     // Notice physical[ndx::rho] constraint lumped into Crho BY DESIGN.
-    cphi              /= delta_t; // Henceforth includes 1/delta_t scaling!
-    const real_t iota  = method.iota(substep_index);
-    com.fx()          += iota*(
-                             cphi[mx]*physical[mx]->shape
-                           - com.fx()
-                         );
-    com.fy()          += iota*(
-                             cphi[my]*physical[my]->shape
-                           - com.fy()
-                         );
-    com.fz()          += iota*(
-                             cphi[mz]*physical[mz]->shape
-                           - com.fz()
-                         );
-    com.f_dot_u()     += iota*(
-                             cphi[mx]*physical[mx]->shape*com.u()
-                           + cphi[my]*physical[my]->shape*com.v()
-                           + cphi[mz]*physical[mz]->shape*com.w()
-                           - com.f_dot_u()
-                         );
-    com.qb()          += iota*(
-                             cphi[e]*physical[e]->shape
-                           - com.qb()
-                         );
-    com.CrhoE()       += iota*(
-                             cphi[rho_1+e  ]*numerical[e  ]->shape
-                           - com.CrhoE()
-                         );
-    com.Crhou()       += iota*(
-                             cphi[rho_1+mx ]*numerical[mx ]->shape
-                           - com.Crhou()
-                         );
-    com.Crhov()       += iota*(
-                             cphi[rho_1+my ]*numerical[my ]->shape
-                           - com.Crhov()
-                         );
-    com.Crhow()       += iota*(
-                             cphi[rho_1+mz ]*numerical[mz ]->shape
-                           - com.Crhow()
-                         );
-    com.Crho()        += iota*(
-                             cphi[rho]      *physical [rho]->shape
-                           + cphi[rho_1+rho]*numerical[rho]->shape
-                           - com.Crho()
-                         );
-    com.Crhou_dot_u() += iota*(
-                             cphi[rho_1+mx]*numerical[mx]->shape*com.u()
-                           + cphi[rho_1+my]*numerical[my]->shape*com.v()
-                           + cphi[rho_1+mz]*numerical[mz]->shape*com.w()
-                           - com.Crhou_dot_u()
-                         );
+    cphi               /= delta_t; // Henceforth includes 1/delta_t scaling!
+    const real_t iota   = method.iota(substep_index);
+    com.fx()           += iota*(
+                              cphi[mx]*physical[mx]->shape
+                            - com.fx()
+                          );
+    com.fy()           += iota*(
+                              cphi[my]*physical[my]->shape
+                            - com.fy()
+                          );
+    com.fz()           += iota*(
+                              cphi[mz]*physical[mz]->shape
+                            - com.fz()
+                          );
+    com.f_dot_u()      += iota*(
+                              cphi[mx]*physical[mx]->shape*com.u()
+                            + cphi[my]*physical[my]->shape*com.v()
+                            + cphi[mz]*physical[mz]->shape*com.w()
+                            - com.f_dot_u()
+                          );
+    com.qb()           += iota*(
+                              cphi[e]*physical[e]->shape
+                            - com.qb()
+                          );
+    com.CrhoE()        += iota*(
+                              cphi[rho_1+e  ]*numerical[e  ]->shape
+                            - com.CrhoE()
+                          );
+    com.C2rhoE()       += iota*(
+                              (cphi[rho_1+e  ]*numerical[e  ]->shape).square()
+                            - com.C2rhoE()
+                          );
+    com.Crhou()        += iota*(
+                              cphi[rho_1+mx ]*numerical[mx ]->shape
+                            - com.Crhou()
+                          );
+    com.C2rhou()       += iota*(
+                              (cphi[rho_1+mx ]*numerical[mx ]->shape).square()
+                            - com.C2rhou()
+                          );
+    com.Crhov()        += iota*(
+                              cphi[rho_1+my ]*numerical[my ]->shape
+                            - com.Crhov()
+                          );
+    com.C2rhov()       += iota*(
+                              (cphi[rho_1+my ]*numerical[my ]->shape).square()
+                            - com.C2rhov()
+                          );
+    com.Crhow()        += iota*(
+                              cphi[rho_1+mz ]*numerical[mz ]->shape
+                            - com.Crhow()
+                          );
+    com.C2rhow()       += iota*(
+                              (cphi[rho_1+mz ]*numerical[mz ]->shape).square()
+                            - com.C2rhow()
+                          );
+    com.Crho()         += iota*(
+                              cphi[rho]      *physical [rho]->shape
+                            + cphi[rho_1+rho]*numerical[rho]->shape
+                            - com.Crho()
+                          );
+    com.C2rho()        += iota*( // Terms like aa + 2ab + bb
+                                (cphi[rho]      *physical [rho]->shape).square()
+                            + 2*(cphi[rho]      *physical [rho]->shape)
+                               *(cphi[rho_1+rho]*numerical[rho]->shape)
+                            +   (cphi[rho_1+rho]*numerical[rho]->shape).square()
+                            - com.C2rho()
+                          );
+    com.Crhou_dot_u()  += iota*(
+                              cphi[rho_1+mx]*numerical[mx]->shape*com.u()
+                            + cphi[rho_1+my]*numerical[my]->shape*com.v()
+                            + cphi[rho_1+mz]*numerical[mz]->shape*com.w()
+                            - com.Crhou_dot_u()
+                          );
+    com.C2rhou_dot_u() += iota*( // Terms like uu + 2uv + 2uw + vv + 2vw + ww
+                                (cphi[rho_1+mx]*numerical[mx]->shape).square()
+                               *com.uu()
+                            + 2*(cphi[rho_1+mx]*cphi[rho_1+my])
+                               *numerical[mx]->shape
+                               *numerical[my]->shape
+                               *com.uv()
+                            + 2*(cphi[rho_1+mx]*cphi[rho_1+mz])
+                               *numerical[mx]->shape
+                               *numerical[mz]->shape
+                               *com.uw()
+                            +   (cphi[rho_1+my]*numerical[my]->shape).square()
+                               *com.vv()
+                            + 2*(cphi[rho_1+my]*cphi[rho_1+mz])
+                               *numerical[my]->shape
+                               *numerical[mz]->shape
+                               *com.vw()
+                            +   (cphi[rho_1+mz]*numerical[mz]->shape).square()
+                               *com.ww()
+                            - com.C2rhou_dot_u()
+                          );
 
     // State leaves method as coefficients in X, Y, and Z directions
 }
