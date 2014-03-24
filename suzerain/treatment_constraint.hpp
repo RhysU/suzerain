@@ -130,7 +130,7 @@ public:
      *
      * Means of the implicit ndx::mx, ndx::my, ndx::mz, and ndx::e forcing are
      * maintained across each individual time step for sampling the statistics
-     * \c /bar_f, \c /bar_f_dot_u, and \c /bar_qb using #common.  The mean
+     * \c /bar_f, \c /bar_f_dot_u, and \c /bar_qb using #com.  The mean
      * implicit numerical[ndx::rho] forcing is combined with
      * physical[ndx::rho]'s effect and stored within \c /bar_Crho.
      */
@@ -146,7 +146,7 @@ public:
      *
      * Means of the implicit ndx::mx, ndx::my, ndx::mz, and ndx::e forcing are
      * maintained across each individual time step for sampling the statistics
-     * \c /bar_Crhou, \c /bar_Crhou_dot_u, and \c /bar_CrhoE using #common.
+     * \c /bar_Crhou, \c /bar_Crhou_dot_u, and \c /bar_CrhoE using #com.
      * The mean implicit numerical[ndx::rho] forcing is combined with
      * physical[ndx::rho]'s effect and stored within \c /bar_Crho.
      */
@@ -170,7 +170,7 @@ protected:
      * Used to obtain mean primitive state profiles to compute
      * implicit forcing work contributions to the total energy equation.
      */
-    CommonBlock& common;
+    CommonBlock& com;
 
 private:
 
@@ -201,7 +201,7 @@ treatment<CommonBlock>::treatment(
     : none(new constraint::disabled(b))
     , Ma(Ma)
     , rank_has_zero_zero_modes(dgrid.has_zero_zero_modes())
-    , common(common)
+    , com(common)
     , jacobiSvd(0, 0, Eigen::ComputeFullU | Eigen::ComputeFullV)
 {
     using std::fill;
@@ -284,17 +284,17 @@ treatment<CommonBlock>::invert_mass_plus_scaled_operator(
         //     directly add the result to the total energy equation.
         //
         // Notice ndx::rho constraint ignores other equations BY DESIGN.
-        // This choice is reflected in the later update of common.Crho.
+        // This choice is reflected in the later update of com.Crho.
         cdata.setZero(state.shape()[0]*N, cdata.cols());
         cdata.col(e  ).segment(N*e  , N).real() = physical[e  ]->shape;
         cdata.col(mx ).segment(N*e  , N).real() = physical[mx ]->shape
-                                                * common.u() * (Ma * Ma);
+                                                * com.u() * (Ma * Ma);
         cdata.col(mx ).segment(N*mx , N).real() = physical[mx ]->shape;
         cdata.col(my ).segment(N*e  , N).real() = physical[my ]->shape
-                                                * common.v() * (Ma * Ma);
+                                                * com.v() * (Ma * Ma);
         cdata.col(my ).segment(N*my , N).real() = physical[my ]->shape;
         cdata.col(mz ).segment(N*e  , N).real() = physical[mz ]->shape
-                                                * common.w() * (Ma * Ma);
+                                                * com.w() * (Ma * Ma);
         cdata.col(mz ).segment(N*mz , N).real() = physical[mz ]->shape;
         cdata.col(rho).segment(N*rho, N).real() = physical[rho]->shape;
 
@@ -385,57 +385,57 @@ treatment<CommonBlock>::invert_mass_plus_scaled_operator(
     // because our post-processing routines will account for Mach^2 factor.
     //
     // Notice physical[ndx::rho] constraint lumped into Crho BY DESIGN.
-    cphi                 /= delta_t; // Henceforth includes 1/delta_t scaling!
-    const real_t iota     = method.iota(substep_index);
-    common.fx()          += iota*(
-                                cphi[mx]*physical[mx]->shape
-                              - common.fx()
-                            );
-    common.fy()          += iota*(
-                                cphi[my]*physical[my]->shape
-                              - common.fy()
-                            );
-    common.fz()          += iota*(
-                                cphi[mz]*physical[mz]->shape
-                              - common.fz()
-                            );
-    common.f_dot_u()     += iota*(
-                                cphi[mx]*physical[mx]->shape*common.u()
-                              + cphi[my]*physical[my]->shape*common.v()
-                              + cphi[mz]*physical[mz]->shape*common.w()
-                              - common.f_dot_u()
-                            );
-    common.qb()          += iota*(
-                                cphi[e]*physical[e]->shape
-                              - common.qb()
-                            );
-    common.CrhoE()       += iota*(
-                                cphi[rho_1+e  ]*numerical[e  ]->shape
-                              - common.CrhoE()
-                            );
-    common.Crhou()       += iota*(
-                                cphi[rho_1+mx ]*numerical[mx ]->shape
-                              - common.Crhou()
-                            );
-    common.Crhov()       += iota*(
-                                cphi[rho_1+my ]*numerical[my ]->shape
-                              - common.Crhov()
-                            );
-    common.Crhow()       += iota*(
-                                cphi[rho_1+mz ]*numerical[mz ]->shape
-                              - common.Crhow()
-                            );
-    common.Crho()        += iota*(
-                                cphi[rho]      *physical [rho]->shape
-                              + cphi[rho_1+rho]*numerical[rho]->shape
-                              - common.Crho()
-                            );
-    common.Crhou_dot_u() += iota*(
-                                cphi[rho_1+mx]*numerical[mx]->shape*common.u()
-                              + cphi[rho_1+my]*numerical[my]->shape*common.v()
-                              + cphi[rho_1+mz]*numerical[mz]->shape*common.w()
-                              - common.Crhou_dot_u()
-                            );
+    cphi              /= delta_t; // Henceforth includes 1/delta_t scaling!
+    const real_t iota  = method.iota(substep_index);
+    com.fx()          += iota*(
+                             cphi[mx]*physical[mx]->shape
+                           - com.fx()
+                         );
+    com.fy()          += iota*(
+                             cphi[my]*physical[my]->shape
+                           - com.fy()
+                         );
+    com.fz()          += iota*(
+                             cphi[mz]*physical[mz]->shape
+                           - com.fz()
+                         );
+    com.f_dot_u()     += iota*(
+                             cphi[mx]*physical[mx]->shape*com.u()
+                           + cphi[my]*physical[my]->shape*com.v()
+                           + cphi[mz]*physical[mz]->shape*com.w()
+                           - com.f_dot_u()
+                         );
+    com.qb()          += iota*(
+                             cphi[e]*physical[e]->shape
+                           - com.qb()
+                         );
+    com.CrhoE()       += iota*(
+                             cphi[rho_1+e  ]*numerical[e  ]->shape
+                           - com.CrhoE()
+                         );
+    com.Crhou()       += iota*(
+                             cphi[rho_1+mx ]*numerical[mx ]->shape
+                           - com.Crhou()
+                         );
+    com.Crhov()       += iota*(
+                             cphi[rho_1+my ]*numerical[my ]->shape
+                           - com.Crhov()
+                         );
+    com.Crhow()       += iota*(
+                             cphi[rho_1+mz ]*numerical[mz ]->shape
+                           - com.Crhow()
+                         );
+    com.Crho()        += iota*(
+                             cphi[rho]      *physical [rho]->shape
+                           + cphi[rho_1+rho]*numerical[rho]->shape
+                           - com.Crho()
+                         );
+    com.Crhou_dot_u() += iota*(
+                             cphi[rho_1+mx]*numerical[mx]->shape*com.u()
+                           + cphi[rho_1+my]*numerical[my]->shape*com.v()
+                           + cphi[rho_1+mz]*numerical[mz]->shape*com.w()
+                           - com.Crhou_dot_u()
+                         );
 
     // State leaves method as coefficients in X, Y, and Z directions
 }
