@@ -29,19 +29,28 @@ fields_DATA += spatiotemporal_consistent_1e-1_pexi-1e-2_k06.h5 # FPG
 fields_DATA += spatiotemporal_consistent_5e-2_pexi-1e-2_k06.h5 # FPG
 
 # Coarse-but-turbulent fields suitable for development or production spin-up
+# See Redmine #3058 if you need the backstory on obtaining these fields.
 # Beware these employ bulk viscosity ('/alpha') to permit coarse grids!
 fields_DATA += coarse3D.channel.h5
 fields_DATA += coarse3D.couette.h5
 fields_DATA += coarse3D.couette.forced.h5
 fields_DATA += coarse3D.bl.isothermal.zpg.h5
 
-# Mean profiles for coarse3D.* so one might see what one is about to use
+# Coarse-but-turbulent fields per CEV ISS laminar edge (4.134m) conditions
+# See Redmine #3088 if you need the backstory on obtaining these fields.
+# Beware these employ bulk viscosity ('/alpha') to permit coarse grids!
+# fields_DATA += coarse3D.cevisslamedge.isothermal.zpg.h5    # TODO
+# fields_DATA += coarse3D.cevisslamedge.isothermal.fpg.h5    # TODO
+# fields_DATA += coarse3D.cevisslamedge.cold.fpg.h5          # TODO
+# fields_DATA += coarse3D.cevisslamedge.cold.blowing.fpg.h5  # TODO
+
+# Mean profiles for some of coarse3D.* so one might see what one is using.
 # Using postproc/gplot is recommended to interrogate this data.  For example,
 #     gplot -c using '"y":"bar_u"' with linespoints ::: coarse3D.*.mean.gz
 noinst_DATA += coarse3D.channel.mean.gz
 noinst_DATA += coarse3D.couette.mean.gz
 noinst_DATA += coarse3D.couette.forced.mean.gz
-fields_DATA += coarse3D.bl.isothermal.zpg.mean.gz
+noinst_DATA += coarse3D.bl.isothermal.zpg.mean.gz
 
 # Legacy fields for checking backwards-compatibility of restarting
 noinst_DATA += legacy_r22804.h5
