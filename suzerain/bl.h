@@ -140,8 +140,8 @@ suzerain_bl_find_edge(
 /**
  * Find the boundary layer edge within <tt>[lowerbnd, upperbnd]</tt> given a
  * B-spline coefficient representation of the velocity \f$u\f$ using the common
- * $\delta_{99}$ criterion.  Specifically, the edge is defined to be where the
- * streamwise velocity reaches 99% of the velocity from the final B-spline
+ * \f$\delta_{99}\f$ criterion.  Specifically, the edge is defined to be where
+ * the streamwise velocity reaches 99% of the velocity from the final B-spline
  * collocation point. This determination is computationally robust but
  * physically ill-defined, particularly when an inviscid baseflow is employed.
  *
