@@ -21,7 +21,7 @@ unset DISPLAY            # Avoid "Error in locking authority file" from xauth
 RESOURCE_LIST=$(qstat -j $JOB_ID | grep resource_list)
 H_RT=$(echo $RESOURCE_LIST | egrep -o 'h_rt=[0-9]+*' | egrep -o '[0-9]+')
 S_RT=$(echo $RESOURCE_LIST | egrep -o 's_rt=[0-9]+*' | egrep -o '[0-9]+')
-test -z "$S_RT" && S_RT=$(expr $H_RT - 60)
+test -z "$S_RT" && S_RT=$(expr $H_RT - 75)
 test "${S_RT:=0}" -lt 0 && S_RT=0
 
 # Provide defaults for environment variables used to build CMD (see below).
@@ -128,7 +128,7 @@ for signal in ${SIGNALS}; do
 done
 
 # Mail output to the job submitter.  Sleep required for message receipt.
-mail -s "Job $JOB_ID ($JOB_NAME) Output [$CMDEXIT]" $USER < ./output && sleep 10
+mail -s "Job $JOB_ID ($JOB_NAME) Output [$CMDEXIT]" $USER < ./output && sleep 15
 
 # Sun Grid Engine blocks any dependent (-hold_jid) jobs on exit 100,
 # so coerce CMDEXIT to be either 0 if we succeeded or 100 if we failed.
