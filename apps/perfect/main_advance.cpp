@@ -461,8 +461,16 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
 
             // Compute density, model-specific rates, and last pressure
             largo_state grDA;
-            grDA.rho = (Tw * dxiw.rho - scenario->gamma * dxiw.p)
-                     / (Tw *   iw.rho - scenario->gamma *   iw.p);
+            const real_t percentT = 100*(1 - Tw/(scenario->gamma*iw.p/iw.rho));
+            if (abs(percentT) < 1) {
+                INFO0(who, "Disabling density mean growth as 1 - T_w/T_{iw} is "
+                           << percentT << "%");
+            } else {
+                INFO0(who, "Enabling density mean growth as 1 - T_w/T_{iw} is "
+                           << percentT << "%");
+                grDA.rho = (Tw * dxiw.rho - scenario->gamma * dxiw.p)
+                         / (Tw *   iw.rho - scenario->gamma *   iw.p);
+            }
             if (sg->formulation.expects_conserved_growth_rates()) {
                 INFO0(who, "Calculating conserved defect mean growth rates");
                 grDA.mx = dxiw.mx / iw.mx;
