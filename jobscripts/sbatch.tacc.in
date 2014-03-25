@@ -19,10 +19,6 @@
 #SBATCH -p normal # queue name
 #SBATCH -t 00:30:00 # max tim
 
-#SBATCH --mail-user=nick@ices.utexas.edu
-#SBATCH --mail-type=ALL
-#SBATCH -A TG-01234       # necessary if you have multiple project accounts
-
 #$ -notify               # Notify job of impending doom
 set -m                   # Employ job control
 set -u                   # Abort on undefined shell variables
