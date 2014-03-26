@@ -411,29 +411,21 @@ definition_grid::save(
             2, "Wavenumbers in spanwise Z direction"); // Re(cbuf)
 
     DEBUG0("Storing collocation point vectors for Fourier bases");
-    ArrayXr rbuf;
+    ArrayXr rbuf(std::max(dN.x(), dN.z()));
 
-    // Obtain collocation points in x using [-Lx/2, Lx/2]) and dN.x()
-    if (dN.x() > 1) {
-        rbuf = ArrayXr::LinSpaced(Sequential, dN.x(), 0, dN.x() - 1);
-        rbuf *= L.x() / dN.x();
-        rbuf -= L.x() / 2;
-    } else {
-        rbuf = ArrayXr::Constant(dN.x(), 0);
+    // Save collocation points in x
+    for (int i = 0; i < dN.x(); ++i) {
+        rbuf[i] = this->x(i);
     }
-    esio_line_establish(h, rbuf.size(), 0, (procid == 0 ? rbuf.size() : 0));
+    esio_line_establish(h, dN.x(), 0, (procid == 0 ? dN.x() : 0));
     esio_line_write(h, "collocation_points_x", rbuf.data(), 0,
             "Collocation points for the dealiased, streamwise X direction");
 
-    // Obtain collocation points in z using [-Lz/2, Lz/2]) and dN.z()
-    if (dN.z() > 1) {
-        rbuf = ArrayXr::LinSpaced(Sequential, dN.z(), 0, dN.z() - 1);
-        rbuf *= L.z() / dN.z();
-        rbuf -= L.z() / 2;
-    } else {
-        rbuf = ArrayXr::Constant(dN.z(), 0);
+    // Save collocation points in z
+    for (int k = 0; k < dN.z(); ++k) {
+        rbuf[k] = this->z(k);
     }
-    esio_line_establish(h, rbuf.size(), 0, (procid == 0 ? rbuf.size() : 0));
+    esio_line_establish(h, dN.z(), 0, (procid == 0 ? dN.z() : 0));
     esio_line_write(h, "collocation_points_z", rbuf.data(), 0,
             "Collocation points for the dealiased, spanwise Z direction");
 }
