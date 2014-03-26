@@ -200,21 +200,27 @@ public:
     specification_grid& DAFz(const std::string& factor);
 
     /**
-     * Return the <tt>i</tt>th \c globally-indexed x collocation point,
-     * taking into account the chosen dealiasing factors.
+     * Return the <tt>i</tt>th \c globally-indexed x collocation point, taking
+     * into account the chosen dealiasing factors.
+     *
+     * On a degenerate grid with only a single point, the collocation point is
+     * taken to be at zero.
      */
     real_t x(std::size_t i) const
     {
-        return (i * L.x()) / dN.x() - L.x() / 2;
+        return dN.x() > 1 ? ((i * L.x()) / dN.x() - L.x() / 2) : 0;
     }
 
     /**
-     * Return the <tt>k</tt>th \c globally-indexed z collocation point,
-     * taking into account the chosen dealiasing factors.
+     * Return the <tt>k</tt>th \c globally-indexed z collocation point, taking
+     * into account the chosen dealiasing factors.
+     *
+     * On a degenerate grid with only a single point, the collocation point is
+     * taken to be at zero.
      */
     real_t z(std::size_t k) const
     {
-        return (k * L.z()) / dN.z() - L.z() / 2;
+        return dN.z() > 1 ? ((k * L.z()) / dN.z() - L.z() / 2) : 0;
     }
 
 };
