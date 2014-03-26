@@ -40,7 +40,7 @@ fields_DATA += coarse3D.bl.isothermal.zpg.h5
 # See Redmine #3088 if you need the backstory on obtaining these fields.
 # Beware these employ bulk viscosity ('/alpha') to permit coarse grids!
 fields_DATA += coarse3D.cevisslamedge.isothermal.zpg.h5
-# fields_DATA += coarse3D.cevisslamedge.isothermal.fpg.h5    # TODO
+fields_DATA += coarse3D.cevisslamedge.isothermal.fpg.h5
 # fields_DATA += coarse3D.cevisslamedge.cold.fpg.h5          # TODO
 # fields_DATA += coarse3D.cevisslamedge.cold.blowing.fpg.h5  # TODO
 
@@ -52,6 +52,7 @@ fields_DATA += coarse3D.couette.mean.gz
 fields_DATA += coarse3D.couette.forced.mean.gz
 fields_DATA += coarse3D.bl.isothermal.zpg.mean.gz
 fields_DATA += coarse3D.cevisslamedge.isothermal.zpg.mean.gz
+fields_DATA += coarse3D.cevisslamedge.isothermal.fpg.mean.gz
 
 # Legacy fields for checking backwards-compatibility of restarting
 noinst_DATA += legacy_r22804.h5
