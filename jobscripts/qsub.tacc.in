@@ -115,17 +115,22 @@ ${MSGS:-}${MSGS:+
 HEADER
 
 # Execute the command, passing along any signals, and wait for completion
-cache_binary "$PWD" "$BINARY"
-/usr/bin/time -v ibrun tacc_affinity $CMD &
-CMDPID=$!
-for signal in ${SIGNALS=HUP INT TERM USR1 USR2}; do
-    trap "kill -s $signal $CMDPID" $signal
-done
-fg
-CMDEXIT=$?
-for signal in ${SIGNALS}; do
-    trap - $signal
-done
+if [ ! -r "$INPUT" ]; then
+    echo Not invoking binary because input \"$INPUT\" is not readable
+    CMDEXIT=1
+else
+    cache_binary "$PWD" "$BINARY"
+    /usr/bin/time -v ibrun tacc_affinity $CMD &
+    CMDPID=$!
+    for signal in ${SIGNALS=HUP INT TERM USR1 USR2}; do
+        trap "kill -s $signal $CMDPID" $signal
+    done
+    fg
+    CMDEXIT=$?
+    for signal in ${SIGNALS}; do
+        trap - $signal
+    done
+fi
 
 # Mail output to the job submitter.  Sleep required for message receipt.
 mail -s "Job $JOB_ID ($JOB_NAME) Output [$CMDEXIT]" $USER < ./output && sleep 15
