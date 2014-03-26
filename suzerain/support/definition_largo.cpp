@@ -578,6 +578,7 @@ definition_largo::load(
                 dy.outerStride(), dy.innerStride());
     }
 
+    using boost::starts_with;
     if (!base_x && !base_dx && !base_dy) {
 
         // No baseflow to load
@@ -590,8 +591,16 @@ definition_largo::load(
         // External logic MUST re-generate the table after load completes
         // otherwise the baseflow is lost after restart.
 
-    } else if (    (base_x  && type_polynomial == base_x .get())
-                && (base_dx && type_polynomial == base_dx.get())) {
+    } else if (    (base_x  && starts_with(base_x .get(), type_polynomial))
+                && (base_dx && starts_with(base_dx.get(), type_polynomial)) ){
+
+        // Fuziness added to the matching to wallpaper over Python/ESIO hiccup
+        if (type_polynomial != base_x.get()) {
+            WARN0("Polynomial baseflow from starts_with(base_x, 'polynomial')");
+        }
+        if (type_polynomial != base_dx.get()) {
+            WARN0("Polynomial baseflow from starts_with(base_x, 'polynomial')");
+        }
 
         INFO0("Preparing polynomial-based baseflow description");
         shared_ptr<baseflow_polynomial> p = make_shared<baseflow_polynomial>();
