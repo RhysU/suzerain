@@ -28,8 +28,10 @@
 #include <suzerain/support/definition_helm.hpp>
 
 #include <boost/version.hpp>
+#include <esio/esio.h>
 
 #include <suzerain/exprparse.hpp>
+#include <suzerain/support/logging.hpp>
 #include <suzerain/validation.hpp>
 
 namespace suzerain {
@@ -63,12 +65,27 @@ definition_helm::definition_helm(
     this->r = r;
 }
 
-static const char name_r    [] = "helm_r";
-static const char name_kp   [] = "helm_kp";
-static const char name_Td   [] = "helm_Td";
-static const char name_Tf   [] = "helm_Tf";
-static const char name_Ti   [] = "helm_Ti";
-static const char name_Tt   [] = "helm_Tt";
+// Strings used in options_description and populate/override/save/load.
+static const char location[] = "helm";
+static const char desc_location []
+    = "PID controller settings used to drive boundary layer thickness"
+      " (measured using 99% of freestream velocity)"
+      " by dynamically adjusting the Largo slow growth parameter."
+      " Poorly chosen parameters will destabilize a simulation.";
+
+static const char name_r [] = "helm_r";
+static const char name_kp[] = "helm_kp";
+static const char name_Td[] = "helm_Td";
+static const char name_Tf[] = "helm_Tf";
+static const char name_Ti[] = "helm_Ti";
+static const char name_Tt[] = "helm_Tt";
+
+static const char * const attr_r  = name_r  + sizeof(location);
+static const char * const attr_kp = name_kp + sizeof(location);
+static const char * const attr_Td = name_Td + sizeof(location);
+static const char * const attr_Tf = name_Tf + sizeof(location);
+static const char * const attr_Ti = name_Ti + sizeof(location);
+static const char * const attr_Tt = name_Tt + sizeof(location);
 
 static const char desc_r [] = "Reference value, often called the setpoint";
 static const char desc_kp[] = "Proportional gain modifying P, I, and D terms.";
@@ -80,12 +97,6 @@ static const char desc_Ti[] = "Time scale governing integral action."
                               " Set to infinity to disable integral control.";
 static const char desc_Tt[] = "Time scale governing automatic reset."
                               " Set to infinity to disable automatic reset.";
-
-static const char desc_location []
-    = "PID controller settings used to drive boundary layer thickness"
-      " (measured using 99% of freestream velocity)"
-      " by dynamically adjusting the Largo slow growth parameter."
-      " Poorly chosen parameters will destabilize a simulation.";
 
 boost::program_options::options_description
 definition_helm::options_description()
@@ -149,6 +160,28 @@ definition_helm::options_description()
         ;
 
     return retval;
+}
+
+void
+definition_helm::save(
+        const esio_handle h) const
+{
+    DEBUG0("Storing definition_helm parameters");
+
+    // Only root writes the containing location
+    const int one = 1;
+    int procid;
+    esio_handle_comm_rank(h, &procid);
+    esio_line_establish(h, 1, 0, (procid == 0 ? 1 : 0));
+    esio_line_write(h, location, &one, 0, desc_location);
+
+    // Everyone writes the metadata
+    esio_attribute_write(h, location, attr_r,  &this->r   );
+    esio_attribute_write(h, location, attr_kp, &this->h.kp);
+    esio_attribute_write(h, location, attr_Td, &this->h.Td);
+    esio_attribute_write(h, location, attr_Tf, &this->h.Tf);
+    esio_attribute_write(h, location, attr_Ti, &this->h.Ti);
+    esio_attribute_write(h, location, attr_Tt, &this->h.Tt);
 }
 
 } // end namespace support

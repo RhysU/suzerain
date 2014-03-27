@@ -30,6 +30,7 @@
 
 #include <suzerain/specification_helm.hpp>
 #include <suzerain/support/definition_base.hpp>
+#include <suzerain/support/savable.hpp>
 
 namespace suzerain {
 
@@ -42,6 +43,7 @@ namespace support {
 class definition_helm
     : public specification_helm
     , public virtual definition_base
+    , public virtual savable
 {
 public:
 
@@ -77,6 +79,10 @@ public:
         specification_helm::approach(t, v, this->r);
         return this;
     }
+
+    /** @copydoc savable::save */
+    virtual void save(
+            const esio_handle h) const;
 
 };
 
