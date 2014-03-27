@@ -174,6 +174,38 @@ definition_helm::options_description()
 }
 
 void
+definition_helm::populate(
+        const definition_helm& that,
+        const bool verbose)
+{
+#define CALL_MAYBE_POPULATE(mem, loc)                                  \
+    maybe_populate(name_ ## mem, desc_ ## mem, loc, that.loc, verbose)
+    CALL_MAYBE_POPULATE(kp, h.kp);
+    CALL_MAYBE_POPULATE(r , r   );
+    CALL_MAYBE_POPULATE(Td, h.Td);
+    CALL_MAYBE_POPULATE(Tf, h.Tf);
+    CALL_MAYBE_POPULATE(Ti, h.Ti);
+    CALL_MAYBE_POPULATE(Tt, h.Tt);
+#undef CALL_MAYBE_POPULATE
+}
+
+void
+definition_helm::override(
+        const definition_helm& that,
+        const bool verbose)
+{
+#define CALL_MAYBE_OVERRIDE(mem, loc)                                  \
+    maybe_override(name_ ## mem, desc_ ## mem, loc, that.loc, verbose)
+    CALL_MAYBE_OVERRIDE(kp, h.kp);
+    CALL_MAYBE_OVERRIDE(r , r   );
+    CALL_MAYBE_OVERRIDE(Td, h.Td);
+    CALL_MAYBE_OVERRIDE(Tf, h.Tf);
+    CALL_MAYBE_OVERRIDE(Ti, h.Ti);
+    CALL_MAYBE_OVERRIDE(Tt, h.Tt);
+#undef CALL_MAYBE_OVERRIDE
+}
+
+void
 definition_helm::save(
         const esio_handle h) const
 {

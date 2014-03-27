@@ -46,8 +46,8 @@ namespace support {
 class definition_helm
     : public virtual definition_base
 ////, public virtual loadable
-////, public virtual overridable<specification_helm>
-////, public virtual populatable<specification_helm>
+    , public virtual overridable<definition_helm>
+    , public virtual populatable<definition_helm>
     , public virtual savable
     , public specification_helm
 {
@@ -89,15 +89,15 @@ public:
         return this;
     }
 
-//  /** @copydoc populatable::populate */
-//  virtual void populate(
-//          const specification_grid& that,
-//          const bool verbose = false);
+    /** @copydoc populatable::populate */
+    virtual void populate(
+            const definition_helm& that,
+            const bool verbose = false);
 
-//  /** @copydoc overridable::override */
-//  virtual void override(
-//          const specification_grid& that,
-//          const bool verbose = false);
+    /** @copydoc overridable::override */
+    virtual void override(
+            const definition_helm& that,
+            const bool verbose = false);
 
     /** @copydoc savable::save */
     virtual void save(
