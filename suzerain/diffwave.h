@@ -70,7 +70,7 @@ extern "C" {
  *                      determines the maximum wavenumbers which are
  *                      retained when differentiating.
  * @param[in]     dNx   Number of dealiased points in the X direction,
- *                      which determines of offsets are translated into
+ *                      which determines how offsets are translated into
  *                      frequencies.
  * @param[in]     dkbx  The first (inclusive) in-order frequency contained
  *                      in field \c x in the X direction.
@@ -80,7 +80,7 @@ extern "C" {
  *                      determines the maximum wavenumbers which are
  *                      retained when differentiating.
  * @param[in]     dNz   Number of dealiased points in the Z direction,
- *                      which determines of offsets are translated into
+ *                      which determines how offsets are translated into
  *                      frequencies.
  * @param[in]     dkbz  The first (inclusive) in-order frequency contained
  *                      in field \c z in the Z direction.
@@ -118,7 +118,7 @@ void suzerain_diffwave_apply(
  *                      determines the maximum wavenumbers which are
  *                      retained when differentiating.
  * @param[in]     dNx   Number of dealiased points in the X direction,
- *                      which determines of offsets are translated into
+ *                      which determines how offsets are translated into
  *                      frequencies.
  * @param[in]     dkbx  The first (inclusive) in-order frequency contained
  *                      in field \c x in the X direction.
@@ -128,7 +128,7 @@ void suzerain_diffwave_apply(
  *                      determines the maximum wavenumbers which are
  *                      retained when differentiating.
  * @param[in]     dNz   Number of dealiased points in the Z direction,
- *                      which determines of offsets are translated into
+ *                      which determines how offsets are translated into
  *                      frequencies.
  * @param[in]     dkbz  The first (inclusive) in-order frequency contained
  *                      in field \c z in the Z direction.
