@@ -28,6 +28,7 @@
 #include <suzerain/support/definition_helm.hpp>
 
 #include <boost/version.hpp>
+#include <esio/error.h>
 #include <esio/esio.h>
 
 #include <suzerain/exprparse.hpp>
@@ -211,20 +212,48 @@ definition_helm::save(
 {
     DEBUG0("Storing definition_helm parameters");
 
-    // Only root writes the containing location
-    const int one = 1;
+    // Only root writes the containing location with
+    // a 0 or 1 indicating whether or not helm was enabled.
     int procid;
     esio_handle_comm_rank(h, &procid);
     esio_line_establish(h, 1, 0, (procid == 0 ? 1 : 0));
-    esio_line_write(h, location, &one, 0, desc_location);
+    const int enabled_int = enabled;
+    esio_line_write(h, location, &enabled_int, 0, desc_location);
 
     // Everyone writes the metadata
-    esio_attribute_write(h, location, attr_r,  &this->r   );
     esio_attribute_write(h, location, attr_kp, &this->h.kp);
+    esio_attribute_write(h, location, attr_r,  &this->r   );
     esio_attribute_write(h, location, attr_Td, &this->h.Td);
     esio_attribute_write(h, location, attr_Tf, &this->h.Tf);
     esio_attribute_write(h, location, attr_Ti, &this->h.Ti);
     esio_attribute_write(h, location, attr_Tt, &this->h.Tt);
+}
+
+void
+definition_helm::load(
+    const esio_handle h,
+    const bool verbose)
+{
+    definition_helm t;
+
+    // When possible, load settings from restart.
+
+    // All ranks load any data with short circuit when not present
+    esio_line_establish(h, 1, 0, 1);
+    if (ESIO_NOTFOUND == esio_line_size(h, location, NULL)) {
+        return;
+    }
+
+    DEBUG0("Loading definition_helm parameters");
+    esio_attribute_read(h, location, attr_kp, &t.h.kp);
+    esio_attribute_read(h, location, attr_r,  &t.r   );
+    esio_attribute_read(h, location, attr_Td, &t.h.Td);
+    esio_attribute_read(h, location, attr_Tf, &t.h.Tf);
+    esio_attribute_read(h, location, attr_Ti, &t.h.Ti);
+    esio_attribute_read(h, location, attr_Tt, &t.h.Tt);
+
+    // Prefer incoming to temporary
+    this->populate(t, verbose);
 }
 
 } // end namespace support

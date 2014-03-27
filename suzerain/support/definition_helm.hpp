@@ -45,7 +45,7 @@ namespace support {
  */
 class definition_helm
     : public virtual definition_base
-////, public virtual loadable
+    , public virtual loadable
     , public virtual overridable<definition_helm>
     , public virtual populatable<definition_helm>
     , public virtual savable
@@ -103,10 +103,14 @@ public:
     virtual void save(
             const esio_handle h) const;
 
-//  /** @copydoc loadable::load */
-//  virtual void load(
-//          const esio_handle h,
-//          const bool verbose = true);
+    /**
+     * @copydoc loadable::load
+     *
+     * Does \e not enable the controller under any circumstances.
+     */
+    virtual void load(
+            const esio_handle h,
+            const bool verbose = true);
 
 };
 
