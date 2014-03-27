@@ -37,7 +37,8 @@ specification_helm::specification_helm(
         const double Tf,
         const double Ti,
         const double Tt)
-    : t(std::numeric_limits<double>::quiet_NaN())
+    : enabled(false)
+    , t(std::numeric_limits<double>::quiet_NaN())
     , v(std::numeric_limits<double>::quiet_NaN())
     , r(std::numeric_limits<double>::quiet_NaN())
 {
@@ -47,14 +48,6 @@ specification_helm::specification_helm(
     h.Tf = Tf;
     h.Ti = Ti;
     h.Tt = Tt;
-}
-
-bool
-specification_helm::enabled()
-{
-#pragma warning(push,disable:1572)
-    return this->h.kp == 0;
-#pragma warning(pop,disable:1572)
 }
 
 specification_helm *
@@ -70,6 +63,7 @@ specification_helm::approach(
         const double v,
         const double r)
 {
+    this->enabled = true;
     this->t = t;
     this->v = v;
     this->r = r;
@@ -83,6 +77,7 @@ specification_helm::steady(
         const double u,
         const double y) const
 {
+    assert(this->enabled);
     assert(!(boost::math::isnan)(this->t));
     assert(!(boost::math::isnan)(this->v));
     assert(!(boost::math::isnan)(this->r));

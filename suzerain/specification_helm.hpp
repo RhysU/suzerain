@@ -36,7 +36,8 @@ namespace suzerain {
  * Encapsulates PID controller settings and operation using \ref helm.h.
  * Hides aspects of the incremental control from \ref helm.h to ease use.
  * Const-ness in this class refers to logical const-ness as
- * operating the control mutates internal state.
+ * operating the control mutates internal state.  The controller
+ * tracks whether or not it has been #enabled.
  */
 class specification_helm
 {
@@ -68,18 +69,14 @@ public:
      * \param Tt \copydoc helm_state#Tp
      */
     explicit
-    specification_helm(const double kp,
+    specification_helm(const double kp = 1.00,
                        const double Td = 1.00,
                        const double Tf = 0.01,
                        const double Ti = 1.00,
                        const double Tt = 1.00);
 
-    /**
-     * \brief Is the controller enabled because is #kp nonzero?
-     * \return True if #kp is nonzero.  False otherwise.
-     */
-    bool
-    enabled();
+    /** Is the controller turned on? */
+    bool enabled;
 
     /**
      * \brief Reset all tuning parameters, but \e not transient state.
@@ -90,6 +87,8 @@ public:
 
     /**
      * \brief Reset any transient state, but \e not tuning parameters.
+     * Has the side-effect of setting <code>enabled == true</code>.
+     *
      * \param t Absolute time at which control is being established.
      * \param v Absolute actuator position to establish.
      * \param r Desired reference value, often called the setpoint.
