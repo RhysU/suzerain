@@ -230,25 +230,115 @@ suzerain::reacting::driver_advance::run(int argc, char **argv)
 
     } else if (grid->one_sided()) { // Flat plate
 
-        INFO0(who, "Computing mean freestream behavior per plate scenario");
-        const real_t T_inf   = isothermal->upper_T;
-        const real_t u_inf   = isothermal->upper_u;
-        const real_t rho_inf = isothermal->upper_rho;
-        const real_t mx_inf  = u_inf * rho_inf;
+        real_t rho_inf;
+        real_t mx_inf;
+        real_t e_inf;
 
-        // Compute total energy at infinity based on input upper values
-        // Neglect contribution of wall-normal velocity to kinetic energy,
-        // and assume that species concentrations are at equilibrium
-        // FIXME: adjust the value of target rho_E dynamically
-        //        to account for wall-normal velocity and variations in
-        //        species mass fractions
-        const size_t Ns = cmods->Ns();
-        vector<real_t> mass_fractions(Ns);
-        for (unsigned int s=0; s<Ns; ++s) {
-            mass_fractions[s]      = isothermal->upper_cs[s];
-        }
-        const real_t e_inf   = (cmods->e_from_T(T_inf, mass_fractions)
-                                + 0.5 * (u_inf * u_inf)) * rho_inf;
+        // Compute baseflow from coefficients
+        if (sgdef->baseflow) {
+            INFO0(who, "Setting mean freestream reference state per baseflow");
+            WARN0(who, "... there is no correction to freestream values for"
+                       " displacement effects ");
+            if (isothermal->lower_v != 0.) {
+                WARN0(who, "... there is no correction to freestream energy"
+                           " for wall-normal velocity");
+            }
+
+            const size_t Ns = cmods->Ns();
+            if (Ns > 1) {
+                WARN0(who, "... setting mean freestream reference state" 
+                      " per baseflow NOT tested for multispecies,"
+                      " proceed at your own risk");
+            }
+            real_t   base [Ns+4+1];
+            real_t dybase [Ns+4+1];
+            real_t dxbase [Ns+4+1];
+            sgdef->baseflow->conserved(
+                grid->L.y(), &base[0], &dybase[0], &dxbase[0]);
+            sgdef->baseflow->pressure(
+                grid->L.y(), base[Ns+4], dybase[Ns+4], dxbase[Ns+4]);
+
+            // Clobber upper values
+            isothermal->upper_rho = base[0];
+            isothermal->upper_u   = base[1]/base[0];
+            isothermal->upper_v   = base[2]/base[0];
+            isothermal->upper_w   = base[3]/base[0];
+
+            for (unsigned int s=1; s<Ns; ++s) {
+              isothermal->upper_cs[s] = base[5+s]/base[0];
+            }
+
+            // Get upper temperature from antioch
+            const real_t irho = 1.0/isothermal->upper_rho ;
+
+            // ... momentum
+            const Vector3r m (isothermal->upper_rho * isothermal->upper_u,
+                              isothermal->upper_rho * isothermal->upper_v,
+                              isothermal->upper_rho * isothermal->upper_w);
+
+            // ... total energy
+            const real_t e   (base[4]);
+
+            // ... species densities
+            VectorXr species(Ns); // species densities
+            VectorXr cs     (Ns); // species mass fractions
+
+            // NOTE: In species vector, idx 0 is the dilluter (the species
+            // that is not explicitly part of the state vector)
+            species(0) = isothermal->upper_rho;
+            for (unsigned int s=1; s<Ns; ++s) {
+                species(s)  = isothermal->upper_cs[s];
+
+                // dilluter density = rho_0 = rho - sum_{s=1}^{Ns-1} rho_s
+                species(0) -= species(s);
+            }
+
+            // ... compute mass fractions
+            for (unsigned int s=0; s<Ns; ++s) {
+                cs(s) = irho * species(s);
+            }
+
+            // ... temperature and pressure-related quantities
+            real_t T, pr;
+            cmods->evaluate_pressure(
+                e, m, isothermal->upper_rho, species, cs, isothermal->lower_T,
+                T, pr);
+
+            // ... finally we got what we wanted...
+            isothermal->upper_T = T;
+
+            INFO0(who, "... upper_rho set to " << isothermal->upper_rho );
+            INFO0(who, "... upper_u   set to " << isothermal->upper_u   );
+            INFO0(who, "... upper_v   set to " << isothermal->upper_v   );
+            INFO0(who, "... upper_w   set to " << isothermal->upper_w   );
+            INFO0(who, "... upper_T   set to " << isothermal->upper_T   );
+
+            // ... set inf values for freestream constraints
+            rho_inf = isothermal->upper_rho;
+            mx_inf  = isothermal->upper_u   * rho_inf;
+            e_inf   = e;
+
+        } else {
+            INFO0(who, "Computing mean freestream behavior per plate scenario");
+            const real_t T_inf   = isothermal->upper_T;
+            const real_t u_inf   = isothermal->upper_u;
+            rho_inf = isothermal->upper_rho;
+            mx_inf  = u_inf * rho_inf;
+
+            // Compute total energy at infinity based on input upper values
+            // Neglect contribution of wall-normal velocity to kinetic energy,
+            // and assume that species concentrations are at equilibrium
+            // FIXME: adjust the value of target rho_E dynamically
+            //        to account for wall-normal velocity and variations in
+            //        species mass fractions
+            const size_t Ns = cmods->Ns();
+            vector<real_t> mass_fractions(Ns);
+            for (unsigned int s=0; s<Ns; ++s) {
+              mass_fractions[s]      = isothermal->upper_cs[s];
+            }
+            e_inf   = (cmods->e_from_T(T_inf, mass_fractions)
+                + 0.5 * (u_inf * u_inf)) * rho_inf;
+       }
 
         INFO0(who, "Setting constraints using freestream reference state"
                    " on upper boundary");
