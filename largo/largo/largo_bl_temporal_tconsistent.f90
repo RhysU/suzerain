@@ -15,6 +15,10 @@ module largo_BL_temporal_tconsistent
 
   type :: largo_BL_temporal_tconsistent_workspace_type
 
+    ! Threshold chosen from experience with mean densities
+    ! like 0.0025 requiring cutoffs like 1e-7_WP.
+    real(WP) :: cutoff_wrt_rho = 4e-5_WP
+
     real(WP) :: gr_delta   = 1.0_WP
 
     real(WP) :: dts_rho = 0.0_WP
@@ -124,8 +128,6 @@ module largo_BL_temporal_tconsistent
   integer(c_int), parameter :: irhoV = 3
   integer(c_int), parameter :: irhoW = 4
   integer(c_int), parameter :: irhoE = 5
-!!$   real(WP), parameter :: eps = 1.0E-10_WP
-  real(WP), parameter :: eps = 1.0E-7_WP
 
   ! Number of equations
   integer(c_int) :: neq_ = 0
@@ -366,9 +368,13 @@ contains
     integer(c_int) :: is
     type(largo_workspace_ptr), intent(in)          :: cp
     type(largo_BL_temporal_tconsistent_workspace_type), pointer :: auxp
+    real(WP) :: eps
 
     ! Get Fortran pointer from C pointer
     call c_f_pointer(cp, auxp)
+
+    ! Obtain epsilon-like cutoff scaled by local mean density
+    eps = auxp%mean_rho * auxp%cutoff_wrt_rho
 
     ! Compute \mean{ru"u"} for each u component and for energy
     ! In a continuous setting, these must be nonnegative so

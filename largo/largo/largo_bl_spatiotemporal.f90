@@ -16,6 +16,10 @@ module largo_BL_spatiotemporal
   ! largo workspace type declaration
   type :: largo_BL_spatiotemporal_workspace_type
 
+    ! Threshold chosen from experience with mean densities
+    ! like 0.0025 requiring cutoffs like 1e-10_WP.
+    real(WP) :: cutoff_wrt_rho = 4e-8_WP
+
     real(WP) :: grt_delta   = 1.0_WP
     real(WP) :: grx_delta   = 1.0_WP
 
@@ -142,9 +146,6 @@ module largo_BL_spatiotemporal
 
   ! Number of species
   integer(c_int) :: ns_  = 0
-
-  ! Tolerance to consider rms = 0
-  real(WP), parameter :: eps = 1.0E-10_WP
 
   public  :: largo_BL_spatiotemporal_allocate
   public  :: largo_BL_spatiotemporal_deallocate
@@ -465,9 +466,13 @@ contains
     integer(c_int) :: is
     type(largo_workspace_ptr), intent(in) :: cp
     type(largo_BL_spatiotemporal_workspace_type), pointer   :: auxp
+    real(WP) :: eps
 
     ! Get Fortran pointer from C pointer
     call c_f_pointer(cp, auxp)
+
+    ! Obtain epsilon-like cutoff scaled by local mean density
+    eps = auxp%mean_rho * auxp%cutoff_wrt_rho
 
     ! These ones depend on y only
     auxp%ygrms_rho  = 0.0_WP
