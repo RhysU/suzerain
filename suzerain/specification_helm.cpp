@@ -37,42 +37,43 @@ specification_helm::specification_helm(
         const double Tf,
         const double Ti,
         const double Tt)
-    : r(std::numeric_limits<double>::quiet_NaN())
-    , t(std::numeric_limits<double>::quiet_NaN())
+    : t(std::numeric_limits<double>::quiet_NaN())
     , v(std::numeric_limits<double>::quiet_NaN())
+    , r(std::numeric_limits<double>::quiet_NaN())
 {
     this->reset();
-    this->kp = kp;
-    this->Td = Td;
-    this->Tf = Tf;
-    this->Ti = Ti;
-    this->Tt = Tt;
+    h.kp = kp;
+    h.Td = Td;
+    h.Tf = Tf;
+    h.Ti = Ti;
+    h.Tt = Tt;
 }
 
 bool
 specification_helm::enabled()
 {
 #pragma warning(push,disable:1572)
-    return this->kp == 0;
+    return this->h.kp == 0;
 #pragma warning(pop,disable:1572)
 }
 
 specification_helm *
 specification_helm::reset()
 {
-    helm_reset(this);
+    helm_reset(&this->h);
     return this;
 }
 
 specification_helm *
 specification_helm::approach(
-        const double r,
-        const double v)
+        const double t,
+        const double v,
+        const double r)
 {
-    this->r = r;
+    this->t = t;
     this->v = v;
-    t = std::numeric_limits<double>::quiet_NaN();
-    helm_approach(this);
+    this->r = r;
+    helm_approach(&this->h);
     return this;
 }
 
@@ -80,16 +81,20 @@ double
 specification_helm::steady(
         const double t,
         const double u,
-        const double y)
+        const double y) const
 {
-    double dv = 0;
-    if ((boost::math::isnan)(this->t)) {
-        this->t = t;
-    } else {
-        dv = helm_steady(this, t - this->t, r, u, v, y);
-        this->t  = t;
-        this->v += dv;
-    }
+    assert(!(boost::math::isnan)(this->t));
+    assert(!(boost::math::isnan)(this->v));
+    assert(!(boost::math::isnan)(this->r));
+
+    // Invoke control logic
+    const double dt = t - this->t;
+    const double dv = helm_steady(&this->h, dt, r, u, v, y);
+
+    // Update absolute state
+    this->t  = t;
+    this->v += dv;
+
     return dv;
 }
 

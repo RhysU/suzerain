@@ -35,25 +35,42 @@ namespace suzerain {
 /**
  * Encapsulates PID controller settings and operation using \ref helm.h.
  * Hides aspects of the incremental control from \ref helm.h to ease use.
+ * Const-ness in this class refers to logical const-ness as
+ * operating the control mutates internal state.
  */
-class specification_helm : public helm_state
+class specification_helm
 {
 
 public:
 
     /**
-     * Construct an instance with default values.
-     * To enable, argument \c kp must be nonzero.
+     * Construct an instance with standard-form control settings.
+     * That is, with coefficients from the equation
+     * \f{align}{
+     *     \frac{\mathrm{d}}{\mathrm{d}t} v(t) &= k_p \left[
+     *               - \frac{\mathrm{d}}{\mathrm{d}t} y(t)
+     *               + \frac{r(t) - y(t)}{T_i}
+     *               + \frac{u(t) - v(t)}{T_t}
+     *               + \frac{T_d}{T_f}\left(
+     *                   \frac{\mathrm{d}}{\mathrm{d}t} f(t)
+     *                 - \frac{\mathrm{d}}{\mathrm{d}t} y(t)
+     *                 \right)
+     *             \right]
+     *             .
+     * \f}
+     * To be enabled, argument \c kp must be nonzero.
+     *
+     * After construction, \ref approach must be called once before \ref steady.
      */
     explicit
     specification_helm(const double kp,
-                       const double Td = 1,
+                       const double Td = 1.00,
                        const double Tf = 0.01,
-                       const double Ti = 1,
-                       const double Tt = 1);
+                       const double Ti = 1.00,
+                       const double Tt = 1.00);
 
     /**
-     * \brief Is the controller turned on mean is #kp nonzero?
+     * \brief Is the controller enabled because is #kp nonzero?
      * \return True if #kp is nonzero.  False otherwise.
      */
     bool
@@ -68,13 +85,15 @@ public:
 
     /**
      * \brief Reset any transient state, but \e not tuning parameters.
-     * \param r Desired reference value, often called the setpoint.
+     * \param t Absolute time at which control is being established.
      * \param v Absolute actuator position to establish.
+     * \param r Desired reference value, often called the setpoint.
      * \see \ref helm_approach
      */
     specification_helm *
-    approach(const double r,
-             const double v);
+    approach(const double t,
+             const double v,
+             const double r);
 
     /**
      * \brief Find the control signal necessary to steady unsteady process y(t).
@@ -87,16 +106,21 @@ public:
     double
     steady(const double t,
            const double u,
-           const double y);
+           const double y) const;
 
-    /** Desired reference signal, often called the setpoint. */
-    double r;
+protected:
+
+    /** The state and settings for underlying incremental controller. */
+    mutable helm_state h;
 
     /** The last simulation time \c t at which steady was called. */
-    double t;
+    mutable double t;
 
     /** Tracks the position-based control signal \c v. */
-    double v;
+    mutable double v;
+
+    /** Desired reference signal, often called the setpoint. */
+    mutable double r;
 
 };
 
