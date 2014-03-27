@@ -73,7 +73,7 @@ definition_arsel::definition_arsel()
 // Strings used in options_description and populate/override/save/load.
 static const char location      [] = "arsel";
 static const char desc_location []
-    = " Autoregressive autocorrelation analysis settings governing"
+    = "Autoregressive autocorrelation analysis settings governing"
       " eff_N, eff_var, mu, mu_sigma, p, and T attributes on"
       " Reynolds averaged quantities. See 'Estimating Uncertainties"
       " in Statistics Computed from DNS' by Oliver et al. in PoF.";
