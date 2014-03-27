@@ -30,6 +30,9 @@
 
 #include <suzerain/specification_helm.hpp>
 #include <suzerain/support/definition_base.hpp>
+#include <suzerain/support/loadable.hpp>
+#include <suzerain/support/overridable.hpp>
+#include <suzerain/support/populatable.hpp>
 #include <suzerain/support/savable.hpp>
 
 namespace suzerain {
@@ -41,11 +44,17 @@ namespace support {
  * This permits using the instance with \ref program_options.
  */
 class definition_helm
-    : public specification_helm
-    , public virtual definition_base
+    : public virtual definition_base
+////, public virtual loadable
+////, public virtual overridable<specification_helm>
+////, public virtual populatable<specification_helm>
     , public virtual savable
+    , public specification_helm
 {
 public:
+
+    /** Default constructor providing disabled values. */
+    definition_helm();
 
     /**
      * \copydoc specification_helm()
@@ -80,9 +89,24 @@ public:
         return this;
     }
 
+//  /** @copydoc populatable::populate */
+//  virtual void populate(
+//          const specification_grid& that,
+//          const bool verbose = false);
+
+//  /** @copydoc overridable::override */
+//  virtual void override(
+//          const specification_grid& that,
+//          const bool verbose = false);
+
     /** @copydoc savable::save */
     virtual void save(
             const esio_handle h) const;
+
+//  /** @copydoc loadable::load */
+//  virtual void load(
+//          const esio_handle h,
+//          const bool verbose = true);
 
 };
 

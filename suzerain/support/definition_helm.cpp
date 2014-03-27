@@ -52,6 +52,17 @@ static void parse_option(const std::string& s,
     *value = t;
 }
 
+definition_helm::definition_helm()
+    : specification_helm(std::numeric_limits<double>::quiet_NaN(),
+                         std::numeric_limits<double>::quiet_NaN(),
+                         std::numeric_limits<double>::quiet_NaN(),
+                         std::numeric_limits<double>::quiet_NaN(),
+                         std::numeric_limits<double>::quiet_NaN())
+{
+    // Fix setpoint within superclass storage
+    this->r = std::numeric_limits<double>::quiet_NaN();
+}
+
 definition_helm::definition_helm(
         const double kp,
         const double Td,
