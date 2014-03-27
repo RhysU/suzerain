@@ -109,6 +109,9 @@ suzerain::reacting::driver_advance::run(int argc, char **argv)
                          ->implicit_value("all"),
                      "Disable all or some physics-related driving forces"
                      " by specifying 'all' or 'rho', 'rho_u', etc.")
+        ("preserve_upper_input", boost::program_options::bool_switch(),
+                     "Preserve upper input or file values (applies to"
+                     " slow growth baseflow scenarios)")
     ;
 
     // Initialize application and then process binary-specific options
@@ -153,6 +156,9 @@ suzerain::reacting::driver_advance::run(int argc, char **argv)
     }
     const string restart_file = positional[0];
 
+    // Reset or preserve the file or input upper values
+    const bool preserve_upper_input =  
+        options.variables()["preserve_upper_input"].as<bool>(); 
 
     INFO0(who, "Loading restart file: " << restart_file);
     real_t initial_t = numeric_limits<real_t>::quiet_NaN();
@@ -235,7 +241,7 @@ suzerain::reacting::driver_advance::run(int argc, char **argv)
         real_t e_inf;
 
         // Compute baseflow from coefficients
-        if (sgdef->baseflow) {
+        if (sgdef->baseflow && !preserve_upper_input) {
             INFO0(who, "Setting mean freestream reference state per baseflow");
             WARN0(who, "... there is no correction to freestream values for"
                        " displacement effects ");
@@ -320,6 +326,10 @@ suzerain::reacting::driver_advance::run(int argc, char **argv)
 
         } else {
             INFO0(who, "Computing mean freestream behavior per plate scenario");
+            if (sgdef->baseflow && preserve_upper_input) {
+                WARN0(who, "... preserving upper input or file values as per"
+                       " 'preserve_upper_input' option");
+            }
             const real_t T_inf   = isothermal->upper_T;
             const real_t u_inf   = isothermal->upper_u;
             rho_inf = isothermal->upper_rho;
