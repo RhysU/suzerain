@@ -28,6 +28,7 @@
 #include <suzerain/support/definition_grid.hpp>
 
 #include <esio/esio.h>
+#include <esio/error.h>
 
 #include <suzerain/diffwave.hpp>
 #include <suzerain/exprparse.hpp>
