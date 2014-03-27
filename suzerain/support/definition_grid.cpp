@@ -392,23 +392,24 @@ definition_grid::save(
     DEBUG0("Storing wavenumber vectors for Fourier bases");
     ArrayXc cbuf(std::max(N.x(), N.z()));
 
-    // Obtain wavenumbers via computing 1*(i*kx)/i
+    // Obtain Hermitian symmetric X wavenumbers via computing Re(1*(i*kx)/i)
     cbuf.fill(complex_t(1,0));
+    const int effective_Nx = 2*(N.x() - 1) + (N.x() % 2);
     diffwave::apply(1, 0, complex_t(0,-1), cbuf.data(),
             L.x(), L.z(),
-            1, N.x(), N.x(), 0, N.x(), 1, 1, 0, 1);
+            1, effective_Nx, effective_Nx, 0, N.x(), 1, 1, 0, 1);
     esio_line_establish(h, N.x(), 0, (procid == 0 ? N.x() : 0));
-    esio_line_write(h, "kx", reinterpret_cast<real_t *>(cbuf.data()),
-            2, "Wavenumbers in streamwise X direction"); // Re(cbuf)
+    esio_line_write(h, "kx", reinterpret_cast<real_t *>(cbuf.data()), 2,
+        "Wavenumbers in streamwise Hermitian-symmetric X direction");
 
-    // Obtain wavenumbers via computing 1*(i*kz)/i
+    // Obtain Z wavenumbers via computing Re(1*(i*kz)/i)
     cbuf.fill(complex_t(1,0));
     diffwave::apply(0, 1, complex_t(0,-1), cbuf.data(),
             L.x(), L.z(),
             1, 1, 1, 0, 1, N.z(), N.z(), 0, N.z());
     esio_line_establish(h, N.z(), 0, (procid == 0 ? N.z() : 0));
-    esio_line_write(h, "kz", reinterpret_cast<real_t *>(cbuf.data()),
-            2, "Wavenumbers in spanwise Z direction"); // Re(cbuf)
+    esio_line_write(h, "kz", reinterpret_cast<real_t *>(cbuf.data()), 2,
+        "Wavenumbers in spanwise Z direction");
 
     DEBUG0("Storing collocation point vectors for Fourier bases");
     ArrayXr rbuf(std::max(dN.x(), dN.z()));
