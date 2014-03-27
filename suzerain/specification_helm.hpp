@@ -59,8 +59,13 @@ public:
      *             .
      * \f}
      * To be enabled, argument \c kp must be nonzero.
-     *
      * After construction, \ref approach must be called once before \ref steady.
+     *
+     * \param kp \copydoc helm_state#kp
+     * \param Td \copydoc helm_state#Td
+     * \param Tf \copydoc helm_state#Tf
+     * \param Ti \copydoc helm_state#Ti
+     * \param Tt \copydoc helm_state#Tp
      */
     explicit
     specification_helm(const double kp,

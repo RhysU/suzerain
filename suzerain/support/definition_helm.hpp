@@ -45,16 +45,38 @@ class definition_helm
 {
 public:
 
-    /** \copydoc specification_helm() */
+    /**
+     * \copydoc specification_helm()
+     * \param r Reference value, often called the setpoint.
+     */
     explicit
     definition_helm(const double kp,
                     const double Td = 1.00,
                     const double Tf = 0.01,
                     const double Ti = 1.00,
-                    const double Tt = 1.00);
+                    const double Tt = 1.00,
+                    const double r  = 1.00);
 
     /** @copydoc definition_base::options_description() */
     virtual boost::program_options::options_description options_description();
+
+    // Make specification_helm::approach(t, v, r) visible
+    using specification_helm::approach;
+
+    /**
+     * \brief Reset any transient state, but \e not tuning parameters.
+     * Reference from construction, possibly modified by options parsing, used.
+     * \param t Absolute time at which control is being established.
+     * \param v Absolute actuator position to establish.
+     * \see \ref specification_helm::approach.
+     */
+    definition_helm *
+    approach(const double t,
+             const double v)
+    {
+        specification_helm::approach(t, v, this->r);
+        return this;
+    }
 
 };
 

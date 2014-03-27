@@ -36,16 +36,17 @@ namespace suzerain {
 
 namespace support {
 
-/** Helper for parsing and validating options. */
+/** Helper used to parse string-based options */
+template<typename T>
 static void parse_option(const std::string& s,
-                         double* value,
+                         T* value,
+                         void (*validator)(T, const char*),
                          const char* name)
 {
-
 #pragma warning(push,disable:2259)
-    const double t = exprparse<double>(s, name);
+    const T t = exprparse<real_t>(s, name);
 #pragma warning(pop)
-    validation::ensure_nonnegative(t, name);
+    validator(t, name);
     *value = t;
 }
 
@@ -54,17 +55,22 @@ definition_helm::definition_helm(
         const double Td,
         const double Tf,
         const double Ti,
-        const double Tt)
+        const double Tt,
+        const double r)
     : specification_helm(kp, Td, Tf, Ti, Tt)
 {
+    // Preserve incoming setpoint within superclass storage
+    this->r = r;
 }
 
+static const char name_r    [] = "helm_r";
 static const char name_kp   [] = "helm_kp";
 static const char name_Td   [] = "helm_Td";
 static const char name_Tf   [] = "helm_Tf";
 static const char name_Ti   [] = "helm_Ti";
 static const char name_Tt   [] = "helm_Tt";
 
+static const char desc_r [] = "Reference value, often called the setpoint";
 static const char desc_kp[] = "Proportional gain modifying P, I, and D terms.";
 static const char desc_Td[] = "Time scale governing derivative action."
                               " Set to zero to disable derivative control.";
@@ -89,6 +95,7 @@ definition_helm::options_description()
     using boost::program_options::bool_switch;
     using boost::program_options::value;
     using std::string;
+    using validation::ensure_nonnegative;
     using validation::ensure_positive;
 
     boost::program_options::options_description retval(desc_location);
@@ -98,35 +105,45 @@ definition_helm::options_description()
 #if BOOST_VERSION >= 105000
          ->value_name("GAIN")
 #endif
-         ->notifier(bind(&parse_option, _1, &h.kp, name_kp))
+         ->notifier(bind(&parse_option<double>, _1, &h.kp,
+                         &ensure_nonnegative<double>, name_kp))
          ->default_value(lexical_cast<string>(h.kp)),
          desc_kp)
+        (name_r, value<string>(NULL)
+         ->notifier(bind(&parse_option<double>, _1, &this->r,
+                         &ensure_nonnegative<double>, name_r))
+         ->default_value(lexical_cast<string>(this->r)),
+         desc_r)
         (name_Td, value<string>(NULL)
 #if BOOST_VERSION >= 105000
          ->value_name("TIMESCALE")
 #endif
-         ->notifier(bind(&parse_option, _1, &h.Td, name_Td))
+         ->notifier(bind(&parse_option<double>, _1, &h.Td,
+                         &ensure_nonnegative<double>, name_Td))
          ->default_value(lexical_cast<string>(h.Td)),
          desc_Td)
         (name_Tf, value<string>(NULL)
 #if BOOST_VERSION >= 105000
          ->value_name("TIMESCALE")
 #endif
-         ->notifier(bind(&parse_option, _1, &h.Tf, name_Tf))
+         ->notifier(bind(&parse_option<double>, _1, &h.Tf,
+                         &ensure_nonnegative<double>, name_Tf))
          ->default_value(lexical_cast<string>(h.Tf)),
          desc_Tf)
         (name_Ti, value<string>(NULL)
 #if BOOST_VERSION >= 105000
          ->value_name("TIMESCALE")
 #endif
-         ->notifier(bind(&parse_option, _1, &h.Ti, name_Ti))
+         ->notifier(bind(&parse_option<double>, _1, &h.Ti,
+                         &ensure_nonnegative<double>, name_Ti))
          ->default_value(lexical_cast<string>(h.Ti)),
          desc_Ti)
         (name_Tt, value<string>(NULL)
 #if BOOST_VERSION >= 105000
          ->value_name("TIMESCALE")
 #endif
-         ->notifier(bind(&parse_option, _1, &h.Tt, name_Tt))
+         ->notifier(bind(&parse_option<double>, _1, &h.Tt,
+                         &ensure_nonnegative<double>, name_Tt))
          ->default_value(lexical_cast<string>(h.Tt)),
          desc_Tt)
         ;
