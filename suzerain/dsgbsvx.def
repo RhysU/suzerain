@@ -289,6 +289,16 @@ double_precision_attempt:
         *tolsc = *res / tol;
     }
 
+    // As we originally presumed an all-zero solution vector x and performing
+    // any backsubstitions above hinged on (*res > tol), isnan(*res) stemming
+    // from a NaN in input vector b just produced an all-zero output x.  That
+    // atrocity needs to be corrected though things like 'fact' should be okay.
+    if (UNLIKELY(isnan(*res))) {
+        for (int i = 0; i < n; ++i) {
+            x[i] = NAN;
+        }
+    }
+
     return info;
 }
 
