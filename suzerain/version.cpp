@@ -30,6 +30,7 @@
 #include <sstream>
 
 #include <suzerain/suzerain-config.h>
+#include <suzerain/revisionstr.h>
 
 namespace suzerain {
 

@@ -29,8 +29,8 @@ TESTS               =
 CXX = @MPICXX@
 CC  = @MPICC@
 
-# Depend on .revisionstr to rebuild whenever revision changes
-# Get $(REVISIONSTR) into target CPPFLAGS to use the macro.
+# Depend on revisionstr.h to rebuild whenever revision information changes.
+# Get $(REVISIONFLAG) into target CPPFLAGS to use macro without dependency.
 include $(top_srcdir)/revisionstr.am
 
 AM_CPPFLAGS += $(OPENMP_CPPFLAGS) #pragma

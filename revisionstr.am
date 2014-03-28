@@ -1,20 +1,26 @@
 # Automake fragment for automatic revision management
 # Depend on .revisionstr to trigger automatic rebuilds
 
+# Generate the revision information only once per make invocation
 # Requires support with $(top_srcdir)/Makefile.am
 REVISIONSTR  := $(shell cd $(top_srcdir) && ./build-aux/version-gen .version-dist .version)
+
+# Produce a macro-declaring flag permitting use without implicit dependency
+# Useful whenever compilation should record when it happened
 REVISIONFLAG  = -DREVISIONSTR=\"$(REVISIONSTR)\"
 
-# Update the timestamp on .revisionstr only when the content changes
-BUILT_SOURCES += .revisionstr
-.revisionstr:
-	@echo $(REVISIONSTR) | diff $@ - 2>/dev/null || echo $(REVISIONSTR) > $@
-.PHONY: .revisionstr
+# Produce a macro-declaring header permitting use with explicit dependency
+# Useful whenever compilation must occur on revision information change
+.PHONY:          revisionstr.h
+BUILT_SOURCES += revisionstr.h
+revisionstr.h:
+	echo '#define REVISIONSTR "'$(REVISIONSTR)'"' > "$@.tmp"
+	cmp "$@.tmp" "$@" || mv "$@.tmp" "$@"
 
-# Remove the .revisionstr breadcrumbs on clean or distribution
+# Remove the revisionstr.h breadcrumbs on clean or distribution
 dist-hook:   revisionstr-clean
 clean-local: revisionstr-clean
 revisionstr-clean:
-	@rm -f .revisionstr
+	@rm -f revisionstr.h
 
 # vim: set ft=automake:

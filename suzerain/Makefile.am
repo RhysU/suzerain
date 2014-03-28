@@ -26,8 +26,8 @@ lib_LTLIBRARIES           = # Append below
 nobase_pkginclude_HEADERS = # Append below
 noinst_LTLIBRARIES        = # Append below
 
-# Depend on .revisionstr to rebuild whenever revision changes
-# Get $(REVISIONFLAG) into target CPPFLAGS to use the macro.
+# Depend on revisionstr.h to rebuild whenever revision information changes.
+# Get $(REVISIONFLAG) into target CPPFLAGS to use macro without dependency.
 include $(top_srcdir)/revisionstr.am
 
 # MPI-based compilation and linking
@@ -182,6 +182,8 @@ nobase_pkginclude_HEADERS += version.hpp
 # the most-uncommon prerequisities first in the hope that introduction of
 # any system-wide /usr/lib, /usr/lib64, etc. is delayed as long as possible.
 lib_LTLIBRARIES          += libsuzerain.la
+libsuzerain_la_CPPFLAGS   = $(AM_CPPFLAGS)
+libsuzerain_la_SOURCES    = version.cpp
 libsuzerain_la_LDFLAGS    = -release $(PACKAGE_VERSION)
 libsuzerain_la_LDFLAGS   += $(LD_AS_NEEDED)
 libsuzerain_la_LIBADD     = libblasetal.la
@@ -206,9 +208,6 @@ libsuzerain_la_LIBADD    += $(GSL_LIBS)
 libsuzerain_la_LIBADD    += $(LD_AS_NEEDED)
 #
 libsuzerain_la_LIBADD    += $(LOG4CXX_LIBS)
-libsuzerain_la_CPPFLAGS   = $(AM_CPPFLAGS) $(REVISIONFLAG)
-libsuzerain_la_SOURCES    = version.cpp
-version.lo:                 .revisionstr
 
 # BLAS and LAPACK wrappers, including custom BLAS- and LAPACK-like kernels.
 # These routines ("BLAS et. al.") should be directly usable elsewhere
