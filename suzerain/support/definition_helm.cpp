@@ -80,10 +80,8 @@ definition_helm::definition_helm(
 // Strings used in options_description and populate/override/save/load.
 static const char location[] = "helm";
 static const char desc_location []
-    = "PID controller settings used to drive boundary layer thickness"
-      " (measured using 99% of freestream velocity)"
-      " by dynamically adjusting the Largo slow growth parameter."
-      " Poorly chosen parameters will destabilize a simulation.";
+    = "PID controller settings used to drive boundary layer delta99"
+      " by dynamically adjusting the Largo slow growth parameter";
 
 static const char name_r [] = "helm_r";
 static const char name_kp[] = "helm_kp";
@@ -99,7 +97,7 @@ static const char * const attr_Tf = name_Tf + sizeof(location);
 static const char * const attr_Ti = name_Ti + sizeof(location);
 static const char * const attr_Tt = name_Tt + sizeof(location);
 
-static const char desc_r [] = "Reference value, often called the setpoint";
+static const char desc_r [] = "Reference value, often called the setpoint.";
 static const char desc_kp[] = "Proportional gain modifying P, I, and D terms.";
 static const char desc_Td[] = "Time scale governing derivative action."
                               " Set to zero to disable derivative control.";
@@ -136,6 +134,9 @@ definition_helm::options_description()
          ->default_value(lexical_cast<string>(h.kp)),
          desc_kp)
         (name_r, value<string>(NULL)
+#if BOOST_VERSION >= 105000
+         ->value_name("SETPOINT")
+#endif
          ->notifier(bind(&parse_option<double>, _1, &this->r,
                          &ensure_nonnegative<double>, name_r))
          ->default_value(lexical_cast<string>(this->r)),
