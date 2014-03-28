@@ -5,7 +5,7 @@
 REVISIONSTR := -DREVISIONSTR=\"$(shell cd $(top_srcdir) && ./build-aux/version-gen .version-dist .version)\"
 
 # Update the timestamp on .revisionstr only when the content changes
-BUILT_SOURCES: .revisionstr
+BUILT_SOURCES += .revisionstr
 .revisionstr:
 	@echo $(REVISIONSTR) | diff $@ - 2>/dev/null || echo $(REVISIONSTR) > $@
 
