@@ -40,6 +40,7 @@
 #include <suzerain/specification_isothermal.hpp>
 #include <suzerain/specification_zgbsv.hpp>
 #include <suzerain/state.hpp>
+#include <suzerain/support/definition_helm.hpp>
 #include <suzerain/support/definition_noise.hpp>
 #include <suzerain/support/logging.hpp>
 
@@ -100,6 +101,9 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
     string implicit("rhome_xyz");
     real_t cevisslam = numeric_limits<real_t>::quiet_NaN();
     string undriven;
+
+    // We might turn on boundary layer control, so provide default tuning.
+    helm = make_shared<support::definition_helm>(1.0);
 
     // Register binary-specific options
     options.add_definition(const_cast<support::definition_noise&>(noisedef));
