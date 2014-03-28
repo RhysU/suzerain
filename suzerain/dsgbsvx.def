@@ -62,9 +62,9 @@
 #define SGBTRS   CONCAT3(suzerain_lapack_   ,        SCHAR, gbtrs  )
 
 // Shorthand for reporting internal sanity mistakes;
-#define MAYBE_XERBLA(info)                                \
-    if (SUZERAIN_UNLIKELY(info)) {                        \
-        return suzerain_blas_xerbla(__func__, -__LINE__); \
+#define MAYBE_XERBLA(cond, code)                     \
+    if (UNLIKELY(cond)) {                            \
+        return suzerain_blas_xerbla(__func__, code); \
     }
 
 int
@@ -116,9 +116,9 @@ FUNCTION(
     if (info) return suzerain_blas_xerbla(__func__, info);
 
     // Error handling from here onward deserves a word.  Internal errors are
-    // marked by calls to suzerain_blas_xerbla using (-__LINE__) via
-    // MAYBE_XERBLA.  Usage errors by a user (e.g.  providing a singular
-    // matrix) simply return the appropriate info value.
+    // marked by calls to suzerain_blas_xerbla using MAYBE_XERBLA(...,
+    // -__LINE__).  Usage errors by a user (e.g.  providing a singular matrix)
+    // simply return the appropriate info value.
 
     // Lookup machine-specific floating point information
     const NORM eps = suzerain_lapack_dlamch('E');
@@ -177,13 +177,13 @@ FUNCTION(
 
             DLACPY('F', ldab, n, ab, ldab, afb + kl, ldafb);
             info = DDEMOTE(n*ldafb, afb);
-            MAYBE_XERBLA(info)
+            MAYBE_XERBLA(info, -__LINE__)
             info = SGBTRF(n, n, kl, ku, (SINGLE*)afb, ldafb, ipiv);
             if (UNLIKELY(info > 0 && dmax >= 0)) {
                 // Single precision factorization failed where
                 // double precision might succeed.  Bail on single.
                 goto double_precision_attempt;
-            } else MAYBE_XERBLA(info < 0)
+            } else MAYBE_XERBLA(info < 0, -__LINE__)
         }
 
         while (*siter < smax && *res > tol) {
@@ -192,18 +192,18 @@ FUNCTION(
             // updating norm computations r = b - op(A) x and possibly tol
             *siter += 1;
             info = DDEMOTE(n, r);
-            MAYBE_XERBLA(info)
+            MAYBE_XERBLA(info, -__LINE__)
             info = SGBTRS(trans, n, kl, ku, 1,
                           (SINGLE*)afb, ldafb, ipiv,
                           (SINGLE*)r, n);
-            MAYBE_XERBLA(info)
+            MAYBE_XERBLA(info, -__LINE__)
             info = DPROMOTE(n, r);
-            MAYBE_XERBLA(info)
+            MAYBE_XERBLA(info, -__LINE__)
             DAXPY(n, 1, r, inc, x, inc);
             tol = (use_eps_tol ? eps : DNRM2(n, x, inc)) * tolconst;
             DCOPY(n, b, inc, r, inc);
             info = DGBMV(trans, n, n, kl, ku, -1, ab, ldab, x, inc, 1, r, inc);
-            MAYBE_XERBLA(info)
+            MAYBE_XERBLA(info, -__LINE__)
             *res  = DNRM2(n, r, inc);
 
             // Are we experiencing slow convergence after aiter-th step?
@@ -240,7 +240,7 @@ double_precision_attempt:
             *apprx = 0;
             DLACPY('F', ldab, n, ab, ldab, afb + kl, ldafb);
             info = DGBTRF(n, n, kl, ku, afb, ldafb, ipiv);
-            MAYBE_XERBLA(info < 0) else if (UNLIKELY(info > 0)) { return info; }
+            MAYBE_XERBLA(info < 0, -__LINE__) else if (UNLIKELY(info > 0)) { return info; }
         }
 
         while (*diter < dmax && *res > tol) {
@@ -249,12 +249,12 @@ double_precision_attempt:
             // updating norm computations r = b - op(A) x and possibly tol
             *diter += 1;
             info = DGBTRS(trans, n, kl, ku, 1, afb, ldafb, ipiv, r, n);
-            MAYBE_XERBLA(info)
+            MAYBE_XERBLA(info, -__LINE__)
             DAXPY(n, 1.0, r, inc, x, inc);
             tol = (use_eps_tol ? eps : DNRM2(n, x, inc)) * tolconst;
             DCOPY(n, b, inc, r, inc);
             info = DGBMV(trans, n, n, kl, ku, -1, ab, ldab, x, inc, 1, r, inc);
-            MAYBE_XERBLA(info)
+            MAYBE_XERBLA(info, -__LINE__)
             *res = DNRM2(n, r, inc);
 
             // Are we experiencing slow convergence after aiter-th step?
