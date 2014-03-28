@@ -514,7 +514,7 @@ suzerain::reacting::driver_advance::run(int argc, char **argv)
 
         // growth rate amplitude for species must be set all equal for consistency
         // setting them all equal to zero
-        for (int s=0; s<Ns-1; s++) {
+        for (size_t s=0; s<Ns-1; s++) {
             sgdef->gramp_mean[is0+s] = sgdef->gramp_mean[0];
         }
 
