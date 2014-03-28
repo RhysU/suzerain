@@ -112,6 +112,9 @@ suzerain::reacting::driver_advance::run(int argc, char **argv)
         ("preserve_upper_input", boost::program_options::bool_switch(),
                      "Preserve upper input or file values (applies to"
                      " slow growth baseflow scenarios)")
+        ("preserve_largo_gramp_input", boost::program_options::bool_switch(),
+                     "Preserve gramp file values (applies to"
+                     " slow growth bl_spatiotemporal_consistent model)")
     ;
 
     // Initialize application and then process binary-specific options
@@ -159,6 +162,10 @@ suzerain::reacting::driver_advance::run(int argc, char **argv)
     // Reset or preserve the file or input upper values
     const bool preserve_upper_input =  
         options.variables()["preserve_upper_input"].as<bool>(); 
+
+    // Reset or preserve the file amplitude growth rate values
+    const bool preserve_largo_gramp_input =  
+        options.variables()["preserve_largo_gramp_input"].as<bool>(); 
 
     INFO0(who, "Loading restart file: " << restart_file);
     real_t initial_t = numeric_limits<real_t>::quiet_NaN();
@@ -436,6 +443,104 @@ suzerain::reacting::driver_advance::run(int argc, char **argv)
         INFO0(who, "R_ref     = " << common_block.R_ref    );
         INFO0(who, "E_ref     = " << cmods->e_from_T(common_block.T_ref,
                                                      mass_fractions));
+    }
+
+    // Reset amplitude growth rate parameters for spatiotemporal formulation
+    if (sgdef->formulation == largo_formulation::spatiotemporal_consistent
+        && !preserve_largo_gramp_input) {
+        INFO0(who, "Setting largo growth rate amplitude values");
+ 
+        const size_t Ns = cmods->Ns();
+
+        // resize to 5 flow vars + (Ns-1) species + pressure
+        sgdef->gramp_mean.resize(5+(Ns-1)+1);
+
+        // set all values to zero
+        for (unsigned int i=0; i<sgdef->gramp_mean.size(); i++) {
+            sgdef->gramp_mean[i] = 0.;
+        }
+
+        // pre-computations to get wall baseflow values
+        const size_t iu  = 1;
+        const size_t ie  = 4;
+        const size_t is0 = 5;
+        const size_t ip  = Ns + 4;
+        real_t   wall [Ns+4+1];
+        real_t dywall [Ns+4+1];
+        real_t dxwall [Ns+4+1];
+        sgdef->baseflow->conserved(
+            0., &wall[0], &dywall[0], &dxwall[0]);
+        sgdef->baseflow->pressure(
+            0., wall[ip], dywall[ip], dxwall[ip]);
+
+
+        // thermo quantities to estimate wall flow values
+        VectorXr wall_cs(Ns);
+        for (unsigned int s=0; s<Ns; ++s) {
+            wall_cs(s) = isothermal->lower_cs[s];
+        }
+
+        real_t wall_a;            // not needed
+        real_t wall_gamma;
+        real_t wall_Rmix;
+        VectorXr wall_etots(Ns);  // not needed
+        cmods->evaluate_for_nonreflecting(isothermal->lower_T,
+                                          wall_cs,
+                                          wall_a,
+                                          wall_gamma,
+                                          wall_Rmix,
+                                          wall_etots);
+
+        // pre-compute these for convenience
+        const real_t wall_Cv       = wall_Rmix / (wall_gamma - 1.);
+        const real_t wall_P        =   wall[ip];
+        const real_t wall_ddx_P    = dxwall[ip];
+        const real_t wall_rhoI     =   wall[0];
+        const real_t wall_ddx_rhoI = dxwall[0];
+        const real_t wall_rho      = wall_P     / wall_Rmix / isothermal->lower_T;
+        const real_t wall_ddx_rho  = wall_ddx_P / wall_Rmix / isothermal->lower_T;
+        const real_t wall_ruI      =   wall[iu];
+        const real_t wall_ddx_ruI  = dxwall[iu];
+        const real_t wall_EI       =   wall[ie] / wall[0];
+        const real_t wall_rEI      =   wall[ie];
+        const real_t wall_ddx_rEI  = dxwall[ie];
+        const real_t wall_E        = wall_Cv * isothermal->lower_T;
+
+        // growth rate amplitudes for density, streamwise velocity, energy
+        sgdef->gramp_mean[0]  = 1./(wall_rho - wall_rhoI) * (wall_ddx_rho - wall_ddx_rhoI);
+        sgdef->gramp_mean[1]  = wall_ddx_ruI/wall_ruI - wall_ddx_rhoI/wall_rhoI;
+        sgdef->gramp_mean[ie] = - (wall_EI/(wall_E - wall_EI))
+                                * (wall_ddx_rEI/wall_rEI - wall_ddx_rhoI/wall_rhoI);
+
+        // growth rate amplitude for species must be set all equal for consistency
+        // setting them all equal to zero
+        for (int s=0; s<Ns-1; s++) {
+            sgdef->gramp_mean[is0+s] = sgdef->gramp_mean[0];
+        }
+
+        // rms amplitude growth rates
+        sgdef->gramp_rms.resize(5+(Ns-1)+1);
+
+
+        // output computed values
+        DEBUG0(who, "... wall rho  is " << wall_rho);
+        DEBUG0(who, "... wall Cv   is " << wall_Cv);
+        DEBUG0(who, "... wall Rmix is " << wall_Rmix);
+        DEBUG0(who, "... wall E    is " << wall_E);
+
+        INFO0(who, "... gramp_mean for rho set to " << sgdef->gramp_mean[0]);
+        INFO0(who, "... gramp_mean for u   set to " << sgdef->gramp_mean[iu]);
+        INFO0(who, "... gramp_mean for E   set to " << sgdef->gramp_mean[ie]);
+        WARN0(who, "... gramp_mean for cs  set all to 0. ");
+
+        // set all values to zero
+        for (unsigned int i=0; i<sgdef->gramp_rms.size(); i++) {
+            sgdef->gramp_rms[i] = 0.;
+        }
+    } else if (sgdef->formulation == largo_formulation::spatiotemporal_consistent
+              && preserve_largo_gramp_input) {
+        WARN0(who, "Preserving largo_gramp values from file"
+                   " per 'preserve_largo_gramp_input' option");
     }
 
     // Prepare spatial operators depending on requested advance type
