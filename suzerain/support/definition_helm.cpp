@@ -124,6 +124,9 @@ definition_helm::options_description()
     boost::program_options::options_description retval(desc_location);
 
     retval.add_options()
+        ("helm_enable",
+         bool_switch(&enabled)->default_value(false),
+         "Enable control of the boundary layer thickness")
         (name_kp, value<string>(NULL)
 #if BOOST_VERSION >= 105000
          ->value_name("GAIN")
