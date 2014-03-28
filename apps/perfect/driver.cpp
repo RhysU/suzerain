@@ -71,11 +71,12 @@ driver::initialize(
         char **argv)
 {
     // Only add groups of options when non-trivial at initialization
-    if (scenario  ) options.add_definition(*scenario  ) ;
-    if (isothermal) options.add_definition(*isothermal) ;
-    if (sg        ) options.add_definition(*sg        ) ;
-    if (rad       ) options.add_definition(*rad       ) ;
-    if (msoln     ) options.add_definition(*msoln     ) ;
+    if (scenario  ) options.add_definition(*scenario  );
+    if (isothermal) options.add_definition(*isothermal);
+    if (sg        ) options.add_definition(*sg        );
+    if (rad       ) options.add_definition(*rad       );
+    if (helm      ) options.add_definition(*helm      );
+    if (msoln     ) options.add_definition(*msoln     );
 
     // Delegate to superclass initialization
     std::vector<std::string> positional = super::initialize(argc, argv);
@@ -352,6 +353,7 @@ driver::save_metadata_hook(
     if (isothermal) isothermal->save(esioh);
     if (sg)         sg->save(esioh);
     if (rad)        rad->save(esioh);
+    if (helm)       helm->save(esioh);
     if (msoln)      save(esioh, msoln, *scenario, *grid);
     return;
 }
@@ -381,6 +383,11 @@ driver::load_metadata_hook(
         rad = make_shared<support::definition_radialflow>();
     }
     rad->load(esioh);
+
+    if (!helm) {
+        helm = make_shared<support::definition_helm>();
+    }
+    helm->load(esioh);
 
     load(esioh, msoln, *scenario, *grid);
     return;

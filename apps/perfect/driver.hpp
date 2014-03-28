@@ -28,6 +28,7 @@
  * A driver for nondimensional perfect gas simulations.
  */
 
+#include <suzerain/support/definition_helm.hpp>
 #include <suzerain/support/definition_isothermal.hpp>
 #include <suzerain/support/definition_largo.hpp>
 #include <suzerain/support/definition_radialflow.hpp>
@@ -82,6 +83,9 @@ public:
 
     /** Radial flow baseflow specification for possible use with Largo. */
     shared_ptr<support::definition_radialflow> rad;
+
+    /** Provides PID-based controls of Largo slow growth parameters.  */
+    shared_ptr<support::definition_helm> helm;
 
     /** Nondimensional manufactured solution optionally used by applications. */
     shared_ptr<manufactured_solution> msoln;
