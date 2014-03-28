@@ -9,6 +9,7 @@ REVISIONFLAG  = -DREVISIONSTR=\"$(REVISIONSTR)\"
 BUILT_SOURCES += .revisionstr
 .revisionstr:
 	@echo $(REVISIONSTR) | diff $@ - 2>/dev/null || echo $(REVISIONSTR) > $@
+.PHONY: .revisionstr
 
 # Remove the .revisionstr breadcrumbs on clean or distribution
 dist-hook:   revisionstr-clean
