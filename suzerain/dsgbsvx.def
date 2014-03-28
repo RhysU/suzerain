@@ -206,6 +206,11 @@ FUNCTION(
             MAYBE_XERBLA(info, -__LINE__)
             *res  = DNRM2(n, r, inc);
 
+            // Getting here required *res > tol so isnan(*res) now is badness
+            // likely stemming from NaNs within matrix ab not caught because the
+            // matrix was not factorized within this invocation.  Or our bug.
+            MAYBE_XERBLA(isnan(*res), -__LINE__)
+
             // Are we experiencing slow convergence after aiter-th step?
             if (*siter >= aiter && lastres < *res * resdecay) {
                 if (*apprx) {  // Blame the approximate factorization
@@ -256,6 +261,11 @@ double_precision_attempt:
             info = DGBMV(trans, n, n, kl, ku, -1, ab, ldab, x, inc, 1, r, inc);
             MAYBE_XERBLA(info, -__LINE__)
             *res = DNRM2(n, r, inc);
+
+            // Getting here required *res > tol so isnan(*res) now is badness
+            // likely stemming from NaNs within matrix ab not caught because the
+            // matrix was not factorized within this invocation.  Or our bug.
+            MAYBE_XERBLA(isnan(*res), -__LINE__)
 
             // Are we experiencing slow convergence after aiter-th step?
             if (*diter >= aiter && lastres < *res * resdecay) {
