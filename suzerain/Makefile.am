@@ -27,7 +27,7 @@ nobase_pkginclude_HEADERS = # Append below
 noinst_LTLIBRARIES        = # Append below
 
 # Depend on .revisionstr to rebuild whenever revision changes
-# Get $(REVISIONSTR) into target CPPFLAGS to use the macro.
+# Get $(REVISIONFLAG) into target CPPFLAGS to use the macro.
 include $(top_srcdir)/revisionstr.am
 
 # MPI-based compilation and linking
@@ -206,7 +206,7 @@ libsuzerain_la_LIBADD    += $(GSL_LIBS)
 libsuzerain_la_LIBADD    += $(LD_AS_NEEDED)
 #
 libsuzerain_la_LIBADD    += $(LOG4CXX_LIBS)
-libsuzerain_la_CPPFLAGS   = $(AM_CPPFLAGS) $(REVISIONSTR)
+libsuzerain_la_CPPFLAGS   = $(AM_CPPFLAGS) $(REVISIONFLAG)
 libsuzerain_la_SOURCES    = version.cpp
 version.lo:                 .revisionstr
 

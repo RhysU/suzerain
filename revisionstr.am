@@ -2,7 +2,8 @@
 # Depend on .revisionstr to trigger automatic rebuilds
 
 # Requires support with $(top_srcdir)/Makefile.am
-REVISIONSTR := -DREVISIONSTR=\"$(shell cd $(top_srcdir) && ./build-aux/version-gen .version-dist .version)\"
+REVISIONSTR  := $(shell cd $(top_srcdir) && ./build-aux/version-gen .version-dist .version)
+REVISIONFLAG  = -DREVISIONSTR=\"$(REVISIONSTR)\"
 
 # Update the timestamp on .revisionstr only when the content changes
 BUILT_SOURCES += .revisionstr
