@@ -525,6 +525,11 @@ typedef struct suzerain_bl_pg {
  * Compute nondimensional boundary layer pressure gradient parameters.
  * Each nondimensional quantity is scaled as documented.
  *
+ * Unless a specific integral thickness is required according to the quantity
+ * definition (e.g. \f$\delta_1\f$ in the Clauser parameter), \f$\delta_{99}\f$
+ * from <code>thick->delta99</code> supplies the boundary layer thickness
+ * consistent with the use of \c edge99.
+ *
  * \param[in ] code_Ma     Mach number \f$u_0/a_0\f$ used to scale
  *                         nondimensional quantities.  For dimensional
  *                         calculations, use <code>1</code>.

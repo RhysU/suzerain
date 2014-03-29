@@ -515,12 +515,12 @@ suzerain_bl_compute_pg(
                      / code_Re;
     pg->Launder_w    = wall->mu * edge99_u__x / edge99->rho / square(edge99->u)
                      / code_Re;
-    pg->Lambda_n     = - thick->delta / viscous->tau_w * edge99_p__x
+    pg->Lambda_n     = - thick->delta99 / viscous->tau_w * edge99_p__x
                      / square(code_Ma);
-    pg->p_ex         = thick->delta / edge99->rho
+    pg->p_ex         = thick->delta99 / edge99->rho
                      / square(edge99->u) * edge99_p__x
                      / square(code_Ma);
-    pg->Pohlhausen   = square(thick->delta) * edge99->rho
+    pg->Pohlhausen   = square(thick->delta99) * edge99->rho
                      / edge99->mu * edge99_u__x
                      * code_Re;
 
