@@ -1108,6 +1108,7 @@ void driver_base::log_quantities_boundary_layer(
                 << ' ' << setw(fullprec<>::width) << "delta_nu"
                 << ' ' << setw(fullprec<>::width) << "tau_w"
                 << ' ' << setw(fullprec<>::width) << "u_tau"
+                << ' ' << setw(fullprec<>::width) << "Re_tau"
                 << ' ' << setw(fullprec<>::width) << "Bq"
                 << ' ' << setw(fullprec<>::width) << "v_wallplus";
             INFO0(name, msg.str());
@@ -1117,6 +1118,7 @@ void driver_base::log_quantities_boundary_layer(
             << ' ' << fullprec<>(viscous->delta_nu)
             << ' ' << fullprec<>(viscous->tau_w)
             << ' ' << fullprec<>(viscous->u_tau)
+            << ' ' << fullprec<>(thick->delta99 / viscous->delta_nu)
             << ' ' << fullprec<>(qoi->Bq)
             << ' ' << fullprec<>(qoi->v_wallplus);
         INFO0(name, msg.str());
