@@ -1,0 +1,23 @@
+#!/bin/bash
+# Use gplot to quickly plot boundary-layer related quantities versus time in one
+# or more directories.  Useful in conjunction with job management scripts.
+
+declare -a state qoi bc log
+for dir in "$@"; do
+    if [ -d "$dir" ]; then
+        bc+=("$dir/bcdat")
+        log+=("$dir/log.dat")
+        qoi+=("$dir/qoi.dat")
+        state+=("$dir/state.dat")
+    else
+        echo Argument \"$dir\" not a directory, skipping.
+    fi
+done
+
+gplot -il -g state.L2  -y state.L2  -f i=6:10 u 4:i w l ::: "${state[@]}"
+gplot -il -g state.RMS -y state.RMS -f i=6:10 u 4:i w l ::: "${state[@]}"
+gplot -il -g state.max -y state.max -f i=6:10 u 4:i w l ::: "${state[@]}"
+
+gplot -il -g bl.thick -y bl.thick  -f i=6:11 u 4:i  w l ::: "${qoi[@]}"
+gplot -i  -g bl.Re    -y Re_delta2           u 4:8  w l ::: "${qoi[@]}"
+gplot -i  -g bl.qoi   -y Re_tau              u 4:11 w l ::: "${qoi[@]}"
