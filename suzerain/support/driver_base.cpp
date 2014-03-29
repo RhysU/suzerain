@@ -1105,20 +1105,20 @@ void driver_base::log_quantities_boundary_layer(
         if (!log_header_shown) {
             log_header_shown = true;
             msg << setw(timeprefix.size()) << build_timeprefix_description()
+                << ' ' << setw(fullprec<>::width) << "cf"
                 << ' ' << setw(fullprec<>::width) << "delta_nu"
                 << ' ' << setw(fullprec<>::width) << "tau_w"
                 << ' ' << setw(fullprec<>::width) << "u_tau"
-                << ' ' << setw(fullprec<>::width) << "Re_tau"
                 << ' ' << setw(fullprec<>::width) << "Bq"
                 << ' ' << setw(fullprec<>::width) << "v_wallplus";
             INFO0(name, msg.str());
             msg.str("");
         }
         msg << timeprefix
+            << ' ' << fullprec<>(qoi->cf)
             << ' ' << fullprec<>(viscous->delta_nu)
             << ' ' << fullprec<>(viscous->tau_w)
             << ' ' << fullprec<>(viscous->u_tau)
-            << ' ' << fullprec<>(thick->delta99 / viscous->delta_nu)
             << ' ' << fullprec<>(qoi->Bq)
             << ' ' << fullprec<>(qoi->v_wallplus);
         INFO0(name, msg.str());
@@ -1186,22 +1186,22 @@ void driver_base::log_quantities_boundary_layer(
         if (!log_header_shown) {
             log_header_shown = true;
             msg << setw(timeprefix.size()) << build_timeprefix_description()
-                << ' ' << setw(fullprec<>::width) << "cf"
                 << ' ' << setw(fullprec<>::width) << "Ma_e"
                 << ' ' << setw(fullprec<>::width) << "Ma_tau"
                 << ' ' << setw(fullprec<>::width) << "ratio_rho"
                 << ' ' << setw(fullprec<>::width) << "ratio_nu"
-                << ' ' << setw(fullprec<>::width) << "ratio_T";
+                << ' ' << setw(fullprec<>::width) << "ratio_T"
+                << ' ' << setw(fullprec<>::width) << "Re_tau";
             INFO0(name, msg.str());
             msg.str("");
         }
         msg << timeprefix
-            << ' ' << fullprec<>(qoi->cf)
             << ' ' << fullprec<>(qoi->Ma_e)
             << ' ' << fullprec<>(qoi->Ma_tau)
             << ' ' << fullprec<>(qoi->ratio_rho)
             << ' ' << fullprec<>(qoi->ratio_nu)
-            << ' ' << fullprec<>(qoi->ratio_T);
+            << ' ' << fullprec<>(qoi->ratio_T)
+            << ' ' << fullprec<>(thick->delta99 / viscous->delta_nu);
         INFO0(name, msg.str());
     }
 
@@ -1255,6 +1255,7 @@ void driver_base::log_quantities_channel(
         if (!log_header_shown) {
             log_header_shown = true;
             msg << setw(timeprefix.size()) << build_timeprefix_description()
+                << ' ' << setw(fullprec<>::width) << "cf"
                 << ' ' << setw(fullprec<>::width) << "delta_nu"
                 << ' ' << setw(fullprec<>::width) << "tau_w"
                 << ' ' << setw(fullprec<>::width) << "u_tau"
@@ -1264,6 +1265,7 @@ void driver_base::log_quantities_channel(
             msg.str("");
         }
         msg << timeprefix
+            << ' ' << fullprec<>(qoi->cf)
             << ' ' << fullprec<>(viscous->delta_nu)
             << ' ' << fullprec<>(viscous->tau_w)
             << ' ' << fullprec<>(viscous->u_tau)
@@ -1281,7 +1283,6 @@ void driver_base::log_quantities_channel(
         if (!log_header_shown) {
             log_header_shown = true;
             msg << setw(timeprefix.size()) << build_timeprefix_description()
-                << ' ' << setw(fullprec<>::width) << "cf"
                 << ' ' << setw(fullprec<>::width) << "Ma_c"
                 << ' ' << setw(fullprec<>::width) << "Ma_tau"
                 << ' ' << setw(fullprec<>::width) << "Pr_w"
@@ -1291,7 +1292,6 @@ void driver_base::log_quantities_channel(
             msg.str("");
         }
         msg << timeprefix
-            << ' ' << fullprec<>(qoi->cf)
             << ' ' << fullprec<>(qoi->Ma_c)
             << ' ' << fullprec<>(qoi->Ma_tau)
             << ' ' << fullprec<>(qoi->Pr_w)
