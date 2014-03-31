@@ -121,7 +121,8 @@ compute_field_L2xz(
  * versus separation in the Hermitian-symmetric \f$x\f$ direction.  See
  * writeup/twopoint.tex for full details.  Obtaining a globally correct answer
  * requires using <code>MPI_Reduce</code> (or similar) with <code>MPI_SUM</code>
- * to sum the resulting buffer across all ranks.
+ * to sum the resulting buffer across all ranks.  Dealiasing modes are \e not
+ * included in computation.
  *
  * @param state[in  ] Scalar fields represented as Fourier coefficients in
  *                    \f$x\f$ and \f$z\f$ \e but point values in \f$y\f$.
@@ -147,7 +148,8 @@ compute_twopoint_xlocal(
  * versus separation in the \f$z\f$ direction.  See writeup/twopoint.tex for
  * full details.  Obtaining a globally correct answer requires using
  * <code>MPI_Reduce</code> (or similar) with <code>MPI_SUM</code> to sum the
- * resulting buffer across all ranks.
+ * resulting buffer across all ranks.  Dealiasing modes are \e not included in
+ * computation.
  *
  * @param state[in  ] Scalar fields represented as Fourier coefficients in
  *                    \f$x\f$ and \f$z\f$ \e but point values in \f$y\f$.

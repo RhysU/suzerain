@@ -446,7 +446,15 @@ compute_twopoint_zlocal(
                         &state[sj][0][m - dgrid.local_wave_start.x()]
                                      [n - dgrid.local_wave_start.z()],
                         grid.N.y());
-                o.col(nf) += u_mn * v_mn.conjugate();
+
+                // Account for conjugate symmetry per twopoint.tex
+                if (m == 0) {
+                    o.col(nf) +=    u_mn * v_mn.conjugate();
+                } else if (m < grid.dN.x()/2) {
+                    o.col(nf) += 2*(u_mn * v_mn.conjugate());
+                } else {
+                    o.col(nf) +=    u_mn.conjugate() * v_mn;
+                }
             }
         }
     }
