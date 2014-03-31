@@ -4,6 +4,7 @@ Plot wall-normal profiles averaged over (X,Z) directions from HDF5FILE.
 Options: 
   -f  --file_ext  Output file extension. Default is 'eps'.
   -h  --help      This help message.
+      --plot_all  Generate secondary 'debug' type of plots.
 """
 
 # TODO: Add ability to plot things other than bar_rho.
@@ -19,15 +20,15 @@ from matplotlib import pyplot
 from scipy.interpolate import interp1d
 
 
-def plot(hdf5file, fileext, ifile):
+def plot(hdf5file, fileext, ifile, plot_all):
     print "Plotting", hdf5file
 
     # Load a stats file
     f = h5py.File(hdf5file,'r')
         
     # Grab number of collocation points and B-spline order
-    Ny=f['Ny'].value
-    k=f['k'].value
+    Ny=f['Ny'].value[0]
+    k=f['k'].value[0]
     
     # Grab collocation points
     y = f['collocation_points_y'].value
@@ -43,6 +44,14 @@ def plot(hdf5file, fileext, ifile):
     # Get "mass" matrix and convert to dense format
     D0T_gb = f['Dy0T'].value
     D0T = gb.gb2ge(D0T_gb, Ny, k-2)
+
+    # Get "mass" matrix and convert to dense format
+    D1T_gb = f['Dy1T'].value
+    D1T = gb.gb2ge(D1T_gb, Ny, k-2)
+
+    # Get "mass" matrix and convert to dense format
+    D2T_gb = f['Dy2T'].value
+    D2T = gb.gb2ge(D2T_gb, Ny, k-2)
 
     # Grab rho coefficients
     rho_coeff = f['bar_rho'].value
@@ -60,6 +69,10 @@ def plot(hdf5file, fileext, ifile):
     # Grab T coefficients
     T_coeff = f['bar_T'].value
     T_coeff = np.array(T_coeff).reshape(Ny,1)
+
+    # Grab T coefficients
+    T_T_coeff = f['bar_T_T'].value
+    T_T_coeff = np.array(T_T_coeff).reshape(Ny,1)
 
     # Grab rho_u_u coefficients
     rho_u_u_coeff = f['bar_rho_u_u'].value
@@ -106,12 +119,15 @@ def plot(hdf5file, fileext, ifile):
     f.close()
     
     D0 = D0T.transpose()
+    D1 = D1T.transpose()
+    D2 = D2T.transpose()
 
     # Coefficients -> Collocation points
     rho_col     = D0*rho_coeff
     rho_u_col   = D0*rho_u_coeff
     rho_E_col   = D0*rho_E_coeff
     T_col       = D0*T_coeff
+    T_T_col     = D0*T_T_coeff
     rho_u_u_col = D0*rho_u_u_coeff
     rho_s_col   = D0*rho_s_coeff
     om_s_col    = D0*om_s_coeff
@@ -119,6 +135,13 @@ def plot(hdf5file, fileext, ifile):
     nu_col      = D0*nu_coeff
     p_col       = D0*p_coeff
     a_col       = D0*a_coeff
+
+    rho_E_col_y  = D1*rho_E_coeff
+    rho_E_col_yy = D2*rho_E_coeff
+    p_col_y      = D1*p_coeff
+    p_col_yy     = D2*p_coeff
+    rho_col_y    = D1*rho_coeff
+    rho_col_yy   = D2*rho_coeff
 
 
     # Computed quantities
@@ -128,6 +151,17 @@ def plot(hdf5file, fileext, ifile):
     fav_w       = np.array(rho_u_col[:,2]/rho_col[:,0]).reshape(Ny,1)
 
     fav_H       = np.array((rho_E_col[:,0] + p_col[:,0])/rho_col[:,0]).reshape(Ny,1)
+
+    if (plot_all):
+        # d(d(\fav{H})/dy)/dy
+        rho_col_2   =    np.multiply(rho_col  [:,0], rho_col  [:,0]).reshape(Ny,1)
+        rho_col_3   =    np.multiply(rho_col_2[:,0], rho_col  [:,0]).reshape(Ny,1)
+        rho_col_y2  =    np.multiply(rho_col_y[:,0], rho_col_y[:,0]).reshape(Ny,1)
+        fav_H_yy    =    np.array   ((rho_E_col_yy[:,0] + p_col_yy[:,0])/rho_col  [:,0]                 ).reshape(Ny,1)
+        fav_H_yy   -= 2.*np.multiply((rho_E_col_y [:,0] + p_col_y [:,0])/rho_col_2[:,0], rho_col_y [:,0]).reshape(Ny,1)
+        fav_H_yy   -=    np.multiply((rho_E_col   [:,0] + p_col   [:,0])/rho_col_2[:,0], rho_col_yy[:,0]).reshape(Ny,1)
+        fav_H_yy   += 2.*np.multiply((rho_E_col   [:,0] + p_col   [:,0])/rho_col_3[:,0], rho_col_y2[:,0]).reshape(Ny,1)
+
 
     # - Bar rho_upp
     # rho_upp     = np.array(np.ravel(rho_col) * np.ravel(fav_u)).reshape(Ny,1)
@@ -154,6 +188,9 @@ def plot(hdf5file, fileext, ifile):
     inv_nub = 1/nub
     dssqr_over_2nu = np.multiply(dyb[:,0], dyb[:,0]).reshape(Ny-4,1)
     dssqr_over_2nu = np.multiply(dssqr_over_2nu[:,0], 1/nub[:,0]).reshape(Ny-4,1) * 0.5
+
+    # - Temperature rms
+    Tp_Tp = T_T_col - np.multiply(T_col,T_col).reshape(Ny,1)
 
     # Plots
     figid  = 0
@@ -198,7 +235,14 @@ def plot(hdf5file, fileext, ifile):
     pyplot.semilogx(y, T_col, linewidth=3, label=key)
     pyplot.legend(loc=0)
     pyplot.savefig('bar_T.' + fileext, bbox_inches='tight')
-  
+
+    figid += 1
+    pyplot.figure(figid)
+    key = "sqrt_Tp_Tp" + str(ifile)
+    pyplot.semilogx(y, np.sqrt(Tp_Tp)/T_col, linewidth=3, label=key)
+    pyplot.legend(loc=0)
+    pyplot.savefig('sqrt_Tp_Tp.' + fileext, bbox_inches='tight')
+ 
     figid += 1
     pyplot.figure(figid)
     key = "bar_p" + str(ifile)
@@ -308,6 +352,15 @@ def plot(hdf5file, fileext, ifile):
     pyplot.legend(loc=0)
     pyplot.savefig('fav_H.' + fileext, bbox_inches='tight')
 
+    if (plot_all):
+        figid += 1   
+        pyplot.figure(figid)
+        key = "fav_H_yy" + str(ifile)
+        pyplot.plot(y, fav_H_yy[:,0], linewidth=0.1, label=key)
+        pyplot.axhline(linewidth=0.1, color='r')
+        pyplot.legend(loc=0)
+        pyplot.savefig('fav_H_yy.' + fileext, bbox_inches='tight')
+
 
 def main(argv=None):
 
@@ -318,20 +371,24 @@ def main(argv=None):
     # File extension (eps is default)
     fileext="eps"
 
+    # Plot all stuff
+    # ... include "debug" type plots one may want to see/declare
+    plot_all = False
+
     # Parse and check incoming command line arguments
     try:
         try:
-            opts, args = getopt.getopt(argv[1:], "hf:n", ["help", "file_ext="])
+            opts, args = getopt.getopt(argv[1:], "hf:n", ["help", "file_ext=", "plot_all"])
         except getopt.error, msg:
             raise Usage(msg)
         for o, a in opts:
             if o in ("-h", "--help"):
                 print __doc__
                 return 0
-        for o, a in opts:
-            # TODO: add sanity check for extension input
 	    if o in ("-f", "--file_ext"):
                 fileext=a
+	    if o in ("-f", "--plot_all"):
+                plot_all = True
         if len(args) < 1:
             print >>sys.stderr, "Incorrect number of arguments.  See --help."
             return 2
@@ -345,7 +402,7 @@ def main(argv=None):
     # Plot multiple files   
     ifile = 0    
     for hdf5file in hdf5files:
-        plot(hdf5file, fileext, ifile)
+        plot(hdf5file, fileext, ifile, plot_all)
         ifile += 1
 
 if __name__ == "__main__":
