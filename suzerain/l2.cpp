@@ -383,7 +383,64 @@ compute_twopoint_xlocal(
         const pencil_grid& dgrid,
         complex_t * const out)
 {
-    // FIXME Redmine #2998 implement
+    // Ensure state storage meets this routine's assumptions
+    // Notice state.shape()[0] may be any value
+    using boost::numeric_cast;
+    SUZERAIN_ENSURE((int) state.shape()[1] == dgrid.local_wave_extent.y());
+    SUZERAIN_ENSURE((int) state.shape()[2] == dgrid.local_wave_extent.x());
+    SUZERAIN_ENSURE((int) state.shape()[3] == dgrid.local_wave_extent.z());
+    SUZERAIN_ENSURE(state.strides()[1] == (int) 1);
+    SUZERAIN_ENSURE(state.strides()[2] == (int) state.shape()[1]);
+    SUZERAIN_ENSURE(state.strides()[3] == (int) ( state.shape()[1]
+                                                 *state.shape()[2]));
+
+    // Only want non-dealiased X-direction modes to contribute
+    // Compute wavenumber translation logistics for X direction
+    int fxb[2], fxe[2], mxb[2], mxe[2];
+    inorder::wavenumber_translate(grid.N.x(),
+                                  grid.dN.x(),
+                                  dgrid.local_wave_start.x(),
+                                  dgrid.local_wave_end.x(),
+                                  fxb[0], fxe[0], fxb[1], fxe[1],
+                                  mxb[0], mxe[0], mxb[1], mxe[1]);
+    // X contains only positive wavenumbers => second range must be empty
+    assert(fxb[1] == fxe[1]);
+    assert(mxb[1] == mxe[1]);
+
+    // Only want non-dealiased Z-direction modes to contribute
+    // Compute wavenumber translation logistics for Z direction
+    // One or both ranges may be empty
+    int fzb[2], fze[2], mzb[2], mze[2];
+    inorder::wavenumber_translate(grid.N.z(),
+                                  grid.dN.z(),
+                                  dgrid.local_wave_start.z(),
+                                  dgrid.local_wave_end.z(),
+                                  fzb[0], fze[0], fzb[1], fze[1],
+                                  mzb[0], mze[0], mzb[1], mze[1]);
+
+    // Prepare and a view of the output storage and zero it.
+    Map<ArrayXXc> o(out, grid.N.y(), grid.N.x());
+    o.setZero();
+
+    // Sum rank-local contribution to Fourier-transformed two-point correlation
+    for (int j = 0; j < 2; ++j) {
+        for (int n = mzb[j]; n < mze[j]; ++n) {
+            for (int m = mxb[0], mf = fxb[0]; m < mxe[0]; ++m, ++mf) {  // mf!
+                Map<const ArrayXc,0,InnerStride<> > u_mn(
+                        &state[si][0][m - dgrid.local_wave_start.x()]
+                                     [n - dgrid.local_wave_start.z()],
+                        grid.N.y(),
+                        InnerStride<>(state.shape()[1] * state.shape()[2]));
+                Map<const ArrayXc,0,InnerStride<> > v_mn(
+                        &state[sj][0][m - dgrid.local_wave_start.x()]
+                                     [n - dgrid.local_wave_start.z()],
+                        grid.N.y(),
+                        InnerStride<>(state.shape()[1] * state.shape()[2]));
+
+                o.col(mf) += u_mn * v_mn.conjugate();
+            }
+        }
+    }
 }
 
 void
@@ -406,7 +463,7 @@ compute_twopoint_zlocal(
     SUZERAIN_ENSURE(state.strides()[3] == (int) ( state.shape()[1]
                                                  *state.shape()[2]));
 
-    // Only want non-dealiased X-direction modes to contribute to L2
+    // Only want non-dealiased X-direction modes to contribute
     // Compute wavenumber translation logistics for X direction
     int fxb[2], fxe[2], mxb[2], mxe[2];
     inorder::wavenumber_translate(grid.N.x(),
@@ -419,7 +476,7 @@ compute_twopoint_zlocal(
     assert(fxb[1] == fxe[1]);
     assert(mxb[1] == mxe[1]);
 
-    // Only want non-dealiased Z-direction modes to contribute to L2
+    // Only want non-dealiased Z-direction modes to contribute
     // Compute wavenumber translation logistics for Z direction
     // One or both ranges may be empty
     int fzb[2], fze[2], mzb[2], mze[2];
@@ -436,7 +493,7 @@ compute_twopoint_zlocal(
 
     // Sum rank-local contribution to Fourier-transformed two-point correlation
     for (int j = 0; j < 2; ++j) {
-        for (int n = mzb[j], nf = fzb[j]; n < mze[j]; ++n, ++nf) {  // Note nf
+        for (int n = mzb[j], nf = fzb[j]; n < mze[j]; ++n, ++nf) {  // nf!
             for (int m = mxb[0]; m < mxe[0]; ++m) {
                 Map<const ArrayXc> u_mn(
                         &state[si][0][m - dgrid.local_wave_start.x()]
