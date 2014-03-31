@@ -561,7 +561,33 @@ compute_twopoint_z(
         const specification_grid& grid,
         const pencil_grid& dgrid)
 {
-    return shared_array<complex_t>(); // FIXME Redmine #2998
+    SUZERAIN_ENSURE((int) state.shape()[0] < (int) nf);
+
+    // Allocate contiguous storage for all the pairwise results
+    const int npairs  = (nf*(nf+1))/2;
+    const int bufpair = grid.N.y() * grid.N.z();
+    shared_array<complex_t> retval(
+            (complex_t*)suzerain_blas_malloc(sizeof(complex_t)*bufpair*npairs),
+            suzerain_blas_free);
+
+    // Compute result for each pair of incoming fields
+    for (int si = 0; si < nf; ++si) {
+        for (int sj = si; sj < nf; ++sj) {
+            const int ndxpair = nf*si + sj - (si*(si+1))/2;
+            compute_twopoint_zlocal(state, si, sj, grid, dgrid,
+                                    &retval[bufpair*ndxpair]);
+        }
+    }
+
+    // Perform the global summation across all pairs at once
+    //
+    // Reduction operation is complex-valued, but OpenMPI pre-1.7.3 can bomb
+    // unless we keep it real: https://svn.open-mpi.org/trac/ompi/ticket/3127.
+    SUZERAIN_MPICHKR(MPI_Allreduce(MPI_IN_PLACE, retval.get(),
+            (sizeof(complex_t)/sizeof(real_t))*bufpair*npairs,
+            mpi::datatype<real_t>(), MPI_SUM, MPI_COMM_WORLD));
+
+    return retval;
 }
 
 } // end namespace suzerain
