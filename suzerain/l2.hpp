@@ -116,6 +116,58 @@ compute_field_L2xz(
         const specification_grid& grid,
         const pencil_grid& dgrid);
 
+/**
+ * Compute the <em>rank-local</em> Fourier transform of two-point correlation
+ * versus separation in the Hermitian-symmetric \f$x\f$ direction.  See
+ * writeup/twopoint.tex for full details.  Obtaining a globally correct answer
+ * requires using <code>MPI_Reduce</code> (or similar) with <code>MPI_SUM</code>
+ * to sum the resulting buffer across all ranks.
+ *
+ * @param state[in  ] Scalar fields represented as Fourier coefficients in
+ *                    \f$x\f$ and \f$z\f$ \e but point values in \f$y\f$.
+ * @param si   [in  ] Scalar index of interest within \c state.
+ * @param sj   [in  ] Scalar index of interest within \c state.
+ * @param grid [in  ] Domain specification.
+ * @param dgrid[in  ] Fourier-based domain specification.
+ * @param out  [out ] Output to be stored as a row-major, contiguous
+ *                    matrix of size <code>grid.N.y()</code> by
+ *                    <code>grid.N.x()</code> indexed by \f$(y_j, k_x)\f$.
+ */
+void
+compute_twopoint_xlocal(
+        const contiguous_state<4,complex_t> &state,
+        const contiguous_state<4,complex_t>::index &si,
+        const contiguous_state<4,complex_t>::index &sj,
+        const specification_grid& grid,
+        const pencil_grid& dgrid,
+        complex_t * const out);
+
+/**
+ * Compute the <em>rank-local</em> Fourier transform of two-point correlation
+ * versus separation in the \f$z\f$ direction.  See writeup/twopoint.tex for
+ * full details.  Obtaining a globally correct answer requires using
+ * <code>MPI_Reduce</code> (or similar) with <code>MPI_SUM</code> to sum the
+ * resulting buffer across all ranks.
+ *
+ * @param state[in  ] Scalar fields represented as Fourier coefficients in
+ *                    \f$x\f$ and \f$z\f$ \e but point values in \f$y\f$.
+ * @param si   [in  ] Scalar index of interest within \c state.
+ * @param sj   [in  ] Scalar index of interest within \c state.
+ * @param grid [in  ] Domain specification.
+ * @param dgrid[in  ] Fourier-based domain specification.
+ * @param out  [out ] Output to be stored as a row-major, contiguous
+ *                    matrix of size <code>grid.N.y()</code> by
+ *                    <code>grid.N.z()</code> indexed by \f$(y_j, k_z)\f$.
+ */
+void
+compute_twopoint_zlocal(
+        const contiguous_state<4,complex_t> &state,
+        const contiguous_state<4,complex_t>::index &si,
+        const contiguous_state<4,complex_t>::index &sj,
+        const specification_grid& grid,
+        const pencil_grid& dgrid,
+        complex_t * const out);
+
 } // end namespace suzerain
 
 #endif // SUZERAIN_L2_HPP
