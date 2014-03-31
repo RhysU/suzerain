@@ -178,8 +178,8 @@ compute_twopoint_zlocal(
  * Hermitian-symmetric \f$x\f$ direction for all state field pairs with indices
  * less than \c nf.  Output is stored row-major \f$y_j\f$ by \f$ k_x \f$ by \c
  * ndx where state indices \c si and \sj are combined to produce <code>ndx ==
- * nf*si + sj - si*(si+1)/2</code> using integer division.  Dealiasing modes are
- * \e not included in computation but should nevertheless be zeroed on entry.
+ * nf*si + sj - (si*(si+1))/2</code> using integer division.  Dealiasing modes
+ * are not included in computation but should nevertheless be zeroed on entry.
  *
  * @param state[in  ] Scalar fields represented as Fourier coefficients in
  *                    \f$x\f$ and \f$z\f$ \e but point values in \f$y\f$.
@@ -205,7 +205,7 @@ compute_twopoint_x(
  * \f$z\f$ direction for all state field pairs with indices less than \c nf.
  * Output is stored row-major \f$y_j\f$ by \f$ k_z \f$ by \c ndx where state
  * indices \c si and \sj are combined to produce <code>ndx == nf*si + sj -
- * si*(si+1)/2</code> using integer division.  Dealiasing modes are \e not
+ * (si*(si+1))/2</code> using integer division.  Dealiasing modes are not
  * included in computation but should nevertheless be zeroed on entry.
  *
  * @param state[in  ] Scalar fields represented as Fourier coefficients in
