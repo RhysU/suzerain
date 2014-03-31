@@ -117,12 +117,12 @@ compute_field_L2xz(
         const pencil_grid& dgrid);
 
 /**
- * Compute the <em>rank-local</em> Fourier transform of two-point correlation
- * versus separation in the Hermitian-symmetric \f$x\f$ direction.  See
- * writeup/twopoint.tex for full details.  Obtaining a globally correct answer
- * requires using <code>MPI_Reduce</code> (or similar) with <code>MPI_SUM</code>
- * to sum the resulting buffer across all ranks.  Dealiasing modes are \e not
- * included in computation.
+ * Compute <em>rank-local</em> Fourier transform of two-point correlation versus
+ * separation in the Hermitian-symmetric \f$x\f$ direction.  Obtaining a
+ * globally correct answer requires using <code>MPI_Reduce</code> (or similar)
+ * with <code>MPI_SUM</code> to sum the resulting buffer across all ranks.
+ * Dealiasing modes are \e not included in computation but should nevertheless
+ * be zeroed on entry.
  *
  * @param state[in  ] Scalar fields represented as Fourier coefficients in
  *                    \f$x\f$ and \f$z\f$ \e but point values in \f$y\f$.
@@ -133,23 +133,24 @@ compute_field_L2xz(
  * @param out  [out ] Output to be stored as a row-major, contiguous
  *                    matrix of size <code>grid.N.y()</code> by
  *                    <code>grid.N.x()</code> indexed by \f$(y_j, k_x)\f$.
+ *
+ * @see writeup/twopoint.tex for full details.
  */
 void
 compute_twopoint_xlocal(
         const contiguous_state<4,complex_t> &state,
-        const contiguous_state<4,complex_t>::index &si,
-        const contiguous_state<4,complex_t>::index &sj,
+        const contiguous_state<4,complex_t>::index si,
+        const contiguous_state<4,complex_t>::index sj,
         const specification_grid& grid,
         const pencil_grid& dgrid,
         complex_t * const out);
 
 /**
- * Compute the <em>rank-local</em> Fourier transform of two-point correlation
- * versus separation in the \f$z\f$ direction.  See writeup/twopoint.tex for
- * full details.  Obtaining a globally correct answer requires using
- * <code>MPI_Reduce</code> (or similar) with <code>MPI_SUM</code> to sum the
- * resulting buffer across all ranks.  Dealiasing modes are \e not included in
- * computation.
+ * Compute <em>rank-local</em> Fourier transform of two-point correlation versus
+ * separation in the \f$z\f$ direction.  Obtaining a globally correct answer
+ * requires using <code>MPI_Reduce</code> (or similar) with <code>MPI_SUM</code>
+ * to sum the resulting buffer across all ranks.  Dealiasing modes are \e not
+ * included in in computation but should nevertheless be zeroed on entry.
  *
  * @param state[in  ] Scalar fields represented as Fourier coefficients in
  *                    \f$x\f$ and \f$z\f$ \e but point values in \f$y\f$.
@@ -160,15 +161,71 @@ compute_twopoint_xlocal(
  * @param out  [out ] Output to be stored as a row-major, contiguous
  *                    matrix of size <code>grid.N.y()</code> by
  *                    <code>grid.N.z()</code> indexed by \f$(y_j, k_z)\f$.
+ *
+ * @see writeup/twopoint.tex for full details.
  */
 void
 compute_twopoint_zlocal(
         const contiguous_state<4,complex_t> &state,
-        const contiguous_state<4,complex_t>::index &si,
-        const contiguous_state<4,complex_t>::index &sj,
+        const contiguous_state<4,complex_t>::index si,
+        const contiguous_state<4,complex_t>::index sj,
         const specification_grid& grid,
         const pencil_grid& dgrid,
         complex_t * const out);
+
+/**
+ * Compute Fourier transform of two-point correlation versus separation in the
+ * Hermitian-symmetric \f$x\f$ direction for all state field pairs with indices
+ * less than \c nf.  Output is stored row-major \f$y_j\f$ by \f$ k_x \f$ by \c
+ * ndx where state indices \c si and \sj are combined to produce <code>ndx ==
+ * nf*si + sj - si*(si+1)/2</code> using integer division.  Dealiasing modes are
+ * \e not included in computation but should nevertheless be zeroed on entry.
+ *
+ * @param state[in  ] Scalar fields represented as Fourier coefficients in
+ *                    \f$x\f$ and \f$z\f$ \e but point values in \f$y\f$.
+ * @param nf   [in  ] Maximum scalar field index to be considered in
+ *                    pairwise fashion.
+ * @param grid [in  ] Domain specification.
+ * @param dgrid[in  ] Fourier-based domain specification.
+ * @param out  [out ] Output stored as a row-major, contiguous
+ *                    matrix of size <code>grid.N.y()</code> by
+ *                    <code>grid.N.x()</code> by <code>ndx</code>.
+ *
+ * @see compute_twopoint_xlocal for details on pairwise computations.
+ */
+shared_array<complex_t>
+compute_twopoint_x(
+        const contiguous_state<4,complex_t> &state,
+        const contiguous_state<4,complex_t>::index nf,
+        const specification_grid& grid,
+        const pencil_grid& dgrid);
+
+/**
+ * Compute Fourier transform of two-point correlation versus separation in the
+ * \f$z\f$ direction for all state field pairs with indices less than \c nf.
+ * Output is stored row-major \f$y_j\f$ by \f$ k_z \f$ by \c ndx where state
+ * indices \c si and \sj are combined to produce <code>ndx == nf*si + sj -
+ * si*(si+1)/2</code> using integer division.  Dealiasing modes are \e not
+ * included in computation but should nevertheless be zeroed on entry.
+ *
+ * @param state[in  ] Scalar fields represented as Fourier coefficients in
+ *                    \f$x\f$ and \f$z\f$ \e but point values in \f$y\f$.
+ * @param nf   [in  ] Maximum scalar field index to be considered in
+ *                    pairwise fashion.
+ * @param grid [in  ] Domain specification.
+ * @param dgrid[in  ] Fourier-based domain specification.
+ * @param out  [out ] Output stored as a row-major, contiguous
+ *                    matrix of size <code>grid.N.y()</code> by
+ *                    <code>grid.N.z()</code> by <code>ndx</code>.
+ *
+ * @see compute_twopoint_xlocal for details on pairwise computations.
+ */
+shared_array<complex_t>
+compute_twopoint_z(
+        const contiguous_state<4,complex_t> &state,
+        const contiguous_state<4,complex_t>::index nf,
+        const specification_grid& grid,
+        const pencil_grid& dgrid);
 
 } // end namespace suzerain
 

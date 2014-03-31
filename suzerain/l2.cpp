@@ -377,8 +377,8 @@ compute_field_L2xz(
 void
 compute_twopoint_xlocal(
         const contiguous_state<4,complex_t> &state,
-        const contiguous_state<4,complex_t>::index &si,
-        const contiguous_state<4,complex_t>::index &sj,
+        const contiguous_state<4,complex_t>::index si,
+        const contiguous_state<4,complex_t>::index sj,
         const specification_grid& grid,
         const pencil_grid& dgrid,
         complex_t * const out)
@@ -446,8 +446,8 @@ compute_twopoint_xlocal(
 void
 compute_twopoint_zlocal(
         const contiguous_state<4,complex_t> &state,
-        const contiguous_state<4,complex_t>::index &si,
-        const contiguous_state<4,complex_t>::index &sj,
+        const contiguous_state<4,complex_t>::index si,
+        const contiguous_state<4,complex_t>::index sj,
         const specification_grid& grid,
         const pencil_grid& dgrid,
         complex_t * const out)
@@ -515,6 +515,26 @@ compute_twopoint_zlocal(
             }
         }
     }
+}
+
+shared_array<complex_t>
+compute_twopoint_x(
+        const contiguous_state<4,complex_t> &state,
+        const contiguous_state<4,complex_t>::index nf,
+        const specification_grid& grid,
+        const pencil_grid& dgrid)
+{
+    return shared_array<complex_t>(); // FIXME Redmine #2998
+}
+
+shared_array<complex_t>
+compute_twopoint_z(
+        const contiguous_state<4,complex_t> &state,
+        const contiguous_state<4,complex_t>::index nf,
+        const specification_grid& grid,
+        const pencil_grid& dgrid)
+{
+    return shared_array<complex_t>(); // FIXME Redmine #2998
 }
 
 } // end namespace suzerain
