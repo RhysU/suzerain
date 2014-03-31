@@ -162,6 +162,15 @@ public:
     virtual void compute_statistics(
             time_type t);
 
+    /**
+     * Collectively compute and save two-point spectra versus \f$k_x\f$ and
+     * \f$k_z\f$ for \f$T\f$, \f$u\f$, \f$v\f$, \f$w\f$, \f$\rho\f$, and all
+     * pairwise combinations thereof based on #state_linear destroying
+     * #state_nonlinear in the process.
+     */
+    virtual void save_spectra_primitive(
+            const esio_handle esioh);
+
 protected:
 
     /**

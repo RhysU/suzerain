@@ -27,6 +27,8 @@
 
 #include "driver.hpp"
 
+#include <esio/esio.h>
+
 #include <suzerain/bl.h>
 #include <suzerain/channel.h>
 #include <suzerain/diffwave.hpp>
@@ -35,7 +37,9 @@
 #include <suzerain/l2.hpp>
 #include <suzerain/ndx.hpp>
 #include <suzerain/operator_tools.hpp>
+#include <suzerain/physical_view.hpp>
 #include <suzerain/profile.hpp>
+#include <suzerain/rholut.hpp>
 #include <suzerain/samples.hpp>
 #include <suzerain/state.hpp>
 #include <suzerain/support/logging.hpp>
@@ -316,6 +320,117 @@ driver::compute_statistics(
                    mean->implicit().outerStride());
     } else {
         WARN0(who, "Could not obtain mean quantities set by implicit forcing");
+    }
+}
+
+// TODO Stolen from support/field.cpp.  Move into somewhere more appropriate.
+static inline
+void complex_field_write(esio_handle h,
+                         const char *name, const complex_t *field,
+                         int cstride = 0, int bstride = 0, int astride = 0,
+                         const char * comment = 0)
+{
+    esio_field_writev(h, name, reinterpret_cast<const real_t *>(field),
+                      2*boost::numeric_cast<int>(cstride),
+                      2*boost::numeric_cast<int>(bstride),
+                      2*boost::numeric_cast<int>(astride),
+                      2, comment);
+}
+
+void
+driver::save_spectra_primitive(
+        const esio_handle esioh)
+{
+    SUZERAIN_TIMER_SCOPED("driver::save_spectra_primitive");
+
+    enum { swave_count = 5 };
+    assert(static_cast<int>(ndx::e  ) < swave_count);
+    assert(static_cast<int>(ndx::mx ) < swave_count);
+    assert(static_cast<int>(ndx::my ) < swave_count);
+    assert(static_cast<int>(ndx::mz ) < swave_count);
+    assert(static_cast<int>(ndx::rho) < swave_count);
+    SUZERAIN_ENSURE((int) state_nonlinear->shape()[0] == swave_count);
+
+    // Obtain information from instantaneous fields in *state_linear
+    state_nonlinear->assign_from(*state_linear);
+
+    // Convert to pointwise conserved state in physical space
+    physical_view<swave_count> sphys(*dgrid, *state_nonlinear);
+    shared_ptr<operator_tools> otool = obtain_operator_tools();
+    for (size_t f = 0; f < swave_count; ++f) {
+        otool->zero_dealiasing_modes(  *state_nonlinear, f);
+        otool->bop_apply     (0,    1, *state_nonlinear, f);
+        dgrid->transform_wave_to_physical(&sphys.coeffRef(f,0));
+    }
+
+    // Pointwise conversion from e, mx, my, mz, rho to T, u, v, w, rho
+    const real_t alpha = scenario->alpha;
+    const real_t beta  = scenario->beta;
+    const real_t gamma = scenario->gamma;
+    const real_t Ma    = scenario->Ma;
+    for (int offset = 0; offset < sphys.cols(); ++offset) {
+
+        // Unpack conserved state
+        const real_t   e  (sphys(ndx::e,   offset));
+        const Vector3r m  (sphys(ndx::mx,  offset),
+                           sphys(ndx::my,  offset),
+                           sphys(ndx::mz,  offset));
+        const real_t   rho(sphys(ndx::rho, offset));
+
+        // Compute desired primitive state
+        const Vector3r u = m / rho;
+        real_t p, T;
+        rholut::p_T(alpha, beta, gamma, Ma, rho, m, e, p, T);
+
+        // Pack desired primitive state
+        sphys(0, offset) = T;
+        sphys(1, offset) = u.x();
+        sphys(2, offset) = u.y();
+        sphys(3, offset) = u.z();
+        sphys(4, offset) = rho;
+    }
+
+    // Convert to Fourier coefficients in XZ but leave as points in Y
+    for (size_t f = 0; f < swave_count; ++f) {
+        dgrid->transform_physical_to_wave(&sphys.coeffRef(f,0));
+        otool->zero_dealiasing_modes(*state_nonlinear, f);
+    }
+
+    // Only rank zero will write the results though all ranks participate
+    const int npairs = (swave_count*(swave_count+1))/2;
+    int procid;
+    esio_handle_comm_rank(esioh, &procid);
+
+    // Compute and save the two-point correlation as (y_j, k_x, ndxpair)
+    // Ordering arises from packing of primitive state in physical space
+    {
+        shared_array<complex_t> twopoint_x = compute_twopoint_x(
+                *state_nonlinear, swave_count, *grid, *dgrid);
+        esio_field_establish(esioh,
+                             npairs,      0, procid == 0 ? npairs      : 0,
+                             grid->N.x(), 0, procid == 0 ? grid->N.x() : 0,
+                             grid->N.y(), 0, procid == 0 ? grid->N.y() : 0);
+        complex_field_write(esioh, "twopoint_kx", twopoint_x.get(), 0, 0, 0,
+                   "Streamwise two point correlations stored row-major"
+                   " (/collocation_points_y, /kx, scalarpair) for scalarpair"
+                   " in { T*T, T*u, T*v, T*w, T*rho, u*u, u*v, u*w, u*rho,"
+                   " v*v, v*w, v*rho, w*w, w*rho, rho*rho }");
+    }
+
+    // Compute and save the two-point correlation as (y_j, k_z, ndxpair)
+    // Ordering arises from packing of primitive state in physical space
+    {
+        shared_array<complex_t> twopoint_z = compute_twopoint_z(
+                *state_nonlinear, swave_count, *grid, *dgrid);
+        esio_field_establish(esioh,
+                             npairs,      0, procid == 0 ? npairs      : 0,
+                             grid->N.z(), 0, procid == 0 ? grid->N.z() : 0,
+                             grid->N.y(), 0, procid == 0 ? grid->N.y() : 0);
+        complex_field_write(esioh, "twopoint_kz", twopoint_z.get(), 0, 0, 0,
+                   "Spanwise two point correlations stored row-major"
+                   " (/collocation_points_y, /kz, scalarpair) for scalarpair"
+                   " in { T*T, T*u, T*v, T*w, T*rho, u*u, u*v, u*w, u*rho,"
+                   " v*v, v*w, v*rho, w*w, w*rho, rho*rho }");
     }
 }
 
