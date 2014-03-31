@@ -144,6 +144,9 @@ suzerain::perfect::driver_initial::run(int argc, char **argv)
             manufactured_solution::default_caption
             + " (active only when --mms supplied)");
 
+    // Establish default tuning for boundary layer thickness
+    helm = make_shared<support::definition_helm>(1.0);
+
     // Establish binary-specific options
     bool clobber;
     real_t mms    = numeric_limits<real_t>::quiet_NaN();

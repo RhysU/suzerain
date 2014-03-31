@@ -96,14 +96,12 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
     using boost::math::isfinite;
 
     // Storage for binary-specific options
+    helm = make_shared<support::definition_helm>();
     const support::definition_noise noisedef;
     string solver_spec(static_cast<string>(suzerain::specification_zgbsv()));
     string implicit("rhome_xyz");
     real_t cevisslam = numeric_limits<real_t>::quiet_NaN();
     string undriven;
-
-    // We might turn on boundary layer control, so provide default tuning.
-    helm = make_shared<support::definition_helm>(1.0);
 
     // Register binary-specific options
     options.add_definition(const_cast<support::definition_noise&>(noisedef));
