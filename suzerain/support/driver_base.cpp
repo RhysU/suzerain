@@ -40,6 +40,7 @@
 #include <suzerain/mpi_datatype.hpp>
 #include <suzerain/mpi.hpp>
 #include <suzerain/ndx.hpp>
+#include <suzerain/operator_tools.hpp>
 #include <suzerain/os.h>
 #include <suzerain/state.hpp>
 #include <suzerain/support/field.hpp>
@@ -305,6 +306,17 @@ driver_base::~driver_base()
 
     // Preserve restartdef->uncommitted as it may help post mortem debugging as
     // during operation committing a file removes the uncommitted temporary
+}
+
+shared_ptr<operator_tools>
+driver_base::obtain_operator_tools()
+{
+    shared_ptr<operator_tools> otool
+            = dynamic_pointer_cast<operator_tools>(N);
+    if (!otool) {
+        otool = make_shared<operator_tools>(*grid, *dgrid, *cop);
+    }
+    return otool;
 }
 
 void

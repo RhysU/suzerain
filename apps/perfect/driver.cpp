@@ -214,16 +214,9 @@ void driver::log_quantities_of_interest(
 
     SUZERAIN_TIMER_SCOPED("driver::log_quantities_of_interest");
 
-    // When possible, any operator_tools superclass of N is reused so that
-    // take_samples may benefit from any cached factorizations.
-    shared_ptr<operator_tools> otool
-            = dynamic_pointer_cast<operator_tools>(N);
-    if (!otool) {
-        otool = make_shared<operator_tools>(*grid, *dgrid, *cop);
-    }
-
     // If possible, use existing information from mean quantities
     // Otherwise compute from instantaneous fields stored in state_linear
+    shared_ptr<operator_tools> otool = obtain_operator_tools();
     profile prof;
     if (controller && mean && mean->t == t) {
         prof = *mean;
@@ -284,13 +277,7 @@ driver::compute_statistics(
 
     // Obtain mean samples from instantaneous fields stored in state_linear
     state_nonlinear->assign_from(*state_linear);
-    // When possible, any operator_tools superclass of N is reused so that
-    // take_samples may benefit from any cached factorizations.
-    shared_ptr<operator_tools> otool
-            = dynamic_pointer_cast<operator_tools>(N);
-    if (!otool) {
-        otool = make_shared<operator_tools>(*grid, *dgrid, *cop);
-    }
+    shared_ptr<operator_tools> otool = obtain_operator_tools();
     mean = take_samples(*scenario, *otool, *state_nonlinear, t);
 
     // Obtain mean quantities computed via implicit forcing (when possible)

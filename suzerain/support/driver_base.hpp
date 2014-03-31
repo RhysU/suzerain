@@ -52,6 +52,9 @@ struct suzerain_channel_viscous;
 
 namespace suzerain {
 
+// Forward declarations
+class operator_tools;
+
 namespace support {
 
 /** Provides well-scoped names related to driver signal handling */
@@ -207,6 +210,12 @@ public:
 
     /** Controls time advance, including callback processing. */
     shared_ptr<timecontroller<real_t> > controller;
+
+    /**
+     * When possible, any operator_tools superclass of N is reused so that
+     * callers may benefit from any cached factorizations.
+     */
+    virtual shared_ptr<operator_tools> obtain_operator_tools();
 
     /**
      * Ensure #method is valid for use by #controller.  That is, if
