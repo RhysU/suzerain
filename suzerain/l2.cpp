@@ -419,25 +419,25 @@ compute_twopoint_xlocal(
                                   mzb[0], mze[0], mzb[1], mze[1]);
 
     // Prepare and a view of the output storage and zero it.
-    Map<ArrayXXc> o(out, grid.N.y(), grid.N.x());
+    Map<MatrixXXc> o(out, grid.N.y(), grid.N.x());
     o.setZero();
 
     // Sum rank-local contribution to Fourier-transformed two-point correlation
     for (int j = 0; j < 2; ++j) {
         for (int n = mzb[j]; n < mze[j]; ++n) {
             for (int m = mxb[0], mf = fxb[0]; m < mxe[0]; ++m, ++mf) {  // mf!
-                Map<const ArrayXc,0,InnerStride<> > u_mn(
+                Map<const VectorXc,0,InnerStride<> > u_mn(
                         &state[si][0][m - dgrid.local_wave_start.x()]
                                      [n - dgrid.local_wave_start.z()],
                         grid.N.y(),
                         InnerStride<>(state.shape()[1] * state.shape()[2]));
-                Map<const ArrayXc,0,InnerStride<> > v_mn(
+                Map<const VectorXc,0,InnerStride<> > v_mn(
                         &state[sj][0][m - dgrid.local_wave_start.x()]
                                      [n - dgrid.local_wave_start.z()],
                         grid.N.y(),
                         InnerStride<>(state.shape()[1] * state.shape()[2]));
 
-                o.col(mf) += u_mn * v_mn.conjugate();
+                o.col(mf) += u_mn.cwiseProduct(v_mn.conjugate());
             }
         }
     }
@@ -488,29 +488,29 @@ compute_twopoint_zlocal(
                                   mzb[0], mze[0], mzb[1], mze[1]);
 
     // Prepare and a view of the output storage and zero it.
-    Map<ArrayXXc> o(out, grid.N.y(), grid.N.z());
+    Map<MatrixXXc> o(out, grid.N.y(), grid.N.z());
     o.setZero();
 
     // Sum rank-local contribution to Fourier-transformed two-point correlation
     for (int j = 0; j < 2; ++j) {
         for (int n = mzb[j], nf = fzb[j]; n < mze[j]; ++n, ++nf) {  // nf!
             for (int m = mxb[0]; m < mxe[0]; ++m) {
-                Map<const ArrayXc> u_mn(
+                Map<const VectorXc> u_mn(
                         &state[si][0][m - dgrid.local_wave_start.x()]
                                      [n - dgrid.local_wave_start.z()],
                         grid.N.y());
-                Map<const ArrayXc> v_mn(
+                Map<const VectorXc> v_mn(
                         &state[sj][0][m - dgrid.local_wave_start.x()]
                                      [n - dgrid.local_wave_start.z()],
                         grid.N.y());
 
                 // Account for conjugate symmetry per twopoint.tex
                 if (m == 0) {
-                    o.col(nf) +=    u_mn * v_mn.conjugate();
+                    o.col(nf) +=    u_mn.cwiseProduct(v_mn.conjugate());
                 } else if (m < grid.dN.x()/2) {
-                    o.col(nf) += 2*(u_mn * v_mn.conjugate());
+                    o.col(nf) += 2*u_mn.cwiseProduct(v_mn.conjugate());
                 } else {
-                    o.col(nf) +=    u_mn.conjugate() * v_mn;
+                    o.col(nf) +=    u_mn.conjugate().cwiseProduct(v_mn);
                 }
             }
         }
