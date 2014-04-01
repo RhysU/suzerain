@@ -525,7 +525,7 @@ compute_twopoint_x(
         const specification_grid& grid,
         const pencil_grid& dgrid)
 {
-    SUZERAIN_ENSURE((int) state.shape()[0] < (int) nf);
+    SUZERAIN_ENSURE((int) state.shape()[0] <= (int) nf);
 
     // Allocate contiguous storage for all the pairwise results
     const int npairs  = (nf*(nf+1))/2;
@@ -561,7 +561,7 @@ compute_twopoint_z(
         const specification_grid& grid,
         const pencil_grid& dgrid)
 {
-    SUZERAIN_ENSURE((int) state.shape()[0] < (int) nf);
+    SUZERAIN_ENSURE((int) state.shape()[0] <= (int) nf);
 
     // Allocate contiguous storage for all the pairwise results
     const int npairs  = (nf*(nf+1))/2;
