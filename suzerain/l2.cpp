@@ -427,16 +427,14 @@ compute_twopoint_xlocal(
     for (int j = 0; j < 2; ++j) {
         for (int n = mzb[j]; n < mze[j]; ++n) {
             for (int m = mxb[0], mf = fxb[0]; m < mxe[0]; ++m, ++mf) {  // mf!
-                Map<const VectorXc,0,InnerStride<> > u_mn(
+                Map<const VectorXc> u_mn(
                         &state[si][0][m - dgrid.local_wave_start.x()]
                                      [n - dgrid.local_wave_start.z()],
-                        grid.N.y(),
-                        InnerStride<>(state.strides()[3]));
-                Map<const VectorXc,0,InnerStride<> > v_mn(
+                        grid.N.y());
+                Map<const VectorXc> v_mn(
                         &state[sj][0][m - dgrid.local_wave_start.x()]
                                      [n - dgrid.local_wave_start.z()],
-                        grid.N.y(),
-                        InnerStride<>(state.strides()[3]));
+                        grid.N.y());
 
                 o.col(mf) += u_mn.cwiseProduct(v_mn.conjugate());
             }
