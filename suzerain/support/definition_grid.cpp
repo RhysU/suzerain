@@ -391,15 +391,15 @@ definition_grid::save(
     esio_line_write(h, name_DAFz,    &this->DAF.z(), 0, desc_DAFz   );
 
     DEBUG0("Storing wavenumber vectors for Fourier bases");
-    ArrayXc cbuf(std::max(N.x(), N.z()));
+    ArrayXc cbuf(std::max(N.x()/2+1, N.z()));
 
     // Obtain Hermitian symmetric X wavenumbers via computing Re(1*(i*kx)/i)
+    // Notice N.x() and dN.x() represent logical, not stored, extents.
     cbuf.fill(complex_t(1,0));
-    const int effective_Nx = 2*(N.x() - 1) + (N.x() % 2);
     diffwave::apply(1, 0, complex_t(0,-1), cbuf.data(),
             L.x(), L.z(),
-            1, effective_Nx, effective_Nx, 0, N.x(), 1, 1, 0, 1);
-    esio_line_establish(h, N.x(), 0, (procid == 0 ? N.x() : 0));
+            1, N.x(), dN.x(), 0, N.x()/2+1, 1, 1, 0, 1);
+    esio_line_establish(h, N.x()/2+1, 0, (procid == 0 ? N.x()/2+1 : 0));
     esio_line_write(h, "kx", reinterpret_cast<real_t *>(cbuf.data()), 2,
         "Wavenumbers in streamwise Hermitian-symmetric X direction");
 
