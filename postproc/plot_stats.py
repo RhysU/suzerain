@@ -29,7 +29,7 @@ def plot(hdf5file, fileext, ifile, plot_all):
     # Grab number of collocation points and B-spline order
     Ny=f['Ny'].value[0]
     k=f['k'].value[0]
-    
+
     # Grab collocation points
     y = f['collocation_points_y'].value
 
@@ -115,6 +115,29 @@ def plot(hdf5file, fileext, ifile, plot_all):
     dyb = np.append(dyb,dyb[Ny-6])
     dyb = np.array(dyb).reshape(Ny-4,1)
 
+    # load baseflow coefficients
+    if "largo_baseflow" in f:
+      if f['largo_baseflow'].attrs['coefficient_base'] == 'polynomial':
+        baseflow_coeff = f['largo_baseflow'].value
+	# print 'baseflow coefficients loaded'
+	npoly = baseflow_coeff.shape[1]
+	base_rho   = np.zeros((Ny,1))
+	base_rho_u = np.zeros((Ny,1))
+	base_rho_v = np.zeros((Ny,1))
+	base_rho_E = np.zeros((Ny,1))
+	base_p     = np.zeros((Ny,1))
+	for i in xrange(0,npoly):
+	  for j in xrange(0, Ny):
+	    y_power_i = np.power(y[j,],i) 
+	    base_rho  [j,0] += y_power_i  * baseflow_coeff[0,i]
+       	    base_rho_u[j,0] += y_power_i  * baseflow_coeff[1,i]
+	    base_rho_v[j,0] += y_power_i  * baseflow_coeff[2,i]
+	    base_rho_E[j,0] += y_power_i  * baseflow_coeff[4,i]
+	    base_p    [j,0] += y_power_i  * baseflow_coeff[5,i]
+      #else:
+	# skip loading
+	# print 'baseflow coefficients not polynomial'
+
     # Done getting data
     f.close()
     
@@ -197,6 +220,8 @@ def plot(hdf5file, fileext, ifile, plot_all):
     figid += 1
     pyplot.figure(figid)
     key = "bar_rho_" + str(ifile)
+    if (ifile == 0 and base_rho.any()):
+      pyplot.plot(y, base_rho[:,0], linewidth=1)
     pyplot.plot(y, rho_col, linewidth=3, label=key)
     pyplot.legend(loc=0)
     pyplot.savefig('bar_rho.' + fileext, bbox_inches='tight')
@@ -204,6 +229,8 @@ def plot(hdf5file, fileext, ifile, plot_all):
     figid += 1   
     pyplot.figure(figid)
     key = "bar_rho_u" + str(ifile)
+    if (ifile == 0 and base_rho_u.any()):
+      pyplot.plot(y, base_rho_u[:,0], linewidth=1)
     pyplot.plot(y, rho_u_col[:,0], linewidth=3, label=key)
     pyplot.legend(loc=0)
     pyplot.savefig('bar_rho_u.' + fileext, bbox_inches='tight')
@@ -211,6 +238,8 @@ def plot(hdf5file, fileext, ifile, plot_all):
     figid += 1
     pyplot.figure(figid)
     key = "bar_rho_v" + str(ifile)
+    if (ifile == 0 and base_rho_v.any()):
+      pyplot.plot(y, base_rho_v[:,0], linewidth=1)
     pyplot.semilogx(y, rho_u_col[:,1], linewidth=3, label=key)
     pyplot.legend(loc=0)
     pyplot.savefig('bar_rho_v.' + fileext, bbox_inches='tight')
@@ -225,6 +254,8 @@ def plot(hdf5file, fileext, ifile, plot_all):
     figid += 1
     pyplot.figure(figid)
     key = "bar_rho_E" + str(ifile)
+    if (ifile == 0 and base_rho_E.any()):
+      pyplot.plot(y, base_rho_E[:,0], linewidth=1)
     pyplot.plot(y, rho_E_col, linewidth=3, label=key)
     pyplot.legend(loc=0)
     pyplot.savefig('bar_rho_E.' + fileext, bbox_inches='tight')
@@ -246,6 +277,8 @@ def plot(hdf5file, fileext, ifile, plot_all):
     figid += 1
     pyplot.figure(figid)
     key = "bar_p" + str(ifile)
+    if (ifile == 0 and base_p.any()):
+      pyplot.plot(y, base_p[:,0], linewidth=1)
     pyplot.semilogx(y, p_col, linewidth=3, label=key)
     pyplot.legend(loc=0)
     pyplot.savefig('bar_p.' + fileext, bbox_inches='tight')
