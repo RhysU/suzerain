@@ -420,7 +420,7 @@ compute_twopoint_xlocal(
                                   mzb[0], mze[0], mzb[1], mze[1]);
 
     // Prepare and a view of the output storage and zero it.
-    Map<MatrixXXc> o(out, grid.N.y(), grid.N.x());
+    Map<MatrixXXc> o(out, grid.N.y(), grid.N.x()/2+1);
     o.setZero();
 
     // Sum rank-local contribution to Fourier-transformed two-point correlation
@@ -431,12 +431,12 @@ compute_twopoint_xlocal(
                         &state[si][0][m - dgrid.local_wave_start.x()]
                                      [n - dgrid.local_wave_start.z()],
                         grid.N.y(),
-                        InnerStride<>(state.shape()[1] * state.shape()[2]));
+                        InnerStride<>(state.strides()[3]));
                 Map<const VectorXc,0,InnerStride<> > v_mn(
                         &state[sj][0][m - dgrid.local_wave_start.x()]
                                      [n - dgrid.local_wave_start.z()],
                         grid.N.y(),
-                        InnerStride<>(state.shape()[1] * state.shape()[2]));
+                        InnerStride<>(state.strides()[3]));
 
                 o.col(mf) += u_mn.cwiseProduct(v_mn.conjugate());
             }
@@ -529,7 +529,7 @@ compute_twopoint_x(
 
     // Allocate contiguous storage for all the pairwise results
     const int npairs  = (nf*(nf+1))/2;
-    const int bufpair = grid.N.y() * grid.N.x();
+    const int bufpair = grid.N.y() * (grid.N.x()/2+1);
     shared_array<complex_t> retval(
             (complex_t*)suzerain_blas_malloc(sizeof(complex_t)*bufpair*npairs),
             suzerain_blas_free);

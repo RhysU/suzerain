@@ -132,7 +132,7 @@ compute_field_L2xz(
  * @param dgrid[in  ] Fourier-based domain specification.
  * @param out  [out ] Output to be stored as a row-major, contiguous
  *                    matrix of size <code>grid.N.y()</code> by
- *                    <code>grid.N.x()</code> indexed by \f$(y_j, k_x)\f$.
+ *                    <code>grid.N.x()/2+1</code> indexed by \f$(y_j, k_x)\f$.
  *
  * @see writeup/twopoint.tex for full details.
  */
@@ -189,7 +189,7 @@ compute_twopoint_zlocal(
  * @param dgrid[in  ] Fourier-based domain specification.
  * @param out  [out ] Output stored as a row-major, contiguous
  *                    matrix of size <code>grid.N.y()</code> by
- *                    <code>grid.N.x()</code> by <code>ndx</code>.
+ *                    <code>grid.N.x()/2+1</code> by <code>ndx</code>.
  *
  * @see compute_twopoint_xlocal for details on pairwise computations.
  */
