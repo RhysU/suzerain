@@ -210,6 +210,7 @@ R_{uv} \left( r_x, y_j, r_z \right)
   \label{eq:twopoint_physical_xz}
 \end{align}
 
+\todo[inline]{Relative to what I expect, this looks weird.}
 Towards efficiently computing this result, relabel $x = r_x$, $z = r_z$,
 $m^\prime = m$, and $n^\prime = n$,
 \begin{align}
@@ -222,39 +223,27 @@ R_{uv} \left( x, y_j, z \right)
      \hat{u}_{y_j m^\prime n^\prime}
      \hat{v}^\ast_{y_j m^\prime n^\prime}
 \end{align}
-Applying a discrete Fourier transform in $x$ and $z$ and taking advantage of
+Applying the Fourier transform in $x$ and $z$ and taking advantage of
 orthogonality,
 \begin{align}
      \left(\hat{R}_{uv}\right)_{y_j m n}
   &=
-     \sum_{m}
+     \int_{-\frac{L_x}{2}}^{\frac{L_x}{2}}
+     \int_{-\frac{L_z}{2}}^{\frac{L_z}{2}}
      e^{-\ii k_m x}
-     \sum_{n}
-     e^{-\ii k_n z}
+     e^{-\ii k_n x}
      R_{uv} \left( x, y_j, z \right)
+     \,\mathrm{d}z
+     \,\mathrm{d}x
 \\
   &=
-     \sum_{m}
-     e^{-\ii k_m x}
-     \sum_{m^\prime}
-     e^{\ii k_m^\prime x}
-     \sum_{n}
-     e^{-\ii k_n z}
-     \sum_{n^\prime}
-     e^{\ii k_n^\prime z}
-     \hat{u}_{y_j m^\prime n^\prime}
-     \hat{v}^\ast_{y_j m^\prime n^\prime}
-\\
-  &=
-     \hat{u}_{y_j m n}
-     \hat{v}^\ast_{y_j m n}
-  .
+     L_x L_z \hat{u}_{y_j m n} \hat{v}^\ast_{y_j m n}.
 \end{align}
 Evidently, the Fourier representation of the two-point correlation function
-evaluated at collocation point $y_j$ is nothing but the product of identical
-coefficient representations of $u$ and $v$.  Directly employing the two
-dimensional convolution theorem to bivariate functions $u(x, y_j, z)$ and $v(x,
-y_j, z)$ permits arriving at this conclusion in one step.  Therefore,
+evaluated at collocation point $y_j$ is nothing but the scaled product of
+identical coefficient representations of $u$ and $v$.  Directly employing the
+two dimensional convolution theorem to bivariate functions $u(x, y_j, z)$ and
+$v(x, y_j, z)$ permits arriving at this conclusion in one step.  Therefore,
 computation of $R_{uv}$ is most effectively performed in Fourier space via
 conveniently parallel, complex-valued wavenumber products once a
 collocation-based B-spline mass matrix has been applied to $\hat{u}_{lmn}$ and
@@ -285,24 +274,17 @@ R_{uv} \left( x, y_j, 0 \right)
      \hat{u}_{y_j m^\prime n}
      \hat{v}^\ast_{y_j m^\prime n}
 \end{align}
-Applying a discrete Fourier transformation in $x$,
+Applying a Fourier transformation in $x$,
 \begin{align}
      \left(\hat{R}_{uv}\right)_{y_j m \, 0}
   &=
-     \sum_{m}
+     \int_{-\frac{L_x}{2}}^{\frac{L_x}{2}}
      e^{-\ii k_m x}
      R_{uv} \left( x, y_j, 0 \right)
+     \,\mathrm{d}x
 \\
   &=
-     \sum_{m}
-     e^{-\ii k_m x}
-     \sum_{m^\prime}
-     e^{\ii k_m^\prime x}
-     \sum_{n}
-     \hat{u}_{y_j m^\prime n}
-     \hat{v}^\ast_{y_j m^\prime n}
-\\
-  &=
+     L_x
      \sum_{n}
      \hat{u}_{y_j m n}
      \hat{v}^\ast_{y_j m n}
@@ -326,6 +308,7 @@ and consequently
 \begin{align}
      \left(\hat{R}_{uv}\right)_{y_j 0 \, n}
   &=
+     L_z
      \sum_{m}
      \hat{u}_{y_j m n}
      \hat{v}^\ast_{y_j m n}
@@ -368,7 +351,8 @@ n}, \hat{v}^\ast_{y_j m n}\right)$.  Then
 \end{align}
 Consequently,
 \begin{align}
-     \left(\hat{R}_{uv}\right)_{y_j 0 \, n}
+    L_z^{-1}
+    \left(\hat{R}_{uv}\right)_{y_j 0 \, n}
 &=
     \hat{u}_{y_j 0 \, n} \hat{v}^\ast_{y_j 0 \, n}
     +
