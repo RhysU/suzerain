@@ -109,9 +109,9 @@
                            (( rho_v_v_w,        "Reynolds-averaged (y,y,z)-component of the momentum times the velocity times the velocity" )) \
                            (( rho_v_w_w,        "Reynolds-averaged (y,z,z)-component of the momentum times the velocity times the velocity" )) \
                            (( rho_w_w_w,        "Reynolds-averaged (z,z,z)-component of the momentum times the velocity times the velocity" )) \
-    ))(( rho_T_u,          (( rho_T_u,          "Reynolds-averaged x-component of the temperature times the velocity"                       )) \
-                           (( rho_T_v,          "Reynolds-averaged y-component of the temperature times the velocity"                       )) \
-                           (( rho_T_w,          "Reynolds-averaged z-component of the temperature times the velocity"                       )) \
+    ))(( rho_T_u,          (( rho_T_u,          "Reynolds-averaged x-component of the temperature times the momentum"                       )) \
+                           (( rho_T_v,          "Reynolds-averaged y-component of the temperature times the momentum"                       )) \
+                           (( rho_T_w,          "Reynolds-averaged z-component of the temperature times the momentum"                       )) \
     ))(( rho_mu,           (( rho_mu,           "Reynolds-averaged dynamic viscosity times the density"                                     )) \
     ))(( mu_S,             (( mu_Sxx,           "Reynolds-averaged (x,x)-component of the deviatoric portion of the strain rate"            )) \
                            (( mu_Sxy,           "Reynolds-averaged (x,y)-component of the deviatoric portion of the strain rate"            )) \
