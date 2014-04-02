@@ -210,7 +210,6 @@ R_{uv} \left( r_x, y_j, r_z \right)
   \label{eq:twopoint_physical_xz}
 \end{align}
 
-\todo[inline]{Relative to what I expect, this looks weird.}
 Towards efficiently computing this result, relabel $x = r_x$, $z = r_z$,
 $m^\prime = m$, and $n^\prime = n$,
 \begin{align}
@@ -228,6 +227,7 @@ orthogonality,
 \begin{align}
      \left(\hat{R}_{uv}\right)_{y_j m n}
   &=
+     \frac{1}{L_x L_z}
      \int_{-\frac{L_x}{2}}^{\frac{L_x}{2}}
      \int_{-\frac{L_z}{2}}^{\frac{L_z}{2}}
      e^{-\ii k_m x}
@@ -235,9 +235,8 @@ orthogonality,
      R_{uv} \left( x, y_j, z \right)
      \,\mathrm{d}z
      \,\mathrm{d}x
-\\
-  &=
-     L_x L_z \hat{u}_{y_j m n} \hat{v}^\ast_{y_j m n}.
+   =
+     \hat{u}_{y_j m n} \hat{v}^\ast_{y_j m n}.
 \end{align}
 Evidently, the Fourier representation of the two-point correlation function
 evaluated at collocation point $y_j$ is nothing but the scaled product of
@@ -278,13 +277,12 @@ Applying a Fourier transformation in $x$,
 \begin{align}
      \left(\hat{R}_{uv}\right)_{y_j m \, 0}
   &=
+     \frac{1}{L_x}
      \int_{-\frac{L_x}{2}}^{\frac{L_x}{2}}
      e^{-\ii k_m x}
      R_{uv} \left( x, y_j, 0 \right)
      \,\mathrm{d}x
-\\
-  &=
-     L_x
+   =
      \sum_{n}
      \hat{u}_{y_j m n}
      \hat{v}^\ast_{y_j m n}
@@ -308,7 +306,6 @@ and consequently
 \begin{align}
      \left(\hat{R}_{uv}\right)_{y_j 0 \, n}
   &=
-     L_z
      \sum_{m}
      \hat{u}_{y_j m n}
      \hat{v}^\ast_{y_j m n}
@@ -351,7 +348,6 @@ n}, \hat{v}^\ast_{y_j m n}\right)$.  Then
 \end{align}
 Consequently,
 \begin{align}
-    L_z^{-1}
     \left(\hat{R}_{uv}\right)_{y_j 0 \, n}
 &=
     \hat{u}_{y_j 0 \, n} \hat{v}^\ast_{y_j 0 \, n}
