@@ -391,7 +391,9 @@ driver::save_spectra_primitive(
     }
 
     // Convert to Fourier coefficients in XZ but leave as points in Y
+    // rescaling by dNx*dNz to account for our non-normalized transforms
     for (size_t f = 0; f < swave_count; ++f) {
+        sphys *= dgrid->chi();
         dgrid->transform_physical_to_wave(&sphys.coeffRef(f,0));
         otool->zero_dealiasing_modes(*state_nonlinear, f);
     }
