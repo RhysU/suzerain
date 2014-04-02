@@ -123,6 +123,25 @@
     ))(( mu_grad_T,        (( mu_gradx_T,       "Reynolds-averaged x-component of dynamic viscosity times the temperature gradient"         )) \
                            (( mu_grady_T,       "Reynolds-averaged y-component of dynamic viscosity times the temperature gradient"         )) \
                            (( mu_gradz_T,       "Reynolds-averaged z-component of dynamic viscosity times the temperature gradient"         )) \
+    ))(( u_u,              (( u_u,              "Reynolds-averaged (x,x)-component of the velocity times the velocity"                      )) \
+                           (( u_v,              "Reynolds-averaged (x,y)-component of the velocity times the velocity"                      )) \
+                           (( u_w,              "Reynolds-averaged (x,z)-component of the velocity times the velocity"                      )) \
+                           (( v_v,              "Reynolds-averaged (y,y)-component of the velocity times the velocity"                      )) \
+                           (( v_w,              "Reynolds-averaged (y,z)-component of the velocity times the velocity"                      )) \
+                           (( w_w,              "Reynolds-averaged (z,z)-component of the velocity times the velocity"                      )) \
+    ))(( u_u_u,            (( u_u_u,            "Reynolds-averaged (x,x,x)-component of the velocity times the velocity times the velocity" )) \
+                           (( u_u_v,            "Reynolds-averaged (x,x,y)-component of the velocity times the velocity times the velocity" )) \
+                           (( u_u_w,            "Reynolds-averaged (x,x,z)-component of the velocity times the velocity times the velocity" )) \
+                           (( u_v_v,            "Reynolds-averaged (x,y,y)-component of the velocity times the velocity times the velocity" )) \
+                           (( u_v_w,            "Reynolds-averaged (x,y,z)-component of the velocity times the velocity times the velocity" )) \
+                           (( u_w_w,            "Reynolds-averaged (x,z,z)-component of the velocity times the velocity times the velocity" )) \
+                           (( v_v_v,            "Reynolds-averaged (y,y,y)-component of the velocity times the velocity times the velocity" )) \
+                           (( v_v_w,            "Reynolds-averaged (y,y,z)-component of the velocity times the velocity times the velocity" )) \
+                           (( v_w_w,            "Reynolds-averaged (y,z,z)-component of the velocity times the velocity times the velocity" )) \
+                           (( w_w_w,            "Reynolds-averaged (z,z,z)-component of the velocity times the velocity times the velocity" )) \
+    ))(( T_u,              (( T_u,              "Reynolds-averaged x-component of the temperature times the velocity"                       )) \
+                           (( T_v,              "Reynolds-averaged y-component of the temperature times the velocity"                       )) \
+                           (( T_w,              "Reynolds-averaged z-component of the temperature times the velocity"                       )) \
     ))
 
 /**

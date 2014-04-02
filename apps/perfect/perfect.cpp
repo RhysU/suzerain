@@ -840,6 +840,28 @@ take_samples(const definition_scenario &scenario,
             acc[ref::mu_grady_T](mu * grad_T.y());
             acc[ref::mu_gradz_T](mu * grad_T.z());
 
+            acc[ref::u_u](u.x() * u.x());
+            acc[ref::u_v](u.x() * u.y());
+            acc[ref::u_w](u.x() * u.z());
+            acc[ref::v_v](u.y() * u.y());
+            acc[ref::v_w](u.y() * u.z());
+            acc[ref::w_w](u.z() * u.z());
+
+            acc[ref::u_u_u](u.x() * u.x() * u.x());
+            acc[ref::u_u_v](u.x() * u.x() * u.y());
+            acc[ref::u_u_w](u.x() * u.x() * u.z());
+            acc[ref::u_v_v](u.x() * u.y() * u.y());
+            acc[ref::u_v_w](u.x() * u.y() * u.z());
+            acc[ref::u_w_w](u.x() * u.z() * u.z());
+            acc[ref::v_v_v](u.y() * u.y() * u.y());
+            acc[ref::v_v_w](u.y() * u.y() * u.z());
+            acc[ref::v_w_w](u.y() * u.z() * u.z());
+            acc[ref::w_w_w](u.z() * u.z() * u.z());
+
+            acc[ref::T_u](T * u.x());
+            acc[ref::T_v](T * u.y());
+            acc[ref::T_w](T * u.z());
+
         } // end X // end Z
 
         // All accumulators should have seen a consistent number of samples

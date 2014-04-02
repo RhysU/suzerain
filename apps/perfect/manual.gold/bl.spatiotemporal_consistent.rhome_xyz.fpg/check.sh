@@ -14,7 +14,7 @@ case=$(basename "$SCRIPTDIR")
 rmmkcd "gold/$case"
 exec 1> >(tee ./output) 2>&1
 
-for dataset in /helm /metadata_generated \
+for dataset in /bar_u_u /bar_u_u_u /bar_T_u /helm /metadata_generated \
                /maxx_rho  /maxx_rho_E  /maxx_rho_u  /maxx_rho_v  /maxx_rho_w \
                /maxz_rho  /maxz_rho_E  /maxz_rho_u  /maxz_rho_v  /maxz_rho_w \
                /minx_rho  /minx_rho_E  /minx_rho_u  /minx_rho_v  /minx_rho_w \
