@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 """Usage: plot_status.py *.dat
-Generate plots from L2.dat, rms.dat, or bulk.dat files.
+Generate plots from suzerain status files.
 Options:
   -f  --file_ext  Output file extension. Default is 'eps'.
   -h  --help      This help message.
+      --quantity  Status quantity to plot.
   -s  --skip      Lines to skip in input files. Default is 20.
 """
 
@@ -15,21 +16,6 @@ import gb
 import matplotlib
 matplotlib.use('Agg')
 from matplotlib import pyplot
-
-
-def getfilekind(infile):
-
-    if infile.find('rms.dat')!=-1 or infile.find('rms.fluct.dat')!=-1:
-       kind = 'rms_'
-    elif infile.find('L2.dat')!=-1 or infile.find('L2.mean.dat')!=-1:
-       kind = 'L2_'
-    elif infile.find('bulk.dat')!=-1:
-       kind = 'bulk_'
-    else:
-       kind = ''
-
-    return kind
-
 
 def getheader(infile):
 
@@ -51,22 +37,83 @@ def getheader(infile):
     return head
 
 
-def getstatus(infile,nskip):
+def getquantitykeys(quantity):
 
-    # Load data from file, except the header
-    data = np.genfromtxt(infile, skip_header=1)
+    keys = []
+    if quantity == 'rms':
+        keys.append('rms.fluct')
+        keys.append('state.RMS')
+    elif quantity == 'L2':
+        keys.append('L2.mean')
+        keys.append('state.L2')
+    elif quantity == 'bulk':
+        keys.append('bulk.state')
+        keys.append('state.bulk')
+    elif quantity == 'min':
+        keys.append('state.min')
+    elif quantity == 'xmin':
+        keys.append('state.xmin')
+    elif quantity == 'ymin':
+        keys.append('state.ymin')
+    elif quantity == 'zmin':
+        keys.append('state.zmin')
+    elif quantity == 'max':
+        keys.append('state.max')
+    elif quantity == 'xmax':
+        keys.append('state.xmax')
+    elif quantity == 'ymax':
+        keys.append('state.ymax')
+    elif quantity == 'zmax':
+        keys.append('state.zmax')
+    elif quantity == 'fneg':
+        keys.append('state.fneg')
+    elif quantity == 'lower.d0':
+        keys.append('bc.lower.d0')
+    elif quantity == 'lower.d1':
+        keys.append('bc.lower.d1')
+    elif quantity == 'lower.d2':
+        keys.append('bc.lower.d2')
+    elif quantity == 'upper.d0':
+        keys.append('bc.upper.d0')
+    elif quantity == 'upper.d1':
+        keys.append('bc.upper.d1')
+    elif quantity == 'upper.d2':
+        keys.append('bc.upper.d2')
 
-    # Resize if there is only one line
-    if data.shape[0] == data.size:
-      data = np.array(data).reshape(1, data.size)
+    return keys
 
-    # Delete unused columns
-    data = np.delete(data,[0,1,2,4],axis=1)
 
-    # Keep every (nskip)th row
-    r     = data.shape[0]
-    data  = data[np.s_[1:r:nskip]]
+def getstatus(infile,nskip,keys):
 
+    data = []
+    f = open(infile,'r')
+    iskip = 0
+    # walk all lines in file
+    for line in f:
+        # check if any of the keys for this quantity
+        # is in the line
+        for key in keys:
+            if key in line:
+	        row = line.split()
+                # delete unused columns
+	        del row[4]
+	        row = row[3:]
+	        try:
+		    # try to converto to float
+	            row = [float(i) for i in row]
+                    # check if it should skip the line
+	            if iskip % nskip == 0:
+                        data.append(row)
+	            iskip += 1
+	        except ValueError:
+		    # if the conversion falis, 
+                    # discard and continue
+	            continue
+		# if key was in line, continue with the next line
+	        continue
+
+    # convert to numpy array and return
+    data = np.array(data)
     return data
     
 
@@ -78,22 +125,25 @@ def main(argv=None):
 
     # Default values
     nskip = 20
-    fileext = 'eps'
+    fileext  = 'eps'
+    quantity = 'rms' 
 
     # Parse and check incoming command line arguments
     try:
         try:
-	  opts, args = getopt.getopt(argv[1:], "hs:f:", ["help","skip=","file_type="])
+	  opts, args = getopt.getopt(argv[1:], "hs:f:", ["help","skip=","file_type=","quantity="])
         except getopt.error, msg:
             raise Usage(msg)
         for o, a in opts:
             if o in ("-h", "--help"):
                 print __doc__
                 return 0
-            if o in ("-s", "--skip="):
+            if o in ("-s", "--skip"):
                 nskip = int(float(a))
-            if o in ("-f", "--file_type="):
+            if o in ("-f", "--file_type"):
                 fileext = a
+            if o in ("--quantity"):
+                quantity = a
         if len(args) < 1:
             print >>sys.stderr, "Incorrect number of arguments.  See --help."
             return 2
@@ -115,28 +165,23 @@ def main(argv=None):
     # First input file determines the file 
     # kind (rms, L2, bulk), and the header
 
-    # TODO: Add sanity check for first input file
-    # Get file "kind" from first input file
-    kind_table = getfilekind(infiles[0])
+    # Get suzerain keys for the requested quantity
+    keys = getquantitykeys(quantity)
 
-    # Get file "kind" from first input file
+    # Get header from first input file
     head_table = getheader(infiles[0])
 
     # Process each file in turn  
     for infile in infiles:
-        kind = getfilekind(infile)
-	if kind != kind_table:
-	   print "Skipping ", infile, " (different kind)"
-	else:
-           print "Processing", infile
-           head  = getheader(infile)
-           # read data if the header is not empty
-	   if (head != 0 and head==head_table):
-              data  = getstatus(infile,nskip)
-              rows += data.shape[0]
-              cols  = data.shape[1]
-              data_table = np.append(data_table, data)
-	      head_table = head
+        print "Processing", infile
+        head  = getheader(infile)
+        # read data if the header is not empty
+        if (head != 0 and head==head_table):
+            data  = getstatus(infile,nskip,keys)
+            rows += data.shape[0]
+            cols  = data.shape[1]
+            data_table = np.append(data_table, data)
+            head_table = head
 
     # Reshape table and sort by time
     data_table = np.array(data_table).reshape(rows, cols)
@@ -145,7 +190,7 @@ def main(argv=None):
     # Plot all files
     for figid in xrange(1,cols):
         pyplot.figure(figid)
-        key = kind_table + head_table[figid]
+        key = quantity + '_' + head_table[figid]
         pyplot.plot(data_table[:,0], data_table[:,figid], '-o',linewidth=3, label=key)
         pyplot.legend(loc=0)
         pyplot.savefig(key + '.' + fileext, bbox_inches='tight')
