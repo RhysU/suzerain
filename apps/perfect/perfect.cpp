@@ -725,6 +725,8 @@ take_samples(const definition_scenario &scenario,
                                     auxp(aux::rho_z, offset));
 
             // Compute local quantities based upon state
+            const real_t   rho2   = rho * rho;
+
             const Vector3r u      = rholut::u(
                                        rho, m);
             const real_t   div_u  = rholut::div_u(
@@ -769,7 +771,7 @@ take_samples(const definition_scenario &scenario,
             acc[ref::v](u.y());
             acc[ref::w](u.z());
 
-            acc[ref::rho2](rho * rho);
+            acc[ref::rho2](rho2);
 
             acc[ref::p2](p * p);
 
@@ -789,6 +791,13 @@ take_samples(const definition_scenario &scenario,
             acc[ref::symyz_rho_grad_u](rho * (grad_u(1,2) + grad_u(2,1)) / 2);
             acc[ref::symzz_rho_grad_u](rho *  grad_u(2,2)                   );
 
+            acc[ref::symxx_rho2_grad_u](rho2 *  grad_u(0,0)                   );
+            acc[ref::symxy_rho2_grad_u](rho2 * (grad_u(0,1) + grad_u(1,0)) / 2);
+            acc[ref::symxz_rho2_grad_u](rho2 * (grad_u(0,2) + grad_u(2,0)) / 2);
+            acc[ref::symyy_rho2_grad_u](rho2 *  grad_u(1,1)                   );
+            acc[ref::symyz_rho2_grad_u](rho2 * (grad_u(1,2) + grad_u(2,1)) / 2);
+            acc[ref::symzz_rho2_grad_u](rho2 *  grad_u(2,2)                   );
+
             acc[ref::gradx_T](grad_T.x());
             acc[ref::grady_T](grad_T.y());
             acc[ref::gradz_T](grad_T.z());
@@ -796,6 +805,10 @@ take_samples(const definition_scenario &scenario,
             acc[ref::rho_gradx_T](rho * grad_T.x());
             acc[ref::rho_grady_T](rho * grad_T.y());
             acc[ref::rho_gradz_T](rho * grad_T.z());
+
+            acc[ref::rho2_gradx_T](rho2 * grad_T.x());
+            acc[ref::rho2_grady_T](rho2 * grad_T.y());
+            acc[ref::rho2_gradz_T](rho2 * grad_T.z());
 
             acc[ref::tau_colon_grad_u]((tau.transpose()*grad_u).trace());
 
@@ -819,6 +832,13 @@ take_samples(const definition_scenario &scenario,
             acc[ref::rho_v_w](rho * u.y() * u.z());
             acc[ref::rho_w_w](rho * u.z() * u.z());
 
+            acc[ref::rho2_u_u](rho2 * u.x() * u.x());
+            acc[ref::rho2_u_v](rho2 * u.x() * u.y());
+            acc[ref::rho2_u_w](rho2 * u.x() * u.z());
+            acc[ref::rho2_v_v](rho2 * u.y() * u.y());
+            acc[ref::rho2_v_w](rho2 * u.y() * u.z());
+            acc[ref::rho2_w_w](rho2 * u.z() * u.z());
+
             acc[ref::rho_u_u_u](rho * u.x() * u.x() * u.x());
             acc[ref::rho_u_u_v](rho * u.x() * u.x() * u.y());
             acc[ref::rho_u_u_w](rho * u.x() * u.x() * u.z());
@@ -830,11 +850,28 @@ take_samples(const definition_scenario &scenario,
             acc[ref::rho_v_w_w](rho * u.y() * u.z() * u.z());
             acc[ref::rho_w_w_w](rho * u.z() * u.z() * u.z());
 
+            acc[ref::rho2_u_u_u](rho2 * u.x() * u.x() * u.x());
+            acc[ref::rho2_u_u_v](rho2 * u.x() * u.x() * u.y());
+            acc[ref::rho2_u_u_w](rho2 * u.x() * u.x() * u.z());
+            acc[ref::rho2_u_v_v](rho2 * u.x() * u.y() * u.y());
+            acc[ref::rho2_u_v_w](rho2 * u.x() * u.y() * u.z());
+            acc[ref::rho2_u_w_w](rho2 * u.x() * u.z() * u.z());
+            acc[ref::rho2_v_v_v](rho2 * u.y() * u.y() * u.y());
+            acc[ref::rho2_v_v_w](rho2 * u.y() * u.y() * u.z());
+            acc[ref::rho2_v_w_w](rho2 * u.y() * u.z() * u.z());
+            acc[ref::rho2_w_w_w](rho2 * u.z() * u.z() * u.z());
+
             acc[ref::rho_T_u](rho * T * u.x());
             acc[ref::rho_T_v](rho * T * u.y());
             acc[ref::rho_T_w](rho * T * u.z());
 
+            acc[ref::rho2_T_u](rho2 * T * u.x());
+            acc[ref::rho2_T_v](rho2 * T * u.y());
+            acc[ref::rho2_T_w](rho2 * T * u.z());
+
             acc[ref::rho_mu](rho * mu);
+
+            acc[ref::rho2_mu](rho2 * mu);
 
             acc[ref::mu_Sxx](mu * ( grad_u(0,0)                  - div_u / 3));
             acc[ref::mu_Sxy](mu * ((grad_u(0,1) + grad_u(1,0))/2            ));
@@ -886,12 +923,23 @@ take_samples(const definition_scenario &scenario,
             acc[ref::rho_omy](rho * om.y());
             acc[ref::rho_omz](rho * om.z());
 
+            acc[ref::rho2_omx](rho2 * om.x());
+            acc[ref::rho2_omy](rho2 * om.y());
+            acc[ref::rho2_omz](rho2 * om.z());
+
             acc[ref::rho_omx_omx](rho * om.x() * om.x());
             acc[ref::rho_omx_omy](rho * om.x() * om.y());
             acc[ref::rho_omx_omz](rho * om.x() * om.z());
             acc[ref::rho_omy_omy](rho * om.y() * om.y());
             acc[ref::rho_omy_omz](rho * om.y() * om.z());
             acc[ref::rho_omz_omz](rho * om.z() * om.z());
+
+            acc[ref::rho2_omx_omx](rho2 * om.x() * om.x());
+            acc[ref::rho2_omx_omy](rho2 * om.x() * om.y());
+            acc[ref::rho2_omx_omz](rho2 * om.x() * om.z());
+            acc[ref::rho2_omy_omy](rho2 * om.y() * om.y());
+            acc[ref::rho2_omy_omz](rho2 * om.y() * om.z());
+            acc[ref::rho2_omz_omz](rho2 * om.z() * om.z());
 
         } // end X // end Z
 
