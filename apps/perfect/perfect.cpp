@@ -769,6 +769,12 @@ take_samples(const definition_scenario &scenario,
             acc[ref::v](u.y());
             acc[ref::w](u.z());
 
+            acc[ref::rho2](rho * rho);
+
+            acc[ref::p2](p * p);
+
+            acc[ref::T2](T * T);
+
             acc[ref::symxx_grad_u]( grad_u(0,0)                   );
             acc[ref::symxy_grad_u]((grad_u(0,1) + grad_u(1,0)) / 2);
             acc[ref::symxz_grad_u]((grad_u(0,2) + grad_u(2,0)) / 2);

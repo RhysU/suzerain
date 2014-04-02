@@ -15,7 +15,7 @@ rmmkcd "gold/$case"
 exec 1> >(tee ./output) 2>&1
 
 for dataset in /bar_u_u /bar_u_u_u /bar_T_u /helm /metadata_generated                       \
-               /bar_om /bar_om_om /bar_rho_om /bar_rho_om_om                                \
+               /bar_om /bar_om_om /bar_rho_om /bar_rho_om_om /bar_rho2 /bar_p2 /bar_T2      \
                /maxx_rho  /maxx_rho_E  /maxx_rho_u  /maxx_rho_v  /maxx_rho_w                \
                /maxz_rho  /maxz_rho_E  /maxz_rho_u  /maxz_rho_v  /maxz_rho_w                \
                /minx_rho  /minx_rho_E  /minx_rho_u  /minx_rho_v  /minx_rho_w                \

@@ -64,6 +64,9 @@
     ))(( u,                (( u,                "Reynolds-averaged streamwise velocity"                                                     )) \
                            (( v,                "Reynolds-averaged wall-normal velocity"                                                    )) \
                            (( w,                "Reynolds-averaged spanwise velocity"                                                       )) \
+    ))(( rho2,             (( rho2,             "Reynolds-averaged squared density"                                                         )) \
+    ))(( p2,               (( p2,               "Reynolds-averaged squared pressure"                                                        )) \
+    ))(( T2,               (( T2,               "Reynolds-averaged squared temperature"                                                     )) \
     ))(( sym_grad_u,       (( symxx_grad_u,     "Symmetric part (x,x)-component of Reynolds-averaged velocity gradient"                     )) \
                            (( symxy_grad_u,     "Symmetric part (x,y)-component of Reynolds-averaged velocity gradient"                     )) \
                            (( symxz_grad_u,     "Symmetric part (x,z)-component of Reynolds-averaged velocity gradient"                     )) \
