@@ -724,13 +724,16 @@ take_samples(const definition_scenario &scenario,
                                     auxp(aux::rho_y, offset),
                                     auxp(aux::rho_z, offset));
 
-            // Compute local quantities based upon state.
-            const Vector3r u   = rholut::u(
-                                    rho, m);
-            const real_t div_u = rholut::div_u(
-                                    rho, grad_rho, m, div_m);
+            // Compute local quantities based upon state
+            const Vector3r u      = rholut::u(
+                                       rho, m);
+            const real_t   div_u  = rholut::div_u(
+                                        rho, grad_rho, m, div_m);
             const Matrix3r grad_u = rholut::grad_u(
-                                    rho, grad_rho, m, grad_m);
+                                        rho, grad_rho, m, grad_m);
+            const Vector3r om       (grad_u(2,1) - grad_u(1,2),
+                                     grad_u(0,2) - grad_u(2,0),
+                                     grad_u(1,0) - grad_u(0,1));
 
             real_t p, T, mu, lambda;
             Vector3r grad_p, grad_T, grad_mu, grad_lambda;
@@ -861,6 +864,28 @@ take_samples(const definition_scenario &scenario,
             acc[ref::T_u](T * u.x());
             acc[ref::T_v](T * u.y());
             acc[ref::T_w](T * u.z());
+
+            acc[ref::omx](om.x());
+            acc[ref::omy](om.y());
+            acc[ref::omz](om.z());
+
+            acc[ref::omx_omx](om.x() * om.x());
+            acc[ref::omx_omy](om.x() * om.y());
+            acc[ref::omx_omz](om.x() * om.z());
+            acc[ref::omy_omy](om.y() * om.y());
+            acc[ref::omy_omz](om.y() * om.z());
+            acc[ref::omz_omz](om.z() * om.z());
+
+            acc[ref::rho_omx](rho * om.x());
+            acc[ref::rho_omy](rho * om.y());
+            acc[ref::rho_omz](rho * om.z());
+
+            acc[ref::rho_omx_omx](rho * om.x() * om.x());
+            acc[ref::rho_omx_omy](rho * om.x() * om.y());
+            acc[ref::rho_omx_omz](rho * om.x() * om.z());
+            acc[ref::rho_omy_omy](rho * om.y() * om.y());
+            acc[ref::rho_omy_omz](rho * om.y() * om.z());
+            acc[ref::rho_omz_omz](rho * om.z() * om.z());
 
         } // end X // end Z
 

@@ -142,6 +142,24 @@
     ))(( T_u,              (( T_u,              "Reynolds-averaged x-component of the temperature times the velocity"                       )) \
                            (( T_v,              "Reynolds-averaged y-component of the temperature times the velocity"                       )) \
                            (( T_w,              "Reynolds-averaged z-component of the temperature times the velocity"                       )) \
+    ))(( om,               (( omx,              "Reynolds-averaged streamwise vorticity"                                                    )) \
+                           (( omy,              "Reynolds-averaged wall-normal vorticity"                                                   )) \
+                           (( omz,              "Reynolds-averaged spanwise vorticity"                                                      )) \
+    ))(( om_om,            (( omx_omx,          "Reynolds-averaged (x,x)-component of the vorticity times the vorticity"                    )) \
+                           (( omx_omy,          "Reynolds-averaged (x,y)-component of the vorticity times the vorticity"                    )) \
+                           (( omx_omz,          "Reynolds-averaged (x,z)-component of the vorticity times the vorticity"                    )) \
+                           (( omy_omy,          "Reynolds-averaged (y,y)-component of the vorticity times the vorticity"                    )) \
+                           (( omy_omz,          "Reynolds-averaged (y,z)-component of the vorticity times the vorticity"                    )) \
+                           (( omz_omz,          "Reynolds-averaged (z,z)-component of the vorticity times the vorticity"                    )) \
+    ))(( rho_om,           (( rho_omx,          "Reynolds-averaged density times the streamwise vorticity"                                  )) \
+                           (( rho_omy,          "Reynolds-averaged density times the wall-normal vorticity"                                 )) \
+                           (( rho_omz,          "Reynolds-averaged density times the spanwise vorticity"                                    )) \
+    ))(( rho_om_om,        (( rho_omx_omx,      "Reynolds-averaged (x,x)-component of density times the vorticity times the vorticity"      )) \
+                           (( rho_omx_omy,      "Reynolds-averaged (x,y)-component of density times the vorticity times the vorticity"      )) \
+                           (( rho_omx_omz,      "Reynolds-averaged (x,z)-component of density times the vorticity times the vorticity"      )) \
+                           (( rho_omy_omy,      "Reynolds-averaged (y,y)-component of density times the vorticity times the vorticity"      )) \
+                           (( rho_omy_omz,      "Reynolds-averaged (y,z)-component of density times the vorticity times the vorticity"      )) \
+                           (( rho_omz_omz,      "Reynolds-averaged (z,z)-component of density times the vorticity times the vorticity"      )) \
     ))
 
 /**

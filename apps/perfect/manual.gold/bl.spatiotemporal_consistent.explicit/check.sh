@@ -14,11 +14,12 @@ case=$(basename "$SCRIPTDIR")
 rmmkcd "gold/$case"
 exec 1> >(tee ./output) 2>&1
 
-for dataset in /bar_u_u /bar_u_u_u /bar_T_u /helm /metadata_generated \
-               /maxx_rho  /maxx_rho_E  /maxx_rho_u  /maxx_rho_v  /maxx_rho_w \
-               /maxz_rho  /maxz_rho_E  /maxz_rho_u  /maxz_rho_v  /maxz_rho_w \
-               /minx_rho  /minx_rho_E  /minx_rho_u  /minx_rho_v  /minx_rho_w \
-               /minz_rho  /minz_rho_E  /minz_rho_u  /minz_rho_v  /minz_rho_w \
+for dataset in /bar_u_u /bar_u_u_u /bar_T_u /helm /metadata_generated                       \
+               /bar_om /bar_om_om /bar_rho_om /bar_rho_om_om                                \
+               /maxx_rho  /maxx_rho_E  /maxx_rho_u  /maxx_rho_v  /maxx_rho_w                \
+               /maxz_rho  /maxz_rho_E  /maxz_rho_u  /maxz_rho_v  /maxz_rho_w                \
+               /minx_rho  /minx_rho_E  /minx_rho_u  /minx_rho_v  /minx_rho_w                \
+               /minz_rho  /minz_rho_E  /minz_rho_u  /minz_rho_v  /minz_rho_w                \
                /bar_C2rho /bar_C2rhoE /bar_C2rhou /bar_C2rhou /bar_C2rhow /bar_C2rhou_dot_u
 do
     excludes+=" --exclude-path $dataset"
