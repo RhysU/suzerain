@@ -124,7 +124,7 @@ R_{uv} \left( r_x, y_j, r_z \right)
 \end{align}
 Substituting $u^h$ and $v^h$, introducing shorthand $\phi_{y_j} = \sum_{l}
 B_l\left(y_j\right) \phi_l$ denoting evaluating the B-spline basis expansion at
-point $y_j$, and rearranging,
+point $y_j$, and using orthogonality,
 \begin{align}
 R_{uv} \left( r_x, y_j, r_z \right)
   &= \frac{1}{L_x L_z}
@@ -158,7 +158,42 @@ R_{uv} \left( r_x, y_j, r_z \right)
      \hat{v}_{y_j m^\prime n^\prime}
      \,\mathrm{d}z
      \,\mathrm{d}x
+\\
+  &= \frac{1}{L_x L_z}
+     \sum_{m}
+     e^{\ii k_m r_x}
+     \sum_{m^\prime}
+     L_x
+     \delta_{m,-m^\prime}
+     \sum_{n}
+     e^{\ii k_n r_z}
+     \sum_{n^\prime}
+     L_z
+     \delta_{n,-n^\prime}
+     \hat{u}_{y_j m n}
+     \hat{v}_{y_j m^\prime n^\prime}
+\\
+  &=
+     \sum_{m}
+     e^{\ii k_m r_x}
+     \sum_{n}
+     e^{\ii k_n r_z}
+     \hat{u}_{y_j m n}
+     \hat{v}_{y_j\,-m\,-n}
+\\
+  &=
+     \sum_{m}
+     \sum_{n}
+     e^{\ii k_m r_x}
+     e^{\ii k_n r_z}
+     \hat{u}_{y_j m n}
+     \hat{v}^{\ast}_{y_j m n}
 \end{align}
+Here, $\ast$ denotes complex conjugation and the final simplification uses the
+real nature of $v$.
+\todo[inline]{This is still, sadly, not correct.}
+
+
 %FIXME STARTHERE
 Rearranging,
 \begin{multline}
