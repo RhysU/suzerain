@@ -87,44 +87,51 @@ B-spline basis for some order and some knot selection.
          \citep[\textsection{}6.3]{Pope2000Turbulent}}
 
 \subsection{As a function of separation in both $x$ and $z$}
-
-For any two real-valued, continuous functions $u$ and $v$,
+The two-point correlation of complex-valued $u$ and $v$ is
 \begin{align}
 R_{uv} \left( \vec{x}, \vec{r}, t \right)
-  &=   \overline{%
-       u \left( \vec{x} + \vec{r}, t \right)
-       v \left( \vec{x}          , t \right)
-       }.
+  &= \frac{%
+        \int_\Omega
+        u^\ast\left(\vec{x}          , t\right)
+        v     \left(\vec{x} + \vec{r}, t\right)
+        \,\mathrm{d}\vec{x}
+     }{%
+        \int_\Omega
+        \,\mathrm{d}\vec{x}
+     }
 \end{align}
+where $t$ is the time, $\vec{r}$ the separation, and $\ast$ denotes complex
+conjugation.  $R_{uv}$ is nothing but the spatial cross-correlation, related to
+but different from the convolution, normalized by the measure of the domain.
 Expanding position vector $\vec{x}$ and separation vector $\vec{r}$ into their
 scalar components and invoking stationary,
 \begin{align}
 R_{uv} \left( x, r_x, y, r_y, z, r_z \right)
-  &=   \overline{%
-       u \left( x + r_x, y + r_y, z + r_z \right)
-       v \left( x      , y      , z       \right)
-       }.
+  &= \frac{%
+        \int_\Omega
+        u^\ast\left( x      , y      , z       \right)
+        v     \left( x + r_x, y + r_y, z + r_z \right)
+        \,\mathrm{d}\vec{x}
+     }{%
+        \int_\Omega
+        \,\mathrm{d}\vec{x}
+    }.
 \end{align}
 When the $x$ and $z$ directions are homogeneous and only $r_y=0$ is of interest
 at some fixed $y_j$,
 \begin{align}
 R_{uv} \left( r_x, y_j, r_z \right)
-  &=   \overline{%
-       u \left( x + r_x, y_j, z + r_z \right)
-       v \left( x      , y_j, z       \right)
-       }
-\\
   &= \frac{1}{L_x L_z}
      \int_{-\frac{L_x}{2}}^{\frac{L_x}{2}}
      \int_{-\frac{L_z}{2}}^{\frac{L_z}{2}}
-       u \left( x + r_x, y_j, z + r_z \right)
-       v \left( x      , y_j, z       \right)
+       u^\ast\left( x      , y_j, z       \right)
+       v     \left( x + r_x, y_j, z + r_z \right)
      \,\mathrm{d}z
-     \,\mathrm{d}x
+     \,\mathrm{d}x.
 \end{align}
-Substituting $u^h$ and $v^h$, introducing shorthand $\phi_{y_j} = \sum_{l}
-B_l\left(y_j\right) \phi_l$ denoting evaluating the B-spline basis expansion at
-point $y_j$, and using orthogonality,
+Substituting $(u^h)^\ast$ and $v^h$, introducing shorthand $\phi_{y_j} =
+\sum_{l} B_l\left(y_j\right) \phi_l$ denoting evaluating the B-spline basis
+expansion at point $y_j$, using Fourier orthogonality, and simplifying,
 \begin{align}
 R_{uv} \left( r_x, y_j, r_z \right)
   &= \frac{1}{L_x L_z}
@@ -132,287 +139,182 @@ R_{uv} \left( r_x, y_j, r_z \right)
      \int_{-\frac{L_z}{2}}^{\frac{L_z}{2}}
         \left(
          \sum_{m}\sum_{n}
-         \hat{u}_{y_j m n}
-         e^{\ii k_m \left(x+r_x\right)}e^{\ii k_n \left(z+r_z\right)}
+         \hat{u}^\ast_{y_j m n}
+         e^{-\ii k_m x}e^{-\ii k_n z}
        \right)
        \left(
          \sum_{m^\prime}\sum_{n^\prime}
          \hat{v}_{y_j m^\prime n^\prime}
-         e^{\ii k_m^\prime x}e^{\ii k_n^\prime z}
+         e^{\ii k_m^\prime \left(x+r_x\right)}e^{\ii k_n^\prime \left(z+r_z\right)}
        \right)
      \,\mathrm{d}z
      \,\mathrm{d}x
 \\
   &= \frac{1}{L_x L_z}
      \sum_{m}
-     e^{\ii k_m r_x}
+     e^{\ii k_m^\prime r_x}
      \sum_{m^\prime}
      \int_{-\frac{L_x}{2}}^{\frac{L_x}{2}}
-     e^{\ii (k_m+k_m^\prime) x}
+     e^{-\ii k_m x} e^{\ii k_m^\prime x}
      \sum_{n}
-     e^{\ii k_n r_z}
+     e^{\ii k_n^\prime r_z}
      \sum_{n^\prime}
      \int_{-\frac{L_z}{2}}^{\frac{L_z}{2}}
-     e^{\ii (k_n+k_n^\prime) z}
-     \hat{u}_{y_j m n}
+     e^{-\ii k_n z} e^{\ii k_n^\prime z}
+     \hat{u}^\ast_{y_j m n}
      \hat{v}_{y_j m^\prime n^\prime}
      \,\mathrm{d}z
      \,\mathrm{d}x
 \\
   &= \frac{1}{L_x L_z}
      \sum_{m}
-     e^{\ii k_m r_x}
+     e^{\ii k_m^\prime r_x}
      \sum_{m^\prime}
-     L_x
-     \delta_{m,-m^\prime}
+     L_x \delta_{m m^\prime}
      \sum_{n}
-     e^{\ii k_n r_z}
+     e^{\ii k_n^\prime r_z}
      \sum_{n^\prime}
-     L_z
-     \delta_{n,-n^\prime}
-     \hat{u}_{y_j m n}
+     L_z \delta_{n n^\prime}
+     \hat{u}^\ast_{y_j m n}
      \hat{v}_{y_j m^\prime n^\prime}
 \\
-  &=
-     \sum_{m}
-     e^{\ii k_m r_x}
-     \sum_{n}
-     e^{\ii k_n r_z}
-     \hat{u}_{y_j m n}
-     \hat{v}_{y_j\,-m\,-n}
-\\
-  &=
-     \sum_{m}
-     \sum_{n}
-     e^{\ii k_m r_x}
-     e^{\ii k_n r_z}
-     \hat{u}_{y_j m n}
-     \hat{v}^{\ast}_{y_j m n}
-\end{align}
-Here, $\ast$ denotes complex conjugation and the final simplification uses the
-real nature of $v$.
-\todo[inline]{This is still, sadly, not correct.}
-
-
-%FIXME STARTHERE
-Rearranging,
-\begin{multline}
-R_{uv} \left( r_x, y_j, r_z \right)
-   = \frac{1}{L_x L_z}
-     \sum_{l} B_l\left(y_j\right)
-     \sum_{l^\prime} B_l^\prime\left(y_j\right)
-     \\
-     \sum_{m}
-     \sum_{m^\prime}
-     e^{\ii k_m r_x}
-     \int_{-\frac{L_x}{2}}^{\frac{L_x}{2}}
-     e^{\ii k_m x  }
-     e^{-\ii k_m^\prime x}
-     \sum_{n}
+  &= \sum_{m^\prime}
      \sum_{n^\prime}
-     \hat{u}_{l m n}
-     \hat{v}^\ast_{l^\prime m^\prime n^\prime}
-     e^{\ii k_n r_z}
-     \int_{-\frac{L_z}{2}}^{\frac{L_z}{2}}
-     e^{\ii k_n z  }
-     e^{-\ii k_n^\prime z}
-     \,\mathrm{d}z
-     \,\mathrm{d}x
-\end{multline}
-By the orthogonality of the Fourier basis,
-\begin{align}
-R_{uv} \left( r_x, y_j, r_z \right)
-  &= \frac{1}{L_x}
-     \sum_{l} B_l\left(y_j\right)
-     \sum_{l^\prime} B_l^\prime\left(y_j\right)
-     \sum_{m}
-     \sum_{m^\prime}
-     e^{\ii k_m r_x}
-     \sum_{n}
-     e^{\ii k_n r_z}
-     \int_{-\frac{L_x}{2}}^{\frac{L_x}{2}}
-     e^{\ii k_m x  }
-     e^{-\ii k_m^\prime x}
-     \hat{u}_{l m n}
-     \hat{v}^\ast_{l^\prime m^\prime n}
-     \,\mathrm{d}x
-\\
-  &= \sum_{l} B_l\left(y_j\right)
-     \sum_{l^\prime} B_l^\prime\left(y_j\right)
-     \sum_{m}
-     e^{\ii k_m r_x}
-     \sum_{n}
-     e^{\ii k_n r_z}
-     \hat{u}_{l m n}
-     \hat{v}^\ast_{l^\prime m n}
+     \hat{u}^\ast_{y_j m^\prime n^\prime}
+     \hat{v}_{y_j m^\prime n^\prime}
+     e^{\ii k_m^\prime r_x}
+     e^{\ii k_n^\prime r_z}
+    \label{eq:twopointxz_physical}
 \end{align}
-Introducing shorthand $\phi_{y_j} = \sum_{l} B_l\left(y_j\right) \phi_l$
-denoting evaluating the B-spline basis expansion at point $y_j$,
+Relabeling $r_x = x$, $r_z = z$, and applying the Fourier transform in $x$ and
+$z$, by orthogonality one then sees
 \begin{align}
-R_{uv} \left( r_x, y_j, r_z \right)
-  &=
-     \sum_{m}
-     \sum_{n}
-     \hat{u}_{y_j m n}
-     \hat{v}^\ast_{y_j m n}
-     e^{\ii k_m r_x}
-     e^{\ii k_n r_z}
-  \label{eq:twopoint_physical_xz}
-\end{align}
-
-Towards efficiently computing this result, relabel $x = r_x$, $z = r_z$,
-$m^\prime = m$, and $n^\prime = n$,
-\begin{align}
-R_{uv} \left( x, y_j, z \right)
-  &=
-     \sum_{m^\prime}
-     e^{\ii k_m^\prime x}
-     \sum_{n^\prime}
-     e^{\ii k_n^\prime z}
-     \hat{u}_{y_j m^\prime n^\prime}
-     \hat{v}^\ast_{y_j m^\prime n^\prime}
-\end{align}
-Applying the Fourier transform in $x$ and $z$ and taking advantage of
-orthogonality,
-\begin{align}
-     \left(\hat{R}_{uv}\right)_{y_j m n}
-  &=
-     \frac{1}{L_x L_z}
-     \int_{-\frac{L_x}{2}}^{\frac{L_x}{2}}
-     \int_{-\frac{L_z}{2}}^{\frac{L_z}{2}}
-     e^{-\ii k_m x}
-     e^{-\ii k_n x}
-     R_{uv} \left( x, y_j, z \right)
-     \,\mathrm{d}z
-     \,\mathrm{d}x
-   =
-     \hat{u}_{y_j m n} \hat{v}^\ast_{y_j m n}.
+\left(\hat{R}_{uv}\right)_{y_j m n}
+    =
+    \int_{-\frac{L_x}{2}}^{\frac{L_x}{2}}
+    \int_{-\frac{L_z}{2}}^{\frac{L_z}{2}}
+    R_{uv} \left( x, y_j, z \right)
+    e^{-\ii k_m x}
+    e^{-\ii k_n z}
+    \,\mathrm{d}z
+    \,\mathrm{d}x
+    &=
+    L_x L_z
+    \hat{u}^\ast_{y_j m n}
+    \hat{v}_{y_j m n}.
+    \label{eq:twopointxz_wave}
 \end{align}
 Evidently, the Fourier representation of the two-point correlation function
 evaluated at collocation point $y_j$ is nothing but the scaled product of
-identical coefficient representations of $u$ and $v$.  Directly employing the
-two dimensional convolution theorem to bivariate functions $u(x, y_j, z)$ and
-$v(x, y_j, z)$ permits arriving at this conclusion in one step.  Therefore,
-computation of $R_{uv}$ is most effectively performed in Fourier space via
-conveniently parallel, complex-valued wavenumber products once a
-collocation-based B-spline mass matrix has been applied to $\hat{u}_{lmn}$ and
-$\hat{v}^\ast_{lmn}$ to convert them to $\hat{u}_{y_j m n}$ and
-$\hat{v}^\ast_{y_j m n}$.
+identical coefficient representations of $u$ and $v$.
 
 \subsection{As a function of separation in only $x$}
 
-Setting both $r_y = r_z = 0$ one can obtain the two-point correlation as a
-function of only $x$.  Replaying the above derivation through
-\eqref{eq:twopoint_physical_xz},
-\begin{align}
-R_{uv} \left( r_x, y_j, 0 \right)
-  &=
-     \sum_{m}
-     \sum_{n}
-     \hat{u}_{y_j m n}
-     \hat{v}^\ast_{y_j m n}
-     e^{\ii k_m r_x}
-\end{align}
-Relabeling $x = r_x$ and $m'=m$,
+Choosing $r_z = 0$ and relabeling $r_x = x$ and $n^\prime = n$ within
+\eqref{eq:twopointxz_physical}, the two-point correlation as a
+function of only separation in $x$ is
 \begin{align}
 R_{uv} \left( x, y_j, 0 \right)
-  &=
-     \sum_{m^\prime}
-     e^{\ii k_m^\prime x}
+  &= \sum_{m^\prime}
      \sum_{n}
-     \hat{u}_{y_j m^\prime n}
-     \hat{v}^\ast_{y_j m^\prime n}
+     \hat{u}^\ast_{y_j m^\prime n}
+     \hat{v}_{y_j m^\prime n}
+     e^{\ii k_m^\prime x}.
+    \label{eq:twopointx_physical}
 \end{align}
-Applying a Fourier transformation in $x$,
+Fourier transforming in $x$,
 \begin{align}
-     \left(\hat{R}_{uv}\right)_{y_j m \, 0}
-  &=
-     \frac{1}{L_x}
-     \int_{-\frac{L_x}{2}}^{\frac{L_x}{2}}
-     e^{-\ii k_m x}
-     R_{uv} \left( x, y_j, 0 \right)
-     \,\mathrm{d}x
+\left(\hat{R}_{uv}\right)_{y_j m 0}
    =
-     \sum_{n}
-     \hat{u}_{y_j m n}
-     \hat{v}^\ast_{y_j m n}
+    \int_{-\frac{L_x}{2}}^{\frac{L_x}{2}}
+    R_{uv} \left( x, y_j, 0 \right)
+    e^{-\ii k_m x}
+    \,\mathrm{d}x
+  &=
+    L_x
+    \sum_{n}
+    \hat{u}^\ast_{y_j m n}
+    \hat{v}_{y_j m n}
+    \label{eq:twopointx_wave}
 \end{align}
 where the summation is over $n \in \left\{-N_z/2, \dots, 0, \dots,
 N_z/2-1\right\}$.
 
 \subsection{As a function of separation in only $z$}
 
-Setting $r_x = r_y = 0$ as above, one finds
+Choosing $r_x = 0$ and relabeling $r_z = z$ and $m^\prime = m$ within
+\eqref{eq:twopointxz_physical}, the two-point correlation as a
+function of only separation in $z$ is
 \begin{align}
-R_{uv} \left( 0, y_j, r_z \right)
-  &=
-     \sum_{m}
-     \sum_{n}
-     \hat{u}_{y_j m n}
-     \hat{v}^\ast_{y_j m n}
-     e^{\ii k_n r_z}
+R_{uv} \left( 0, y_j, z \right)
+  &= \sum_{m}
+     \sum_{n^\prime}
+     \hat{u}^\ast_{y_j m n^\prime}
+     \hat{v}_{y_j m n^\prime}
+     e^{\ii k_n^\prime z}.
+    \label{eq:twopointz_physical}
 \end{align}
-and consequently
+Fourier transforming in $z$,
 \begin{align}
-     \left(\hat{R}_{uv}\right)_{y_j 0 \, n}
+\left(\hat{R}_{uv}\right)_{y_j 0 n}
+   =
+    \int_{-\frac{L_z}{2}}^{\frac{L_z}{2}}
+    R_{uv} \left( 0, y_j, z \right)
+    e^{-\ii k_n z}
+    \,\mathrm{d}x
   &=
-     \sum_{m}
-     \hat{u}_{y_j m n}
-     \hat{v}^\ast_{y_j m n}
+    L_z
+    \sum_{m}
+    \hat{u}^\ast_{y_j m n}
+    \hat{v}_{y_j m n}
+    \label{eq:twopointz_wave}
 \end{align}
 where the summation is over $m \in \left\{-N_x/2, \dots, 0, \dots,
 N_x/2-1\right\}$.
 
-When $u$ and $v$ are real-valued and the $x$ direction storage employs
-conjugate symmetry as an optimization technique, as in Suzerain, care must be
-taken when evaluating such summations.  More concretely, say one employs
-conjugate symmetry in the $x$ direction when computing $f\left(\hat{u}_{y_j m
-n}, \hat{v}^\ast_{y_j m n}\right)$.  Then
+\subsection{Accounting for Hermitian symmetry}
+
+When $u$ and $v$ are real-valued and coefficient storage utilizes their
+Hermitian symmetry as an optimization, care must be taken in evaluating either
+\eqref{eq:twopointx_wave} or \eqref{eq:twopointz_wave}.  For example, employing
+$x$ symmetry when computing the summation in \eqref{eq:twopointz_wave} yields
+%
+\small
 \begin{align}
   \sum_{m=-\frac{N_x}{2}}^{\frac{N_x}{2}-1}
-  f\left(\hat{u}_{y_j m n}, \hat{v}^\ast_{y_j m n}\right)
+  \hat{u}^\ast_{y_j m n} \hat{v}_{y_j m n}
 &=
     \sum_{m=0}^{\frac{N_x}{2}-1}
-    f\left(\hat{u}_{y_j m n}, \hat{v}^\ast_{y_j m n}\right)
+    \hat{u}^\ast_{y_j m n} \hat{v}_{y_j m n}
     +
     \sum_{m=-\frac{N_x}{2}}^{-1}
-    f\left(\hat{u}_{y_j m n}, \hat{v}^\ast_{y_j m n}\right)
+    \hat{u}^\ast_{y_j m n} \hat{v}_{y_j m n}
 \\ &=
     \sum_{m=0}^{\frac{N_x}{2}-1}
-    f\left(\hat{u}_{y_j m n}, \hat{v}^\ast_{y_j m n}\right)
+    \hat{u}^\ast_{y_j m n} \hat{v}_{y_j m n}
     +
     \sum_{m=1}^{\frac{N_x}{2}}
-    f\left(\hat{u}^\ast_{y_j m n}, \hat{v}_{y_j m n}\right)
+    \hat{u}_{y_j m n} \hat{v}^\ast_{y_j m n}
 \\ &=
-    \left.f\left(\hat{u}_{y_j m n}, \hat{v}^\ast_{y_j m n}\right)\right|_{m=0}
+    \hat{u}^\ast_{y_j 0 n} \hat{v}_{y_j 0 n}
     +
     \sum_{m=1}^{\frac{N_x}{2}-1}
     \left[
-      f\left(\hat{u}_{y_j m n}, \hat{v}^\ast_{y_j m n}\right)
-      +
-      f\left(\hat{u}^\ast_{y_j m n}, \hat{v}_{y_j m n}\right)
-    \right]
-    +
-    \left.f\left(\hat{u}^\ast_{y_j m n}, \hat{v}_{y_j m n}\right)\right|_{m=\frac{N_x}{2}}
-  .
-\end{align}
-Consequently,
-\begin{align}
-    \left(\hat{R}_{uv}\right)_{y_j 0 \, n}
-&=
-    \hat{u}_{y_j 0 \, n} \hat{v}^\ast_{y_j 0 \, n}
-    +
-    \sum_{m=1}^{\frac{N_x}{2}-1}
-    \left[
-      \hat{u}_{y_j m n} \hat{v}^\ast_{y_j m n}
-      +
       \hat{u}^\ast_{y_j m n} \hat{v}_{y_j m n}
+      +
+      \hat{u}_{y_j m n} \hat{v}^\ast_{y_j m n}
     \right]
     +
-    \hat{u}^\ast_{y_j \frac{N_x}{2} n} \hat{v}_{y_j \frac{N_x}{2} n}
-\\
-&=
-    \hat{u}_{y_j 0 \, n} \hat{v}^\ast_{y_j 0 \, n}
+    \hat{u}_{y_j \frac{N_x}{2} n} \hat{v}^\ast_{y_j \frac{N_x}{2} n}.
+\\ &=
+      \left(
+        \operatorname{Re}
+        \hat{u}_{y_j 0 n}
+      \right)
+      \left(
+        \operatorname{Re}
+        \hat{v}_{y_j 0 n}
+      \right)
     +
     2
     \sum_{m=1}^{\frac{N_x}{2}-1}
@@ -436,9 +338,19 @@ Consequently,
       \right)
     \right]
     +
-    \hat{u}^\ast_{y_j \frac{N_x}{2} n} \hat{v}_{y_j \frac{N_x}{2} n}
-  .
+      \left(
+        \operatorname{Re}
+        \hat{u}_{y_j \frac{N_x}{2} n}
+      \right)
+      \left(
+        \operatorname{Re}
+        \hat{v}_{y_j \frac{N_x}{2} n}
+      \right)
 \end{align}
+\normalsize
+%
+where the $0$ and $N_x / 2$ products simplify because they lack imaginary
+content.
 
 \section{One-dimensional spectra
          \citep[\textsection{}6.5]{Pope2000Turbulent}}
