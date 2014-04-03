@@ -28,8 +28,8 @@
 #include <suzerain/support/support.hpp>
 
 #include <fftw3.h>
+#include <fftw3-mpi.h>
 #ifdef SUZERAIN_HAVE_UNDERLING
-# include <fftw3-mpi.h>
 # include <underling/error.h>
 # include <underling/underling.hpp>
 # include <underling/underling_fftw.hpp>
