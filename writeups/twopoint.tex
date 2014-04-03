@@ -91,27 +91,25 @@ B-spline basis for some order and some knot selection.
 For any two real-valued, continuous functions $u$ and $v$,
 \begin{align}
 R_{uv} \left( \vec{x}, \vec{r}, t \right)
-  &=   \overline{
-       u \left( \vec{x}+ \vec{r}, t \right)
-       v \left( \vec{x}         , t \right)
-       }
-       .
+  &=   \overline{%
+       u \left( \vec{x} + \vec{r}, t \right)
+       v \left( \vec{x}          , t \right)
+       }.
 \end{align}
 Expanding position vector $\vec{x}$ and separation vector $\vec{r}$ into their
 scalar components and invoking stationary,
 \begin{align}
 R_{uv} \left( x, r_x, y, r_y, z, r_z \right)
-  &=   \overline{
+  &=   \overline{%
        u \left( x + r_x, y + r_y, z + r_z \right)
        v \left( x      , y      , z       \right)
-       }
-       .
+       }.
 \end{align}
 When the $x$ and $z$ directions are homogeneous and only $r_y=0$ is of interest
-for some fixed $y_j$,
+at some fixed $y_j$,
 \begin{align}
 R_{uv} \left( r_x, y_j, r_z \right)
-  &=   \overline{
+  &=   \overline{%
        u \left( x + r_x, y_j, z + r_z \right)
        v \left( x      , y_j, z       \right)
        }
@@ -119,32 +117,49 @@ R_{uv} \left( r_x, y_j, r_z \right)
   &= \frac{1}{L_x L_z}
      \int_{-\frac{L_x}{2}}^{\frac{L_x}{2}}
      \int_{-\frac{L_z}{2}}^{\frac{L_z}{2}}
-       u      \left( x + r_x, y_j, z + r_z \right)
-       v^\ast \left( x      , y_j, z       \right)
+       u \left( x + r_x, y_j, z + r_z \right)
+       v \left( x      , y_j, z       \right)
      \,\mathrm{d}z
      \,\mathrm{d}x
 \end{align}
-Here, $\ast$ denotes complex conjugation.  Substituting $u^h$ and $v^h$ for $u$
-and $v$,
-\begin{multline}
+Substituting $u^h$ and $v^h$, introducing shorthand $\phi_{y_j} = \sum_{l}
+B_l\left(y_j\right) \phi_l$ denoting evaluating the B-spline basis expansion at
+point $y_j$, and rearranging,
+\begin{align}
 R_{uv} \left( r_x, y_j, r_z \right)
-   = \frac{1}{L_x L_z}
+  &= \frac{1}{L_x L_z}
      \int_{-\frac{L_x}{2}}^{\frac{L_x}{2}}
      \int_{-\frac{L_z}{2}}^{\frac{L_z}{2}}
         \left(
-         \sum_{l}\sum_{m}\sum_{n}
-         \hat{u}_{l m n}B_l\left(y_j\right)
+         \sum_{m}\sum_{n}
+         \hat{u}_{y_j m n}
          e^{\ii k_m \left(x+r_x\right)}e^{\ii k_n \left(z+r_z\right)}
        \right)
-       \\
        \left(
-         \sum_{l^\prime}\sum_{m^\prime}\sum_{n^\prime}
-         \hat{v}^\ast_{l^\prime m^\prime n^\prime} B_l^\prime\left(y_j\right)
-         e^{-\ii k_m^\prime x}e^{-\ii k_n^\prime z}
+         \sum_{m^\prime}\sum_{n^\prime}
+         \hat{v}_{y_j m^\prime n^\prime}
+         e^{\ii k_m^\prime x}e^{\ii k_n^\prime z}
        \right)
      \,\mathrm{d}z
      \,\mathrm{d}x
-\end{multline}
+\\
+  &= \frac{1}{L_x L_z}
+     \sum_{m}
+     e^{\ii k_m r_x}
+     \sum_{m^\prime}
+     \int_{-\frac{L_x}{2}}^{\frac{L_x}{2}}
+     e^{\ii (k_m+k_m^\prime) x}
+     \sum_{n}
+     e^{\ii k_n r_z}
+     \sum_{n^\prime}
+     \int_{-\frac{L_z}{2}}^{\frac{L_z}{2}}
+     e^{\ii (k_n+k_n^\prime) z}
+     \hat{u}_{y_j m n}
+     \hat{v}_{y_j m^\prime n^\prime}
+     \,\mathrm{d}z
+     \,\mathrm{d}x
+\end{align}
+%FIXME STARTHERE
 Rearranging,
 \begin{multline}
 R_{uv} \left( r_x, y_j, r_z \right)
