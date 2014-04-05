@@ -274,10 +274,11 @@ N_x/2-1\right\}$.
 
 \subsection{Accounting for Hermitian symmetry}
 
-When $u$ and $v$ are real-valued and coefficient storage utilizes their
-Hermitian symmetry as an optimization, care must be taken in evaluating either
-\eqref{eq:twopointx_wave} or \eqref{eq:twopointz_wave}.  For example, employing
-$x$ symmetry when computing the summation in \eqref{eq:twopointz_wave} yields
+When $u$ and $v$ are real-valued so is $R_uv$.  By utilizing the Hermitian
+symmetry present in coefficients $\hat{u}_{y_j m n}$ and $\hat{v}_{y_j m n}$,
+\eqref{eq:twopointx_wave} and \eqref{eq:twopointz_wave} may be computed at
+reduced cost.  For example, employing $x$ symmetry when computing the summation
+in \eqref{eq:twopointz_wave} yields
 %
 \small
 \begin{align}

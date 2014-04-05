@@ -382,7 +382,7 @@ compute_twopoint_xlocal(
         const contiguous_state<4,complex_t>::index sj,
         const specification_grid& grid,
         const pencil_grid& dgrid,
-        complex_t * const out)
+        real_t * const out)
 {
     // Ensure state storage meets this routine's assumptions
     // Notice state.shape()[0] may be any value
@@ -420,26 +420,39 @@ compute_twopoint_xlocal(
                                   mzb[0], mze[0], mzb[1], mze[1]);
 
     // Prepare and a view of the output storage and zero it.
-    Map<MatrixXXc> o(out, grid.N.y(), grid.N.x()/2+1);
+    Map<ArrayXXr> o(out, grid.N.y(), grid.N.x()/2+1);
     o.setZero();
 
     // Sum rank-local contribution to Fourier-transformed two-point correlation
     for (int j = 0; j < 2; ++j) {
         for (int n = mzb[j]; n < mze[j]; ++n) {
+            if (n >= grid.N.z()/2+1) continue;
             for (int m = mxb[0], mf = fxb[0]; m < mxe[0]; ++m, ++mf) {  // mf!
-                Map<const VectorXc> u_mn(
+                if (m >= grid.N.x()/2+1) continue;
+                Map<const ArrayX1c> u_mn(
                         &state[si][0][m - dgrid.local_wave_start.x()]
                                      [n - dgrid.local_wave_start.z()],
                         grid.N.y());
-                Map<const VectorXc> v_mn(
+                Map<const ArrayX1c> v_mn(
                         &state[sj][0][m - dgrid.local_wave_start.x()]
                                      [n - dgrid.local_wave_start.z()],
                         grid.N.y());
 
-                o.col(mf) += u_mn.cwiseProduct(v_mn.conjugate());
+                // Account for conjugate symmetry per twopoint.tex
+                if (m == 0) {
+                    o.col(mf) +=      u_mn.real() * v_mn.real();
+                } else if (m < grid.dN.x()/2) {
+                    o.col(mf) += 2*(  u_mn.real() * v_mn.real()
+                                    + u_mn.imag() * v_mn.imag());
+                } else {
+                    o.col(mf) +=      u_mn.real() * v_mn.real();
+                }
             }
         }
     }
+
+    // Adjust results for the domain size in x direction
+    o *= grid.L.x();
 }
 
 void
@@ -449,7 +462,7 @@ compute_twopoint_zlocal(
         const contiguous_state<4,complex_t>::index sj,
         const specification_grid& grid,
         const pencil_grid& dgrid,
-        complex_t * const out)
+        real_t * const out)
 {
     // Ensure state storage meets this routine's assumptions
     // Notice state.shape()[0] may be any value
@@ -487,36 +500,42 @@ compute_twopoint_zlocal(
                                   mzb[0], mze[0], mzb[1], mze[1]);
 
     // Prepare and a view of the output storage and zero it.
-    Map<MatrixXXc> o(out, grid.N.y(), grid.N.z());
+    Map<ArrayXXr> o(out, grid.N.y(), grid.N.z()/2+1);
     o.setZero();
 
     // Sum rank-local contribution to Fourier-transformed two-point correlation
     for (int j = 0; j < 2; ++j) {
         for (int n = mzb[j], nf = fzb[j]; n < mze[j]; ++n, ++nf) {  // nf!
+            if (n >= grid.N.z()/2+1) continue;
             for (int m = mxb[0]; m < mxe[0]; ++m) {
-                Map<const VectorXc> u_mn(
+                if (m >= grid.N.x()/2+1) continue;
+                Map<const ArrayX1c> u_mn(
                         &state[si][0][m - dgrid.local_wave_start.x()]
                                      [n - dgrid.local_wave_start.z()],
                         grid.N.y());
-                Map<const VectorXc> v_mn(
+                Map<const ArrayX1c> v_mn(
                         &state[sj][0][m - dgrid.local_wave_start.x()]
                                      [n - dgrid.local_wave_start.z()],
                         grid.N.y());
 
                 // Account for conjugate symmetry per twopoint.tex
                 if (m == 0) {
-                    o.col(nf) +=    u_mn.cwiseProduct(v_mn.conjugate());
-                } else if (m < grid.dN.x()/2) {
-                    o.col(nf) += 2*u_mn.cwiseProduct(v_mn.conjugate());
+                    o.col(nf) +=      u_mn.real() * v_mn.real();
+                } else if (m < grid.dN.z()/2) {
+                    o.col(nf) += 2*(  u_mn.real() * v_mn.real()
+                                    + u_mn.imag() * v_mn.imag());
                 } else {
-                    o.col(nf) +=    u_mn.conjugate().cwiseProduct(v_mn);
+                    o.col(nf) +=      u_mn.real() * v_mn.real();
                 }
             }
         }
     }
+
+    // Adjust results for the domain size in z direction
+    o *= grid.L.z();
 }
 
-shared_array<complex_t>
+shared_array<real_t>
 compute_twopoint_x(
         const contiguous_state<4,complex_t> &state,
         const contiguous_state<4,complex_t>::index nf,
@@ -528,8 +547,8 @@ compute_twopoint_x(
     // Allocate contiguous storage for all the pairwise results
     const int npairs  = (nf*(nf+1))/2;
     const int bufpair = grid.N.y() * (grid.N.x()/2+1);
-    shared_array<complex_t> retval(
-            (complex_t*)suzerain_blas_malloc(sizeof(complex_t)*bufpair*npairs),
+    shared_array<real_t> retval(
+            (real_t*)suzerain_blas_malloc(sizeof(real_t)*bufpair*npairs),
             suzerain_blas_free);
 
     // Compute result for each pair of incoming fields
@@ -542,17 +561,13 @@ compute_twopoint_x(
     }
 
     // Perform the global summation across all pairs at once
-    //
-    // Reduction operation is complex-valued, but OpenMPI pre-1.7.3 can bomb
-    // unless we keep it real: https://svn.open-mpi.org/trac/ompi/ticket/3127.
     SUZERAIN_MPICHKR(MPI_Allreduce(MPI_IN_PLACE, retval.get(),
-            (sizeof(complex_t)/sizeof(real_t))*bufpair*npairs,
-            mpi::datatype<real_t>(), MPI_SUM, MPI_COMM_WORLD));
+            bufpair*npairs, mpi::datatype<real_t>(), MPI_SUM, MPI_COMM_WORLD));
 
     return retval;
 }
 
-shared_array<complex_t>
+shared_array<real_t>
 compute_twopoint_z(
         const contiguous_state<4,complex_t> &state,
         const contiguous_state<4,complex_t>::index nf,
@@ -563,9 +578,9 @@ compute_twopoint_z(
 
     // Allocate contiguous storage for all the pairwise results
     const int npairs  = (nf*(nf+1))/2;
-    const int bufpair = grid.N.y() * grid.N.z();
-    shared_array<complex_t> retval(
-            (complex_t*)suzerain_blas_malloc(sizeof(complex_t)*bufpair*npairs),
+    const int bufpair = grid.N.y() * (grid.N.z()/2+1);
+    shared_array<real_t> retval(
+            (real_t*)suzerain_blas_malloc(sizeof(real_t)*bufpair*npairs),
             suzerain_blas_free);
 
     // Compute result for each pair of incoming fields
@@ -578,12 +593,8 @@ compute_twopoint_z(
     }
 
     // Perform the global summation across all pairs at once
-    //
-    // Reduction operation is complex-valued, but OpenMPI pre-1.7.3 can bomb
-    // unless we keep it real: https://svn.open-mpi.org/trac/ompi/ticket/3127.
     SUZERAIN_MPICHKR(MPI_Allreduce(MPI_IN_PLACE, retval.get(),
-            (sizeof(complex_t)/sizeof(real_t))*bufpair*npairs,
-            mpi::datatype<real_t>(), MPI_SUM, MPI_COMM_WORLD));
+            bufpair*npairs, mpi::datatype<real_t>(), MPI_SUM, MPI_COMM_WORLD));
 
     return retval;
 }

@@ -143,7 +143,7 @@ compute_twopoint_xlocal(
         const contiguous_state<4,complex_t>::index sj,
         const specification_grid& grid,
         const pencil_grid& dgrid,
-        complex_t * const out);
+        real_t * const out);
 
 /**
  * Compute <em>rank-local</em> Fourier transform of two-point correlation versus
@@ -160,7 +160,7 @@ compute_twopoint_xlocal(
  * @param dgrid[in  ] Fourier-based domain specification.
  * @param out  [out ] Output to be stored as a row-major, contiguous
  *                    matrix of size <code>grid.N.y()</code> by
- *                    <code>grid.N.z()</code> indexed by \f$(y_j, k_z)\f$.
+ *                    <code>grid.N.z/2+1()</code> indexed by \f$(y_j, k_z)\f$.
  *
  * @see writeup/twopoint.tex for full details.
  */
@@ -171,7 +171,7 @@ compute_twopoint_zlocal(
         const contiguous_state<4,complex_t>::index sj,
         const specification_grid& grid,
         const pencil_grid& dgrid,
-        complex_t * const out);
+        real_t * const out);
 
 /**
  * Compute Fourier transform of two-point correlation versus separation in the
@@ -193,7 +193,7 @@ compute_twopoint_zlocal(
  *
  * @see compute_twopoint_xlocal for details on pairwise computations.
  */
-shared_array<complex_t>
+shared_array<real_t>
 compute_twopoint_x(
         const contiguous_state<4,complex_t> &state,
         const contiguous_state<4,complex_t>::index nf,
@@ -216,11 +216,11 @@ compute_twopoint_x(
  * @param dgrid[in  ] Fourier-based domain specification.
  * @param out  [out ] Output stored as a row-major, contiguous
  *                    matrix of size <code>grid.N.y()</code> by
- *                    <code>grid.N.z()</code> by <code>ndx</code>.
+ *                    <code>grid.N.z()/2+1</code> by <code>ndx</code>.
  *
  * @see compute_twopoint_xlocal for details on pairwise computations.
  */
-shared_array<complex_t>
+shared_array<real_t>
 compute_twopoint_z(
         const contiguous_state<4,complex_t> &state,
         const contiguous_state<4,complex_t>::index nf,
