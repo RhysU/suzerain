@@ -384,6 +384,17 @@ compute_twopoint_xlocal(
         const pencil_grid& dgrid,
         real_t * const out)
 {
+    // Wavenumber traversal modeled after those found in suzerain/diffwave.c
+    const int Ny   = dgrid.global_wave_extent.y();
+    const int Nx   = grid.N.x();
+    const int dNx  = grid.dN.x();
+    const int dkbx = dgrid.local_wave_start.x();
+    const int dkex = dgrid.local_wave_end.x();
+    const int Nz   = grid.N.z();
+    const int dNz  = grid.dN.z();
+    const int dkbz = dgrid.local_wave_start.z();
+    const int dkez = dgrid.local_wave_end.z();
+
     // Ensure state storage meets this routine's assumptions
     // Notice state.shape()[0] may be any value
     using boost::numeric_cast;
@@ -395,58 +406,29 @@ compute_twopoint_xlocal(
     SUZERAIN_ENSURE(state.strides()[3] == (int) ( state.shape()[1]
                                                  *state.shape()[2]));
 
-    // Only want non-dealiased X-direction modes to contribute
-    // Compute wavenumber translation logistics for X direction
-    int fxb[2], fxe[2], mxb[2], mxe[2];
-    inorder::wavenumber_translate(grid.N.x(),
-                                  grid.dN.x(),
-                                  dgrid.local_wave_start.x(),
-                                  dgrid.local_wave_end.x(),
-                                  fxb[0], fxe[0], fxb[1], fxe[1],
-                                  mxb[0], mxe[0], mxb[1], mxe[1]);
-    // X contains only positive wavenumbers => second range must be empty
-    assert(fxb[1] == fxe[1]);
-    assert(mxb[1] == mxe[1]);
-
-    // Only want non-dealiased Z-direction modes to contribute
-    // Compute wavenumber translation logistics for Z direction
-    // One or both ranges may be empty
-    int fzb[2], fze[2], mzb[2], mze[2];
-    inorder::wavenumber_translate(grid.N.z(),
-                                  grid.dN.z(),
-                                  dgrid.local_wave_start.z(),
-                                  dgrid.local_wave_end.z(),
-                                  fzb[0], fze[0], fzb[1], fze[1],
-                                  mzb[0], mze[0], mzb[1], mze[1]);
-
-    // Prepare and a view of the output storage and zero it.
-    Map<ArrayXXr> o(out, grid.N.y(), grid.N.x()/2+1);
+    // Prepare and a view of the output storage and zero it
+    Map<ArrayXXr> o(out, Ny, Nx/2+1);
     o.setZero();
 
     // Sum rank-local contribution to Fourier-transformed two-point correlation
-    for (int j = 0; j < 2; ++j) {
-        for (int n = mzb[j]; n < mze[j]; ++n) {
-            if (n >= grid.N.z()/2+1) continue;
-            for (int m = mxb[0], mf = fxb[0]; m < mxe[0]; ++m, ++mf) {  // mf!
-                if (m >= grid.N.x()/2+1) continue;
-                Map<const ArrayX1c> u_mn(
-                        &state[si][0][m - dgrid.local_wave_start.x()]
-                                     [n - dgrid.local_wave_start.z()],
-                        grid.N.y());
-                Map<const ArrayX1c> v_mn(
-                        &state[sj][0][m - dgrid.local_wave_start.x()]
-                                     [n - dgrid.local_wave_start.z()],
-                        grid.N.y());
+    // dropping dealiasing and Nyquist modes and using Hermitian symmetry
+    for (int n = dkbz; n < dkez; ++n) {
+        const int abs_wn = std::abs(inorder::wavenumber(dNz, n));
+        if (abs_wn > inorder::wavenumber_absmin(Nz)) continue;
 
-                // Account for conjugate symmetry per twopoint.tex
-                if (m == 0) {
-                    o.col(mf) +=      u_mn.real() * v_mn.real();
-                } else if (m < grid.dN.x()/2) {
-                    o.col(mf) += 2*(  u_mn.real() * v_mn.real()
+        for (int m = dkbx; m < dkex; ++m) {
+            const int abs_wm = std::abs(inorder::wavenumber(dNx, m));
+            if (abs_wm > inorder::wavenumber_absmin(Nx)) continue;
+
+            Map<const ArrayX1c> u_mn(&state[si][0][m - dkbx][n - dkbz], Ny);
+            Map<const ArrayX1c> v_mn(&state[sj][0][m - dkbx][n - dkbz], Ny);
+
+            if (abs_wm == 0) {
+                o.col(abs_wm) +=   (  u_mn.real() * v_mn.real()
                                     + u_mn.imag() * v_mn.imag());
-                } else {
-                    o.col(mf) +=      u_mn.real() * v_mn.real();
-                }
+            } else {
+                o.col(abs_wm) += 2*(  u_mn.real() * v_mn.real()
+                                    + u_mn.imag() * v_mn.imag());
             }
         }
     }
@@ -461,6 +443,17 @@ compute_twopoint_zlocal(
         const pencil_grid& dgrid,
         real_t * const out)
 {
+    // Wavenumber traversal modeled after those found in suzerain/diffwave.c
+    const int Ny   = dgrid.global_wave_extent.y();
+    const int Nx   = grid.N.x();
+    const int dNx  = grid.dN.x();
+    const int dkbx = dgrid.local_wave_start.x();
+    const int dkex = dgrid.local_wave_end.x();
+    const int Nz   = grid.N.z();
+    const int dNz  = grid.dN.z();
+    const int dkbz = dgrid.local_wave_start.z();
+    const int dkez = dgrid.local_wave_end.z();
+
     // Ensure state storage meets this routine's assumptions
     // Notice state.shape()[0] may be any value
     using boost::numeric_cast;
@@ -472,58 +465,29 @@ compute_twopoint_zlocal(
     SUZERAIN_ENSURE(state.strides()[3] == (int) ( state.shape()[1]
                                                  *state.shape()[2]));
 
-    // Only want non-dealiased X-direction modes to contribute
-    // Compute wavenumber translation logistics for X direction
-    int fxb[2], fxe[2], mxb[2], mxe[2];
-    inorder::wavenumber_translate(grid.N.x(),
-                                  grid.dN.x(),
-                                  dgrid.local_wave_start.x(),
-                                  dgrid.local_wave_end.x(),
-                                  fxb[0], fxe[0], fxb[1], fxe[1],
-                                  mxb[0], mxe[0], mxb[1], mxe[1]);
-    // X contains only positive wavenumbers => second range must be empty
-    assert(fxb[1] == fxe[1]);
-    assert(mxb[1] == mxe[1]);
-
-    // Only want non-dealiased Z-direction modes to contribute
-    // Compute wavenumber translation logistics for Z direction
-    // One or both ranges may be empty
-    int fzb[2], fze[2], mzb[2], mze[2];
-    inorder::wavenumber_translate(grid.N.z(),
-                                  grid.dN.z(),
-                                  dgrid.local_wave_start.z(),
-                                  dgrid.local_wave_end.z(),
-                                  fzb[0], fze[0], fzb[1], fze[1],
-                                  mzb[0], mze[0], mzb[1], mze[1]);
-
-    // Prepare and a view of the output storage and zero it.
-    Map<ArrayXXr> o(out, grid.N.y(), grid.N.z()/2+1);
+    // Prepare and a view of the output storage and zero it
+    Map<ArrayXXr> o(out, Ny, Nz/2+1);
     o.setZero();
 
     // Sum rank-local contribution to Fourier-transformed two-point correlation
-    for (int j = 0; j < 2; ++j) {
-        for (int n = mzb[j], nf = fzb[j]; n < mze[j]; ++n, ++nf) {  // nf!
-            if (n >= grid.N.z()/2+1) continue;
-            for (int m = mxb[0]; m < mxe[0]; ++m) {
-                if (m >= grid.N.x()/2+1) continue;
-                Map<const ArrayX1c> u_mn(
-                        &state[si][0][m - dgrid.local_wave_start.x()]
-                                     [n - dgrid.local_wave_start.z()],
-                        grid.N.y());
-                Map<const ArrayX1c> v_mn(
-                        &state[sj][0][m - dgrid.local_wave_start.x()]
-                                     [n - dgrid.local_wave_start.z()],
-                        grid.N.y());
+    // dropping dealiasing and Nyquist modes and using Hermitian symmetry
+    for (int n = dkbz; n < dkez; ++n) {
+        const int abs_wn = std::abs(inorder::wavenumber(dNz, n));
+        if (abs_wn > inorder::wavenumber_absmin(Nz)) continue;
 
-                // Account for conjugate symmetry per twopoint.tex
-                if (m == 0) {
-                    o.col(nf) +=      u_mn.real() * v_mn.real();
-                } else if (m < grid.dN.z()/2) {
-                    o.col(nf) += 2*(  u_mn.real() * v_mn.real()
+        for (int m = dkbx; m < dkex; ++m) {
+            const int abs_wm = std::abs(inorder::wavenumber(dNx, m));
+            if (abs_wm > inorder::wavenumber_absmin(Nx)) continue;
+
+            Map<const ArrayX1c> u_mn(&state[si][0][m - dkbx][n - dkbz], Ny);
+            Map<const ArrayX1c> v_mn(&state[sj][0][m - dkbx][n - dkbz], Ny);
+
+            if (abs_wn == 0) {
+                o.col(abs_wn) +=   (  u_mn.real() * v_mn.real()
                                     + u_mn.imag() * v_mn.imag());
-                } else {
-                    o.col(nf) +=      u_mn.real() * v_mn.real();
-                }
+            } else {
+                o.col(abs_wn) += 2*(  u_mn.real() * v_mn.real()
+                                    + u_mn.imag() * v_mn.imag());
             }
         }
     }
