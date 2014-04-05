@@ -450,9 +450,6 @@ compute_twopoint_xlocal(
             }
         }
     }
-
-    // Adjust results for the domain size in x direction
-    o *= grid.L.x();
 }
 
 void
@@ -530,9 +527,6 @@ compute_twopoint_zlocal(
             }
         }
     }
-
-    // Adjust results for the domain size in z direction
-    o *= grid.L.z();
 }
 
 shared_array<real_t>

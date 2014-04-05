@@ -191,6 +191,7 @@ $z$, by orthogonality one then sees
 \begin{align}
 \left(\hat{R}_{uv}\right)_{y_j m n}
     =
+    \frac{1}{L_x L_z}
     \int_{-\frac{L_x}{2}}^{\frac{L_x}{2}}
     \int_{-\frac{L_z}{2}}^{\frac{L_z}{2}}
     R_{uv} \left( x, y_j, z \right)
@@ -199,14 +200,13 @@ $z$, by orthogonality one then sees
     \,\mathrm{d}z
     \,\mathrm{d}x
     &=
-    L_x L_z
     \hat{u}^\ast_{y_j m n}
     \hat{v}_{y_j m n}.
     \label{eq:twopointxz_wave}
 \end{align}
-Evidently, the Fourier representation of the two-point correlation function
-evaluated at collocation point $y_j$ is nothing but the scaled product of
-identical coefficient representations of $u$ and $v$.
+The Fourier representation of the two-point correlation function evaluated at
+collocation point $y_j$ is nothing but the product of the Fourier
+representations of $u$ and $v$.
 
 \subsection{As a function of separation in only $x$}
 
@@ -226,12 +226,12 @@ Fourier transforming in $x$,
 \begin{align}
 \left(\hat{R}_{uv}\right)_{y_j m 0}
    =
+    \frac{1}{L_x}
     \int_{-\frac{L_x}{2}}^{\frac{L_x}{2}}
     R_{uv} \left( x, y_j, 0 \right)
     e^{-\ii k_m x}
     \,\mathrm{d}x
   &=
-    L_x
     \sum_{n}
     \hat{u}^\ast_{y_j m n}
     \hat{v}_{y_j m n}
@@ -258,12 +258,12 @@ Fourier transforming in $z$,
 \begin{align}
 \left(\hat{R}_{uv}\right)_{y_j 0 n}
    =
+    \frac{1}{L_z}
     \int_{-\frac{L_z}{2}}^{\frac{L_z}{2}}
     R_{uv} \left( 0, y_j, z \right)
     e^{-\ii k_n z}
     \,\mathrm{d}x
   &=
-    L_z
     \sum_{m}
     \hat{u}^\ast_{y_j m n}
     \hat{v}_{y_j m n}
@@ -277,8 +277,8 @@ N_x/2-1\right\}$.
 When $u$ and $v$ are real-valued so is $R_uv$.  By utilizing the Hermitian
 symmetry present in coefficients $\hat{u}_{y_j m n}$ and $\hat{v}_{y_j m n}$,
 \eqref{eq:twopointx_wave} and \eqref{eq:twopointz_wave} may be computed at
-reduced cost.  For example, employing $x$ symmetry when computing the summation
-in \eqref{eq:twopointz_wave} yields
+reduced cost.  For example, exploiting $x$ symmetry when computing
+\eqref{eq:twopointz_wave} yields
 %
 \small
 \begin{align}
