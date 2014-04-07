@@ -323,20 +323,6 @@ driver::compute_statistics(
     }
 }
 
-// TODO Stolen from support/field.cpp.  Move into somewhere more appropriate.
-static inline
-void complex_field_write(esio_handle h,
-                         const char *name, const complex_t *field,
-                         int cstride = 0, int bstride = 0, int astride = 0,
-                         const char * comment = 0)
-{
-    esio_field_writev(h, name, reinterpret_cast<const real_t *>(field),
-                      2*boost::numeric_cast<int>(cstride),
-                      2*boost::numeric_cast<int>(bstride),
-                      2*boost::numeric_cast<int>(astride),
-                      2, comment);
-}
-
 void
 driver::save_spectra_primitive(
         const esio_handle esioh)
@@ -390,8 +376,9 @@ driver::save_spectra_primitive(
         sphys(4, offset) = rho;
     }
 
-    // Convert to Fourier coefficients in XZ but leave as points in Y
+    // Convert to normalized Fourier coefficients in XZ but points in Y
     for (size_t f = 0; f < swave_count; ++f) {
+        sphys.row(f) *= dgrid->chi();
         dgrid->transform_physical_to_wave(&sphys.coeffRef(f,0));
         otool->zero_dealiasing_modes(*state_nonlinear, f);
     }
@@ -404,14 +391,14 @@ driver::save_spectra_primitive(
     // Compute and save the two-point correlation as (y_j, k_x, ndxpair)
     // Ordering arises from packing of primitive state in physical space
     {
-        shared_array<complex_t> twopoint_x = compute_twopoint_x(
+        shared_array<real_t> twopoint_x = compute_twopoint_x(
                 *state_nonlinear, swave_count, *grid, *dgrid);
         esio_field_establish(esioh,
                 npairs,          0, procid == 0 ? npairs          : 0,
                 grid->N.x()/2+1, 0, procid == 0 ? grid->N.x()/2+1 : 0,
                 grid->N.y(),     0, procid == 0 ? grid->N.y()     : 0);
-        complex_field_write(esioh, "twopoint_kx", twopoint_x.get(), 0, 0, 0,
-                "Streamwise two point correlations stored row-major"
+        esio_field_write(esioh, "twopoint_kx", twopoint_x.get(), 0, 0, 0,
+                "Streamwise two-point correlations stored row-major"
                 " (/collocation_points_y, /kx, scalarpair) for scalarpair"
                 " in { T*T, T*u, T*v, T*w, T*rho, u*u, u*v, u*w, u*rho,"
                 " v*v, v*w, v*rho, w*w, w*rho, rho*rho }");
@@ -420,14 +407,14 @@ driver::save_spectra_primitive(
     // Compute and save the two-point correlation as (y_j, k_z, ndxpair)
     // Ordering arises from packing of primitive state in physical space
     {
-        shared_array<complex_t> twopoint_z = compute_twopoint_z(
+        shared_array<real_t> twopoint_z = compute_twopoint_z(
                 *state_nonlinear, swave_count, *grid, *dgrid);
         esio_field_establish(esioh,
-                npairs,      0, procid == 0 ? npairs      : 0,
-                grid->N.z(), 0, procid == 0 ? grid->N.z() : 0,
-                grid->N.y(), 0, procid == 0 ? grid->N.y() : 0);
-        complex_field_write(esioh, "twopoint_kz", twopoint_z.get(), 0, 0, 0,
-                "Spanwise two point correlations stored row-major"
+                npairs,          0, procid == 0 ? npairs          : 0,
+                grid->N.z()/2+1, 0, procid == 0 ? grid->N.z()/2+1 : 0,
+                grid->N.y(),     0, procid == 0 ? grid->N.y()     : 0);
+        esio_field_write(esioh, "twopoint_kz", twopoint_z.get(), 0, 0, 0,
+                "Spanwise two-point correlations stored row-major"
                 " (/collocation_points_y, /kz, scalarpair) for scalarpair"
                 " in { T*T, T*u, T*v, T*w, T*rho, u*u, u*v, u*w, u*rho,"
                 " v*v, v*w, v*rho, w*w, w*rho, rho*rho }");
@@ -493,6 +480,22 @@ driver::load_metadata_hook(
 
     load(esioh, msoln, *scenario, *grid);
     return;
+}
+
+bool
+driver::save_state_hook(
+        const esio_handle esioh)
+{
+    // Get the state to disk as quickly as possible
+    const bool success = super::save_state_hook(esioh);
+
+//// FIXME Ticket #3097
+////// If that went well, go for the spectra
+////if (success) {
+////    save_spectra_primitive(esioh);
+////}
+
+    return success;
 }
 
 bool

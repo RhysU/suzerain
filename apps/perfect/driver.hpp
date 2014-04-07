@@ -199,6 +199,17 @@ protected:
             const esio_handle esioh);
 
     /**
+     * Invokes \ref save_spectra_primitive after calling the superclass method.
+     *
+     * @param esioh An ESIO handle pointing to an open, writable file.
+     *
+     * @returns True if any active time advance should continue.
+     *          False otherwise.
+     */
+    virtual bool save_state_hook(
+            const esio_handle esioh);
+
+    /**
      * Beyond the inherited behavior, this method invokes \ref
      * compute_statistics and saves #mean.  Any currently cached results in
      * #mean will be reused <em>without recomputation</em> whenever
