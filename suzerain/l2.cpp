@@ -480,10 +480,10 @@ compute_twopoint_zlocal(
 
             // Yes, there are faster ways to compute these products...
             if (abs_wm == 0) {
-                o.col(abs_wn) +=      u_mn.conjugate().cwiseProduct(v_mn);
+                o.col(abs_wn) +=   u_mn.conjugate().cwiseProduct(v_mn);
             } else {
-                o.col(abs_wn) += 2*(  u_mn.conjugate().cwiseProduct(v_mn)
-                                    + u_mn.cwiseProduct(v_mn.conjugate()));
+                o.col(abs_wn) +=   u_mn.conjugate().cwiseProduct(v_mn)
+                                 + u_mn.cwiseProduct(v_mn.conjugate());
             }
         }
     }
