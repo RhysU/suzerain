@@ -36,7 +36,11 @@ banner "Idempotence of restarting without time advance${OPER:+ ($OPER)}"
     WIZ="--plan_wisdom=wisdom.init" # Prepared by test_setup.sh
     $perfect ich0.h5 --restart_destination "a#.h5" --advance_nt=0 $WIZ $P \
                      --restart_retain=1
-    differ $exclude_datasets ich0.h5 a0.h5
+    differ $exclude_datasets                                       \
+           --exclude-path=/twopoint_kx --exclude-path=/twopoint_kz \
+           ich0.h5 a0.h5
+    differ --use-system-epsilon ich0.h5 a0.h5 /twopoint_kx
+    differ --use-system-epsilon ich0.h5 a0.h5 /twopoint_kz
 )
 
 banner "Equivalence of a field advanced both with and without a restart${OPER:+ ($OPER)}"
@@ -65,7 +69,11 @@ banner "Upsample/downsample both homogeneous directions${OPER:+ ($OPER)}"
     $perfect a0.h5   --restart_destination "b#.h5" --advance_nt=0 $WIZ $P \
                      --restart_retain=1                                   \
                      --Nx=$((  $Nx)) --Nz=$((  $Nz))
-    differ $exclude_datasets ich0.h5 b0.h5
+    differ $exclude_datasets                                       \
+           --exclude-path=/twopoint_kx --exclude-path=/twopoint_kz \
+           ich0.h5 b0.h5
+    differ --use-system-epsilon ich0.h5 b0.h5 /twopoint_kx
+    differ --use-system-epsilon ich0.h5 b0.h5 /twopoint_kz
 )
 
 banner "Upsample/downsample inhomogeneous direction order${OPER:+ ($OPER)}"

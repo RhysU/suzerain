@@ -497,11 +497,10 @@ driver::save_state_hook(
     // Get the state to disk as quickly as possible
     const bool success = super::save_state_hook(esioh);
 
-//// FIXME Ticket #3097
-////// If that went well, go for the spectra
-////if (success) {
-////    save_spectra_primitive(esioh);
-////}
+    // If that went well, go for the spectra
+    if (success) {
+        save_spectra_primitive(esioh);
+    }
 
     return success;
 }
