@@ -79,11 +79,11 @@ banner "Upsample/downsample inhomogeneous direction order${OPER:+ ($OPER)}"
                      --restart_retain=1                                   \
                      --k=$(($k  ))
     # Chosen tolerances are wholly empirical and represent nothing deep
-    differ $exclude_datasets --delta=5e-5 ich0.h5 b0.h5 /rho
-    differ $exclude_datasets --delta=3e-4 ich0.h5 b0.h5 /rho_u
-    differ $exclude_datasets --delta=5e-5 ich0.h5 b0.h5 /rho_v
-    differ $exclude_datasets --delta=6e-5 ich0.h5 b0.h5 /rho_w
-    differ $exclude_datasets --delta=7e-4 ich0.h5 b0.h5 /rho_E
+    differ --delta=5e-5 ich0.h5 b0.h5 /rho
+    differ --delta=3e-4 ich0.h5 b0.h5 /rho_u
+    differ --delta=5e-5 ich0.h5 b0.h5 /rho_v
+    differ --delta=6e-5 ich0.h5 b0.h5 /rho_w
+    differ --delta=7e-4 ich0.h5 b0.h5 /rho_E
 )
 
 banner "Upsample/downsample inhomogeneous direction NDOF and htdelta${OPER:+ ($OPER)}"
@@ -97,11 +97,11 @@ banner "Upsample/downsample inhomogeneous direction NDOF and htdelta${OPER:+ ($O
                      --restart_retain=1                                   \
                      --Ny=$((  $Ny)) --htdelta=$(($htdelta  ))
     # Chosen tolerances are wholly empirical and represent nothing deep
-    differ $exclude_datasets --delta=6e-6 ich0.h5 b0.h5 /rho
-    differ $exclude_datasets --delta=1e-4 ich0.h5 b0.h5 /rho_u
-    differ $exclude_datasets --delta=7e-6 ich0.h5 b0.h5 /rho_v
-    differ $exclude_datasets --delta=3e-5 ich0.h5 b0.h5 /rho_w
-    differ $exclude_datasets --delta=2e-4 ich0.h5 b0.h5 /rho_E
+    differ --delta=6e-6 ich0.h5 b0.h5 /rho
+    differ --delta=1e-4 ich0.h5 b0.h5 /rho_u
+    differ --delta=7e-6 ich0.h5 b0.h5 /rho_v
+    differ --delta=3e-5 ich0.h5 b0.h5 /rho_w
+    differ --delta=2e-4 ich0.h5 b0.h5 /rho_E
 )
 
 done
