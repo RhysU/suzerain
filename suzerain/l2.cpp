@@ -382,7 +382,7 @@ compute_twopoint_xlocal(
         const contiguous_state<4,complex_t>::index sj,
         const specification_grid& grid,
         const pencil_grid& dgrid,
-        real_t * const out)
+        complex_t * const out)
 {
     // Wavenumber traversal modeled after those found in suzerain/diffwave.c
     const int Ny   = dgrid.global_wave_extent.y();
@@ -407,31 +407,23 @@ compute_twopoint_xlocal(
                                                  *state.shape()[2]));
 
     // Prepare and a view of the output storage and zero it
-    Map<ArrayXXr> o(out, Ny, Nx/2+1);
+    Map<MatrixXXc> o(out, Ny, Nx/2+1);
     o.setZero();
 
     // Sum rank-local contribution to Fourier-transformed two-point correlation
-    // dropping dealiasing and Nyquist modes and using Hermitian symmetry
+    // ignoring dealiasing and Nyquist modes
     for (int n = dkbz; n < dkez; ++n) {
-        const int abs_wn = std::abs(inorder::wavenumber(dNz, n));
+        const int abs_wn = inorder::wavenumber_abs(dNz, n);
         if (abs_wn > inorder::wavenumber_absmin(Nz)) continue;
 
         for (int m = dkbx; m < dkex; ++m) {
-            const int abs_wm = std::abs(inorder::wavenumber(dNx, m));
+            const int abs_wm = inorder::wavenumber_abs(dNx, m);
             if (abs_wm > inorder::wavenumber_absmin(Nx)) continue;
 
-            Map<const ArrayX1c> u_mn(&state[si][0][m - dkbx][n - dkbz], Ny);
-            Map<const ArrayX1c> v_mn(&state[sj][0][m - dkbx][n - dkbz], Ny);
+            Map<const VectorXc> u_mn(&state[si][0][m - dkbx][n - dkbz], Ny);
+            Map<const VectorXc> v_mn(&state[sj][0][m - dkbx][n - dkbz], Ny);
 
-            if (abs_wm == 0) {
-                if (abs_wn != 0) {
-                    o.col(abs_wm) +=   u_mn.real() * v_mn.real()
-                                     + u_mn.imag() * v_mn.imag();
-                }
-            } else {
-                o.col(abs_wm) += 2*(  u_mn.real() * v_mn.real()
-                                    + u_mn.imag() * v_mn.imag());
-            }
+            o.col(abs_wm) += u_mn.conjugate().cwiseProduct(v_mn);
         }
     }
 }
@@ -443,7 +435,7 @@ compute_twopoint_zlocal(
         const contiguous_state<4,complex_t>::index sj,
         const specification_grid& grid,
         const pencil_grid& dgrid,
-        real_t * const out)
+        complex_t * const out)
 {
     // Wavenumber traversal modeled after those found in suzerain/diffwave.c
     const int Ny   = dgrid.global_wave_extent.y();
@@ -468,36 +460,36 @@ compute_twopoint_zlocal(
                                                  *state.shape()[2]));
 
     // Prepare and a view of the output storage and zero it
-    Map<ArrayXXr> o(out, Ny, Nz/2+1);
+    Map<MatrixXXc> o(out, Ny, Nz/2+1);
     o.setZero();
 
     // Sum rank-local contribution to Fourier-transformed two-point correlation
     // dropping dealiasing and Nyquist modes and using Hermitian symmetry
+    // for both the x summation and the result $\hat{R_{uv}}_{y_j 0 n}$.
     for (int n = dkbz; n < dkez; ++n) {
-        const int abs_wn = std::abs(inorder::wavenumber(dNz, n));
+        if (inorder::wavenumber(dNz, n) < 0) continue;
+        const int abs_wn = inorder::wavenumber_abs(dNz, n);
         if (abs_wn > inorder::wavenumber_absmin(Nz)) continue;
 
         for (int m = dkbx; m < dkex; ++m) {
-            const int abs_wm = std::abs(inorder::wavenumber(dNx, m));
+            const int abs_wm = inorder::wavenumber_abs(dNx, m);
             if (abs_wm > inorder::wavenumber_absmin(Nx)) continue;
 
-            Map<const ArrayX1c> u_mn(&state[si][0][m - dkbx][n - dkbz], Ny);
-            Map<const ArrayX1c> v_mn(&state[sj][0][m - dkbx][n - dkbz], Ny);
+            Map<const VectorXc> u_mn(&state[si][0][m - dkbx][n - dkbz], Ny);
+            Map<const VectorXc> v_mn(&state[sj][0][m - dkbx][n - dkbz], Ny);
 
+            // Yes, there are faster ways to compute these products...
             if (abs_wm == 0) {
-                if (abs_wn != 0) {
-                    o.col(abs_wn) +=   u_mn.real() * v_mn.real()
-                                     + u_mn.imag() * v_mn.imag();
-                }
+                o.col(abs_wn) +=      u_mn.conjugate().cwiseProduct(v_mn);
             } else {
-                o.col(abs_wn) += 2*(  u_mn.real() * v_mn.real()
-                                    + u_mn.imag() * v_mn.imag());
+                o.col(abs_wn) += 2*(  u_mn.conjugate().cwiseProduct(v_mn)
+                                    + u_mn.cwiseProduct(v_mn.conjugate()));
             }
         }
     }
 }
 
-shared_array<real_t>
+shared_array<complex_t>
 compute_twopoint_x(
         const contiguous_state<4,complex_t> &state,
         const contiguous_state<4,complex_t>::index nf,
@@ -507,13 +499,14 @@ compute_twopoint_x(
     SUZERAIN_ENSURE((int) state.shape()[0] <= (int) nf);
 
     // Allocate contiguous storage for all the pairwise results
+    // As two-point is real-valued, only positive wavenumbers computed
     const int npairs  = (nf*(nf+1))/2;
     const int bufpair = grid.N.y() * (grid.N.x()/2+1);
-    shared_array<real_t> retval(
-            (real_t*)suzerain_blas_malloc(sizeof(real_t)*bufpair*npairs),
+    shared_array<complex_t> retval(
+            (complex_t*)suzerain_blas_malloc(sizeof(complex_t)*bufpair*npairs),
             suzerain_blas_free);
 
-    // Compute result for each pair of incoming fields
+    // Compute result for each unique pair of scalar fields
     for (int si = 0; si < nf; ++si) {
         for (int sj = si; sj < nf; ++sj) {
             const int ndxpair = nf*si + sj - (si*(si+1))/2;
@@ -523,13 +516,17 @@ compute_twopoint_x(
     }
 
     // Perform the global summation across all pairs at once
+    //
+    // Reduction operation is complex-valued, but OpenMPI pre-1.7.3 can bomb
+    // unless we keep it real: https://svn.open-mpi.org/trac/ompi/ticket/3127.
     SUZERAIN_MPICHKR(MPI_Allreduce(MPI_IN_PLACE, retval.get(),
-            bufpair*npairs, mpi::datatype<real_t>(), MPI_SUM, MPI_COMM_WORLD));
+            (sizeof(complex_t)/sizeof(real_t))*bufpair*npairs,
+            mpi::datatype<real_t>(), MPI_SUM, MPI_COMM_WORLD));
 
     return retval;
 }
 
-shared_array<real_t>
+shared_array<complex_t>
 compute_twopoint_z(
         const contiguous_state<4,complex_t> &state,
         const contiguous_state<4,complex_t>::index nf,
@@ -539,13 +536,14 @@ compute_twopoint_z(
     SUZERAIN_ENSURE((int) state.shape()[0] <= (int) nf);
 
     // Allocate contiguous storage for all the pairwise results
+    // As two-point is real-valued, only positive wavenumbers computed
     const int npairs  = (nf*(nf+1))/2;
     const int bufpair = grid.N.y() * (grid.N.z()/2+1);
-    shared_array<real_t> retval(
-            (real_t*)suzerain_blas_malloc(sizeof(real_t)*bufpair*npairs),
+    shared_array<complex_t> retval(
+            (complex_t*)suzerain_blas_malloc(sizeof(complex_t)*bufpair*npairs),
             suzerain_blas_free);
 
-    // Compute result for each pair of incoming fields
+    // Compute result for each unique pair of scalar fields
     for (int si = 0; si < nf; ++si) {
         for (int sj = si; sj < nf; ++sj) {
             const int ndxpair = nf*si + sj - (si*(si+1))/2;
@@ -555,8 +553,12 @@ compute_twopoint_z(
     }
 
     // Perform the global summation across all pairs at once
+    //
+    // Reduction operation is complex-valued, but OpenMPI pre-1.7.3 can bomb
+    // unless we keep it real: https://svn.open-mpi.org/trac/ompi/ticket/3127.
     SUZERAIN_MPICHKR(MPI_Allreduce(MPI_IN_PLACE, retval.get(),
-            bufpair*npairs, mpi::datatype<real_t>(), MPI_SUM, MPI_COMM_WORLD));
+            (sizeof(complex_t)/sizeof(real_t))*bufpair*npairs,
+            mpi::datatype<real_t>(), MPI_SUM, MPI_COMM_WORLD));
 
     return retval;
 }

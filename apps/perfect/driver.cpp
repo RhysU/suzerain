@@ -397,13 +397,14 @@ driver::save_spectra_primitive(
     // Compute and save the two-point correlation as (y_j, k_x, ndxpair)
     // Ordering arises from packing of primitive state in physical space
     {
-        shared_array<real_t> twopoint_x = compute_twopoint_x(
+        shared_array<complex_t> twopoint_x = compute_twopoint_x(
                 *state_nonlinear, swave_count, *grid, *dgrid);
         esio_field_establish(esioh,
                 npairs,          0, procid == 0 ? npairs          : 0,
                 grid->N.x()/2+1, 0, procid == 0 ? grid->N.x()/2+1 : 0,
                 grid->N.y(),     0, procid == 0 ? grid->N.y()     : 0);
-        esio_field_write(esioh, "twopoint_kx", twopoint_x.get(), 0, 0, 0,
+        support::complex_field_write(esioh,
+                "twopoint_kx", twopoint_x.get(), 0, 0, 0,
                 "Streamwise two-point correlations stored row-major"
                 " (/collocation_points_y, /kx, scalarpair) for scalarpair"
                 " in { T*T, T*u, T*v, T*w, T*rho, u*u, u*v, u*w, u*rho,"
@@ -413,13 +414,14 @@ driver::save_spectra_primitive(
     // Compute and save the two-point correlation as (y_j, k_z, ndxpair)
     // Ordering arises from packing of primitive state in physical space
     {
-        shared_array<real_t> twopoint_z = compute_twopoint_z(
+        shared_array<complex_t> twopoint_z = compute_twopoint_z(
                 *state_nonlinear, swave_count, *grid, *dgrid);
         esio_field_establish(esioh,
                 npairs,          0, procid == 0 ? npairs          : 0,
                 grid->N.z()/2+1, 0, procid == 0 ? grid->N.z()/2+1 : 0,
                 grid->N.y(),     0, procid == 0 ? grid->N.y()     : 0);
-        esio_field_write(esioh, "twopoint_kz", twopoint_z.get(), 0, 0, 0,
+        support::complex_field_write(esioh,
+                "twopoint_kz", twopoint_z.get(), 0, 0, 0,
                 "Spanwise two-point correlations stored row-major"
                 " (/collocation_points_y, /kz, scalarpair) for scalarpair"
                 " in { T*T, T*u, T*v, T*w, T*rho, u*u, u*v, u*w, u*rho,"

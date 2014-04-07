@@ -117,12 +117,12 @@ compute_field_L2xz(
         const pencil_grid& dgrid);
 
 /**
- * Compute <em>rank-local</em> Fourier transform of two-point correlation versus
- * separation in the Hermitian-symmetric \f$x\f$ direction.  Obtaining a
- * globally correct answer requires using <code>MPI_Reduce</code> (or similar)
- * with <code>MPI_SUM</code> to sum the resulting buffer across all ranks.
- * Nyquist modes are not included in the computation.  The mean is \e not
- * automatically subtracted.
+ * Compute <em>rank-local</em> Fourier transform of the real-valued two-point
+ * correlation versus separation in the Hermitian-symmetric \f$x\f$ direction.
+ * Obtaining a globally correct answer requires using <code>MPI_Reduce</code>
+ * (or similar) with <code>MPI_SUM</code> to sum the resulting buffer across all
+ * ranks.  Nyquist modes are not included in the computation.  The mean is \e
+ * not automatically subtracted.
  *
  * @param state[in  ] Scalar fields represented as Fourier coefficients in
  *                    \f$x\f$ and \f$z\f$ \e but point values in \f$y\f$.
@@ -130,7 +130,7 @@ compute_field_L2xz(
  * @param sj   [in  ] Scalar index of interest within \c state.
  * @param grid [in  ] Domain specification.
  * @param dgrid[in  ] Fourier-based domain specification.
- * @param out  [out ] Output to be stored as a row-major, contiguous
+ * @param out  [out ] Output stored as a row-major, contiguous
  *                    matrix of size <code>grid.N.y()</code> by
  *                    <code>grid.N.x()/2+1</code> indexed by \f$(y_j, k_x)\f$.
  *
@@ -143,14 +143,15 @@ compute_twopoint_xlocal(
         const contiguous_state<4,complex_t>::index sj,
         const specification_grid& grid,
         const pencil_grid& dgrid,
-        real_t * const out);
+        complex_t * const out);
 
 /**
- * Compute <em>rank-local</em> Fourier transform of two-point correlation versus
- * separation in the \f$z\f$ direction.  Obtaining a globally correct answer
- * requires using <code>MPI_Reduce</code> (or similar) with <code>MPI_SUM</code>
- * to sum the resulting buffer across all ranks.  Nyquist modes are not included
- * in the computation.  The mean is \e not automatically subtracted.
+ * Compute <em>rank-local</em> Fourier transform of the real-valued two-point
+ * correlation versus separation in the \f$z\f$ direction.  Obtaining a globally
+ * correct answer requires using <code>MPI_Reduce</code> (or similar) with
+ * <code>MPI_SUM</code> to sum the resulting buffer across all ranks.  Nyquist
+ * modes are not included in the computation.  The mean is \e not automatically
+ * subtracted.
  *
  * @param state[in  ] Scalar fields represented as Fourier coefficients in
  *                    \f$x\f$ and \f$z\f$ \e but point values in \f$y\f$.
@@ -158,7 +159,7 @@ compute_twopoint_xlocal(
  * @param sj   [in  ] Scalar index of interest within \c state.
  * @param grid [in  ] Domain specification.
  * @param dgrid[in  ] Fourier-based domain specification.
- * @param out  [out ] Output to be stored as a row-major, contiguous
+ * @param out  [out ] Output as a row-major, contiguous
  *                    matrix of size <code>grid.N.y()</code> by
  *                    <code>grid.N.z/2+1()</code> indexed by \f$(y_j, k_z)\f$.
  *
@@ -171,16 +172,16 @@ compute_twopoint_zlocal(
         const contiguous_state<4,complex_t>::index sj,
         const specification_grid& grid,
         const pencil_grid& dgrid,
-        real_t * const out);
+        complex_t * const out);
 
 /**
- * Compute Fourier transform of two-point correlation versus separation in the
- * Hermitian-symmetric \f$x\f$ direction for all state field pairs with indices
- * less than \c nf.  Output is stored row-major \f$y_j\f$ by \f$ k_x \f$ by \c
- * ndx where state indices \c si and \sj are combined to produce <code>ndx ==
- * nf*si + sj - (si*(si+1))/2</code> using integer division.  Nyquist modes are
- * not included in the computation.  The mean is \e not automatically
- * subtracted.
+ * Compute Fourier transform of the real-valued two-point correlation versus
+ * separation in the Hermitian-symmetric \f$x\f$ direction for all state field
+ * pairs with indices less than \c nf.  Output is stored row-major \f$y_j\f$ by
+ * \f$ k_x \f$ by \c ndx where state indices \c si and \sj are combined to
+ * produce <code>ndx == nf*si + sj - (si*(si+1))/2</code> using integer
+ * division.  Nyquist modes are not included in the computation.  The mean is \e
+ * not automatically subtracted.
  *
  * @param state[in  ] Scalar fields represented as Fourier coefficients in
  *                    \f$x\f$ and \f$z\f$ \e but point values in \f$y\f$.
@@ -194,7 +195,7 @@ compute_twopoint_zlocal(
  *
  * @see compute_twopoint_xlocal for details on pairwise computations.
  */
-shared_array<real_t>
+shared_array<complex_t>
 compute_twopoint_x(
         const contiguous_state<4,complex_t> &state,
         const contiguous_state<4,complex_t>::index nf,
@@ -202,12 +203,13 @@ compute_twopoint_x(
         const pencil_grid& dgrid);
 
 /**
- * Compute Fourier transform of two-point correlation versus separation in the
- * \f$z\f$ direction for all state field pairs with indices less than \c nf.
- * Output is stored row-major \f$y_j\f$ by \f$ k_z \f$ by \c ndx where state
- * indices \c si and \sj are combined to produce <code>ndx == nf*si + sj -
- * (si*(si+1))/2</code> using integer division.  Nyquist modes are not included
- * in the computation.  The mean is \e not automatically subtracted.
+ * Compute Fourier transform of the real-valued two-point correlation versus
+ * separation in the \f$z\f$ direction for all state field pairs with indices
+ * less than \c nf.  Output is stored row-major \f$y_j\f$ by \f$ k_z \f$ by \c
+ * ndx where state indices \c si and \sj are combined to produce <code>ndx ==
+ * nf*si + sj - (si*(si+1))/2</code> using integer division.  Nyquist modes are
+ * not included in the computation.  The mean is \e not automatically
+ * subtracted.
  *
  * @param state[in  ] Scalar fields represented as Fourier coefficients in
  *                    \f$x\f$ and \f$z\f$ \e but point values in \f$y\f$.
@@ -221,7 +223,7 @@ compute_twopoint_x(
  *
  * @see compute_twopoint_xlocal for details on pairwise computations.
  */
-shared_array<real_t>
+shared_array<complex_t>
 compute_twopoint_z(
         const contiguous_state<4,complex_t> &state,
         const contiguous_state<4,complex_t>::index nf,
