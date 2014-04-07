@@ -377,13 +377,19 @@ driver::save_spectra_primitive(
     }
 
     // Convert to normalized Fourier coefficients in XZ but points in Y
+    // Zeroing dealiasing modes not done as compute_twopoint_* ignores them
+    // Subtract means so we compute the two-point only on fluctuations
     for (size_t f = 0; f < swave_count; ++f) {
         sphys.row(f) *= dgrid->chi();
         dgrid->transform_physical_to_wave(&sphys.coeffRef(f,0));
-        otool->zero_dealiasing_modes(*state_nonlinear, f);
+        if (dgrid->has_zero_zero_modes()) {
+            for (int j = 0; j < grid->N.y(); ++j) {
+                (*state_nonlinear)[f][j][0][0] = 0;
+            }
+        }
     }
 
-    // Only rank zero will write the results though all ranks participate
+    // Only rank zero will write the results though all ranks must participate
     const int npairs = (swave_count*(swave_count+1))/2;
     int procid;
     esio_handle_comm_rank(esioh, &procid);
