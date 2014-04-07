@@ -272,7 +272,6 @@ void load_coefficients(const esio_handle h,
                                dst_strides[2], dst_strides[1], dst_strides[0]);
         }
 
-
         // If necessary, interpolate between B-spline bases.
         // Relies heavily on both bases being collocation-based.
         // This will change dramatically if we ever go the L_2 route.
