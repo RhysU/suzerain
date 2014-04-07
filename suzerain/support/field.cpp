@@ -48,30 +48,35 @@ namespace suzerain {
 
 namespace support {
 
-/** Read a complex-valued field via ESIO */
-static inline
-void complex_field_read(esio_handle h, const char *name, complex_t *field,
-                        int cstride = 0, int bstride = 0, int astride = 0)
+int complex_field_read(
+    esio_handle h,
+    const char *name,
+    complex_t *field,
+    int cstride,
+    int bstride,
+    int astride)
 {
-    esio_field_readv(h, name, reinterpret_cast<real_t *>(field),
-                     2*boost::numeric_cast<int>(cstride),
-                     2*boost::numeric_cast<int>(bstride),
-                     2*boost::numeric_cast<int>(astride),
-                     2);
+    return esio_field_readv(h, name, reinterpret_cast<real_t *>(field),
+                            2*boost::numeric_cast<int>(cstride),
+                            2*boost::numeric_cast<int>(bstride),
+                            2*boost::numeric_cast<int>(astride),
+                            2);
 }
 
-/** Write a complex-valued field via ESIO */
-static inline
-void complex_field_write(esio_handle h,
-                         const char *name, const complex_t *field,
-                         int cstride = 0, int bstride = 0, int astride = 0,
-                         const char * comment = 0)
+int complex_field_write(
+    esio_handle h,
+    const char *name,
+    const complex_t *field,
+    int cstride,
+    int bstride,
+    int astride,
+    const char * comment)
 {
-    esio_field_writev(h, name, reinterpret_cast<const real_t *>(field),
-                      2*boost::numeric_cast<int>(cstride),
-                      2*boost::numeric_cast<int>(bstride),
-                      2*boost::numeric_cast<int>(astride),
-                      2, comment);
+    return esio_field_writev(h, name, reinterpret_cast<const real_t *>(field),
+                             2*boost::numeric_cast<int>(cstride),
+                             2*boost::numeric_cast<int>(bstride),
+                             2*boost::numeric_cast<int>(astride),
+                             2, comment);
 }
 
 void save_coefficients(

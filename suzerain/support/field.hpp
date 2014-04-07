@@ -68,6 +68,25 @@ public:
 
 };
 
+/** Read a complex-valued field via ESIO */
+int complex_field_read(
+    esio_handle h,
+    const char *name,
+    complex_t *field,
+    int cstride = 0,
+    int bstride = 0,
+    int astride = 0);
+
+/** Write a complex-valued field via ESIO */
+int complex_field_write(
+    esio_handle h,
+    const char *name,
+    const complex_t *field,
+    int cstride = 0,
+    int bstride = 0,
+    int astride = 0,
+    const char * comment = 0);
+
 /**
  * Save the current simulation conserved state as expansion coefficients into
  * an open restart file.   Only non-dealiased, conserved state is saved as
