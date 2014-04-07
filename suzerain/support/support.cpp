@@ -704,6 +704,7 @@ save_samples(const esio_handle h,
 
 bool
 load_samples(const esio_handle h,
+             const shared_ptr<bspline> target,
              samples& s,
              const char* const prefix,
              const char* const sizeper)
@@ -714,15 +715,28 @@ load_samples(const esio_handle h,
     // Defensively NaN out all storage in the instance prior to load.
     s.storage.fill(std::numeric_limits<real_t>::quiet_NaN());
 
+    // Would loading statistics require interpolation?
+    // TODO Conceptually not difficult, but not well-encapsulated
+    bool bsp_same = true;
+    if (target) {
+        shared_ptr<bspline> source;
+        load_bsplines(h, source);
+        const double bsp_dist = target->distance_to(*source);
+        bsp_same = bsp_dist < suzerain_bspline_distance_distinct;
+    }
+
     int cglobal, bglobal, aglobal;
-    if (ESIO_SUCCESS == esio_field_size(h, sizeper,
-                                        &cglobal, &bglobal, &aglobal)) {
+    if (!bsp_same) {
+        WARN0(who, "No sampled quantities loaded--"
+                   " B-spline differences would require interpolation");
+    } else if (ESIO_SUCCESS == esio_field_size(h, sizeper,
+                                               &cglobal, &bglobal, &aglobal)) {
         s.storage.resize(aglobal, NoChange);
         samples_loader f(who, h, prefix);
         success = s.foreach(f);
     } else {
         WARN0(who, "No sampled quantities loaded--"
-              " unable to anticipate storage needs");
+                   " unable to anticipate storage needs");
     }
 
     return success;
@@ -971,7 +985,7 @@ load_summary(const esio_handle h, shared_ptr<bspline> target)
 
     // Load samples, which are quantity-by-quantity coefficients, into "sam"
     samples sam(time, source->n());
-    support::load_samples(h, sam);
+    support::load_samples(h, source, sam);
     if (sam.t >= 0) {
         TRACE0(who, "Successfully loaded samples from " << path);
     } else {

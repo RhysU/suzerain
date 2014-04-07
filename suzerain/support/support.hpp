@@ -199,6 +199,7 @@ save_samples(const esio_handle h,
  */
 bool
 load_samples(const esio_handle h,
+             const shared_ptr<bspline> target,
              samples& s,
              const char* const prefix  = "bar_",
              const char* const sizeper = "bar_rho");

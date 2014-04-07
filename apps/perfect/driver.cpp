@@ -544,7 +544,7 @@ driver::load_statistics_hook(
     }
     support::load_time(esioh, mean->t);
 
-    if (!support::load_samples(esioh, *mean)) {
+    if (!support::load_samples(esioh, b, *mean)) {
         // Notice this forces use_cached == false in save_statistics_hook
         WARN0(who, "Incomplete statistics loaded from time " << mean->t);
         mean->t = std::numeric_limits<real_t>::quiet_NaN();
