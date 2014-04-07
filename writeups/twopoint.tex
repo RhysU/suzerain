@@ -274,7 +274,7 @@ N_x/2-1\right\}$.
 
 \subsection{Accounting for Hermitian symmetry}
 
-When $u$ and $v$ are real-valued so is $R_uv$.  By utilizing the Hermitian
+When $u$ and $v$ are real-valued so is $R_{uv}$.  By utilizing the Hermitian
 symmetry present in coefficients $\hat{u}_{y_j m n}$ and $\hat{v}_{y_j m n}$,
 \eqref{eq:twopointx_wave} and \eqref{eq:twopointz_wave} may be computed at
 reduced cost.  For example, exploiting $x$ symmetry when computing
@@ -307,51 +307,48 @@ reduced cost.  For example, exploiting $x$ symmetry when computing
     \right]
     +
     \hat{u}_{y_j \frac{N_x}{2} n} \hat{v}^\ast_{y_j \frac{N_x}{2} n}.
-\\ &=
-      \left(
-        \operatorname{Re}
-        \hat{u}_{y_j 0 n}
-      \right)
-      \left(
-        \operatorname{Re}
-        \hat{v}_{y_j 0 n}
-      \right)
-    +
-    2
-    \sum_{m=1}^{\frac{N_x}{2}-1}
-    \left[
-      \left(
-        \operatorname{Re}
-        \hat{u}_{y_j m n}
-      \right)
-      \left(
-        \operatorname{Re}
-        \hat{v}_{y_j m n}
-      \right)
-      +
-      \left(
-        \operatorname{Im}
-        \hat{u}_{y_j m n}
-      \right)
-      \left(
-        \operatorname{Im}
-        \hat{v}_{y_j m n}
-      \right)
-    \right]
-    +
-      \left(
-        \operatorname{Re}
-        \hat{u}_{y_j \frac{N_x}{2} n}
-      \right)
-      \left(
-        \operatorname{Re}
-        \hat{v}_{y_j \frac{N_x}{2} n}
-      \right)
+%%\\ &=
+%%      \left(
+%%        \operatorname{Re}
+%%        \hat{u}_{y_j 0 n}
+%%      \right)
+%%      \left(
+%%        \operatorname{Re}
+%%        \hat{v}_{y_j 0 n}
+%%      \right)
+%%    +
+%%    2
+%%    \sum_{m=1}^{\frac{N_x}{2}-1}
+%%    \left[
+%%      \left(
+%%        \operatorname{Re}
+%%        \hat{u}_{y_j m n}
+%%      \right)
+%%      \left(
+%%        \operatorname{Re}
+%%        \hat{v}_{y_j m n}
+%%      \right)
+%%      +
+%%      \left(
+%%        \operatorname{Im}
+%%        \hat{u}_{y_j m n}
+%%      \right)
+%%      \left(
+%%        \operatorname{Im}
+%%        \hat{v}_{y_j m n}
+%%      \right)
+%%    \right]
+%%    +
+%%      \left(
+%%        \operatorname{Re}
+%%        \hat{u}_{y_j \frac{N_x}{2} n}
+%%      \right)
+%%      \left(
+%%        \operatorname{Re}
+%%        \hat{v}_{y_j \frac{N_x}{2} n}
+%%      \right)
 \end{align}
 \normalsize
-%
-where the $0$ and $N_x / 2$ products simplify because they lack imaginary
-content.
 
 \section{One-dimensional spectra
          \citep[\textsection{}6.5]{Pope2000Turbulent}}
@@ -359,7 +356,7 @@ content.
 %FIXME: Review this one, in particular the claimed generalization
 \todo[inline]{Incorrect generalization and transform scaling-- see Redmine \#2998 update 6}
 Here we consider a generalization (in the sense that we will apply the formula
-to any two fields) of the definiton for one-dimensional velocity spectra given
+to any two fields) of the definition for one-dimensional velocity spectra given
 in Pope \citep[\textsection{}6.3]{Pope2000Turbulent}, where the fields are any
 two velocity components.  The one-dimensional spectra along the
 $\vec{r}_{xz1}$-direction  $\hat{E}_{u,v}(y_j,\vec{k}_{xz1})$ are defined to be twice
