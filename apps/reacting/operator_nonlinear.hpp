@@ -1349,13 +1349,22 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                     real_t   base_H     =   base_rH /    base[0];
                     real_t dybase_rH    = dybase[4] + dyPbase   ;
 
+                    // FIXME: Added until baseflow sources get coded
+                    //        to avoid 'unused variable' warning
+                    //
+                    SUZERAIN_UNUSED(base_u);
+                    SUZERAIN_UNUSED(base_v);
+                    SUZERAIN_UNUSED(base_w);
+                    SUZERAIN_UNUSED(base_H);
+                    SUZERAIN_UNUSED(dybase_rH);
+
                     // time derivative base flow
                     for (unsigned int ivar=0; ivar<Ns+4; ivar++){
                          dtbase[ivar] = wall_u * dxbase[ivar];
                     }
 
                     // FIXME: Add option and code baseflow sources for 
-                    //        temporal and spatil formulations
+                    //        temporal and spatial formulations
                     //
                     // // sources from baseflow -- temporal formulations
                     //
@@ -1379,12 +1388,12 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                     // srcbase[4]  = dtbase[4];
                     // srcbase[4] += base_H * dybase[2] + base_v * dybase_rH - base_v * base_H * dybase[0];
 
-                    // rho_s
-                    for (unsigned int ivar=1; ivar<Ns; ivar++){
-                        real_t   base_cs =   base[4+ivar] /  base[0];
-                        srcbase[4+ivar]  = dtbase[4+ivar];
-                        srcbase[4+ivar] += base_cs * dybase[2] + base_v * dybase[4+ivar] - base_v * base_cs * dybase[0];
-                    }
+                    // // rho_s
+                    // for (unsigned int ivar=1; ivar<Ns; ivar++){
+                    //     real_t   base_cs =   base[4+ivar] /  base[0];
+                    //     srcbase[4+ivar]  = dtbase[4+ivar];
+                    //     srcbase[4+ivar] += base_cs * dybase[2] + base_v * dybase[4+ivar] - base_v * base_cs * dybase[0];
+                    // }
                 } else { // Assign values to initialize the velocity scale for spatiotemporal
                     wall[0] = common.rho_ref; 
                     wall[1] = common.rho_ref * common.u_ref; 
