@@ -424,8 +424,10 @@ compute_twopoint_xlocal(
             Map<const ArrayX1c> v_mn(&state[sj][0][m - dkbx][n - dkbz], Ny);
 
             if (abs_wm == 0) {
-                o.col(abs_wm) +=   (  u_mn.real() * v_mn.real()
-                                    + u_mn.imag() * v_mn.imag());
+                if (abs_wn != 0) {
+                    o.col(abs_wm) +=   u_mn.real() * v_mn.real()
+                                     + u_mn.imag() * v_mn.imag();
+                }
             } else {
                 o.col(abs_wm) += 2*(  u_mn.real() * v_mn.real()
                                     + u_mn.imag() * v_mn.imag());
@@ -482,9 +484,11 @@ compute_twopoint_zlocal(
             Map<const ArrayX1c> u_mn(&state[si][0][m - dkbx][n - dkbz], Ny);
             Map<const ArrayX1c> v_mn(&state[sj][0][m - dkbx][n - dkbz], Ny);
 
-            if (abs_wn == 0) {
-                o.col(abs_wn) +=   (  u_mn.real() * v_mn.real()
-                                    + u_mn.imag() * v_mn.imag());
+            if (abs_wm == 0) {
+                if (abs_wn != 0) {
+                    o.col(abs_wn) +=   u_mn.real() * v_mn.real()
+                                     + u_mn.imag() * v_mn.imag();
+                }
             } else {
                 o.col(abs_wn) += 2*(  u_mn.real() * v_mn.real()
                                     + u_mn.imag() * v_mn.imag());
