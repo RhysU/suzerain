@@ -430,11 +430,8 @@ compute_twopoint_xlocal(
 
     // Ensure real-valued R_uv(x) arises from Fourier-transforming result
     o.leftCols<1>().imag().setZero();
-
-    // Ensure real-valued R_uv(x) arises from Fourier-transforming result,
-    // throwing away all Nyquist-ish information just on principle
     if (Nx%2 == 0) {
-        o.rightCols<1>().setZero();
+        o.rightCols<1>().imag().setZero();
     }
 }
 
@@ -498,13 +495,10 @@ compute_twopoint_zlocal(
         }
     }
 
-    // Ensure real-valued R_uv(z) arises from Fourier-transforming result
+    // Ensure real-valued R_uv(x) arises from Fourier-transforming result
     o.leftCols<1>().imag().setZero();
-
-    // Ensure real-valued R_uv(z) arises from Fourier-transforming result,
-    // throwing away all Nyquist-ish information just on principle
     if (Nz%2 == 0) {
-        o.rightCols<1>().setZero();
+        o.rightCols<1>().imag().setZero();
     }
 }
 
