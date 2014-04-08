@@ -419,7 +419,7 @@ compute_twopoint_xlocal(
 
         for (int m = dkbx; m < dkex; ++m) {
             const int wm = inorder::wavenumber(dNx, m);
-            if (0 < wm || wm >= o.cols()) continue;                  // Ignored
+            if (wm < 0 || wm >= o.cols()) continue;                  // Ignored
 
             Map<const VectorXc> u_mn(&state[si][0][m - dkbx][n - dkbz], Ny);
             Map<const VectorXc> v_mn(&state[sj][0][m - dkbx][n - dkbz], Ny);
