@@ -116,12 +116,12 @@ def plot(hdf5file, fileext, ifile, plot_all):
     dyb = np.array(dyb).reshape(Ny-4,1)
 
     # load baseflow coefficients
-    base_rho   = [] 
-    base_rho_u = [] 
-    base_rho_v = []
-    base_rho_w = [] 
-    base_rho_E = [] 
-    base_p     = [] 
+    base_rho   = None 
+    base_rho_u = None 
+    base_rho_v = None 
+    base_rho_w = None 
+    base_rho_E = None 
+    base_p     = None 
     if "largo_baseflow" in f:
       if f['largo_baseflow'].attrs['coefficient_base'] == 'polynomial':
         baseflow_coeff = f['largo_baseflow'].value
@@ -228,7 +228,7 @@ def plot(hdf5file, fileext, ifile, plot_all):
     figid += 1
     pyplot.figure(figid)
     key = "bar_rho_" + str(ifile)
-    if (ifile == 0 and base_rho!=[]):
+    if (ifile == 0 and base_rho is not None):
       pyplot.plot(y, base_rho[:,0], linewidth=1)
     pyplot.plot(y, rho_col, linewidth=3, label=key)
     pyplot.legend(loc=0)
@@ -237,7 +237,7 @@ def plot(hdf5file, fileext, ifile, plot_all):
     figid += 1   
     pyplot.figure(figid)
     key = "bar_rho_u" + str(ifile)
-    if (ifile == 0 and base_rho_u!=[]):
+    if (ifile == 0 and base_rho_u is not None):
       pyplot.plot(y, base_rho_u[:,0], linewidth=1)
     pyplot.plot(y, rho_u_col[:,0], linewidth=3, label=key)
     pyplot.legend(loc=0)
@@ -246,7 +246,7 @@ def plot(hdf5file, fileext, ifile, plot_all):
     figid += 1
     pyplot.figure(figid)
     key = "bar_rho_v" + str(ifile)
-    if (ifile == 0 and base_rho_v!=[]):
+    if (ifile == 0 and base_rho_v is not None):
       pyplot.plot(y, base_rho_v[:,0], linewidth=1)
     pyplot.semilogx(y, rho_u_col[:,1], linewidth=3, label=key)
     pyplot.legend(loc=0)
@@ -255,7 +255,7 @@ def plot(hdf5file, fileext, ifile, plot_all):
     figid += 1
     pyplot.figure(figid)
     key = "bar_rho_w" + str(ifile)
-    if (ifile == 0 and base_rho_w!=[]):
+    if (ifile == 0 and base_rho_w is not None):
       pyplot.plot(y, base_rho_w[:,0], linewidth=1)
     pyplot.plot(y, rho_u_col[:,2], linewidth=3, label=key)
     pyplot.legend(loc=0)
@@ -264,7 +264,7 @@ def plot(hdf5file, fileext, ifile, plot_all):
     figid += 1
     pyplot.figure(figid)
     key = "bar_rho_E" + str(ifile)
-    if (ifile == 0 and base_rho_E!=[]):
+    if (ifile == 0 and base_rho_E is not None):
       pyplot.plot(y, base_rho_E[:,0], linewidth=1)
     pyplot.plot(y, rho_E_col, linewidth=3, label=key)
     pyplot.legend(loc=0)
@@ -287,7 +287,7 @@ def plot(hdf5file, fileext, ifile, plot_all):
     figid += 1
     pyplot.figure(figid)
     key = "bar_p" + str(ifile)
-    if (ifile == 0 and base_p!=[]):
+    if (ifile == 0 and base_p is not None):
       pyplot.plot(y, base_p[:,0], linewidth=1)
     pyplot.semilogx(y, p_col, linewidth=3, label=key)
     pyplot.legend(loc=0)
