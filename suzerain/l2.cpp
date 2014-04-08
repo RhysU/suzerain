@@ -384,6 +384,16 @@ compute_twopoint_xlocal(
         const pencil_grid& dgrid,
         complex_t * const out)
 {
+    // Ensure state matches assumptions; state.shape()[0] may be any value
+    using boost::numeric_cast;
+    SUZERAIN_ENSURE((int) state.shape()[1] == dgrid.local_wave_extent.y());
+    SUZERAIN_ENSURE((int) state.shape()[2] == dgrid.local_wave_extent.x());
+    SUZERAIN_ENSURE((int) state.shape()[3] == dgrid.local_wave_extent.z());
+    SUZERAIN_ENSURE(state.strides()[1] == (int) 1);
+    SUZERAIN_ENSURE(state.strides()[2] == (int) state.shape()[1]);
+    SUZERAIN_ENSURE(state.strides()[3] == (int) ( state.shape()[1]
+                                                 *state.shape()[2]));
+
     // Wavenumber traversal modeled after those found in suzerain/diffwave.c
     const int Ny   = dgrid.global_wave_extent.y();
     const int Nx   = grid.N.x();
@@ -394,37 +404,37 @@ compute_twopoint_xlocal(
     const int dNz  = grid.dN.z();
     const int dkbz = dgrid.local_wave_start.z();
     const int dkez = dgrid.local_wave_end.z();
+    SUZERAIN_UNUSED(Nz);
 
-    // Ensure state storage meets this routine's assumptions
-    // Notice state.shape()[0] may be any value
-    using boost::numeric_cast;
-    SUZERAIN_ENSURE((int) state.shape()[1] == dgrid.local_wave_extent.y());
-    SUZERAIN_ENSURE((int) state.shape()[2] == dgrid.local_wave_extent.x());
-    SUZERAIN_ENSURE((int) state.shape()[3] == dgrid.local_wave_extent.z());
-    SUZERAIN_ENSURE(state.strides()[1] == (int) 1);
-    SUZERAIN_ENSURE(state.strides()[2] == (int) state.shape()[1]);
-    SUZERAIN_ENSURE(state.strides()[3] == (int) ( state.shape()[1]
-                                                 *state.shape()[2]));
-
-    // Prepare and a view of the output storage and zero it
+    // Prepare a view of the output storage and zero it prior to accumulation
     Map<MatrixXXc> o(out, Ny, Nx/2+1);
     o.setZero();
 
     // Sum rank-local contribution to Fourier-transformed two-point correlation
-    // ignoring dealiasing and Nyquist modes
+    // We /do/ sum over dealiasing modes so zero them a priori if that bugs you
+    // Real R_uv(x) implies only nonnegative wavenumbers wm carry information
+    const int absmin_dNz = inorder::wavenumber_absmin(dNz);
     for (int n = dkbz; n < dkez; ++n) {
-        const int abs_wn = inorder::wavenumber_abs(dNz, n);
-        if (abs_wn > inorder::wavenumber_absmin(Nz)) continue;
+        if (inorder::wavenumber_abs(dNz, n) > absmin_dNz) continue;  // Nyquist
 
         for (int m = dkbx; m < dkex; ++m) {
-            const int abs_wm = inorder::wavenumber_abs(dNx, m);
-            if (abs_wm > inorder::wavenumber_absmin(Nx)) continue;
+            const int wm = inorder::wavenumber(dNx, m);
+            if (0 < wm || wm >= o.cols()) continue;                  // Ignored
 
             Map<const VectorXc> u_mn(&state[si][0][m - dkbx][n - dkbz], Ny);
             Map<const VectorXc> v_mn(&state[sj][0][m - dkbx][n - dkbz], Ny);
 
-            o.col(abs_wm) += u_mn.conjugate().cwiseProduct(v_mn);
+            o.col(wm) += u_mn.conjugate().cwiseProduct(v_mn);
         }
+    }
+
+    // Ensure real-valued R_uv(x) arises from Fourier-transforming result
+    o.leftCols<1>().imag().setZero();
+
+    // Ensure real-valued R_uv(x) arises from Fourier-transforming result,
+    // throwing away all Nyquist-ish information just on principle
+    if (Nx%2 == 0) {
+        o.rightCols<1>().setZero();
     }
 }
 
@@ -437,6 +447,16 @@ compute_twopoint_zlocal(
         const pencil_grid& dgrid,
         complex_t * const out)
 {
+    // Ensure state matches assumptions; state.shape()[0] may be any value
+    using boost::numeric_cast;
+    SUZERAIN_ENSURE((int) state.shape()[1] == dgrid.local_wave_extent.y());
+    SUZERAIN_ENSURE((int) state.shape()[2] == dgrid.local_wave_extent.x());
+    SUZERAIN_ENSURE((int) state.shape()[3] == dgrid.local_wave_extent.z());
+    SUZERAIN_ENSURE(state.strides()[1] == (int) 1);
+    SUZERAIN_ENSURE(state.strides()[2] == (int) state.shape()[1]);
+    SUZERAIN_ENSURE(state.strides()[3] == (int) ( state.shape()[1]
+                                                 *state.shape()[2]));
+
     // Wavenumber traversal modeled after those found in suzerain/diffwave.c
     const int Ny   = dgrid.global_wave_extent.y();
     const int Nx   = grid.N.x();
@@ -447,45 +467,44 @@ compute_twopoint_zlocal(
     const int dNz  = grid.dN.z();
     const int dkbz = dgrid.local_wave_start.z();
     const int dkez = dgrid.local_wave_end.z();
+    SUZERAIN_UNUSED(Nx);
 
-    // Ensure state storage meets this routine's assumptions
-    // Notice state.shape()[0] may be any value
-    using boost::numeric_cast;
-    SUZERAIN_ENSURE((int) state.shape()[1] == dgrid.local_wave_extent.y());
-    SUZERAIN_ENSURE((int) state.shape()[2] == dgrid.local_wave_extent.x());
-    SUZERAIN_ENSURE((int) state.shape()[3] == dgrid.local_wave_extent.z());
-    SUZERAIN_ENSURE(state.strides()[1] == (int) 1);
-    SUZERAIN_ENSURE(state.strides()[2] == (int) state.shape()[1]);
-    SUZERAIN_ENSURE(state.strides()[3] == (int) ( state.shape()[1]
-                                                 *state.shape()[2]));
-
-    // Prepare and a view of the output storage and zero it
+    // Prepare a view of the output storage and zero it prior to accumulation
     Map<MatrixXXc> o(out, Ny, Nz/2+1);
     o.setZero();
 
     // Sum rank-local contribution to Fourier-transformed two-point correlation
-    // dropping dealiasing and Nyquist modes and using Hermitian symmetry
-    // for both the x summation and the result $\hat{R_{uv}}_{y_j 0 n}$.
+    // We /do/ sum over dealiasing modes so zero them a priori if that bugs you
+    // Real R_uv(z) implies only nonnegative wavenumbers wn carry information
+    const int absmin_dNx = inorder::wavenumber_absmin(dNx);
     for (int n = dkbz; n < dkez; ++n) {
-        if (inorder::wavenumber(dNz, n) < 0) continue;
-        const int abs_wn = inorder::wavenumber_abs(dNz, n);
-        if (abs_wn > inorder::wavenumber_absmin(Nz)) continue;
+        const int wn = inorder::wavenumber(dNz, n);
+        if (wn < 0 || wn >= o.cols()) continue;  // Ignored
 
         for (int m = dkbx; m < dkex; ++m) {
             const int abs_wm = inorder::wavenumber_abs(dNx, m);
-            if (abs_wm > inorder::wavenumber_absmin(Nx)) continue;
+            if (abs_wm > absmin_dNx) continue;   // Nyquist
 
             Map<const VectorXc> u_mn(&state[si][0][m - dkbx][n - dkbz], Ny);
             Map<const VectorXc> v_mn(&state[sj][0][m - dkbx][n - dkbz], Ny);
 
-            // Yes, there are faster ways to compute these products...
             if (abs_wm == 0) {
-                o.col(abs_wn) +=   u_mn.conjugate().cwiseProduct(v_mn);
+                o.col(wn) +=   u_mn.conjugate().cwiseProduct(v_mn);
             } else {
-                o.col(abs_wn) +=   u_mn.conjugate().cwiseProduct(v_mn)
-                                 + u_mn.cwiseProduct(v_mn.conjugate());
+                // Admittedly, there are faster ways to compute this product
+                o.col(wn) +=   u_mn.conjugate().cwiseProduct(v_mn)
+                             + u_mn.cwiseProduct(v_mn.conjugate());
             }
         }
+    }
+
+    // Ensure real-valued R_uv(z) arises from Fourier-transforming result
+    o.leftCols<1>().imag().setZero();
+
+    // Ensure real-valued R_uv(z) arises from Fourier-transforming result,
+    // throwing away all Nyquist-ish information just on principle
+    if (Nz%2 == 0) {
+        o.rightCols<1>().setZero();
     }
 }
 

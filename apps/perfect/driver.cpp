@@ -376,11 +376,11 @@ driver::save_spectra_primitive(
         sphys(4, offset) = rho;
     }
 
+    // TODO Zero dealiasing modes?  If so, can't recover m = rho * u.
     // Convert to normalized Fourier coefficients in XZ but points in Y
-    // Zeroing dealiasing modes not done as compute_twopoint_* ignores them
     // Subtract means so we compute the two-point only on fluctuations
+    sphys *= dgrid->chi();
     for (size_t f = 0; f < swave_count; ++f) {
-        sphys.row(f) *= dgrid->chi();
         dgrid->transform_physical_to_wave(&sphys.coeffRef(f,0));
         if (dgrid->has_zero_zero_modes()) {
             for (int j = 0; j < grid->N.y(); ++j) {

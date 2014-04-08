@@ -121,8 +121,8 @@ compute_field_L2xz(
  * correlation versus separation in the Hermitian-symmetric \f$x\f$ direction.
  * Obtaining a globally correct answer requires using <code>MPI_Reduce</code>
  * (or similar) with <code>MPI_SUM</code> to sum the resulting buffer across all
- * ranks.  Nyquist modes are not included in the computation.  The mean is \e
- * not automatically subtracted.
+ * ranks.  \e Neither the mean \e nor dealiasing modes are automatically
+ * subtracted though any highest Nyquist mode is ignored.
  *
  * @param state[in  ] Scalar fields represented as Fourier coefficients in
  *                    \f$x\f$ and \f$z\f$ \e but point values in \f$y\f$.
@@ -149,9 +149,9 @@ compute_twopoint_xlocal(
  * Compute <em>rank-local</em> Fourier transform of the real-valued two-point
  * correlation versus separation in the \f$z\f$ direction.  Obtaining a globally
  * correct answer requires using <code>MPI_Reduce</code> (or similar) with
- * <code>MPI_SUM</code> to sum the resulting buffer across all ranks.  Nyquist
- * modes are not included in the computation.  The mean is \e not automatically
- * subtracted.
+ * <code>MPI_SUM</code> to sum the resulting buffer across all ranks.  \e
+ * Neither the mean \e nor dealiasing modes are automatically subtracted though
+ * any highest Nyquist mode is ignored.
  *
  * @param state[in  ] Scalar fields represented as Fourier coefficients in
  *                    \f$x\f$ and \f$z\f$ \e but point values in \f$y\f$.
@@ -180,8 +180,8 @@ compute_twopoint_zlocal(
  * pairs with indices less than \c nf.  Output is stored row-major \f$y_j\f$ by
  * \f$ k_x \f$ by \c ndx where state indices \c si and \sj are combined to
  * produce <code>ndx == nf*si + sj - (si*(si+1))/2</code> using integer
- * division.  Nyquist modes are not included in the computation.  The mean is \e
- * not automatically subtracted.
+ * division.  \e Neither the mean \e nor dealiasing modes are automatically
+ * subtracted though any Nyquist mode is ignored.
  *
  * @param state[in  ] Scalar fields represented as Fourier coefficients in
  *                    \f$x\f$ and \f$z\f$ \e but point values in \f$y\f$.
@@ -207,9 +207,9 @@ compute_twopoint_x(
  * separation in the \f$z\f$ direction for all state field pairs with indices
  * less than \c nf.  Output is stored row-major \f$y_j\f$ by \f$ k_z \f$ by \c
  * ndx where state indices \c si and \sj are combined to produce <code>ndx ==
- * nf*si + sj - (si*(si+1))/2</code> using integer division.  Nyquist modes are
- * not included in the computation.  The mean is \e not automatically
- * subtracted.
+ * nf*si + sj - (si*(si+1))/2</code> using integer division.  \e Neither the
+ * mean \e nor dealiasing modes are automatically subtracted though any highest
+ * Nyquist mode is ignored.
  *
  * @param state[in  ] Scalar fields represented as Fourier coefficients in
  *                    \f$x\f$ and \f$z\f$ \e but point values in \f$y\f$.

@@ -74,17 +74,19 @@ $\left[-\frac{L_x}{2},\frac{L_x}{2}\right] \times{} [0,L_y] \times{}
   B_l\!\left(y\right)
   e^{\ii\frac{2\pi{}m}{L_x}x}
   e^{\ii\frac{2\pi{}n}{L_z}z}
-\\&=
+=
   \sum_{l}\sum_{m}\sum_{n}
   \hat{u}_{l m n}B_l\!\left(y\right)e^{\ii k_m x}e^{\ii k_n z}
-\\&=
-  \sum_{m}\sum_{n}
-  \hat{u}_{y_j m n} e^{\ii k_m x}e^{\ii k_n z}
 \end{align}
 where $k_m = 2\pi{}m/L_x$, $k_n = 2\pi{}n/L_z$, and $B_l\!\left(y\right)$ are a
-B-spline basis for some order and some knot selection.  Here, shorthand
-$\phi_{y_j} = \sum_{l} B_l\left(y_j\right) \phi_l$ denotes evaluating the
-B-spline basis expansion of $\phi$ at some point $y_j$.
+B-spline basis for some order and some knot selection.  Evaluating only the
+B-spline expansion at collocation points $y_j$,
+\begin{align}
+  u^h(x,y_j,z)
+  &=
+  \sum_{m}\sum_{n}
+  \hat{u}_{y_j m n} e^{\ii k_m x}e^{\ii k_n z}.
+\end{align}
 
 \section{Two-point correlation
          \citep[\textsection{}6.3]{Pope2000Turbulent}}
@@ -93,10 +95,15 @@ B-spline basis expansion of $\phi$ at some point $y_j$.
 The instantaneous two-point correlation of complex-valued $u$ and $v$ is
 \begin{align}
 R_{uv} \left( \vec{x}, \vec{r}, t \right)
-  &= \int_\Omega
+  &= \frac{%
+     \int_\Omega
      u^\ast\left(\vec{x}          , t\right)
      v     \left(\vec{x} + \vec{r}, t\right)
      \,\mathrm{d}\vec{x}
+  }{%
+     \int_\Omega
+     \,\mathrm{d}\vec{x}
+  }
 \end{align}
 where $t$ is the time, $\vec{r}$ the separation, and $\ast$ denotes complex
 conjugation.  $R_{uv}$ is the spatial cross-correlation, related to but
@@ -105,16 +112,22 @@ separation vector $\vec{r}$ into their scalar components along with suppressing
 the notational dependence on $t$,
 \begin{align}
 R_{uv} \left( x, r_x, y, r_y, z, r_z \right)
-  &= \int_\Omega
+  &= \frac{%
+     \int_\Omega
      u^\ast\left( x      , y      , z       \right)
      v     \left( x + r_x, y + r_y, z + r_z \right)
      \,\mathrm{d}\vec{x}
+  }{%
+     \int_\Omega
+     \,\mathrm{d}\vec{x}
+  }
 \end{align}
 When the $x$ and $z$ directions are homogeneous and only $r_y=0$ is of interest
 at some fixed $y_j$,
 \begin{align}
 R_{uv} \left( r_x, y_j, r_z \right)
-  &= \int_{-\frac{L_x}{2}}^{\frac{L_x}{2}}
+  &= \frac{1}{L_x L_z}
+     \int_{-\frac{L_x}{2}}^{\frac{L_x}{2}}
      \int_{-\frac{L_z}{2}}^{\frac{L_z}{2}}
        u^\ast\left( x      , y_j, z       \right)
        v     \left( x + r_x, y_j, z + r_z \right)
@@ -125,7 +138,8 @@ Substituting $(u^h)^\ast$ and $v^h$, using Fourier orthogonality, and
 simplifying,
 \begin{align}
 R_{uv} \left( r_x, y_j, r_z \right)
-  &= \int_{-\frac{L_x}{2}}^{\frac{L_x}{2}}
+  &= \frac{1}{L_x L_z}
+     \int_{-\frac{L_x}{2}}^{\frac{L_x}{2}}
      \int_{-\frac{L_z}{2}}^{\frac{L_z}{2}}
         \left(
          \sum_{m}\sum_{n}
@@ -140,7 +154,8 @@ R_{uv} \left( r_x, y_j, r_z \right)
      \,\mathrm{d}z
      \,\mathrm{d}x
 \\
-  &= \sum_{m}
+  &= \frac{1}{L_x L_z}
+     \sum_{m}
      e^{\ii k_m^\prime r_x}
      \sum_{m^\prime}
      \int_{-\frac{L_x}{2}}^{\frac{L_x}{2}}
@@ -155,7 +170,8 @@ R_{uv} \left( r_x, y_j, r_z \right)
      \,\mathrm{d}z
      \,\mathrm{d}x
 \\
-  &= \sum_{m}
+  &= \frac{1}{L_x L_z}
+     \sum_{m}
      e^{\ii k_m^\prime r_x}
      \sum_{m^\prime}
      L_x \delta_{m m^\prime}
@@ -166,8 +182,7 @@ R_{uv} \left( r_x, y_j, r_z \right)
      \hat{u}^\ast_{y_j m n}
      \hat{v}_{y_j m^\prime n^\prime}
 \\
-  &= L_x L_z
-     \sum_{m^\prime}
+  &= \sum_{m^\prime}
      \sum_{n^\prime}
      \hat{u}^\ast_{y_j m^\prime n^\prime}
      \hat{v}_{y_j m^\prime n^\prime}
@@ -189,7 +204,6 @@ $z$, by orthogonality one then sees
     \,\mathrm{d}z
     \,\mathrm{d}x
     &=
-    L_x L_z
     \hat{u}^\ast_{y_j m n}
     \hat{v}_{y_j m n}.
     \label{eq:twopointxz_wave}
@@ -205,8 +219,7 @@ Choosing $r_z = 0$ and relabeling $r_x = x$ and $n^\prime = n$ within
 function of only separation in $x$ is
 \begin{align}
 R_{uv} \left( x, y_j, 0 \right)
-  &= L_x L_z
-     \sum_{m^\prime}
+  &= \sum_{m^\prime}
      \sum_{n}
      \hat{u}^\ast_{y_j m^\prime n}
      \hat{v}_{y_j m^\prime n}
@@ -223,7 +236,6 @@ Fourier transforming in $x$,
     e^{-\ii k_m x}
     \,\mathrm{d}x
   &=
-    L_x L_z
     \sum_{n}
     \hat{u}^\ast_{y_j m n}
     \hat{v}_{y_j m n}
@@ -239,8 +251,7 @@ Choosing $r_x = 0$ and relabeling $r_z = z$ and $m^\prime = m$ within
 function of only separation in $z$ is
 \begin{align}
 R_{uv} \left( 0, y_j, z \right)
-  &= L_x L_z
-     \sum_{m}
+  &= \sum_{m}
      \sum_{n^\prime}
      \hat{u}^\ast_{y_j m n^\prime}
      \hat{v}_{y_j m n^\prime}
@@ -257,7 +268,6 @@ Fourier transforming in $z$,
     e^{-\ii k_n z}
     \,\mathrm{d}x
   &=
-    L_x L_z
     \sum_{m}
     \hat{u}^\ast_{y_j m n}
     \hat{v}_{y_j m n}
@@ -271,8 +281,8 @@ N_x/2-1\right\}$.
 When $u$ and $v$ are real-valued so is $R_{uv}$.  By utilizing the Hermitian
 symmetry present in coefficients $\hat{u}_{y_j m n}$ and $\hat{v}_{y_j m n}$,
 \eqref{eq:twopointx_wave} and \eqref{eq:twopointz_wave} may be computed at
-reduced cost.  For example, exploiting $x$ symmetry when computing the summation
-from \eqref{eq:twopointz_wave} yields
+reduced cost.  For example, exploiting $x$ symmetry when computing
+\eqref{eq:twopointz_wave} yields
 %
 \small
 \begin{align}
