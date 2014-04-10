@@ -394,6 +394,7 @@ compute_twopoint_xlocal(
     SUZERAIN_ENSURE(state.strides()[3] == (int) ( state.shape()[1]
                                                  *state.shape()[2]));
 
+    // Grab relevant parallel decomposition information
     const int Ny   = dgrid.global_wave_extent.y();
     const int Nx   = grid.N.x();
     const int dNx  = grid.dN.x();
@@ -408,9 +409,8 @@ compute_twopoint_xlocal(
 
     // Sum rank-local contribution to Fourier-transformed two-point correlation
     // We /do/ sum dealiasing/Nyquist modes so clear a priori if that bugs you
-    // Real R_uv(x) implies only nonnegative wavenumbers wm carry information
+    // (though notice only Nx/2+1 and not dNx/2+1 modes are reported in result)
     for (int n = dkbz; n < dkez; ++n) {
-
         for (int m = dkbx; m < dkex; ++m) {
             const int wm = inorder::wavenumber(dNx, m);
             if (wm >= o.cols()) continue;                            // Ignored
@@ -423,6 +423,7 @@ compute_twopoint_xlocal(
     }
 
     // Ensure real-valued R_uv(x) arises from Fourier-transforming result
+    // (occurs trivially for R_uu but dealiasing can break property for R_uv)
     o.col(0).imag().setZero();
     if (Nx%2 == 0) {
         o.col(Nx/2).imag().setZero();
@@ -448,7 +449,7 @@ compute_twopoint_zlocal(
     SUZERAIN_ENSURE(state.strides()[3] == (int) ( state.shape()[1]
                                                  *state.shape()[2]));
 
-    // Wavenumber traversal modeled after those found in suzerain/diffwave.c
+    // Grab relevant parallel decomposition information
     const int Ny   = dgrid.global_wave_extent.y();
     const int Nx   = grid.N.x();
     const int dNx  = grid.dN.x();
@@ -466,7 +467,7 @@ compute_twopoint_zlocal(
 
     // Sum rank-local contribution to Fourier-transformed two-point correlation
     // We /do/ sum dealiasing/Nyquist modes so clear a priori if that bugs you
-    // Real R_uv(z) implies only nonnegative wavenumbers wn carry information
+    // (though notice only Nx/2+1 and not dNx/2+1 modes are reported in result)
     const int absmin_dNx = inorder::wavenumber_absmin(dNx);
     for (int n = dkbz; n < dkez; ++n) {
         const int wn = inorder::wavenumber(dNz, n);
@@ -491,6 +492,7 @@ compute_twopoint_zlocal(
     }
 
     // Ensure real-valued R_uv(z) arises from Fourier-transforming result
+    // (occurs trivially for R_uu but dealiasing can break property for R_uv)
     o.col(0).imag().setZero();
     if (Nz%2 == 0) {
         o.col(Nz/2).imag().setZero();
