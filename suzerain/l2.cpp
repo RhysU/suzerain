@@ -394,32 +394,26 @@ compute_twopoint_xlocal(
     SUZERAIN_ENSURE(state.strides()[3] == (int) ( state.shape()[1]
                                                  *state.shape()[2]));
 
-    // Wavenumber traversal modeled after those found in suzerain/diffwave.c
     const int Ny   = dgrid.global_wave_extent.y();
     const int Nx   = grid.N.x();
     const int dNx  = grid.dN.x();
     const int dkbx = dgrid.local_wave_start.x();
     const int dkex = dgrid.local_wave_end.x();
-    const int Nz   = grid.N.z();
-    const int dNz  = grid.dN.z();
     const int dkbz = dgrid.local_wave_start.z();
     const int dkez = dgrid.local_wave_end.z();
-    SUZERAIN_UNUSED(Nz);
 
     // Prepare a view of the output storage and zero it prior to accumulation
     Map<MatrixXXc> o(out, Ny, Nx/2+1);
     o.setZero();
 
     // Sum rank-local contribution to Fourier-transformed two-point correlation
-    // We /do/ sum over dealiasing modes so zero them a priori if that bugs you
+    // We /do/ sum dealiasing/Nyquist modes so clear a priori if that bugs you
     // Real R_uv(x) implies only nonnegative wavenumbers wm carry information
-    const int absmin_dNz = inorder::wavenumber_absmin(dNz);
     for (int n = dkbz; n < dkez; ++n) {
-        if (inorder::wavenumber_abs(dNz, n) > absmin_dNz) continue;  // Nyquist
 
         for (int m = dkbx; m < dkex; ++m) {
             const int wm = inorder::wavenumber(dNx, m);
-            if (wm < 0 || wm >= o.cols()) continue;                  // Ignored
+            if (wm >= o.cols()) continue;                            // Ignored
 
             Map<const VectorXc> u_mn(&state[si][0][m - dkbx][n - dkbz], Ny);
             Map<const VectorXc> v_mn(&state[sj][0][m - dkbx][n - dkbz], Ny);
@@ -429,9 +423,9 @@ compute_twopoint_xlocal(
     }
 
     // Ensure real-valued R_uv(x) arises from Fourier-transforming result
-    o.leftCols<1>().imag().setZero();
+    o.col(0).imag().setZero();
     if (Nx%2 == 0) {
-        o.rightCols<1>().imag().setZero();
+        o.col(Nx/2).imag().setZero();
     }
 }
 
@@ -471,7 +465,7 @@ compute_twopoint_zlocal(
     o.setZero();
 
     // Sum rank-local contribution to Fourier-transformed two-point correlation
-    // We /do/ sum over dealiasing modes so zero them a priori if that bugs you
+    // We /do/ sum dealiasing/Nyquist modes so clear a priori if that bugs you
     // Real R_uv(z) implies only nonnegative wavenumbers wn carry information
     const int absmin_dNx = inorder::wavenumber_absmin(dNx);
     for (int n = dkbz; n < dkez; ++n) {
@@ -480,13 +474,14 @@ compute_twopoint_zlocal(
 
         for (int m = dkbx; m < dkex; ++m) {
             const int abs_wm = inorder::wavenumber_abs(dNx, m);
-            if (abs_wm > absmin_dNx) continue;   // Nyquist
 
             Map<const VectorXc> u_mn(&state[si][0][m - dkbx][n - dkbz], Ny);
             Map<const VectorXc> v_mn(&state[sj][0][m - dkbx][n - dkbz], Ny);
 
             if (abs_wm == 0) {
                 o.col(wn) +=   u_mn.conjugate().cwiseProduct(v_mn);
+            } else if (abs_wm > absmin_dNx) {    // Nyquist
+                o.col(wn) +=   u_mn.cwiseProduct(v_mn.conjugate());
             } else {
                 // Admittedly, there are faster ways to compute this product
                 o.col(wn) +=   u_mn.conjugate().cwiseProduct(v_mn)
@@ -495,10 +490,10 @@ compute_twopoint_zlocal(
         }
     }
 
-    // Ensure real-valued R_uv(x) arises from Fourier-transforming result
-    o.leftCols<1>().imag().setZero();
+    // Ensure real-valued R_uv(z) arises from Fourier-transforming result
+    o.col(0).imag().setZero();
     if (Nz%2 == 0) {
-        o.rightCols<1>().imag().setZero();
+        o.col(Nz/2).imag().setZero();
     }
 }
 
