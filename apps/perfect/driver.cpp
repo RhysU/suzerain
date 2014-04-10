@@ -418,7 +418,7 @@ driver::save_spectra_primitive(
                 *state_nonlinear, swave_count, *grid, *dgrid);
         esio_field_establish(esioh,
                 npairs,          0, procid == 0 ? npairs          : 0,
-                grid->N.z()/2+1, 0, procid == 0 ? grid->N.z()/2+1 : 0,
+                grid->N.z(),     0, procid == 0 ? grid->N.z()     : 0,
                 grid->N.y(),     0, procid == 0 ? grid->N.y()     : 0);
         support::complex_field_write(esioh,
                 "twopoint_kz", twopoint_z.get(), 0, 0, 0,

@@ -451,7 +451,6 @@ compute_twopoint_zlocal(
 
     // Grab relevant parallel decomposition information
     const int Ny   = dgrid.global_wave_extent.y();
-    const int Nx   = grid.N.x();
     const int dNx  = grid.dN.x();
     const int dkbx = dgrid.local_wave_start.x();
     const int dkex = dgrid.local_wave_end.x();
@@ -459,34 +458,30 @@ compute_twopoint_zlocal(
     const int dNz  = grid.dN.z();
     const int dkbz = dgrid.local_wave_start.z();
     const int dkez = dgrid.local_wave_end.z();
-    SUZERAIN_UNUSED(Nx);
 
     // Prepare a view of the output storage and zero it prior to accumulation
-    Map<MatrixXXc> o(out, Ny, Nz/2+1);
+    Map<MatrixXXc> o(out, Ny, Nz);
     o.setZero();
 
     // Sum rank-local contribution to Fourier-transformed two-point correlation
     // We /do/ sum dealiasing/Nyquist modes so clear a priori if that bugs you
-    // (though notice only Nx/2+1 and not dNx/2+1 modes are reported in result)
-    const int absmin_dNx = inorder::wavenumber_absmin(dNx);
     for (int n = dkbz; n < dkez; ++n) {
-        const int wn = inorder::wavenumber(dNz, n);
-        if (wn < 0 || wn >= o.cols()) continue;  // Ignored
+        if (!inorder::wavenumber_translatable(Nz, dNz, n)) continue;  // Ignored
+        const int wn_idx = inorder::index(Nz, inorder::wavenumber(dNz, n));
 
         for (int m = dkbx; m < dkex; ++m) {
-            const int abs_wm = inorder::wavenumber_abs(dNx, m);
 
             Map<const VectorXc> u_mn(&state[si][0][m - dkbx][n - dkbz], Ny);
             Map<const VectorXc> v_mn(&state[sj][0][m - dkbx][n - dkbz], Ny);
 
-            if (abs_wm == 0) {
-                o.col(wn) +=   u_mn.conjugate().cwiseProduct(v_mn);
-            } else if (abs_wm > absmin_dNx) {    // Nyquist
-                o.col(wn) +=   u_mn.cwiseProduct(v_mn.conjugate());
+            if (m == 0) {
+                o.col(wn_idx) +=   u_mn.conjugate().cwiseProduct(v_mn);
+            } else if (inorder::wavenumber_nyquist_index(dNx, m)) {
+                o.col(wn_idx) +=   u_mn.cwiseProduct(v_mn.conjugate());
             } else {
                 // Admittedly, there are faster ways to compute this product
-                o.col(wn) +=   u_mn.conjugate().cwiseProduct(v_mn)
-                             + u_mn.cwiseProduct(v_mn.conjugate());
+                o.col(wn_idx) +=   u_mn.conjugate().cwiseProduct(v_mn)
+                                 + u_mn.cwiseProduct(v_mn.conjugate());
             }
         }
     }
@@ -548,7 +543,7 @@ compute_twopoint_z(
     // Allocate contiguous storage for all the pairwise results
     // As two-point is real-valued, only positive wavenumbers computed
     const int npairs  = (nf*(nf+1))/2;
-    const int bufpair = grid.N.y() * (grid.N.z()/2+1);
+    const int bufpair = grid.N.y() * grid.N.z();
     shared_array<complex_t> retval(
             (complex_t*)suzerain_blas_malloc(sizeof(complex_t)*bufpair*npairs),
             suzerain_blas_free);

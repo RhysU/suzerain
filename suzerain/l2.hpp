@@ -122,7 +122,7 @@ compute_field_L2xz(
  * Obtaining a globally correct answer requires using <code>MPI_Reduce</code>
  * (or similar) with <code>MPI_SUM</code> to sum the resulting buffer across all
  * ranks.  \e Neither the mean \e nor dealiasing modes are automatically
- * subtracted though any highest Nyquist mode is ignored.
+ * subtracted.
  *
  * @param state[in  ] Scalar fields represented as Fourier coefficients in
  *                    \f$x\f$ and \f$z\f$ \e but point values in \f$y\f$.
@@ -150,8 +150,7 @@ compute_twopoint_xlocal(
  * correlation versus separation in the \f$z\f$ direction.  Obtaining a globally
  * correct answer requires using <code>MPI_Reduce</code> (or similar) with
  * <code>MPI_SUM</code> to sum the resulting buffer across all ranks.  \e
- * Neither the mean \e nor dealiasing modes are automatically subtracted though
- * any highest Nyquist mode is ignored.
+ * Neither the mean \e nor dealiasing modes are automatically subtracted.
  *
  * @param state[in  ] Scalar fields represented as Fourier coefficients in
  *                    \f$x\f$ and \f$z\f$ \e but point values in \f$y\f$.
@@ -161,7 +160,7 @@ compute_twopoint_xlocal(
  * @param dgrid[in  ] Fourier-based domain specification.
  * @param out  [out ] Output as a row-major, contiguous
  *                    matrix of size <code>grid.N.y()</code> by
- *                    <code>grid.N.z/2+1()</code> indexed by \f$(y_j, k_z)\f$.
+ *                    <code>grid.N.z()</code> indexed by \f$(y_j, k_z)\f$.
  *
  * @see writeup/twopoint.tex for full details.
  */
@@ -181,7 +180,7 @@ compute_twopoint_zlocal(
  * \f$ k_x \f$ by \c ndx where state indices \c si and \sj are combined to
  * produce <code>ndx == nf*si + sj - (si*(si+1))/2</code> using integer
  * division.  \e Neither the mean \e nor dealiasing modes are automatically
- * subtracted though any Nyquist mode is ignored.
+ * subtracted.
  *
  * @param state[in  ] Scalar fields represented as Fourier coefficients in
  *                    \f$x\f$ and \f$z\f$ \e but point values in \f$y\f$.
@@ -208,8 +207,7 @@ compute_twopoint_x(
  * less than \c nf.  Output is stored row-major \f$y_j\f$ by \f$ k_z \f$ by \c
  * ndx where state indices \c si and \sj are combined to produce <code>ndx ==
  * nf*si + sj - (si*(si+1))/2</code> using integer division.  \e Neither the
- * mean \e nor dealiasing modes are automatically subtracted though any highest
- * Nyquist mode is ignored.
+ * mean \e nor dealiasing modes are automatically subtracted.
  *
  * @param state[in  ] Scalar fields represented as Fourier coefficients in
  *                    \f$x\f$ and \f$z\f$ \e but point values in \f$y\f$.
@@ -219,7 +217,7 @@ compute_twopoint_x(
  * @param dgrid[in  ] Fourier-based domain specification.
  * @param out  [out ] Output stored as a row-major, contiguous
  *                    matrix of size <code>grid.N.y()</code> by
- *                    <code>grid.N.z()/2+1</code> by <code>ndx</code>.
+ *                    <code>grid.N.z()</code> by <code>ndx</code>.
  *
  * @see compute_twopoint_xlocal for details on pairwise computations.
  */
