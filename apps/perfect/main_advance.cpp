@@ -617,9 +617,20 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
             }
         }
 
-        if (isothermal->upper_v > 0 && !(boost::math::isinf)(scenario->Re)) {
-            WARN0(who, "Nonreflecting viscous outflow boundary problematic"
-                       << " (Redmine #2983)");
+        // Call out known numerical problems to alert user of potential woes
+        if (!(boost::math::isinf)(scenario->Re)) {
+            if (isothermal->upper_v > 0) {
+                WARN0(who, "Nonreflecting viscous outflow boundary problematic"
+                           " (Redmine #2983)");
+            } else if (use_explicit) {
+                WARN0(who, "Nonreflecting viscous inflow boundary problematic"
+                           " for explicit advance"
+                           " (Redmine #3070)");
+            } else if (common_block.linearization == linearize::rhome_xyz) {
+                WARN0(who, "Nonreflecting viscous inflow boundary problematic"
+                           " for implicit-in-3D advance"
+                           " (Redmine #3070)");
+            }
         }
 
     } else {
