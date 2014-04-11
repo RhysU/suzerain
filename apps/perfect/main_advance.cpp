@@ -591,29 +591,41 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
         constrainer->physical[ndx::rho].reset(
                 new constraint::constant_upper(freestream.rho, *cop, 0));
         if (sg->formulation.enabled() && sg->baseflow) {
-            INFO0(who, "Matching freestream constraint enforcement"
-                       " profile to baseflow");
-            largo_state state, dontcare;
-            for (int i = 0; i < b->n(); ++i) {
-                sg->baseflow->conserved(b->collocation_point(i),
-                                        state.as_is(),
-                                        dontcare.as_is(),
-                                        dontcare.as_is());
-                constrainer->physical[ndx::e  ]->shape[i] = state.e  ;
-                constrainer->physical[ndx::mx ]->shape[i] = state.mx ;
-                constrainer->physical[ndx::rho]->shape[i] = state.rho;
-            }
-            for (size_t i = 0; i < constrainer->physical.size(); ++i) {
-                if (!constrainer->physical[i]->enabled()) {
-                    continue;
+            // In one- or two-dimensions (i.e. laminar case) peg freestream
+            // so the user might exactly recover the scenario of interest.
+            // In three-dimensions, likely because of NRBC noise, destablizes
+            // the flow by perturbing the near wall in aphysical manner.
+            if (grid->N.x() > 1 && grid->N.z() > 1) {
+                INFO0(who, "Assuming baseflow drives three-dimensional cases"
+                           " thus freestream constraints inactive");
+                constrainer->physical[ndx::e  ] = constrainer->none;
+                constrainer->physical[ndx::mx ] = constrainer->none;
+                constrainer->physical[ndx::rho] = constrainer->none;
+            } else {
+                INFO0(who, "Matching freestream constraint enforcement"
+                           " profile to baseflow");
+                largo_state state, dontcare;
+                for (int i = 0; i < b->n(); ++i) {
+                    sg->baseflow->conserved(b->collocation_point(i),
+                                            state.as_is(),
+                                            dontcare.as_is(),
+                                            dontcare.as_is());
+                    constrainer->physical[ndx::e  ]->shape[i] = state.e  ;
+                    constrainer->physical[ndx::mx ]->shape[i] = state.mx ;
+                    constrainer->physical[ndx::rho]->shape[i] = state.rho;
                 }
-                real_t minval = constrainer->physical[i]->shape.minCoeff();
-                real_t maxval = constrainer->physical[i]->shape.maxCoeff();
-                INFO0(who, "Constraint profile for "
-                            << setw(5) << left << ndx::identifier[i]
-                            << " has range ["
-                            << fullprec<>(minval) << ", "
-                            << fullprec<>(maxval) << ']');
+                for (size_t i = 0; i < constrainer->physical.size(); ++i) {
+                    if (!constrainer->physical[i]->enabled()) {
+                        continue;
+                    }
+                    real_t minval = constrainer->physical[i]->shape.minCoeff();
+                    real_t maxval = constrainer->physical[i]->shape.maxCoeff();
+                    INFO0(who, "Constraint profile for "
+                                << setw(5) << left << ndx::identifier[i]
+                                << " has range ["
+                                << fullprec<>(minval) << ", "
+                                << fullprec<>(maxval) << ']');
+                }
             }
         }
 
