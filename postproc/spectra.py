@@ -46,10 +46,9 @@ def process(kx, kz, Lx, Lz, Nx, Nz, Rkx, Rkz, y, **kwargs):
     assert np.max(np.abs(np.imag(Ekx))) == 0
     Ekx = np.real(Ekx)
 
-    # Compute spectra from Rkz by reflecting and adding the negative
-    # wavenumbers
-    Ekz          = Rkz[:, 0:(Nz/2), :].copy()
-    Ekz[:, 1:, :] += Rkz[:, -1:-(Nz/2):-1,:]
+    # Compute spectra from Rkz by adding reflected negative wavenumbers
+    Ekz            = Rkz[:, 0:(Nz/2+1), :].copy()
+    Ekz[:, 1:, :] += Rkz[:, -1:-(Nz/2+1):-1,:]
     assert np.max(np.abs(np.imag(Ekz))) < np.finfo(Ekz.dtype).eps
     Ekz = np.real(Ekz)
 
