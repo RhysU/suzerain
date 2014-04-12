@@ -114,15 +114,17 @@ def load(h5filenames):
 
 def contour(k, y, Ek, maxk=None,
             nbins1=7, nbins2=50,
-            cmap1='gist_rainbow', cmap2='binary'):
+            cm1='gist_rainbow', cm2='binary'):
     """Prepare a two-dimensional contour plot a la MK's spectra presentation"""
     if not maxk: maxk = Ek.max()
+    cm1  = plt.get_cmap(cm1)
+    cm2  = plt.get_cmap(cm2)
     lv1  = matplotlib.ticker.MaxNLocator(nbins=nbins1).tick_values(0, maxk)
     lv2  = matplotlib.ticker.MaxNLocator(nbins=nbins2).tick_values(0, maxk)
     fig  = plt.figure()
     ax   = fig.add_subplot(111)
-    c1   = ax.contour (k, y, Ek, levels=lv1, cmap=plt.get_cmap(cmap1))
-    c2   = ax.contourf(k, y, Ek, levels=lv2, cmap=plt.get_cmap(cmap2))
+    c1   = ax.contour (k, y, np.transpose(Ek), levels=lv1, cmap=cm1)
+    c2   = ax.contourf(k, y, np.transpose(Ek), levels=lv2, cmap=cm2)
     cbar = fig.colorbar(c1)
     ax.set_xscale('log')
     ax.set_yscale('log')
@@ -166,10 +168,12 @@ def main(argv=None):
     plt.interactive(False)
 
     # Process and distill all incoming data
-    (Ekx, Ekz, Rx, Rz, Rkx, Rkz) = process(**load(args))
+    data = load(args)
+    (Ekx, Ekz, Rx, Rz, Rkx, Rkz) = process(**data)
 
     # Prepare contour plots for kx
     for index, name in enumerate(PAIRS):
+        index += 2 # Hack based on knowledge of SpectralData
         (fig, ax, c1, c2, cbar) = contour(Ekx.k, Ekx.y, Ekx[index])
         ax.set_title("Spectra: " + name)
         ax.set_xlabel('Streamwise wavenumber')
@@ -180,6 +184,7 @@ def main(argv=None):
 
     # Prepare contour plots for kx
     for index, name in enumerate(PAIRS):
+        index += 2 # Hack based on knowledge of SpectralData
         (fig, ax, c1, c2, cbar) = contour(Ekz.k, Ekz.y, Ekz[index])
         ax.set_title("Spectra: " + name)
         ax.set_xlabel('Streamwise wavenumber')
