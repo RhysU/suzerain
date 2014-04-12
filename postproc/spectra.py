@@ -84,29 +84,30 @@ def load(h5filenames):
     for h5filename in h5filenames:
         h5file = h5py.File(h5filename, 'r')
         d.update(dict(
-            kx = h5file['kx'],
-            kz = h5file['kz'],
+            kx = h5file['kx'][()],
+            kz = h5file['kz'][()],
             Lx = h5file['Lx'][0],
             Ly = h5file['Ly'][0],
             Lz = h5file['Lz'][0],
             Nx = h5file['Nx'][0],
             Ny = h5file['Ny'][0],
             Nz = h5file['Nz'][0],
+            y  = h5file['collocation_points_y'][()],
         ))
-        if Rkx:
+        if Rkx is None:
             Rkx  = np.squeeze(h5file['twopoint_kx'][()].view(np.complex128))
         else:
             Rkx += np.squeeze(h5file['twopoint_kx'][()].view(np.complex128))
-        if Rkz:
+        if Rkz is None:
             Rkz  = np.squeeze(h5file['twopoint_kz'][()].view(np.complex128))
         else:
             Rkz += np.squeeze(h5file['twopoint_kz'][()].view(np.complex128))
         h5file.close()
-    Rkx /= len(h5files)
-    Rkz /= len(h5files)
+    Rkx /= len(h5filenames)
+    Rkz /= len(h5filenames)
     d.update(dict(
         Rkx = Rkx,
-        Rkx = Rkz
+        Rkz = Rkz
     ))
     return d
 
@@ -165,7 +166,7 @@ def main(argv=None):
     plt.interactive(False)
 
     # Process and distill all incoming data
-    (Ekx, Ekz, Rx, Rz, Rkx, Rkz) = process(**load(args[1:]))
+    (Ekx, Ekz, Rx, Rz, Rkx, Rkz) = process(**load(args))
 
     # Prepare contour plots for kx
     for index, name in enumerate(PAIRS):
