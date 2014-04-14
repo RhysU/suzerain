@@ -42,7 +42,7 @@ ProcessResult = collections.namedtuple('ProcessResult',
 def process(kx, kz, Lx, Lz, Nx, Nz, Rkx, Rkz, y, **kwargs):
     """Distill loaded Rkx, etc. data into easy-to-use form."""
     Rx = fft.irfft(Nx * Rkx, axis=1)  # Non-normalized inverse FFT
-    Rz = fft.ifft(Nz * Rkz, axis=1)  # Non-normalized inverse FFT
+    Rz = fft.ifft (Nz * Rkz, axis=1)  # Non-normalized inverse FFT
 
     # Compute spectra from Rkx using conjugate-symmetry of Rkx
     Ekx = Rkx.copy()
