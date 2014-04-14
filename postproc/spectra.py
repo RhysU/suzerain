@@ -3,10 +3,11 @@
 Display spectra averaged across /twopoint_{kx,kz} in all named H5RESTART files.
 
 Options:
-    -c            Produce contour plots showing {kx,kz} versus y location
+    -c            Plot contours showing {kx,kz} versus y location
     -h            Display this help message and exit
     -o OUTSUFFIX  Save the output files *.OUTSUFFIX instead of displaying
     -p OUTPICKLE  Pickle the two point and spectra into file OUTPICKLE
+    -y YINDEX     Plot spectra at wall-normal location YINDEX
 
 Each H5RESTART should have been made by Suzerain perfect_advance (or similar),
 meaning that all of the following are well-defined datasets
@@ -14,7 +15,6 @@ meaning that all of the following are well-defined datasets
 adhering to a host of ill-documented restrictions.  All shapes must match!
 """
 # TODO Accept normalization constants to display results in wall units
-# TODO Accept "-y YINDEX     Display data from only /collocation_points_y[YINDEX]"
 
 import collections
 import getopt
@@ -152,9 +152,10 @@ def main(argv=None):
     do_contour = False
     outpickle  = None
     outsuffix  = None
+    yindex     = []
     try:
         try:
-            opts, args = getopt.getopt(argv[1:], "cho:p:", ["help"])
+            opts, args = getopt.getopt(argv[1:], "cho:p:y:", ["help"])
         except getopt.error, msg:
             raise Usage(msg)
         for o, a in opts:
@@ -167,6 +168,8 @@ def main(argv=None):
                 outsuffix = a
             elif o == "-p":
                 outpickle = a
+            elif o == "-y":
+                yindex.append(int(a))
         if len(args) < 1:
             print >>sys.stderr, "Too few arguments.  See --help."
             return 1
@@ -187,6 +190,38 @@ def main(argv=None):
     # (it currently requires jumping through hoops to load these pickles).
     if outpickle:
         pickle.dump(res, open(outpickle, "wb"), -1)
+
+    # Prepare spectra at each requested y index
+    for j in yindex:
+        # Spectra in x direction
+        fig  = plt.figure()
+        ax   = fig.add_subplot(111)
+        ax.loglog(Ekx.k, Ekx.TT[:,j], label="T")
+        ax.loglog(Ekx.k, Ekx.uu[:,j], label="u")
+        ax.loglog(Ekx.k, Ekx.vv[:,j], label="v")
+        ax.loglog(Ekx.k, Ekx.ww[:,j], label="w")
+        ax.loglog(Ekx.k, Ekx.rr[:,j], label="rho")
+        ax.set_xlabel("Streamwise wavenumber")
+        ax.set_ylabel("Spectra at y = %g" % Ekx.y[j])
+        ax.legend()
+        if outsuffix:
+            fig.savefig(str(j)+'.diag.kx.'+outsuffix)
+            plt.close(fig)
+
+        # Spectra in z direction
+        fig  = plt.figure()
+        ax   = fig.add_subplot(111)
+        ax.loglog(Ekz.k, Ekz.TT[:,j], label="T")
+        ax.loglog(Ekz.k, Ekz.uu[:,j], label="u")
+        ax.loglog(Ekz.k, Ekz.vv[:,j], label="v")
+        ax.loglog(Ekz.k, Ekz.ww[:,j], label="w")
+        ax.loglog(Ekz.k, Ekz.rr[:,j], label="rho")
+        ax.set_xlabel("Spanwise wavenumber")
+        ax.set_ylabel("Spectra at y = %g" % Ekx.y[j])
+        ax.legend()
+        if outsuffix:
+            fig.savefig(str(j)+'.diag.kx.'+outsuffix)
+            plt.close(fig)
 
     # Prepare contour plots for kx and kz if requested
     if do_contour:
