@@ -220,7 +220,7 @@ def main(argv=None):
         ax.set_title("Spectra at y = %g" % Ekx.y[j])
         ax.legend()
         if outsuffix:
-            fig.savefig(str(j)+'.spectra.kx.'+outsuffix)
+            fig.savefig(str(j)+'.spectra.kz.'+outsuffix)
             plt.close(fig)
 
         # Cospectra in x direction
