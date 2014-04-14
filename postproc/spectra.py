@@ -3,6 +3,7 @@
 Display spectra averaged across /twopoint_{kx,kz} in all named H5RESTART files.
 
 Options:
+    -c            Produce contour plots showing {kx,kz} versus y location
     -h            Display this help message and exit
     -o OUTSUFFIX  Save the output files *.OUTSUFFIX instead of displaying
 
@@ -143,14 +144,17 @@ def main(argv=None):
         argv = sys.argv
 
     # Parse and check incoming command line arguments
-    outsuffix = None
+    outsuffix  = None
+    do_contour = False
     try:
         try:
-            opts, args = getopt.getopt(argv[1:], "ho:", ["help"])
+            opts, args = getopt.getopt(argv[1:], "cho:", ["help"])
         except getopt.error, msg:
             raise Usage(msg)
         for o, a in opts:
-            if o in ("-h", "--help"):
+            if o == '-c':
+                do_contour = True
+            elif o in ("-h", "--help"):
                 print __doc__
                 return 0
             elif o == "-o":
@@ -170,27 +174,27 @@ def main(argv=None):
     data = load(args)
     (Ekx, Ekz, Rx, Rz, Rkx, Rkz) = process(**data)
 
-    # Prepare contour plots for kx
-    for index, name in enumerate(PAIRS):
-        index += 2 # Hack based on knowledge of SpectralData
-        (fig, ax, c1, c2, cbar) = contour(Ekx.k, Ekx.y, Ekx[index])
-        ax.set_title("Spectra: " + name)
-        ax.set_xlabel('Streamwise wavenumber')
-        ax.set_ylabel('Wall-normal distance')
-        if outsuffix:
-            fig.savefig(name+'.kx.'+outsuffix)
-            plt.close(fig)
+    # Prepare contour plots for kx and kz if requested
+    if do_contour:
+        for index, name in enumerate(PAIRS):
+            index += 2 # Hack based on knowledge of SpectralData
+            (fig, ax, c1, c2, cbar) = contour(Ekx.k, Ekx.y, Ekx[index])
+            ax.set_title("Spectra: " + name)
+            ax.set_xlabel('Streamwise wavenumber')
+            ax.set_ylabel('Wall-normal distance')
+            if outsuffix:
+                fig.savefig(name+'.kx.'+outsuffix)
+                plt.close(fig)
 
-    # Prepare contour plots for kx
-    for index, name in enumerate(PAIRS):
-        index += 2 # Hack based on knowledge of SpectralData
-        (fig, ax, c1, c2, cbar) = contour(Ekz.k, Ekz.y, Ekz[index])
-        ax.set_title("Spectra: " + name)
-        ax.set_xlabel('Streamwise wavenumber')
-        ax.set_ylabel('Wall-normal distance')
-        if outsuffix:
-            fig.savefig(name+'.kz.'+outsuffix)
-            plt.close(fig)
+        for index, name in enumerate(PAIRS):
+            index += 2 # Hack based on knowledge of SpectralData
+            (fig, ax, c1, c2, cbar) = contour(Ekz.k, Ekz.y, Ekz[index])
+            ax.set_title("Spectra: " + name)
+            ax.set_xlabel('Streamwise wavenumber')
+            ax.set_ylabel('Wall-normal distance')
+            if outsuffix:
+                fig.savefig(name+'.kz.'+outsuffix)
+                plt.close(fig)
 
     if not outsuffix:
         plt.show()
