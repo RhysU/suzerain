@@ -103,8 +103,10 @@ def load(h5filenames):
         else:
             Rkz += np.squeeze(h5file['twopoint_kz'][()].view(np.complex128))
         h5file.close()
-    Rkx /= len(h5filenames)
-    Rkz /= len(h5filenames)
+    if Rkx is not None:
+        Rkx /= len(h5filenames)
+    if Rkz is not None:
+        Rkz /= len(h5filenames)
     d.update(dict(
         Rkx = Rkx,
         Rkz = Rkz
