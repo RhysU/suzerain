@@ -202,10 +202,10 @@ def main(argv=None):
         ax.loglog(Ekx.k, Ekx.ww[:,j], label="w")
         ax.loglog(Ekx.k, Ekx.rr[:,j], label="rho")
         ax.set_xlabel("Streamwise wavenumber")
-        ax.set_ylabel("Spectra at y = %g" % Ekx.y[j])
+        ax.set_title("Spectra at y = %g" % Ekx.y[j])
         ax.legend()
         if outsuffix:
-            fig.savefig(str(j)+'.diag.kx.'+outsuffix)
+            fig.savefig(str(j)+'.spectra.kx.'+outsuffix)
             plt.close(fig)
 
         # Spectra in z direction
@@ -215,12 +215,52 @@ def main(argv=None):
         ax.loglog(Ekz.k, Ekz.uu[:,j], label="u")
         ax.loglog(Ekz.k, Ekz.vv[:,j], label="v")
         ax.loglog(Ekz.k, Ekz.ww[:,j], label="w")
-        ax.loglog(Ekz.k, Ekz.rr[:,j], label="rho")
+        ax.loglog(Ekz.k, Ekz.rr[:,j], label="r")
         ax.set_xlabel("Spanwise wavenumber")
-        ax.set_ylabel("Spectra at y = %g" % Ekx.y[j])
+        ax.set_title("Spectra at y = %g" % Ekx.y[j])
         ax.legend()
         if outsuffix:
-            fig.savefig(str(j)+'.diag.kx.'+outsuffix)
+            fig.savefig(str(j)+'.spectra.kx.'+outsuffix)
+            plt.close(fig)
+
+        # Cospectra in x direction
+        fig  = plt.figure()
+        ax   = fig.add_subplot(111)
+        ax.loglog(Ekx.k, Ekx.Tu[:,j], label='Tu')
+        ax.loglog(Ekx.k, Ekx.Tv[:,j], label='Tv')
+        ax.loglog(Ekx.k, Ekx.Tw[:,j], label='Tw')
+        ax.loglog(Ekx.k, Ekx.Tr[:,j], label='Tr')
+        ax.loglog(Ekx.k, Ekx.uv[:,j], label='uv')
+        ax.loglog(Ekx.k, Ekx.uw[:,j], label='uw')
+        ax.loglog(Ekx.k, Ekx.ur[:,j], label='ur')
+        ax.loglog(Ekx.k, Ekx.vw[:,j], label='vw')
+        ax.loglog(Ekx.k, Ekx.vr[:,j], label='vr')
+        ax.loglog(Ekx.k, Ekx.wr[:,j], label='wr')
+        ax.set_xlabel("Streamwise wavenumber")
+        ax.set_title("Cospectra at y = %g" % Ekx.y[j])
+        ax.legend()
+        if outsuffix:
+            fig.savefig(str(j)+'.cospectra.kx.'+outsuffix)
+            plt.close(fig)
+
+        # Cospectra in z direction
+        fig  = plt.figure()
+        ax   = fig.add_subplot(111)
+        ax.loglog(Ekz.k, Ekz.Tu[:,j], label='Tu')
+        ax.loglog(Ekz.k, Ekz.Tv[:,j], label='Tv')
+        ax.loglog(Ekz.k, Ekz.Tw[:,j], label='Tw')
+        ax.loglog(Ekz.k, Ekz.Tr[:,j], label='Tr')
+        ax.loglog(Ekz.k, Ekz.uv[:,j], label='uv')
+        ax.loglog(Ekz.k, Ekz.uw[:,j], label='uw')
+        ax.loglog(Ekz.k, Ekz.ur[:,j], label='ur')
+        ax.loglog(Ekz.k, Ekz.vw[:,j], label='vw')
+        ax.loglog(Ekz.k, Ekz.vr[:,j], label='vr')
+        ax.loglog(Ekz.k, Ekz.wr[:,j], label='wr')
+        ax.set_xlabel("Streamwise wavenumber")
+        ax.set_title("Cospectra at y = %g" % Ekz.y[j])
+        ax.legend()
+        if outsuffix:
+            fig.savefig(str(j)+'.cospectra.kz.'+outsuffix)
             plt.close(fig)
 
     # Prepare contour plots for kx and kz if requested
