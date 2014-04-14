@@ -6,6 +6,7 @@ Options:
     -c            Produce contour plots showing {kx,kz} versus y location
     -h            Display this help message and exit
     -o OUTSUFFIX  Save the output files *.OUTSUFFIX instead of displaying
+    -p OUTPICKLE  Pickle the two point and spectra into file OUTPICKLE
 
 Each H5RESTART should have been made by Suzerain perfect_advance (or similar),
 meaning that all of the following are well-defined datasets
@@ -23,6 +24,7 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker
 import numpy as np
 import numpy.fft as fft
+import pickle
 import sys
 
 # Helper types providing easy result usage like plot(Ex.k, Ex.uu)
@@ -32,9 +34,10 @@ PAIRS = ['TT', 'Tu', 'Tv', 'Tw', 'Tr',
                      'vv', 'vw', 'vr',
                            'ww', 'wr',
                                  'rr']
-SpectralData = collections.namedtuple('SpectralData', ['y', 'k'] + PAIRS)
-PhysicalData = collections.namedtuple('PhysicalData', ['y', 'x'] + PAIRS)
-
+SpectralData  = collections.namedtuple('SpectralData', ['y', 'k'] + PAIRS)
+PhysicalData  = collections.namedtuple('PhysicalData', ['y', 'x'] + PAIRS)
+ProcessResult = collections.namedtuple('ProcessResult',
+                                       ['Ekx', 'Ekz', 'Rx', 'Rz', 'Rkx', 'Rkz'])
 
 def process(kx, kz, Lx, Lz, Nx, Nz, Rkx, Rkz, y, **kwargs):
     """Distill loaded Rkx, etc. data into easy-to-use form."""
@@ -70,7 +73,7 @@ def process(kx, kz, Lx, Lz, Nx, Nz, Rkx, Rkz, y, **kwargs):
     Rx = PhysicalData(y, np.mgrid[:Nx/2+1]*(Lx/Nx), *scalarpairs(Rx))
     Rz = PhysicalData(y, np.mgrid[:Nz/2+1]*(Lz/Nz), *scalarpairs(Rz))
 
-    return (Ekx, Ekz, Rx, Rz, Rkx, Rkz)
+    return ProcessResult(Ekx, Ekz, Rx, Rz, Rkx, Rkz)
 
 
 def load(h5filenames):
@@ -146,21 +149,24 @@ def main(argv=None):
         argv = sys.argv
 
     # Parse and check incoming command line arguments
-    outsuffix  = None
     do_contour = False
+    outpickle  = None
+    outsuffix  = None
     try:
         try:
-            opts, args = getopt.getopt(argv[1:], "cho:", ["help"])
+            opts, args = getopt.getopt(argv[1:], "cho:p:", ["help"])
         except getopt.error, msg:
             raise Usage(msg)
         for o, a in opts:
-            if o == '-c':
+            if o == "-c":
                 do_contour = True
             elif o in ("-h", "--help"):
                 print __doc__
                 return 0
             elif o == "-o":
                 outsuffix = a
+            elif o == "-p":
+                outpickle = a
         if len(args) < 1:
             print >>sys.stderr, "Too few arguments.  See --help."
             return 1
@@ -172,9 +178,15 @@ def main(argv=None):
     was_interactive = plt.isinteractive()
     plt.interactive(False)
 
-    # Process and distill all incoming data
+    # Load and process all incoming data into easy-to-use form
     data = load(args)
-    (Ekx, Ekz, Rx, Rz, Rkx, Rkz) = process(**data)
+    res  = process(**data)
+    (Ekx, Ekz, Rx, Rz, Rkx, Rkz) = res
+
+    # If requested, first pickle results to ease post mortem on crash
+    # (it currently requires jumping through hoops to load these pickles).
+    if outpickle:
+        pickle.dump(res, open(outpickle, "wb"), -1)
 
     # Prepare contour plots for kx and kz if requested
     if do_contour:
