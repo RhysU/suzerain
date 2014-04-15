@@ -444,10 +444,6 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             j < o.dgrid.local_physical_end.y();
             ++j) {
 
-            // Redmine #2983 disables mu and lambda on the freestream boundary
-            // to attempt adhering to Poinsot and Lele subsonic NRBC conditions
-            const bool locallyviscous = !(o.grid.one_sided() && j == (Ny-1));
-
             // Prepare logical indices using struct for scoping (e.g. ref::ux).
             struct ref { enum { rho, p, p2, T, a,
                                 ux, uy, uz, u2,
@@ -479,8 +475,6 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                 real_t p, T, mu, lambda;
                 rholut::p_T_mu_lambda(
                     alpha, beta, gamma, Ma, rho, m, e, p, T, mu, lambda);
-                mu     *= static_cast<int>(locallyviscous);
-                lambda *= static_cast<int>(locallyviscous);
 
                 // Accumulate reference quantities into running sums...
                 acc[ref::rho](rho);
@@ -624,10 +618,6 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             j < o.dgrid.local_physical_end.y();
             ++j) {
 
-            // Redmine #2983 disables mu and lambda on the freestream boundary
-            // to attempt adhering to Poinsot and Lele subsonic NRBC conditions
-            const bool locallyviscous = !(o.grid.one_sided() && j == (Ny-1));
-
             // Prepare logical indices using struct for scoping (e.g. q::u).
             struct q { enum { u,  v,  w, uu, uv, uw, vv, vw, ww,
                               rho, rhouu, rhovv, rhoww, rhoEE, p, p2,
@@ -654,9 +644,6 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                 const Vector3r u  (m / rho);
                 real_t p;
                 rholut::p(alpha, beta, gamma, Ma, rho, m, e, p);
-
-                // Ask yourself if it should be used...
-                SUZERAIN_UNUSED(locallyviscous);
 
                 // Accumulate pointwise information
                 acc[q::u    ](u.x());
@@ -1016,10 +1003,6 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
         // Construction/destruction automatically resets counts at each y(j)
         array<summing_accumulator_type, barf_type::ColsAtCompileTime> barf_acc;
 
-        // Redmine #2983 disables mu and lambda on the freestream boundary
-        // to attempt adhering to Poinsot and Lele subsonic NRBC conditions
-        const bool locallyviscous = !(o.grid.one_sided() && j == (Ny-1));
-
         // Prepare to iterate across the j-th ZX plane
         const int last_zxoffset = offset
                                 + o.dgrid.local_physical_extent.z()
@@ -1103,8 +1086,6 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                                   rho, grad_rho, m, grad_m, e, grad_e,
                                   p, grad_p, T, grad_T,
                                   mu, grad_mu, lambda, grad_lambda);
-            mu     *= static_cast<int>(locallyviscous);
-            lambda *= static_cast<int>(locallyviscous);
             const real_t nu         = mu / rho;
             const real_t div_grad_p = rholut::div_grad_p(
                                         gamma, Ma,
