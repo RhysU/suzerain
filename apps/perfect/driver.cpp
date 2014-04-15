@@ -376,7 +376,7 @@ driver::save_spectra_primitive(
         sphys(4, offset) = rho;
     }
 
-    // TODO Zero dealiasing modes?  If so, can't recover m = rho * u.
+    // Dealiasing modes not zeroed else can't recover m = rho * u.
     // Convert to normalized Fourier coefficients in XZ but points in Y
     // Leave mean else ensemble of two-point in physical space is wrong!
     sphys *= dgrid->chi();
