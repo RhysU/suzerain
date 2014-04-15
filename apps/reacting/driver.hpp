@@ -123,6 +123,14 @@ public:
     virtual void compute_statistics(
             time_type t);
 
+    /**
+     * Collectively compute and save two-point spectra versus \f$k_x\f$ and
+     * \f$k_z\f$ for \f$T\f$, \f$u\f$, \f$v\f$, \f$w\f$, \f$\rho\f$, \f$\c_i\f$
+     * and all pairwise combinations thereof based on #state_linear.
+     */
+    virtual void save_spectra_primitive(
+            const esio_handle esioh);
+
 protected:
 
     /**
@@ -148,6 +156,17 @@ protected:
      * @copydetails driver_base::save_metadata_hook
      */
     virtual void load_metadata_hook(
+            const esio_handle esioh);
+
+    /**
+     * Invokes \ref save_spectra_primitive after calling the superclass method.
+     *
+     * @param esioh An ESIO handle pointing to an open, writable file.
+     *
+     * @returns True if any active time advance should continue.
+     *          False otherwise.
+     */
+    virtual bool save_state_hook(
             const esio_handle esioh);
 
     /**

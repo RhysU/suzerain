@@ -27,14 +27,23 @@
 
 #include "driver.hpp"
 
+#include <esio/esio.h>
+
 #include <suzerain/diffwave.hpp>
 #include <suzerain/error.h>
 #include <suzerain/format.hpp>
 #include <suzerain/l2.hpp>
+#include <suzerain/ndx.hpp>
+#include <suzerain/operator_tools.hpp>
+#include <suzerain/physical_view.hpp>
+#include <suzerain/profile.hpp>
+#include <suzerain/rholut.hpp>
+#include <suzerain/samples.hpp>
+#include <suzerain/state.hpp>
 #include <suzerain/support/logging.hpp>
 #include <suzerain/support/support.hpp>
 
-#include "reacting.hpp"
+#include "reacting_ndx.hpp"
 
 namespace suzerain {
 
@@ -155,6 +164,172 @@ driver::compute_statistics(
     }
 }
 
+void
+driver::save_spectra_primitive(
+        const esio_handle esioh)
+{
+    SUZERAIN_TIMER_SCOPED("driver::save_spectra_primitive");
+
+    const size_t Ns = cmods->Ns();
+    const size_t state_count = Ns+4;
+
+    // Indices for auxiliary storage to allow the diluter to 
+    // be included in the two-point corralation computation
+    struct aux { enum {
+            T       = 0,
+            u       = 1,
+            v       = 2,
+            w       = 3,
+            rho     = 4,
+            species = 5
+        }; };
+
+    // Get total number of fields in aux storage
+    const size_t aux_count = (aux::species + Ns);
+
+    // Obtain the auxiliary storage (likely from a pool to avoid fragmenting).
+    // We assume no garbage values in the memory will impact us (for speed).
+    // Maybe FIXME: In this way, instead of reusing the memory of state_nonlinear,
+    // we are allocating new memory for all the variables to include the diluter.
+    // There might be a more memory-efficient way to do this...
+    typedef contiguous_state<4,complex_t> state_type;
+    scoped_ptr<state_type> _auxw_ptr(
+            support::allocate_padded_state<state_type>(
+                aux_count, *dgrid));                               // RAII
+    state_type &auxw = *_auxw_ptr;                                 // Shorthand
+
+    // Ensure state and auxw storage meets this routine's assumptions
+    const unsigned int swave_count = state_count;
+    assert(static_cast<int>(ndx::e      ) < swave_count);
+    assert(static_cast<int>(ndx::mx     ) < swave_count);
+    assert(static_cast<int>(ndx::my     ) < swave_count);
+    assert(static_cast<int>(ndx::mz     ) < swave_count);
+    assert(static_cast<int>(ndx::rho    ) < swave_count);
+    if (Ns > 1) {
+        assert(static_cast<int>(ndx::species) < swave_count);
+    }
+    SUZERAIN_ENSURE((int) state_nonlinear->shape()[0] == swave_count);
+    SUZERAIN_ENSURE(std::equal(state_nonlinear->shape() + 1, 
+                               state_nonlinear->shape() + 4,
+                               auxw.shape() + 1));
+    SUZERAIN_ENSURE(std::equal(state_nonlinear->strides() + 1, 
+                               state_nonlinear->strides() + 4,
+                               auxw.strides() + 1));
+
+    // Obtain information from instantaneous fields in *state_linear
+    state_nonlinear->assign_from(*state_linear);
+
+    // Convert to pointwise conserved state in physical space
+    physical_view<> sphys(*dgrid, *state_nonlinear);
+    shared_ptr<operator_tools> otool = obtain_operator_tools();
+    for (size_t f = 0; f < swave_count; ++f) {
+        otool->zero_dealiasing_modes(  *state_nonlinear, f);
+        otool->bop_apply     (0,    1, *state_nonlinear, f);
+        dgrid->transform_wave_to_physical(&sphys.coeffRef(f,0));
+    }
+
+    // Pointwise conversion from e, mx, my, mz, rho, rho_s 
+    // to T, u, v, w, rho, c_s
+    physical_view<> auxp(*dgrid, auxw);
+    real_t Tguess = -1;
+    VectorXr species(Ns); // species densities
+    VectorXr cs     (Ns); // species mass fractions
+    for (int offset = 0; offset < sphys.cols(); ++offset) {
+
+        // Unpack conserved state
+        const real_t   e  (sphys(ndx::e,   offset));
+        const Vector3r m  (sphys(ndx::mx,  offset),
+                           sphys(ndx::my,  offset),
+                           sphys(ndx::mz,  offset));
+        const real_t   rho(sphys(ndx::rho, offset));
+
+        // Compute desired primitive state
+        const Vector3r u = m / rho;
+        real_t T = 0;
+
+        // Unpack species variables
+        // NOTE: In species vector, idx 0 is the dilluter (the species
+        // that is not explicitly part of the state vector)
+        // Compute mass fractions
+        const real_t irho = 1.0/rho;
+        species(0) = rho;
+        for (unsigned int s=1; s<Ns; ++s) {
+            species(s) = sphys(ndx::species + s - 1, offset);
+            cs(s) = irho * species(s);
+
+            // dilluter density = rho_0 = rho - sum_{s=1}^{Ns-1} rho_s
+            species(0)        -= species(s);
+        }
+        cs(0) = irho * species(0);
+
+        // Compute temperature from internal energy
+        // (assuming thermal equilibrium)
+        const real_t re_internal = e -
+            0.5*irho*(m[0]*m[0] + m[1]*m[1] + m[2]*m[2]);
+        T = cmods->sm_thermo->T_from_e_tot(irho*re_internal, cs, Tguess);
+        Tguess = T;
+
+        // Pack desired primitive state
+        auxp(aux::T  , offset) = T;
+        auxp(aux::u  , offset) = u.x();
+        auxp(aux::v  , offset) = u.y();
+        auxp(aux::w  , offset) = u.z();
+        auxp(aux::rho, offset) = rho;
+        for (unsigned int s=0; s<Ns; ++s) {
+            auxp(aux::species + s, offset) = cs(s);
+        }
+    }
+
+    // TODO Zero dealiasing modes?  If so, can't recover m = rho * u.
+    // Convert to normalized Fourier coefficients in XZ but points in Y
+    // Keep means, compute raw statistics
+    auxp *= dgrid->chi();
+    for (size_t f = 0; f < aux_count; ++f) {
+        dgrid->transform_physical_to_wave(&auxp.coeffRef(f,0));
+    }
+
+    // Only rank zero will write the results though all ranks must participate
+    const int npairs = (aux_count*(aux_count+1))/2;
+    int procid;
+    esio_handle_comm_rank(esioh, &procid);
+
+    // Compute and save the two-point correlation as (y_j, k_x, ndxpair)
+    // Ordering arises from packing of primitive state in physical space
+    {
+        shared_array<complex_t> twopoint_x = compute_twopoint_x(
+                auxw, aux_count, *grid, *dgrid);
+        esio_field_establish(esioh,
+                npairs,          0, procid == 0 ? npairs          : 0,
+                grid->N.x()/2+1, 0, procid == 0 ? grid->N.x()/2+1 : 0,
+                grid->N.y(),     0, procid == 0 ? grid->N.y()     : 0);
+        support::complex_field_write(esioh,
+                "twopoint_kx", twopoint_x.get(), 0, 0, 0,
+                "Streamwise two-point correlations stored row-major"
+                " (/collocation_points_y, /kx, scalarpair) for scalarpair"
+                " in { T*T, T*u, T*v, T*w, T*rho, T*{c_j}, u*u, u*v, u*w,"
+    	        " u*rho, u*{c_j}, v*v, v*w, v*rho, v*{c_j}, w*w, w*rho,"
+                " w*{c_j}, rho*rho, rho*{c_j}, {c_i}*{c_j}}");
+    }
+
+    // Compute and save the two-point correlation as (y_j, k_z, ndxpair)
+    // Ordering arises from packing of primitive state in physical space
+    {
+        shared_array<complex_t> twopoint_z = compute_twopoint_z(
+                auxw, aux_count, *grid, *dgrid);
+        esio_field_establish(esioh,
+                npairs,          0, procid == 0 ? npairs          : 0,
+                grid->N.z(),     0, procid == 0 ? grid->N.z()     : 0,
+                grid->N.y(),     0, procid == 0 ? grid->N.y()     : 0);
+        support::complex_field_write(esioh,
+                "twopoint_kz", twopoint_z.get(), 0, 0, 0,
+                "Spanwise two-point correlations stored row-major"
+                " (/collocation_points_y, /kz, scalarpair) for scalarpair"
+                " in { T*T, T*u, T*v, T*w, T*rho, T*{c_j}, u*u, u*v, u*w,"
+                " u*rho, u*{c_j}, v*v, v*w, v*rho, v*{c_j}, w*w, w*rho,"
+                " w*{c_j}, rho*rho, rho*{c_j}, {c_i}*{c_j}}");
+    }
+}
+
 bool
 driver::log_status_hook(
         const std::string& timeprefix,
@@ -198,6 +373,21 @@ driver::load_metadata_hook(
 
     load(esioh, msoln, *cmods, *grid);
     return;
+}
+
+bool
+driver::save_state_hook(
+        const esio_handle esioh)
+{
+    // Get the state to disk as quickly as possible
+    const bool success = super::save_state_hook(esioh);
+
+    // If that went well, go for the spectra
+    if (success) {
+        save_spectra_primitive(esioh);
+    }
+
+    return success;
 }
 
 bool

@@ -11,7 +11,8 @@ Options:
 
 Each H5RESTART should have been made by Suzerain perfect_advance (or similar),
 meaning that all of the following are well-defined datasets
-    /Nx, /Ny, /Nz, /Lx, /Ly, /Lz, /kx, /kz, /twopoint_kx, /twopoint_kz
+    /Nx, /Ny, /Nz, /Lx, /Ly, /Lz, /kx, /kz, /twopoint_kx, /twopoint_kz,
+and if present, /antioch_constitutive_data,
 adhering to a host of ill-documented restrictions.  All shapes must match!
 """
 # TODO Accept normalization constants to display results in wall units
@@ -27,33 +28,41 @@ import numpy.fft as fft
 import pickle
 import sys
 
-# Helper types providing easy result usage like plot(Ex.k, Ex.uu)
-# These are the scalar field pairings to be stored in /twopoint_{kx,kz}
-PAIRS = ['TT', 'Tu', 'Tv', 'Tw', 'Tr',
-               'uu', 'uv', 'uw', 'ur',
-                     'vv', 'vw', 'vr',
-                           'ww', 'wr',
-                                 'rr']
-SpectralData  = collections.namedtuple('SpectralData', ['y', 'k'] + PAIRS)
-PhysicalData  = collections.namedtuple('PhysicalData', ['y', 'x'] + PAIRS)
-ProcessResult = collections.namedtuple('ProcessResult',
-                                       ['Ekx', 'Ekz', 'Rx', 'Rz', 'Rkx', 'Rkz'])
-
-def process(kx, kz, Lx, Lz, Nx, Nz, Rkx, Rkz, y, **kwargs):
+def process(kx, kz, Lx, Lz, Nx, Nz, Rkx, Rkz, y, Ns, sn, **kwargs):
     """Distill loaded Rkx, etc. data into easy-to-use form."""
+
+    # 
+    vars = ['T', 'u', 'v', 'w', 'r']
+    print type(sn), sn.size
+    if sn.size != 0:
+        for s in sn:
+            vars.append('c'+s)
+    print vars
+
+    PAIRS = []
+    for i in xrange(0,len(vars)):
+        for j in xrange(i,len(vars)):
+            PAIRS.append(vars[i] + vars[j])
+
+    print PAIRS
+    SpectralData  = collections.namedtuple('SpectralData', ['y', 'k'] + PAIRS)
+    PhysicalData  = collections.namedtuple('PhysicalData', ['y', 'x'] + PAIRS)
+    ProcessResult = collections.namedtuple('ProcessResult',
+                                           ['Ekx', 'Ekz', 'Rx', 'Rz', 'Rkx', 'Rkz'])
+
     Rx = fft.irfft(Nx * Rkx, axis=1)  # Non-normalized inverse FFT
     Rz = fft.ifft (Nz * Rkz, axis=1)  # Non-normalized inverse FFT
 
     # Compute spectra from Rkx using conjugate-symmetry of Rkx
     Ekx = Rkx.copy()
     Ekx[:, 1:, :] += np.conj(Rkx[:, 1:,:])
-    assert np.max(np.abs(np.imag(Ekx))) == 0
+    #assert np.max(np.abs(np.imag(Ekx))) == 0
     Ekx = np.real(Ekx)
 
     # Compute spectra from Rkz by adding reflected negative wavenumbers
     Ekz            = Rkz[:, 0:(Nz/2+1), :].copy()
     Ekz[:, 1:, :] += Rkz[:, -1:-(Nz/2+1):-1,:]
-    assert np.max(np.abs(np.imag(Ekz))) < np.finfo(Ekz.dtype).eps
+    #assert np.max(np.abs(np.imag(Ekz))) < np.finfo(Ekz.dtype).eps
     Ekz = np.real(Ekz)
 
     # Helper to shorten the following few statements
@@ -86,6 +95,13 @@ def load(h5filenames):
     d   = {}
     for h5filename in h5filenames:
         h5file = h5py.File(h5filename, 'r')
+        Ns = 0
+        sname = []
+        if "antioch_constitutive_data" in h5file:
+            Ns=h5file['antioch_constitutive_data'].attrs['Ns'][0]
+            sname= np.chararray(Ns, itemsize=5)
+            for s in xrange(0,Ns):
+                sname[s]=h5file['antioch_constitutive_data'].attrs['Species_'+str(s)]
         d.update(dict(
             kx = h5file['kx'][()],
             kz = h5file['kz'][()],
@@ -96,6 +112,8 @@ def load(h5filenames):
             Ny = h5file['Ny'][0],
             Nz = h5file['Nz'][0],
             y  = h5file['collocation_points_y'][()],
+            Ns = Ns,
+            sn = sname
         ))
         if Rkx is None:
             Rkx  = np.squeeze(h5file['twopoint_kx'][()].view(np.complex128))
