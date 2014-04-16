@@ -414,7 +414,7 @@ quantities sample_quantities(
     VectorXr species(Ns); // species densities
     VectorXr Ds     (Ns); // mass diffusivities
     VectorXr hs     (Ns); // species enthalpies
-    VectorXr om     (Ns); // reaction source terms
+    VectorXr oms    (Ns); // reaction source terms
     VectorXr cs     (Ns); // species mass fractions
     VectorXr etots  (Ns); // species internal energies
 
@@ -639,6 +639,10 @@ quantities sample_quantities(
                 const Matrix3r grad_u=
                     suzerain::rholut::grad_u(rho, grad_rho, m, grad_m);
 
+                // ... this is vorticity
+                const Vector3r om       (grad_u(2,1) - grad_u(1,2),
+                                         grad_u(0,2) - grad_u(2,0),
+                                         grad_u(1,0) - grad_u(0,1));
 
                 // Compute temperature, pressure, mass diffusivities,
                 // viscosity, thermal conductivity, species enthalpies, and
@@ -646,7 +650,7 @@ quantities sample_quantities(
                 real_t T, p, mu, kap, a, Cv, Cp;
                 Tguess = auxp(aux::T, offset);
                 cmods.evaluate(e, m, rho, species, cs, Tguess,
-                               T, p, Ds, mu, kap, hs, om, a, Cv, Cp);
+                               T, p, Ds, mu, kap, hs, oms, a, Cv, Cp);
 
                 // Extract grad(T)
                 const Vector3r grad_T ( auxp(aux::gT+dir::x, offset),
@@ -667,7 +671,7 @@ quantities sample_quantities(
                 // Accumulate quantities into sum_XXX using function syntax.
                 for (unsigned int s=0; s<Ns; ++s) {
                     sum_rho_s[s](species[s]);
-                    sum_om_s [s](om[s]);
+                    sum_om_s [s](oms[s]);
 
                     sum_rho_s_u[s*dir::count+0](species[s] * u.x());
                     sum_rho_s_u[s*dir::count+1](species[s] * u.y());
@@ -817,6 +821,17 @@ quantities sample_quantities(
                 sum_u_u[0](u.x() * u.x());
                 sum_u_u[1](u.y() * u.y());
                 sum_u_u[2](u.z() * u.z());
+
+                sum_om[0](om.x());
+                sum_om[1](om.y());
+                sum_om[2](om.z());
+
+                sum_om_om[0](om.x() * om.x());
+                sum_om_om[1](om.x() * om.y());
+                sum_om_om[2](om.x() * om.z());
+                sum_om_om[3](om.y() * om.y());
+                sum_om_om[4](om.y() * om.z());
+                sum_om_om[5](om.z() * om.z());
 
                 // TODO Sum mean slow growth forcing contributions (Redmine #2496)
 

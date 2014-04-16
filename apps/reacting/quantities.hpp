@@ -95,6 +95,7 @@ public:
     ((u,                 3))  /* vector           */ \
     ((sym_grad_u,        6))  /* symmetric tensor */ \
     ((sym_rho_grad_u,    6))  /* symmetric tensor */ \
+    ((om,                3))  /* vector           */ \
     ((grad_T,            3))  /* vector           */ \
     ((rho_grad_T,        3))  /* vector           */ \
     ((tau_colon_grad_u,  1))  /* scalar           */ \
@@ -118,6 +119,7 @@ public:
     ((M_M,               1))  /* scalar           */ \
     ((mu_mu,             1))  /* scalar           */ \
     ((u_u,               3))  /* vector           */ \
+    ((om_om,             3))  /* vector           */ \
     ((SrhoE,             1))  /* scalar           */ \
     ((Srhou,             3))  /* vector           */ \
     ((Srho,              1))  /* scalar           */ \
