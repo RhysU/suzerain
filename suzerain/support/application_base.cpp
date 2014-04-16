@@ -106,6 +106,7 @@ application_base::initialize(int argc, char **argv)
     atexit(mkl_free_buffers);
 #endif
 #endif
+    atexit(fftw_cleanup);                            // Finalize FFTW at exit
     atexit(fftw_forget_wisdom);                      // Finalize FFTW at exit
 #ifdef SUZERAIN_HAVE_UNDERLING
     underling_init(&argc, &argv, 0);                 // Initialize underling...
