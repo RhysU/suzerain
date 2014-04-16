@@ -194,8 +194,12 @@ driver::log_linearization_error(
     state_nonlinear->add_scaled(1/dgrid->chi(), *state_linear);
 
     // When this->L and this->N match perfectly, state_nonlinear should be
-    // identically zero.  Seeing more than acceptable (e.g. 1e-10) floating
-    // point error indicates something is amiss.
+    // identically zero at each collocation point.  Seeing more than acceptable
+    // (e.g. 1e-10) floating point error indicates something is amiss.
+    shared_ptr<operator_tools> otool = obtain_operator_tools();
+    for (size_t f = 0; f < state_nonlinear->shape()[0]; ++f) {
+        otool->bop_solve(*otool->massluz(), *state_nonlinear, f);
+    }
     const std::vector<field_L2xyz> L2
         = compute_field_L2xyz(*state_nonlinear, *grid, *dgrid, *gop);
     std::ostringstream msg;
