@@ -40,7 +40,7 @@ banner "Idempotence of restarting from physical space without time advance${OPER
     $perfect pich0.h5 --restart_destination "a#.h5" --advance_nt=0 \
                       --restart_retain=1                           \
                       ${DECOMP:-} $WIZ $P --restart_physical
-    differ --delta=1e-15 pich0.h5 a0.h5
+    differ --delta=1e-15 --exclude-path /twopoint_kx --exclude-path /twopoint_kz pich0.h5 a0.h5
 )
 
 banner "Conversion from physical- to wave-based restart without time advance${OPER:+ ($OPER)}"
