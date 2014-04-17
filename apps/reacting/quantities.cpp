@@ -219,7 +219,7 @@ quantities::quantities(
     : quantities_base(t, Ny)
     , Ns(Ns)
 {
-    species_storage.setZero(Ny, 11*Ns);
+    species_storage.setZero(Ny, 12*Ns);
 }
 
 
@@ -231,6 +231,7 @@ bool quantities::save(const esio_handle h) const
     if (this->species_storage.size()) {
         quantities_saver f("quantities", h, "bar_");
         retval &= f("rho_s",             this->rho_s(0, Ns));
+        retval &= f("cs_s" ,             this->cs_s (0, Ns));
         retval &= f("om_s" ,             this->om_s (0, Ns));
         retval &= f("rho_s_u"          , this->rho_s_u          ());
         retval &= f("rho_Ds_grad_cs"   , this->rho_Ds_grad_cs   ());
@@ -255,7 +256,7 @@ bool quantities::load(const esio_handle h)
     int cglobal, bglobal, aglobal;
     if (ESIO_SUCCESS == esio_field_size(h, "bar_rho_s",
                                         &cglobal, &bglobal, &aglobal)) {
-        this->species_storage.resize(aglobal, 11*bglobal);
+        this->species_storage.resize(aglobal, 12*bglobal);
 
         if (this->Ns==0)
             { this->Ns = bglobal; }
@@ -264,6 +265,7 @@ bool quantities::load(const esio_handle h)
 
         quantities_loader f("quantities", h, "bar_");
         retval &= f("rho_s", this->rho_s(0, Ns));
+        retval &= f("cs_s" , this->cs_s (0, Ns));
         retval &= f("om_s" , this->om_s (0, Ns));
         retval &= f("rho_s_u"          , this->rho_s_u          ());
         retval &= f("rho_Ds_grad_cs"   , this->rho_Ds_grad_cs   ());
@@ -546,6 +548,7 @@ quantities sample_quantities(
 
         // Vectors of species quantity accumulators
         std::vector<accumulator_type> sum_rho_s  (Ns);
+        std::vector<accumulator_type> sum_cs_s   (Ns);
         std::vector<accumulator_type> sum_om_s   (Ns);
         std::vector<accumulator_type> sum_rho_s_u          (Ns*dir::count);
         std::vector<accumulator_type> sum_rho_Ds_grad_cs   (Ns*dir::count);
@@ -671,6 +674,7 @@ quantities sample_quantities(
                 // Accumulate quantities into sum_XXX using function syntax.
                 for (unsigned int s=0; s<Ns; ++s) {
                     sum_rho_s[s](species[s]);
+                    sum_cs_s [s](cs[s]);
                     sum_om_s [s](oms[s]);
 
                     sum_rho_s_u[s*dir::count+0](species[s] * u.x());
@@ -866,7 +870,8 @@ quantities sample_quantities(
         // ... species quantities
         for (unsigned int s=0; s<Ns; ++s) {
             ret.rho_s(s)[j] = acc::sum(sum_rho_s[s]);
-            ret.om_s (s)[j] = acc::sum(sum_om_s[s] );
+            ret.cs_s (s)[j] = acc::sum(sum_cs_s [s]);
+            ret.om_s (s)[j] = acc::sum(sum_om_s [s]);
 
             ret.rho_s_u(s,0)[j] = acc::sum(sum_rho_s_u[s*dir::count+0]);
             ret.rho_s_u(s,1)[j] = acc::sum(sum_rho_s_u[s*dir::count+1]);
@@ -915,7 +920,7 @@ quantities sample_quantities(
             ret.storage.middleCols<quantities::nscalars::physical>(
                 quantities::start::physical).data(),
             ret.storage.innerStride(), ret.storage.outerStride());
-    scaled_mass.solve(11*Ns, ret.species_storage.data(),
+    scaled_mass.solve(12*Ns, ret.species_storage.data(),
                       ret.species_storage.innerStride(),
                       ret.species_storage.outerStride());
 

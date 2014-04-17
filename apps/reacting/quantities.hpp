@@ -375,6 +375,34 @@ public:
         return species_storage.middleCols(s, nc);
     }
 
+    // Declare a named, mutable "view" into storage for each species 
+    // concentration
+    species_storage_type::ColXpr
+    cs_s(const std::size_t s) {
+        return species_storage.col(s);
+    }
+
+    // Declare a named, immutable "view" into storage for each species 
+    // concentration
+    species_storage_type::ConstColXpr
+    cs_s(const std::size_t s) const {
+        return species_storage.col(s);
+    }
+
+    // Declare a named, mutable "view" into storage for each species 
+    // concentration
+    species_storage_type::ColsBlockXpr
+    cs_s(const std::size_t s, species_storage_type::Index nc) {
+        return species_storage.middleCols(s, nc);
+    }
+
+    // Declare a named, immutable "view" into storage for each species 
+    // concentration
+    species_storage_type::ConstColsBlockXpr
+    cs_s(const std::size_t s, species_storage_type::Index nc) const {
+        return species_storage.middleCols(s, nc);
+    }
+
     // Declare a named, mutable "view" into storage for each species density
     species_storage_type::ColXpr
     om_s(const std::size_t s) {
