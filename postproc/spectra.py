@@ -18,6 +18,7 @@ adhering to a host of ill-documented restrictions.  All shapes must match!
 # TODO Accept normalization constants to display results in wall units
 
 import collections
+import gb
 import getopt
 import h5py
 import matplotlib
@@ -28,27 +29,31 @@ import numpy.fft as fft
 import pickle
 import sys
 
-def process(kx, kz, Lx, Lz, Nx, Nz, Rkx, Rkz, y, Ns, sn, **kwargs):
+def process(kx, kz, Lx, Lz, Nx, Nz, Rkx, Rkz, bar, y, Ns, sn, **kwargs):
     """Distill loaded Rkx, etc. data into easy-to-use form."""
 
-    # 
+    # Generate string of variable names 
     vars = ['T', 'u', 'v', 'w', 'r']
-    print type(sn), sn.size
     if sn.size != 0:
         for s in sn:
             vars.append('c'+s)
-    print vars
+    print "Variables : ", vars
+    nvars = len(vars)
 
-    PAIRS = []
+    # Generate product of mean fields along with pairs of variables
+    PAIRS     = []
+    npairs    = nvars * (nvars+1) / 2
+    bar_pairs = np.empty((npairs, len(y)))
     for i in xrange(0,len(vars)):
         for j in xrange(i,len(vars)):
             PAIRS.append(vars[i] + vars[j])
+            bar_pairs[len(PAIRS)-1,:] = np.multiply(bar[i,:],bar[j,:])
 
-    print PAIRS
+    print "Pairs : ", PAIRS
     SpectralData  = collections.namedtuple('SpectralData', ['y', 'k'] + PAIRS)
     PhysicalData  = collections.namedtuple('PhysicalData', ['y', 'x'] + PAIRS)
     ProcessResult = collections.namedtuple('ProcessResult',
-                                           ['Ekx', 'Ekz', 'Rx', 'Rz', 'Rkx', 'Rkz'])
+                                           ['Ekx', 'Ekz', 'Rx', 'Rz', 'Rkx', 'Rkz', 'bar'])
 
     Rx = fft.irfft(Nx * Rkx, axis=1)  # Non-normalized inverse FFT
     Rz = fft.ifft (Nz * Rkz, axis=1)  # Non-normalized inverse FFT
@@ -56,13 +61,13 @@ def process(kx, kz, Lx, Lz, Nx, Nz, Rkx, Rkz, y, Ns, sn, **kwargs):
     # Compute spectra from Rkx using conjugate-symmetry of Rkx
     Ekx = Rkx.copy()
     Ekx[:, 1:, :] += np.conj(Rkx[:, 1:,:])
-    #assert np.max(np.abs(np.imag(Ekx))) == 0
+    assert np.max(np.abs(np.imag(Ekx))) == 0
     Ekx = np.real(Ekx)
 
     # Compute spectra from Rkz by adding reflected negative wavenumbers
     Ekz            = Rkz[:, 0:(Nz/2+1), :].copy()
     Ekz[:, 1:, :] += Rkz[:, -1:-(Nz/2+1):-1,:]
-    #assert np.max(np.abs(np.imag(Ekz))) < np.finfo(Ekz.dtype).eps
+    assert np.max(np.abs(np.imag(Ekz))) < np.finfo(Ekz.dtype).eps
     Ekz = np.real(Ekz)
 
     # Helper to shorten the following few statements
@@ -79,10 +84,15 @@ def process(kx, kz, Lx, Lz, Nx, Nz, Rkx, Rkz, y, Ns, sn, **kwargs):
     # Only half of two-point is interesting as they are periodic and even
     Rx = Rx[:, :(Rx.shape[1]/2+1), :]
     Rz = Rz[:, :(Rz.shape[1]/2+1), :]
+    # Substract mean contribution
+    for i in xrange(Rx.shape[1]):
+        Rx[:,i,:] -= bar_pairs
+    for k in xrange(Rz.shape[1]):
+        Rz[:,k,:] -= bar_pairs
     Rx = PhysicalData(y, np.mgrid[:Nx/2+1]*(Lx/Nx), *scalarpairs(Rx))
     Rz = PhysicalData(y, np.mgrid[:Nz/2+1]*(Lz/Nz), *scalarpairs(Rz))
 
-    return ProcessResult(Ekx, Ekz, Rx, Rz, Rkx, Rkz)
+    return ProcessResult(Ekx, Ekz, Rx, Rz, Rkx, Rkz, bar)
 
 
 def load(h5filenames):
@@ -90,13 +100,29 @@ def load(h5filenames):
     Averages of /twopoint_kx and /twopoint_kz are taken across all inputs.
     Other results reflect only the metadata from the last file loaded.
     """
-    Rkx = None
-    Rkz = None
-    d   = {}
+    Rkx     = None
+    Rkz     = None
+    bar     = None
+    bar_T   = None
+    bar_u   = None
+    bar_rho = None
+    bar_cs  = None
+    d       = {}
+    D0      = None
     for h5filename in h5filenames:
         h5file = h5py.File(h5filename, 'r')
         Ns = 0
         sname = []
+
+        # Grab number of collocation points and B-spline order
+        Ny = h5file['Ny'][0]
+        k  = h5file['k'][0]
+
+        # Get "mass" matrix and convert to dense format
+        D0T_gb = h5file['Dy0T'].value
+        D0T    = gb.gb2ge(D0T_gb, Ny, k-2)
+        D0     = D0T.transpose()
+
         if "antioch_constitutive_data" in h5file:
             Ns=h5file['antioch_constitutive_data'].attrs['Ns'][0]
             sname= np.chararray(Ns, itemsize=5)
@@ -123,14 +149,56 @@ def load(h5filenames):
             Rkz  = np.squeeze(h5file['twopoint_kz'][()].view(np.complex128))
         else:
             Rkz += np.squeeze(h5file['twopoint_kz'][()].view(np.complex128))
+        if bar_T is None:
+            bar_T  = np.squeeze(h5file['bar_T'][()].view(np.float64))
+        else:
+            bar_T += np.squeeze(h5file['bar_T'][()].view(np.float64))
+        if bar_u is None:
+            bar_u  = np.squeeze(h5file['bar_u'][()].view(np.float64))
+        else:
+            bar_u += np.squeeze(h5file['bar_u'][()].view(np.float64))
+        if bar_rho is None:
+            bar_rho  = np.squeeze(h5file['bar_rho'][()].view(np.float64))
+        else:
+            bar_rho += np.squeeze(h5file['bar_rho'][()].view(np.float64))
+        if "antioch_constitutive_data" in h5file:
+            if Ns > 1:
+                if bar_cs is None:
+                    bar_cs  = np.squeeze(h5file['bar_cs'][()].view(np.float64))
+                else:
+                    bar_cs += np.squeeze(h5file['bar_cs'][()].view(np.float64))
+            else:
+                if bar_cs is None:
+                    bar_cs  = 0 * np.array(bar_rho).reshape(1,Ny) + 1
+                else:
+                    bar_cs += 0 * np.array(bar_rho).reshape(1,Ny) + 1
         h5file.close()
     if Rkx is not None:
         Rkx /= len(h5filenames)
     if Rkz is not None:
         Rkz /= len(h5filenames)
+    if bar_T is not None:
+        bar_T /= len(h5filenames)
+        bar_T  = np.dot(D0,bar_T)
+    if bar_u is not None:
+        print D0.shape, bar_u.shape
+        bar_u /= len(h5filenames)
+        bar_u  = np.transpose(np.dot(D0,np.transpose(bar_u)))
+    if bar_rho is not None:
+        bar_rho /= len(h5filenames)
+        bar_rho = np.dot(D0,bar_rho)
+    if bar_cs is not None:
+        bar_cs /= len(h5filenames)
+        bar_cs  = np.transpose(np.dot(D0,np.transpose(bar_cs)))
+
+    # Pack mean fields, assume no variable remained as None, 
+    # except for possibly bar_cs
+    bar = np.concatenate((bar_T, bar_u, bar_rho, bar_cs)).reshape(5+Ns, Ny)
+    
     d.update(dict(
         Rkx = Rkx,
-        Rkz = Rkz
+        Rkz = Rkz,
+        bar = bar 
     ))
     return d
 
@@ -202,7 +270,7 @@ def main(argv=None):
     # Load and process all incoming data into easy-to-use form
     data = load(args)
     res  = process(**data)
-    (Ekx, Ekz, Rx, Rz, Rkx, Rkz) = res
+    (Ekx, Ekz, Rx, Rz, Rkx, Rkz, bar) = res
 
     # If requested, first pickle results to ease post mortem on crash
     # (it currently requires jumping through hoops to load these pickles).
