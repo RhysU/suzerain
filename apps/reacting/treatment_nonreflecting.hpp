@@ -117,7 +117,7 @@ private:
     treatment_nonreflecting(const treatment_nonreflecting&);
     treatment_nonreflecting& operator=(const treatment_nonreflecting&);
 
-    /** FIXME: Numbrer of species. */
+    /** FIXME: Number of species. */
     size_t Ns;
 
     /** Mean species densities at upper boundary. */

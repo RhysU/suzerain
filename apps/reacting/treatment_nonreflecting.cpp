@@ -202,7 +202,7 @@ std::vector<real_t> treatment_nonreflecting::apply_operator(
             rhos(is_local) = rho * common.cs_ref(is_local);
             DEBUG0(who, "rhos(" << is_local << ") = " << rhos(is_local));
 
-            // substract to compute diluter density
+            // subtract to compute diluter density
             rhos(0) -= rhos(is_local);
         }
         DEBUG0(who, "rhos(0) = " << rhos(0) );
