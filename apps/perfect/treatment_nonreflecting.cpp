@@ -136,6 +136,7 @@ treatment_nonreflecting::apply_operator(
     const real_t twopioverLz = twopiover(grid.L.z());  // ...for FP control
 
     // Traverse wavenumbers updating the RHS with the Giles boundary condition
+    // per "Implementation primarily within the nonlinear explicit operator"
     // TODO Could short circuit some of this traversal using dealiasing
     using suzerain::inorder::wavenumber;
     const int mu = boost::numeric_cast<int>(swave.shape()[2]);
@@ -147,26 +148,27 @@ treatment_nonreflecting::apply_operator(
             const int wm = wavenumber(dNx, m);
             const real_t km = twopioverLx*wm;
 
-            // Unpack upper boundary RHS into a contiguous buffer
-            Vector5c N;
-            for (int f = 0; f < N.size(); ++f) {
-                N(f) = swave[f][Ny - 1][m - dkbx][n - dkbz];
-            }
-
-            // Modify the packed RHS per
-            // "Implementation primarily within the nonlinear explicit operator"
-            // Accumulates kn/km terms before any possible ImPG swamping.
-            // The -I factors have already been included within negI_stash.
+            // Accumulates kn/km NRBC terms before any possible ImPG swamping.
+            // The -I scaling has already been accommodated within negI_stash.
             Vector5c tmp   = kn
                            * PG_BG_VL_S_RY_by_chi.cast<complex_t>()
                            * negI_stash.col((m - dkbx) + mu*(n - dkbz));
             tmp.noalias() += km
                            * PG_CG_VL_S_RY_by_chi.cast<complex_t>()
                            * negI_stash.col((m - dkbx) + mu*(n - dkbz));
-            tmp.noalias() += ImPG_VL_S_RY.cast<complex_t>() * N;
-            N.noalias()    = inv_VL_S_RY.cast<complex_t>() * tmp;
 
-            // Pack new upper boundary RHS from the contiguous buffer
+            // Pack upper boundary nonlinear RHS into contiguous buffer
+            Vector5c N;
+            for (int f = 0; f < N.size(); ++f) {
+                N(f) = swave[f][Ny - 1][m - dkbx][n - dkbz];
+            }
+
+            // Project out unwanted characteristics from RHS and accumulate
+            // followed by projecting result back to conserved state
+            tmp.noalias() += ImPG_VL_S_RY.cast<complex_t>() * N;
+            N.noalias()    = inv_VL_S_RY.cast<complex_t>()  * tmp;
+
+            // Unpack new upper boundary RHS from the contiguous buffer
             for (int f = 0; f < N.size(); ++f) {
                 swave[f][Ny - 1][m - dkbx][n - dkbz] = N(f);
             }
