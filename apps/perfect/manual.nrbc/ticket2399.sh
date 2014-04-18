@@ -121,13 +121,10 @@ tempfile() { tempprefix=$(basename "$0"); mktemp /tmp/${tempprefix}.XXXXXX; }
 FAILURES=$(tempfile)
 trap 'rm -f $FAILURES' EXIT
 
+# FIXME This test cases will misbehave until at least #3102 is resolved.
 echo 'Quiet base flow suite one: outflow upper boundary'
 echo '######################################################'
 (
-    # Ticket #2399 showed problems with subsonic viscous outflow.
-    # Ticket #2983 failed in an attempt to fix them quickly.
-    # FIXME A thorough, IMEX-friendly solution requires some thought.
-    # This test case will misbehave until the #2983 and #2957 are resolved.
     case="quiet_pos_v"
     rmmkcd "ticket2399/$case"
     (
@@ -174,6 +171,7 @@ echo '######################################################'
     run_postproc
 ) &
 
+# FIXME This test cases will misbehave until at least #3102 is resolved.
 echo 'Acoustic pulse: outflow upper boundary'
 echo '######################################################'
 (
