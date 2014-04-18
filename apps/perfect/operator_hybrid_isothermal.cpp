@@ -832,7 +832,7 @@ operator_hybrid_isothermal::apply_operator(
             N_hatV(4) = swave[ndx::rho][Ny - 1][m - dkbx][n - dkbz];
 
             // Modify the packed RHS per
-            // "Implementation primarily within the linear explicit operator"
+            // "Implementation primarily within the linear implicit operator"
             N_hatV.applyOnTheLeft(upper_nrbc_n.cast<complex_t>());
 
             // Pack new upper boundary RHS from the contiguous buffer
