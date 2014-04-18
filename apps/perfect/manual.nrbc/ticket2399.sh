@@ -61,8 +61,8 @@ perfect_initial=(
     --upper_T=1
     --lower_u=1
     --upper_u=1
-    --Ma=1.5               # From upper_u/sqrt(upper_T)
-    --Re=500               # Larger reduces undesirable viscous impact
+    --Ma=${MACH:-1.5}
+    --Re=${REYNOLDS:-500}  # Larger reduces undesirable viscous impact
                            # Try --Re=inf for an Eulerian good time
 )
 perfect_advance=(
