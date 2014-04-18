@@ -31,6 +31,44 @@
 
 namespace suzerain {
 
+// A word on numerical implementation choices in the giles_matrices() method:
+//
+// Symbolic S^{-1} and V_L^{-1} matrices appear in the model document
+// and appear below though they are commented out.  Some quick testing has
+// shown that forming
+//     inv_VL_S_RY = RY.transpose() * inv_S * inv_VL
+// can be less well-behaved than computing a numerical inverse in that
+// the latter produces smaller norm((inv_VL_S_RY * VL_S_RY) - eye(5)).
+//
+// More concretely, the characteristic projection was measured using
+//     perfect_advance --advance_nt=1 fields/spatiotemporal_consistent_1e-1_k06.h5
+// via the additional snippet
+//     std::cerr << std::endl << (inv_VL_S_RY * VL_S_RY) << std::endl;
+// added at the end of the method giles_matrices().
+//
+// Symbolic inverse coded as of r44757.
+//            1            0  4.44089e-16            0 -1.11022e-16
+//            0            1  1.11022e-16            0 -2.77556e-17
+//            0            0            1            0 -4.16334e-17
+//            0            0            0            1            0
+//            0            0  1.11022e-16            0            1
+// coded with
+//     inv_VL_S_RY   = RY.transpose() * inv_S * inv_VL
+//
+// Numeric inverse using FullPivLU via MatrixBase::inverse()
+//            1 -2.22045e-16            0            0            0
+//            0            1  1.11022e-16            0 -2.77556e-17
+//            0  5.55112e-17            1            0  4.16334e-17
+//            0            0            0            1            0
+//            0            0  1.11022e-16            0            1
+// coded with
+//     inv_VL_S_RY   = VL_S_RY.inverse();
+//
+// Comparing these results shows the numeric inverse to be better by 2x
+// when building --enable-debug on GNU C++.  As this routine is called
+// once per Runge-Kutta time step, the explicit inversion overhead is
+// moot compared to getting a cleaner nonreflecting boundary result.
+
 void
 giles_matrices(
         const real_t Ma,
@@ -77,12 +115,11 @@ giles_matrices(
           real_t inv_a2  = 1 / a2;
 
     // Prepare oft-used scenario-related constants
-    const real_t half       = static_cast<real_t>(1) / 2;
-    const real_t gamma1     = gamma - 1;
-    const real_t inv_gamma1 = 1 / gamma1;
-    const real_t inv_Ma     = 1 / Ma;
-    const real_t Ma2        = Ma * Ma;
-    const real_t inv_Ma2    = 1 / Ma2;
+    const real_t half    = static_cast<real_t>(1) / 2;
+    const real_t gamma1  = gamma - 1;
+    const real_t inv_Ma  = 1 / Ma;
+    const real_t Ma2     = Ma * Ma;
+    const real_t inv_Ma2 = 1 / Ma2;
 
     // Build the conserved -> primitive transformation and its inverse
     Matrix5r S(Matrix5r::Zero());
@@ -100,21 +137,21 @@ giles_matrices(
         S(4, 3) = - gamma1 * w;
         S(4, 4) =   gamma1 * inv_Ma2;
     }
-    Matrix5r inv_S(Matrix5r::Zero());
-    {
-        inv_S(0, 0) =   1;
-        inv_S(1, 0) =   u;
-        inv_S(2, 0) =   v;
-        inv_S(3, 0) =   w;
-        inv_S(4, 0) =   Ma2 * (u2 + v2 + w2) / 2;
-        inv_S(1, 1) =   rho;
-        inv_S(4, 1) =   Ma2 * rho * u;
-        inv_S(2, 2) =   rho;
-        inv_S(4, 2) =   Ma2 * rho * v;
-        inv_S(3, 3) =   rho;
-        inv_S(4, 3) =   Ma2 * rho * w;
-        inv_S(4, 4) =   Ma2 * inv_gamma1;
-    }
+////Matrix5r inv_S(Matrix5r::Zero());
+////{
+////    inv_S(0, 0) =   1;
+////    inv_S(1, 0) =   u;
+////    inv_S(2, 0) =   v;
+////    inv_S(3, 0) =   w;
+////    inv_S(4, 0) =   Ma2 * (u2 + v2 + w2) / 2;
+////    inv_S(1, 1) =   rho;
+////    inv_S(4, 1) =   Ma2 * rho * u;
+////    inv_S(2, 2) =   rho;
+////    inv_S(4, 2) =   Ma2 * rho * v;
+////    inv_S(3, 3) =   rho;
+////    inv_S(4, 3) =   Ma2 * rho * w;
+////    inv_S(4, 4) =   Ma2 / gamma1;
+////}
 
     // Per the model document
     //   When reusing [V^L, B^G, and C^G] derived for U ... for V^\ast
@@ -138,18 +175,18 @@ giles_matrices(
         VL(3, 4) =   1;
         VL(4, 4) =   1;
     }
-    Matrix5r inv_VL(Matrix5r::Zero());
-    {
-        inv_VL(0, 0) = - inv_a2;
-        inv_VL(2, 1) =   inv_rho * inv_a;
-        inv_VL(3, 2) =   inv_rho * inv_a;
-        inv_VL(0, 3) =   half * inv_a2;
-        inv_VL(1, 3) =   half * inv_rho * inv_a;
-        inv_VL(4, 3) =   half;
-        inv_VL(0, 4) =   half * inv_a2;
-        inv_VL(1, 4) = - half * inv_rho * inv_a;
-        inv_VL(4, 4) =   half;
-    }
+////Matrix5r inv_VL(Matrix5r::Zero());
+////{
+////    inv_VL(0, 0) = - inv_a2;
+////    inv_VL(2, 1) =   inv_rho * inv_a;
+////    inv_VL(3, 2) =   inv_rho * inv_a;
+////    inv_VL(0, 3) =   half * inv_a2;
+////    inv_VL(1, 3) =   half * inv_rho * inv_a;
+////    inv_VL(4, 3) =   half;
+////    inv_VL(0, 4) =   half * inv_a2;
+////    inv_VL(1, 4) = - half * inv_rho * inv_a;
+////    inv_VL(4, 4) =   half;
+////}
 
     // Build the in-vs-outflow characteristic-preserving projection.
     // Also accounts for sub- versus supersonic boundaries.
@@ -185,7 +222,8 @@ giles_matrices(
     PG_BG_VL_S_RY = PG.asDiagonal() * BG * VL_S_RY;
     PG_CG_VL_S_RY = PG.asDiagonal() * CG * VL_S_RY;
     PG_VL_S_RY    = PG.asDiagonal()      * VL_S_RY;
-    inv_VL_S_RY   = RY.transpose() * inv_S * inv_VL;
+////inv_VL_S_RY   = RY.transpose() * inv_S * inv_VL;  // Symbolic inverse
+    inv_VL_S_RY   = VL_S_RY.inverse();                // Numeric inverse
 }
 
 } // namespace suzerain
