@@ -373,20 +373,12 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
         o.dgrid.transform_wave_to_physical(&auxp.coeffRef(i,0));
     }
 
-    // Compute derived constants before inner loops
-    const real_t alpha13          = alpha + real_t(1)/real_t(3);
-    const real_t alpha43          = alpha + real_t(4)/real_t(3);
-    const real_t inv_Re           = 1 / Re;
+    // Compute inviscid-only constants before any Y, X, or Z inner loops
     const real_t inv_Ma2          = 1 / (Ma * Ma);
-    const real_t Ma2_over_Re      = (Ma * Ma) / Re;
     const real_t gamma1           = gamma - 1;
-    const real_t inv_Re_Pr_gamma1 = 1 / (Re * Pr * gamma1);
     const real_t gamma_over_Pr    = gamma / Pr;
     const real_t lambda1_x        = o.lambda1_x;
     const real_t lambda1_z        = o.lambda1_z;
-    const real_t maxdiffconst     = inv_Re*max(gamma/Pr, max(real_t(1), alpha));
-    const real_t md_lambda2_x     = maxdiffconst * o.lambda2_x;
-    const real_t md_lambda2_z     = maxdiffconst * o.lambda2_z;
 
     // If necessary, perform globally-relevant initialization calls to Largo.
     // Required only once but done every ZerothSubstep as a nod to modularity.
@@ -444,10 +436,6 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             j < o.dgrid.local_physical_end.y();
             ++j) {
 
-            // Redmine #2983 disables mu and lambda on the freestream boundary
-            // to attempt adhering to Poinsot and Lele subsonic NRBC conditions
-            const bool locallyviscous = !(o.grid.one_sided() && j+1U == Ny);
-
             // Prepare logical indices using struct for scoping (e.g. ref::ux).
             struct ref { enum { rho, p, p2, T, a,
                                 ux, uy, uz, u2,
@@ -462,6 +450,10 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
 
             // An array of summing_accumulator_type holds all running sums
             array<summing_accumulator_type, ref::count> acc;
+
+            // Redmine #2983 disables mu, lambda on the freestream boundary to
+            // adhere to superset of Poinsot and Lele subsonic NRBC conditions
+            const bool locallyviscous = !(o.grid.one_sided() && j+1U == Ny);
 
             const int last_zxoffset = offset
                                     + o.dgrid.local_physical_extent.z()
@@ -479,6 +471,11 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                 real_t p, T, mu, lambda;
                 rholut::p_T_mu_lambda(
                     alpha, beta, gamma, Ma, rho, m, e, p, T, mu, lambda);
+
+                // The linearization reference quantity implementation
+                // requires a single global 1 / Re value, so unlike
+                // the RHS implementation below setting 1 / Re = 0,
+                // here we locally turn off viscosity as necessary.
                 mu     *= static_cast<int>(locallyviscous);
                 lambda *= static_cast<int>(locallyviscous);
 
@@ -624,10 +621,6 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             j < o.dgrid.local_physical_end.y();
             ++j) {
 
-            // Redmine #2983 disables mu and lambda on the freestream boundary
-            // to attempt adhering to Poinsot and Lele subsonic NRBC conditions
-            const bool locallyviscous = !(o.grid.one_sided() && j+1U == Ny);
-
             // Prepare logical indices using struct for scoping (e.g. q::u).
             struct q { enum { u,  v,  w, uu, uv, uw, vv, vw, ww,
                               rho, rhouu, rhovv, rhoww, rhoEE, p, p2,
@@ -637,6 +630,10 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             // An array of summing_accumulator_type holds all running sums.
             // This gives nicer construction and allows looping over results.
             array<summing_accumulator_type, q::count> acc;
+
+            // Redmine #2983 disables mu, lambda on the freestream boundary to
+            // adhere to superset of Poinsot and Lele subsonic NRBC conditions
+            const bool locallyviscous = !(o.grid.one_sided() && j+1U == Ny);
 
             const int last_zxoffset = offset
                                     + o.dgrid.local_physical_extent.z()
@@ -655,7 +652,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                 real_t p;
                 rholut::p(alpha, beta, gamma, Ma, rho, m, e, p);
 
-                // Ask yourself if it should be used...
+                // Ask yourself if it should be used for viscous quantities...
                 SUZERAIN_UNUSED(locallyviscous);
 
                 // Accumulate pointwise information
@@ -972,10 +969,6 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                                ? o.y(j) * sg.grdelta
                                : 0;
 
-        // Wall-normal operator eigenvalue estimates depend on location
-        const real_t lambda1_y    = o.lambda1_y(j);
-        const real_t md_lambda2_y = maxdiffconst * o.lambda2_y(j);
-
         // Unpack appropriate wall-normal reference quantities
         const Vector3r ref_u              (common.ref_ux        ()[j],
                                            common.ref_uy        ()[j],
@@ -1019,6 +1012,22 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
         // Redmine #2983 disables mu and lambda on the freestream boundary
         // to attempt adhering to Poinsot and Lele subsonic NRBC conditions
         const bool locallyviscous = !(o.grid.one_sided() && j+1U == Ny);
+
+        // Compute viscous-related constants before X or Z inner loops
+        // (as this permits easily making a single XZ plan inviscid)
+        const real_t alpha13          = alpha + real_t(1)/real_t(3);
+        const real_t alpha43          = alpha + real_t(4)/real_t(3);
+        const real_t inv_Re           = static_cast<int>(locallyviscous) / Re;
+        const real_t Ma2_over_Re      = (Ma * Ma) * inv_Re;
+        const real_t inv_Re_Pr_gamma1 = 1 / (Pr * gamma1) * inv_Re;
+        const real_t maxdiffconst     = inv_Re
+                                      * max(gamma/Pr, max(real_t(1), alpha));
+        const real_t md_lambda2_x     = maxdiffconst * o.lambda2_x;
+        const real_t md_lambda2_z     = maxdiffconst * o.lambda2_z;
+
+        // Wall-normal operator eigenvalue estimates depend on location
+        const real_t lambda1_y    = o.lambda1_y(j);
+        const real_t md_lambda2_y = maxdiffconst * o.lambda2_y(j);
 
         // Prepare to iterate across the j-th ZX plane
         const int last_zxoffset = offset
@@ -1103,8 +1112,6 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                                   rho, grad_rho, m, grad_m, e, grad_e,
                                   p, grad_p, T, grad_T,
                                   mu, grad_mu, lambda, grad_lambda);
-            mu     *= static_cast<int>(locallyviscous);
-            lambda *= static_cast<int>(locallyviscous);
             const real_t nu         = mu / rho;
             const real_t div_grad_p = rholut::div_grad_p(
                                         gamma, Ma,
