@@ -393,10 +393,10 @@ std::vector<real_t> treatment_nonreflecting::apply_operator(
             // The imaginary unit has already been included within i_stash.
             tmp.noalias()  = ImPG_VL_S_RY.cast<complex_t>() * N;
             // FIXME: Uncomment if BG, CG are declared
-//             tmp.noalias() += kn
+//             tmp.noalias() -= kn
 //                            * BG_VL_S_RY_by_chi.cast<complex_t>()
 //                            * i_stash.col((m - dkbx) + mu*(n - dkbz));
-//             tmp.noalias() += km
+//             tmp.noalias() -= km
 //                            * CG_VL_S_RY_by_chi.cast<complex_t>()
 //                            * i_stash.col((m - dkbx) + mu*(n - dkbz));
             N.noalias()    = inv_VL_S_RY.cast<complex_t>() * tmp;
