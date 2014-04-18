@@ -155,15 +155,15 @@ treatment_nonreflecting::apply_operator(
 
             // Modify the packed RHS per
             // "Implementation primarily within the nonlinear explicit operator"
+            // Accumulates kn/km terms before any possible ImPG swamping.
             // The -I factors have already been included within negI_stash.
-            Vector5c tmp;
-            tmp.noalias()  = ImPG_VL_S_RY.cast<complex_t>() * N;
-            tmp.noalias() += kn
+            Vector5c tmp   = kn
                            * PG_BG_VL_S_RY_by_chi.cast<complex_t>()
                            * negI_stash.col((m - dkbx) + mu*(n - dkbz));
             tmp.noalias() += km
                            * PG_CG_VL_S_RY_by_chi.cast<complex_t>()
                            * negI_stash.col((m - dkbx) + mu*(n - dkbz));
+            tmp.noalias() += ImPG_VL_S_RY.cast<complex_t>() * N;
             N.noalias()    = inv_VL_S_RY.cast<complex_t>() * tmp;
 
             // Pack new upper boundary RHS from the contiguous buffer
