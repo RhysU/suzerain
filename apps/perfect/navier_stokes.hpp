@@ -446,7 +446,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
 
             // Redmine #2983 disables mu and lambda on the freestream boundary
             // to attempt adhering to Poinsot and Lele subsonic NRBC conditions
-            const bool locallyviscous = !(o.grid.one_sided() && j == (Ny-1));
+            const bool locallyviscous = !(o.grid.one_sided() && j+1U == Ny);
 
             // Prepare logical indices using struct for scoping (e.g. ref::ux).
             struct ref { enum { rho, p, p2, T, a,
@@ -626,7 +626,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
 
             // Redmine #2983 disables mu and lambda on the freestream boundary
             // to attempt adhering to Poinsot and Lele subsonic NRBC conditions
-            const bool locallyviscous = !(o.grid.one_sided() && j == (Ny-1));
+            const bool locallyviscous = !(o.grid.one_sided() && j+1U == Ny);
 
             // Prepare logical indices using struct for scoping (e.g. q::u).
             struct q { enum { u,  v,  w, uu, uv, uw, vv, vw, ww,
@@ -1018,7 +1018,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
 
         // Redmine #2983 disables mu and lambda on the freestream boundary
         // to attempt adhering to Poinsot and Lele subsonic NRBC conditions
-        const bool locallyviscous = !(o.grid.one_sided() && j == (Ny-1));
+        const bool locallyviscous = !(o.grid.one_sided() && j+1U == Ny);
 
         // Prepare to iterate across the j-th ZX plane
         const int last_zxoffset = offset
