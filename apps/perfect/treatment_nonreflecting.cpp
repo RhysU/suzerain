@@ -91,12 +91,12 @@ treatment_nonreflecting::apply_operator(
 
     // State enters method as coefficients in X, Y, and Z directions
 
-    // Make a local, stride-1 copy of I times upper boundary state point values.
+    // Make a local, stride-1 copy of -I times upper boundary state values.
     // Notice that boundary coefficients are 1-1 with boundary point values.
-    // That is, applying the mass matrix to the boundary is an ignorable NOP.
-    Matrix5Xc i_stash(5, swave.shape()[2] * swave.shape()[3]);
+    // That is, applying the mass matrix is an ignorable NOP at the boundary.
+    Matrix5Xc negI_stash(5, swave.shape()[2] * swave.shape()[3]);
     {
-        const complex_t imag_unit(0, 1);
+        const complex_t negI_unit(0, -1);
         const int ku = boost::numeric_cast<int>(swave.shape()[0]);
         const int l  = boost::numeric_cast<int>(swave.shape()[1]) - 1; // Upper
         const int mu = boost::numeric_cast<int>(swave.shape()[2]);
@@ -104,7 +104,7 @@ treatment_nonreflecting::apply_operator(
         for (int k = 0; k < ku; ++k) {
             for (int n = 0; n < nu; ++n) {
                 for (int m = 0; m < mu; ++m) {
-                    i_stash(k, m + n * mu) = imag_unit * swave[k][l][m][n];
+                    negI_stash(k, m + mu*n) = negI_unit * swave[k][l][m][n];
                 }
             }
         }
@@ -155,15 +155,15 @@ treatment_nonreflecting::apply_operator(
 
             // Modify the packed RHS per
             // "Implementation primarily within the nonlinear explicit operator"
-            // The imaginary unit has already been included within i_stash.
+            // The -I factors have already been included within negI_stash.
             Vector5c tmp;
             tmp.noalias()  = ImPG_VL_S_RY.cast<complex_t>() * N;
-            tmp.noalias() -= kn
+            tmp.noalias() += kn
                            * PG_BG_VL_S_RY_by_chi.cast<complex_t>()
-                           * i_stash.col((m - dkbx) + mu*(n - dkbz));
-            tmp.noalias() -= km
+                           * negI_stash.col((m - dkbx) + mu*(n - dkbz));
+            tmp.noalias() += km
                            * PG_CG_VL_S_RY_by_chi.cast<complex_t>()
-                           * i_stash.col((m - dkbx) + mu*(n - dkbz));
+                           * negI_stash.col((m - dkbx) + mu*(n - dkbz));
             N.noalias()    = inv_VL_S_RY.cast<complex_t>() * tmp;
 
             // Pack new upper boundary RHS from the contiguous buffer
