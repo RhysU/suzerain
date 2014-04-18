@@ -99,7 +99,7 @@ run_postproc() {
 
     # Display (hopefully) logarithmic decay of signal versus simulation time
     if hash gplot 2>/dev/null; then
-        gplot -o L2.png -lc -f i=6:10 -x t -y L2 L2.dat using 4:i with lines
+        gplot -o L2.png -g state.L2 -lc -f i=6:10 -x t -y L2 using 4:i with lines ::: state.dat
     fi
 
     # Post-process the entire collection of sample and restart files
