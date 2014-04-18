@@ -47,9 +47,10 @@ giles_matrices(
         Matrix5r& inv_VL_S_RY,
         const real_t normal_sign)
 {
-    // Prepare the rotation and its inverse that reorders from
+    // Prepare a rotation (differing from the model document), reordering,
     // ndx::{e, mx, my, mz, rho} to {rho = 0, my = 1, mz = 2, mx = 3, e = 4}.
     // All remaining matrices/logic within the routine uses the latter order!
+    // The inverse rotation RY^{-1} is accomplished using RY.transpose().
     Matrix5r RY(Matrix5r::Zero());
     {
         RY(0, ndx::rho) = 1;
@@ -57,14 +58,6 @@ giles_matrices(
         RY(2, ndx::mz ) = 1;
         RY(3, ndx::mx ) = 1;
         RY(4, ndx::e  ) = 1;
-    }
-    Matrix5r inv_RY(Matrix5r::Zero());
-    {
-        inv_RY(ndx::e  , 4) = 1;
-        inv_RY(ndx::mx , 3) = 1;
-        inv_RY(ndx::my , 1) = 1;
-        inv_RY(ndx::mz , 2) = 1;
-        inv_RY(ndx::rho, 0) = 1;
     }
 
     // Prepare upper boundary reference state per rotated frame
@@ -192,7 +185,7 @@ giles_matrices(
     PG_BG_VL_S_RY = PG.asDiagonal() * BG * VL_S_RY;
     PG_CG_VL_S_RY = PG.asDiagonal() * CG * VL_S_RY;
     PG_VL_S_RY    = PG.asDiagonal()      * VL_S_RY;
-    inv_VL_S_RY   = inv_RY * inv_S * inv_VL;
+    inv_VL_S_RY   = RY.transpose() * inv_S * inv_VL;
 }
 
 } // namespace suzerain
