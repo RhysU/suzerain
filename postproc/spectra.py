@@ -49,7 +49,6 @@ def process(kx, kz, Lx, Lz, Nx, Nz, Rkx, Rkz, bar, y, Ns, sn, **kwargs):
             PAIRS.append(vars[i] + vars[j])
             bar_pairs[len(PAIRS)-1,:] = np.multiply(bar[i,:],bar[j,:])
 
-    print "Pairs : ", PAIRS
     SpectralData  = collections.namedtuple('SpectralData', ['y', 'k'] + PAIRS)
     PhysicalData  = collections.namedtuple('PhysicalData', ['y', 'x'] + PAIRS)
     ProcessResult = collections.namedtuple('ProcessResult',
@@ -67,7 +66,8 @@ def process(kx, kz, Lx, Lz, Nx, Nz, Rkx, Rkz, bar, y, Ns, sn, **kwargs):
     # Compute spectra from Rkz by adding reflected negative wavenumbers
     Ekz            = Rkz[:, 0:(Nz/2+1), :].copy()
     Ekz[:, 1:, :] += Rkz[:, -1:-(Nz/2+1):-1,:]
-    assert np.max(np.abs(np.imag(Ekz))) < np.finfo(Ekz.dtype).eps
+    # FIXME: find better criterion for tolerance of assert line below
+    assert np.max(np.abs(np.imag(Ekz))) < 1E-10 #np.finfo(Ekz.dtype).eps
     Ekz = np.real(Ekz)
 
     # Helper to shorten the following few statements
@@ -164,9 +164,9 @@ def load(h5filenames):
         if "antioch_constitutive_data" in h5file:
             if Ns > 1:
                 if bar_cs is None:
-                    bar_cs  = np.squeeze(h5file['bar_cs'][()].view(np.float64))
+                    bar_cs  = np.squeeze(h5file['bar_cs_s'][()].view(np.float64))
                 else:
-                    bar_cs += np.squeeze(h5file['bar_cs'][()].view(np.float64))
+                    bar_cs += np.squeeze(h5file['bar_cs_s'][()].view(np.float64))
             else:
                 if bar_cs is None:
                     bar_cs  = 0 * np.array(bar_rho).reshape(1,Ny) + 1
@@ -181,7 +181,6 @@ def load(h5filenames):
         bar_T /= len(h5filenames)
         bar_T  = np.dot(D0,bar_T)
     if bar_u is not None:
-        print D0.shape, bar_u.shape
         bar_u /= len(h5filenames)
         bar_u  = np.transpose(np.dot(D0,np.transpose(bar_u)))
     if bar_rho is not None:
