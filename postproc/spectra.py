@@ -32,7 +32,7 @@ import sys
 def process(kx, kz, Lx, Lz, Nx, Nz, Rkx, Rkz, bar, y, Ns, sn, **kwargs):
     """Distill loaded Rkx, etc. data into easy-to-use form."""
 
-    # Generate string of variable names 
+    # Generate string of variable names
     vars = ['T', 'u', 'v', 'w', 'r']
     if sn.size != 0:
         for s in sn:
@@ -190,14 +190,14 @@ def load(h5filenames):
         bar_cs /= len(h5filenames)
         bar_cs  = np.transpose(np.dot(D0,np.transpose(bar_cs)))
 
-    # Pack mean fields, assume no variable remained as None, 
+    # Pack mean fields, assume no variable remained as None,
     # except for possibly bar_cs
     bar = np.concatenate((bar_T, bar_u, bar_rho, bar_cs)).reshape(5+Ns, Ny)
-    
+
     d.update(dict(
         Rkx = Rkx,
         Rkz = Rkz,
-        bar = bar 
+        bar = bar
     ))
     return d
 
