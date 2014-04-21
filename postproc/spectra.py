@@ -36,7 +36,7 @@ def process(kx, kz, Lx, Lz, Nx, Nz, Rkx, Rkz, bar, y, Ns, sn, **kwargs):
     vars = ['T', 'u', 'v', 'w', 'r']
     for s in sn:
         vars.append('c'+s)
-    print "Variables : ", vars
+    # DEBUG print "Variables : ", vars
     nvars = len(vars)
 
     # Generate product of mean fields along with pairs of variables
