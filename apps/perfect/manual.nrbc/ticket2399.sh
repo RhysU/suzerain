@@ -89,17 +89,17 @@ run_postproc() {
 
     # Plot 0th, 1st, and 2nd derivatives of conserved state at the boundaries
     if hash gplot 2>/dev/null; then
-        gplot -o lower.d0.png -g bc.lower.d0 -x t -c -f i=6:10 using 4:i w l ::: bc.dat
-        gplot -o lower.d1.png -g bc.lower.d1 -x t -c -f i=6:10 using 4:i w l ::: bc.dat
-        gplot -o lower.d2.png -g bc.lower.d2 -x t -c -f i=6:10 using 4:i w l ::: bc.dat
-        gplot -o upper.d0.png -g bc.upper.d0 -x t -c -f i=6:10 using 4:i w l ::: bc.dat
-        gplot -o upper.d1.png -g bc.upper.d1 -x t -c -f i=6:10 using 4:i w l ::: bc.dat
-        gplot -o upper.d2.png -g bc.upper.d2 -x t -c -f i=6:10 using 4:i w l ::: bc.dat
+        gplot -o lower.d0.png -g bc.lower.d0 -x t -t "${OPER:+$OPER }bc.lower.d0" -c -f i=6:10 using 4:i w l ::: bc.dat
+        gplot -o lower.d1.png -g bc.lower.d1 -x t -t "${OPER:+$OPER }bc.lower.d1" -c -f i=6:10 using 4:i w l ::: bc.dat
+        gplot -o lower.d2.png -g bc.lower.d2 -x t -t "${OPER:+$OPER }bc.lower.d2" -c -f i=6:10 using 4:i w l ::: bc.dat
+        gplot -o upper.d0.png -g bc.upper.d0 -x t -t "${OPER:+$OPER }bc.upper.d0" -c -f i=6:10 using 4:i w l ::: bc.dat
+        gplot -o upper.d1.png -g bc.upper.d1 -x t -t "${OPER:+$OPER }bc.upper.d1" -c -f i=6:10 using 4:i w l ::: bc.dat
+        gplot -o upper.d2.png -g bc.upper.d2 -x t -t "${OPER:+$OPER }bc.upper.d2" -c -f i=6:10 using 4:i w l ::: bc.dat
     fi
 
     # Display (hopefully) logarithmic decay of signal versus simulation time
     if hash gplot 2>/dev/null; then
-        gplot -o L2.png -g state.L2 -lc -f i=6:10 -x t -y L2 using 4:i with lines ::: state.dat
+        gplot -o L2.png -g state.L2 -lc -f i=6:10 -t "${OPER:+$OPER }state.L2" -x t -y L2 using 4:i with lines ::: state.dat
     fi
 
     # Post-process the entire collection of sample and restart files
@@ -109,10 +109,10 @@ run_postproc() {
 
     # Summarize the overall field behavior in a manner that aids visual debugging
     if hash gplot 2>/dev/null; then
-        gplot -3M -o bar_p.png   -t bar_p   -x t -y y using '"t":"y":"bar_p"'   ::: summary.dat
-        gplot -3M -o bar_rho.png -t bar_rho -x t -y y using '"t":"y":"bar_rho"' ::: summary.dat
-        gplot -3M -o bar_T.png   -t bar_T   -x t -y y using '"t":"y":"bar_T"'   ::: summary.dat
-        gplot -3M -o bar_v.png   -t bar_v   -x t -y y using '"t":"y":"bar_v"'   ::: summary.dat
+        gplot -3M -o bar_p.png   -t "${OPER:+$OPER }bar_p"   -x t -y y using '"t":"y":"bar_p"'   ::: summary.dat
+        gplot -3M -o bar_rho.png -t "${OPER:+$OPER }bar_rho" -x t -y y using '"t":"y":"bar_rho"' ::: summary.dat
+        gplot -3M -o bar_T.png   -t "${OPER:+$OPER }bar_T"   -x t -y y using '"t":"y":"bar_T"'   ::: summary.dat
+        gplot -3M -o bar_v.png   -t "${OPER:+$OPER }bar_v"   -x t -y y using '"t":"y":"bar_v"'   ::: summary.dat
     fi
 }
 
