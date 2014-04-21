@@ -290,6 +290,9 @@ def main(argv=None):
         ax.loglog(Ekx.k, Ekx.rr[:,j], label="rho")
         ax.set_xlabel("Streamwise wavenumber")
         ax.set_title("Spectra at y = %g" % Ekx.y[j])
+        ax.set_xlim([min(Ekx.k[Ekx.k != 0].min(), Ekz.k[Ekz.k != 0].min()),
+                     max(Ekx.k[Ekx.k != 0].max(), Ekz.k[Ekz.k != 0].max())]);
+        ax.set_ylim([np.finfo(Ekx.k.dtype).eps, 1]);
         ax.legend()
         if outsuffix:
             fig.savefig(str(j)+'.spectra.kx.'+outsuffix)
@@ -302,9 +305,12 @@ def main(argv=None):
         ax.loglog(Ekz.k, Ekz.uu[:,j], label="u")
         ax.loglog(Ekz.k, Ekz.vv[:,j], label="v")
         ax.loglog(Ekz.k, Ekz.ww[:,j], label="w")
-        ax.loglog(Ekz.k, Ekz.rr[:,j], label="r")
+        ax.loglog(Ekz.k, Ekz.rr[:,j], label="rho")
         ax.set_xlabel("Spanwise wavenumber")
         ax.set_title("Spectra at y = %g" % Ekx.y[j])
+        ax.set_xlim([min(Ekx.k[Ekx.k != 0].min(), Ekz.k[Ekz.k != 0].min()),
+                     max(Ekx.k[Ekx.k != 0].max(), Ekz.k[Ekz.k != 0].max())]);
+        ax.set_ylim([np.finfo(Ekz.k.dtype).eps, 1]);
         ax.legend()
         if outsuffix:
             fig.savefig(str(j)+'.spectra.kz.'+outsuffix)
@@ -325,6 +331,9 @@ def main(argv=None):
         ax.loglog(Ekx.k, Ekx.wr[:,j], label='wr')
         ax.set_xlabel("Streamwise wavenumber")
         ax.set_title("Cospectra at y = %g" % Ekx.y[j])
+        ax.set_xlim([min(Ekx.k[Ekx.k != 0].min(), Ekz.k[Ekz.k != 0].min()),
+                     max(Ekx.k[Ekx.k != 0].max(), Ekz.k[Ekz.k != 0].max())]);
+        ax.set_ylim([np.finfo(Ekx.k.dtype).eps, 1]);
         ax.legend()
         if outsuffix:
             fig.savefig(str(j)+'.cospectra.kx.'+outsuffix)
@@ -345,6 +354,9 @@ def main(argv=None):
         ax.loglog(Ekz.k, Ekz.wr[:,j], label='wr')
         ax.set_xlabel("Streamwise wavenumber")
         ax.set_title("Cospectra at y = %g" % Ekz.y[j])
+        ax.set_xlim([min(Ekx.k[Ekx.k != 0].min(), Ekz.k[Ekz.k != 0].min()),
+                     max(Ekx.k[Ekx.k != 0].max(), Ekz.k[Ekz.k != 0].max())]);
+        ax.set_ylim([np.finfo(Ekz.k.dtype).eps, 1]);
         ax.legend()
         if outsuffix:
             fig.savefig(str(j)+'.cospectra.kz.'+outsuffix)
