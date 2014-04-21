@@ -34,9 +34,8 @@ def process(kx, kz, Lx, Lz, Nx, Nz, Rkx, Rkz, bar, y, Ns, sn, **kwargs):
 
     # Generate string of variable names
     vars = ['T', 'u', 'v', 'w', 'r']
-    if sn.size != 0:
-        for s in sn:
-            vars.append('c'+s)
+    for s in sn:
+        vars.append('c'+s)
     print "Variables : ", vars
     nvars = len(vars)
 
@@ -192,7 +191,10 @@ def load(h5filenames):
 
     # Pack mean fields, assume no variable remained as None,
     # except for possibly bar_cs
-    bar = np.concatenate((bar_T, bar_u, bar_rho, bar_cs)).reshape(5+Ns, Ny)
+    if bar_cs is None:
+        bar = np.concatenate((bar_T, bar_u, bar_rho        )).reshape(5+Ns, Ny)
+    else:
+        bar = np.concatenate((bar_T, bar_u, bar_rho, bar_cs)).reshape(5+Ns, Ny)
 
     d.update(dict(
         Rkx = Rkx,
