@@ -240,8 +240,6 @@ driver::log_quantities_of_interest(
         const std::string& prefix,
         const profile& prof)
 {
-    shared_ptr<operator_tools> otool = obtain_operator_tools();
-
     if (grid->one_sided()) {
 
         // Compute many details about the boundary layer for logging
@@ -253,6 +251,7 @@ driver::log_quantities_of_interest(
         suzerain_bl_reynolds    reynolds;
         suzerain_bl_qoi         qoi;
         suzerain_bl_pg          pg;
+        shared_ptr<operator_tools> otool = obtain_operator_tools();
         summarize_boundary_layer_nature(prof, *scenario, sg,
                                         *otool->masslu(), *b,
                                         wall, viscous, thick,
