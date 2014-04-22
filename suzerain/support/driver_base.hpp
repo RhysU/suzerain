@@ -54,6 +54,7 @@ namespace suzerain {
 
 // Forward declarations
 class operator_tools;
+class summary;
 
 namespace support {
 
@@ -760,6 +761,12 @@ protected:
      * summary_run.
      */
     static const char * const summary_argument_synopsis;
+
+    /**
+     * A resource-owning mapping from simulation time to \ref summary results.
+     * In-order traversal gives temporal evolution of summary statistics.
+     */
+    typedef boost::ptr_map<real_t, summary> summary_pool_type;
 
     // TODO Decide on what information to return
     /**

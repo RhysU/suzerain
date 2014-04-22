@@ -162,7 +162,6 @@ driver_base::summary_run(int argc, char **argv)
 
     // Processing differs slightly when done file-by-file versus
     // aggregated across multiple files...
-    typedef boost::ptr_map<real_t, summary> pool_type;
     if (!use_stdout && !use_dat && !use_hdf5) {
 
         for (vector<string>::const_iterator it = restart_files.begin();
@@ -175,7 +174,7 @@ driver_base::summary_run(int argc, char **argv)
                     esio_handle_initialize(MPI_COMM_WORLD),
                     esio_handle_finalize);
             esio_file_open(h.get(), filename.c_str(), /*read-only*/0);
-            pool_type data(support::load_summary(h.get()));
+            summary_pool_type data(support::load_summary(h.get()));
 
             // Save quantities to `basename filename .h5`.mean
             static const char suffix[] = ".h5";
@@ -191,7 +190,7 @@ driver_base::summary_run(int argc, char **argv)
 
             // Write header followed by data values separated by blank lines
             ofstream ofs(outname.c_str());
-            for (pool_type::const_iterator i = data.begin();
+            for (summary_pool_type::const_iterator i = data.begin();
                  i != data.end(); ++i) {
                 i->second->write(ofs, data.begin() == i) << endl;
             }
@@ -229,7 +228,7 @@ driver_base::summary_run(int argc, char **argv)
         // A single map of data is stored across all files.  Because the map
         // key is the simulation time, we automatically get a well-ordered,
         // unique set of data across all files.
-        pool_type pool;
+        summary_pool_type pool;
 
         for (size_t i = 0; i < restart_files.size(); ++i) {
             const string& filename = restart_files[i];
@@ -239,10 +238,10 @@ driver_base::summary_run(int argc, char **argv)
                     esio_handle_initialize(MPI_COMM_WORLD),
                     esio_handle_finalize);
             esio_file_open(h.get(), filename.c_str(), /*read-only*/0);
-            pool_type data(support::load_summary(h.get(), b));
+            summary_pool_type data(support::load_summary(h.get(), b));
 
             // Output status to the user so they don't think we're hung.
-            for (pool_type::const_iterator j = data.begin();
+            for (summary_pool_type::const_iterator j = data.begin();
                  j != data.end(); ++j) {
                 INFO0("Read sample for t = " << j->first
                       << " from " << filename);
@@ -252,7 +251,7 @@ driver_base::summary_run(int argc, char **argv)
             pool.transfer(data);
 
             // Warn on any duplicate values which were not transfered
-            for (pool_type::const_iterator j = data.begin();
+            for (summary_pool_type::const_iterator j = data.begin();
                  j != data.end(); ++j) {
                 WARN0("Duplicate sample time "
                       << j->first << " from " << filename << " ignored");
@@ -262,7 +261,7 @@ driver_base::summary_run(int argc, char **argv)
 
         if (use_stdout) {
             // Write header followed by data values separated by blank lines
-            for (pool_type::const_iterator i = pool.begin();
+            for (summary_pool_type::const_iterator i = pool.begin();
                  i != pool.end(); ++i) {
                 i->second->write(cout, pool.begin() == i) << endl;
             }
@@ -271,7 +270,7 @@ driver_base::summary_run(int argc, char **argv)
         if (use_dat) {
             INFO0("Writing file " << datfile);
             ofstream outf(datfile.c_str());
-            for (pool_type::const_iterator i = pool.begin();
+            for (summary_pool_type::const_iterator i = pool.begin();
                  i != pool.end(); ++i) {
                 i->second->write(outf, pool.begin() == i) << endl;
             }
@@ -290,7 +289,7 @@ driver_base::summary_run(int argc, char **argv)
             // Determine vector of unique times in the pool and save as "/t"
             std::vector<real_t> t;
             t.reserve(pool.size());
-            for (pool_type::const_iterator i = pool.begin();
+            for (summary_pool_type::const_iterator i = pool.begin();
                  i != pool.end(); ++i) {
                 t.push_back(i->first);
             }
@@ -340,7 +339,7 @@ driver_base::summary_run(int argc, char **argv)
                     data.setConstant(y.size(), t.size(),
                                     numeric_limits<real_t>::quiet_NaN());
                     size_t off = 0;
-                    for (pool_type::const_iterator i = pool.begin();
+                    for (summary_pool_type::const_iterator i = pool.begin();
                         i != pool.end(); ++i) {
                         data.col(off++) = i->second->storage.col(c);
                     }
