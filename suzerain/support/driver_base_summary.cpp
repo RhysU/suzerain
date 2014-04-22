@@ -119,14 +119,14 @@ driver_base::summary_run(
 
     // Ensure that we're running in a single processor environment
     if (mpi::comm_size(MPI_COMM_WORLD) > 1) {
-        FATAL0(argv[0] << " only intended to run on single rank");
+        FATAL0(who, argv[0] << " only intended to run on single rank");
         return EXIT_FAILURE;
     }
 
     // Die if the non-HDF5 datfile argument ended with '.h5' like an HDF5 file
     // Defends (somewhat) against clobbering potentially valuable results
     if (use_dat && boost::algorithm::ends_with(datfile, ".h5")) {
-        FATAL0("Cowardly refusing to output a 'datfile' ending in '.h5'");
+        FATAL0(who, "Cowardly refusing to output a 'datfile' ending in '.h5'");
         return EXIT_FAILURE;
     }
 
@@ -167,8 +167,8 @@ driver_base::summary_run(
             esio_file_open(h.get(),
                             restart_files.back().c_str(), /*read-only*/0);
         } else {
-            FATAL0("One or more positional arguments required when "
-                    " --target is not supplied");
+            FATAL0(who, "One or more positional arguments required when "
+                        " --target is not supplied");
             return EXIT_FAILURE;
         }
 
@@ -201,8 +201,8 @@ driver_base::summary_run(
             // Output status so the user does not become impatient
             for (summary_pool_type::const_iterator j = data.begin();
                     j != data.end(); ++j) {
-                INFO0("Read sample for t = " << j->first
-                        << " from " << filename);
+                INFO0(who, "Read sample for t = " << j->first
+                           << " from " << filename);
             }
 
         } else {
@@ -222,8 +222,8 @@ driver_base::summary_run(
             ofstream ofs(outname.c_str());
             for (summary_pool_type::const_iterator j = data.begin();
                     j != data.end(); ++j) {
-                INFO0("Writing sample for t = " << j->first
-                        << " from " << filename << " to " << outname);
+                INFO0(who, "Writing sample for t = " << j->first
+                           << " from " << filename << " to " << outname);
                 j->second->write(ofs, data.begin() == j) << endl;
             }
             ofs.close();
@@ -236,8 +236,8 @@ driver_base::summary_run(
         // Warn on any duplicate times that were not transfered
         for (summary_pool_type::const_iterator j = data.begin();
                 j != data.end(); ++j) {
-            WARN0("Duplicate sample time "
-                    << j->first << " from " << filename << " ignored");
+            WARN0(who, "Duplicate sample time "
+                       << j->first << " from " << filename << " ignored");
         }
 
     }
@@ -261,7 +261,7 @@ driver_base::summary_run(
     }
 
     if (use_dat) {
-        INFO0("Writing file " << datfile);
+        INFO0(who, "Writing file " << datfile);
         ofstream outf(datfile.c_str());
         for (summary_pool_type::const_iterator i = pool.begin();
              i != pool.end(); ++i) {
@@ -275,7 +275,7 @@ driver_base::summary_run(
         SUZERAIN_ENSURE(projecting);
 
         // Create output file and store metadata per base class
-        DEBUG0("Creating file " << hdffile);
+        DEBUG0(who, "Creating file " << hdffile);
         shared_ptr<boost::remove_pointer<esio_handle>::type> h(
                 esio_handle_initialize(MPI_COMM_WORLD),
                 esio_handle_finalize);
@@ -325,7 +325,7 @@ driver_base::summary_run(
                 c < summary::nscalars::total;
                 ++c) {
 
-                INFO0("Processing component " << summary::name[c]);
+                INFO0(who, "Processing component " << summary::name[c]);
 
                 // ...assembling from the pool into contiguous memory
                 data.setConstant(final.y().size(), t.size(),
@@ -372,12 +372,12 @@ driver_base::summary_run(
             }
         }
 
-        INFO0("Finished processing aggregated data");
+        INFO0(who, "Finished processing aggregated data");
         arspec.save(h.get());
 
         // Summarize the temporal content of the data iff nontrivial
         if (t.size() == 1) {
-            INFO0("Collection contains a single sample at time " << t[0]);
+            INFO0(who, "Collection contains a single sample at time " << t[0]);
         } else if (t.size() > 1) {
             ostringstream msg;
             msg.precision(static_cast<int>(
