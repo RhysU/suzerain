@@ -215,7 +215,6 @@ void driver::log_quantities_of_interest(
         const real_t t,
         const std::size_t nt)
 {
-    SUZERAIN_UNUSED(t);
     SUZERAIN_UNUSED(nt);
 
     if (!grid) return;
@@ -232,6 +231,16 @@ void driver::log_quantities_of_interest(
         state_nonlinear->assign_from(*state_linear);
         prof = *take_profile(*scenario, *otool, *state_nonlinear);
     }
+
+    this->log_quantities_of_interest(timeprefix, prof);
+}
+
+void
+driver::log_quantities_of_interest(
+        const std::string& prefix,
+        const profile& prof)
+{
+    shared_ptr<operator_tools> otool = obtain_operator_tools();
 
     if (grid->one_sided()) {
 
@@ -251,7 +260,7 @@ void driver::log_quantities_of_interest(
                                         reynolds, qoi, pg);
 
         // Log messages using application-agnostic superclass functionality
-        this->log_quantities_boundary_layer(timeprefix,
+        this->log_quantities_boundary_layer(prefix,
                                             &wall, &viscous, &thick,
                                             &edge, &edge99,
                                             &reynolds, &qoi, &pg);
@@ -267,7 +276,7 @@ void driver::log_quantities_of_interest(
                                  wall, viscous, center, qoi);
 
         // Log messages using application-agnostic superclass functionality
-        this->log_quantities_channel(timeprefix,
+        this->log_quantities_channel(prefix,
                                      &wall, &viscous, &center, &qoi);
 
     } else {

@@ -41,6 +41,7 @@
 namespace suzerain {
 
 // Forward declarations
+class profile;
 class samples;
 
 namespace perfect {
@@ -152,6 +153,14 @@ public:
             const std::string& timeprefix,
             const real_t t,
             const std::size_t nt);
+
+    /**
+     * Log a variety of quantities of interest for a boundary layer or channel
+     * flow simulation given an extant profile.
+     */
+    virtual void log_quantities_of_interest(
+            const std::string& prefix,
+            const profile& prof);
 
     /**
      * Collectively compute statistics from #state_linear saving them into
