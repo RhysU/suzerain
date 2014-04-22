@@ -27,6 +27,7 @@
 
 #include "driver.hpp"
 
+#include <suzerain/summary.hpp>
 #include <suzerain/support/driver_base.hpp>
 #include <suzerain/support/support.hpp>
 
@@ -58,7 +59,10 @@ struct driver_summary : public driver
     /** Invoked by \c main just below. */
     int run(int argc, char **argv)
     {
-        return summary_run(argc, argv);
+        // TODO Do something interesting with pool
+        summary_pool_type pool;
+        const int status = summary_run(argc, argv, pool);
+        return status;
     }
 
 private:

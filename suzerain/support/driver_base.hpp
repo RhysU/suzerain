@@ -776,13 +776,14 @@ protected:
      * may wish to reset options definitions to suppress their appearance in the
      * help message.
      *
-     * \param argc Incoming arguments per <code>main(argc, ...)</code>
-     * \param argv Incoming arguments per <code>main(..., argv)</code>
+     * \param[in]  argc Incoming arguments per <code>main(argc, ...)</code>
+     * \param[in]  argv Incoming arguments per <code>main(..., argv)</code>
+     * \param[out] pool Processed data summaries as a function of unique time.
      *
      * \return Success or failure suitable for return to the OS.
      */
     int
-    summary_run(int argc, char **argv);
+    summary_run(int argc, char **argv, summary_pool_type& pool);
 
     /**
      * @}

@@ -78,7 +78,10 @@ const char * const driver_base::summary_argument_synopsis
     = "RESTART-OR-SAMPLE-HDF5-FILE...";
 
 int
-driver_base::summary_run(int argc, char **argv)
+driver_base::summary_run(
+        int argc,
+        char **argv,
+        summary_pool_type& pool)
 {
     static const char who[] = "summary";
 
@@ -225,11 +228,8 @@ driver_base::summary_run(int argc, char **argv)
             load_metadata(h.get());
         }
 
-        // A single map of data is stored across all files.  Because the map
-        // key is the simulation time, we automatically get a well-ordered,
-        // unique set of data across all files.
-        summary_pool_type pool;
-
+        // A single pool is maintained across all files.  Because the key is the
+        // simulation time, we get a well-ordered, unique data sequence.
         for (size_t i = 0; i < restart_files.size(); ++i) {
             const string& filename = restart_files[i];
 
