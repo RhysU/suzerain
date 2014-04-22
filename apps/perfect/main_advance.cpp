@@ -638,10 +638,6 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
                 WARN0(who, "Nonreflecting viscous inflow boundary problematic"
                            " for explicit advance"
                            " (Redmine #3070)");
-            } else if (common_block.linearization == linearize::rhome_xyz) {
-                WARN0(who, "Nonreflecting viscous inflow boundary problematic"
-                           " for implicit-in-3D advance"
-                           " (Redmine #3070)");
             }
         }
 
