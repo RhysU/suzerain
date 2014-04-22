@@ -179,6 +179,19 @@ application_base::log4cxx_config()
 }
 
 void
+application_base::reset()
+{
+    grid           .reset();
+    fftwdef        .reset();
+    b              .reset();
+    cop            .reset();
+    gop            .reset();
+    dgrid          .reset();
+    state_linear   .reset();
+    state_nonlinear.reset();
+}
+
+void
 application_base::load_grid_and_operators(
         const esio_handle esioh)
 {

@@ -151,6 +151,13 @@ public:
     shared_ptr<state_nonlinear_type> state_nonlinear;
 
     /**
+     * Reset all \c shared_ptr members to be empty.
+     *
+     * Subclasses should extend this functionality with any added members.
+     */
+    virtual void reset();
+
+    /**
      * Load a grid and discrete operators from a file or initialize
      * them per #grid.  The following are modified:
      * \li #grid
