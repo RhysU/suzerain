@@ -212,6 +212,9 @@ public:
     /** Controls time advance, including callback processing. */
     shared_ptr<timecontroller<real_t> > controller;
 
+    /** @copydoc application_base::reset */
+    virtual void reset();
+
     /**
      * When possible, any operator_tools superclass of N is reused so that
      * callers may benefit from any cached factorizations.

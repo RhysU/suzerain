@@ -308,6 +308,19 @@ driver_base::~driver_base()
     // during operation committing a file removes the uncommitted temporary
 }
 
+void
+driver_base::reset()
+{
+    restartdef.reset();
+    statsdef  .reset();
+    timedef   .reset();
+    method    .reset();
+    L         .reset();
+    N         .reset();
+    controller.reset();
+    return super::reset();
+}
+
 shared_ptr<operator_tools>
 driver_base::obtain_operator_tools()
 {
