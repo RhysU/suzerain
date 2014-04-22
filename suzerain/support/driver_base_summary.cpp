@@ -253,6 +253,24 @@ driver_base::summary_run(
 
     }
 
+    // Prepare either final or averaged profile information per target basis
+    // Averaging may be redone during other passes over memory (e.g. ARSEL)
+    final.storage.resize(0, NoChange);   // Clear
+    if (pool.size()) {
+
+        final = *pool.rbegin()->second;  // Resizes and populates final.grid()
+
+        if (projecting) {                // Averaging as appropriate
+            final.nongrid().setZero();
+            for (summary_pool_type::const_iterator i = pool.begin();
+                i != pool.end(); ++i) {
+                final.nongrid() += i->second->nongrid();
+            }
+            final.nongrid() /= pool.size();
+        }
+
+    }
+
     if (use_stdout) {
         for (summary_pool_type::const_iterator i = pool.begin();
              i != pool.end(); ++i) {
