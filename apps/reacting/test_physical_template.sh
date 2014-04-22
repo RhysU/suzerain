@@ -29,7 +29,8 @@ banner "Preparation of physical-space version of wave-based test field${OPER:+ (
                                           --advance_nt=0 --restart_physical
     $reacting mms0.h5 --restart_destination "a#.h5" --advance_nt=0 \
                       --restart_physical --restart_retain=1 $WIZ
-    differ --delta=5e-16 pmms0.h5 a0.h5
+    differ --exclude-path /twopoint_kx --exclude-path /twopoint_kz \
+           --delta=5e-16 pmms0.h5 a0.h5
 )
 
 banner "Idempotence of restarting from physical space without time advance${OPER:+ ($OPER)}"
@@ -38,7 +39,7 @@ banner "Idempotence of restarting from physical space without time advance${OPER
     $reacting pmms0.h5 --restart_destination "a#.h5" --advance_nt=0 $WIZ $P \
                        --restart_physical --restart_retain=1
     #differ --delta=1e-15 pmms0.h5 a0.h5
-    differ --relative=5e-14 pmms0.h5 a0.h5
+    differ --relative=5e-14 --exclude-path /twopoint_kx --exclude-path /twopoint_kz pmms0.h5 a0.h5
 )
 
 banner "Conversion from physical- to wave-based restart without time advance${OPER:+ ($OPER)}"
@@ -84,8 +85,10 @@ banner "Equivalence of a field advanced both with and without a physical space r
                        --restart_physical --restart_retain=1 --max_dt=1e-5
     # FIXME: Ticket 2790.  See comments above.
     #differ $exclude_datasets_bar --delta=6e-13 b0.h5 c0.h5
-    differ $exclude_datasets_bar \
-           $exclude_datasets_maxminloc --delta=3e-10 b0.h5 c0.h5
+    differ $exclude_datasets_bar                                   \
+           $exclude_datasets_maxminloc                             \
+           --exclude-path /twopoint_kx --exclude-path /twopoint_kz \
+           --delta=3e-10 b0.h5 c0.h5
     # Paths like /bar_foo not checked as part of this test
 )
 

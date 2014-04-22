@@ -37,7 +37,11 @@ banner "Idempotence of restarting without time advance${OPER:+ ($OPER)}"
     WIZ="--plan_wisdom=wisdom.init" # Prepared by test_setup.sh
     $reacting multi0.h5 --restart_destination "a#.h5" --advance_nt=0 $WIZ $P \
                         --restart_retain=1
-    differ $exclude_datasets multi0.h5 a0.h5
+    differ $exclude_datasets                                       \
+           --exclude-path=/twopoint_kx --exclude-path=/twopoint_kz \
+            multi0.h5 a0.h5
+    differ --delta=3e-16 multi0.h5 a0.h5 /twopoint_kx
+    differ --delta=3e-16 multi0.h5 a0.h5 /twopoint_kz
 )
 
 banner "Equivalence of a field advanced both with and without a restart${OPER:+ ($OPER)}"
@@ -64,7 +68,11 @@ banner "Upsample/downsample both homogeneous directions${OPER:+ ($OPER)}"
                         --restart_retain=1 --Nx=$((2*$Nx)) --Nz=$((3*$Nz))
     $reacting a0.h5     --restart_destination "b#.h5" --advance_nt=0 $WIZ $P \
                         --restart_retain=1 --Nx=$((  $Nx)) --Nz=$((  $Nz))
-    differ $exclude_datasets multi0.h5 b0.h5
+    differ $exclude_datasets                                       \
+           --exclude-path=/twopoint_kx --exclude-path=/twopoint_kz \
+            multi0.h5 b0.h5
+    differ --delta=3e-16 multi0.h5 b0.h5 /twopoint_kx
+    differ --delta=3e-16 multi0.h5 b0.h5 /twopoint_kz
 )
 
 done
