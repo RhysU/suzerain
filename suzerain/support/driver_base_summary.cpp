@@ -192,17 +192,24 @@ driver_base::summary_run(
             it != restart_files.end();
             ++it) {
 
-        // Load data from filename using a clean ESIO handle
+        // Open file from filename using a clean ESIO handle
         const string& filename = *it;
         shared_ptr<boost::remove_pointer<esio_handle>::type> h(
                 esio_handle_initialize(MPI_COMM_WORLD),
                 esio_handle_finalize);
         esio_file_open(h.get(), filename.c_str(), /*read-only*/0);
-        summary_pool_type data(support::load_summary(h.get()));
+
+        // Load summary, projecting as appropriate
+        if (!projecting) {
+            b.reset();
+            cop.reset();
+            grid.reset();
+        }
+        summary_pool_type data(support::load_summary(h.get(), b));
 
         if (projecting) {
 
-            // Output status to the user so user doesn't think we're hung.
+            // Output status to the user so user doesn't think we've hung
             for (summary_pool_type::const_iterator j = data.begin();
                     j != data.end(); ++j) {
                 INFO0("Read sample for t = " << j->first
@@ -230,12 +237,6 @@ driver_base::summary_run(
                 i->second->write(ofs, data.begin() == i) << endl;
             }
             ofs.close();
-
-            // Reset the numerics after each file to avoid projecting
-            // TODO Provide mechanism to reset scenario information too
-            grid.reset();
-            b.reset();
-            cop.reset();
 
         }
 
