@@ -252,8 +252,7 @@ load_extrema(const esio_handle h,
 /**
  * Convert all \ref samples in the file into \ref summary, indexed by time,
  * detailing the data and its derivatives at the collocation points of the \c
- * target.  If \c target is empty, default to using the B-spline information
- * from the source file.
+ * targetb.
  *
  * @return A resource-owning container mapping unique simulation times to
  * summarized statistics. See <a
@@ -262,7 +261,8 @@ load_extrema(const esio_handle h,
  */
 std::auto_ptr<boost::ptr_map<real_t, summary> >
 load_summary(const esio_handle h,
-             shared_ptr<bspline> target = shared_ptr<bspline>());
+             shared_ptr<bspline>& targetb,
+             shared_ptr<bsplineop>& targetcop);
 
 /**
  * Forward declaration to allocate state padded for transformation to/from

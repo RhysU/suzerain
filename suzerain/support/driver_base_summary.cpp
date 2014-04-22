@@ -206,7 +206,7 @@ driver_base::summary_run(
             cop.reset();
             grid.reset();
         }
-        summary_pool_type data(support::load_summary(h.get(), b));
+        summary_pool_type data(support::load_summary(h.get(), b, cop));
 
         if (projecting) {
 

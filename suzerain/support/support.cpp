@@ -949,7 +949,9 @@ load_extrema(const esio_handle h,
 
 
 std::auto_ptr<boost::ptr_map<real_t, summary> >
-load_summary(const esio_handle h, shared_ptr<bspline> target)
+load_summary(const esio_handle h,
+             shared_ptr<bspline>& targetb,
+             shared_ptr<bsplineop>& targetcop)
 {
     boost::ptr_map<real_t, summary> retval;
     const char * const path = esio_file_path(h);
@@ -958,19 +960,21 @@ load_summary(const esio_handle h, shared_ptr<bspline> target)
     // Load time and B-spline details
     real_t time;
     support::load_time(h, time);
-    shared_ptr<bspline> source;
-    support::load_bsplines(h, source);
+    shared_ptr<bspline>   sourceb;
+    shared_ptr<bsplineop> sourcecop;
+    support::load_bsplines(h, sourceb, sourcecop);
 
     // If we have no target, the source becomes the target
-    if (!target) {
-        target = source;
+    if (!targetb) {
+        targetb   = sourceb;
+        targetcop = sourcecop;
     }
 
     // Warn on inconsistent basis extents (though we'll likely soon die)
-    const real_t source_lower = source->collocation_point(0);
-    const real_t source_upper = source->collocation_point(source->n()-1);
-    const real_t target_lower = target->collocation_point(0);
-    const real_t target_upper = target->collocation_point(target->n()-1);
+    const real_t source_lower = sourceb->collocation_point(0);
+    const real_t source_upper = sourceb->collocation_point(sourceb->n()-1);
+    const real_t target_lower = targetb->collocation_point(0);
+    const real_t target_upper = targetb->collocation_point(targetb->n()-1);
     if (source_lower != target_lower || source_upper != target_upper) {
         WARN0(who, "File " << path << " has B-spline support ["
                    << fullprec<>(source_lower)
@@ -984,8 +988,8 @@ load_summary(const esio_handle h, shared_ptr<bspline> target)
     }
 
     // Load samples, which are quantity-by-quantity coefficients, into "sam"
-    samples sam(time, source->n());
-    support::load_samples(h, source, sam);
+    samples sam(time, sourceb->n());
+    support::load_samples(h, sourceb, sam);
     if (sam.t >= 0) {
         TRACE0(who, "Successfully loaded samples from " << path);
     } else {
@@ -995,10 +999,10 @@ load_summary(const esio_handle h, shared_ptr<bspline> target)
 
     // Summary, component-by-component collocation values, will be "sum"
     // Then store constant time and wall-normal collocation points
-    std::auto_ptr<summary> sum(new summary(target->n()));
+    std::auto_ptr<summary> sum(new summary(targetb->n()));
     sum->t().fill(time);
-    for (int i = 0; i < target->n(); ++i) {
-        sum->y()[i] = target->collocation_point(i);
+    for (int i = 0; i < targetb->n(); ++i) {
+        sum->y()[i] = targetb->collocation_point(i);
     }
 
     // Use source basis to evaluate quantities and all derivatives on target.
@@ -1019,7 +1023,7 @@ load_summary(const esio_handle h, shared_ptr<bspline> target)
         );
 
         // Notice acute need to adjust from samples to summary indexing
-        source->linear_combination(
+        sourceb->linear_combination(
                 2, sam.storage.col(j).data(),
                 sum->y().rows(), sum->y().data(),
                 sum->storage.col(j + summary::offset::nongrid).data(),
