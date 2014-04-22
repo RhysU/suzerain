@@ -255,6 +255,17 @@ driver::log_quantities_of_interest(
 {
     if (grid->one_sided()) {
 
+        // A horrible way to cheaply grab a shared pointer to a masslu
+        // Uses internal knowledge of obtain_operator_tools requiring a dgrid
+        shared_ptr<const bsplineop_lu> masslu;
+        if (dgrid) {
+            masslu = obtain_operator_tools()->masslu();
+        } else {
+            shared_ptr<bsplineop_lu> t(new bsplineop_lu(*cop));
+            t->factor_mass(*cop);
+            masslu = t;
+        }
+
         // Compute many details about the boundary layer for logging
         suzerain_bl_local       wall;
         suzerain_bl_viscous     viscous;
@@ -264,9 +275,7 @@ driver::log_quantities_of_interest(
         suzerain_bl_reynolds    reynolds;
         suzerain_bl_qoi         qoi;
         suzerain_bl_pg          pg;
-        shared_ptr<operator_tools> otool = obtain_operator_tools();
-        summarize_boundary_layer_nature(prof, *scenario, sg,
-                                        *otool->masslu(), *b,
+        summarize_boundary_layer_nature(prof, *scenario, sg, *masslu, *b,
                                         wall, viscous, thick,
                                         edge, edge99,
                                         reynolds, qoi, pg);
