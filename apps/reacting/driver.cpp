@@ -88,6 +88,18 @@ driver::initialize(
 }
 
 void
+driver::reset()
+{
+    isothermal.reset();
+    chdef     .reset();
+    msoln     .reset();
+    cmods     .reset();
+    fsdef     .reset();
+    sgdef     .reset();
+    return super::reset();
+}
+
+void
 driver::log_manufactured_solution_absolute_error(
         const std::string& timeprefix,
         const time_type t,

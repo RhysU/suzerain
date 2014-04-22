@@ -104,6 +104,9 @@ public:
      */
     quantities mean;
 
+    /** @copydoc driver_base::reset */
+    virtual void reset();
+
     /**
      * When \c msoln is true, log messages containing the absolute
      * error in \c state_linear relative to the manufactured solution.
