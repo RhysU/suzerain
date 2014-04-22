@@ -27,6 +27,7 @@
 
 #include "driver.hpp"
 
+#include <suzerain/bspline.hpp>
 #include <suzerain/profile.hpp>
 #include <suzerain/summary.hpp>
 #include <suzerain/support/driver_base.hpp>
@@ -54,15 +55,29 @@ struct driver_summary : public driver
     /** Invoked by \c main just below. */
     int run(int argc, char **argv)
     {
+        // Invoke driver-agnostic summarization logic
         summary_pool_type pool;
         summary final;
         const int status = summary_run(argc, argv, pool, final);
+
+        // Perform driver-specific post-processing on nontrivial results
         if (pool.size()) {
+
+            // Convert final from collocation point values to coefficients
+            bsplineop_lu masslu(*cop);
+            masslu.factor_mass(*cop);
+            masslu.solve(final.nongrid().cols(),
+                         final.nongrid().data(),
+                         final.nongrid().innerStride(),
+                         final.nongrid().outerStride());
+
+            // Compute QoI given final profile in coefficient form
             profile prof;
             prof = final;
             log_quantities_of_interest(
                     build_timeprefix_description("summary", "summary"), prof);
         }
+
         return status;
     }
 
