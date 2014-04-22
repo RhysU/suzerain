@@ -60,7 +60,8 @@ struct driver_summary : public driver
         if (pool.size()) {
             profile prof;
             prof = final;
-            log_quantities_of_interest("summary", prof);
+            log_quantities_of_interest(
+                    build_timeprefix_description("summary", "summary"), prof);
         }
         return status;
     }
