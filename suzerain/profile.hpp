@@ -35,6 +35,7 @@ namespace suzerain {
 
 // Forward declarations
 class samples;
+class summary;
 
 /**
  * Encapsulates solution profiles necessary for using \ref bl.h
@@ -143,6 +144,12 @@ public:
      * May permit avoiding \ref sample_profile calls in some circumstances.
      */
     profile& operator=(const samples &q);
+
+    /**
+     * Copy information from a \ref summary instance.
+     * May permit avoiding \ref sample_profile calls in some circumstances.
+     */
+    profile& operator=(const summary &q);
 
 };
 

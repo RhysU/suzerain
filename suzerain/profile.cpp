@@ -28,6 +28,7 @@
 #include <suzerain/profile.hpp>
 
 #include <suzerain/samples.hpp>
+#include <suzerain/summary.hpp>
 
 namespace suzerain {
 
@@ -47,7 +48,7 @@ profile& profile::operator=(const samples &q)
             storage_type::ColsAtCompileTime,
             std::numeric_limits<storage_type::Scalar>::quiet_NaN());
 
-    // Copy boundary layer profiles of interest from q
+    // Copy profiles of interest from q
     this->rho()          = q.rho();
     this->rho_u().col(0) = q.rho_u().col(0);
     this->rho_u().col(1) = q.rho_u().col(1);
@@ -58,6 +59,28 @@ profile& profile::operator=(const samples &q)
     this->mu()           = q.mu();
     this->u().col(0)     = q.u().col(0);
     this->u().col(1)     = q.u().col(1);
+
+    return *this;
+}
+
+profile& profile::operator=(const summary &q)
+{
+    // Resize our storage and defensively NaN in case we miss something
+    this->storage.setConstant(q.storage.rows(),
+            storage_type::ColsAtCompileTime,
+            std::numeric_limits<storage_type::Scalar>::quiet_NaN());
+
+    // Copy profiles of interest from q
+    this->rho()          = q.bar_rho();
+    this->rho_u().col(0) = q.bar_rho_u();
+    this->rho_u().col(1) = q.bar_rho_v();
+    this->a()            = q.bar_a();
+    this->H0()           = q.bar_H0();
+    this->ke()           = q.bar_ke();
+    this->T()            = q.bar_T();
+    this->mu()           = q.bar_mu();
+    this->u().col(0)     = q.bar_u();
+    this->u().col(1)     = q.bar_v();
 
     return *this;
 }
