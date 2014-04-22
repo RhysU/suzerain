@@ -188,30 +188,30 @@ giles_matrices(
 ////    inv_VL(4, 4) =   half;
 ////}
 
-    // Build the in-vs-outflow characteristic-preserving projection.
-    // Also accounts for sub- versus supersonic boundaries.
+    // Build the in-vs-outflow characteristic-preserving projection
+    // automatically accounting for sub- versus supersonic boundaries.
     Vector5r PG;
-    PG(0) = static_cast<real_t>(normal_sign * (u    ) < 0);
-    PG(1) = static_cast<real_t>(normal_sign * (u    ) < 0);
-    PG(2) = static_cast<real_t>(normal_sign * (u    ) < 0);
-    PG(3) = static_cast<real_t>(normal_sign * (u + a) < 0);
-    PG(4) = static_cast<real_t>(normal_sign * (u - a) < 0);
+    PG(0) = static_cast<real_t>(normal_sign * (u    ) < 0);  // Entropy
+    PG(1) = static_cast<real_t>(normal_sign * (u    ) < 0);  // Vorticity
+    PG(2) = static_cast<real_t>(normal_sign * (u    ) < 0);  // Vorticity
+    PG(3) = static_cast<real_t>(normal_sign * (u + a) < 0);  // Pressure
+    PG(4) = static_cast<real_t>(normal_sign * (u - a) < 0);  // Pressure
 
-    Matrix5r BG(Matrix5r::Zero());  // Medida's B^G_1
+    Matrix5r BG(Matrix5r::Zero());          // Medida equations 5.82 and 5.83
     BG(1, 1) = v;
-    BG(3, 1) = half * (a - u);
-    BG(4, 1) = u;
+    BG(3, 1) = PG(0) ? half * (a - u) : u;  // Inflow modifications to...
+    BG(4, 1) = PG(0) ? half * (a + u) : u;  // ...produce well-posed result.
     BG(2, 2) = v;
     BG(1, 3) = half * (a + u);
     BG(3, 3) = v;
     BG(1, 4) = half * (a - u);
     BG(4, 4) = v;
 
-    Matrix5r CG(Matrix5r::Zero());  // Medida's C^G_1
+    Matrix5r CG(Matrix5r::Zero());          // Medida equations 5.82 and 5.83
     CG(1, 1) = w;
     CG(2, 2) = w;
-    CG(3, 2) = half * (a - u);
-    CG(4, 2) = u;
+    CG(3, 2) = PG(0) ? half * (a - u) : u;  // Inflow modifications to...
+    CG(4, 2) = PG(0) ? half * (a + u) : u;  // ...produce well-posed result.
     CG(2, 3) = half * (a + u);
     CG(3, 3) = w;
     CG(2, 4) = half * (a - u);

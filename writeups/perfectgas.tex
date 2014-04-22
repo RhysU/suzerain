@@ -4517,29 +4517,9 @@ Direct computation shows
 \[
   \det V^L = -2\bar{\rho}^3\bar{a}^5
 \]
-and so $V^L$ is always nonsingular for a realizable reference state.  Medida's
-equations~(5.82) and~(5.83) provide one set of nonreflecting conditions for
-which reflection coefficients were not reported:
-\begin{align}
-\label{eq:dimeulerapproxmedidaopt1}
-  B^G_1 &= \left[\begin{array}{ccccc}
-    0 & 0                         & 0       & 0                           & 0                         \\ \noalign{\smallskip}
-    0 & \bar{v}                   & 0       & \frac{\bar{a} + \bar{u}}{2} & \frac{\bar{a}-\bar{u}}{2} \\ \noalign{\smallskip}
-    0 & 0                         & \bar{v} & 0                           & 0                         \\ \noalign{\smallskip}
-    0 & \frac{\bar{a}-\bar{u}}{2} & 0       & \bar{v}                     & 0                         \\ \noalign{\smallskip}
-    0 & \bar{u}                   & 0       & 0                           & \bar{v}                   \\ \noalign{\smallskip}
-  \end{array}\right]
-&
-  C^G_1 &= \left[\begin{array}{ccccc}
-    0 & 0       & 0                         & 0                         & 0                         \\ \noalign{\smallskip}
-    0 & \bar{w} & 0                         & 0                         & 0                         \\ \noalign{\smallskip}
-    0 & 0       & \bar{w}                   & \frac{\bar{a}+\bar{u}}{2} & \frac{\bar{a}-\bar{u}}{2} \\ \noalign{\smallskip}
-    0 & 0       & \frac{\bar{a}-\bar{u}}{2} & \bar{w}                   & 0                         \\ \noalign{\smallskip}
-    0 & 0       & \bar{u}                   & 0                         & \bar{w}                   \\ \noalign{\smallskip}
-  \end{array}\right]
-\end{align}
-Using the one-dimensional outward normal $n$ with value $-1$ or $1$ at a left
-or right boundary, respectively,
+and so $V^L$ is always nonsingular for a realizable reference state.  Using the
+one-dimensional outward normal $n$ with value $-1$ or $1$ at a left or right
+boundary, respectively,
 \begin{align}
 \label{eq:PGmedida}
   P^G
@@ -4557,41 +4537,44 @@ or right boundary, respectively,
   0
   \right)
 \end{align}
-returns the appropriate projection operator if comparisons are deemed to
-indicate 1 if true and 0 if false.
-
-We assume, but have not verified, analysis like that presented in
-\citet[\textsection{}3.7.4]{Giles1988Nonreflecting} extends to Medida's
-analogous results.  At the inflow, the outgoing pressure wave produces no
-reflected entropy or vorticity waves and generates a fourth-order pressure
-reflection.  At the outflow, the outgoing entropy and vorticity waves produce
-no reflections while the outgoing pressure wave produces a second order
-reflection.  In contrast, Medida's equation~(5.84), which arises from modifying
-the already-well-posed outflow condition to match the well-posed inflow
-condition, provides different outflow behavior:
+specifies the appropriate projection operator if comparisons are deemed to
+indicate 1 if true and 0 if false.  Medida's equations~(5.82) and~(5.83) provide
+conditions for which reflection coefficients were not reported:
 \begin{align}
-\label{eq:dimeulerapproxmedidaopt2}
-  B^G_2 &= \left[\begin{array}{ccccc}
-    0 & 0                         & 0       & 0                           & 0                         \\ \noalign{\smallskip}
-    0 & \bar{v}                   & 0       & \frac{\bar{a} + \bar{u}}{2} & \frac{\bar{a}-\bar{u}}{2} \\ \noalign{\smallskip}
-    0 & 0                         & \bar{v} & 0                           & 0                         \\ \noalign{\smallskip}
-    0 & \frac{\bar{a}-\bar{u}}{2} & 0       & \bar{v}                     & 0                         \\ \noalign{\smallskip}
-    0 & \frac{\bar{a}+\bar{u}}{2} & 0       & 0                           & \bar{v}                   \\ \noalign{\smallskip}
+\label{eq:dimeulerapproxmedidaopt1}
+  B^G &= \left[\begin{array}{ccccc}
+    0 & 0       & 0       & 0                           & 0                         \\ \noalign{\smallskip}
+    0 & \bar{v} & 0       & \frac{\bar{a} + \bar{u}}{2} & \frac{\bar{a}-\bar{u}}{2} \\ \noalign{\smallskip}
+    0 & 0       & \bar{v} & 0                           & 0                         \\ \noalign{\smallskip}
+    0 & m_{-}   & 0       & \bar{v}                     & 0                         \\ \noalign{\smallskip}
+    0 & m_{+}   & 0       & 0                           & \bar{v}                   \\ \noalign{\smallskip}
   \end{array}\right]
 &
-  C^G_2 &= \left[\begin{array}{ccccc}
-    0 & 0       & 0                         & 0                         & 0                         \\ \noalign{\smallskip}
-    0 & \bar{w} & 0                         & 0                         & 0                         \\ \noalign{\smallskip}
-    0 & 0       & \bar{w}                   & \frac{\bar{a}+\bar{u}}{2} & \frac{\bar{a}-\bar{u}}{2} \\ \noalign{\smallskip}
-    0 & 0       & \frac{\bar{a}-\bar{u}}{2} & \bar{w}                   & 0                         \\ \noalign{\smallskip}
-    0 & 0       & \frac{\bar{a}+\bar{u}}{2} & 0                         & \bar{w}                   \\ \noalign{\smallskip}
+  C^G &= \left[\begin{array}{ccccc}
+    0 & 0       & 0       & 0                         & 0                         \\ \noalign{\smallskip}
+    0 & \bar{w} & 0       & 0                         & 0                         \\ \noalign{\smallskip}
+    0 & 0       & \bar{w} & \frac{\bar{a}+\bar{u}}{2} & \frac{\bar{a}-\bar{u}}{2} \\ \noalign{\smallskip}
+    0 & 0       & m_{-}   & \bar{w}                   & 0                         \\ \noalign{\smallskip}
+    0 & 0       & m_{+}   & 0                         & \bar{w}                   \\ \noalign{\smallskip}
   \end{array}\right]
 \end{align}
-These matrices cause outgoing pressure waves to produce fourth order pressure
-reflections while outgoing vorticity waves produce first order reflections.  As
-Giles notes~\citep{Giles1990Nonreflecting}, this second outflow condition is
-preferable only when one knows there will be no outgoing vorticity wave.  This
-should be the case for some of our problems of interest.
+\begin{align}
+    m_{-} &= \begin{cases} \frac{\bar{a}-\bar{u}}{2} &\text{if $n\bar{u}<0$} \\ \bar{u} &\text{otherwise} \end{cases}
+&
+    m_{+} &= \begin{cases} \frac{\bar{a}+\bar{u}}{2} &\text{if $n\bar{u}<0$} \\ \bar{u} &\text{otherwise} \end{cases}
+\end{align}
+The constants $m_{-}$ and $m_{+}$ arise from the modifications Giles chose,
+which both Medida and Guarini reproduced, to obtain well-posed inflow
+conditions.  The form of these constants follows from Medida's equation~(5.84)
+and is similar to Guarini's definition~(4.86).
+
+We assume, but have not verified, reflection analysis like that presented in
+\citet[\textsection{}3.7.4]{Giles1988Nonreflecting} extends to Medida's
+\eqref{eq:dimeulerapproxmedidaopt1}.  At the inflow, an outgoing pressure wave
+would then produce no reflected entropy or vorticity waves and would generate a
+fourth-order pressure reflection.  At the outflow, an outgoing entropy or
+vorticity wave would then produce no reflection while an outgoing pressure wave
+would generate a second order reflection.
 
 \subsubsection{Application to the chosen nondimensional state variables}
 
