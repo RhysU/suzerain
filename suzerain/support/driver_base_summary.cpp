@@ -163,6 +163,8 @@ driver_base::summary_run(
         cout << flush;
     }
 
+    // TODO Redmine #3045 Merge input processing loops!
+
     // Processing differs slightly when done file-by-file versus
     // aggregated across multiple files...
     if (!use_stdout && !use_dat && !use_hdf5) {
