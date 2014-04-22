@@ -807,7 +807,7 @@ public:
         if (ESIO_SUCCESS == esio_plane_size(esioh, key.c_str(),
                                             &bglobal, &aglobal)
             && (EigenArray::ColsAtCompileTime == Dynamic
-                || dat.cols() == bglobal)) 
+                || dat.cols() == bglobal))
         {
             dat.resize(aglobal, bglobal);
             esio_plane_establish(esioh,
@@ -923,10 +923,10 @@ load_extrema(const esio_handle h,
        // check for each field
         std::string location(min_prefix);
         location.append(fields[f].identifier);
-        if (ESIO_SUCCESS == esio_plane_size(h, 
+        if (ESIO_SUCCESS == esio_plane_size(h,
                   location.c_str(), &bglobal, &aglobal)) {
 
-            //// FIXME Need to trasform coordinates to global indices
+            //// FIXME Need to transform coordinates to global indices
             //// to complete the implementation  #3071
             //retval = retval && ffmin(fields[f].identifier, e[f].min);
             //retval = retval && fxmin(fields[f].identifier, e[f].imin);
