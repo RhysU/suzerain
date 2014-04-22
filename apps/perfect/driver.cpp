@@ -95,6 +95,19 @@ driver::initialize(
 }
 
 void
+driver::reset()
+{
+    scenario.reset();
+    isothermal.reset();
+    sg.reset();
+    rad.reset();
+    helm.reset();
+    msoln.reset();
+    mean.reset();
+    return super::reset();
+}
+
+void
 driver::log_manufactured_solution_absolute_error(
         const std::string& timeprefix,
         const time_type t,
