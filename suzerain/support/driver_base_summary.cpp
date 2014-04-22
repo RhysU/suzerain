@@ -44,35 +44,31 @@ namespace suzerain {
 namespace support {
 
 const char * const driver_base::summary_description =
-"Invocable in four distinct ways:\n"
+"Invocable in three distinct ways:\n"
 "\n"
 "  1) perfect_summary                INFILE.h5 ...\n"
 "\n"
 "     This first way processes each INFILE.h5 in turn outputting a\n"
 "     corresponding INFILE.mean containing a whitespace-separated table\n"
 "     of means from the first samples in the file.  Useful primarily for\n"
-"     quick plotting of a single snapshot.\n"
+"     quick plotting of a single snapshot or snapshots against each other.\n"
 "\n"
-"  2) perfect_summary -s             INFILE.h5 ...\n"
+"  2) perfect_summary -f OUTFILE.dat INFILE.h5 ...\n"
 "\n"
-"     This second way (-s) sends the data from all samples to standard\n"
-"     output sorted according to the simulation time with a blank line\n"
+"     This second way (-s) sends the data from all samples to file\n"
+"     OUTFILE.dat sorted according to the simulation time with a blank line\n"
 "     separating adjacent times.  Useful primarily for quick plotting of\n"
 "     multiple snapshots.\n"
 "\n"
-"  3) perfect_summary -f OUTFILE.dat INFILE.h5 ...\n"
+"  3) perfect_summary -o OUTFILE.h5  INFILE.h5 ...\n"
 "\n"
-"     This third way (-f) is identical to the second except the output is\n"
-"     automatically sent to the file named OUTFILE.dat.\n"
-"\n"
-"  4) perfect_summary -o OUTFILE.h5  INFILE.h5 ...\n"
-"\n"
-"     This fourth way (-o) outputs a single HDF5 file called OUTFILE.h5\n"
+"     This third way (-o) outputs a single HDF5 file called OUTFILE.h5\n"
 "     combining all samples.  Additionally, automatic autocorrelation\n"
 "     analysis using autoregresive modeling techniques is run on the\n"
-"     combined samples and output as HDF5 attributes.\n"
+"     combined samples and output as HDF5 attributes.  This is the\n"
+"     recommended form for archival and/or further processing.\n"
 "\n"
-"Options -s, -f, and -o may be specified simultaneously.\n";
+"Options -f and -o may be specified simultaneously.\n";
 
 const char * const driver_base::summary_argument_synopsis
     = "RESTART-OR-SAMPLE-HDF5-FILE...";
@@ -104,8 +100,6 @@ driver_base::summary_run(
          "Overwrite any existing HDF5 output files?")
         ("describe,d",
          "Dump all sample descriptions to standard output")
-        ("stdout,s",
-         "Write results to standard output?")
         ("datfile,f",  po::value(&datfile),
          "Write results to a textual output file")
         ("hdffile,o",  po::value(&hdffile),
@@ -119,7 +113,6 @@ driver_base::summary_run(
     // Initialize application and then process binary-specific options
     // (henceforth suzerain::support::logging macros become usable)
     const vector<string> restart_files = initialize(argc, argv);
-    const bool use_stdout = options.variables().count("stdout");
     const bool use_dat    = options.variables().count("datfile");
     const bool use_hdf5   = options.variables().count("hdffile");
     const bool describe   = options.variables().count("describe");
@@ -162,7 +155,7 @@ driver_base::summary_run(
 
     // Will we be projecting data onto some particular target grid?
     // If so, load the target details per --target or positional arguments
-    const bool projecting = use_stdout || use_dat || use_hdf5;
+    const bool projecting = use_dat || use_hdf5;
     if (projecting) {
         shared_ptr<boost::remove_pointer<esio_handle>::type> h(
                 esio_handle_initialize(MPI_COMM_WORLD),
@@ -264,13 +257,6 @@ driver_base::summary_run(
             final.nongrid() /= pool.size();
         }
 
-    }
-
-    if (use_stdout) {
-        for (summary_pool_type::const_iterator i = pool.begin();
-             i != pool.end(); ++i) {
-            i->second->write(cout, pool.begin() == i) << endl;
-        }
     }
 
     if (use_dat) {
