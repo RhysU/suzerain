@@ -178,12 +178,12 @@ driver_base::summary_run(
 
     // A single pool is maintained across all files.  Because the key is the
     // simulation time, we obtain get a well-ordered, unique data sequence.
-    for (vector<string>::const_iterator it = restart_files.begin();
-            it != restart_files.end();
-            ++it) {
+    for (vector<string>::const_iterator i = restart_files.begin();
+            i != restart_files.end();
+            ++i) {
 
         // Open file from filename using a clean ESIO handle
-        const string& filename = *it;
+        const string& filename = *i;
         shared_ptr<boost::remove_pointer<esio_handle>::type> h(
                 esio_handle_initialize(MPI_COMM_WORLD),
                 esio_handle_finalize);
@@ -198,7 +198,7 @@ driver_base::summary_run(
 
         if (projecting) {
 
-            // Output status to the user so user doesn't think we've hung
+            // Output status so the user does not become impatient
             for (summary_pool_type::const_iterator j = data.begin();
                     j != data.end(); ++j) {
                 INFO0("Read sample for t = " << j->first
@@ -217,13 +217,14 @@ driver_base::summary_run(
             } else {
                 outname = filename + ".mean";
             }
-            DEBUG0("Saving nondimensional quantities to " << outname);
 
             // Write header followed by data values separated by blank lines
             ofstream ofs(outname.c_str());
-            for (summary_pool_type::const_iterator i = data.begin();
-                    i != data.end(); ++i) {
-                i->second->write(ofs, data.begin() == i) << endl;
+            for (summary_pool_type::const_iterator j = data.begin();
+                    j != data.end(); ++j) {
+                INFO0("Writing sample for t = " << j->first
+                        << " from " << filename << " to " << outname);
+                j->second->write(ofs, data.begin() == j) << endl;
             }
             ofs.close();
 
