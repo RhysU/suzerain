@@ -81,7 +81,8 @@ int
 driver_base::summary_run(
         int argc,
         char **argv,
-        summary_pool_type& pool)
+        summary_pool_type& pool,
+        summary& final)
 {
     static const char who[] = "summary";
 

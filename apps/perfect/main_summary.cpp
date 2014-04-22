@@ -59,9 +59,10 @@ struct driver_summary : public driver
     /** Invoked by \c main just below. */
     int run(int argc, char **argv)
     {
-        // TODO Do something interesting with pool
+        // TODO Do something interesting with pool and final
         summary_pool_type pool;
-        const int status = summary_run(argc, argv, pool);
+        summary final;
+        const int status = summary_run(argc, argv, pool, final);
         return status;
     }
 
