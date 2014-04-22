@@ -46,13 +46,7 @@ struct driver_summary : public driver
                  driver_base::summary_argument_synopsis,
                  driver_base::summary_description,
                  REVISIONSTR)
-    {
-        // Almost none of the common application/driver infrastructure is used:
-        isothermal.reset();  // No monkeying with boundary conditions...
-        rad.reset();         // ...or inviscid radial flow parameters
-        sg.reset();          // ...or with slow growth.
-        scenario.reset();    // Scenario taken from input files only
-    }
+    {}
 
     /** Logging requirements are simpler than what superclass provides. */
     virtual std::string log4cxx_config() { return support::log4cxx_config; }

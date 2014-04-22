@@ -86,12 +86,8 @@ driver_base::summary_run(
 {
     static const char who[] = "summary";
 
-    // Almost none of the common application/driver infrastructure is used:
-    fftwdef.reset();     // No FFTs
-    grid.reset();        // Grid taken from input files only
-    restartdef.reset();  // No writing restart files
-    statsdef.reset();    // ...or writing statistics files
-    timedef.reset();     // ...or advancing time
+    // Begin devoid of common application/driver infrastructure
+    this->reset();
 
     namespace po = boost::program_options;
     using namespace std;
@@ -202,9 +198,8 @@ driver_base::summary_run(
 
         // Load summary, projecting as appropriate
         if (!projecting) {
-            b.reset();
-            cop.reset();
-            grid.reset();
+            this->reset();
+            load_metadata(h.get());
         }
         summary_pool_type data(support::load_summary(h.get(), b));
 

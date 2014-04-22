@@ -771,20 +771,20 @@ protected:
      */
     typedef boost::ptr_map<real_t, summary> summary_pool_type;
 
-    // TODO Decide on what information to return
     /**
      * Run the generic data summarization application.
+     * Do not invoke \ref initialize beforehand as this routine does so.
      *
-     * Do not invoke \ref initialize first as this routine does so. Subclasses
-     * may wish to reset options definitions to suppress their appearance in the
-     * help message.
+     * On successful return, the instance will be populated with metadata
+     * from either the target file specified on the command line or the
+     * final restart file listed in \c argv.
      *
      * \param[in]  argc  Incoming arguments per <code>main(argc, ...)</code>
      * \param[in]  argv  Incoming arguments per <code>main(..., argv)</code>
      * \param[out] pool  Processed data summaries as a function of unique time.
      * \param[out] final When \c pool has non-zero size,
      *                   either mean or final profile information
-     *                   suitable for further analysis.
+     *                   on collocation points suitable for further analysis.
      *
      * \return Success or failure suitable for return to the OS.
      */
