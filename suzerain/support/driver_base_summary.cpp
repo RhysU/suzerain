@@ -359,6 +359,11 @@ driver_base::summary_run(
                                 final.y().size(), arspec,
                                 eff_N, eff_var, mu, mu_sigma, p, T);
 
+                // ... overwriting previously computed mean profile
+                // (as mu is Kahan-ish here and therefore numerically cleaner)
+                assert(final.storage.col(c).innerStride() == 1);
+                std::copy(mu.begin(), mu.end(), final.storage.col(c).data());
+
                 // ...saving the contiguous spatiotemporal plane to disk
                 // ...and writing arsel results as additional attributes
                 // TODO Parallelize IO after isolating/fixing segfault
