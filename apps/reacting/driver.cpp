@@ -220,7 +220,7 @@ driver::save_spectra_primitive(
     if (Ns > 1) {
         assert(static_cast<int>(ndx::species) < swave_count);
     }
-    SUZERAIN_ENSURE((int) state_nonlinear->shape()[0] == swave_count);
+    SUZERAIN_ENSURE(state_nonlinear->shape()[0] == swave_count);
     SUZERAIN_ENSURE(std::equal(state_nonlinear->shape() + 1, 
                                state_nonlinear->shape() + 4,
                                auxw.shape() + 1));
