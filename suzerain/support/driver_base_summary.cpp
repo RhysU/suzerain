@@ -163,23 +163,53 @@ driver_base::summary_run(
         cout << flush;
     }
 
-    // TODO Redmine #3045 Merge input processing loops!
+    // Will we be projecting data onto some particular target grid?
+    // If so, load the target details per --target or positional arguments
+    const bool projecting = use_stdout || use_dat || use_hdf5;
+    if (projecting) {
+        shared_ptr<boost::remove_pointer<esio_handle>::type> h(
+                esio_handle_initialize(MPI_COMM_WORLD),
+                esio_handle_finalize);
 
-    // Processing differs slightly when done file-by-file versus
-    // aggregated across multiple files...
-    if (!use_stdout && !use_dat && !use_hdf5) {
+        if (options.variables().count("target")) {
+            esio_file_open(h.get(), tgtfile.c_str(), /*read-only*/0);
+        } else if (restart_files.size() > 0) {
+            esio_file_open(h.get(),
+                            restart_files.back().c_str(), /*read-only*/0);
+        } else {
+            FATAL0("One or more positional arguments required when "
+                    " --target is not supplied");
+            return EXIT_FAILURE;
+        }
 
-        for (vector<string>::const_iterator it = restart_files.begin();
-             it != restart_files.end();
-             ++it) {
+        // Notice load_metadata gets everything the base class desires
+        load_metadata(h.get());
+    }
 
-            // Load data from filename using a clean ESIO handle
-            const string& filename = *it;
-            shared_ptr<boost::remove_pointer<esio_handle>::type> h(
-                    esio_handle_initialize(MPI_COMM_WORLD),
-                    esio_handle_finalize);
-            esio_file_open(h.get(), filename.c_str(), /*read-only*/0);
-            summary_pool_type data(support::load_summary(h.get()));
+    // A single pool is maintained across all files.  Because the key is the
+    // simulation time, we obtain get a well-ordered, unique data sequence.
+    for (vector<string>::const_iterator it = restart_files.begin();
+            it != restart_files.end();
+            ++it) {
+
+        // Load data from filename using a clean ESIO handle
+        const string& filename = *it;
+        shared_ptr<boost::remove_pointer<esio_handle>::type> h(
+                esio_handle_initialize(MPI_COMM_WORLD),
+                esio_handle_finalize);
+        esio_file_open(h.get(), filename.c_str(), /*read-only*/0);
+        summary_pool_type data(support::load_summary(h.get()));
+
+        if (projecting) {
+
+            // Output status to the user so user doesn't think we're hung.
+            for (summary_pool_type::const_iterator j = data.begin();
+                    j != data.end(); ++j) {
+                INFO0("Read sample for t = " << j->first
+                        << " from " << filename);
+            }
+
+        } else {
 
             // Save quantities to `basename filename .h5`.mean
             static const char suffix[] = ".h5";
@@ -196,70 +226,32 @@ driver_base::summary_run(
             // Write header followed by data values separated by blank lines
             ofstream ofs(outname.c_str());
             for (summary_pool_type::const_iterator i = data.begin();
-                 i != data.end(); ++i) {
+                    i != data.end(); ++i) {
                 i->second->write(ofs, data.begin() == i) << endl;
             }
             ofs.close();
 
-            // Numerics details reset to avoid carrying grid across files.
+            // Reset the numerics after each file to avoid projecting
+            // TODO Provide mechanism to reset scenario information too
             grid.reset();
             b.reset();
             cop.reset();
-        }
-
-    } else {
-
-        // Load the target grid and scenario per --target or positionals
-        // Notice load_metadata gets everything the base class desires
-        {
-            shared_ptr<boost::remove_pointer<esio_handle>::type> h(
-                    esio_handle_initialize(MPI_COMM_WORLD),
-                    esio_handle_finalize);
-
-            if (options.variables().count("target")) {
-                esio_file_open(h.get(), tgtfile.c_str(), /*read-only*/0);
-            } else if (restart_files.size() > 0) {
-                esio_file_open(h.get(),
-                               restart_files.back().c_str(), /*read-only*/0);
-            } else {
-                FATAL0("One or more positional arguments required when "
-                       " --target is not supplied");
-                return EXIT_FAILURE;
-            }
-
-            load_metadata(h.get());
-        }
-
-        // A single pool is maintained across all files.  Because the key is the
-        // simulation time, we get a well-ordered, unique data sequence.
-        for (size_t i = 0; i < restart_files.size(); ++i) {
-            const string& filename = restart_files[i];
-
-            // Load data from filename using a clean ESIO handle
-            shared_ptr<boost::remove_pointer<esio_handle>::type> h(
-                    esio_handle_initialize(MPI_COMM_WORLD),
-                    esio_handle_finalize);
-            esio_file_open(h.get(), filename.c_str(), /*read-only*/0);
-            summary_pool_type data(support::load_summary(h.get(), b));
-
-            // Output status to the user so they don't think we're hung.
-            for (summary_pool_type::const_iterator j = data.begin();
-                 j != data.end(); ++j) {
-                INFO0("Read sample for t = " << j->first
-                      << " from " << filename);
-            }
-
-            // Transfer data into pool (which erases it from data)
-            pool.transfer(data);
-
-            // Warn on any duplicate values which were not transfered
-            for (summary_pool_type::const_iterator j = data.begin();
-                 j != data.end(); ++j) {
-                WARN0("Duplicate sample time "
-                      << j->first << " from " << filename << " ignored");
-            }
 
         }
+
+        // Transfer data into pool (erasing it from data)
+        pool.transfer(data);
+
+        // Warn on any duplicate times that were not transfered
+        for (summary_pool_type::const_iterator j = data.begin();
+                j != data.end(); ++j) {
+            WARN0("Duplicate sample time "
+                    << j->first << " from " << filename << " ignored");
+        }
+
+    }
+
+    {
 
         if (use_stdout) {
             // Write header followed by data values separated by blank lines
