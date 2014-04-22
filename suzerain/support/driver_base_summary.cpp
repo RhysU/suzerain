@@ -314,14 +314,10 @@ driver_base::summary_run(
 
         // Set "/y" to be the one-dimensional vector of collocation points.
         // Strictly speaking unnecessary, but useful shorthand for scripts.
-        std::vector<real_t> y;
-        y.resize(b->n());
-        for (size_t i = 0; i < y.size(); ++i) {
-            y[i] = b->collocation_point(i);
-        }
-        esio_line_establish(h.get(), y.size(), 0, y.size());
+        esio_line_establish(h.get(), final.y().size(), 0, final.y().size());
         esio_line_write(h.get(), summary::name[summary::offset::y],
-                y.data(), 0, summary::description[summary::offset::y]);
+                final.y().data(), final.y().innerStride(),
+                summary::description[summary::offset::y]);
 
         // Compute the bulk weights and then output those as well.
         suzerain::bsplineop_lu masslu(*cop.get());
@@ -337,7 +333,7 @@ driver_base::summary_run(
         // Process each component's spatiotemporal trace...
         running_statistics<real_t,1> dtstats;
         esio_plane_establish(h.get(), t.size(), 0, t.size(),
-                                      y.size(), 0, y.size());
+                                      final.y().size(), 0, final.y().size());
         #pragma omp parallel default(shared)
         {
             ArrayXXr data;
@@ -350,8 +346,8 @@ driver_base::summary_run(
                 INFO0("Processing component " << summary::name[c]);
 
                 // ...assembling from the pool into contiguous memory
-                data.setConstant(y.size(), t.size(),
-                                numeric_limits<real_t>::quiet_NaN());
+                data.setConstant(final.y().size(), t.size(),
+                                 numeric_limits<real_t>::quiet_NaN());
                 size_t off = 0;
                 for (summary_pool_type::const_iterator i = pool.begin();
                     i != pool.end(); ++i) {
@@ -359,7 +355,8 @@ driver_base::summary_run(
                 }
 
                 // ...running the automatic autocorrelation analysis
-                dtstats = arsel(y.size(), t, data.data(), y.size(), arspec,
+                dtstats = arsel(final.y().size(), t, data.data(),
+                                final.y().size(), arspec,
                                 eff_N, eff_var, mu, mu_sigma, p, T);
 
                 // ...saving the contiguous spatiotemporal plane to disk
@@ -383,7 +380,7 @@ driver_base::summary_run(
                     esio_attribute_writev(esioh, name, "p",
                             p.data(), p.size());
                     esio_attribute_writev(esioh, name, "T",
-                            T.data(),        T.size());
+                            T.data(), T.size());
                 }
             }
         }
