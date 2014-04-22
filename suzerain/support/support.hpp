@@ -130,7 +130,8 @@ create_bsplines(const int ndof,
                 const double right,
                 const double htdelta,
                 shared_ptr<bspline>& b,
-                shared_ptr<bsplineop>& cop);
+                shared_ptr<bsplineop>& cop,
+                const bool verbose = false);
 
 /** Save a \ref bspline workspace and associated operators in a file. */
 void

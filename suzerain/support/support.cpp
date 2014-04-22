@@ -249,11 +249,18 @@ create_bsplines(const int ndof,
                 const double right,
                 const double htdelta,
                 shared_ptr<bspline>& b,
-                shared_ptr<bsplineop>& cop)
+                shared_ptr<bsplineop>& cop,
+                const bool verbose)
 {
-    INFO0(who, "Creating B-spline basis of order " << k
-          << " on [" << left << ", " << right << "] with "
-          << ndof << " DOF stretched per htdelta " << htdelta);
+    if (verbose) {
+        INFO0(who, "Creating B-spline basis of order " << k
+              << " on [" << left << ", " << right << "] with "
+              << ndof << " DOF stretched per htdelta " << htdelta);
+    } else {
+        DEBUG0(who, "Creating B-spline basis of order " << k
+               << " on [" << left << ", " << right << "] with "
+               << ndof << " DOF stretched per htdelta " << htdelta);
+    }
 
     ////FIXME: Knot vectors are non-increasing for moderate htdelta
     /// FIXME: See https://savannah.gnu.org/bugs/index.php?34361
