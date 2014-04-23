@@ -47,21 +47,17 @@ giles_matrices(
         Matrix5r& inv_VL_S_RY,
         const real_t normal_sign)
 {
-    // Constants (to ease reusing expressions in, say, Fortran down the road)
-    const real_t one  = 1;
-    const real_t half = one / 2;
-
     // Prepare a rotation (differing from the model document), reordering,
     // ndx::{e, mx, my, mz, rho} to {rho = 0, my = 1, mz = 2, mx = 3, e = 4}.
     // All remaining matrices/logic within the routine uses the latter order!
     // The inverse rotation RY^{-1} is accomplished using RY.transpose().
     Matrix5r RY(Matrix5r::Zero());
     {
-        RY(0, ndx::rho) = one;
-        RY(1, ndx::my ) = one;
-        RY(2, ndx::mz ) = one;
-        RY(3, ndx::mx ) = one;
-        RY(4, ndx::e  ) = one;
+        RY(0, ndx::rho) = 1;
+        RY(1, ndx::my ) = 1;
+        RY(2, ndx::mz ) = 1;
+        RY(3, ndx::mx ) = 1;
+        RY(4, ndx::e  ) = 1;
     }
 
     // Prepare upper boundary reference state per rotated frame
@@ -72,28 +68,29 @@ giles_matrices(
           real_t a   = ref_a  ;
 
     // Prepare oft-used quantities derived from the reference state
-    const real_t inv_rho = one / rho;
+    const real_t inv_rho = 1 / rho;
     const real_t u2      = u * u;
     const real_t v2      = v * v;
     const real_t w2      = w * w;
-          real_t inv_a   = one / a;
+          real_t inv_a   = 1 / a;
           real_t a2      = a * a;
-          real_t inv_a2  = one / a2;
+          real_t inv_a2  = 1 / a2;
 
     // Prepare oft-used scenario-related constants
-    const real_t gamma1  = gamma - one;
-    const real_t inv_Ma  = one / Ma;
+    const real_t half    = static_cast<real_t>(1) / 2;
+    const real_t gamma1  = gamma - 1;
+    const real_t inv_Ma  = 1 / Ma;
     const real_t Ma2     = Ma * Ma;
-    const real_t inv_Ma2 = one / Ma2;
+    const real_t inv_Ma2 = 1 / Ma2;
 
     // Build the conserved -> primitive transformation and its inverse
     Matrix5r S(Matrix5r::Zero());
     {
-        S(0, 0) =   one;
+        S(0, 0) =   1;
         S(1, 0) = - u * inv_rho;
         S(2, 0) = - v * inv_rho;
         S(3, 0) = - w * inv_rho;
-        S(4, 0) =   half * gamma1 * (u2 + v2 + w2);
+        S(4, 0) =   gamma1 * (u2 + v2 + w2) / 2;
         S(1, 1) =   inv_rho;
         S(4, 1) = - gamma1 * u;
         S(2, 2) =   inv_rho;
@@ -104,11 +101,11 @@ giles_matrices(
     }
     Matrix5r inv_S(Matrix5r::Zero());
     {
-        inv_S(0, 0) =   one;
+        inv_S(0, 0) =   1;
         inv_S(1, 0) =   u;
         inv_S(2, 0) =   v;
         inv_S(3, 0) =   w;
-        inv_S(4, 0) =   half * Ma2 * (u2 + v2 + w2);
+        inv_S(4, 0) =   Ma2 * (u2 + v2 + w2) / 2;
         inv_S(1, 1) =   rho;
         inv_S(4, 1) =   Ma2 * rho * u;
         inv_S(2, 2) =   rho;
@@ -136,9 +133,9 @@ giles_matrices(
         VL(4, 1) = - rho * a;
         VL(1, 2) =   rho * a;
         VL(2, 3) =   rho * a;
-        VL(0, 4) =   one;
-        VL(3, 4) =   one;
-        VL(4, 4) =   one;
+        VL(0, 4) =   1;
+        VL(3, 4) =   1;
+        VL(4, 4) =   1;
     }
     Matrix5r inv_VL(Matrix5r::Zero());
     {
@@ -156,11 +153,11 @@ giles_matrices(
     // Build the in-vs-outflow characteristic-preserving projection
     // automatically accounting for sub- versus supersonic boundaries.
     Vector5r PG;
-    PG(0) = one * (normal_sign * (u    ) < 0);  // Entropy
-    PG(1) = one * (normal_sign * (u    ) < 0);  // Vorticity
-    PG(2) = one * (normal_sign * (u    ) < 0);  // Vorticity
-    PG(3) = one * (normal_sign * (u + a) < 0);  // Pressure
-    PG(4) = one * (normal_sign * (u - a) < 0);  // Pressure
+    PG(0) = static_cast<real_t>(normal_sign * (u    ) < 0);  // Entropy
+    PG(1) = static_cast<real_t>(normal_sign * (u    ) < 0);  // Vorticity
+    PG(2) = static_cast<real_t>(normal_sign * (u    ) < 0);  // Vorticity
+    PG(3) = static_cast<real_t>(normal_sign * (u + a) < 0);  // Pressure
+    PG(4) = static_cast<real_t>(normal_sign * (u - a) < 0);  // Pressure
 
     Matrix5r BG(Matrix5r::Zero());          // Medida equations 5.82 and 5.83
     BG(1, 1) = v;
