@@ -31,6 +31,7 @@
 
 #include <suzerain/arsel.hpp>
 #include <suzerain/common.hpp>
+#include <suzerain/format.hpp>
 #include <suzerain/mpi.hpp>
 #include <suzerain/running_statistics.hpp>
 #include <suzerain/summary.hpp>
@@ -201,7 +202,7 @@ driver_base::summary_run(
             // Output status so the user does not become impatient
             for (summary_pool_type::const_iterator j = data.begin();
                     j != data.end(); ++j) {
-                INFO0(who, "Read sample for t = " << j->first
+                INFO0(who, "Read sample t = " << fullprec<>(j->first)
                            << " from " << filename);
             }
 
@@ -222,7 +223,7 @@ driver_base::summary_run(
             ofstream ofs(outname.c_str());
             for (summary_pool_type::const_iterator j = data.begin();
                     j != data.end(); ++j) {
-                INFO0(who, "Writing sample for t = " << j->first
+                INFO0(who, "Writing sample t = " << fullprec<>(j->first)
                            << " from " << filename << " to " << outname);
                 j->second->write(ofs, data.begin() == j) << endl;
             }
