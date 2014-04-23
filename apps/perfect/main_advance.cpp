@@ -634,10 +634,6 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
             if (isothermal->upper_v > 0) {
                 WARN0(who, "Nonreflecting viscous outflow boundary problematic"
                            " (Redmine #2983)");
-            } else if (use_explicit) {
-                WARN0(who, "Nonreflecting viscous inflow boundary problematic"
-                           " for explicit advance"
-                           " (Redmine #3070)");
             }
         }
 
