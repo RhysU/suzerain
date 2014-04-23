@@ -237,8 +237,8 @@ driver_base::summary_run(
         // Warn on any duplicate times that were not transfered
         for (summary_pool_type::const_iterator j = data.begin();
                 j != data.end(); ++j) {
-            WARN0(who, "Duplicate sample time "
-                       << j->first << " from " << filename << " ignored");
+            WARN0(who, "Duplicate sample time " << fullprec<>(j->first)
+                       << " from " << filename << " ignored");
         }
 
     }
