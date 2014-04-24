@@ -23,6 +23,7 @@ fields_DATA += temporal_1e-2_k08.h5
 
 # Spatiotemporally homogenized boundary layers at Coleman-like conditions
 fields_DATA += spatiotemporal_1e-1_k06.h5                      # ZPG
+fields_DATA += spatiotemporal_1e-2_k06.h5                      # ZPG
 fields_DATA += spatiotemporal_consistent_1e-1_k06.h5           # ZPG
 fields_DATA += spatiotemporal_consistent_1e-1_pexi-1e-2_k06.h5 # FPG
 fields_DATA += spatiotemporal_consistent_5e-2_pexi-1e-2_k06.h5 # FPG
