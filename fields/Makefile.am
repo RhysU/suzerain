@@ -23,12 +23,14 @@ fields_DATA += temporal_1e-2_k08.h5
 fields_DATA += temporal_consistent_1e-1_k08.h5
 fields_DATA += temporal_consistent_1e-2_k08.h5
 
-# Spatiotemporally homogenized boundary layers at Coleman-like conditions
-fields_DATA += spatiotemporal_1e-1_k06.h5                      # ZPG
-fields_DATA += spatiotemporal_1e-2_k06.h5                      # ZPG
-fields_DATA += spatiotemporal_consistent_1e-1_k06.h5           # ZPG
-fields_DATA += spatiotemporal_consistent_1e-1_pexi-1e-2_k06.h5 # FPG
-fields_DATA += spatiotemporal_consistent_5e-2_pexi-1e-2_k06.h5 # FPG
+# Spatiotemporally homogenized boundary layers at Coleman-like ZPG conditions
+fields_DATA += spatiotemporal_1e-1_k06.h5
+fields_DATA += spatiotemporal_1e-2_k06.h5
+fields_DATA += spatiotemporal_consistent_1e-1_k06.h5
+
+# Spatiotemporally homogenized boundary layers at Coleman-like FPG conditions
+fields_DATA += spatiotemporal_consistent_1e-1_pexi-1e-2_k06.h5
+fields_DATA += spatiotemporal_consistent_5e-2_pexi-1e-2_k06.h5
 
 # Coarse-but-turbulent fields suitable for development or production spin-up
 # See Redmine #3058 if you need the backstory on obtaining these fields.
