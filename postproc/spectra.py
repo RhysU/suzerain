@@ -59,20 +59,20 @@ def process(kx, kz, Lx, Lz, Nx, Nz, Rkx, Rkz, bar, y, Ns, sn, **kwargs):
     # Compute spectra from Rkx using conjugate-symmetry of Rkx
     Ekx = Rkx.copy()
     Ekx[:, 1:, :] += np.conj(Rkx[:, 1:,:])
-    # Substract mean contribution
+    # Subtract mean contribution
     Ekx[:,0,:] -= bar_pairs
     assert np.max(np.abs(np.imag(Ekx))) == 0
-    # Convert to real and multiply by FT to FS factor
+    # Convert to real and multiply by Fourier Transform to Fourier Series factor
     Ekx = np.real(Ekx) * Lx / (2*np.pi)
 
     # Compute spectra from Rkz by adding reflected negative wavenumbers
     Ekz            = Rkz[:, 0:(Nz/2+1), :].copy()
     Ekz[:, 1:, :] += Rkz[:, -1:-(Nz/2+1):-1,:]
-    # Substract mean contribution
+    # Subtract mean contribution
     Ekz[:,0,:] -= bar_pairs
     # FIXME: find better criterion for tolerance of assert line below
     assert np.max(np.abs(np.imag(Ekz))) < 1E-10 #np.finfo(Ekz.dtype).eps
-    # Convert to real and multiply by FT to FS factor
+    # Convert to real and multiply by Fourier Transform to Fourier Series factor
     Ekz = np.real(Ekz) * Lz / (2*np.pi)
 
     # Helper to shorten the following few statements
@@ -89,7 +89,7 @@ def process(kx, kz, Lx, Lz, Nx, Nz, Rkx, Rkz, bar, y, Ns, sn, **kwargs):
     # Only half of two-point is interesting as they are periodic and even
     Rx = Rx[:, :(Rx.shape[1]/2+1), :]
     Rz = Rz[:, :(Rz.shape[1]/2+1), :]
-    # Substract mean contribution
+    # Subtract mean contribution
     for i in xrange(Rx.shape[1]):
         Rx[:,i,:] -= bar_pairs
     for k in xrange(Rz.shape[1]):
