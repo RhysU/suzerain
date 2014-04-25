@@ -593,8 +593,8 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
         if (sg->formulation.enabled() && sg->baseflow) {
             // In one- or two-dimensions (i.e. laminar case) peg freestream
             // so the user might exactly recover the scenario of interest.
-            // In three-dimensions, likely because of NRBC noise, destablizes
-            // the flow by perturbing the near wall in aphysical manner.
+            // In three-dimensions, likely because of NRBC noise, destabilizes
+            // the flow by perturbing the near wall in an aphysical manner.
             if (grid->N.x() > 1 && grid->N.z() > 1) {
                 INFO0(who, "Assuming baseflow drives three-dimensional cases"
                            " thus freestream constraints inactive");
