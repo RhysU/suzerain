@@ -26,7 +26,11 @@ trap "rm -f \"$tmp1\" \"$tmp2\"" EXIT
 # Build up any post-terminal processing in tmp2 for later use
 autotitle=
 title="$(date +%r): gplot $*"
-terminal="set terminal ${GNUTERM:-x11} title '$title'"
+if test -n "$GNUTERM"; then
+    terminal="set term ${GNUTERM} title '$title'"
+else
+    terminal="if (strstrt(GPVAL_TERMINALS, 'wxt') > 0) { set term wxt title '$title' } else { set term x11 title '$title' }"
+fi
 plotcmd=plot
 forexpr=
 grepcmd=
@@ -56,13 +60,16 @@ do
        outputext="${outputfile##*.}"
        case "$outputext" in
          eps|EPS)
-           terminal='set term postscript eps color dashed rounded'
+           terminal="if (strstrt(GPVAL_TERMINALS, 'epscairo') > 0) { set term epscairo color } else { set term postscript eps color }"
            ;;
          jpeg|JPEG|jpg|JPG)
            terminal='set term jpeg'
            ;;
+         pdf|PDF)
+           terminal="set term pdfcairo color"
+           ;;
          png|PNG)
-           terminal='set term png'
+           terminal="if (strstrt(GPVAL_TERMINALS, 'pngcairo') > 0) { set term pngcairo } else { set term png }"
            ;;
          svg|SVG)
            terminal='set term svg dynamic'
@@ -100,8 +107,6 @@ do
        ;;
     M) echo set pm3d map >> "$tmp2"
        ;;
-    S) stdin=true
-       ;;
     X) echo "set xrange [$OPTARG]" >> "$tmp2"
        ;;
     Y) echo "set yrange [$OPTARG]" >> "$tmp2"
@@ -126,7 +131,7 @@ Use gnuplot to plot one or more files directly from the command line.
   -i             Interactive plotting mode.  Hit 'h' on plot for help.
   -l             Use logarithmic scale for y axis.
   -o FILE        Save the plot to FILE with type chosen via the extension.
-                 Encapsulated postscript (eps), PNG, JPEG, and SVG supported.
+                 Formats EPS, JPEG, PDF, PNG, and SVG supported.
   -s FILE        Save the generated gnuplot commands as a script called FILE.
   -t TITLE       Set TITLE as the plot title.
   -x XLABEL      Specify XLABEL as the x axis label.
@@ -155,7 +160,7 @@ Examples (see gnuplot documentation for complete GNUPLOTSPEC details):
 
 If [::: [FILE]...] is omitted, filenames are read from standard input.
 Input files compressed by bzip2, gzip, or xz are transparently decompressed.
-Variable \$GNUTERM, defaulting to "x11", sets the terminal for on-screen plots.
+Variable \$GNUTERM, defaulting to "wxt" then "x11", sets the default terminal.
 On error, the failing gnuplot script is shown.
 HERE
     exit $showhelp
