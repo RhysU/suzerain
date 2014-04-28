@@ -716,6 +716,10 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
 
     // Perform final housekeeping and then advance time as requested
     establish_ieee_mode();
+    INFO0(who, "B-spline basis of order " << grid->k
+               << " on [" << b->collocation_point(0) << ", "
+               << b->collocation_point(b->n() - 1) << "] with "
+               << b->n() << " DOF stretched per htdelta " << grid->htdelta);
     log_discretization_quality();
     prepare_controller(initial_t, dgrid->chi());
     save_metadata();
