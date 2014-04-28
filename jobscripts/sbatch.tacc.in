@@ -7,15 +7,12 @@
 # http://www.tacc.utexas.edu/user-services/training/course-materials/
 #############################################################################
 #
-#SBATCH -J suzerain           # Job name
-
-# FIXME
-##$ -pe @corespernode@way @corespernode@          # Requests TpN tasks/node, (NoN x @corespernode@) cores total
-#SBATCH -N 2 # Number of nodes, not cores (16 cores/node)
-#SBATCH -n 32 # Total number of MPI tasks (if omitted, n=N)
-
-#SBATCH -p normal # queue name
-#SBATCH -t 00:30:00 # max tim
+#SBATCH -J suzerain                       # Job name
+#SBATCH --ntasks-per-core 1               # Do not run OpenMP/MPI hybrid
+#SBATCH --ntasks-per-node @corespernode@
+#SBATCH -n 32                             # Total number of MPI tasks
+#SBATCH -p normal                         # Queue name
+#SBATCH -t 00:30:00                       # Maximum wall time
 
 #$ -notify               # Notify job of impending doom
 set -m                   # Employ job control
