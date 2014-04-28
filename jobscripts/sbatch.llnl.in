@@ -3,15 +3,12 @@
 # Template for generated, generic job submission script in SLURM
 # Production-ready jobscripts are installed in $prefix/jobscripts
 #
-# using:
 # https://computing.llnl.gov/linux/slurm/quickstart.html
 # https://computing.llnl.gov/tutorials/lc_resources/
 # https://computing.llnl.gov/?set=resources&page=OCF_resources#cab
 #############################################################################
 #
 #SBATCH -J suzerain           # Job name
-#SBATCH -o myjob.%j.out       # stdout; %j expands to jobid
-#SBATCH -e myjob.%j.err       # stderr; skip to combine stdout and stderr
 
 # FIXME
 ##$ -pe @corespernode@way @corespernode@          # Requests TpN tasks/node, (NoN x @corespernode@) cores total

@@ -8,8 +8,6 @@
 #############################################################################
 #
 #SBATCH -J suzerain           # Job name
-#SBATCH -o myjob.%j.out       # stdout; %j expands to jobid
-#SBATCH -e myjob.%j.err       # stderr; skip to combine stdout and stderr
 
 # FIXME
 ##$ -pe @corespernode@way @corespernode@          # Requests TpN tasks/node, (NoN x @corespernode@) cores total
