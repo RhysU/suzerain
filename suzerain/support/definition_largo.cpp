@@ -334,7 +334,8 @@ definition_largo::save(
                 tmp.innerSize(), 0, procid == 0 ? tmp.innerSize() : 0);
 
         // Pack pointwise data and save it to location_baseflow
-        // computing primitive velocity on the fly
+        // computing primitive velocity on the fly.
+        // Changes here require syncing the logic within load(...).
         baseflow_map::table_type::const_iterator it = b->table.begin();
         for (int i = 0; i < tmp.rows(); ++i) {
             const largo_state& base = it->second.base;
@@ -360,7 +361,8 @@ definition_largo::save(
                 attr_base, type_map.c_str());
 
         // Pack pointwise x derivatives and save to location_baseflow_dx
-        // computing primitive velocity derivatives on the fly
+        // computing primitive velocity derivatives on the fly.
+        // Changes here require syncing the logic within load(...).
         it = b->table.begin();
         for (int i = 0; i < tmp.rows(); ++i) {
             const largo_state& base   = it->second.base;
@@ -387,7 +389,8 @@ definition_largo::save(
                 attr_base, type_map.c_str());
 
         // Pack pointwise y derivatives and save to location_baseflow_dy
-        // computing primitive velocity derivatives on the fly
+        // computing primitive velocity derivatives on the fly.
+        // Changes here require syncing the logic within load(...).
         it = b->table.begin();
         for (int i = 0; i < tmp.rows(); ++i) {
             const largo_state& base   = it->second.base;
@@ -587,9 +590,36 @@ definition_largo::load(
                 || (base_dx && type_map == base_dx.get())
                 || (base_dy && type_map == base_dy.get())) {
 
-        INFO0("Non-normative baseflow table(s) observed but wholly ignored");
-        // External logic MUST re-generate the table after load completes
-        // otherwise the baseflow is lost after restart.
+        INFO0("Preparing table-driven baseflow description");
+        SUZERAIN_ENSURE(x.rows() == dx.rows());
+        SUZERAIN_ENSURE(x.rows() == dy.rows());
+        SUZERAIN_ENSURE(x.cols() == dx.cols());
+        SUZERAIN_ENSURE(x.cols() == dy.cols());
+
+        // See save(...) method for the origin of the magic numbers below
+        shared_ptr<baseflow_map> const p = make_shared<baseflow_map>();
+        for (int i = 0; i < x.rows(); ++i) {
+            baseflow_map::row& row = p->table[x(i, 0)];
+            row.  base.e   =  x(i, 1);
+            row.  base.mx  =  x(i, 2);
+            row.  base.my  =  x(i, 3);
+            row.  base.mz  =  x(i, 4);
+            row.  base.rho =  x(i, 5);
+            row.  base.p   =  x(i, 6);
+            row.dxbase.e   = dx(i, 1);
+            row.dxbase.mx  = dx(i, 2);
+            row.dxbase.my  = dx(i, 3);
+            row.dxbase.mz  = dx(i, 4);
+            row.dxbase.rho = dx(i, 5);
+            row.dxbase.p   = dx(i, 6);
+            row.dybase.e   = dy(i, 1);
+            row.dybase.mx  = dy(i, 2);
+            row.dybase.my  = dy(i, 3);
+            row.dybase.mz  = dy(i, 4);
+            row.dybase.rho = dy(i, 5);
+            row.dybase.p   = dy(i, 6);
+        }
+        t.baseflow = p;
 
     } else if (    (base_x  && starts_with(base_x .get(), type_polynomial))
                 && (base_dx && starts_with(base_dx.get(), type_polynomial)) ){
