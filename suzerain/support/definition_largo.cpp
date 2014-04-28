@@ -197,7 +197,7 @@ definition_largo::override(
     if (that.baseflow) {
         this->baseflow = that.baseflow;
     }
-    
+
     if ((that.gramp_mean.size() > 0)) {
         TRACE0("Overriding growth rate amplitude mean");
         this->gramp_mean = that.gramp_mean;
