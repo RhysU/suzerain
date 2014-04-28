@@ -590,7 +590,7 @@ definition_largo::load(
                 || (base_dx && type_map == base_dx.get())
                 || (base_dy && type_map == base_dy.get())) {
 
-        INFO0("Preparing table-driven baseflow description");
+        DEBUG0("Preparing table-driven baseflow description");
         SUZERAIN_ENSURE(x.rows() == dx.rows());
         SUZERAIN_ENSURE(x.rows() == dy.rows());
         SUZERAIN_ENSURE(x.cols() == dx.cols());
@@ -632,7 +632,7 @@ definition_largo::load(
             WARN0("Polynomial baseflow from starts_with(base_x, 'polynomial')");
         }
 
-        INFO0("Preparing polynomial-based baseflow description");
+        DEBUG0("Preparing polynomial-based baseflow description");
         shared_ptr<baseflow_polynomial> p = make_shared<baseflow_polynomial>();
         p->x       = x;
         p->dx      = dx;
@@ -640,7 +640,7 @@ definition_largo::load(
 
     } else if (base_x && type_uniform == base_x.get()) {
 
-        INFO0("Preparing uniform baseflow description");
+        DEBUG0("Preparing uniform baseflow description");
         shared_ptr<baseflow_uniform> p = make_shared<baseflow_uniform>();
         p->x       = x;
         t.baseflow = p;
