@@ -639,9 +639,8 @@ driver::default_restart_interval(
         if (sg->formulation.enabled() && sg->baseflow) {
             // ...prefer wall velocity from inviscid baseflow as freestream
             // surrogate as it is independent of the wall-normal domain size...
-            largo_state freestream, dontcare;
-            sg->baseflow->conserved(0.0, freestream.as_is(),
-                                    dontcare.as_is(), dontcare.as_is());
+            largo_state freestream;
+            sg->baseflow->conserved(0.0, freestream.as_is());
             velocity = maxmf(abs(freestream.u()), velocity);
         } else if (isothermal) {
             // ...taking freestream reference if-and-only-if no baseflow...

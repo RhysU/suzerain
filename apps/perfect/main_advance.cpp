@@ -545,16 +545,8 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
         // consistent with slow growth forcing.  Notice when no slow growth we
         // still have vanilla flat plate scenario values after this block.
         if (sg->formulation.enabled() && sg->baseflow) {
-            {
-                largo_state dontcare;
-                sg->baseflow->conserved(grid->L.y(), freestream.as_is(),
-                                        dontcare.as_is(), dontcare.as_is());
-            }
-            {
-                real_t dontcare;
-                sg->baseflow->pressure (grid->L.y(), freestream.p,
-                                        dontcare, dontcare);
-            }
+            sg->baseflow->conserved(grid->L.y(), freestream.as_is());
+            sg->baseflow->pressure (grid->L.y(), freestream.p);
         }
 
         INFO0(who, "Setting freestream reference state on upper boundary");
@@ -604,12 +596,10 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
             } else {
                 INFO0(who, "Matching freestream constraint enforcement"
                            " profile to baseflow");
-                largo_state state, dontcare;
+                largo_state state;
                 for (int i = 0; i < b->n(); ++i) {
                     sg->baseflow->conserved(b->collocation_point(i),
-                                            state.as_is(),
-                                            dontcare.as_is(),
-                                            dontcare.as_is());
+                                            state.as_is());
                     constrainer->physical[ndx::e  ]->shape[i] = state.e  ;
                     constrainer->physical[ndx::mx ]->shape[i] = state.mx ;
                     constrainer->physical[ndx::rho]->shape[i] = state.rho;

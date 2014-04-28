@@ -1175,14 +1175,12 @@ void summarize_boundary_layer_nature(
         coeffs_inviscid.resize(b.n(), NoChange);
 
         // Retrieve values on collocation points
-        largo_state state, dontcare;
+        largo_state state;
         baseflow_interface &baseflow = *sg->baseflow;
         for (int j = 0; j < b.n(); ++j) {
             const real_t y_j = b.collocation_point(j);
-            baseflow.conserved(y_j, state.as_is(),
-                               dontcare.as_is(), dontcare.as_is());
-            baseflow.pressure (y_j, state.p,
-                               dontcare.p, dontcare.p);
+            baseflow.conserved(y_j, state.as_is());
+            baseflow.pressure (y_j, state.p);
             coeffs_inviscid(j, 0) = state.H0();
             coeffs_inviscid(j, 1) = state.mx;
             coeffs_inviscid(j, 2) = state.u();
