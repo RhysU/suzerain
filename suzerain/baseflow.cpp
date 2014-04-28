@@ -51,6 +51,16 @@ baseflow_uniform::baseflow_uniform()
 void
 baseflow_uniform::conserved(
         const real_t      y,
+        real_t*        base) const
+{
+    SUZERAIN_UNUSED(y);
+    const int nstate = x.size() - 1;
+    memcpy(base,   x.data(), nstate*sizeof(real_t));
+}
+
+void
+baseflow_uniform::conserved(
+        const real_t      y,
         real_t*        base,
         real_t*      dybase,
         real_t*      dxbase) const
@@ -60,6 +70,15 @@ baseflow_uniform::conserved(
     memcpy(base,   x.data(), nstate*sizeof(real_t));
     memset(dybase, 0,        nstate*sizeof(real_t));
     memset(dxbase, 0,        nstate*sizeof(real_t));
+}
+
+void
+baseflow_uniform::pressure(
+        const real_t y,
+        real_t&      P) const
+{
+    SUZERAIN_UNUSED(y);
+    P   = x.tail<1>()[0];
 }
 
 void
@@ -79,6 +98,29 @@ baseflow_polynomial::baseflow_polynomial()
     : x ()
     , dx()
 {
+}
+
+void
+baseflow_polynomial::conserved(
+        const real_t      y,
+        real_t*        base) const
+{
+    assert(x.cols() > 0);
+    const int nstate = x.cols() - 1;
+
+    // Compute baseflow
+    if (x.rows()) {
+
+        for (int j = 0; j < nstate; ++j) {
+            base[j] = gsl_poly_eval(x.col(j).data(), x.rows(), y);
+        }
+
+    } else {
+
+        using namespace std;
+        memset(base,   0, nstate*sizeof(real_t));
+
+    }
 }
 
 void
@@ -130,6 +172,21 @@ baseflow_polynomial::conserved(
 void
 baseflow_polynomial::pressure(
         const real_t   y,
+        real_t&        P) const
+{
+    assert(x.cols() > 0);
+
+    // Compute pressure
+    if (x.rows()) {
+        P = gsl_poly_eval(x.rightCols<1>().data(), x.rows(), y);
+    } else {
+        P = 0;
+    }
+}
+
+void
+baseflow_polynomial::pressure(
+        const real_t   y,
         real_t&        P,
         real_t&      dyP,
         real_t&      dxP) const
@@ -155,6 +212,17 @@ baseflow_polynomial::pressure(
 
 baseflow_map::baseflow_map()
 {
+}
+
+// Minor efficiency improvement possible by avoiding dontcare values,
+// but the overhead will all be in the search process in the delegate.
+void
+baseflow_map::conserved(
+        const real_t      y,
+        real_t*        base) const
+{
+    largo_state dontcare1, dontcare2;
+    return conserved(y, base, dontcare1.as_is(), dontcare2.as_is());
 }
 
 // Beware this makes strong assumptions about baseflow_map::row
@@ -222,6 +290,17 @@ baseflow_map::conserved(
                         /*yp3*/ dybase[i]);
         }
     }
+}
+
+// Minor efficiency improvement possible by avoiding dontcare values,
+// but the overhead will all be in the search process in the delegate.
+void
+baseflow_map::pressure(
+        const real_t   y,
+        real_t&        P) const
+{
+    real_t dontcare1, dontcare2;
+    return pressure(y, P, dontcare1, dontcare2);
 }
 
 // Structural changes here likely require adjusting baseflow_map::conserved

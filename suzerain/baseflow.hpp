@@ -52,6 +52,15 @@ public:
     virtual ~baseflow_interface();
 
     /**
+     * Compute baseflow state at some position.
+     *
+     * @param[in ] y      Wall-normal coordinate \f$y\f$.
+     * @param[out] base   Flow state at \f$y\f$ stored per \ref largo_state.
+     */
+    virtual void conserved(const real_t      y,
+                           real_t *       base) const = 0;
+
+    /**
      * Compute baseflow state and its spatial derivatives at some position.
      *
      * @param[in ] y      Wall-normal coordinate \f$y\f$.
@@ -65,6 +74,15 @@ public:
                            real_t *       base,
                            real_t *     dybase,
                            real_t *     dxbase) const = 0;
+
+    /**
+     * Compute baseflow pressure at some position.
+     *
+     * @param[in ] y   Wall-normal coordinate \f$y\f$.
+     * @param[out] P   Base flow pressure at \f$y\f$.
+     */
+    virtual void pressure(const real_t    y,
+                          real_t &        P) const = 0;
 
     /**
      * Compute baseflow pressure and its spatial derivatives at some position.
@@ -97,9 +115,15 @@ public:
     baseflow_uniform();
 
     void conserved(const real_t      y,
+                   real_t *       base) const;
+
+    void conserved(const real_t      y,
                    real_t *       base,
                    real_t *     dybase,
                    real_t *     dxbase) const;
+
+    void pressure(const real_t    y,
+                  real_t &        P) const;
 
     void pressure(const real_t    y,
                   real_t &        P,
@@ -128,9 +152,15 @@ public:
     baseflow_polynomial();
 
     void conserved(const real_t      y,
+                   real_t *       base) const;
+
+    void conserved(const real_t      y,
                    real_t *       base,
                    real_t *     dybase,
                    real_t *     dxbase) const;
+
+    void pressure(const real_t    y,
+                  real_t &        P) const;
 
     void pressure(const real_t    y,
                   real_t &        P,
@@ -176,9 +206,25 @@ public:
      * \throw std::out_of_range on requests requiring extrapolation.
      */
     void conserved(const real_t      y,
+                   real_t *       base) const;
+
+    /**
+     * Look up conserved state results from \c table.
+     * If not found and possible, interpolate for the results.
+     * \throw std::out_of_range on requests requiring extrapolation.
+     */
+    void conserved(const real_t      y,
                    real_t *       base,
                    real_t *     dybase,
                    real_t *     dxbase) const;
+
+    /**
+     * Look up pressure results from \c table.
+     * If not found and possible, interpolate for the results.
+     * \throw std::out_of_range on requests requiring extrapolation.
+     */
+    void pressure(const real_t    y,
+                  real_t &        P) const;
 
     /**
      * Look up pressure results from \c table.
