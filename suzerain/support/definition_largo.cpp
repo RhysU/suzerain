@@ -594,7 +594,7 @@ definition_largo::load(
     } else if (    (base_x  && starts_with(base_x .get(), type_polynomial))
                 && (base_dx && starts_with(base_dx.get(), type_polynomial)) ){
 
-        // Fuziness added to the matching to wallpaper over Python/ESIO hiccup
+        // Fuzziness added to the matching to wallpaper over Python/ESIO hiccup
         if (type_polynomial != base_x.get()) {
             WARN0("Polynomial baseflow from starts_with(base_x, 'polynomial')");
         }
