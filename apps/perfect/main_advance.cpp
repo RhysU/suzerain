@@ -556,6 +556,7 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
             // Homogenization modifies the inviscid characteristics.
             // See discussion (or placeholder thereof) at Redmine #2982
             // Notice adjustment of growth rate for spatiotemporal-like cases.
+            // FIXME Automatically synchronize with CFL in navier_stokes.hpp
             if (sg->formulation.is_strictly_temporal()) {
                 isothermal->upper_v = freestream.v()
                                     - grid->L.y()*sg->grdelta;
