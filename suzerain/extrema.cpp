@@ -171,10 +171,10 @@ compute_field_extrema_xz(
         retval[f].min.resize(ny);
         retval[f].max.resize(ny);
         retval[f].imin.resize(ny);
-        retval[f].imax.resize(ny); 
+        retval[f].imax.resize(ny);
         retval[f].kmin.resize(ny);
-        retval[f].kmax.resize(ny); 
-        retval[f].fneg.resize(ny); 
+        retval[f].kmax.resize(ny);
+        retval[f].fneg.resize(ny);
 
         for (int j = 0; j < ny; ++j) {
             // value
@@ -186,9 +186,9 @@ compute_field_extrema_xz(
             retval[f].imax(j) = buf2[(nf+f)*ny + j].index % dNx;
 
             // z-index = (xz_global - i-index) / dNx
-            retval[f].kmin(j) = (buf2[    f *ny + j].index 
+            retval[f].kmin(j) = (buf2[    f *ny + j].index
                                  - retval[f].imin(j)) / dNx;
-            retval[f].kmax(j) = (buf2[(nf+f)*ny + j].index 
+            retval[f].kmax(j) = (buf2[(nf+f)*ny + j].index
                                  - retval[f].imax(j)) / dNx;
 
             // negatives

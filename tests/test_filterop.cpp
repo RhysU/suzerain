@@ -543,7 +543,7 @@ BOOST_AUTO_TEST_CASE( filterop_symmetry_complex_double )
 }
 
 
-// TODO Test with no-filter closure on one end and symmetric closure on the 
+// TODO Test with no-filter closure on one end and symmetric closure on the
 // other end
 
 BOOST_AUTO_TEST_SUITE_END()

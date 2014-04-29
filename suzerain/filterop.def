@@ -317,7 +317,7 @@ static int WORK(suzerain_filterop,_operator_boundaries)(
 
             // The number of near-boundary schemes that need to be replaced
             // goes in general by the width of the stencil (widest side).
-            // In the symmetry case, however, the only rows that change 
+            // In the symmetry case, however, the only rows that change
             // in A_T are those with coefficients of A_T at ghost points.
             for (int j = 0; j < w->kuat; at_j += ld, ++j) {
 
@@ -327,7 +327,7 @@ static int WORK(suzerain_filterop,_operator_boundaries)(
                     at_j[(0     )*inc] += 2*at_j[(0-joff)*inc];
                     at_j[(0+joff)*inc] -=   at_j[(0-joff)*inc];
                     // Reset value at ghost element
-                    at_j[(0-joff)*inc]  = 0;                     
+                    at_j[(0-joff)*inc]  = 0;
                 }
             }
         }
@@ -458,7 +458,7 @@ static int WORK(suzerain_filterop,_operator_boundaries)(
 
             // The number of near-boundary schemes that need to be replaced
             // goes in general by the width of the stencil (widest side).
-            // In the symmetry case, however, the only rows that change 
+            // In the symmetry case, however, the only rows that change
             // in A_T are those with coefficients of A_T at ghost points.
             for (int j = 0; j > -(w->klat); at_j -= ld, --j) {
 

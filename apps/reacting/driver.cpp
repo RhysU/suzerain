@@ -185,7 +185,7 @@ driver::save_spectra_primitive(
     const size_t Ns = cmods->Ns();
     const size_t state_count = Ns+4;
 
-    // Indices for auxiliary storage to allow the diluter to 
+    // Indices for auxiliary storage to allow the diluter to
     // be included in the two-point corralation computation
     struct aux { enum {
             T       = 0,
@@ -221,10 +221,10 @@ driver::save_spectra_primitive(
         assert(static_cast<int>(ndx::species) < swave_count);
     }
     SUZERAIN_ENSURE(state_nonlinear->shape()[0] == swave_count);
-    SUZERAIN_ENSURE(std::equal(state_nonlinear->shape() + 1, 
+    SUZERAIN_ENSURE(std::equal(state_nonlinear->shape() + 1,
                                state_nonlinear->shape() + 4,
                                auxw.shape() + 1));
-    SUZERAIN_ENSURE(std::equal(state_nonlinear->strides() + 1, 
+    SUZERAIN_ENSURE(std::equal(state_nonlinear->strides() + 1,
                                state_nonlinear->strides() + 4,
                                auxw.strides() + 1));
 
@@ -240,7 +240,7 @@ driver::save_spectra_primitive(
         dgrid->transform_wave_to_physical(&sphys.coeffRef(f,0));
     }
 
-    // Pointwise conversion from e, mx, my, mz, rho, rho_s 
+    // Pointwise conversion from e, mx, my, mz, rho, rho_s
     // to T, u, v, w, rho, c_s
     physical_view<> auxp(*dgrid, auxw);
     real_t Tguess = -1;

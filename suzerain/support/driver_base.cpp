@@ -1676,7 +1676,7 @@ driver_base::save_statistics_hook(
 
     // FIXME: choose between computed and cached extrema stats #3071
     state_nonlinear->assign_from(*state_linear);
-    extrema = 
+    extrema =
         compute_field_extrema_xz(*state_nonlinear, *grid, *dgrid, *cop);
 
     save_extrema(esioh, fields, extrema, *grid);

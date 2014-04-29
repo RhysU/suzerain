@@ -231,7 +231,7 @@ suzerain_reacting_flow_imexop_accumulate(
         suzerain_blas_zscal(n, beta, OUT(rho_v));
 
         if (LIKELY(in_rho_E)) {
-            
+
             (*p_gbdmv)(trans, n, w->kl[D1], w->ku[D1],
                 -phi,              REF(p_rE),
                 w->D_T[D1],  w->ld, IN(rho_E), 1.0, OUT(rho_v));

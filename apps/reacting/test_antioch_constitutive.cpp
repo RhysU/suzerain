@@ -374,7 +374,7 @@ int test_evaluate(const std::string& chem_xml_file)
     real_t species[5] = {0.5, 0.2, 0.1, 0.1, 0.1};
     real_t cs[5]      = {0.5, 0.2, 0.1, 0.1, 0.1};
 
-    real_t Tguess     = -1; 
+    real_t Tguess     = -1;
 
     // Storage for computed quantities
     real_t T=-1, p=-1, Ds[5], mu, kap,
@@ -455,7 +455,7 @@ int test_evaluate_eigen(const std::string& chem_xml_file)
     species(3) = cs(3) = 0.1;
     species(4) = cs(4) = 0.1;
 
-    real_t Tguess= -1; 
+    real_t Tguess= -1;
 
     // Storage for computed quantities
     real_t T=-1, p=-1, mu, kap, a=-1, Cv=0, Cp=0;

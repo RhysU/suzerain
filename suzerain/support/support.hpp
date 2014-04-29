@@ -231,7 +231,7 @@ save_extrema(const esio_handle h,
  * and \c max_prefix, as well as their x and z coordinates with \c minx_prefix,
  * \c maxx_prefix, \c minz_prefix, and \c maxc_prefix. Load as well the
  * global fraction of negative values using \c fneg_prefix. Statistics not
- * present in the file are considered to be all NaNs. 
+ * present in the file are considered to be all NaNs.
  *
  * @return True if all sampled quantities could be loaded.  False otherwise.
  */

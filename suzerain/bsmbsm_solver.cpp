@@ -168,14 +168,14 @@ bsmbsm_solver_zgbsv::solve_hook(
     int info = 0;
     if (toupper(fact_) == 'N') {
         SUZERAIN_TIMER_SCOPED("bsmbsm_solver_zgbsv::suzerain_lapack_zgbtrf");
-        info = suzerain_lapack_zgbtrf(N, N, KL, KU, 
+        info = suzerain_lapack_zgbtrf(N, N, KL, KU,
                                       LU.data(), LU.colStride(), ipiv.data());
         fact_ = 'F';
     }
     if (!info) {
         SUZERAIN_TIMER_SCOPED("bsmbsm_solver_zgbsv::suzerain_lapack_zgbtrs");
-        info = suzerain_lapack_zgbtrs(trans, N, KL, KU, nrhs, 
-                                      LU.data(), LU.colStride(), ipiv.data(), 
+        info = suzerain_lapack_zgbtrs(trans, N, KL, KU, nrhs,
+                                      LU.data(), LU.colStride(), ipiv.data(),
                                       PB.data(), PB.colStride());
     }
     return info;

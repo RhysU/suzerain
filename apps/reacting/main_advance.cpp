@@ -160,12 +160,12 @@ suzerain::reacting::driver_advance::run(int argc, char **argv)
     const string restart_file = positional[0];
 
     // Reset or preserve the file or input upper values
-    const bool preserve_upper_input =  
-        options.variables()["preserve_upper_input"].as<bool>(); 
+    const bool preserve_upper_input =
+        options.variables()["preserve_upper_input"].as<bool>();
 
     // Reset or preserve the file amplitude growth rate values
-    const bool preserve_largo_gramp_input =  
-        options.variables()["preserve_largo_gramp_input"].as<bool>(); 
+    const bool preserve_largo_gramp_input =
+        options.variables()["preserve_largo_gramp_input"].as<bool>();
 
     INFO0(who, "Loading restart file: " << restart_file);
     real_t initial_t = numeric_limits<real_t>::quiet_NaN();
@@ -259,7 +259,7 @@ suzerain::reacting::driver_advance::run(int argc, char **argv)
 
             const size_t Ns = cmods->Ns();
             if (Ns > 1) {
-                WARN0(who, "... setting mean freestream reference state" 
+                WARN0(who, "... setting mean freestream reference state"
                       " per baseflow NOT tested for multispecies,"
                       " proceed at your own risk");
             }
@@ -449,7 +449,7 @@ suzerain::reacting::driver_advance::run(int argc, char **argv)
     if (sgdef->formulation == largo_formulation::spatiotemporal_consistent
         && !preserve_largo_gramp_input) {
         INFO0(who, "Setting largo growth rate amplitude values");
- 
+
         const size_t Ns = cmods->Ns();
 
         // resize to 5 flow vars + (Ns-1) species + pressure

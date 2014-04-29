@@ -830,9 +830,9 @@ protected:
 
     // FIXME: Carry extrema time? #3071
     /**
-     * Maintains instantaneously sampled wall-normal extrema quantities.  
-     * Member \c extrema.t tracks the last time statistics were computed 
-     * and is used as a mechanism to avoid expensive recomputations.  
+     * Maintains instantaneously sampled wall-normal extrema quantities.
+     * Member \c extrema.t tracks the last time statistics were computed
+     * and is used as a mechanism to avoid expensive recomputations.
      */
     std::vector<field_extrema_xz>  extrema;
 

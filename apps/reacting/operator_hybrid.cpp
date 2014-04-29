@@ -90,16 +90,16 @@ isothermal_hybrid_linear_operator::isothermal_hybrid_linear_operator(
 {
     // Prepare species solvers
     species_solver.reserve(cmods.Ns()-1);
-    
+
     for (unsigned int i=0; i<cmods.Ns()-1; ++i) {
         shared_ptr<bsmbsm_solver> tmp(
             bsmbsm_solver::build(suzerain_bsmbsm_construct(
-                                     1, dgrid.global_wave_extent.y(), 
+                                     1, dgrid.global_wave_extent.y(),
                                      cop.max_kl(), cop.max_ku()), spec, 1));
 
         species_solver.push_back(tmp);
     }
-    
+
 }
 
 isothermal_hybrid_linear_operator::~isothermal_hybrid_linear_operator()
@@ -114,7 +114,7 @@ isothermal_hybrid_linear_operator::~isothermal_hybrid_linear_operator()
 
     for (std::size_t i = 0; i < species_solver.size(); ++i) {
         if (species_solver[i]) {
-            std::vector<std::string> 
+            std::vector<std::string>
                 summary = species_solver[i]->summarize_statistics();
             for (std::size_t i = 0; i < summary.size(); ++i) {
                 INFO0(who, summary[i]);
@@ -216,7 +216,7 @@ void isothermal_hybrid_linear_operator::apply_mass_plus_scaled_operator(
 
                 // Flow equations
                 suzerain_reacting_flow_imexop_accumulate(
-                        phi, &s, &ref, &ld, cop.get(), 
+                        phi, &s, &ref, &ld, cop.get(),
                         0, // imagzero=false FIXME: update after removing from reacting_imexop
                         tmp.data() + ndx::e   * Ny,
                         tmp.data() + ndx::mx  * Ny,
@@ -433,19 +433,19 @@ class IsothermalNoSlipPATPTEnforcer
 
     // To flip sign of v at upper wall for channel case
     std::vector<real_t> vsgn;
- 
+
 public:
 
     IsothermalNoSlipPATPTEnforcer(const suzerain_bsmbsm &A_T,
                                   const real_t &u_wall,
                                   const real_t &v_wall,
-                                  const real_t &w_wall,                                  
-                                  const real_t &e_tot, 
+                                  const real_t &w_wall,
+                                  const real_t &e_tot,
                                   const int nwalls)
         : // Pass internal energy and compute total energy to use in the object
           e_tot(e_tot+0.5*(u_wall*u_wall + v_wall*v_wall + w_wall*w_wall))
         , nwalls(nwalls)
-         
+
     {
         // Starting offset to named scalars in interleaved_state pencil
         const int e0   = static_cast<int>(ndx::e  ) * A_T.n;
@@ -472,10 +472,10 @@ public:
         velw[0] = u_wall;
         velw[1] = v_wall;
         velw[2] = w_wall;
-        
+
         // Initialize sign constant for velocity components
         // NOTE: we need to declare the sign for the three components
-        // Indices go by eqn+nmomentum*wall, with 
+        // Indices go by eqn+nmomentum*wall, with
         // eqn {u,v,w}       = {1,2,3} and
         // wall{bottom, top} = {0,1}
         vsgn.resize(nsides*nmomentum);
@@ -513,7 +513,7 @@ public:
      */
     template<typename T>
     void op(const suzerain_bsmbsm& A_T, T * const patpt, int patpt_ld)
-    {  
+    {
         // Attempt made to not unnecessarily disturb matrix conditioning.
 
         for (int wall = 0; wall < nwalls; ++wall) {
@@ -616,7 +616,7 @@ public:
         // 2.) incoming xflow is non-permuted flow solution
 
         for (int wall = 0; wall < nwalls; ++wall) {
-            bspec[rho_s[wall]] = 
+            bspec[rho_s[wall]] =
                 xflow[ndx::rho*Ny+wall*(Ny-1)]*wall_mass_fractions[alfa+1];
         }
     }
@@ -632,7 +632,7 @@ public:
         // 2.) incoming xflow is non-permuted flow solution
 
         for (int wall = 0; wall < nwalls; ++wall) {
-            bspec[wall*(Ny-1)] = 
+            bspec[wall*(Ny-1)] =
                 xflow[ndx::rho*Ny+wall*(Ny-1)]*wall_mass_fractions[alfa+1];
         }
     }
@@ -725,7 +725,7 @@ void isothermal_hybrid_linear_operator::invert_mass_plus_scaled_operator(
     const std::size_t nconstraints = ic0 ? ic0->shape()[2]*ic0->shape()[3] : 0;
     if (nconstraints) {
         SUZERAIN_ENSURE(dgrid.has_zero_zero_modes());
-        SUZERAIN_ENSURE(ic0->shape()  [1] == (unsigned)             Ny); 
+        SUZERAIN_ENSURE(ic0->shape()  [1] == (unsigned)             Ny);
         SUZERAIN_ENSURE(ic0->strides()[1] ==                         1);
         SUZERAIN_ENSURE(ic0->strides()[0] == (unsigned)             Ny);
         SUZERAIN_ENSURE(ic0->shape()  [0] == (unsigned) (flow_solver->S +
@@ -747,14 +747,14 @@ void isothermal_hybrid_linear_operator::invert_mass_plus_scaled_operator(
     if (grid.one_sided()) nwalls=1;
 
     IsothermalNoSlipPATPTEnforcer flow_bc_enforcer(
-        *flow_solver, 
-        isospec.lower_u, isospec.lower_v, isospec.lower_w, 
+        *flow_solver,
+        isospec.lower_u, isospec.lower_v, isospec.lower_w,
         cmods.e_from_T(isospec.lower_T, isospec.lower_cs), nwalls);
 
     shared_ptr<MassFractionPATPTEnforcer> species_bc_enforcer;
     if (species_solver.size()>0) {
         // FIXME: permit upper_T and upper_cs
-        species_bc_enforcer = 
+        species_bc_enforcer =
             make_shared<MassFractionPATPTEnforcer>(
                 *(species_solver[0]), isospec.lower_cs, nwalls);
     }
@@ -795,13 +795,13 @@ void isothermal_hybrid_linear_operator::invert_mass_plus_scaled_operator(
                 SUZERAIN_TIMER_SCOPED("implicit operator assembly (packf)");
                 suzerain_reacting_species_imexop_packf(
                     phi, &s, &ref, &ld, cop.get(),
-                    buf.data(), species_solver[alfa].get(), 
+                    buf.data(), species_solver[alfa].get(),
                     species_solver[alfa]->LU.data());
             } else {                       // Pack for out-of-place LU
                 SUZERAIN_TIMER_SCOPED("implicit operator assembly (packc)");
                 suzerain_reacting_species_imexop_packc(
                     phi, &s, &ref, &ld, cop.get(),
-                    buf.data(), species_solver[alfa].get(), 
+                    buf.data(), species_solver[alfa].get(),
                     species_solver[alfa]->PAPT.data());
             }
         }
@@ -831,11 +831,11 @@ void isothermal_hybrid_linear_operator::invert_mass_plus_scaled_operator(
 
 
         for (std::size_t alfa=0; alfa<species_solver.size(); ++alfa) {
-            
+
             {
                 // Apply species BCs to operator
-                SUZERAIN_TIMER_SCOPED("implicit operator BCs"); 
-                species_bc_enforcer->op(*(species_solver[alfa]), 
+                SUZERAIN_TIMER_SCOPED("implicit operator BCs");
+                species_bc_enforcer->op(*(species_solver[alfa]),
                                         species_solver[alfa]->PAPT.data(),
                                         species_solver[alfa]->PAPT.colStride());
             }
@@ -847,7 +847,7 @@ void isothermal_hybrid_linear_operator::invert_mass_plus_scaled_operator(
                 const int KU = species_solver[alfa]->KU;
 
                 const int nr  = KL+KU+1;
-                const int ncb = 
+                const int ncb =
                     species_solver[alfa]->S*(species_solver[alfa]->n-1);
 
                 // zero the whole block
@@ -931,8 +931,8 @@ void isothermal_hybrid_linear_operator::invert_mass_plus_scaled_operator(
             // Handle effects of constraints on species wall BCs
             for (std::size_t alfa=0; alfa<species_solver.size(); ++alfa) {
                 species_bc_enforcer->rhs_non_permuted(
-                    ic0->data() + i * Ntot + (ndx::species+alfa)*Ny, 
-                    ic0->data() + i * Ntot, 
+                    ic0->data() + i * Ntot + (ndx::species+alfa)*Ny,
+                    ic0->data() + i * Ntot,
                     alfa);
             }
         }

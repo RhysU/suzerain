@@ -96,7 +96,7 @@ suzerain::reacting::driver_init::run(int argc, char **argv)
     // Establish default scenario parameters
     cmods->Le = 0.9;
     cmods->alpha = 0.0;
-    chdef.reset(new definition_channel( 
+    chdef.reset(new definition_channel(
               1                                        // bulk_rho
             , 1                                        // bulk_rho_u
             , std::numeric_limits<real_t>::quiet_NaN() // bulk_rho_E
@@ -139,8 +139,8 @@ suzerain::reacting::driver_init::run(int argc, char **argv)
 
     // TODO: Add maybe tanh option through options.add_option
     //       as it's done in the perfect initialization.
-    //       I think we'd like to have the parabolic profile by default 
-    //       for a channel grid (htdelta>=0), and the tanh profile 
+    //       I think we'd like to have the parabolic profile by default
+    //       for a channel grid (htdelta>=0), and the tanh profile
     //       by default for a plate case.
 
     // Initialize application and then process binary-specific options
@@ -309,20 +309,20 @@ suzerain::reacting::driver_init::run(int argc, char **argv)
             INFO("Preparing the wall-normal streamwise velocity profile");
             std::vector<real_t> csj;
             csj.resize(cmods->Ns());
-            // TODO: Storing species concentrations at each j index in a 
+            // TODO: Storing species concentrations at each j index in a
             // separate container, csj, to be passed to the e_from_T method.
             // Can this be avoided?
             for (int j = 0; j < u.size(); ++j) {
                 const real_t y_j = b->collocation_point(j);
-                u[j] = (isothermal->lower_u) 
-                    + (isothermal->upper_u - isothermal->lower_u) 
+                u[j] = (isothermal->lower_u)
+                    + (isothermal->upper_u - isothermal->lower_u)
                     * tanh(10/grid->L.y() * y_j);
-                T    = (isothermal->lower_T) 
-                    + (isothermal->upper_T - isothermal->lower_T) 
+                T    = (isothermal->lower_T)
+                    + (isothermal->upper_T - isothermal->lower_T)
                     * tanh(10/grid->L.y() * y_j);
                 for (size_t s=0; s<cmods->Ns(); ++s) {
-                    csj[s] = isothermal->lower_cs[s] 
-                        + (isothermal->upper_cs[s] - isothermal->lower_cs[s]) 
+                    csj[s] = isothermal->lower_cs[s]
+                        + (isothermal->upper_cs[s] - isothermal->lower_cs[s])
                         * tanh(10/grid->L.y() * y_j);
                     cs(j,s) = csj[s];
                 }
@@ -375,26 +375,26 @@ suzerain::reacting::driver_init::run(int argc, char **argv)
 
         // Compute and print the wall viscosity (known b/c only
         // depends on T and mass fractions)
-        const real_t wall_visc = 
+        const real_t wall_visc =
             this->cmods->wilke_evaluator->mu(isothermal->lower_T,
                                              isothermal->lower_cs);
         INFO("The wall (dynamic) viscosity is " << wall_visc);
 
         // Note: 2 in Re below takes channel height to half-height
-        INFO("So that Re_bulk = " << 
+        INFO("So that Re_bulk = " <<
              chdef->bulk_rho_u * grid->L.y() / (2.0*wall_visc) );
 
         // Compute and print the speed of sound (frozen)
         const real_t R_mix = this->cmods->mixture->R(isothermal->lower_cs);
-        const real_t Cv    = this->cmods->sm_thermo->cv(isothermal->lower_T, 
-                                                        isothermal->lower_T, 
+        const real_t Cv    = this->cmods->sm_thermo->cv(isothermal->lower_T,
+                                                        isothermal->lower_T,
                                                         isothermal->lower_cs);
 
-        
+
         const real_t a = std::sqrt( (1.0 + R_mix/Cv)*R_mix*isothermal->lower_T);
-        
+
         INFO("The speed of sound at the wall is " << a);
-        
+
     }
 
     INFO0(who, "Saving the newly initialized state to disk");

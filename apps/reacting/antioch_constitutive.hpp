@@ -281,7 +281,7 @@ public:
                      const std::vector<real_t> mass_fractions) const;
 
     /**
-     * Given temperature compute specific total energy for each 
+     * Given temperature compute specific total energy for each
      * species.
      *
      * @param[in] T       Temparature.
@@ -291,7 +291,7 @@ public:
                        VectorXr&       etots) const;
 
     /**
-     * Given temperature compute specific total enthalpy for each 
+     * Given temperature compute specific total enthalpy for each
      * species.
      *
      * @param[in] T       Temparature.
@@ -301,8 +301,8 @@ public:
                        VectorXr&       htots) const;
 
     /**
-     * Given temperature and species mass fractions compute 
-     * required thermodynamic quantities for the nonreflecting 
+     * Given temperature and species mass fractions compute
+     * required thermodynamic quantities for the nonreflecting
      * boundary
      *
      * @param[in] T       Temperature

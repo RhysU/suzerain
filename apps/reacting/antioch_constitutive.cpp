@@ -407,7 +407,7 @@ antioch_constitutive::evaluate (const real_t  e,
         this->kinetics->compute_mass_sources(T, molar_densities_nonnegative,
                                              h_RT_minus_s_R, omega_dot);
 #else
-        this->kinetics->compute_mass_sources(T, rho, R_mix, Y, 
+        this->kinetics->compute_mass_sources(T, rho, R_mix, Y,
 	                                     molar_densities_nonnegative,
                                              h_RT_minus_s_R, omega_dot);
 #endif
@@ -512,7 +512,7 @@ antioch_constitutive::evaluate (const real_t    e,
         this->kinetics->compute_mass_sources(T, molar_densities_nonnegative,
                                              h_RT_minus_s_R, om);
 #else
-        this->kinetics->compute_mass_sources(T, rho, R_mix, cs, 
+        this->kinetics->compute_mass_sources(T, rho, R_mix, cs,
 	                                     molar_densities_nonnegative,
                                              h_RT_minus_s_R, om);
 #endif
@@ -658,7 +658,7 @@ antioch_constitutive::evaluate_pressure_derivs_and_trans (const real_t    e,
         Ds[i] = D0;
 
     // Speed of sound(frozen)
-    // TODO: Unify computation of speed of sound with that from 
+    // TODO: Unify computation of speed of sound with that from
     //       the evaluate method
     real_t af2 = (1.0 + R_mix/Cv)*R_mix*T;
     a = std::sqrt(af2);
@@ -681,7 +681,7 @@ antioch_constitutive::etots_from_T (const real_t T,
     const size_t Ns = this->Ns();
 
     // total specific energy for each species
-    // index 0 is the diluter 
+    // index 0 is the diluter
     for (unsigned int i=0; i<Ns; ++i){
          etots[i] = this->sm_thermo->e_tot(i, T, T);
      }
@@ -697,7 +697,7 @@ antioch_constitutive::htots_from_T (const real_t T,
          htots[i] = this->sm_thermo->h_tot(i, T, T);
      }
 }
- 
+
 
 void
 antioch_constitutive::evaluate_for_nonreflecting (const real_t      T,
@@ -710,7 +710,7 @@ antioch_constitutive::evaluate_for_nonreflecting (const real_t      T,
     const size_t Ns = this->Ns();
 
     // total specific energy for each species
-    // index 0 is the diluter 
+    // index 0 is the diluter
     for (unsigned int i=0; i<Ns; ++i){
         etots[i] = this->sm_thermo->e_tot(i, T, T);
     }

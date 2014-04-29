@@ -583,7 +583,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                                 vp_ru, vp_rw, vp_rE,
                                 Cmy_rho, Ce_rho, Ce_rv,
                                 nu, korCv, Ds,
-                                T, gamma, a, p, p2, 
+                                T, gamma, a, p, p2,
                                 count // Sentry
             }; };
 
@@ -865,7 +865,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                     T, pr);
                 Tguess = T;
 
-                // compute and accumulate 
+                // compute and accumulate
                 const Vector3r u = m / sphys(ndx::rho, offset);
                 ux(u.x());
                 uy(u.y());
@@ -912,7 +912,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
     } // end traversal (1)
 
     //****************************************************************
-    // 
+    //
     // Compute derivative of mean and rms of pressure for slow growth
     MatrixXXr mean_p_values(Ny, 2);
     MatrixXXr  rms_p_values(Ny, 2);
@@ -925,14 +925,14 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             mean_p_values(j,0) = common.p ()[j] ;
             rms_p_values (j,0) = sqrt(
                 common.p2()[j] - common.p()[j] * common.p()[j]);
-            // Copy the mean and rms to the 
+            // Copy the mean and rms to the
             // dmean and drms part of the storage in
             // preparation to computing the derivatives
             mean_p_values(j,1) = mean_p_values(j,0);
             rms_p_values (j,1) = rms_p_values (j,0);
         }
 
-        // Each process computes the y-derivative of the 
+        // Each process computes the y-derivative of the
         // mean and rms
 
         // Obtain mean in bspline coefficients
@@ -1363,7 +1363,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                          dtbase[ivar] = wall_u * dxbase[ivar];
                     }
 
-                    // FIXME: Add option and code baseflow sources for 
+                    // FIXME: Add option and code baseflow sources for
                     //        temporal and spatial formulations
                     //
                     // // sources from baseflow -- temporal formulations
@@ -1395,8 +1395,8 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                     //     srcbase[4+ivar] += base_cs * dybase[2] + base_v * dybase[4+ivar] - base_v * base_cs * dybase[0];
                     // }
                 } else { // Assign values to initialize the velocity scale for spatiotemporal
-                    wall[0] = common.rho_ref; 
-                    wall[1] = common.rho_ref * common.u_ref; 
+                    wall[0] = common.rho_ref;
+                    wall[1] = common.rho_ref * common.u_ref;
                 }
 
                 // Init

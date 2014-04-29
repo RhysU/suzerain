@@ -41,7 +41,7 @@ struct ndx { enum {
         rho,
         species
     }; };
-    
+
 }
 }
 
