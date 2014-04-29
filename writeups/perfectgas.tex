@@ -5050,21 +5050,21 @@ conditions are necessary to simulate homogenized boundary layers as $-y
 \operatorname{gr}\!\left(\Delta\right)$ dominates $\bar{v}$ at the $y=L_y$
 boundary given a reasonable wall-normal domain extent.
 
-\todo{Update discussion based on outcome of
-\href{https://red.ices.utexas.edu/issues/3070}{Redmine \#3070}}
-%
 \citet{Poinsot1992Boundary} suggest two additional viscous conditions be
 supplied when Euler-derived conditions are applied to the Navier--Stokes
-equations.  While subsonic outflow boundaries do exhibit stability problems
-without \citeauthor{Poinsot1992Boundary}'s suggested fixes, testing has shown
-viscous subsonic inflow boundaries to be stable without this further effort.
-Therefore, because only subsonic inflows are of interest to us, unlike
-\citet{Guarini1998}, we do not apply viscous conditions at the nonreflecting
+equations.  These involve disabling viscous stress and heat flux terms at the
 boundary.\footnote{%
     Interestingly, though he applied their two shear conditions,
     \citet{Guarini1998} either did not enforce or did not report enforcing
     \citeauthor{Poinsot1992Boundary}'s recommended heat flux condition.
 }
+While testing has shown viscous subsonic inflows to be stable without this
+further treatment, viscous subsonic outflows were not.  The simplest way to
+enforce all of \citeauthor{Poinsot1992Boundary}'s recommendations is to have the
+entire $X-Z$ computational plane at the nonreflecting boundary be inviscid.  At
+$y=L_y$ the nonlinear pointwise nonlinear computations use $1/\Reynolds=0$ and
+the viscous linearization references $c^\nu$, $\overrightarrow{c^{\nu{}u}}$,
+etc. are set to zero.
 
 %% TODO Where does this fit?
 %Guarini also rotated the nonreflecting boundary to match the nonorthogonal
