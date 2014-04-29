@@ -13,6 +13,10 @@ noinst_PROGRAMS      += conservation
 conservation_SOURCES  = conservation.cpp
 conservation_LDADD    = ../suzerain/libsuzerain.la
 
+noinst_PROGRAMS    += operators
+operators_SOURCES   = operators.cpp
+operators_LDADD     = ../suzerain/libsuzerain.la
+
 bin_PROGRAMS               += pencil_grid_bench
 pencil_grid_bench_LDADD     = ../suzerain/libsuzerain.la
 pencil_grid_bench_SOURCES   = pencil_grid_bench.cpp
