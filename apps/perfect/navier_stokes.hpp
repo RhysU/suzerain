@@ -384,6 +384,25 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
     // Required only once but done every ZerothSubstep as a nod to modularity.
     largo_state basewall;
     if (ZerothSubstep && SlowTreatment == slowgrowth::largo) {
+
+        // Initialize the slow growth workspace
+        // Avoids debugging-related memory allocation if at all possible
+        assert(sg.gramp_mean.size());
+        assert(sg.gramp_mean.size() == sg.gramp_rms.size());
+        if (SUZERAIN_UNLIKELY(sg.ignore_gramp_mean || sg.ignore_gramp_rms)) {
+            std::vector<real_t> zeros(sg.gramp_mean.size(), 0);
+            largo_init(sg.workspace,
+                       sg.grdelta,
+                       sg.ignore_gramp_mean ? &zeros[0] : &sg.gramp_mean[0],
+                       sg.ignore_gramp_rms  ? &zeros[0] : &sg.gramp_rms [0]);
+        } else {
+            largo_init(sg.workspace,
+                       sg.grdelta,
+                       &sg.gramp_mean[0],
+                       &sg.gramp_rms[0]);
+        }
+
+        // Prepare and present any necessary baseflow information at the wall
         largo_state dy, dx;
         if (sg.baseflow) {
             sg.baseflow->conserved(
@@ -391,10 +410,6 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             sg.baseflow->pressure (
                     0.0, basewall.p, dy.p, dx.p); // as_is()
         }
-        assert(sg.gramp_mean.size());
-        assert(sg.gramp_rms .size());
-        largo_init(sg.workspace, sg.grdelta,
-                   &sg.gramp_mean[0], &sg.gramp_rms[0]);
         largo_state dt, src;
         largo_init_wall_baseflow(sg.workspace,
                                  basewall.rescale(inv_Ma2),
