@@ -626,6 +626,16 @@ suzerain::reacting::driver_advance::run(int argc, char **argv)
             FATAL0(who, "Debugging option 'ignore_fluctuations' not supported");
             return EXIT_FAILURE;
         }
+        if (sgdef->ignore_gramp_mean) {
+            // TODO Permit option by modifying operator_nonlinear.hpp.
+            FATAL0(who, "Debugging option 'ignore_gramp_mean' not supported");
+            return EXIT_FAILURE;
+        }
+        if (sgdef->ignore_gramp_rms) {
+            // TODO Permit option by modifying operator_nonlinear.hpp.
+            FATAL0(who, "Debugging option 'ignore_gramp_rms' not supported");
+            return EXIT_FAILURE;
+        }
     }
 
     // Use --undriven as a testing- and debugging-related tool.
