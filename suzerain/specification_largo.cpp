@@ -40,6 +40,8 @@ specification_largo::specification_largo(
     , gramp_mean()
     , gramp_rms()
     , ignore_fluctuations(false)
+    , ignore_gramp_mean(false)
+    , ignore_gramp_rms(false)
 {
 }
 

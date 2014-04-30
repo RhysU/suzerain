@@ -73,6 +73,18 @@ public:
      */
     bool ignore_fluctuations;
 
+    /**
+     * Should slow growth computations consider #gramp_mean to be zero?
+     * Meant as a debugging tool emphatically \e not preserved across restarts.
+     */
+    bool ignore_gramp_mean;
+
+    /**
+     * Should slow growth computations consider #gramp_rms to be zero?
+     * Meant as a debugging tool emphatically \e not preserved across restarts.
+     */
+    bool ignore_gramp_rms;
+
 };
 
 } // namespace suzerain
