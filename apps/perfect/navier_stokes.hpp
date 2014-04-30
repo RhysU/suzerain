@@ -964,14 +964,9 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
 
         // Precompute subtractive slow growth velocity for wall-normal
         // convective stability criterion (Euler_Eigensystem_3D_Temporal.nb)
-        // assuming not one bit of slow growth is handled implicitly.  Also,
-        // adjust for gr_{T_s} vs gr_{X_s} with latter being spatiotemporal.
-        // FIXME Automatically synchronize with upper_v in main_advance.cpp
+        // assuming not one bit of slow growth is handled implicitly.
         const real_t y_grdelta
-            = SlowTreatment == slowgrowth::none     ?   0
-            : sg.formulation.is_strictly_temporal() ?   o.y(j) * sg.grdelta
-            :                                           o.y(j) * sg.grdelta
-                                                      / basewall.u()        ;
+            = SlowTreatment == slowgrowth::none ? 0 : o.y(j)*sg.grdelta;
 
         // Unpack appropriate wall-normal reference quantities
         const Vector3r ref_u              (common.ref_ux        ()[j],
