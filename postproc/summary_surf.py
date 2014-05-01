@@ -53,8 +53,8 @@ def main(argv=None):
     outsuffix = None
     rstride   = 1
     title     = None
-    textents  = None
-    yextents  = None
+    textents  = (-np.inf, np.inf)
+    yextents  = (-np.inf, np.inf)
     zextents  = None
     try:
         try:
@@ -93,23 +93,20 @@ def main(argv=None):
     plt.interactive(False)
 
     # Open the HDF5 file, read, and then plot each dataset in turn
+    # (Attempting to trim loaded data to be as small as possible)
     h5file = h5py.File(args[0], 'r')
-    y      = h5file['/y']
-    t      = h5file['/t']
+    y      = h5file['/y'][()]
+    yb     = np.nonzero(y > yextents[0])[0][ 0]
+    ye     = np.nonzero(y < yextents[1])[0][-1]
+    y      = y[yb:ye+1]
+    t      = h5file['/t'][()]
+    tb     = np.nonzero(t > textents[0])[0][ 0]
+    te     = np.nonzero(t < textents[1])[0][-1]
+    t      = t[tb:te+1]
     for dataname in args[1:]:
-        dataset = h5file[dataname][()]
 
-        # Truncate any relevant ranges prior to plotting to speed drawing
-        if yextents:
-            while y.size and y[ 0] < yextents[0]:
-                y, dataset = y[1: ], dataset[:,1:]
-            while y.size and y[-1] > yextents[1]:
-                y, dataset = y[:-1], dataset[:,:-1]
-        if textents:
-            while t.size and t[ 0] < textents[0]:
-                t, dataset = t[1: ], dataset[1: ,:]
-            while t.size and t[-1] > textents[1]:
-                t, dataset = t[:-1], dataset[:-1,:]
+        # Load, truncating any irrelevant range or values
+        dataset = h5file[dataname][tb:te+1,yb:ye+1]
         if zextents:
             dataset[dataset < zextents[0]] = np.nan
             dataset[dataset > zextents[1]] = np.nan
