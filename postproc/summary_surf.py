@@ -92,32 +92,45 @@ def main(argv=None):
     was_interactive = plt.isinteractive()
     plt.interactive(False)
 
-    # Open the HDF5 file and plot each dataset in turn
+    # Open the HDF5 file, read, and then plot each dataset in turn
     h5file = h5py.File(args[0], 'r')
     y      = h5file['/y']
     t      = h5file['/t']
-    for dataset in args[1:]:
-        fig, ax, surf, cbar = surface(y, t, h5file[dataset], {
+    for dataname in args[1:]:
+        dataset = h5file[dataname][()]
+
+        # Truncate any relevant ranges prior to plotting to speed drawing
+        if yextents:
+            while y.size and y[ 0] < yextents[0]:
+                y, dataset = y[1: ], dataset[:,1:]
+            while y.size and y[-1] > yextents[1]:
+                y, dataset = y[:-1], dataset[:,:-1]
+        if textents:
+            while t.size and t[ 0] < textents[0]:
+                t, dataset = t[1: ], dataset[1: ,:]
+            while t.size and t[-1] > textents[1]:
+                t, dataset = t[:-1], dataset[:-1,:]
+        if zextents:
+            dataset[dataset < zextents[0]] = np.nan
+            dataset[dataset > zextents[1]] = np.nan
+
+        # Plot, annotate, and possibly save
+        fig, ax, surf, cbar = surface(y, t, dataset, {
                                        'cstride'  : cstride
                                      , 'rstride'  : rstride
                                      , 'cmap'     : matplotlib.cm.RdYlBu_r
                                      , 'linewidth': linewidth
                                      })
         ax.set_xlabel('Wall-normal distance')
-        if yextents:
-            ax.set_xlim(yextents)
         ax.set_ylabel('Simulation time')
-        if textents:
-            ax.set_ylim(textents)
-        ax.set_zlabel(dataset)
-        if zextents:
-            ax.set_zlim(zextents)
+        ax.set_zlabel(dataname)
         if title:
             ax.set_title(title)
         if outsuffix:
-            fig.savefig(dataset+'.'+outsuffix)
+            fig.savefig(dataname+'.'+outsuffix)
             plt.close(fig)
 
+    # If not saving, then display.
     if not outsuffix:
         plt.show()
 
