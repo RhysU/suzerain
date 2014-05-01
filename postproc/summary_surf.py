@@ -9,6 +9,9 @@ Options:
     -o OUTSUFFIX  Save the output file DATASET.OUTSUFFIX instead of displaying
     -r RSTRIDE    Downsample by providing rstride=RSTRIDE to plot_surface
     -t TITLE      Set the specified plot title
+    -T LO,HI      Limit plot extents to /t in [LO, HI]
+    -Y LO,HI      Limit plot extents to /y in [LO, HI]
+    -Z LO,HI      Limit plot extents to data values in [LO, HI]
 
 File H5SUMMARY must have 1D /y and /t datasets to provide the meshgrid.
 Each DATASET must have extents matching the /y and /t dataset sizes.
@@ -50,9 +53,12 @@ def main(argv=None):
     outsuffix = None
     rstride   = 1
     title     = None
+    textents  = None
+    yextents  = None
+    zextents  = None
     try:
         try:
-            opts, args = getopt.getopt(argv[1:], "c:hl:o:r:t:", ["help"])
+            opts, args = getopt.getopt(argv[1:], "c:hl:o:r:t:T:Y:Z:", ["help"])
         except getopt.error, msg:
             raise Usage(msg)
         for o, a in opts:
@@ -69,6 +75,12 @@ def main(argv=None):
                 rstride = int(a)
             elif o == "-t":
                 title = a
+            elif o == "-T":
+                textents = tuple(float(r) for r in a.split(','))
+            elif o == "-Y":
+                yextents = tuple(float(r) for r in a.split(','))
+            elif o == "-Z":
+                zextents = tuple(float(r) for r in a.split(','))
         if len(args) < 2:
             print >>sys.stderr, "Too few arguments.  See --help."
             return 1
@@ -92,7 +104,14 @@ def main(argv=None):
                                      , 'linewidth': linewidth
                                      })
         ax.set_xlabel('Wall-normal distance')
+        if yextents:
+            ax.set_xlim(yextents)
         ax.set_ylabel('Simulation time')
+        if textents:
+            ax.set_ylim(textents)
+        ax.set_zlabel(dataset)
+        if zextents:
+            ax.set_zlim(zextents)
         if title:
             ax.set_title(title)
         if outsuffix:
