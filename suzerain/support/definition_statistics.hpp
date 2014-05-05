@@ -56,6 +56,7 @@ public:
      * @param dt           Amount of simulation time between samples.
      * @param final        Should a final sample be taken after
      *                     time advance successfully completes?
+     * @param stale        Should incoming statistics be considered stale?
      *
      * @see ESIO's esio_file_close_restart() for the semantics of
      *      \c desttemplate and \c retain.
@@ -65,7 +66,8 @@ public:
             const std::size_t  retain      = (1 << 15),
             const real_t       dt          = 0        ,
             const std::size_t  nt          = 0        ,
-            const bool         final       = false    );
+            const bool         final       = false    ,
+            const bool         stale       = false    );
 
     /** @copydoc definition_base::options_description() */
     virtual boost::program_options::options_description options_description();
@@ -98,6 +100,12 @@ public:
      * Should a final sample be taken after time advance successfully completes?
      */
     bool final;
+
+    /**
+     * Should all statistics present in incoming files be considered stale?
+     * This will force their recomputation if statistics are later required.
+     */
+    bool stale;
 };
 
 } // namespace support

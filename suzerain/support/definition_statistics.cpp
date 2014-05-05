@@ -66,12 +66,14 @@ definition_statistics::definition_statistics(
         const std::size_t  retain,
         const real_t       dt,
         const std::size_t  nt,
-        const bool         final)
+        const bool         final,
+        const bool         stale)
     : destination(destination)
     , retain(retain)
     , dt(dt)
     , nt(nt)
     , final(final)
+    , stale(stale)
 {
 }
 
@@ -110,6 +112,10 @@ definition_statistics::options_description()
     ("statistics_final", value<bool>(&final)
      ->default_value(final),
      "Should a final sample be taken after advance successfully completes?")
+    ("statistics_stale", value<bool>(&stale)
+     ->default_value(stale),
+     "Should incoming statistics from restart files be considered stale"
+     " forcing their recomputation?")
     ;
 
     return retval;
