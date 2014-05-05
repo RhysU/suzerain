@@ -109,10 +109,10 @@ definition_statistics::options_description()
      ->notifier(bind(&parse_size_t, _1, &nt, "statistics_nt"))
      ->default_value(lexical_cast<string>(nt)),
      "Maximum number of time steps between statistical samples")
-    ("statistics_final", value<bool>(&final)
+    ("statistics_final", bool_switch(&final)
      ->default_value(final),
      "Should a final sample be taken after advance successfully completes?")
-    ("statistics_stale", value<bool>(&stale)
+    ("statistics_stale", bool_switch(&stale)
      ->default_value(stale),
      "Should incoming statistics from restart files be considered stale"
      " forcing their recomputation?")
