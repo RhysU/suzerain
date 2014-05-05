@@ -444,7 +444,12 @@ driver::load_statistics_hook(
         const esio_handle esioh)
 {
     support::load_time(esioh, mean.t);
-    if (!mean.load(esioh)) {
+
+    if (statsdef && statsdef->stale) {
+        // Notice this forces use_cached == false in save_statistics_hook
+        WARN0(who, "Ignoring incoming statistics explicitly marked as stale");
+        mean.t = std::numeric_limits<real_t>::quiet_NaN();
+    } else if (!mean.load(esioh)) {
         // Notice this forces use_cached == false in save_statistics_hook
         WARN0(who, "Incomplete statistics loaded from time " << mean.t);
         mean.t = std::numeric_limits<real_t>::quiet_NaN();
