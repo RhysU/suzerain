@@ -31,7 +31,8 @@ fields_DATA += spatiotemporal_consistent_1e-2_k06.h5            # ZPG
 fields_DATA += spatiotemporal_consistent_1e-1_pexi-1e-2_k06.h5  # FPG
 
 # Spatiotemporally homogenized boundary layers at CEV laminar conditions
-fields_DATA += spatiotemporal_consistent_1e-1_cevisslam4.134_k08.h5
+fields_DATA += spatiotemporal_consistent_1e-1_cevisslam4.134_k08.h5 # Super
+fields_DATA += spatiotemporal_consistent_1e-1_cevisslam2.602_k08.h5 # Subsonic
 
 # Coarse-but-turbulent fields suitable for development or production spin-up
 # See Redmine #3058 if you need the backstory on obtaining these fields.
