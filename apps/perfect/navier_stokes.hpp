@@ -730,9 +730,9 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                                + (Ma*Ma / 2)*(  common.rhouu()
                                               + common.rhovv()
                                               + common.rhoww());
-        meanrms[ndx::mx ].mean = common.rho() * common.u();
-        meanrms[ndx::my ].mean = common.rho() * common.v();
-        meanrms[ndx::mz ].mean = common.rho() * common.w();
+        meanrms[ndx::mx ].mean = common.rho() * common.u();  // FIXME Wrong, bug!
+        meanrms[ndx::my ].mean = common.rho() * common.v();  // FIXME Wrong, bug!
+        meanrms[ndx::mz ].mean = common.rho() * common.w();  // FIXME Wrong, bug!
         meanrms[ndx::rho].mean = common.rho();
     }
 
