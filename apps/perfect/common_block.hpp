@@ -84,7 +84,8 @@ public:
      *     equation.
      * \li \c v  Treated identically to \c u.
      * \li \c w  Treated identically to \c u.
-     * \li \c uu Gathered by the \e nonlinear operator for miscellaneous use.
+     * \li \c uu Gathered by the \e nonlinear operator for miscellaneous use,
+     *           for example \ref treatment.
      * \li \c uv Treated identically to \c uu.
      * \li \c uw Treated identically to \c uu.
      * \li \c vv Treated identically to \c uu.
