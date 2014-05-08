@@ -46,13 +46,13 @@ namespace perfect {
 class operator_common_block
 {
     /** Type of the contiguous storage housing all mean quantities */
-    typedef Array<real_t, Dynamic, 16, ColMajor> means_type;
+    typedef Array<real_t, Dynamic, 20, ColMajor> means_type;
 
     /** Type of the contiguous storage housing all implicit quantities */
     typedef Array<real_t, Dynamic, 23, ColMajor> implicits_type;
 
     /** Type of the contiguous storage housing all reference quantities */
-    typedef Array<real_t, 35, Dynamic, ColMajor> refs_type;
+    typedef Array<real_t, 39, Dynamic, ColMajor> refs_type;
 
 public:
 
@@ -75,22 +75,13 @@ public:
 
     /**
      * The mean quantities, stored as collocation point values in \c means,
-     * are as follows:
+     * are updated by the nonlinear operator on each Runge--Kutta substep.
      *
-     * \li \c u  The \e nonlinear operator computes the instantaneous spatial
-     *     (x, z) mean streamwise velocity profile.  The \e linear operator
-     *     then uses the information to compute the implicit \f$f\cdot{}u\f$
-     *     and \f$\mathscr{C}_{\rho{}u}\cdot{}u\f$ terms in the total energy
-     *     equation.
-     * \li \c v  Treated identically to \c u.
-     * \li \c w  Treated identically to \c u.
-     * \li \c uu Gathered by the \e nonlinear operator for miscellaneous use,
-     *           for example \ref treatment.
-     * \li \c uv Treated identically to \c uu.
-     * \li \c uw Treated identically to \c uu.
-     * \li \c vv Treated identically to \c uu.
-     * \li \c vw Treated identically to \c uu.
-     * \li \c ww Treated identically to \c uu.
+     * The \e nonlinear operator computes the instantaneous spatial (x, z) mean
+     * profiles.  The \e linear operator uses this information to compute the
+     * implicit \f$f\cdot{}u\f$ and \f$\mathscr{C}_{\rho{}u}\cdot{}u\f$ terms in
+     * the total energy equation.  Additional profiles are gathered for slow
+     * growth forcing purposes.
      *
      * Each mean quantity is a single column within \c means.  This facilitates
      * operations across the entire wall-normal profile in a stride one
@@ -115,12 +106,16 @@ public:
     mean_type       vw()          { return means.col( 7); }
     mean_type       ww()          { return means.col( 8); }
     mean_type       rho()         { return means.col( 9); }
-    mean_type       rhouu()       { return means.col(10); }
-    mean_type       rhovv()       { return means.col(11); }
-    mean_type       rhoww()       { return means.col(12); }
-    mean_type       rhoEE()       { return means.col(13); }
-    mean_type       p()           { return means.col(14); }
-    mean_type       p2()          { return means.col(15); }
+    mean_type       rhou()        { return means.col(10); }
+    mean_type       rhov()        { return means.col(11); }
+    mean_type       rhow()        { return means.col(12); }
+    mean_type       rhoE()        { return means.col(13); }
+    mean_type       rhouu()       { return means.col(14); }
+    mean_type       rhovv()       { return means.col(15); }
+    mean_type       rhoww()       { return means.col(16); }
+    mean_type       rhoEE()       { return means.col(17); }
+    mean_type       p()           { return means.col(18); }
+    mean_type       p2()          { return means.col(19); }
 
     /** Type returned by the const mean quantity accessors. */
     typedef means_type::ConstColXpr const_mean_type;
@@ -135,12 +130,16 @@ public:
     const_mean_type vw()    const { return means.col( 7); }
     const_mean_type ww()    const { return means.col( 8); }
     const_mean_type rho()   const { return means.col( 9); }
-    const_mean_type rhouu() const { return means.col(10); }
-    const_mean_type rhovv() const { return means.col(11); }
-    const_mean_type rhoww() const { return means.col(12); }
-    const_mean_type rhoEE() const { return means.col(13); }
-    const_mean_type p()     const { return means.col(14); }
-    const_mean_type p2()    const { return means.col(15); }
+    const_mean_type rhou()  const { return means.col(10); }
+    const_mean_type rhov()  const { return means.col(11); }
+    const_mean_type rhow()  const { return means.col(12); }
+    const_mean_type rhoE()  const { return means.col(13); }
+    const_mean_type rhouu() const { return means.col(14); }
+    const_mean_type rhovv() const { return means.col(15); }
+    const_mean_type rhoww() const { return means.col(16); }
+    const_mean_type rhoEE() const { return means.col(17); }
+    const_mean_type p()     const { return means.col(18); }
+    const_mean_type p2()    const { return means.col(19); }
 
     /** @} */
 
@@ -318,11 +317,17 @@ public:
      * The following quantities are also stored, though they are not
      * used for linearization purposes:
      * \li \c ref_p2         Quantity \f$p^2         \f$
+     * \li \c ref_rhoux      Quantity \f$\rho u_x    \f$
+     * \li \c ref_rhouy      Quantity \f$\rho u_y    \f$
+     * \li \c ref_rhouz      Quantity \f$\rho u_z    \f$
+     * \li \c ref_rhoE       Quantity \f$\rho E      \f$
      * \li \c ref_rhouxux    Quantity \f$\rho u_x u_x\f$
      * \li \c ref_rhouyuy    Quantity \f$\rho u_y u_y\f$
      * \li \c ref_rhouzuz    Quantity \f$\rho u_z u_z\f$
      * \li \c ref_rhoEE      Quantity \f$\rho E   E  \f$
-     * Here, \f$E\f$ denotes \f$e/\rho\f$.
+     * Here, \f$E\f$ denotes \f$e/\rho\f$.  Mean state at collocation points
+     * is known on rank zero in wave space, but is additionally tracked
+     * here for numerical uniformity with quantities like \c ref_rhoEE.
      *
      * Each reference quantity is a single row within \c refs.  This
      * facilitates a stride one operation loading or writing all reference
@@ -371,10 +376,14 @@ public:
     ref_type       ref_ez_gradrho()       { return refs.row(28); }
     ref_type       ref_e_divm()           { return refs.row(29); }
     ref_type       ref_e_deltarho()       { return refs.row(30); }
-    ref_type       ref_rhouxux()          { return refs.row(31); }
-    ref_type       ref_rhouyuy()          { return refs.row(32); }
-    ref_type       ref_rhouzuz()          { return refs.row(33); }
-    ref_type       ref_rhoEE()            { return refs.row(34); }
+    ref_type       ref_rhoux()            { return refs.row(31); }
+    ref_type       ref_rhouy()            { return refs.row(32); }
+    ref_type       ref_rhouz()            { return refs.row(33); }
+    ref_type       ref_rhoE()             { return refs.row(34); }
+    ref_type       ref_rhouxux()          { return refs.row(35); }
+    ref_type       ref_rhouyuy()          { return refs.row(36); }
+    ref_type       ref_rhouzuz()          { return refs.row(37); }
+    ref_type       ref_rhoEE()            { return refs.row(38); }
 
     /** Type returned by the const reference quantity accessors. */
     typedef refs_type::ConstRowXpr const_ref_type;
@@ -410,10 +419,14 @@ public:
     const_ref_type ref_ez_gradrho() const { return refs.row(28); }
     const_ref_type ref_e_divm()     const { return refs.row(29); }
     const_ref_type ref_e_deltarho() const { return refs.row(30); }
-    const_ref_type ref_rhouxux()    const { return refs.row(31); }
-    const_ref_type ref_rhouyuy()    const { return refs.row(32); }
-    const_ref_type ref_rhouzuz()    const { return refs.row(33); }
-    const_ref_type ref_rhoEE()      const { return refs.row(34); }
+    const_ref_type ref_rhoux()      const { return refs.row(31); }
+    const_ref_type ref_rhouy()      const { return refs.row(32); }
+    const_ref_type ref_rhouz()      const { return refs.row(33); }
+    const_ref_type ref_rhoE()       const { return refs.row(34); }
+    const_ref_type ref_rhouxux()    const { return refs.row(35); }
+    const_ref_type ref_rhouyuy()    const { return refs.row(36); }
+    const_ref_type ref_rhouzuz()    const { return refs.row(37); }
+    const_ref_type ref_rhoEE()      const { return refs.row(38); }
 
     /** Prepare data for use by implicit operator API in rholut_imexop.h. */
     void imexop_ref(suzerain_rholut_imexop_ref   &ref,

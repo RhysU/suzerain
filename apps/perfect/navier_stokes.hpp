@@ -459,6 +459,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                                 nuuxux, nuuxuy, nuuxuz, nuuyuy, nuuyuz, nuuzuz,
                                 ex_gradrho, ey_gradrho, ez_gradrho,
                                 e_divm, e_deltarho,
+                                rhoux,   rhouy,   rhouz,   rhoE,
                                 rhouxux, rhouyuy, rhouzuz, rhoEE,
                                 count // Sentry
             }; };
@@ -545,6 +546,10 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                             gamma, mu, rho, e, p));
 
                 // ...and, lastly, details needed for slow growth forcing.
+                acc[ref::rhoux  ](m.x()             );
+                acc[ref::rhouy  ](m.y()             );
+                acc[ref::rhouz  ](m.z()             );
+                acc[ref::rhoE   ](e                 );
                 acc[ref::rhouxux](m.x()* m.x() / rho);
                 acc[ref::rhouyuy](m.y()* m.y() / rho);
                 acc[ref::rhouzuz](m.z()* m.z() / rho);
@@ -588,6 +593,10 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             common.ref_ez_gradrho()[j] = sum(acc[ref::ez_gradrho]);
             common.ref_e_divm    ()[j] = sum(acc[ref::e_divm    ]);
             common.ref_e_deltarho()[j] = sum(acc[ref::e_deltarho]);
+            common.ref_rhoux     ()[j] = sum(acc[ref::rhoux     ]);
+            common.ref_rhouy     ()[j] = sum(acc[ref::rhouy     ]);
+            common.ref_rhouz     ()[j] = sum(acc[ref::rhouz     ]);
+            common.ref_rhoE      ()[j] = sum(acc[ref::rhoE      ]);
             common.ref_rhouxux   ()[j] = sum(acc[ref::rhouxux   ]);
             common.ref_rhouyuy   ()[j] = sum(acc[ref::rhouyuy   ]);
             common.ref_rhouzuz   ()[j] = sum(acc[ref::rhouzuz   ]);
@@ -616,6 +625,10 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
 
         // Copy mean information additionally required for slow growth forcing
         common.rho  () = common.ref_rho    ();
+        common.rhou () = common.ref_rhoux  ();
+        common.rhov () = common.ref_rhouy  ();
+        common.rhow () = common.ref_rhouz  ();
+        common.rhoE () = common.ref_rhoE   ();
         common.rhouu() = common.ref_rhouxux();
         common.rhovv() = common.ref_rhouyuy();
         common.rhoww() = common.ref_rhouzuz();
@@ -638,7 +651,8 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
 
             // Prepare logical indices using struct for scoping (e.g. q::u).
             struct q { enum { u,  v,  w, uu, uv, uw, vv, vw, ww,
-                              rho, rhouu, rhovv, rhoww, rhoEE, p, p2,
+                              rho, rhou, rhov, rhow, rhoE,
+                              rhouu, rhovv, rhoww, rhoEE, p, p2,
                               count // Sentry
             }; };
 
@@ -681,6 +695,10 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                 acc[q::vw   ](u.y() * u.z());
                 acc[q::ww   ](u.z() * u.z());
                 acc[q::rho  ](rho);
+                acc[q::rhou ](m.x()              );
+                acc[q::rhov ](m.y()              );
+                acc[q::rhow ](m.z()              );
+                acc[q::rhoE ](e                  );
                 acc[q::rhouu](u.x() * u.x() * rho);
                 acc[q::rhovv](u.y() * u.y() * rho);
                 acc[q::rhoww](u.z() * u.z() * rho);
@@ -705,6 +723,10 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             common.vw   ()[j] = sum(acc[q::vw   ]);
             common.ww   ()[j] = sum(acc[q::ww   ]);
             common.rho  ()[j] = sum(acc[q::rho  ]);
+            common.rhou ()[j] = sum(acc[q::rhou ]);
+            common.rhov ()[j] = sum(acc[q::rhov ]);
+            common.rhow ()[j] = sum(acc[q::rhow ]);
+            common.rhoE ()[j] = sum(acc[q::rhoE ]);
             common.rhouu()[j] = sum(acc[q::rhouu]);
             common.rhovv()[j] = sum(acc[q::rhovv]);
             common.rhoww()[j] = sum(acc[q::rhoww]);
