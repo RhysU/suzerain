@@ -484,7 +484,6 @@ treatment<CommonBlock>::invert_mass_plus_scaled_operator(
     // State leaves method as coefficients in X, Y, and Z directions
 }
 
-
 } // namespace constraint
 
 } // namespace suzerain
