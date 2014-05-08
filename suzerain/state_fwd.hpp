@@ -41,7 +41,7 @@
 // TODO Document better
 
 #include <suzerain/common.hpp>
-#include <suzerain/blas_et_al.hpp>
+#include <suzerain/blas_et_al/blas_et_al.hpp>
 #include <suzerain/mpl.hpp>
 #include <suzerain/multi_array.hpp>
 #include <suzerain/shared_range.hpp>

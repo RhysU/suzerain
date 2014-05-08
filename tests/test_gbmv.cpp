@@ -21,7 +21,7 @@
 //
 //--------------------------------------------------------------------------
 
-#include <suzerain/gbmv.h>
+#include <suzerain/blas_et_al/gbmv.h>
 
 #include <boost/test/parameterized_test.hpp>
 #include <boost/test/unit_test.hpp>
@@ -29,7 +29,7 @@
 #include <gsl/gsl_rng.h>
 
 #include <suzerain/common.hpp>
-#include <suzerain/blas_et_al.h>
+#include <suzerain/blas_et_al/blas_et_al.h>
 
 #include "test_tools.hpp"
 

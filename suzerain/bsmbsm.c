@@ -29,7 +29,7 @@
 #include <suzerain/bsmbsm.h>
 
 #include <suzerain/common.h>
-#include <suzerain/blas_et_al.h>
+#include <suzerain/blas_et_al/blas_et_al.h>
 
 // Shorthand
 #define UNLIKELY(expr) SUZERAIN_UNLIKELY(expr)

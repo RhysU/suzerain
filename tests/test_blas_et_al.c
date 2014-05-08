@@ -21,7 +21,7 @@
 //
 //--------------------------------------------------------------------------
 
-#include <suzerain/blas_et_al.h>
+#include <suzerain/blas_et_al/blas_et_al.h>
 
 #include <gsl/gsl_ieee_utils.h>
 #include <gsl/gsl_machine.h>

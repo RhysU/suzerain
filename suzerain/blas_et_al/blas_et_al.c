@@ -26,16 +26,16 @@
  * @copydoc blas_et_al.h
  */
 
-#include <suzerain/blas_et_al.h>
+#include <suzerain/blas_et_al/blas_et_al.h>
 
 #include <suzerain/common.h>
-#include <suzerain/gbdddddmv.h>
-#include <suzerain/gbddddmv.h>
-#include <suzerain/gbdddmv.h>
-#include <suzerain/gbddmv.h>
-#include <suzerain/gbdmv.h>
-#include <suzerain/gbmv.h>
-#include <suzerain/sbmv.h>
+#include <suzerain/blas_et_al/gbdddddmv.h>
+#include <suzerain/blas_et_al/gbddddmv.h>
+#include <suzerain/blas_et_al/gbdddmv.h>
+#include <suzerain/blas_et_al/gbddmv.h>
+#include <suzerain/blas_et_al/gbdmv.h>
+#include <suzerain/blas_et_al/gbmv.h>
+#include <suzerain/blas_et_al/sbmv.h>
 
 // Odd looking, unused, anonymous enumerations are globally-scoped versions
 // of "Compile Time Assertions" by Ralf Holly (http://drdobbs.com/184401873)

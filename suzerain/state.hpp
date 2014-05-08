@@ -29,7 +29,7 @@
  */
 
 #include <suzerain/common.hpp>
-#include <suzerain/blas_et_al.hpp>
+#include <suzerain/blas_et_al/blas_et_al.hpp>
 #include <suzerain/functional.hpp>
 #include <suzerain/mpl.hpp>
 #include <suzerain/multi_array.hpp>

@@ -32,7 +32,7 @@
 #endif
 
 #include <suzerain/common.hpp>
-#include <suzerain/blas_et_al.hpp>
+#include <suzerain/blas_et_al/blas_et_al.hpp>
 #include <suzerain/error.h>
 #include <suzerain/functional.hpp>
 #include <suzerain/mpi.hpp>

@@ -32,7 +32,7 @@
 #include <gsl/gsl_sf_pow_int.h>
 
 #include <suzerain/common.hpp>
-#include <suzerain/blas_et_al.h>
+#include <suzerain/blas_et_al/blas_et_al.h>
 #include <suzerain/inorder.h>
 
 #include "test_tools.hpp"
