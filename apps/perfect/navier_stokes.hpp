@@ -746,15 +746,11 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
 
     // Slow growth requires mean conserved state at collocation points.
     // Abuse unused pieces within 'meanrms' to avoid allocating more storage.
-    // Information can be cheaply, locally reconstructed after above traversal.
     if (SlowTreatment == slowgrowth::largo) {
-        meanrms[ndx::e  ].mean = common.p() / (gamma - 1)
-                               + (Ma*Ma / 2)*(  common.rhouu()
-                                              + common.rhovv()
-                                              + common.rhoww());
-        meanrms[ndx::mx ].mean = common.rho() * common.u();  // FIXME Wrong, bug!
-        meanrms[ndx::my ].mean = common.rho() * common.v();  // FIXME Wrong, bug!
-        meanrms[ndx::mz ].mean = common.rho() * common.w();  // FIXME Wrong, bug!
+        meanrms[ndx::e  ].mean = common.rhoE();
+        meanrms[ndx::mx ].mean = common.rhou();
+        meanrms[ndx::my ].mean = common.rhov();
+        meanrms[ndx::mz ].mean = common.rhow();
         meanrms[ndx::rho].mean = common.rho();
     }
 
@@ -769,7 +765,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                                       - common.p().square() ).max(0).sqrt();
     }
 
-    // Slow growth requires wall-normal derivative of every RMS quantity
+    // Slow growth requires wall-normal derivative of every mean RMS quantity
     std::vector<field_L2xz> meanrms_y(meanrms.size());
     if (SlowTreatment == slowgrowth::largo) {
         SUZERAIN_TIMER_SCOPED("mean and root-mean-square derivatives");
