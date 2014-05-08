@@ -82,10 +82,25 @@ EXTRA_PROGRAMS      += test_parcel
 test_parcel_SOURCES  = test_parcel.c
 test_parcel_LDADD    = ../suzerain/libsuzerain.la
 
-TESTS                   += test_blas_et_al
-EXTRA_PROGRAMS          += test_blas_et_al
-test_blas_et_al_SOURCES  = test_blas_et_al.c
-test_blas_et_al_LDADD    = ../suzerain/libsuzerain.la
+TESTS                  += test_blas
+EXTRA_PROGRAMS         += test_blas
+test_blas_SOURCES       = test_blas.c
+test_blas_LDADD         = ../suzerain/libsuzerain.la
+
+TESTS                  += test_blasext
+EXTRA_PROGRAMS         += test_blasext
+test_blasext_SOURCES    = test_blasext.c
+test_blasext_LDADD      = ../suzerain/libsuzerain.la
+
+TESTS                  += test_lapack
+EXTRA_PROGRAMS         += test_lapack
+test_lapack_SOURCES     = test_lapack.c
+test_lapack_LDADD       = ../suzerain/libsuzerain.la
+
+TESTS                  += test_lapackext
+EXTRA_PROGRAMS         += test_lapackext
+test_lapackext_SOURCES  = test_lapackext.c
+test_lapackext_LDADD    = ../suzerain/libsuzerain.la
 
 TESTS                             += test_specification_zgbsv
 EXTRA_PROGRAMS                    += test_specification_zgbsv
