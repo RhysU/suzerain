@@ -34,7 +34,7 @@
 #include <boost/utility/enable_if.hpp>
 
 #include <suzerain/allocator.hpp>
-#include <suzerain/blas_et_al/blas_et_al.h>
+#include <suzerain/blas_et_al.h>
 #include <suzerain/complex.hpp>
 
 /** @file

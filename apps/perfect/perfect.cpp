@@ -32,7 +32,7 @@
 #include <gsl/gsl_errno.h>
 #include <sys/file.h>
 
-#include <suzerain/blas_et_al/blas_et_al.hpp>
+#include <suzerain/blas_et_al.hpp>
 #include <suzerain/bl.h>
 #include <suzerain/bspline.hpp>
 #include <suzerain/channel.h>

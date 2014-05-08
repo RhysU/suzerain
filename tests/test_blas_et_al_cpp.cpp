@@ -21,7 +21,7 @@
 //
 //--------------------------------------------------------------------------
 
-#include <suzerain/blas_et_al/blas_et_al.hpp>
+#include <suzerain/blas_et_al.hpp>
 
 #define BOOST_TEST_MAIN
 #include <boost/test/unit_test.hpp>

@@ -29,7 +29,7 @@
 #include <gsl/gsl_rng.h>
 
 #include <suzerain/common.hpp>
-#include <suzerain/blas_et_al/blas_et_al.h>
+#include <suzerain/blas_et_al.h>
 
 #include "test_tools.hpp"
 

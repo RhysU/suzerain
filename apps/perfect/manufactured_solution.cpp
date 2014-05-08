@@ -30,7 +30,7 @@
 #include <esio/esio.h>
 #include <esio/error.h>
 
-#include <suzerain/blas_et_al/blas_et_al.hpp>
+#include <suzerain/blas_et_al.hpp>
 #include <suzerain/bspline.hpp>
 #include <suzerain/error.h>
 #include <suzerain/ndx.hpp>

@@ -27,7 +27,7 @@
 
 #include <suzerain/bsmbsm_solver.hpp>
 
-#include <suzerain/blas_et_al/blas_et_al.h>
+#include <suzerain/blas_et_al.h>
 #include <suzerain/complex.hpp>
 #include <suzerain/error.h>
 

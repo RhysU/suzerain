@@ -31,7 +31,7 @@
 #include <esio/error.h>
 
 #include <suzerain/common.hpp>
-#include <suzerain/blas_et_al/blas_et_al.hpp>
+#include <suzerain/blas_et_al.hpp>
 #include <suzerain/error.h>
 #include <suzerain/inorder.hpp>
 #include <suzerain/operator_tools.hpp>

@@ -25,7 +25,7 @@
 #include <boost/test/unit_test.hpp>
 
 #include <suzerain/common.hpp>
-#include <suzerain/blas_et_al/blas_et_al.hpp>
+#include <suzerain/blas_et_al.hpp>
 #include <suzerain/mpi.hpp>
 
 #include "test_tools.hpp"

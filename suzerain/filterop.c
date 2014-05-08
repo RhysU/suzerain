@@ -28,7 +28,7 @@
 #include <suzerain/filterop.h>
 
 #include <suzerain/common.h>
-#include <suzerain/blas_et_al/blas_et_al.h>
+#include <suzerain/blas_et_al.h>
 #include <suzerain/error.h>
 #include <suzerain/gbmatrix.h>
 #include <suzerain/inorder.h>

@@ -27,7 +27,7 @@
 
 #include "operator_hybrid.hpp"
 
-#include <suzerain/blas_et_al/blas_et_al.hpp>
+#include <suzerain/blas_et_al.hpp>
 #include <suzerain/bsmbsm.h>
 #include <suzerain/bsmbsm_solver.hpp>
 #include <suzerain/complex.hpp>

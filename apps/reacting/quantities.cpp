@@ -30,7 +30,7 @@
 #include <esio/esio.h>
 #include <esio/error.h>
 
-#include <suzerain/blas_et_al/blas_et_al.hpp>
+#include <suzerain/blas_et_al.hpp>
 #include <suzerain/coalescing_pool.hpp>
 #include <suzerain/common.hpp>
 #include <suzerain/countof.h>

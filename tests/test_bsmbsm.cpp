@@ -32,7 +32,7 @@
 #include <gsl/gsl_vector.h>
 
 #include <suzerain/common.hpp>
-#include <suzerain/blas_et_al/blas_et_al.hpp>
+#include <suzerain/blas_et_al.hpp>
 #include <suzerain/countof.h>
 #include <suzerain/gbmatrix.h>
 #include <suzerain/traits.hpp>
