@@ -437,6 +437,13 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
     // Traversal:
     // (1) Computing reference quantities and miscellaneous moments OR
     //     just reduced moments depending on the substep being performed.
+    //
+    // TODO This traversal should be refactored into standalone routine.
+    // It would require codifying the common_block reference vs instantaneous
+    // profiles, writing logic that populates either given state in physical
+    // space, and then provide a copy operation from the reference to the
+    // instantaneous version.  This would cut the routine by 300 lines and
+    // improve compile times.  perfect::take_samples could be a template.
     if (ZerothSubstep) {
 
         SUZERAIN_TIMER_SCOPED("reference quantities");
