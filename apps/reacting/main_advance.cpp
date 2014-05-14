@@ -271,10 +271,19 @@ suzerain::reacting::driver_advance::run(int argc, char **argv)
             sgdef->baseflow->pressure(
                 grid->L.y(), base[Ns+4], dybase[Ns+4], dxbase[Ns+4]);
 
-            // Clobber upper values
+            // Clobber upper values except upper verocity
+            // FIXME: Account for the correction to upper_v for the 
+            //        modified characteristics from slow growth.
+            //  NOTE: Maybe the proper place to implement the upper_v 
+            //        correction is in the nonreflecting implementation,
+            //        instead of setting a corrected upper_v here.
+            //        Working with a modified upper velocity here might be 
+            //        confusing and lead to wrong results, when computing
+            //        derived quantities (eg, temperature), that depend on
+            //        the physical upper_v (not the effective one from 
+            //        characteristics)
             isothermal->upper_rho = base[0];
             isothermal->upper_u   = base[1]/base[0];
-            isothermal->upper_v   = base[2]/base[0];
             isothermal->upper_w   = base[3]/base[0];
 
             for (unsigned int s=1; s<Ns; ++s) {
@@ -285,8 +294,11 @@ suzerain::reacting::driver_advance::run(int argc, char **argv)
             const real_t irho = 1.0/isothermal->upper_rho ;
 
             // ... momentum
+            // ... use the actual freestream rho_v value at the upper boundary
+            //     to compute temperature properly
+            const real_t   upper_rho_v  (base[2]);
             const Vector3r m (isothermal->upper_rho * isothermal->upper_u,
-                              isothermal->upper_rho * isothermal->upper_v,
+                              upper_rho_v,
                               isothermal->upper_rho * isothermal->upper_w);
 
             // ... total energy
