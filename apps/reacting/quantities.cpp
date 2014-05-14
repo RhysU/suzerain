@@ -823,8 +823,11 @@ quantities sample_quantities(
                 sum_mu_mu[0](mu * mu);
 
                 sum_u_u[0](u.x() * u.x());
-                sum_u_u[1](u.y() * u.y());
-                sum_u_u[2](u.z() * u.z());
+                sum_u_u[1](u.x() * u.y());
+                sum_u_u[2](u.x() * u.z());
+                sum_u_u[3](u.y() * u.y());
+                sum_u_u[4](u.y() * u.z());
+                sum_u_u[5](u.z() * u.z());
 
                 sum_om[0](om.x());
                 sum_om[1](om.y());

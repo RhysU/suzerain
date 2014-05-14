@@ -118,7 +118,7 @@ public:
     ((a_a,               1))  /* scalar           */ \
     ((M_M,               1))  /* scalar           */ \
     ((mu_mu,             1))  /* scalar           */ \
-    ((u_u,               3))  /* vector           */ \
+    ((u_u,               6))  /* vector           */ \
     ((om_om,             3))  /* vector           */ \
     ((SrhoE,             1))  /* scalar           */ \
     ((Srhou,             3))  /* vector           */ \
