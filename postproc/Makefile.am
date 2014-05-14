@@ -11,6 +11,7 @@ postproc_SCRIPTS += plan_suzerain.py
 postproc_SCRIPTS += plot_blparam.py
 postproc_SCRIPTS += plot_stats.py
 postproc_SCRIPTS += plot_status.py
+postproc_SCRIPTS += reacting_summary.py
 postproc_SCRIPTS += remove_hdf5.py
 postproc_SCRIPTS += rename_hdf5.py
 postproc_SCRIPTS += sgr2suz.py
