@@ -335,6 +335,7 @@ libbase_la_SOURCES       += specification_largo.cpp
 libbase_la_SOURCES       += specification_noise.cpp
 libbase_la_SOURCES       += specification_radialflow.cpp
 libbase_la_SOURCES       += specification_zgbsv.cpp
+libbase_la_SOURCES       += treatment_constraint.cpp
 libbase_la_SOURCES       += summary.cpp
 libbase_la_SOURCES       += svehla.c
 
