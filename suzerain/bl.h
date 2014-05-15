@@ -373,7 +373,10 @@ typedef struct suzerain_bl_thicknesses {
  * \param[in ] dw          Workspace to use.
  *
  * \return ::SUZERAIN_SUCCESS on success.  On error calls suzerain_error() and
- *      returns one of #suzerain_error_status.
+ *      returns one of #suzerain_error_status.  A best effort attempt is
+ *      made to compute as many of the integral thicknesses as possible.
+ *      In this circumstance, the #suzerain_error_status returned will
+ *      reflect the first problematic integral thickness computation.
  */
 int
 suzerain_bl_compute_thicknesses(

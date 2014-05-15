@@ -350,6 +350,9 @@ suzerain_bl_compute_thicknesses(
     FILL_WITH_NANS(thick);
 
     // Prepare repeatedly used resources
+    // Tracks status of first failure for return from routine.
+    // Where sensible, processing continues on a "best effort" basis.
+    int tmp                            = SUZERAIN_EFAILED;
     int status                         = SUZERAIN_SUCCESS;
     gsl_matrix *dB                     = NULL;
     gsl_integration_glfixed_table *tbl = NULL;
@@ -365,38 +368,38 @@ suzerain_bl_compute_thicknesses(
     if (SUZERAIN_UNLIKELY(status != SUZERAIN_SUCCESS)) goto done;
 
     // As \delta_{99} is brutish but computationally robust, just do it.
-    status = suzerain_bl_find_edge99(
+    tmp = suzerain_bl_find_edge99(
             coeffs_u, gsl_bspline_breakpoint(0, w),
             gsl_bspline_breakpoint(w->nbreak-1, w),
             &thick->delta99, dB, w, dw);
-    if (SUZERAIN_UNLIKELY(status != SUZERAIN_SUCCESS)) goto done;
+    if (status == SUZERAIN_SUCCESS) status = tmp;
 
-    status = suzerain_bl_displacement_thickness(
+    tmp = suzerain_bl_displacement_thickness(
             coeffs_rhou, &thick->delta1, &Bk.vector, w, tbl);
-    if (SUZERAIN_UNLIKELY(status != SUZERAIN_SUCCESS)) goto done;
+    if (status == SUZERAIN_SUCCESS) status = tmp;
 
     // As \delta should always be outside \delta_1 and the latter is more robust
     // than the former, use \delta_1 as a possible lower bound on where we might
     // find \delta.  However, don't have edge detection hinge on sane \delta_1
     // as homogenized boundary layers can produce weird displacement effects.
-    status = suzerain_bl_find_edge(
+    tmp = suzerain_bl_find_edge(
             coeffs_H0, gsl_isnan(thick->delta1) ? gsl_bspline_breakpoint(0, w)
                                                 : thick->delta1,
             gsl_bspline_breakpoint(w->nbreak-1, w),
             &thick->delta, dB, w, dw);
-    if (SUZERAIN_UNLIKELY(status != SUZERAIN_SUCCESS)) goto done;
+    if (status == SUZERAIN_SUCCESS) status = tmp;
 
-    status = suzerain_bl_momentum_thickness(
+    tmp = suzerain_bl_momentum_thickness(
             coeffs_rhou, coeffs_u, &thick->delta2, &Bk.vector, w, tbl);
-    if (SUZERAIN_UNLIKELY(status != SUZERAIN_SUCCESS)) goto done;
+    if (status == SUZERAIN_SUCCESS) status = tmp;
 
-    status = suzerain_bl_energy_thickness(
+    tmp = suzerain_bl_energy_thickness(
             coeffs_ke, coeffs_rhou, &thick->delta3, &Bk.vector, w, tbl);
-    if (SUZERAIN_UNLIKELY(status != SUZERAIN_SUCCESS)) goto done;
+    if (status == SUZERAIN_SUCCESS) status = tmp;
 
-    status = suzerain_bl_enthalpy_thickness(
+    tmp = suzerain_bl_enthalpy_thickness(
             coeffs_H0, coeffs_rhou, &thick->deltaH0, &Bk.vector, w, tbl);
-    /* Done regardless of status */
+    if (status == SUZERAIN_SUCCESS) status = tmp;
 
 done:
 
