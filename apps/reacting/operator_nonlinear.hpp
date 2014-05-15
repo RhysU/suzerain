@@ -136,7 +136,7 @@ void vfilt_apply_ref_viscous_operator(const operator_common_block &common,
     MatrixXXc tmp;
 
     // Shorthand for common task of const referencing common.ref_something()
-    typedef operator_common_block::const_ref_type const_ref_type;
+    typedef ArrayXXr::ConstRowXpr const_ref_type;
 
     // Energy
     {

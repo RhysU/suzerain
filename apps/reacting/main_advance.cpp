@@ -32,6 +32,7 @@
 #include <suzerain/constraint.hpp>
 #include <suzerain/treatment_constraint.hpp>
 #include <suzerain/error.h>
+#include <suzerain/ndx.hpp>
 #include <suzerain/operator_hybrid_residual.hpp>
 #include <suzerain/specification_zgbsv.hpp>
 #include <suzerain/support/definition_noise.hpp>
@@ -228,9 +229,8 @@ suzerain::reacting::driver_advance::run(int argc, char **argv)
 
 
     // Prepare any necessary, problem-specific constraints
-    shared_ptr<constraint::treatment<operator_common_block> > constrainer(
-            new constraint::treatment<operator_common_block>(
-                    1.0, *dgrid, *b, common_block));
+    shared_ptr<constraint::treatment> constrainer(new constraint::treatment(
+                    1.0, *dgrid, *b, common_block, common_block));
     if        (grid->two_sided()) { // Channel per treatment_channel.tex
 
         INFO0(who, "Establishing driving, channel-like state constraints");

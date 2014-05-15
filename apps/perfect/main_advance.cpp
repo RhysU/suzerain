@@ -35,6 +35,7 @@
 #include <suzerain/treatment_constraint.hpp>
 #include <suzerain/format.hpp>
 #include <suzerain/largo_state.hpp>
+#include <suzerain/ndx.hpp>
 #include <suzerain/radialflow.h>
 #include <suzerain/rholut.hpp>
 #include <suzerain/specification_isothermal.hpp>
@@ -278,9 +279,8 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
     }
 
     // Prepare any necessary, problem-specific constraints
-    shared_ptr<constraint::treatment<operator_common_block> > constrainer(
-            new constraint::treatment<operator_common_block>(
-                    scenario->Ma, *dgrid, *b, common_block));
+    shared_ptr<constraint::treatment> constrainer(new constraint::treatment(
+            scenario->Ma, *dgrid, *b, common_block, common_block));
     if        (grid->two_sided()) { // Channel per treatment_channel.tex
 
         INFO0(who, "Establishing driving, channel-like state constraints");
