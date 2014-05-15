@@ -41,84 +41,6 @@ namespace suzerain {
 
 namespace constraint {
 
-/**
- * Abstract interface for tracking instantaneous collocation point
- * profiles taken to be inputs to constraint::treatment logic.
- */
-class treatment_inputs
-{
-public:
-
-    virtual ~treatment_inputs() {} ///< Virtual for interface
-
-    virtual ArrayXXr::ColXpr u()  = 0; ///< Streamwise velocity
-    virtual ArrayXXr::ColXpr v()  = 0; ///< Wall-normal velocity
-    virtual ArrayXXr::ColXpr w()  = 0; ///< Spanwise velocity
-    virtual ArrayXXr::ColXpr uu() = 0; ///< Reynolds stress component uu
-    virtual ArrayXXr::ColXpr uv() = 0; ///< Reynolds stress component uv
-    virtual ArrayXXr::ColXpr uw() = 0; ///< Reynolds stress component uw
-    virtual ArrayXXr::ColXpr vv() = 0; ///< Reynolds stress component vv
-    virtual ArrayXXr::ColXpr vw() = 0; ///< Reynolds stress component vw
-    virtual ArrayXXr::ColXpr ww() = 0; ///< Reynolds stress component ww
-
-    virtual ArrayXXr::ConstColXpr u()  const = 0; ///< @copydoc u()
-    virtual ArrayXXr::ConstColXpr v()  const = 0; ///< @copydoc v()
-    virtual ArrayXXr::ConstColXpr w()  const = 0; ///< @copydoc w()
-    virtual ArrayXXr::ConstColXpr uu() const = 0; ///< @copydoc uu()
-    virtual ArrayXXr::ConstColXpr uv() const = 0; ///< @copydoc uv()
-    virtual ArrayXXr::ConstColXpr uw() const = 0; ///< @copydoc uw()
-    virtual ArrayXXr::ConstColXpr vv() const = 0; ///< @copydoc vv()
-    virtual ArrayXXr::ConstColXpr vw() const = 0; ///< @copydoc vw()
-    virtual ArrayXXr::ConstColXpr ww() const = 0; ///< @copydoc ww()
-};
-
-/**
- * Abstract interface for tracking forcing collocation point profile
- * outputs maintained by constraint::treatment logic.
- */
-class treatment_outputs
-{
-public:
-
-    virtual ~treatment_outputs() {} ///< Virtual for interface
-
-    virtual ArrayXXr::ColXpr fx()           = 0; ///< Streamwise momentum
-    virtual ArrayXXr::ColXpr fy()           = 0; ///< Wall-normal momentum
-    virtual ArrayXXr::ColXpr fz()           = 0; ///< Spanwise momentum
-    virtual ArrayXXr::ColXpr f_dot_u()      = 0; ///< Forcing work
-    virtual ArrayXXr::ColXpr qb()           = 0; ///< Heating
-    virtual ArrayXXr::ColXpr CrhoE()        = 0; ///< Constrained total energy
-    virtual ArrayXXr::ColXpr Crhou()        = 0; ///< Constrained streamwise momentum
-    virtual ArrayXXr::ColXpr Crhov()        = 0; ///< Constrained wall-normal momentum
-    virtual ArrayXXr::ColXpr Crhow()        = 0; ///< Constrained spanwise momentum
-    virtual ArrayXXr::ColXpr Crhou_dot_u()  = 0; ///< Constrained forcing work
-    virtual ArrayXXr::ColXpr Crho()         = 0; ///< Constrained density
-    virtual ArrayXXr::ColXpr C2rhoE()       = 0; ///< Squared \ref CrhoE
-    virtual ArrayXXr::ColXpr C2rhou()       = 0; ///< Squared \ref Crhou
-    virtual ArrayXXr::ColXpr C2rhov()       = 0; ///< Squared \ref Crhov
-    virtual ArrayXXr::ColXpr C2rhow()       = 0; ///< Squared \ref Crhow
-    virtual ArrayXXr::ColXpr C2rhou_dot_u() = 0; ///< Squared \ref Crhou_dot_u
-    virtual ArrayXXr::ColXpr C2rho()        = 0; ///< Squared \ref Crho
-
-    virtual ArrayXXr::ConstColXpr fx()           const = 0; ///< @copydoc fx()
-    virtual ArrayXXr::ConstColXpr fy()           const = 0; ///< @copydoc fy()
-    virtual ArrayXXr::ConstColXpr fz()           const = 0; ///< @copydoc fz()
-    virtual ArrayXXr::ConstColXpr f_dot_u()      const = 0; ///< @copydoc f_dot_u()
-    virtual ArrayXXr::ConstColXpr qb()           const = 0; ///< @copydoc qb()
-    virtual ArrayXXr::ConstColXpr CrhoE()        const = 0; ///< @copydoc CrhoE()
-    virtual ArrayXXr::ConstColXpr Crhou()        const = 0; ///< @copydoc Crhou()
-    virtual ArrayXXr::ConstColXpr Crhov()        const = 0; ///< @copydoc Crhov()
-    virtual ArrayXXr::ConstColXpr Crhow()        const = 0; ///< @copydoc Crhow()
-    virtual ArrayXXr::ConstColXpr Crhou_dot_u()  const = 0; ///< @copydoc Crhou_dot_u()
-    virtual ArrayXXr::ConstColXpr Crho()         const = 0; ///< @copydoc Crho()
-    virtual ArrayXXr::ConstColXpr C2rhoE()       const = 0; ///< @copydoc C2rhoE()
-    virtual ArrayXXr::ConstColXpr C2rhou()       const = 0; ///< @copydoc C2rhou()
-    virtual ArrayXXr::ConstColXpr C2rhov()       const = 0; ///< @copydoc C2rhov()
-    virtual ArrayXXr::ConstColXpr C2rhow()       const = 0; ///< @copydoc C2rhow()
-    virtual ArrayXXr::ConstColXpr C2rhou_dot_u() const = 0; ///< @copydoc C2rhou_dot_u()
-    virtual ArrayXXr::ConstColXpr C2rho()        const = 0; ///< @copydoc C2rho()
-};
-
 //// TODO? Use Eigen Maps to decouple operator_common_block if sensible
 
 /**
@@ -139,6 +61,52 @@ class treatment
 {
 
 public:
+
+    /**
+    * Abstract interface for tracking instantaneous collocation point
+    * profiles taken to be inputs to constraint treatment logic.
+    */
+    class inputs
+    {
+    public:
+        virtual ~inputs() {} ///< Virtual for interface
+        virtual ArrayXXr::ConstColXpr u()  const = 0; ///< Streamwise velocity
+        virtual ArrayXXr::ConstColXpr v()  const = 0; ///< Wall-normal velocity
+        virtual ArrayXXr::ConstColXpr w()  const = 0; ///< Spanwise velocity
+        virtual ArrayXXr::ConstColXpr uu() const = 0; ///< Reynolds stress component uu
+        virtual ArrayXXr::ConstColXpr uv() const = 0; ///< Reynolds stress component uv
+        virtual ArrayXXr::ConstColXpr uw() const = 0; ///< Reynolds stress component uw
+        virtual ArrayXXr::ConstColXpr vv() const = 0; ///< Reynolds stress component vv
+        virtual ArrayXXr::ConstColXpr vw() const = 0; ///< Reynolds stress component vw
+        virtual ArrayXXr::ConstColXpr ww() const = 0; ///< Reynolds stress component ww
+    };
+
+    /**
+    * Abstract interface for tracking forcing collocation point profile
+    * outputs maintained by constraint treatment logic.
+    */
+    class outputs
+    {
+    public:
+        virtual ~outputs() {}                        ///< Virtual for interface
+        virtual ArrayXXr::ColXpr fx()           = 0; ///< Streamwise momentum
+        virtual ArrayXXr::ColXpr fy()           = 0; ///< Wall-normal momentum
+        virtual ArrayXXr::ColXpr fz()           = 0; ///< Spanwise momentum
+        virtual ArrayXXr::ColXpr f_dot_u()      = 0; ///< Forcing work
+        virtual ArrayXXr::ColXpr qb()           = 0; ///< Heating
+        virtual ArrayXXr::ColXpr CrhoE()        = 0; ///< Constrained total energy
+        virtual ArrayXXr::ColXpr Crhou()        = 0; ///< Constrained streamwise momentum
+        virtual ArrayXXr::ColXpr Crhov()        = 0; ///< Constrained wall-normal momentum
+        virtual ArrayXXr::ColXpr Crhow()        = 0; ///< Constrained spanwise momentum
+        virtual ArrayXXr::ColXpr Crhou_dot_u()  = 0; ///< Constrained forcing work
+        virtual ArrayXXr::ColXpr Crho()         = 0; ///< Constrained density
+        virtual ArrayXXr::ColXpr C2rhoE()       = 0; ///< Squared \ref CrhoE
+        virtual ArrayXXr::ColXpr C2rhou()       = 0; ///< Squared \ref Crhou
+        virtual ArrayXXr::ColXpr C2rhov()       = 0; ///< Squared \ref Crhov
+        virtual ArrayXXr::ColXpr C2rhow()       = 0; ///< Squared \ref Crhow
+        virtual ArrayXXr::ColXpr C2rhou_dot_u() = 0; ///< Squared \ref Crhou_dot_u
+        virtual ArrayXXr::ColXpr C2rho()        = 0; ///< Squared \ref Crho
+    };
 
     /**
      * Constructor.  After construction, #L must be provided.  Generally, one
