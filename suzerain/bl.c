@@ -378,15 +378,35 @@ suzerain_bl_compute_thicknesses(
             coeffs_rhou, &thick->delta1, &Bk.vector, w, tbl);
     if (status == SUZERAIN_SUCCESS) status = tmp;
 
-    // As \delta should always be outside \delta_1 and the latter is more robust
-    // than the former, use \delta_1 as a possible lower bound on where we might
-    // find \delta.  However, don't have edge detection hinge on sane \delta_1
-    // as homogenized boundary layers can produce weird displacement effects.
-    tmp = suzerain_bl_find_edge(
-            coeffs_H0, gsl_isnan(thick->delta1) ? gsl_bspline_breakpoint(0, w)
-                                                : thick->delta1,
-            gsl_bspline_breakpoint(w->nbreak-1, w),
-            &thick->delta, dB, w, dw);
+    // TODO Duplicated logic in suzerain_bl_compute_thicknesses_baseflow()!
+    // As \delta should always be outside \delta_1 and the latter is
+    // more robust than the former, use \delta_1 as a possible lower
+    // bound on where we might find \delta.  However, don't have edge
+    // detection hinge on sane \delta_1 as homogenized boundary layers
+    // can produce weird displacement effects.  Then try using a scaled
+    // version of delta99 before a general sweep.  Increased paranoia
+    // to avoid picking up near-wall kinks in H0.
+    tmp = SUZERAIN_EINVAL;
+    if (!gsl_isnan(thick->delta1)) {
+        tmp = suzerain_bl_find_edge(
+                coeffs_H0,
+                gsl_bspline_breakpoint(0, w) + thick->delta1,
+                gsl_bspline_breakpoint(w->nbreak-1, w),
+                &thick->delta, dB, w, dw);
+    } else if (!gsl_isnan(thick->delta99)) {
+        tmp = suzerain_bl_find_edge(  // Assuming sane Prandtl number
+                coeffs_H0,
+                gsl_bspline_breakpoint(0, w) + thick->delta99 / 4,
+                gsl_bspline_breakpoint(w->nbreak-1, w),
+                &thick->delta, dB, w, dw);
+    }
+    if (tmp != SUZERAIN_SUCCESS) {
+        tmp = suzerain_bl_find_edge(
+                coeffs_H0,
+                gsl_bspline_breakpoint(0, w),
+                gsl_bspline_breakpoint(w->nbreak-1, w),
+                &thick->delta, dB, w, dw);
+    }
     if (status == SUZERAIN_SUCCESS) status = tmp;
 
     tmp = suzerain_bl_momentum_thickness(
@@ -1290,17 +1310,35 @@ suzerain_bl_compute_thicknesses_baseflow(
         if (status == SUZERAIN_SUCCESS) status = tmp;
     }
 
-    // As \delta should always be outside \delta_1 and the latter is more robust
-    // than the former, use \delta_1 as a possible lower bound on where we might
-    // find \delta.  However, don't have edge detection hinge on sane \delta_1
-    // as homogenized boundary layers can produce weird displacement effects.
+    // As \delta should always be outside \delta_1 and the latter is
+    // more robust than the former, use \delta_1 as a possible lower
+    // bound on where we might find \delta.  However, don't have edge
+    // detection hinge on sane \delta_1 as homogenized boundary layers
+    // can produce weird displacement effects.  Then try using a scaled
+    // version of delta99 before a general sweep.  Increased paranoia
+    // to avoid picking up near-wall kinds in H0.
     {
-        int tmp = suzerain_bl_find_edge(
-                coeffs_vis_H0,
-                gsl_isnan(thick->delta1) ? gsl_bspline_breakpoint(0, w)
-                                         : thick->delta1,
-                gsl_bspline_breakpoint(w->nbreak-1, w),
-                &thick->delta, dB, w, dw);
+        int tmp = SUZERAIN_EINVAL;
+        if (!gsl_isnan(thick->delta1)) {
+            tmp = suzerain_bl_find_edge(
+                    coeffs_vis_H0,
+                    gsl_bspline_breakpoint(0, w) + thick->delta1,
+                    gsl_bspline_breakpoint(w->nbreak-1, w),
+                    &thick->delta, dB, w, dw);
+        } else if (!gsl_isnan(thick->delta99)) {
+            tmp = suzerain_bl_find_edge(  // Assuming sane Prandtl number
+                    coeffs_vis_H0,
+                    gsl_bspline_breakpoint(0, w) + thick->delta99 / 4,
+                    gsl_bspline_breakpoint(w->nbreak-1, w),
+                    &thick->delta, dB, w, dw);
+        }
+        if (tmp != SUZERAIN_SUCCESS) {
+            tmp = suzerain_bl_find_edge(
+                    coeffs_vis_H0,
+                    gsl_bspline_breakpoint(0, w),
+                    gsl_bspline_breakpoint(w->nbreak-1, w),
+                    &thick->delta, dB, w, dw);
+        }
         if (status == SUZERAIN_SUCCESS) status = tmp;
     }
 
