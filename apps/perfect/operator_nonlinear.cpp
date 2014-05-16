@@ -34,10 +34,10 @@
 #include <suzerain/specification_largo.hpp>
 #include <suzerain/state.hpp>
 
-#include "common_block.hpp"
+#include "definition_scenario.hpp"
 #include "manufactured_solution.hpp"
 #include "navier_stokes.hpp"
-#include "definition_scenario.hpp"
+#include "operator_common_block.hpp"
 
 #pragma warning(disable:383 1572)
 

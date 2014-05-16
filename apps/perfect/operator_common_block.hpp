@@ -21,8 +21,8 @@
 //
 //--------------------------------------------------------------------------
 
-#ifndef SUZERAIN_PERFECT_COMMON_BLOCK_HPP
-#define SUZERAIN_PERFECT_COMMON_BLOCK_HPP
+#ifndef SUZERAIN_PERFECT_OPERATOR_COMMON_BLOCK_HPP
+#define SUZERAIN_PERFECT_OPERATOR_COMMON_BLOCK_HPP
 
 /** @file
  * Declarations shared between linearly-implicit and explicit operators.
@@ -367,4 +367,4 @@ public:
 
 } // namespace suzerain
 
-#endif  /* SUZERAIN_PERFECT_COMMON_BLOCK_HPP */
+#endif  /* SUZERAIN_PERFECT_OPERATOR_COMMON_BLOCK_HPP */

@@ -29,8 +29,8 @@
 
 #include <suzerain/common.hpp>
 
-#include "common_block.hpp"
 #include "definition_scenario.hpp"
+#include "operator_common_block.hpp"
 
 #pragma warning(disable:383 1572)
 

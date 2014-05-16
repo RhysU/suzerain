@@ -45,9 +45,9 @@
 #include <suzerain/support/logging.hpp>
 #include <suzerain/timers.h>
 
-#include "common_block.hpp"
-#include "navier_stokes.hpp"
 #include "definition_scenario.hpp"
+#include "navier_stokes.hpp"
+#include "operator_common_block.hpp"
 
 #pragma warning(disable:383 1572)
 

@@ -34,9 +34,9 @@
 #include <suzerain/support/definition_radialflow.hpp>
 #include <suzerain/support/driver_base.hpp>
 
-#include "common_block.hpp"
-#include "manufactured_solution.hpp"
 #include "definition_scenario.hpp"
+#include "manufactured_solution.hpp"
+#include "operator_common_block.hpp"
 
 namespace suzerain {
 

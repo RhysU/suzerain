@@ -50,8 +50,8 @@
 #include <suzerain/timers.h>
 #include <suzerain/utility.hpp>
 
-#include "common_block.hpp"
 #include "linearize_type.hpp"
+#include "operator_common_block.hpp"
 #include "perfect.hpp"
 #include "slowgrowth_type.hpp"
 

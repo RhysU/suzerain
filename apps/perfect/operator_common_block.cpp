@@ -22,10 +22,10 @@
 //--------------------------------------------------------------------------
 
 /** @file
- * @copydoc common_block.hpp
+ * @copydoc operator_common_block.hpp
  */
 
-#include "common_block.hpp"
+#include "operator_common_block.hpp"
 
 #include <suzerain/common.hpp>
 
