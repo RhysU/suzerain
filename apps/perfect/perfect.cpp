@@ -66,6 +66,8 @@
 #include <suzerain/utility.hpp>
 
 #include "definition_scenario.hpp"
+#include "instantaneous.hpp"
+#include "references.hpp"
 
 using boost::numeric_cast;
 using std::size_t;
@@ -1112,6 +1114,24 @@ take_profile(const definition_scenario &scenario,
                           ret->physical().outerStride());
 
     return ret;
+}
+
+void
+collect_references(const definition_scenario &scenario,
+                   const pencil_grid &dgrid,
+                   const physical_view<5> &sphys,
+                   references &refs)
+{
+    // FIXME Implement
+}
+
+void
+collect_instantaneous(const definition_scenario &scenario,
+                      const pencil_grid &dgrid,
+                      const physical_view<5> &sphys,
+                      instantaneous &inst)
+{
+    // FIXME Implement
 }
 
 void summarize_boundary_layer_nature(

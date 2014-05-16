@@ -56,6 +56,7 @@ class specification_grid;
 class specification_largo;
 class specification_noise;
 namespace support { class field; }
+template <int> struct physical_view;
 
 /**
  * Functionality for Suzerain perfect gas applications.
@@ -64,6 +65,8 @@ namespace perfect {
 
 // Forward declarations
 class definition_scenario;
+class instantaneous;
+class references;
 
 /**
  * Type of Boost.Accumulator to use for summation processes.
@@ -146,6 +149,20 @@ std::auto_ptr<profile>
 take_profile(const definition_scenario &scenario,
              const operator_tools& otool,
              contiguous_state<4,complex_t> &swave);
+
+// TODO Document
+void
+collect_references(const definition_scenario &scenario,
+                   const pencil_grid &dgrid,
+                   const physical_view<5> &sphys,
+                   references &refs);
+
+// TODO Document
+void
+collect_instantaneous(const definition_scenario &scenario,
+                      const pencil_grid &dgrid,
+                      const physical_view<5> &sphys,
+                      instantaneous &inst);
 
 /**
  * Use the boundary layer information in \c prof and possibly base flow
