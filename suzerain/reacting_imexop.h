@@ -42,12 +42,12 @@ extern "C" {
 
 // FIXME: Non of this scenario info belongs anymore except alpha
 /** Scenario-like constants used for operator formation. */
-typedef struct {
+typedef struct suzerain_reacting_imexop_scenario {
     double alpha; /**< \f$\alpha\f$ such that \f$\mu_B = \alpha\mu\f$ */
 } suzerain_reacting_imexop_scenario;
 
 /** Wall-normal diagonal reference matrices used for operator formation. */
-typedef struct {
+typedef struct suzerain_reacting_imexop_ref {
     double *ux;         /**< \f$ C^{u_x}                \f$ */
     double *uy;         /**< \f$ C^{u_y}                \f$ */
     double *uz;         /**< \f$ C^{u_z}                \f$ */
@@ -73,7 +73,7 @@ typedef struct {
 } suzerain_reacting_imexop_ref;
 
 /** Strides between elements in a \ref suzerain_reacting_imexop_ref. */
-typedef struct {
+typedef struct suzerain_reacting_imexop_refld {
     int ux;             /**< \copydoc suzerain_reacting_imexop_ref::ux         */
     int uy;             /**< \copydoc suzerain_reacting_imexop_ref::uy         */
     int uz;             /**< \copydoc suzerain_reacting_imexop_ref::uz         */

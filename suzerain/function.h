@@ -77,7 +77,7 @@ extern "C" {
  * @see The function evaluation macro SUZERAIN_FN_EVAL.
  * @see suzerain_function for the complex-valued analogue.
  */
-typedef struct {
+typedef struct suzerain_function {
 
     /**
      * Underlying function to be evaluated
@@ -112,7 +112,7 @@ typedef struct {
  * @see The function evaluation macro SUZERAIN_ZFN_EVAL.
  * @see suzerain_zfunction for the real-valued analogue.
  */
-typedef struct {
+typedef struct suzerain_zfunction {
 
     /**
      * Underlying function to be evaluated

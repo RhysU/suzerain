@@ -64,7 +64,7 @@ extern "C" {
 #endif
 
 /** Scenario-like constants used for operator formation. */
-typedef struct {
+typedef struct suzerain_rholut_imexop_scenario {
     double Re;    /**< \f$\mbox{Re} = \frac{\rho_0 u_0 l_0 }{\mu_0}\f$ */
     double Pr;    /**< \f$\mbox{Pr} = \frac{\mu_0 C_{p}}{\kappa_0}\f$ */
     double Ma;    /**< \f$\mbox{Ma} = \frac{u_0}{a_0}\f$ */
@@ -73,7 +73,7 @@ typedef struct {
 } suzerain_rholut_imexop_scenario;
 
 /** Wall-normal diagonal reference matrices used for operator formation. */
-typedef struct {
+typedef struct suzerain_rholut_imexop_ref {
     double *ux;         /**< \f$ C^{u_x}                \f$ */
     double *uy;         /**< \f$ C^{u_y}                \f$ */
     double *uz;         /**< \f$ C^{u_z}                \f$ */
@@ -103,7 +103,7 @@ typedef struct {
 } suzerain_rholut_imexop_ref;
 
 /** Strides between elements in a \ref suzerain_rholut_imexop_ref. */
-typedef struct {
+typedef struct suzerain_rholut_imexop_refld {
     int ux;             /**< \copydoc suzerain_rholut_imexop_ref::ux         */
     int uy;             /**< \copydoc suzerain_rholut_imexop_ref::uy         */
     int uz;             /**< \copydoc suzerain_rholut_imexop_ref::uz         */
