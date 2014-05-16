@@ -30,6 +30,8 @@
 
 #include <suzerain/common.hpp>
 
+#include <suzerain/treatment_constraint.hpp>
+
 namespace suzerain {
 
 namespace perfect {
@@ -45,7 +47,9 @@ class references;
  * Each reference quantity is a single \e column in a column-major matrix.  This
  * facilitates a stride one operation consuming an single quantity profile.
  */
-class instantaneous : private ArrayXXr
+class instantaneous
+    : public virtual constraint::treatment::inputs
+    , private ArrayXXr
 {
     typedef ArrayXXr super;
 
