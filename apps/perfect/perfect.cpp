@@ -981,7 +981,8 @@ take_samples(const definition_scenario &scenario,
     return ret;
 }
 
-// This logic is a trimmed down version of take_samples. See comments there.
+// This logic is a trimmed down version of take_samples.
+// See comments there.
 std::auto_ptr<profile>
 take_profile(const definition_scenario &scenario,
              const operator_tools& otool,
@@ -1122,9 +1123,178 @@ collect_references(const definition_scenario &scenario,
                    const physical_view<5> &sphys,
                    references &refs)
 {
-    // FIXME Implement
+    SUZERAIN_TIMER_SCOPED("collect_references");
+
+////// To avoid accumulating garbage, must zero y(j) not present on rank.
+////// Clearing everything is expected to be a bit more performant.
+////refs.set_zero(dgrid.global_physical_extent.y());
+////
+////// Sum reference quantities as a function of y(j) into refs*
+////for (int offset = 0, j = dgrid.local_physical_start.y();
+////    j < dgrid.local_physical_end.y();
+////    ++j) {
+////
+////    // Prepare logical indices using struct for scoping (e.g. ref::ux).
+////    struct ref { enum { rho, p, p2, T, a,
+////                        ux, uy, uz, u2,
+////                        uxux, uxuy, uxuz, uyuy, uyuz, uzuz,
+////                        nu, nuux, nuuy, nuuz, nuu2,
+////                        nuuxux, nuuxuy, nuuxuz, nuuyuy, nuuyuz, nuuzuz,
+////                        ex_gradrho, ey_gradrho, ez_gradrho,
+////                        e_divm, e_deltarho,
+////                        rhoux,   rhouy,   rhouz,   rhoE,
+////                        rhouxux, rhouyuy, rhouzuz, rhoEE,
+////                        count // Sentry
+////    }; };
+////
+////    // An array of summing_accumulator_type holds all running sums
+////    array<summing_accumulator_type, ref::count> acc;
+////
+////    // Redmine #2983 disables mu, lambda on the freestream boundary to
+////    // adhere to superset of Poinsot and Lele subsonic NRBC conditions
+////    const bool locallyviscous = !(o.grid.one_sided() && j+1U == Ny);
+////
+////    const int last_zxoffset = offset
+////                            + o.dgrid.local_physical_extent.z()
+////                            * o.dgrid.local_physical_extent.x();
+////    for (; offset < last_zxoffset; ++offset) {
+////
+////        // Unpack conserved state
+////        const real_t   e  (sphys(ndx::e,   offset));
+////        const Vector3r m  (sphys(ndx::mx,  offset),
+////                           sphys(ndx::my,  offset),
+////                           sphys(ndx::mz,  offset));
+////        const real_t   rho(sphys(ndx::rho, offset));
+////
+////        // Compute quantities related to the equation of state
+////        real_t p, T, mu, lambda;
+////        rholut::p_T_mu_lambda(
+////            alpha, beta, gamma, Ma, rho, m, e, p, T, mu, lambda);
+////
+////        // The linearization reference quantity implementation
+////        // requires a single global 1 / Re value, so unlike
+////        // the RHS implementation below setting 1 / Re = 0,
+////        // here we locally turn off viscosity as necessary.
+////        mu     *= static_cast<int>(locallyviscous);
+////        lambda *= static_cast<int>(locallyviscous);
+////
+////        // Accumulate reference quantities into running sums...
+////        acc[ref::rho](rho);
+////        acc[ref::p  ](p);
+////        acc[ref::p2 ](p*p);
+////        acc[ref::T  ](T);
+////        acc[ref::a  ](sqrt(T));
+////
+////        // ...including simple velocity-related quantities...
+////        const Vector3r u = rholut::u(rho, m);
+////        acc[ref::ux](u.x());
+////        acc[ref::uy](u.y());
+////        acc[ref::uz](u.z());
+////        acc[ref::u2](u.squaredNorm());
+////        acc[ref::uxux](u.x()*u.x());
+////        acc[ref::uxuy](u.x()*u.y());
+////        acc[ref::uxuz](u.x()*u.z());
+////        acc[ref::uyuy](u.y()*u.y());
+////        acc[ref::uyuz](u.y()*u.z());
+////        acc[ref::uzuz](u.z()*u.z());
+////
+////        // ...including simple viscosity-related quantities...
+////        const real_t nu = mu / rho;
+////        acc[ref::nu](nu);
+////        acc[ref::nuux](nu*u.x());
+////        acc[ref::nuuy](nu*u.y());
+////        acc[ref::nuuz](nu*u.z());
+////        acc[ref::nuu2](nu*u.squaredNorm());
+////        acc[ref::nuuxux](nu*u.x()*u.x());
+////        acc[ref::nuuxuy](nu*u.x()*u.y());
+////        acc[ref::nuuxuz](nu*u.x()*u.z());
+////        acc[ref::nuuyuy](nu*u.y()*u.y());
+////        acc[ref::nuuyuz](nu*u.y()*u.z());
+////        acc[ref::nuuzuz](nu*u.z()*u.z());
+////
+////        // ...other, more complicated expressions...
+////        const Vector3r e_gradrho
+////                = rholut::explicit_div_e_plus_p_u_refcoeff_grad_rho(
+////                        gamma, rho, m, e, p);
+////        acc[ref::ex_gradrho](e_gradrho.x());
+////        acc[ref::ey_gradrho](e_gradrho.y());
+////        acc[ref::ez_gradrho](e_gradrho.z());
+////
+////        acc[ref::e_divm](
+////                rholut::explicit_div_e_plus_p_u_refcoeff_div_m(
+////                    rho, e, p));
+////
+////        acc[ref::e_deltarho](
+////                rholut::explicit_mu_div_grad_T_refcoeff_div_grad_rho(
+////                    gamma, mu, rho, e, p));
+////
+////        // ...and, lastly, details needed for slow growth forcing.
+////        acc[ref::rhoux  ](m.x()             );
+////        acc[ref::rhouy  ](m.y()             );
+////        acc[ref::rhouz  ](m.z()             );
+////        acc[ref::rhoE   ](e                 );
+////        acc[ref::rhouxux](m.x()* m.x() / rho);
+////        acc[ref::rhouyuy](m.y()* m.y() / rho);
+////        acc[ref::rhouzuz](m.z()* m.z() / rho);
+////        acc[ref::rhoEE  ](e    * e     / rho);
+////
+////    } // end X // end Z
+////
+////    // All accumulators should have seen a consistent number of samples
+////    assert(consistent_accumulation_counts(acc));
+////
+////    // Store sums into common block in preparation for MPI Allreduce
+////    using boost::accumulators::sum;
+////    common.ref_rho       ()[j] = sum(acc[ref::rho       ]);
+////    common.ref_p         ()[j] = sum(acc[ref::p         ]);
+////    common.ref_p2        ()[j] = sum(acc[ref::p2        ]);
+////    common.ref_T         ()[j] = sum(acc[ref::T         ]);
+////    common.ref_a         ()[j] = sum(acc[ref::a         ]);
+////    common.ref_ux        ()[j] = sum(acc[ref::ux        ]);
+////    common.ref_uy        ()[j] = sum(acc[ref::uy        ]);
+////    common.ref_uz        ()[j] = sum(acc[ref::uz        ]);
+////    common.ref_u2        ()[j] = sum(acc[ref::u2        ]);
+////    common.ref_uxux      ()[j] = sum(acc[ref::uxux      ]);
+////    common.ref_uxuy      ()[j] = sum(acc[ref::uxuy      ]);
+////    common.ref_uxuz      ()[j] = sum(acc[ref::uxuz      ]);
+////    common.ref_uyuy      ()[j] = sum(acc[ref::uyuy      ]);
+////    common.ref_uyuz      ()[j] = sum(acc[ref::uyuz      ]);
+////    common.ref_uzuz      ()[j] = sum(acc[ref::uzuz      ]);
+////    common.ref_nu        ()[j] = sum(acc[ref::nu        ]);
+////    common.ref_nuux      ()[j] = sum(acc[ref::nuux      ]);
+////    common.ref_nuuy      ()[j] = sum(acc[ref::nuuy      ]);
+////    common.ref_nuuz      ()[j] = sum(acc[ref::nuuz      ]);
+////    common.ref_nuu2      ()[j] = sum(acc[ref::nuu2      ]);
+////    common.ref_nuuxux    ()[j] = sum(acc[ref::nuuxux    ]);
+////    common.ref_nuuxuy    ()[j] = sum(acc[ref::nuuxuy    ]);
+////    common.ref_nuuxuz    ()[j] = sum(acc[ref::nuuxuz    ]);
+////    common.ref_nuuyuy    ()[j] = sum(acc[ref::nuuyuy    ]);
+////    common.ref_nuuyuz    ()[j] = sum(acc[ref::nuuyuz    ]);
+////    common.ref_nuuzuz    ()[j] = sum(acc[ref::nuuzuz    ]);
+////    common.ref_ex_gradrho()[j] = sum(acc[ref::ex_gradrho]);
+////    common.ref_ey_gradrho()[j] = sum(acc[ref::ey_gradrho]);
+////    common.ref_ez_gradrho()[j] = sum(acc[ref::ez_gradrho]);
+////    common.ref_e_divm    ()[j] = sum(acc[ref::e_divm    ]);
+////    common.ref_e_deltarho()[j] = sum(acc[ref::e_deltarho]);
+////    common.ref_rhoux     ()[j] = sum(acc[ref::rhoux     ]);
+////    common.ref_rhouy     ()[j] = sum(acc[ref::rhouy     ]);
+////    common.ref_rhouz     ()[j] = sum(acc[ref::rhouz     ]);
+////    common.ref_rhoE      ()[j] = sum(acc[ref::rhoE      ]);
+////    common.ref_rhouxux   ()[j] = sum(acc[ref::rhouxux   ]);
+////    common.ref_rhouyuy   ()[j] = sum(acc[ref::rhouyuy   ]);
+////    common.ref_rhouzuz   ()[j] = sum(acc[ref::rhouzuz   ]);
+////    common.ref_rhoEE     ()[j] = sum(acc[ref::rhoEE     ]);
+////
+////} // end Y
+////
+////// Allreduce and scale common.refs sums to obtain means on all ranks
+////SUZERAIN_MPICHKR(MPI_Allreduce(MPI_IN_PLACE, common.refs.data(),
+////        common.refs.size(), mpi::datatype<real_t>::value,
+////        MPI_SUM, MPI_COMM_WORLD));
+////common.refs *= o.dgrid.chi();
 }
 
+// This is a trimmed down version of collect_references.See comments there.
 void
 collect_instantaneous(const definition_scenario &scenario,
                       const pencil_grid &dgrid,
@@ -1132,6 +1302,9 @@ collect_instantaneous(const definition_scenario &scenario,
                       instantaneous &inst)
 {
     // FIXME Implement
+
+    // Ensure adequate storage
+    inst.set_zero(dgrid.global_physical_extent.y());
 }
 
 void summarize_boundary_layer_nature(
