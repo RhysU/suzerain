@@ -22,7 +22,7 @@
 //--------------------------------------------------------------------------
 
 /** @file
- * @copydoc operator_common_block.hpp
+ * @copydoc references.hpp
  */
 
 #include "references.hpp"
