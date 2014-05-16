@@ -55,9 +55,6 @@ class instantaneous
 
 public:
 
-    /** Default constructor.  Use \ref set_zero to resize prior to use. */
-    instantaneous(): super(20, 0) {} // Magic number from count of quantities
-
     typedef super::ColXpr      ColXpr;      ///< Mutable data for quantities
     typedef super::ConstColXpr ConstColXpr; ///< Immutable data for quantities
     typedef super::Scalar      Scalar;      ///< Expose underlying scalar type
@@ -74,6 +71,9 @@ public:
     {
         super::setZero(NoChange, Ny);
     }
+
+    /** Default constructor.  Use \ref set_zero to resize prior to use. */
+    instantaneous(): super(20, 0) {} // Magic number from count of quantities
 
     ColXpr rho()        { return col( 0); } ///< Quantity \f$\rho         \f$
     ColXpr p()          { return col( 1); } ///< Quantity \f$p            \f$

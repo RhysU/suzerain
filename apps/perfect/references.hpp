@@ -56,9 +56,6 @@ class references : private ArrayXXr
 
 public:
 
-    /** Default constructor.  Use \ref set_zero to resize prior to use. */
-    references(): super(39, 0) {} // Magic number from count of quantities
-
     typedef super::ConstRowXpr ConstRowXpr; ///< Immutable data for quantities
     typedef super::RowXpr      RowXpr;      ///< Mutable data for quantities
     typedef super::Scalar      Scalar;      ///< Expose underlying scalar type
@@ -75,6 +72,9 @@ public:
     {
         super::setZero(NoChange, Ny);
     }
+
+    /** Default constructor.  Use \ref set_zero to resize prior to use. */
+    references(): super(39, 0) {} // Magic number from count of quantities
 
     RowXpr rho()        { return row( 0); } ///< Reference \f$\rho                  \f$
     RowXpr p()          { return row( 1); } ///< Reference \f$p                     \f$
