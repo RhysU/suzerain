@@ -1,6 +1,6 @@
 //--------------------------------------------------------------------------
 //
-// Copyright (C) 2011-2014 Rhys Ulerich
+// Copyright (C) 2010-2014 Rhys Ulerich
 // Copyright (C) 2012-2014 The PECOS Development Team
 // Please see http://pecos.ices.utexas.edu for more information on PECOS.
 //
