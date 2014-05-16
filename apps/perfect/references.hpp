@@ -43,7 +43,7 @@ namespace perfect {
  * nonlinear operator application which either are required for hybrid linear
  * operator application or for statistics sampling purposes.
  *
- * Each reference quantity is a single row in a column-major matrix.  This
+ * Each reference quantity is a single \e row in a column-major matrix.  This
  * facilitates a stride one operation loading or writing all reference
  * quantities for a single wall-normal location.
  *
