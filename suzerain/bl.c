@@ -458,15 +458,15 @@ suzerain_bl_compute_reynolds(
     // quantity and the final line being any needed "code unit" correction.
     // Notice viscous->tau_w and viscous->u_tau already account for code_Re;
     // see the suzerain_bl_viscous struct declaration to check their scaling.
-    reynolds->delta   = edge->rho   * edge->u   * thick->delta   / edge->mu
+    reynolds->delta   = edge  ->rho * edge  ->u * thick->delta   / edge  ->mu
                       * code_Re;
-    reynolds->delta1  = edge99->rho * edge99->u * thick->delta1  / edge->mu
+    reynolds->delta1  = edge99->rho * edge99->u * thick->delta1  / edge99->mu
                       * code_Re;
-    reynolds->delta2  = edge99->rho * edge99->u * thick->delta2  / edge->mu
+    reynolds->delta2  = edge99->rho * edge99->u * thick->delta2  / edge99->mu
                       * code_Re;
-    reynolds->delta3  = edge99->rho * edge99->u * thick->delta3  / edge->mu
+    reynolds->delta3  = edge99->rho * edge99->u * thick->delta3  / edge99->mu
                       * code_Re;
-    reynolds->deltaH0 = edge99->rho * edge99->u * thick->deltaH0 / edge->mu
+    reynolds->deltaH0 = edge99->rho * edge99->u * thick->deltaH0 / edge99->mu
                       * code_Re;
     reynolds->delta99 = edge99->rho * edge99->u * thick->delta99 / edge99->mu
                       * code_Re;
