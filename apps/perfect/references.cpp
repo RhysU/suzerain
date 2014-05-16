@@ -38,31 +38,31 @@ references::imexop_ref(
         suzerain_rholut_imexop_ref   &ref,
         suzerain_rholut_imexop_refld &ld)
 {
-    ref.ux         = ux().data();
-    ref.uy         = uy().data();
-    ref.uz         = uz().data();
-    ref.u2         = u2().data();
-    ref.uxux       = uxux().data();
-    ref.uxuy       = uxuy().data();
-    ref.uxuz       = uxuz().data();
-    ref.uyuy       = uyuy().data();
-    ref.uyuz       = uyuz().data();
-    ref.uzuz       = uzuz().data();
-    ref.nu         = nu().data();
-    ref.nuux       = nu_ux().data();
-    ref.nuuy       = nu_uy().data();
-    ref.nuuz       = nu_uz().data();
-    ref.nuu2       = nu_u2().data();
-    ref.nuuxux     = nu_uxux().data();
-    ref.nuuxuy     = nu_uxuy().data();
-    ref.nuuxuz     = nu_uxuz().data();
-    ref.nuuyuy     = nu_uyuy().data();
-    ref.nuuyuz     = nu_uyuz().data();
-    ref.nuuzuz     = nu_uzuz().data();
+    ref.ux         = u()         .data();
+    ref.uy         = v()         .data();
+    ref.uz         = w()         .data();
+    ref.u2         = u2()        .data();
+    ref.uxux       = uu()        .data();
+    ref.uxuy       = uv()        .data();
+    ref.uxuz       = uw()        .data();
+    ref.uyuy       = vv()        .data();
+    ref.uyuz       = vw()        .data();
+    ref.uzuz       = ww()        .data();
+    ref.nu         = nu()        .data();
+    ref.nuux       = nu_u()      .data();
+    ref.nuuy       = nu_v()      .data();
+    ref.nuuz       = nu_w()      .data();
+    ref.nuu2       = nu_u2()     .data();
+    ref.nuuxux     = nu_uu()     .data();
+    ref.nuuxuy     = nu_uv()     .data();
+    ref.nuuxuz     = nu_uw()     .data();
+    ref.nuuyuy     = nu_vv()     .data();
+    ref.nuuyuz     = nu_vw()     .data();
+    ref.nuuzuz     = nu_ww()     .data();
     ref.ex_gradrho = ex_gradrho().data();
     ref.ey_gradrho = ey_gradrho().data();
     ref.ez_gradrho = ez_gradrho().data();
-    ref.e_divm     = e_divm().data();
+    ref.e_divm     = e_divm()    .data();
     ref.e_deltarho = e_deltarho().data();
 
     const int inc = innerStride();
