@@ -59,13 +59,15 @@ public:
     /** Default constructor.  Use \ref set_zero to resize prior to use. */
     references(): super(39, 0) {} // Magic number from count of quantities
 
-    typedef super::Scalar      Scalar;      ///< Expose underlying scalar type
-    typedef super::RowXpr      RowXpr;      ///< Mutable data for quantities
     typedef super::ConstRowXpr ConstRowXpr; ///< Immutable data for quantities
+    typedef super::RowXpr      RowXpr;      ///< Mutable data for quantities
+    typedef super::Scalar      Scalar;      ///< Expose underlying scalar type
+    using super::cols;                      //   Expose number of columns
     using super::data;                      //   Expose raw block of memory
-    using super::size;                      //   Expose size of raw memory
     using super::innerStride;               //   Expose inner stride
     using super::outerStride;               //   Expose outer stride
+    using super::rows;                      //   Expose number of rows
+    using super::size;                      //   Expose size of raw memory
 
     /** Resize to hold data from \c Ny distinct collocation points. */
     template<typename Index>
