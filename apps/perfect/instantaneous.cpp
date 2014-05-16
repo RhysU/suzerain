@@ -35,7 +35,36 @@ namespace perfect {
 instantaneous&
 instantaneous::operator=(const references& that)
 {
-    // FIXME Implement
+    // Ensure adequate storage for the assignment
+#ifndef NDEBUG
+    setConstant(NoChange, that.cols(), std::numeric_limits<Scalar>::quiet_NaN());
+#else
+    resize     (NoChange, that.cols());
+#endif
+
+    // Assign the data quantity-by-quantity
+    // Notice target is stride-one while source is not
+    this->rho  () = that.rho  ();
+    this->p    () = that.p    ();
+    this->p2   () = that.p2   ();
+    this->u    () = that.u    ();
+    this->v    () = that.v    ();
+    this->w    () = that.w    ();
+    this->uu   () = that.uu   ();
+    this->uv   () = that.uv   ();
+    this->uw   () = that.uw   ();
+    this->vv   () = that.vv   ();
+    this->vw   () = that.vw   ();
+    this->ww   () = that.ww   ();
+    this->rhou () = that.rhou ();
+    this->rhov () = that.rhov ();
+    this->rhow () = that.rhow ();
+    this->rhoE () = that.rhoE ();
+    this->rhouu() = that.rhouu();
+    this->rhovv() = that.rhovv();
+    this->rhoww() = that.rhoww();
+    this->rhoEE() = that.rhoEE();
+
     return *this;
 }
 
