@@ -39,9 +39,16 @@ namespace suzerain {
 namespace perfect {
 
 /**
- * Storage for holding quantities computed during nonlinear operator application
- * which either are required for hybrid linear operator application or for
- * statistics sampling purposes.
+ * Storage for holding quantities at collocation points computed during
+ * nonlinear operator application which either are required for hybrid linear
+ * operator application or for statistics sampling purposes.
+ *
+ * Each reference quantity is a single row in a column-major matrix.  This
+ * facilitates a stride one operation loading or writing all reference
+ * quantities for a single wall-normal location.
+ *
+ * @see rholut_imexop.h for details on linearization and the associated
+ * reference quantities.
  */
 class references : private ArrayXXr
 {
@@ -67,142 +74,85 @@ public:
         super::setZero(NoChange, Ny);
     }
 
-    /**
-     * The reference quantities stored in \c refs are as follows:
-     * \li \c ref_rho        Reference \f$\rho                  \f$
-     * \li \c ref_p          Reference \f$p                     \f$
-     * \li \c ref_T          Reference \f$T                     \f$
-     * \li \c ref_a          Reference \f$a = \sqrt{T}          \f$
-     * \li \c ref_ux         Reference \f$C^{u_x}               \f$
-     * \li \c ref_uy         Reference \f$C^{u_y}               \f$
-     * \li \c ref_uz         Reference \f$C^{u_z}               \f$
-     * \li \c ref_uxux       Reference \f$C^{u_x u_x}           \f$
-     * \li \c ref_uxuy       Reference \f$C^{u_x u_y}           \f$
-     * \li \c ref_uxuz       Reference \f$C^{u_x u_z}           \f$
-     * \li \c ref_uyuy       Reference \f$C^{u_y u_y}           \f$
-     * \li \c ref_uyuz       Reference \f$C^{u_y u_z}           \f$
-     * \li \c ref_uzuz       Reference \f$C^{u_z u_z}           \f$
-     * \li \c ref_nu         Reference \f$C^{\nu}               \f$
-     * \li \c ref_nuux       Reference \f$C^{\nu u_x}           \f$
-     * \li \c ref_nuuy       Reference \f$C^{\nu u_y}           \f$
-     * \li \c ref_nuuz       Reference \f$C^{\nu u_z}           \f$
-     * \li \c ref_nuu2       Reference \f$C^{\nu u^2}           \f$
-     * \li \c ref_nuuxux     Reference \f$C^{\nu u_x u_x}       \f$
-     * \li \c ref_nuuxuy     Reference \f$C^{\nu u_x u_y}       \f$
-     * \li \c ref_nuuxuz     Reference \f$C^{\nu u_x u_z}       \f$
-     * \li \c ref_nuuyuy     Reference \f$C^{\nu u_y u_y}       \f$
-     * \li \c ref_nuuyuz     Reference \f$C^{\nu u_y u_z}       \f$
-     * \li \c ref_nuuzuz     Reference \f$C^{\nu u_z u_z}       \f$
-     * \li \c ref_ex_gradrho Reference \f$C^{e_x}_{\nabla\rho}  \f$
-     * \li \c ref_ey_gradrho Reference \f$C^{e_y}_{\nabla\rho}  \f$
-     * \li \c ref_ez_gradrho Reference \f$C^{e_z}_{\nabla\rho}  \f$
-     * \li \c ref_e_divm     Reference \f$C^{e}_{\nabla\cdot{}m}\f$
-     * \li \c ref_e_deltarho Reference \f$C^{e}_{\Delta\rho}    \f$
-     *
-     * The following quantities are also stored, though they are not
-     * used for linearization purposes:
-     * \li \c ref_p2         Quantity \f$p^2         \f$
-     * \li \c ref_rhoux      Quantity \f$\rho u_x    \f$
-     * \li \c ref_rhouy      Quantity \f$\rho u_y    \f$
-     * \li \c ref_rhouz      Quantity \f$\rho u_z    \f$
-     * \li \c ref_rhoE       Quantity \f$\rho E      \f$
-     * \li \c ref_rhouxux    Quantity \f$\rho u_x u_x\f$
-     * \li \c ref_rhouyuy    Quantity \f$\rho u_y u_y\f$
-     * \li \c ref_rhouzuz    Quantity \f$\rho u_z u_z\f$
-     * \li \c ref_rhoEE      Quantity \f$\rho E   E  \f$
-     * Here, \f$E\f$ denotes \f$e/\rho\f$.  Mean state at collocation points
-     * is known on rank zero in wave space, but is additionally tracked
-     * here for numerical uniformity with quantities like \c ref_rhoEE.
-     *
-     * Each reference quantity is a single row within \c refs.  This
-     * facilitates a stride one operation loading or writing all reference
-     * quantities for a single wall-normal location.
-     *
-     * @see rholut_imexop.h for details on linearization and the associated
-     * reference quantities.
-     *
-     * @{
-     */
+    RowXpr rho()        { return row( 0); } ///< Reference \f$\rho                  \f$
+    RowXpr p()          { return row( 1); } ///< Reference \f$p                     \f$
+    RowXpr p2()         { return row( 2); } ///< Quantity  \f$p^2                   \f$
+    RowXpr T()          { return row( 3); } ///< Reference \f$T                     \f$
+    RowXpr a()          { return row( 4); } ///< Reference \f$a = \sqrt{T}          \f$
+    RowXpr ux()         { return row( 5); } ///< Reference \f$C^{u_x}               \f$
+    RowXpr uy()         { return row( 6); } ///< Reference \f$C^{u_y}               \f$
+    RowXpr uz()         { return row( 7); } ///< Reference \f$C^{u_z}               \f$
+    RowXpr u2()         { return row( 8); } ///< Quantity  \f$\vec{u}^2             \f$
+    RowXpr uxux()       { return row( 9); } ///< Reference \f$C^{u_x u_x}           \f$
+    RowXpr uxuy()       { return row(10); } ///< Reference \f$C^{u_x u_y}           \f$
+    RowXpr uxuz()       { return row(11); } ///< Reference \f$C^{u_x u_z}           \f$
+    RowXpr uyuy()       { return row(12); } ///< Reference \f$C^{u_y u_y}           \f$
+    RowXpr uyuz()       { return row(13); } ///< Reference \f$C^{u_y u_z}           \f$
+    RowXpr uzuz()       { return row(14); } ///< Reference \f$C^{u_z u_z}           \f$
+    RowXpr nu()         { return row(15); } ///< Reference \f$C^{\nu}               \f$
+    RowXpr nu_ux()      { return row(16); } ///< Reference \f$C^{\nu u_x}           \f$
+    RowXpr nu_uy()      { return row(17); } ///< Reference \f$C^{\nu u_y}           \f$
+    RowXpr nu_uz()      { return row(18); } ///< Reference \f$C^{\nu u_z}           \f$
+    RowXpr nu_u2()      { return row(19); } ///< Reference \f$C^{\nu u^2}           \f$
+    RowXpr nu_uxux()    { return row(20); } ///< Reference \f$C^{\nu u_x u_x}       \f$
+    RowXpr nu_uxuy()    { return row(21); } ///< Reference \f$C^{\nu u_x u_y}       \f$
+    RowXpr nu_uxuz()    { return row(22); } ///< Reference \f$C^{\nu u_x u_z}       \f$
+    RowXpr nu_uyuy()    { return row(23); } ///< Reference \f$C^{\nu u_y u_y}       \f$
+    RowXpr nu_uyuz()    { return row(24); } ///< Reference \f$C^{\nu u_y u_z}       \f$
+    RowXpr nu_uzuz()    { return row(25); } ///< Reference \f$C^{\nu u_z u_z}       \f$
+    RowXpr ex_gradrho() { return row(26); } ///< Reference \f$C^{e_x}_{\nabla\rho}  \f$
+    RowXpr ey_gradrho() { return row(27); } ///< Reference \f$C^{e_y}_{\nabla\rho}  \f$
+    RowXpr ez_gradrho() { return row(28); } ///< Reference \f$C^{e_z}_{\nabla\rho}  \f$
+    RowXpr e_divm()     { return row(29); } ///< Reference \f$C^{e}_{\nabla\cdot{}m}\f$
+    RowXpr e_deltarho() { return row(30); } ///< Reference \f$C^{e}_{\Delta\rho}    \f$
+    RowXpr rhoux()      { return row(31); } ///< Quantity  \f$\rho u_x              \f$
+    RowXpr rhouy()      { return row(32); } ///< Quantity  \f$\rho u_y              \f$
+    RowXpr rhouz()      { return row(33); } ///< Quantity  \f$\rho u_z              \f$
+    RowXpr rhoE()       { return row(34); } ///< Quantity  \f$\rho E                \f$
+    RowXpr rhouxux()    { return row(35); } ///< Quantity  \f$\rho u_x u_x          \f$
+    RowXpr rhouyuy()    { return row(36); } ///< Quantity  \f$\rho u_y u_y          \f$
+    RowXpr rhouzuz()    { return row(37); } ///< Quantity  \f$\rho u_z u_z          \f$
+    RowXpr rhoEE()      { return row(38); } ///< Quantity  \f$\rho E   E            \f$
 
-    RowXpr      ref_rho()              { return row( 0); }
-    RowXpr      ref_p()                { return row( 1); }
-    RowXpr      ref_p2()               { return row( 2); }
-    RowXpr      ref_T()                { return row( 3); }
-    RowXpr      ref_a()                { return row( 4); }
-    RowXpr      ref_ux()               { return row( 5); }
-    RowXpr      ref_uy()               { return row( 6); }
-    RowXpr      ref_uz()               { return row( 7); }
-    RowXpr      ref_u2()               { return row( 8); }
-    RowXpr      ref_uxux()             { return row( 9); }
-    RowXpr      ref_uxuy()             { return row(10); }
-    RowXpr      ref_uxuz()             { return row(11); }
-    RowXpr      ref_uyuy()             { return row(12); }
-    RowXpr      ref_uyuz()             { return row(13); }
-    RowXpr      ref_uzuz()             { return row(14); }
-    RowXpr      ref_nu()               { return row(15); }
-    RowXpr      ref_nuux()             { return row(16); }
-    RowXpr      ref_nuuy()             { return row(17); }
-    RowXpr      ref_nuuz()             { return row(18); }
-    RowXpr      ref_nuu2()             { return row(19); }
-    RowXpr      ref_nuuxux()           { return row(20); }
-    RowXpr      ref_nuuxuy()           { return row(21); }
-    RowXpr      ref_nuuxuz()           { return row(22); }
-    RowXpr      ref_nuuyuy()           { return row(23); }
-    RowXpr      ref_nuuyuz()           { return row(24); }
-    RowXpr      ref_nuuzuz()           { return row(25); }
-    RowXpr      ref_ex_gradrho()       { return row(26); }
-    RowXpr      ref_ey_gradrho()       { return row(27); }
-    RowXpr      ref_ez_gradrho()       { return row(28); }
-    RowXpr      ref_e_divm()           { return row(29); }
-    RowXpr      ref_e_deltarho()       { return row(30); }
-    RowXpr      ref_rhoux()            { return row(31); }
-    RowXpr      ref_rhouy()            { return row(32); }
-    RowXpr      ref_rhouz()            { return row(33); }
-    RowXpr      ref_rhoE()             { return row(34); }
-    RowXpr      ref_rhouxux()          { return row(35); }
-    RowXpr      ref_rhouyuy()          { return row(36); }
-    RowXpr      ref_rhouzuz()          { return row(37); }
-    RowXpr      ref_rhoEE()            { return row(38); }
-
-    ConstRowXpr ref_rho()        const { return row( 0); }
-    ConstRowXpr ref_p()          const { return row( 1); }
-    ConstRowXpr ref_p2()         const { return row( 2); }
-    ConstRowXpr ref_T()          const { return row( 3); }
-    ConstRowXpr ref_a()          const { return row( 4); }
-    ConstRowXpr ref_ux()         const { return row( 5); }
-    ConstRowXpr ref_uy()         const { return row( 6); }
-    ConstRowXpr ref_uz()         const { return row( 7); }
-    ConstRowXpr ref_u2()         const { return row( 8); }
-    ConstRowXpr ref_uxux()       const { return row( 9); }
-    ConstRowXpr ref_uxuy()       const { return row(10); }
-    ConstRowXpr ref_uxuz()       const { return row(11); }
-    ConstRowXpr ref_uyuy()       const { return row(12); }
-    ConstRowXpr ref_uyuz()       const { return row(13); }
-    ConstRowXpr ref_uzuz()       const { return row(14); }
-    ConstRowXpr ref_nu()         const { return row(15); }
-    ConstRowXpr ref_nuux()       const { return row(16); }
-    ConstRowXpr ref_nuuy()       const { return row(17); }
-    ConstRowXpr ref_nuuz()       const { return row(18); }
-    ConstRowXpr ref_nuu2()       const { return row(19); }
-    ConstRowXpr ref_nuuxux()     const { return row(20); }
-    ConstRowXpr ref_nuuxuy()     const { return row(21); }
-    ConstRowXpr ref_nuuxuz()     const { return row(22); }
-    ConstRowXpr ref_nuuyuy()     const { return row(23); }
-    ConstRowXpr ref_nuuyuz()     const { return row(24); }
-    ConstRowXpr ref_nuuzuz()     const { return row(25); }
-    ConstRowXpr ref_ex_gradrho() const { return row(26); }
-    ConstRowXpr ref_ey_gradrho() const { return row(27); }
-    ConstRowXpr ref_ez_gradrho() const { return row(28); }
-    ConstRowXpr ref_e_divm()     const { return row(29); }
-    ConstRowXpr ref_e_deltarho() const { return row(30); }
-    ConstRowXpr ref_rhoux()      const { return row(31); }
-    ConstRowXpr ref_rhouy()      const { return row(32); }
-    ConstRowXpr ref_rhouz()      const { return row(33); }
-    ConstRowXpr ref_rhoE()       const { return row(34); }
-    ConstRowXpr ref_rhouxux()    const { return row(35); }
-    ConstRowXpr ref_rhouyuy()    const { return row(36); }
-    ConstRowXpr ref_rhouzuz()    const { return row(37); }
-    ConstRowXpr ref_rhoEE()      const { return row(38); }
+    ConstRowXpr rho()        const { return row( 0); } ///< @copydoc rho()
+    ConstRowXpr p()          const { return row( 1); } ///< @copydoc p()
+    ConstRowXpr p2()         const { return row( 2); } ///< @copydoc p2()
+    ConstRowXpr T()          const { return row( 3); } ///< @copydoc T()
+    ConstRowXpr a()          const { return row( 4); } ///< @copydoc a()
+    ConstRowXpr ux()         const { return row( 5); } ///< @copydoc ux()
+    ConstRowXpr uy()         const { return row( 6); } ///< @copydoc uy()
+    ConstRowXpr uz()         const { return row( 7); } ///< @copydoc uz()
+    ConstRowXpr u2()         const { return row( 8); } ///< @copydoc u2()
+    ConstRowXpr uxux()       const { return row( 9); } ///< @copydoc uxux()
+    ConstRowXpr uxuy()       const { return row(10); } ///< @copydoc uxuy()
+    ConstRowXpr uxuz()       const { return row(11); } ///< @copydoc uxuz()
+    ConstRowXpr uyuy()       const { return row(12); } ///< @copydoc uyuy()
+    ConstRowXpr uyuz()       const { return row(13); } ///< @copydoc uyuz()
+    ConstRowXpr uzuz()       const { return row(14); } ///< @copydoc uzuz()
+    ConstRowXpr nu()         const { return row(15); } ///< @copydoc nu()
+    ConstRowXpr nu_ux()      const { return row(16); } ///< @copydoc nu_ux()
+    ConstRowXpr nu_uy()      const { return row(17); } ///< @copydoc nu_uy()
+    ConstRowXpr nu_uz()      const { return row(18); } ///< @copydoc nu_uz()
+    ConstRowXpr nu_u2()      const { return row(19); } ///< @copydoc nu_u2()
+    ConstRowXpr nu_uxux()    const { return row(20); } ///< @copydoc nu_uxux()
+    ConstRowXpr nu_uxuy()    const { return row(21); } ///< @copydoc nu_uxuy()
+    ConstRowXpr nu_uxuz()    const { return row(22); } ///< @copydoc nu_uxuz()
+    ConstRowXpr nu_uyuy()    const { return row(23); } ///< @copydoc nu_uyuy()
+    ConstRowXpr nu_uyuz()    const { return row(24); } ///< @copydoc nu_uyuz()
+    ConstRowXpr nu_uzuz()    const { return row(25); } ///< @copydoc nu_uzuz()
+    ConstRowXpr ex_gradrho() const { return row(26); } ///< @copydoc ex_gradrho()
+    ConstRowXpr ey_gradrho() const { return row(27); } ///< @copydoc ey_gradrho()
+    ConstRowXpr ez_gradrho() const { return row(28); } ///< @copydoc ez_gradrho()
+    ConstRowXpr e_divm()     const { return row(29); } ///< @copydoc e_divm()
+    ConstRowXpr e_deltarho() const { return row(30); } ///< @copydoc e_deltarho()
+    ConstRowXpr rhoux()      const { return row(31); } ///< @copydoc rhoux()
+    ConstRowXpr rhouy()      const { return row(32); } ///< @copydoc rhouy()
+    ConstRowXpr rhouz()      const { return row(33); } ///< @copydoc rhouz()
+    ConstRowXpr rhoE()       const { return row(34); } ///< @copydoc rhoE()
+    ConstRowXpr rhouxux()    const { return row(35); } ///< @copydoc rhouxux()
+    ConstRowXpr rhouyuy()    const { return row(36); } ///< @copydoc rhouyuy()
+    ConstRowXpr rhouzuz()    const { return row(37); } ///< @copydoc rhouzuz()
+    ConstRowXpr rhoEE()      const { return row(38); } ///< @copydoc rhoEE()
 
     /** @} */
 
