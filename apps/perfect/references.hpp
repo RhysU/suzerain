@@ -56,7 +56,7 @@ class references : protected ArrayXXr
 
 public:
 
-    /** Default constructor.  Use \ref set_zero to resize prior to use. */
+    /** Must call \ref set_zero prior to use. */
     references();
 
     /** Virtual destructor to permit use as a base class. */
@@ -203,8 +203,8 @@ public:
     ConstRowXpr rhoEE()      const { return row(q::rhoEE     ); } ///< @copydoc q::rhoEE
 
     /** Prepare data for use by implicit operator API in rholut_imexop.h. */
-    void imexop_ref(suzerain_rholut_imexop_ref   &ref,
-                    suzerain_rholut_imexop_refld &ld);
+    void rholut_imexop(suzerain_rholut_imexop_ref   &ref,
+                       suzerain_rholut_imexop_refld &ld);
 
 };
 

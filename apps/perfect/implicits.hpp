@@ -51,7 +51,7 @@ class implicits
 
 public:
 
-    /** Default constructor.  Use \ref set_zero to resize prior to use. */
+    /** Must call \ref set_zero prior to use. */
     implicits();
 
     /** Virtual destructor to permit use as a base class. */

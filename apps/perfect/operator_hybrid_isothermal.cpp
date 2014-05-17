@@ -151,7 +151,7 @@ void operator_hybrid_isothermal::apply_mass_plus_scaled_operator(
     suzerain_rholut_imexop_scenario s(this->imexop_s());
     suzerain_rholut_imexop_ref   ref;
     suzerain_rholut_imexop_refld ld;
-    common.imexop_ref(ref, ld);
+    common.ref.rholut_imexop(ref, ld);
 
     // Iterate across local wavenumbers and apply operator "in-place"
     // Short circuit "continues" occur for Nyquist and non-dealiased modes...
@@ -295,7 +295,7 @@ void operator_hybrid_isothermal::accumulate_mass_plus_scaled_operator(
     suzerain_rholut_imexop_scenario s(this->imexop_s());
     suzerain_rholut_imexop_ref   ref;
     suzerain_rholut_imexop_refld ld;
-    common.imexop_ref(ref, ld);
+    common.ref.rholut_imexop(ref, ld);
 
     // Iterate across local wavenumbers and apply operator "in-place"
     // Short circuit "continues" occur for Nyquist and non-dealiased modes...
@@ -597,7 +597,7 @@ void operator_hybrid_isothermal::invert_mass_plus_scaled_operator(
     suzerain_rholut_imexop_scenario s(this->imexop_s());
     suzerain_rholut_imexop_ref   ref;
     suzerain_rholut_imexop_refld ld;
-    common.imexop_ref(ref, ld);
+    common.ref.rholut_imexop(ref, ld);
 
     // Prepare an almost functor mutating RHS and PA^TP^T to enforce BCs.
     IsothermalPATPTEnforcer bc_enforcer(*solver, s, isothermal,

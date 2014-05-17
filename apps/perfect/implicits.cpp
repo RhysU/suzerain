@@ -31,7 +31,6 @@ namespace suzerain {
 namespace perfect {
 
 implicits::implicits()
-    : super(0, static_cast<super::Index>(q::count))
 {
 }
 
@@ -42,7 +41,7 @@ implicits::~implicits()
 void
 implicits::set_zero(int Ny)
 {
-    super::setZero(Ny, NoChange);
+    super::setZero(Ny, q::count);
 }
 
 } // namespace perfect

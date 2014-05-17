@@ -319,30 +319,30 @@ driver::compute_statistics(
     mean = take_samples(*scenario, *otool, *state_nonlinear, t);
 
     // Obtain mean quantities computed via implicit forcing (when possible)
-    if (common_block.implicits.rows() == mean->storage.rows()) {
-        mean->SrhoE()         = common_block.SrhoE();
-        mean->Srhou().col(0)  = common_block.Srhou();
-        mean->Srhou().col(1)  = common_block.Srhov();
-        mean->Srhou().col(2)  = common_block.Srhow();
-        mean->Srho()          = common_block.Srho();
-        mean->Srhou_dot_u()   = common_block.Srhou_dot_u();
-        mean->f().col(0)      = common_block.fx();
-        mean->f().col(1)      = common_block.fy();
-        mean->f().col(2)      = common_block.fz();
-        mean->f_dot_u()       = common_block.f_dot_u();
-        mean->qb()            = common_block.qb();
-        mean->CrhoE()         = common_block.CrhoE();
-        mean->C2rhoE()        = common_block.C2rhoE();
-        mean->Crhou() .col(0) = common_block.Crhou();
-        mean->C2rhou().col(0) = common_block.C2rhou();
-        mean->Crhou() .col(1) = common_block.Crhov();
-        mean->C2rhou().col(1) = common_block.C2rhov();
-        mean->Crhou() .col(2) = common_block.Crhow();
-        mean->C2rhou().col(2) = common_block.C2rhow();
-        mean->Crho()          = common_block.Crho();
-        mean->C2rho()         = common_block.C2rho();
-        mean->Crhou_dot_u()   = common_block.Crhou_dot_u();
-        mean->C2rhou_dot_u()  = common_block.C2rhou_dot_u();
+    if (common_block.imp.rows() == mean->storage.rows()) {
+        mean->SrhoE()         = common_block.imp.SrhoE();
+        mean->Srhou().col(0)  = common_block.imp.Srhou();
+        mean->Srhou().col(1)  = common_block.imp.Srhov();
+        mean->Srhou().col(2)  = common_block.imp.Srhow();
+        mean->Srho()          = common_block.imp.Srho();
+        mean->Srhou_dot_u()   = common_block.imp.Srhou_dot_u();
+        mean->f().col(0)      = common_block.imp.fx();
+        mean->f().col(1)      = common_block.imp.fy();
+        mean->f().col(2)      = common_block.imp.fz();
+        mean->f_dot_u()       = common_block.imp.f_dot_u();
+        mean->qb()            = common_block.imp.qb();
+        mean->CrhoE()         = common_block.imp.CrhoE();
+        mean->C2rhoE()        = common_block.imp.C2rhoE();
+        mean->Crhou() .col(0) = common_block.imp.Crhou();
+        mean->C2rhou().col(0) = common_block.imp.C2rhou();
+        mean->Crhou() .col(1) = common_block.imp.Crhov();
+        mean->C2rhou().col(1) = common_block.imp.C2rhov();
+        mean->Crhou() .col(2) = common_block.imp.Crhow();
+        mean->C2rhou().col(2) = common_block.imp.C2rhow();
+        mean->Crho()          = common_block.imp.Crho();
+        mean->C2rho()         = common_block.imp.C2rho();
+        mean->Crhou_dot_u()   = common_block.imp.Crhou_dot_u();
+        mean->C2rhou_dot_u()  = common_block.imp.C2rhou_dot_u();
 
         // Convert values from collocation points to B-spline coefficients
         bsplineop_lu mass(*cop);

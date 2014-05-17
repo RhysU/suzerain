@@ -279,8 +279,9 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
     }
 
     // Prepare any necessary, problem-specific constraints
+    common_block.imp.set_zero(dgrid->global_physical_extent.y());
     shared_ptr<constraint::treatment> constrainer(new constraint::treatment(
-            scenario->Ma, *dgrid, *b, common_block, common_block));
+            scenario->Ma, *dgrid, *b, common_block.sub, common_block.imp));
     if        (grid->two_sided()) { // Channel per treatment_channel.tex
 
         INFO0(who, "Establishing driving, channel-like state constraints");

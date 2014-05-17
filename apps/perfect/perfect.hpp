@@ -179,7 +179,7 @@ collect_references(const definition_scenario &scenario,
  */
 void
 collect_instantaneous(const definition_scenario &scenario,
-                      const specification_grid& grid,
+                      const specification_grid &grid,
                       const pencil_grid &dgrid,
                       const physical_view<5> &sphys,
                       instantaneous &inst);

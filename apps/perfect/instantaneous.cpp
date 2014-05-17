@@ -33,7 +33,6 @@ namespace suzerain {
 namespace perfect {
 
 instantaneous::instantaneous()
-    : super(0, static_cast<super::Index>(q::count))
 {
 }
 
@@ -44,17 +43,18 @@ instantaneous::~instantaneous()
 void
 instantaneous::set_zero(int Ny)
 {
-    super::setZero(Ny, NoChange);
+    super::setZero(Ny, q::count);
 }
 
 instantaneous&
 instantaneous::operator=(const references& that)
 {
-    // Ensure adequate storage for the assignment
+    // Ensure adequate storage for the assignment (noticing transposed sizes)
+    // FIXME Usage of q::count brittle wrt subclasses-- NoChange preferable
 #ifndef NDEBUG
-    setConstant(NoChange, that.cols(), std::numeric_limits<Scalar>::quiet_NaN());
+    setConstant(that.cols(), q::count, std::numeric_limits<Scalar>::quiet_NaN());
 #else
-    resize     (NoChange, that.cols());
+    resize     (that.cols(), q::count);
 #endif
 
     // Assign the data quantity-by-quantity

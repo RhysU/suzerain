@@ -40,63 +40,11 @@ operator_common_block::operator_common_block()
 }
 
 void
-operator_common_block::imexop_ref(suzerain_rholut_imexop_ref   &ref,
-                                  suzerain_rholut_imexop_refld &ld)
+operator_common_block::set_zero(int Ny)
 {
-    ref.ux         = ref_ux().data();
-    ref.uy         = ref_uy().data();
-    ref.uz         = ref_uz().data();
-    ref.u2         = ref_u2().data();
-    ref.uxux       = ref_uxux().data();
-    ref.uxuy       = ref_uxuy().data();
-    ref.uxuz       = ref_uxuz().data();
-    ref.uyuy       = ref_uyuy().data();
-    ref.uyuz       = ref_uyuz().data();
-    ref.uzuz       = ref_uzuz().data();
-    ref.nu         = ref_nu().data();
-    ref.nuux       = ref_nuux().data();
-    ref.nuuy       = ref_nuuy().data();
-    ref.nuuz       = ref_nuuz().data();
-    ref.nuu2       = ref_nuu2().data();
-    ref.nuuxux     = ref_nuuxux().data();
-    ref.nuuxuy     = ref_nuuxuy().data();
-    ref.nuuxuz     = ref_nuuxuz().data();
-    ref.nuuyuy     = ref_nuuyuy().data();
-    ref.nuuyuz     = ref_nuuyuz().data();
-    ref.nuuzuz     = ref_nuuzuz().data();
-    ref.ex_gradrho = ref_ex_gradrho().data();
-    ref.ey_gradrho = ref_ey_gradrho().data();
-    ref.ez_gradrho = ref_ez_gradrho().data();
-    ref.e_divm     = ref_e_divm().data();
-    ref.e_deltarho = ref_e_deltarho().data();
-
-    const int inc = refs.colStride();
-    ld.ux         = inc;
-    ld.uy         = inc;
-    ld.uz         = inc;
-    ld.u2         = inc;
-    ld.uxux       = inc;
-    ld.uxuy       = inc;
-    ld.uxuz       = inc;
-    ld.uyuy       = inc;
-    ld.uyuz       = inc;
-    ld.uzuz       = inc;
-    ld.nu         = inc;
-    ld.nuux       = inc;
-    ld.nuuy       = inc;
-    ld.nuuz       = inc;
-    ld.nuu2       = inc;
-    ld.nuuxux     = inc;
-    ld.nuuxuy     = inc;
-    ld.nuuxuz     = inc;
-    ld.nuuyuy     = inc;
-    ld.nuuyuz     = inc;
-    ld.nuuzuz     = inc;
-    ld.ex_gradrho = inc;
-    ld.ey_gradrho = inc;
-    ld.ez_gradrho = inc;
-    ld.e_divm     = inc;
-    ld.e_deltarho = inc;
+    ref.set_zero(Ny);
+    sub.set_zero(Ny);
+    imp.set_zero(Ny);
 }
 
 } // namespace perfect

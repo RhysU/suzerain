@@ -34,7 +34,6 @@ namespace suzerain {
 namespace perfect {
 
 references::references()
-    : super(static_cast<super::Index>(q::count), 0)
 {
 }
 
@@ -45,11 +44,11 @@ references::~references()
 void
 references::set_zero(const int Ny)
 {
-    super::setZero(NoChange, Ny);
+    super::setZero(q::count, Ny);
 }
 
 void
-references::imexop_ref(
+references::rholut_imexop(
         suzerain_rholut_imexop_ref   &ref,
         suzerain_rholut_imexop_refld &ld)
 {
@@ -80,7 +79,7 @@ references::imexop_ref(
     ref.e_divm     = e_divm()    .data();
     ref.e_deltarho = e_deltarho().data();
 
-    const int inc = innerStride();
+    const int inc = outerStride();
     ld.ux         = inc;
     ld.uy         = inc;
     ld.uz         = inc;

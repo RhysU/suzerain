@@ -1250,7 +1250,7 @@ collect_references(const definition_scenario &scenario,
 // This is a trimmed down version of collect_references.See comments there.
 void
 collect_instantaneous(const definition_scenario &scenario,
-                      const specification_grid& grid,
+                      const specification_grid &grid,
                       const pencil_grid &dgrid,
                       const physical_view<5> &sphys,
                       instantaneous &inst)

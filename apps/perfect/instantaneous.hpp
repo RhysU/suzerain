@@ -55,7 +55,7 @@ class instantaneous
 
 public:
 
-    /** Default constructor.  Use \ref set_zero to resize prior to use. */
+    /** Must call \ref set_zero prior to use. */
     instantaneous();
 
     /** Virtual destructor to permit use as a base class. */
