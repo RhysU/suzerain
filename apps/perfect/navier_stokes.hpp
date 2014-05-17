@@ -28,8 +28,6 @@
  * Implementation of nonlinear Navier--Stokes spatial operators.
  */
 
-#include <gsl/gsl_math.h>
-
 #include <largo/largo.h>
 
 #include <suzerain/error.h>
