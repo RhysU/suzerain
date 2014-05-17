@@ -62,6 +62,8 @@ public:
     using super::cols;                      //   Expose number of columns
     using super::data;                      //   Expose raw block of memory
     using super::innerStride;               //   Expose inner stride
+    using super::operator/=;                //   Permit division-based scaling
+    using super::operator*=;                //   Permit multiplicative scaling
     using super::outerStride;               //   Expose outer stride
     using super::row;                       //   Expose each quantity by index
     using super::rows;                      //   Expose number of rows
