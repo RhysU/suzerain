@@ -63,8 +63,58 @@ public:
     using super::data;                      //   Expose raw block of memory
     using super::innerStride;               //   Expose inner stride
     using super::outerStride;               //   Expose outer stride
+    using super::row;                       //   Expose each quantity by index
     using super::rows;                      //   Expose number of rows
     using super::size;                      //   Expose size of raw memory
+
+    /** Logical indices for each scalar quantity that will be stored. */
+    struct q { enum {
+        rho,        ///< Reference \f$\rho                  \f$
+        p,          ///< Reference \f$p                     \f$
+        p2,         ///< Quantity  \f$p^2                   \f$
+        T,          ///< Reference \f$T                     \f$
+        a,          ///< Reference \f$a = \sqrt{T}          \f$
+        u,          ///< Reference \f$C^{u_x}               \f$
+        v,          ///< Reference \f$C^{u_y}               \f$
+        w,          ///< Reference \f$C^{u_z}               \f$
+        u2,         ///< Quantity  \f$\vec{u}^2             \f$
+        uu,         ///< Reference \f$C^{u_x u_x}           \f$
+        uv,         ///< Reference \f$C^{u_x u_y}           \f$
+        uw,         ///< Reference \f$C^{u_x u_z}           \f$
+        vv,         ///< Reference \f$C^{u_y u_y}           \f$
+        vw,         ///< Reference \f$C^{u_y u_z}           \f$
+        ww,         ///< Reference \f$C^{u_z u_z}           \f$
+        nu,         ///< Reference \f$C^{\nu}               \f$
+        nu_u,       ///< Reference \f$C^{\nu u_x}           \f$
+        nu_v,       ///< Reference \f$C^{\nu u_y}           \f$
+        nu_w,       ///< Reference \f$C^{\nu u_z}           \f$
+        nu_u2,      ///< Reference \f$C^{\nu u^2}           \f$
+        nu_uu,      ///< Reference \f$C^{\nu u_x u_x}       \f$
+        nu_uv,      ///< Reference \f$C^{\nu u_x u_y}       \f$
+        nu_uw,      ///< Reference \f$C^{\nu u_x u_z}       \f$
+        nu_vv,      ///< Reference \f$C^{\nu u_y u_y}       \f$
+        nu_vw,      ///< Reference \f$C^{\nu u_y u_z}       \f$
+        nu_ww,      ///< Reference \f$C^{\nu u_z u_z}       \f$
+        ex_gradrho, ///< Reference \f$C^{e_x}_{\nabla\rho}  \f$
+        ey_gradrho, ///< Reference \f$C^{e_y}_{\nabla\rho}  \f$
+        ez_gradrho, ///< Reference \f$C^{e_z}_{\nabla\rho}  \f$
+        e_divm,     ///< Reference \f$C^{e}_{\nabla\cdot{}m}\f$
+        e_deltarho, ///< Reference \f$C^{e}_{\Delta\rho}    \f$
+        rhou,       ///< Quantity  \f$\rho u_x              \f$
+        rhov,       ///< Quantity  \f$\rho u_y              \f$
+        rhow,       ///< Quantity  \f$\rho u_z              \f$
+        rhoE,       ///< Quantity  \f$\rho E                \f$
+        rhouu,      ///< Quantity  \f$\rho u_x u_x          \f$
+        rhovv,      ///< Quantity  \f$\rho u_y u_y          \f$
+        rhoww,      ///< Quantity  \f$\rho u_z u_z          \f$
+        rhoEE,      ///< Quantity  \f$\rho E   E            \f$
+        count       ///< Sentry indicating how many quantities are tracked
+    }; };
+
+    /** Default constructor.  Use \ref set_zero to resize prior to use. */
+    references() : super(static_cast<super::Index>(q::count), 0)
+    {
+    }
 
     /** Resize to hold data from \c Ny distinct collocation points. */
     template<typename Index>
@@ -73,88 +123,85 @@ public:
         super::setZero(NoChange, Ny);
     }
 
-    /** Default constructor.  Use \ref set_zero to resize prior to use. */
-    references(): super(39, 0) {} // Magic number from count of quantities
+    RowXpr      rho()              { return row(q::rho       ); } ///< @copydoc q::rho
+    RowXpr      p()                { return row(q::p         ); } ///< @copydoc q::p
+    RowXpr      p2()               { return row(q::p2        ); } ///< @copydoc q::p2
+    RowXpr      T()                { return row(q::T         ); } ///< @copydoc q::T
+    RowXpr      a()                { return row(q::a         ); } ///< @copydoc q::a
+    RowXpr      u()                { return row(q::u         ); } ///< @copydoc q::u
+    RowXpr      v()                { return row(q::v         ); } ///< @copydoc q::v
+    RowXpr      w()                { return row(q::w         ); } ///< @copydoc q::w
+    RowXpr      u2()               { return row(q::u2        ); } ///< @copydoc q::u2
+    RowXpr      uu()               { return row(q::uu        ); } ///< @copydoc q::uu
+    RowXpr      uv()               { return row(q::uv        ); } ///< @copydoc q::uv
+    RowXpr      uw()               { return row(q::uw        ); } ///< @copydoc q::uw
+    RowXpr      vv()               { return row(q::vv        ); } ///< @copydoc q::vv
+    RowXpr      vw()               { return row(q::vw        ); } ///< @copydoc q::vw
+    RowXpr      ww()               { return row(q::ww        ); } ///< @copydoc q::ww
+    RowXpr      nu()               { return row(q::nu        ); } ///< @copydoc q::nu
+    RowXpr      nu_u()             { return row(q::nu_u      ); } ///< @copydoc q::nu_u
+    RowXpr      nu_v()             { return row(q::nu_v      ); } ///< @copydoc q::nu_v
+    RowXpr      nu_w()             { return row(q::nu_w      ); } ///< @copydoc q::nu_w
+    RowXpr      nu_u2()            { return row(q::nu_u2     ); } ///< @copydoc q::nu_u2
+    RowXpr      nu_uu()            { return row(q::nu_uu     ); } ///< @copydoc q::nu_uu
+    RowXpr      nu_uv()            { return row(q::nu_uv     ); } ///< @copydoc q::nu_uv
+    RowXpr      nu_uw()            { return row(q::nu_uw     ); } ///< @copydoc q::nu_uw
+    RowXpr      nu_vv()            { return row(q::nu_vv     ); } ///< @copydoc q::nu_vv
+    RowXpr      nu_vw()            { return row(q::nu_vw     ); } ///< @copydoc q::nu_vw
+    RowXpr      nu_ww()            { return row(q::nu_ww     ); } ///< @copydoc q::nu_ww
+    RowXpr      ex_gradrho()       { return row(q::ex_gradrho); } ///< @copydoc q::ex_gradrho
+    RowXpr      ey_gradrho()       { return row(q::ey_gradrho); } ///< @copydoc q::ey_gradrho
+    RowXpr      ez_gradrho()       { return row(q::ez_gradrho); } ///< @copydoc q::ez_gradrho
+    RowXpr      e_divm()           { return row(q::e_divm    ); } ///< @copydoc q::e_divm
+    RowXpr      e_deltarho()       { return row(q::e_deltarho); } ///< @copydoc q::e_deltarho
+    RowXpr      rhou()             { return row(q::rhou      ); } ///< @copydoc q::rhou
+    RowXpr      rhov()             { return row(q::rhov      ); } ///< @copydoc q::rhov
+    RowXpr      rhow()             { return row(q::rhow      ); } ///< @copydoc q::rhow
+    RowXpr      rhoE()             { return row(q::rhoE      ); } ///< @copydoc q::rhoE
+    RowXpr      rhouu()            { return row(q::rhouu     ); } ///< @copydoc q::rhouu
+    RowXpr      rhovv()            { return row(q::rhovv     ); } ///< @copydoc q::rhovv
+    RowXpr      rhoww()            { return row(q::rhoww     ); } ///< @copydoc q::rhoww
+    RowXpr      rhoEE()            { return row(q::rhoEE     ); } ///< @copydoc q::rhoEE
 
-    RowXpr rho()        { return row( 0); } ///< Reference \f$\rho                  \f$
-    RowXpr p()          { return row( 1); } ///< Reference \f$p                     \f$
-    RowXpr p2()         { return row( 2); } ///< Quantity  \f$p^2                   \f$
-    RowXpr T()          { return row( 3); } ///< Reference \f$T                     \f$
-    RowXpr a()          { return row( 4); } ///< Reference \f$a = \sqrt{T}          \f$
-    RowXpr u()          { return row( 5); } ///< Reference \f$C^{u_x}               \f$
-    RowXpr v()          { return row( 6); } ///< Reference \f$C^{u_y}               \f$
-    RowXpr w()          { return row( 7); } ///< Reference \f$C^{u_z}               \f$
-    RowXpr u2()         { return row( 8); } ///< Quantity  \f$\vec{u}^2             \f$
-    RowXpr uu()         { return row( 9); } ///< Reference \f$C^{u_x u_x}           \f$
-    RowXpr uv()         { return row(10); } ///< Reference \f$C^{u_x u_y}           \f$
-    RowXpr uw()         { return row(11); } ///< Reference \f$C^{u_x u_z}           \f$
-    RowXpr vv()         { return row(12); } ///< Reference \f$C^{u_y u_y}           \f$
-    RowXpr vw()         { return row(13); } ///< Reference \f$C^{u_y u_z}           \f$
-    RowXpr ww()         { return row(14); } ///< Reference \f$C^{u_z u_z}           \f$
-    RowXpr nu()         { return row(15); } ///< Reference \f$C^{\nu}               \f$
-    RowXpr nu_u()       { return row(16); } ///< Reference \f$C^{\nu u_x}           \f$
-    RowXpr nu_v()       { return row(17); } ///< Reference \f$C^{\nu u_y}           \f$
-    RowXpr nu_w()       { return row(18); } ///< Reference \f$C^{\nu u_z}           \f$
-    RowXpr nu_u2()      { return row(19); } ///< Reference \f$C^{\nu u^2}           \f$
-    RowXpr nu_uu()      { return row(20); } ///< Reference \f$C^{\nu u_x u_x}       \f$
-    RowXpr nu_uv()      { return row(21); } ///< Reference \f$C^{\nu u_x u_y}       \f$
-    RowXpr nu_uw()      { return row(22); } ///< Reference \f$C^{\nu u_x u_z}       \f$
-    RowXpr nu_vv()      { return row(23); } ///< Reference \f$C^{\nu u_y u_y}       \f$
-    RowXpr nu_vw()      { return row(24); } ///< Reference \f$C^{\nu u_y u_z}       \f$
-    RowXpr nu_ww()      { return row(25); } ///< Reference \f$C^{\nu u_z u_z}       \f$
-    RowXpr ex_gradrho() { return row(26); } ///< Reference \f$C^{e_x}_{\nabla\rho}  \f$
-    RowXpr ey_gradrho() { return row(27); } ///< Reference \f$C^{e_y}_{\nabla\rho}  \f$
-    RowXpr ez_gradrho() { return row(28); } ///< Reference \f$C^{e_z}_{\nabla\rho}  \f$
-    RowXpr e_divm()     { return row(29); } ///< Reference \f$C^{e}_{\nabla\cdot{}m}\f$
-    RowXpr e_deltarho() { return row(30); } ///< Reference \f$C^{e}_{\Delta\rho}    \f$
-    RowXpr rhou()       { return row(31); } ///< Quantity  \f$\rho u_x              \f$
-    RowXpr rhov()       { return row(32); } ///< Quantity  \f$\rho u_y              \f$
-    RowXpr rhow()       { return row(33); } ///< Quantity  \f$\rho u_z              \f$
-    RowXpr rhoE()       { return row(34); } ///< Quantity  \f$\rho E                \f$
-    RowXpr rhouu()      { return row(35); } ///< Quantity  \f$\rho u_x u_x          \f$
-    RowXpr rhovv()      { return row(36); } ///< Quantity  \f$\rho u_y u_y          \f$
-    RowXpr rhoww()      { return row(37); } ///< Quantity  \f$\rho u_z u_z          \f$
-    RowXpr rhoEE()      { return row(38); } ///< Quantity  \f$\rho E   E            \f$
-
-    ConstRowXpr rho()        const { return row( 0); } ///< @copydoc rho()
-    ConstRowXpr p()          const { return row( 1); } ///< @copydoc p()
-    ConstRowXpr p2()         const { return row( 2); } ///< @copydoc p2()
-    ConstRowXpr T()          const { return row( 3); } ///< @copydoc T()
-    ConstRowXpr a()          const { return row( 4); } ///< @copydoc a()
-    ConstRowXpr u()          const { return row( 5); } ///< @copydoc u()
-    ConstRowXpr v()          const { return row( 6); } ///< @copydoc v()
-    ConstRowXpr w()          const { return row( 7); } ///< @copydoc w()
-    ConstRowXpr u2()         const { return row( 8); } ///< @copydoc u2()
-    ConstRowXpr uu()         const { return row( 9); } ///< @copydoc uu()
-    ConstRowXpr uv()         const { return row(10); } ///< @copydoc uv()
-    ConstRowXpr uw()         const { return row(11); } ///< @copydoc uw()
-    ConstRowXpr vv()         const { return row(12); } ///< @copydoc vv()
-    ConstRowXpr vw()         const { return row(13); } ///< @copydoc vw()
-    ConstRowXpr ww()         const { return row(14); } ///< @copydoc ww()
-    ConstRowXpr nu()         const { return row(15); } ///< @copydoc nu()
-    ConstRowXpr nu_u()       const { return row(16); } ///< @copydoc nu_u()
-    ConstRowXpr nu_v()       const { return row(17); } ///< @copydoc nu_v()
-    ConstRowXpr nu_w()       const { return row(18); } ///< @copydoc nu_w()
-    ConstRowXpr nu_u2()      const { return row(19); } ///< @copydoc nu_u2()
-    ConstRowXpr nu_uu()      const { return row(20); } ///< @copydoc nu_uu()
-    ConstRowXpr nu_uv()      const { return row(21); } ///< @copydoc nu_uv()
-    ConstRowXpr nu_uw()      const { return row(22); } ///< @copydoc nu_uw()
-    ConstRowXpr nu_vv()      const { return row(23); } ///< @copydoc nu_vv()
-    ConstRowXpr nu_vw()      const { return row(24); } ///< @copydoc nu_vw()
-    ConstRowXpr nu_ww()      const { return row(25); } ///< @copydoc nu_ww()
-    ConstRowXpr ex_gradrho() const { return row(26); } ///< @copydoc ex_gradrho()
-    ConstRowXpr ey_gradrho() const { return row(27); } ///< @copydoc ey_gradrho()
-    ConstRowXpr ez_gradrho() const { return row(28); } ///< @copydoc ez_gradrho()
-    ConstRowXpr e_divm()     const { return row(29); } ///< @copydoc e_divm()
-    ConstRowXpr e_deltarho() const { return row(30); } ///< @copydoc e_deltarho()
-    ConstRowXpr rhou()       const { return row(31); } ///< @copydoc rhou()
-    ConstRowXpr rhov()       const { return row(32); } ///< @copydoc rhov()
-    ConstRowXpr rhow()       const { return row(33); } ///< @copydoc rhow()
-    ConstRowXpr rhoE()       const { return row(34); } ///< @copydoc rhoE()
-    ConstRowXpr rhouu()      const { return row(35); } ///< @copydoc rhouu()
-    ConstRowXpr rhovv()      const { return row(36); } ///< @copydoc rhovv()
-    ConstRowXpr rhoww()      const { return row(37); } ///< @copydoc rhoww()
-    ConstRowXpr rhoEE()      const { return row(38); } ///< @copydoc rhoEE()
+    ConstRowXpr rho()        const { return row(q::rho       ); } ///< @copydoc q::rho
+    ConstRowXpr p()          const { return row(q::p         ); } ///< @copydoc q::p
+    ConstRowXpr p2()         const { return row(q::p2        ); } ///< @copydoc q::p2
+    ConstRowXpr T()          const { return row(q::T         ); } ///< @copydoc q::T
+    ConstRowXpr a()          const { return row(q::a         ); } ///< @copydoc q::a
+    ConstRowXpr u()          const { return row(q::u         ); } ///< @copydoc q::u
+    ConstRowXpr v()          const { return row(q::v         ); } ///< @copydoc q::v
+    ConstRowXpr w()          const { return row(q::w         ); } ///< @copydoc q::w
+    ConstRowXpr u2()         const { return row(q::u2        ); } ///< @copydoc q::u2
+    ConstRowXpr uu()         const { return row(q::uu        ); } ///< @copydoc q::uu
+    ConstRowXpr uv()         const { return row(q::uv        ); } ///< @copydoc q::uv
+    ConstRowXpr uw()         const { return row(q::uw        ); } ///< @copydoc q::uw
+    ConstRowXpr vv()         const { return row(q::vv        ); } ///< @copydoc q::vv
+    ConstRowXpr vw()         const { return row(q::vw        ); } ///< @copydoc q::vw
+    ConstRowXpr ww()         const { return row(q::ww        ); } ///< @copydoc q::ww
+    ConstRowXpr nu()         const { return row(q::nu        ); } ///< @copydoc q::nu
+    ConstRowXpr nu_u()       const { return row(q::nu_u      ); } ///< @copydoc q::nu_u
+    ConstRowXpr nu_v()       const { return row(q::nu_v      ); } ///< @copydoc q::nu_v
+    ConstRowXpr nu_w()       const { return row(q::nu_w      ); } ///< @copydoc q::nu_w
+    ConstRowXpr nu_u2()      const { return row(q::nu_u2     ); } ///< @copydoc q::nu_u2
+    ConstRowXpr nu_uu()      const { return row(q::nu_uu     ); } ///< @copydoc q::nu_uu
+    ConstRowXpr nu_uv()      const { return row(q::nu_uv     ); } ///< @copydoc q::nu_uv
+    ConstRowXpr nu_uw()      const { return row(q::nu_uw     ); } ///< @copydoc q::nu_uw
+    ConstRowXpr nu_vv()      const { return row(q::nu_vv     ); } ///< @copydoc q::nu_vv
+    ConstRowXpr nu_vw()      const { return row(q::nu_vw     ); } ///< @copydoc q::nu_vw
+    ConstRowXpr nu_ww()      const { return row(q::nu_ww     ); } ///< @copydoc q::nu_ww
+    ConstRowXpr ex_gradrho() const { return row(q::ex_gradrho); } ///< @copydoc q::ex_gradrho
+    ConstRowXpr ey_gradrho() const { return row(q::ey_gradrho); } ///< @copydoc q::ey_gradrho
+    ConstRowXpr ez_gradrho() const { return row(q::ez_gradrho); } ///< @copydoc q::ez_gradrho
+    ConstRowXpr e_divm()     const { return row(q::e_divm    ); } ///< @copydoc q::e_divm
+    ConstRowXpr e_deltarho() const { return row(q::e_deltarho); } ///< @copydoc q::e_deltarho
+    ConstRowXpr rhou()       const { return row(q::rhou      ); } ///< @copydoc q::rhou
+    ConstRowXpr rhov()       const { return row(q::rhov      ); } ///< @copydoc q::rhov
+    ConstRowXpr rhow()       const { return row(q::rhow      ); } ///< @copydoc q::rhow
+    ConstRowXpr rhoE()       const { return row(q::rhoE      ); } ///< @copydoc q::rhoE
+    ConstRowXpr rhouu()      const { return row(q::rhouu     ); } ///< @copydoc q::rhouu
+    ConstRowXpr rhovv()      const { return row(q::rhovv     ); } ///< @copydoc q::rhovv
+    ConstRowXpr rhoww()      const { return row(q::rhoww     ); } ///< @copydoc q::rhoww
+    ConstRowXpr rhoEE()      const { return row(q::rhoEE     ); } ///< @copydoc q::rhoEE
 
     /** @} */
 
