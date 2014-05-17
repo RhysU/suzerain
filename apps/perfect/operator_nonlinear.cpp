@@ -69,13 +69,7 @@ std::vector<real_t> operator_nonlinear::apply_operator(
             const lowstorage::method_interface<complex_t> &method,
             const std::size_t substep_index) const
 {
-#define ARGUMENTS this->scenario.alpha,                         \
-                  this->scenario.beta,                          \
-                  this->scenario.gamma,                         \
-                  this->scenario.Ma,                            \
-                  this->scenario.Pr,                            \
-                  this->scenario.Re,                            \
-                  *this, common, sg, msoln, time, swave,        \
+#define ARGUMENTS scenario, *this, common, sg, msoln, time, swave, \
                   method, substep_index
 
     // Dispatch to an optimized implementation depending on runtime settings.

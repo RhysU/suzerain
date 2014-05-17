@@ -48,6 +48,7 @@
 #include <suzerain/timers.h>
 #include <suzerain/utility.hpp>
 
+#include "definition_scenario.hpp"
 #include "linearize_type.hpp"
 #include "operator_common_block.hpp"
 #include "perfect.hpp"
@@ -71,22 +72,10 @@ namespace perfect {
  * implementation choices rather than paying runtime cost for such flexibility.
  *
  * Computation follows the "Numerical Considerations" section of
- * writeups/derivation.tex.  No boundary conditions are applied.  The
- * instantaneous wall-normal velocity is averaged across the streamwise and
- * spanwise directions and stored into <tt>common.u()</tt>.
+ * writeups/perfect_gas.tex.  No boundary conditions are applied.  Gathers
+ * information required per \ref operator_common_block documentation.
  *
- * \param alpha Parameter controlling bulk viscosity
- *        per \f$\alpha\f$ in namespace \ref rholut.
- * \param beta Temperature power law exponent
- *        per \f$\beta\f$ in namespace \ref rholut.
- * \param gamma Constant ratio of specific heats
- *        per \f$\gamma\f$ in namespace \ref rholut.
- * \param Ma Mach number
- *        per \f$\textrm{Ma}\f$ in namespace \ref rholut.
- * \param Pr Prandtl number
- *        per \f$\textrm{Pr}\f$ in namespace \ref rholut.
- * \param Re Reynolds number
- *        per \f$\textrm{Re}\f$ in namespace \ref rholut.
+ * \param scenario Nondimensional scenario parameters.
  * \param o Provides access to discretization and parallel decomposition
  *        operational details.
  * \param common Shared storage for interaction with an linear_operator
@@ -125,16 +114,11 @@ template <bool ZerothSubstep,
           slowgrowth::type SlowTreatment,
           class ManufacturedSolution>
 std::vector<real_t> apply_navier_stokes_spatial_operator(
-            const real_t alpha,
-            const real_t beta,
-            const real_t gamma,
-            const real_t Ma,
-            const real_t Pr,
-            const real_t Re,
+            const definition_scenario &scenario,
             const operator_base &o,
             operator_common_block &common,
-            const specification_largo& sg,
-            const shared_ptr<const ManufacturedSolution>& msoln,
+            const specification_largo &sg,
+            const shared_ptr<const ManufacturedSolution> &msoln,
             const real_t time,
             contiguous_state<4,complex_t> &swave,
             const lowstorage::method_interface<complex_t> &method,
@@ -144,6 +128,12 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
     SUZERAIN_TIMER_SCOPED("apply_navier_stokes_spatial_operator");
 
     // Shorthand
+    const real_t alpha = scenario.alpha;
+    const real_t beta  = scenario.beta;
+    const real_t gamma = scenario.gamma;
+    const real_t Ma    = scenario.Ma;
+    const real_t Pr    = scenario.Pr;
+    const real_t Re    = scenario.Re;
     typedef contiguous_state<4,complex_t> state_type;
     using std::abs;
     using std::equal;
@@ -451,7 +441,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
         common.refs.setZero();
 
         // Sum reference quantities as a function of y(j) into common.ref_*
-        // See writeups/derivation.tex or rholut_imexop.h for definitions
+        // See writeups/perfect_gas.tex or rholut_imexop.h for definitions
         for (int offset = 0, j = o.dgrid.local_physical_start.y();
             j < o.dgrid.local_physical_end.y();
             ++j) {
