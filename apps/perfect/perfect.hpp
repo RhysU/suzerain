@@ -150,7 +150,16 @@ take_profile(const definition_scenario &scenario,
              const operator_tools& otool,
              contiguous_state<4,complex_t> &swave);
 
-// TODO Document
+/**
+ * Using the provided state, find the mean reference quantities declared in \ref
+ * references.  This is a mildly expensive, collective method.
+ *
+ * @param[in]  scenario Scenario parameters
+ * @param[in]  grid     Grid definitions in use
+ * @param[in]  dgrid    Parallel, dealiased grid in use.
+ * @param[in]  sphys    Physical space state on collocation points.
+ * @param[out] refs     To be populated during the method invocation.
+ */
 void
 collect_references(const definition_scenario &scenario,
                    const specification_grid& grid,
@@ -158,7 +167,16 @@ collect_references(const definition_scenario &scenario,
                    const physical_view<5> &sphys,
                    references &refs);
 
-// TODO Document
+/**
+ * Using the provided state, find the mean instantaneous quantities declared in
+ * \ref instantaneous.  This is a mildly expensive, collective method.
+ *
+ * @param[in]  scenario Scenario parameters
+ * @param[in]  grid     Grid definitions in use
+ * @param[in]  dgrid    Parallel, dealiased grid in use.
+ * @param[in]  sphys    Physical space state on collocation points.
+ * @param[out] inst     To be populated during the method invocation.
+ */
 void
 collect_instantaneous(const definition_scenario &scenario,
                       const specification_grid& grid,
