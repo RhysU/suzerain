@@ -1130,7 +1130,7 @@ collect_references(const definition_scenario &scenario,
     // Clearing everything is expected to be a bit more performant.
     refs.set_zero(dgrid.global_physical_extent.y());
 
-    // Sum reference quantities as a function of y(j) into refs*
+    // Sum reference quantities as a function of y(j) into refs
     for (int offset = 0, j = dgrid.local_physical_start.y();
         j < dgrid.local_physical_end.y();
         ++j) {
@@ -1255,10 +1255,91 @@ collect_instantaneous(const definition_scenario &scenario,
                       const physical_view<5> &sphys,
                       instantaneous &inst)
 {
-    // FIXME Implement
+    SUZERAIN_TIMER_SCOPED("collect_instantaneous");
 
-    // Ensure adequate storage
+    // To avoid accumulating garbage, must zero y(j) not present on rank.
+    // Clearing everything is expected to be a bit more performant.
     inst.set_zero(dgrid.global_physical_extent.y());
+
+    // Sum reference quantities as a function of y(j) into inst*
+    for (int offset = 0, j = dgrid.local_physical_start.y();
+        j < dgrid.local_physical_end.y();
+        ++j) {
+
+        // An array of summing_accumulator_type holds all running sums
+        array<summing_accumulator_type, instantaneous::q::count> acc;
+
+        // Redmine #2983 disables mu, lambda on the freestream boundary to
+        // adhere to superset of Poinsot and Lele subsonic NRBC conditions
+        const bool locallyviscous
+            = !(grid.one_sided() && j+1 == dgrid.global_physical_extent.y());
+
+        const int last_zxoffset = offset
+                                + dgrid.local_physical_extent.z()
+                                * dgrid.local_physical_extent.x();
+        for (; offset < last_zxoffset; ++offset) {
+
+            // Unpack conserved state
+            const real_t   e  (sphys(ndx::e,   offset));
+            const Vector3r m  (sphys(ndx::mx,  offset),
+                               sphys(ndx::my,  offset),
+                               sphys(ndx::mz,  offset));
+            const real_t   rho(sphys(ndx::rho, offset));
+
+            // Compute quantities related to the equation of state
+            real_t p;
+            rholut::p(
+                scenario.alpha, scenario.beta, scenario.gamma, scenario.Ma,
+                rho, m, e, p);
+
+            // Ask yourself if it should be used for viscous quantities...
+            SUZERAIN_UNUSED(locallyviscous);
+
+            // Accumulate reference quantities into running sums...
+            acc[instantaneous::q::rho](rho);
+            acc[instantaneous::q::p  ](p);
+            acc[instantaneous::q::p2 ](p*p);
+
+            // ...including simple velocity-related quantities...
+            const Vector3r u = rholut::u(rho, m);
+            acc[instantaneous::q::u ](u.x());
+            acc[instantaneous::q::v ](u.y());
+            acc[instantaneous::q::w ](u.z());
+            acc[instantaneous::q::uu](u.x()*u.x());
+            acc[instantaneous::q::uv](u.x()*u.y());
+            acc[instantaneous::q::uw](u.x()*u.z());
+            acc[instantaneous::q::vv](u.y()*u.y());
+            acc[instantaneous::q::vw](u.y()*u.z());
+            acc[instantaneous::q::ww](u.z()*u.z());
+
+            // ...and, lastly, details needed for slow growth forcing.
+            acc[instantaneous::q::rhou ](m.x()             );
+            acc[instantaneous::q::rhov ](m.y()             );
+            acc[instantaneous::q::rhow ](m.z()             );
+            acc[instantaneous::q::rhoE ](e                 );
+            acc[instantaneous::q::rhouu](m.x()* m.x() / rho);
+            acc[instantaneous::q::rhovv](m.y()* m.y() / rho);
+            acc[instantaneous::q::rhoww](m.z()* m.z() / rho);
+            acc[instantaneous::q::rhoEE](e    * e     / rho);
+
+        } // end X // end Z
+
+        // All accumulators should have seen a consistent number of samples
+        // Failure usually indicates a coding indicator on add new quantities
+        assert(consistent_accumulation_counts(acc));
+
+        // Store sums into common block in preparation for MPI Allreduce
+        for (int i = 0; i < static_cast<int>(instantaneous::q::count); ++i) {
+            inst.col(i)[j] = boost::accumulators::sum(acc[i]);
+        }
+
+    } // end Y
+
+    // Allreduce and scale inst sums to obtain means on all ranks
+    SUZERAIN_MPICHKR(MPI_Allreduce(MPI_IN_PLACE, inst.data(), inst.size(),
+            mpi::datatype<instantaneous::Scalar>::value,
+            MPI_SUM, MPI_COMM_WORLD));
+    inst *= dgrid.chi();
 }
 
 void summarize_boundary_layer_nature(
