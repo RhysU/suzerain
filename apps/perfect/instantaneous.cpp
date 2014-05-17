@@ -32,6 +32,21 @@ namespace suzerain {
 
 namespace perfect {
 
+instantaneous::instantaneous()
+    : super(0, static_cast<super::Index>(q::count))
+{
+}
+
+instantaneous::~instantaneous()
+{
+}
+
+void
+instantaneous::set_zero(int Ny)
+{
+    super::setZero(Ny, NoChange);
+}
+
 instantaneous&
 instantaneous::operator=(const references& that)
 {

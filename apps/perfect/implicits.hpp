@@ -45,7 +45,7 @@ namespace perfect {
  */
 class implicits
     : public virtual constraint::treatment::outputs
-    , private ArrayXXr
+    , protected ArrayXXr
 {
     typedef ArrayXXr super;
 
@@ -93,63 +93,60 @@ public:
     }; };
 
     /** Default constructor.  Use \ref set_zero to resize prior to use. */
-    implicits() : super(0, static_cast<super::Index>(q::count))
-    {
-    }
+    implicits();
+
+    /** Virtual destructor to permit use as a base class. */
+    virtual ~implicits();
 
     /** Resize to hold data from \c Ny distinct collocation points. */
-    template<typename Index>
-    void set_zero(const Index& Ny)
-    {
-        super::setZero(Ny, NoChange);
-    }
+    virtual void set_zero(int Ny);
 
-    ColXpr      SrhoE()              { return col(q::SrhoE       ); } ///< @copydoc q::SrhoE       
-    ColXpr      Srhou()              { return col(q::Srhou       ); } ///< @copydoc q::Srhou       
-    ColXpr      Srhov()              { return col(q::Srhov       ); } ///< @copydoc q::Srhov       
-    ColXpr      Srhow()              { return col(q::Srhow       ); } ///< @copydoc q::Srhow       
-    ColXpr      Srho()               { return col(q::Srho        ); } ///< @copydoc q::Srho        
-    ColXpr      Srhou_dot_u()        { return col(q::Srhou_dot_u ); } ///< @copydoc q::Srhou_dot_u 
-    ColXpr      fx()                 { return col(q::fx          ); } ///< @copydoc q::fx          
-    ColXpr      fy()                 { return col(q::fy          ); } ///< @copydoc q::fy          
-    ColXpr      fz()                 { return col(q::fz          ); } ///< @copydoc q::fz          
-    ColXpr      f_dot_u()            { return col(q::f_dot_u     ); } ///< @copydoc q::f_dot_u     
-    ColXpr      qb()                 { return col(q::qb          ); } ///< @copydoc q::qb          
-    ColXpr      CrhoE()              { return col(q::CrhoE       ); } ///< @copydoc q::CrhoE       
-    ColXpr      C2rhoE()             { return col(q::C2rhoE      ); } ///< @copydoc q::C2rhoE      
-    ColXpr      Crhou()              { return col(q::Crhou       ); } ///< @copydoc q::Crhou       
-    ColXpr      C2rhou()             { return col(q::C2rhou      ); } ///< @copydoc q::C2rhou      
-    ColXpr      Crhov()              { return col(q::Crhov       ); } ///< @copydoc q::Crhov       
-    ColXpr      C2rhov()             { return col(q::C2rhov      ); } ///< @copydoc q::C2rhov      
-    ColXpr      Crhow()              { return col(q::Crhow       ); } ///< @copydoc q::Crhow       
-    ColXpr      C2rhow()             { return col(q::C2rhow      ); } ///< @copydoc q::C2rhow      
-    ColXpr      Crho()               { return col(q::Crho        ); } ///< @copydoc q::Crho        
-    ColXpr      C2rho()              { return col(q::C2rho       ); } ///< @copydoc q::C2rho       
-    ColXpr      Crhou_dot_u()        { return col(q::Crhou_dot_u ); } ///< @copydoc q::Crhou_dot_u 
+    ColXpr      SrhoE()              { return col(q::SrhoE       ); } ///< @copydoc q::SrhoE
+    ColXpr      Srhou()              { return col(q::Srhou       ); } ///< @copydoc q::Srhou
+    ColXpr      Srhov()              { return col(q::Srhov       ); } ///< @copydoc q::Srhov
+    ColXpr      Srhow()              { return col(q::Srhow       ); } ///< @copydoc q::Srhow
+    ColXpr      Srho()               { return col(q::Srho        ); } ///< @copydoc q::Srho
+    ColXpr      Srhou_dot_u()        { return col(q::Srhou_dot_u ); } ///< @copydoc q::Srhou_dot_u
+    ColXpr      fx()                 { return col(q::fx          ); } ///< @copydoc q::fx
+    ColXpr      fy()                 { return col(q::fy          ); } ///< @copydoc q::fy
+    ColXpr      fz()                 { return col(q::fz          ); } ///< @copydoc q::fz
+    ColXpr      f_dot_u()            { return col(q::f_dot_u     ); } ///< @copydoc q::f_dot_u
+    ColXpr      qb()                 { return col(q::qb          ); } ///< @copydoc q::qb
+    ColXpr      CrhoE()              { return col(q::CrhoE       ); } ///< @copydoc q::CrhoE
+    ColXpr      C2rhoE()             { return col(q::C2rhoE      ); } ///< @copydoc q::C2rhoE
+    ColXpr      Crhou()              { return col(q::Crhou       ); } ///< @copydoc q::Crhou
+    ColXpr      C2rhou()             { return col(q::C2rhou      ); } ///< @copydoc q::C2rhou
+    ColXpr      Crhov()              { return col(q::Crhov       ); } ///< @copydoc q::Crhov
+    ColXpr      C2rhov()             { return col(q::C2rhov      ); } ///< @copydoc q::C2rhov
+    ColXpr      Crhow()              { return col(q::Crhow       ); } ///< @copydoc q::Crhow
+    ColXpr      C2rhow()             { return col(q::C2rhow      ); } ///< @copydoc q::C2rhow
+    ColXpr      Crho()               { return col(q::Crho        ); } ///< @copydoc q::Crho
+    ColXpr      C2rho()              { return col(q::C2rho       ); } ///< @copydoc q::C2rho
+    ColXpr      Crhou_dot_u()        { return col(q::Crhou_dot_u ); } ///< @copydoc q::Crhou_dot_u
     ColXpr      C2rhou_dot_u()       { return col(q::C2rhou_dot_u); } ///< @copydoc q::C2rhou_dot_u
 
-    ConstColXpr SrhoE()        const { return col(q::SrhoE       ); } ///< @copydoc q::SrhoE       
-    ConstColXpr Srhou()        const { return col(q::Srhou       ); } ///< @copydoc q::Srhou       
-    ConstColXpr Srhov()        const { return col(q::Srhov       ); } ///< @copydoc q::Srhov       
-    ConstColXpr Srhow()        const { return col(q::Srhow       ); } ///< @copydoc q::Srhow       
-    ConstColXpr Srho()         const { return col(q::Srho        ); } ///< @copydoc q::Srho        
-    ConstColXpr Srhou_dot_u()  const { return col(q::Srhou_dot_u ); } ///< @copydoc q::Srhou_dot_u 
-    ConstColXpr fx()           const { return col(q::fx          ); } ///< @copydoc q::fx          
-    ConstColXpr fy()           const { return col(q::fy          ); } ///< @copydoc q::fy          
-    ConstColXpr fz()           const { return col(q::fz          ); } ///< @copydoc q::fz          
-    ConstColXpr f_dot_u()      const { return col(q::f_dot_u     ); } ///< @copydoc q::f_dot_u     
-    ConstColXpr qb()           const { return col(q::qb          ); } ///< @copydoc q::qb          
-    ConstColXpr CrhoE()        const { return col(q::CrhoE       ); } ///< @copydoc q::CrhoE       
-    ConstColXpr C2rhoE()       const { return col(q::C2rhoE      ); } ///< @copydoc q::C2rhoE      
-    ConstColXpr Crhou()        const { return col(q::Crhou       ); } ///< @copydoc q::Crhou       
-    ConstColXpr C2rhou()       const { return col(q::C2rhou      ); } ///< @copydoc q::C2rhou      
-    ConstColXpr Crhov()        const { return col(q::Crhov       ); } ///< @copydoc q::Crhov       
-    ConstColXpr C2rhov()       const { return col(q::C2rhov      ); } ///< @copydoc q::C2rhov      
-    ConstColXpr Crhow()        const { return col(q::Crhow       ); } ///< @copydoc q::Crhow       
-    ConstColXpr C2rhow()       const { return col(q::C2rhow      ); } ///< @copydoc q::C2rhow      
-    ConstColXpr Crho()         const { return col(q::Crho        ); } ///< @copydoc q::Crho        
-    ConstColXpr C2rho()        const { return col(q::C2rho       ); } ///< @copydoc q::C2rho       
-    ConstColXpr Crhou_dot_u()  const { return col(q::Crhou_dot_u ); } ///< @copydoc q::Crhou_dot_u 
+    ConstColXpr SrhoE()        const { return col(q::SrhoE       ); } ///< @copydoc q::SrhoE
+    ConstColXpr Srhou()        const { return col(q::Srhou       ); } ///< @copydoc q::Srhou
+    ConstColXpr Srhov()        const { return col(q::Srhov       ); } ///< @copydoc q::Srhov
+    ConstColXpr Srhow()        const { return col(q::Srhow       ); } ///< @copydoc q::Srhow
+    ConstColXpr Srho()         const { return col(q::Srho        ); } ///< @copydoc q::Srho
+    ConstColXpr Srhou_dot_u()  const { return col(q::Srhou_dot_u ); } ///< @copydoc q::Srhou_dot_u
+    ConstColXpr fx()           const { return col(q::fx          ); } ///< @copydoc q::fx
+    ConstColXpr fy()           const { return col(q::fy          ); } ///< @copydoc q::fy
+    ConstColXpr fz()           const { return col(q::fz          ); } ///< @copydoc q::fz
+    ConstColXpr f_dot_u()      const { return col(q::f_dot_u     ); } ///< @copydoc q::f_dot_u
+    ConstColXpr qb()           const { return col(q::qb          ); } ///< @copydoc q::qb
+    ConstColXpr CrhoE()        const { return col(q::CrhoE       ); } ///< @copydoc q::CrhoE
+    ConstColXpr C2rhoE()       const { return col(q::C2rhoE      ); } ///< @copydoc q::C2rhoE
+    ConstColXpr Crhou()        const { return col(q::Crhou       ); } ///< @copydoc q::Crhou
+    ConstColXpr C2rhou()       const { return col(q::C2rhou      ); } ///< @copydoc q::C2rhou
+    ConstColXpr Crhov()        const { return col(q::Crhov       ); } ///< @copydoc q::Crhov
+    ConstColXpr C2rhov()       const { return col(q::C2rhov      ); } ///< @copydoc q::C2rhov
+    ConstColXpr Crhow()        const { return col(q::Crhow       ); } ///< @copydoc q::Crhow
+    ConstColXpr C2rhow()       const { return col(q::C2rhow      ); } ///< @copydoc q::C2rhow
+    ConstColXpr Crho()         const { return col(q::Crho        ); } ///< @copydoc q::Crho
+    ConstColXpr C2rho()        const { return col(q::C2rho       ); } ///< @copydoc q::C2rho
+    ConstColXpr Crhou_dot_u()  const { return col(q::Crhou_dot_u ); } ///< @copydoc q::Crhou_dot_u
     ConstColXpr C2rhou_dot_u() const { return col(q::C2rhou_dot_u); } ///< @copydoc q::C2rhou_dot_u
 };
 

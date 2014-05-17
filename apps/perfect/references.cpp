@@ -33,6 +33,21 @@ namespace suzerain {
 
 namespace perfect {
 
+references::references()
+    : super(static_cast<super::Index>(q::count), 0)
+{
+}
+
+references::~references()
+{
+}
+
+void
+references::set_zero(const int Ny)
+{
+    super::setZero(NoChange, Ny);
+}
+
 void
 references::imexop_ref(
         suzerain_rholut_imexop_ref   &ref,

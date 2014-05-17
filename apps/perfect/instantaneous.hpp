@@ -49,7 +49,7 @@ class references;
  */
 class instantaneous
     : public virtual constraint::treatment::inputs
-    , private ArrayXXr
+    , protected ArrayXXr
 {
     typedef ArrayXXr super;
 
@@ -94,16 +94,13 @@ public:
     }; };
 
     /** Default constructor.  Use \ref set_zero to resize prior to use. */
-    instantaneous() : super(0, static_cast<super::Index>(q::count))
-    {
-    }
+    instantaneous();
+
+    /** Virtual destructor to permit use as a base class. */
+    virtual ~instantaneous();
 
     /** Resize to hold data from \c Ny distinct collocation points. */
-    template<typename Index>
-    void set_zero(const Index& Ny)
-    {
-        super::setZero(Ny, NoChange);
-    }
+    virtual void set_zero(int Ny);
 
     ColXpr      rho()              { return col(q::rho  ); } ///< @copydoc q::rho  
     ColXpr      p()                { return col(q::p    ); } ///< @copydoc q::p    

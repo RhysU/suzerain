@@ -50,7 +50,7 @@ namespace perfect {
  * @see rholut_imexop.h for details on linearization and the associated
  * reference quantities.
  */
-class references : private ArrayXXr
+class references : protected ArrayXXr
 {
     typedef ArrayXXr super;
 
@@ -114,16 +114,13 @@ public:
     }; };
 
     /** Default constructor.  Use \ref set_zero to resize prior to use. */
-    references() : super(static_cast<super::Index>(q::count), 0)
-    {
-    }
+    references();
+
+    /** Virtual destructor to permit use as a base class. */
+    virtual ~references();
 
     /** Resize to hold data from \c Ny distinct collocation points. */
-    template<typename Index>
-    void set_zero(const Index& Ny)
-    {
-        super::setZero(NoChange, Ny);
-    }
+    virtual void set_zero(const int Ny);
 
     RowXpr      rho()              { return row(q::rho       ); } ///< @copydoc q::rho
     RowXpr      p()                { return row(q::p         ); } ///< @copydoc q::p
@@ -204,8 +201,6 @@ public:
     ConstRowXpr rhovv()      const { return row(q::rhovv     ); } ///< @copydoc q::rhovv
     ConstRowXpr rhoww()      const { return row(q::rhoww     ); } ///< @copydoc q::rhoww
     ConstRowXpr rhoEE()      const { return row(q::rhoEE     ); } ///< @copydoc q::rhoEE
-
-    /** @} */
 
     /** Prepare data for use by implicit operator API in rholut_imexop.h. */
     void imexop_ref(suzerain_rholut_imexop_ref   &ref,
