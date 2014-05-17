@@ -153,6 +153,7 @@ take_profile(const definition_scenario &scenario,
 // TODO Document
 void
 collect_references(const definition_scenario &scenario,
+                   const specification_grid& grid,
                    const pencil_grid &dgrid,
                    const physical_view<5> &sphys,
                    references &refs);
@@ -160,6 +161,7 @@ collect_references(const definition_scenario &scenario,
 // TODO Document
 void
 collect_instantaneous(const definition_scenario &scenario,
+                      const specification_grid& grid,
                       const pencil_grid &dgrid,
                       const physical_view<5> &sphys,
                       instantaneous &inst);
