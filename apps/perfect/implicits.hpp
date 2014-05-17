@@ -51,6 +51,15 @@ class implicits
 
 public:
 
+    /** Default constructor.  Use \ref set_zero to resize prior to use. */
+    implicits();
+
+    /** Virtual destructor to permit use as a base class. */
+    virtual ~implicits();
+
+    /** Resize to hold data from \c Ny distinct collocation points. */
+    virtual void set_zero(int Ny);
+
     typedef super::ColXpr      ColXpr;      ///< Mutable data for quantities
     typedef super::ConstColXpr ConstColXpr; ///< Immutable data for quantities
     typedef super::Scalar      Scalar;      ///< Expose underlying scalar type
@@ -91,15 +100,6 @@ public:
         C2rhou_dot_u, ///< @copydoc constraint::treatment::outputs::C2rhou_dot_u
         count         ///< Sentry indicating how many quantities are tracked
     }; };
-
-    /** Default constructor.  Use \ref set_zero to resize prior to use. */
-    implicits();
-
-    /** Virtual destructor to permit use as a base class. */
-    virtual ~implicits();
-
-    /** Resize to hold data from \c Ny distinct collocation points. */
-    virtual void set_zero(int Ny);
 
     ColXpr      SrhoE()              { return col(q::SrhoE       ); } ///< @copydoc q::SrhoE
     ColXpr      Srhou()              { return col(q::Srhou       ); } ///< @copydoc q::Srhou

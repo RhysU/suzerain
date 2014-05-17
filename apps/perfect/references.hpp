@@ -56,6 +56,15 @@ class references : protected ArrayXXr
 
 public:
 
+    /** Default constructor.  Use \ref set_zero to resize prior to use. */
+    references();
+
+    /** Virtual destructor to permit use as a base class. */
+    virtual ~references();
+
+    /** Resize to hold data from \c Ny distinct collocation points. */
+    virtual void set_zero(const int Ny);
+
     typedef super::ConstRowXpr ConstRowXpr; ///< Immutable data for quantities
     typedef super::RowXpr      RowXpr;      ///< Mutable data for quantities
     typedef super::Scalar      Scalar;      ///< Expose underlying scalar type
@@ -112,15 +121,6 @@ public:
         rhoEE,      ///< Quantity  \f$\rho E   E            \f$
         count       ///< Sentry indicating how many quantities are tracked
     }; };
-
-    /** Default constructor.  Use \ref set_zero to resize prior to use. */
-    references();
-
-    /** Virtual destructor to permit use as a base class. */
-    virtual ~references();
-
-    /** Resize to hold data from \c Ny distinct collocation points. */
-    virtual void set_zero(const int Ny);
 
     RowXpr      rho()              { return row(q::rho       ); } ///< @copydoc q::rho
     RowXpr      p()                { return row(q::p         ); } ///< @copydoc q::p

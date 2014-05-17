@@ -55,6 +55,15 @@ class instantaneous
 
 public:
 
+    /** Default constructor.  Use \ref set_zero to resize prior to use. */
+    instantaneous();
+
+    /** Virtual destructor to permit use as a base class. */
+    virtual ~instantaneous();
+
+    /** Resize to hold data from \c Ny distinct collocation points. */
+    virtual void set_zero(int Ny);
+
     typedef super::ColXpr      ColXpr;      ///< Mutable data for quantities
     typedef super::ConstColXpr ConstColXpr; ///< Immutable data for quantities
     typedef super::Scalar      Scalar;      ///< Expose underlying scalar type
@@ -92,15 +101,6 @@ public:
         rhoEE,      ///< Quantity \f$\rho E   E   \f$
         count       ///< Sentry indicating how many quantities are tracked
     }; };
-
-    /** Default constructor.  Use \ref set_zero to resize prior to use. */
-    instantaneous();
-
-    /** Virtual destructor to permit use as a base class. */
-    virtual ~instantaneous();
-
-    /** Resize to hold data from \c Ny distinct collocation points. */
-    virtual void set_zero(int Ny);
 
     ColXpr      rho()              { return col(q::rho  ); } ///< @copydoc q::rho  
     ColXpr      p()                { return col(q::p    ); } ///< @copydoc q::p    
