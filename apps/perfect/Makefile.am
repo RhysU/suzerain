@@ -21,7 +21,6 @@ libsuzerain_perfect_la_SOURCES += implicits.cpp
 libsuzerain_perfect_la_SOURCES += implicits.hpp
 libsuzerain_perfect_la_SOURCES += instantaneous.cpp
 libsuzerain_perfect_la_SOURCES += instantaneous.hpp
-libsuzerain_perfect_la_SOURCES += linearize_type.hpp
 libsuzerain_perfect_la_SOURCES += manufactured_solution.cpp
 libsuzerain_perfect_la_SOURCES += manufactured_solution.hpp
 libsuzerain_perfect_la_SOURCES += navier_stokes.cpp

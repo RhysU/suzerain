@@ -49,7 +49,6 @@
 #include <suzerain/utility.hpp>
 
 #include "definition_scenario.hpp"
-#include "linearize_type.hpp"
 #include "operator_common_block.hpp"
 #include "perfect.hpp"
 #include "slowgrowth.hpp"
