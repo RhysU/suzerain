@@ -33,18 +33,20 @@ namespace suzerain {
 namespace perfect {
 
 /** Provides scoping semantics for slowgrowth::type */
-namespace slowgrowth {
+class slowgrowth {
 
-/**
- * What slow growth sources are employed?
- * All valid types will evaluate to true in a boolean context.
- */
-enum type {
-    none  = 1,  ///< No slow growth sources
-    largo       ///< Slow growth sources computed by Largo library
+public:
+
+    /**
+     * What slow growth sources are employed?
+     * All valid types will evaluate to true in a boolean context.
+     */
+    enum type {
+        none  = 1,  ///< No slow growth sources
+        largo       ///< Slow growth sources computed by Largo library
+    };
+
 };
-
-} // namespace slowgrowth
 
 } // namespace perfect
 
