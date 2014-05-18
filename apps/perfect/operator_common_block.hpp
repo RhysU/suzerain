@@ -34,7 +34,7 @@
 #include "instantaneous.hpp"
 #include "linearize_type.hpp"
 #include "references.hpp"
-#include "slowgrowth_type.hpp"
+#include "slowgrowth.hpp"
 
 namespace suzerain {
 

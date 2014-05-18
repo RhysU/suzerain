@@ -52,7 +52,7 @@
 #include "linearize_type.hpp"
 #include "operator_common_block.hpp"
 #include "perfect.hpp"
-#include "slowgrowth_type.hpp"
+#include "slowgrowth.hpp"
 
 #pragma warning(push, disable:280 383 1572)
 

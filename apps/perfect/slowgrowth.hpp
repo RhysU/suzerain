@@ -21,8 +21,8 @@
 //
 //--------------------------------------------------------------------------
 
-#ifndef SUZERAIN_PERFECT_SLOWGROWTH_TYPE_HPP
-#define SUZERAIN_PERFECT_SLOWGROWTH_TYPE_HPP
+#ifndef SUZERAIN_PERFECT_SLOWGROWTH_HPP
+#define SUZERAIN_PERFECT_SLOWGROWTH_HPP
 
 /** @file
  * Declarations related to slow growth formulation selection.
@@ -50,4 +50,4 @@ enum type {
 
 } // namespace suzerain
 
-#endif  /* SUZERAIN_PERFECT_SLOWGROWTH_TYPE_HPP */
+#endif  /* SUZERAIN_PERFECT_SLOWGROWTH_HPP */
