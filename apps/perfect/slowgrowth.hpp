@@ -64,8 +64,6 @@ public:
 
     slowgrowth();
 
-    virtual ~slowgrowth();
-
     void
     initialize(const implementation slow_treatment,
                const specification_largo &sg,
