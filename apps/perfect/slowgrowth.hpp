@@ -73,8 +73,9 @@ public:
                   const contiguous_state<4,complex_t> &swave);
 
     void
-    gather_physical(const type slow_treatment,
-                    const instantaneous &inst);
+    gather_physical_cons(const type slow_treatment,
+                         const operator_base &o,
+                         const instantaneous &inst);
 
     //gatherphys_mean
     //differentiate_meanrms

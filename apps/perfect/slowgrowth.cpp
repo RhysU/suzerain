@@ -148,8 +148,9 @@ slowgrowth::gather_wavexz(
 }
 
 void
-slowgrowth::gather_physical(
+slowgrowth::gather_physical_cons(
         const slowgrowth::type slow_treatment,
+        const operator_base &o,
         const instantaneous &inst)
 {
     switch (slow_treatment) {
@@ -161,7 +162,7 @@ slowgrowth::gather_physical(
 
     case slowgrowth::largo:
         {
-            SUZERAIN_TIMER_SCOPED("slowgrowth::gather_physical");
+            SUZERAIN_TIMER_SCOPED("slowgrowth::gather_physical_cons");
 
             // Slow growth requires mean conserved state at collocation points.
             // Abuse unused pieces within 'meanrms' to avoid more allocations.
@@ -181,6 +182,24 @@ slowgrowth::gather_physical(
             meanrms.back().fluctuating = (inst.p2() - inst.p().square())
                                          .max(0).sqrt();
 
+            // Wall-normal derivatives of every mean RMS quantity are required
+            meanrms_y.resize(meanrms.size());
+            ArrayX2r tmp(o.dgrid.global_physical_extent.y(), 2);
+            std::vector<field_L2xz>::const_iterator src = meanrms.begin();
+            std::vector<field_L2xz>::const_iterator end = meanrms.end();
+            std::vector<field_L2xz>::      iterator dst = meanrms_y.begin();
+            for (/*just above*/; src != end; ++src, ++dst) {
+                tmp.col(0) = (*src).mean;
+                tmp.col(1) = (*src).fluctuating;
+                o.masslu()->solve(tmp.cols(), tmp.data(),
+                                  tmp.innerStride(), tmp.outerStride());
+                (*dst).mean       .resizeLike(tmp.col(0));
+                (*dst).fluctuating.resizeLike(tmp.col(1));
+                o.cop.accumulate(1, 1.0, tmp.col(0).data(), tmp.innerStride(),
+                                    0.0, (*dst).mean.data(), 1);
+                o.cop.accumulate(1, 1.0, tmp.col(1).data(), tmp.innerStride(),
+                                    0.0, (*dst).fluctuating.data(), 1);
+            }
         }
         break;
     }
