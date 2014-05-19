@@ -207,6 +207,7 @@ slowgrowth::initialize(
     }
 }
 
+// TODO Avoid fluctuation computations when not required by formulation
 void
 slowgrowth::gather_wavexz(
         const slowgrowth::type slow_treatment,
@@ -361,8 +362,8 @@ slowgrowth::inner_y(
             // Provide any baseflow-dependent information to Largo
             if (sg.baseflow) {
                 largo_state base, dy, dt, dx, src;
-                calculate_baseflow(inv_codeMa2, sg.formulation, sg.baseflow, y_j,
-                                   base, dy, dt, dx, src);
+                calculate_baseflow(inv_codeMa2, sg.formulation, sg.baseflow,
+                                   y_j, base, dy, dt, dx, src);
                 largo_prestep_baseflow(sg.workspace,
                                        base.rescale(inv_codeMa2),
                                        dy  .rescale(inv_codeMa2),
