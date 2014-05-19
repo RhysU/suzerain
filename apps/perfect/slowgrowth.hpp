@@ -64,7 +64,7 @@ public:
     slowgrowth();
 
     void
-    calculate_baseflow(const real_t code_Ma,
+    calculate_baseflow(const real_t inv_codeMa2,
                        const largo_formulation &formulation,
                        const shared_ptr<baseflow_interface> &baseflow,
                        const real_t y,
@@ -77,7 +77,7 @@ public:
     void
     initialize(const type slow_treatment,
                const specification_largo &sg,
-               const real_t code_Ma,
+               const real_t inv_codeMa2,
                const std::size_t substep_index = 0);
 
     void
@@ -98,14 +98,14 @@ public:
     void
     inner_y(const type slow_treatment,
             const specification_largo &sg,
-            const real_t code_Ma,
+            const real_t inv_codeMa2,
             const int j,
             const real_t y_j);
 
     void
     inner_xz(const type slow_treatment,
              const specification_largo &sg,
-             const real_t code_Ma,
+             const real_t inv_codeMa2,
              largo_state &local);
 
     //forcing_xyz

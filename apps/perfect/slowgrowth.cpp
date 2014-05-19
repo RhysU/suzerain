@@ -54,7 +54,7 @@ slowgrowth::slowgrowth()
 
 void
 slowgrowth::calculate_baseflow(
-    const real_t code_Ma,
+    const real_t inv_codeMa2,
     const largo_formulation &formulation,
     const shared_ptr<baseflow_interface> &baseflow,
     const real_t y,
@@ -135,7 +135,7 @@ slowgrowth::calculate_baseflow(
                                                  m,        div_m);
         const Vector3r rhs_m   = - rholut::div_u_outer_m(m, grad_m,
                                                          u, div_u)
-                                 - grad_p / (code_Ma * code_Ma);
+                                 - grad_p * inv_codeMa2;
         const real_t   rhs_e   = - rholut::div_e_u(base.e, grad_e,
                                                    u,      div_u)
                                  - rholut::div_p_u(base.p, grad_p,
@@ -155,7 +155,7 @@ void
 slowgrowth::initialize(
         const type slow_treatment,
         const specification_largo &sg,
-        const real_t code_Ma,
+        const real_t inv_codeMa2,
         const std::size_t substep_index)
 {
     switch (slow_treatment) {
@@ -191,17 +191,16 @@ slowgrowth::initialize(
             // Prepare any necessary baseflow information at the wall
             // As a side-effect, populates this->basewall appropriately
             largo_state dy, dt, dx, src;
-            calculate_baseflow(code_Ma, sg.formulation, sg.baseflow, 0.0,
+            calculate_baseflow(inv_codeMa2, sg.formulation, sg.baseflow, 0.0,
                                this->basewall, dy, dt, dx, src);
 
             // Present the baseflow information to Largo adjusting for code_Ma
-            const real_t inv_Ma2 = 1 / (code_Ma * code_Ma);
             largo_init_wall_baseflow(sg.workspace,
-                                     basewall.rescale(inv_Ma2),
-                                     dy      .rescale(inv_Ma2),
-                                     dt      .rescale(inv_Ma2),
-                                     dx      .rescale(inv_Ma2),
-                                     src     .rescale(inv_Ma2));
+                                     basewall.rescale(inv_codeMa2),
+                                     dy      .rescale(inv_codeMa2),
+                                     dt      .rescale(inv_codeMa2),
+                                     dx      .rescale(inv_codeMa2),
+                                     src     .rescale(inv_codeMa2));
         }
         break;
 
@@ -344,7 +343,7 @@ void
 slowgrowth::inner_y(
         const type slow_treatment,
         const specification_largo &sg,
-        const real_t code_Ma,
+        const real_t inv_codeMa2,
         const int j,
         const real_t y_j)
 {
@@ -359,20 +358,17 @@ slowgrowth::inner_y(
         {
             SUZERAIN_TIMER_SCOPED("slowgrowth::inner_y");
 
-            // Scaling factor adjusting for code_Ma
-            const real_t inv_Ma2 = 1 / (code_Ma * code_Ma);
-
             // Provide any baseflow-dependent information to Largo
             if (sg.baseflow) {
                 largo_state base, dy, dt, dx, src;
-                calculate_baseflow(code_Ma, sg.formulation, sg.baseflow, y_j,
+                calculate_baseflow(inv_codeMa2, sg.formulation, sg.baseflow, y_j,
                                    base, dy, dt, dx, src);
                 largo_prestep_baseflow(sg.workspace,
-                                       base.rescale(inv_Ma2),
-                                       dy  .rescale(inv_Ma2),
-                                       dt  .rescale(inv_Ma2),
-                                       dx  .rescale(inv_Ma2),
-                                       src .rescale(inv_Ma2));
+                                       base.rescale(inv_codeMa2),
+                                       dy  .rescale(inv_codeMa2),
+                                       dt  .rescale(inv_codeMa2),
+                                       dx  .rescale(inv_codeMa2),
+                                       src .rescale(inv_codeMa2));
             }
 
             // Repack Y-dependent profiles into a form consumable by Largo
@@ -436,14 +432,15 @@ slowgrowth::inner_y(
             }
 
             // Present the baseflow information to Largo
-            largo_prestep_seta_innery(sg.workspace,
-                                      y_j,
-                                      mean      .rescale(inv_Ma2        ),
-                                      rms       .rescale(inv_Ma2        ),
-                                      mean_rqq  .rescale(inv_Ma2*inv_Ma2),
-                                      mean_y    .rescale(inv_Ma2        ),
-                                      rms_y     .rescale(inv_Ma2        ),
-                                      mean_rqq_y.rescale(inv_Ma2*inv_Ma2));
+            largo_prestep_seta_innery(
+                        sg.workspace,
+                        y_j,
+                        mean      .rescale(inv_codeMa2            ),
+                        rms       .rescale(inv_codeMa2            ),
+                        mean_rqq  .rescale(inv_codeMa2*inv_codeMa2),
+                        mean_y    .rescale(inv_codeMa2            ),
+                        rms_y     .rescale(inv_codeMa2            ),
+                        mean_rqq_y.rescale(inv_codeMa2*inv_codeMa2));
 
         }
         break;
@@ -454,7 +451,7 @@ void
 slowgrowth::inner_xz(
         const type slow_treatment,
         const specification_largo &sg,
-        const real_t code_Ma,
+        const real_t inv_codeMa2,
         largo_state &local)
 {
     switch (slow_treatment) {
@@ -465,11 +462,8 @@ slowgrowth::inner_xz(
         break;
 
     case slowgrowth::largo:
-        {
-            const real_t inv_Ma2 = 1 / (code_Ma * code_Ma);
-            largo_prestep_seta_innerxz(sg.workspace,
-                                       local.rescale(inv_Ma2));
-        }
+        largo_prestep_seta_innerxz(sg.workspace,
+                                   local.rescale(inv_codeMa2));
         break;
     }
 }
