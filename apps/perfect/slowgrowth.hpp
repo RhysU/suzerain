@@ -57,11 +57,16 @@ public:
     slowgrowth();
 
     void
-    gatherwave_rms(const type slow_treatment,
-                   const operator_base &o,
-                   const contiguous_state<4,complex_t> &swave);
+    initialize(const type slow_treatment,
+               const specification_largo &sg,
+               const real_t code_Ma,
+               const std::size_t substep_index = 0);
 
-    //initialize
+    void
+    gather_wavexz_rms(const type slow_treatment,
+                      const operator_base &o,
+                      const contiguous_state<4,complex_t> &swave);
+
     //gatherphys_mean
     //differentiate_meanrms
     //inner_y
@@ -70,9 +75,9 @@ public:
 
 private:
 
-    std::vector<field_L2xz> meanrms;
+    largo_state basewall;
 
-    //largo_state basewall;
+    std::vector<field_L2xz> meanrms;
 
 };
 
