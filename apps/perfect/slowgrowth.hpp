@@ -106,9 +106,8 @@ public:
     inner_xz(const type slow_treatment,
              const specification_largo &sg,
              const real_t inv_codeMa2,
-             largo_state &local);
-
-    //forcing_xyz
+             largo_state &local_state,
+             largo_state &slowgrowth_forcing);
 
 private:
 

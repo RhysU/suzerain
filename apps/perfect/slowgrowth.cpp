@@ -452,18 +452,22 @@ slowgrowth::inner_xz(
         const type slow_treatment,
         const specification_largo &sg,
         const real_t inv_codeMa2,
-        largo_state &local)
+        largo_state &local_state,
+        largo_state &slowgrowth_forcing)
 {
     switch (slow_treatment) {
     default:
         SUZERAIN_ERROR_VOID_UNIMPLEMENTED();
 
     case slowgrowth::none:
+        slowgrowth_forcing.zero();
         break;
 
     case slowgrowth::largo:
         largo_prestep_seta_innerxz(sg.workspace,
-                                   local.rescale(inv_codeMa2));
+                                   local_state.rescale(inv_codeMa2));
+        largo_seta(sg.workspace, 0., 1.,
+                   slowgrowth_forcing.rescale(inv_codeMa2));
         break;
     }
 }
