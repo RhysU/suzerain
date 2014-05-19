@@ -25,16 +25,19 @@
  * @copydoc slowgrowth.hpp
  */
 
+#include "slowgrowth.hpp"
+
 #include <largo/largo.h>
 
 #include <suzerain/common.hpp>
 #include <suzerain/error.h>
+#include <suzerain/ndx.hpp>
 #include <suzerain/operator_base.hpp>
 #include <suzerain/specification_largo.hpp>
 #include <suzerain/state.hpp>
 #include <suzerain/timers.h>
 
-#include "slowgrowth.hpp"
+#include "instantaneous.hpp"
 
 namespace suzerain {
 
@@ -42,14 +45,16 @@ namespace perfect {
 
 slowgrowth::slowgrowth()
     : meanrms(0)
+    , meanrms_y(0)
 {
 }
 
 void
-slowgrowth::initialize(const type slow_treatment,
-                       const specification_largo &sg,
-                       const real_t code_Ma,
-                       const std::size_t substep_index)
+slowgrowth::initialize(
+        const type slow_treatment,
+        const specification_largo &sg,
+        const real_t code_Ma,
+        const std::size_t substep_index)
 {
     switch (slow_treatment) {
     default:
@@ -109,9 +114,10 @@ slowgrowth::initialize(const type slow_treatment,
 }
 
 void
-slowgrowth::gather_wavexz_rms(const slowgrowth::type slow_treatment,
-                              const operator_base &o,
-                              const contiguous_state<4,complex_t> &swave)
+slowgrowth::gather_wavexz(
+        const slowgrowth::type slow_treatment,
+        const operator_base &o,
+        const contiguous_state<4,complex_t> &swave)
 {
     switch (slow_treatment) {
     default:
@@ -122,7 +128,7 @@ slowgrowth::gather_wavexz_rms(const slowgrowth::type slow_treatment,
 
     case slowgrowth::largo:
         {
-            SUZERAIN_TIMER_SCOPED("slowgrowth::gather_wavexz_rms");
+            SUZERAIN_TIMER_SCOPED("slowgrowth::gather_wavexz");
 
             // With state being Fourier in X and Z but collocation in Y...
             // ...compute L^2_{xz} of state at each collocation point
@@ -140,6 +146,46 @@ slowgrowth::gather_wavexz_rms(const slowgrowth::type slow_treatment,
         break;
     }
 }
+
+void
+slowgrowth::gather_physical(
+        const slowgrowth::type slow_treatment,
+        const instantaneous &inst)
+{
+    switch (slow_treatment) {
+    default:
+        SUZERAIN_ERROR_VOID_UNIMPLEMENTED();
+
+    case slowgrowth::none:
+        break;
+
+    case slowgrowth::largo:
+        {
+            SUZERAIN_TIMER_SCOPED("slowgrowth::gather_physical");
+
+            // Slow growth requires mean conserved state at collocation points.
+            // Abuse unused pieces within 'meanrms' to avoid more allocations.
+            SUZERAIN_ENSURE(meanrms.size() == 5);
+            meanrms[ndx::e  ].mean = inst.rhoE();
+            meanrms[ndx::mx ].mean = inst.rhou();
+            meanrms[ndx::my ].mean = inst.rhov();
+            meanrms[ndx::mz ].mean = inst.rhow();
+            meanrms[ndx::rho].mean = inst.rho();
+
+            // Slow growth requires mean pressure and its fluctuation profiles.
+            // Abuse 'meanrms' to store the information after conserved state.
+            // The RMS of fluctuating pressure computation can be numerically
+            // noisy hence require a non-negative result prior to the sqrt.
+            meanrms.resize(meanrms.size() + 1);
+            meanrms.back().mean        = inst.p();
+            meanrms.back().fluctuating = (inst.p2() - inst.p().square())
+                                         .max(0).sqrt();
+
+        }
+        break;
+    }
+}
+
 
 } // namespace perfect
 

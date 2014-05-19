@@ -40,6 +40,11 @@ class specification_largo;
 
 namespace perfect {
 
+// Forward declarations
+class instantaneous;
+
+// TODO Class slowgrowth should be an interface towards polymorphism
+
 /** Provides scoping semantics for slowgrowth::type */
 class slowgrowth {
 
@@ -63,9 +68,13 @@ public:
                const std::size_t substep_index = 0);
 
     void
-    gather_wavexz_rms(const type slow_treatment,
-                      const operator_base &o,
-                      const contiguous_state<4,complex_t> &swave);
+    gather_wavexz(const type slow_treatment,
+                  const operator_base &o,
+                  const contiguous_state<4,complex_t> &swave);
+
+    void
+    gather_physical(const type slow_treatment,
+                    const instantaneous &inst);
 
     //gatherphys_mean
     //differentiate_meanrms
@@ -78,6 +87,7 @@ private:
     largo_state basewall;
 
     std::vector<field_L2xz> meanrms;
+    std::vector<field_L2xz> meanrms_y;
 
 };
 
