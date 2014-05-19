@@ -54,10 +54,10 @@ class slowgrowth {
 public:
 
     /**
-     * What slow growth sources are employed?
-     * All valid types evaluate to true in a boolean context.
+     * What slow growth forcing implementation is employed?
+     * All valid implementations evaluate to true in a boolean context.
      */
-    enum type {
+    enum implementation {
         none  = 1,  ///< No slow growth sources
         largo       ///< Slow growth sources computed by Largo library
     };
@@ -76,35 +76,35 @@ public:
                        largo_state &src) const;
 
     void
-    initialize(const type slow_treatment,
+    initialize(const implementation slow_treatment,
                const specification_largo &sg,
                const real_t inv_codeMa2,
                const std::size_t substep_index = 0);
 
     void
-    gather_wavexz(const type slow_treatment,
+    gather_wavexz(const implementation slow_treatment,
                   const operator_base &o,
                   const contiguous_state<4,complex_t> &swave);
 
     void
-    gather_physical_cons(const type slow_treatment,
+    gather_physical_cons(const implementation slow_treatment,
                          const operator_base &o,
                          const instantaneous &inst);
 
     void
-    gather_physical_rqq(const type slow_treatment,
+    gather_physical_rqq(const implementation slow_treatment,
                         const operator_base &o,
                         const instantaneous &inst);
 
     void
-    inner_y(const type slow_treatment,
+    inner_y(const implementation slow_treatment,
             const specification_largo &sg,
             const real_t inv_codeMa2,
             const int j,
             const real_t y_j);
 
     void
-    inner_xz(const type slow_treatment,
+    inner_xz(const implementation slow_treatment,
              const specification_largo &sg,
              const real_t inv_codeMa2,
              largo_state &local_state,

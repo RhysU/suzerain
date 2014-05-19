@@ -79,7 +79,7 @@ public:
      * nail down the exact treatment in use as it may depend on other settings,
      * e.g. \ref definition_largo in cases when the Largo library is employed.
      */
-    slowgrowth::type slow_treatment;
+    slowgrowth::implementation slow_treatment;
 
     /** Call \c set_zero on each of \c ref, \c sub, and \c imp. */
     void set_zero(int Ny);

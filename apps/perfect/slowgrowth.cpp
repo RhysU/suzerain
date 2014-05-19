@@ -153,7 +153,7 @@ slowgrowth::calculate_baseflow(
 
 void
 slowgrowth::initialize(
-        const type slow_treatment,
+        const implementation slow_treatment,
         const specification_largo &sg,
         const real_t inv_codeMa2,
         const std::size_t substep_index)
@@ -210,7 +210,7 @@ slowgrowth::initialize(
 // TODO Avoid fluctuation computations when not required by formulation
 void
 slowgrowth::gather_wavexz(
-        const slowgrowth::type slow_treatment,
+        const slowgrowth::implementation slow_treatment,
         const operator_base &o,
         const contiguous_state<4,complex_t> &swave)
 {
@@ -244,7 +244,7 @@ slowgrowth::gather_wavexz(
 
 void
 slowgrowth::gather_physical_cons(
-        const slowgrowth::type slow_treatment,
+        const slowgrowth::implementation slow_treatment,
         const operator_base &o,
         const instantaneous &inst)
 {
@@ -302,7 +302,7 @@ slowgrowth::gather_physical_cons(
 
 void
 slowgrowth::gather_physical_rqq(
-        const slowgrowth::type slow_treatment,
+        const slowgrowth::implementation slow_treatment,
         const operator_base &o,
         const instantaneous &inst)
 {
@@ -342,7 +342,7 @@ slowgrowth::gather_physical_rqq(
 
 void
 slowgrowth::inner_y(
-        const type slow_treatment,
+        const implementation slow_treatment,
         const specification_largo &sg,
         const real_t inv_codeMa2,
         const int j,
@@ -450,7 +450,7 @@ slowgrowth::inner_y(
 
 void
 slowgrowth::inner_xz(
-        const type slow_treatment,
+        const implementation slow_treatment,
         const specification_largo &sg,
         const real_t inv_codeMa2,
         largo_state &local_state,

@@ -110,7 +110,7 @@ namespace perfect {
  */
 template <bool ZerothSubstep,
           linearize::type Linearize,
-          slowgrowth::type SlowTreatment,
+          slowgrowth::implementation SlowTreatment,
           class ManufacturedSolution>
 std::vector<real_t> apply_navier_stokes_spatial_operator(
             const definition_scenario &scenario,
