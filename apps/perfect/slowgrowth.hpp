@@ -77,8 +77,11 @@ public:
                          const operator_base &o,
                          const instantaneous &inst);
 
-    //gatherphys_mean
-    //differentiate_meanrms
+    void
+    gather_physical_rqq(const type slow_treatment,
+                        const operator_base &o,
+                        const instantaneous &inst);
+
     //inner_y
     //inner_xz
     //forcing_xyz
@@ -86,9 +89,10 @@ public:
 private:
 
     largo_state basewall;
-
     std::vector<field_L2xz> meanrms;
     std::vector<field_L2xz> meanrms_y;
+    ArrayX5r rqq;
+    ArrayX5r rqq_y;
 
 };
 

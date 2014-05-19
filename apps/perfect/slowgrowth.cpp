@@ -205,6 +205,46 @@ slowgrowth::gather_physical_cons(
     }
 }
 
+void
+slowgrowth::gather_physical_rqq(
+        const slowgrowth::type slow_treatment,
+        const operator_base &o,
+        const instantaneous &inst)
+{
+    switch (slow_treatment) {
+    default:
+        SUZERAIN_ERROR_VOID_UNIMPLEMENTED();
+
+    case slowgrowth::none:
+        break;
+
+    case slowgrowth::largo:
+        {
+            SUZERAIN_TIMER_SCOPED("slowgrowth::gather_physical_rqq");
+
+            // Obtain "rqq" values for tensorially-consistent homogenization
+            rqq.resize(o.dgrid.global_physical_extent.y(), NoChange);
+            rqq.col(ndx::rho) = inst.rho  ();
+            rqq.col(ndx::mx ) = inst.rhouu();
+            rqq.col(ndx::my ) = inst.rhovv();
+            rqq.col(ndx::mz ) = inst.rhoww();
+            rqq.col(ndx::e  ) = inst.rhoEE();
+
+            // Compute derivatives of these "rqq" values
+            rqq_y = rqq;
+            ArrayXr tmp;
+            for (int i = 0; i < rqq_y.cols(); ++i) {
+                tmp = rqq_y.col(i);
+                o.masslu()->solve(tmp.cols(), tmp.data(),
+                                  tmp.innerStride(), tmp.outerStride());
+                o.cop.accumulate(1, 1.0, tmp.data(), tmp.innerStride(),
+                                    0.0, rqq_y.col(i).data(), 1);
+            }
+        }
+        break;
+    }
+}
+
 
 } // namespace perfect
 
