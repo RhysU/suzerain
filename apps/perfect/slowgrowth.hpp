@@ -102,7 +102,12 @@ public:
             const int j,
             const real_t y_j);
 
-    //inner_xz
+    void
+    inner_xz(const type slow_treatment,
+             const specification_largo &sg,
+             const real_t code_Ma,
+             largo_state &local);
+
     //forcing_xyz
 
 private:

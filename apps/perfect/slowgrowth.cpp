@@ -450,6 +450,30 @@ slowgrowth::inner_y(
     }
 }
 
+void
+slowgrowth::inner_xz(
+        const type slow_treatment,
+        const specification_largo &sg,
+        const real_t code_Ma,
+        largo_state &local)
+{
+    switch (slow_treatment) {
+    default:
+        SUZERAIN_ERROR_VOID_UNIMPLEMENTED();
+
+    case slowgrowth::none:
+        break;
+
+    case slowgrowth::largo:
+        {
+            const real_t inv_Ma2 = 1 / (code_Ma * code_Ma);
+            largo_prestep_seta_innerxz(sg.workspace,
+                                       local.rescale(inv_Ma2));
+        }
+        break;
+    }
+}
+
 } // namespace perfect
 
 } // namespace suzerain
