@@ -189,19 +189,12 @@ slowgrowth::initialize(
             }
 
             // Prepare any necessary baseflow information at the wall
-            // assuming that baseflow state already matched code_Ma.
-            largo_state dy, dx;
-            if (sg.baseflow) {
-                sg.baseflow->conserved(
-                        0.0, basewall.as_is(), dy.as_is(), dx.as_is());
-                sg.baseflow->pressure (
-                        0.0, basewall.p, dy.p, dx.p); // as_is()
-            }
+            // As a side-effect, populates this->basewall appropriately
+            largo_state dy, dt, dx, src;
+            calculate_baseflow(code_Ma, sg.formulation, sg.baseflow, 0.0,
+                               this->basewall, dy, dt, dx, src);
 
-            // TODO Implement, though currently always trivially zero
-            largo_state dt, src;
-
-            // Present the baseflow information to Largo
+            // Present the baseflow information to Largo adjusting for code_Ma
             const real_t inv_Ma2 = 1 / (code_Ma * code_Ma);
             largo_init_wall_baseflow(sg.workspace,
                                      basewall.rescale(inv_Ma2),
