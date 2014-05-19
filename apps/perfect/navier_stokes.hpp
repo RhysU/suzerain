@@ -28,8 +28,6 @@
  * Implementation of nonlinear Navier--Stokes spatial operators.
  */
 
-#include <largo/largo.h>
-
 #include <suzerain/error.h>
 #include <suzerain/l2.hpp>
 #include <suzerain/largo_state.hpp>
@@ -149,7 +147,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
     SUZERAIN_ENSURE(common.linearization  == Linearize);
     SUZERAIN_ENSURE(common.slow_treatment == SlowTreatment);
     if (sg.formulation.enabled()) {
-        SUZERAIN_ENSURE(SlowTreatment == slowgrowth::largo);
+        SUZERAIN_ENSURE(SlowTreatment != slowgrowth::none);
     }
 
     // FIXME Ticket #2477 retrieve linearization-dependent CFL information
@@ -316,25 +314,19 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
     o.diffwave_accumulate(1, 0, 1, auxw,  aux::rho_y, 0, auxw, aux::rho_xy);
     o.diffwave_accumulate(0, 1, 1, auxw,  aux::rho_y, 0, auxw, aux::rho_yz);
 
-    // Now that conserved state is Fourier in X and Z but collocation in Y,
-    // if slow growth forcing is active...
-    std::vector<field_L2xz> meanrms(0);
-    if (SlowTreatment == slowgrowth::largo) {
-        SUZERAIN_TIMER_SCOPED("root-mean-square of state");
+    // Compute inviscid-only constants before any Y, X, or Z inner loops
+    const real_t inv_Ma2   = 1 / (Ma * Ma);
+    const real_t gamma1    = gamma - 1;
+    const real_t lambda1_x = o.lambda1_x;
+    const real_t lambda1_z = o.lambda1_z;
 
-        // ...collectively compute L^2_{xz} of state at each collocation point
-        meanrms = compute_field_L2xz(swave, o.grid, o.dgrid);
+    // Initialize slow growth treatment if necessary
+    slowgrowth sg_treater;
+    sg_treater.initialize(SlowTreatment, sg, inv_Ma2, substep_index);
 
-        // ...and rescale to convert to root-mean-square (RMS) fluctuations
-        // (mean L2 values are uninteresting so also defensively NaN storage).
-        const real_t rms_adjust = 1 / sqrt(o.grid.L.x() * o.grid.L.z());
-        for (size_t i = 0; i < meanrms.size(); ++i) {
-            meanrms[i].fluctuating *= rms_adjust;
-#ifndef NDEBUG
-            meanrms[i].mean.setConstant(numeric_limits<real_t>::quiet_NaN());
-#endif
-        }
-    }
+    // With conserved state Fourier in X and Z but collocation in Y,
+    // gather any RMS-like information necessary for slow growth forcing.
+    sg_treater.gather_wavexz(SlowTreatment, o, swave);
 
     // Collectively convert swave and auxw to physical space using parallel
     // FFTs. In physical space, we'll employ views to reshape the 4D row-major
@@ -348,52 +340,6 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
     }
     for (size_t i = 0; i < aux::count; ++i) {
         o.dgrid.transform_wave_to_physical(&auxp.coeffRef(i,0));
-    }
-
-    // Compute inviscid-only constants before any Y, X, or Z inner loops
-    const real_t inv_Ma2          = 1 / (Ma * Ma);
-    const real_t gamma1           = gamma - 1;
-    const real_t gamma_over_Pr    = gamma / Pr;
-    const real_t lambda1_x        = o.lambda1_x;
-    const real_t lambda1_z        = o.lambda1_z;
-
-    // If necessary, perform globally-relevant initialization calls to Largo.
-    // Required only once but done every ZerothSubstep as a nod to modularity.
-    largo_state basewall;
-    if (ZerothSubstep && SlowTreatment == slowgrowth::largo) {
-
-        // Initialize the slow growth workspace
-        // Avoids debugging-related memory allocation if at all possible
-        assert(sg.gramp_mean.size());
-        assert(sg.gramp_mean.size() == sg.gramp_rms.size());
-        if (SUZERAIN_UNLIKELY(sg.ignore_gramp_mean || sg.ignore_gramp_rms)) {
-            std::vector<real_t> zeros(sg.gramp_mean.size(), 0);
-            largo_init(sg.workspace,
-                       sg.grdelta,
-                       sg.ignore_gramp_mean ? &zeros[0] : &sg.gramp_mean[0],
-                       sg.ignore_gramp_rms  ? &zeros[0] : &sg.gramp_rms [0]);
-        } else {
-            largo_init(sg.workspace,
-                       sg.grdelta,
-                       &sg.gramp_mean[0],
-                       &sg.gramp_rms[0]);
-        }
-
-        // Prepare and present any necessary baseflow information at the wall
-        largo_state dy, dx;
-        if (sg.baseflow) {
-            sg.baseflow->conserved(
-                    0.0, basewall.as_is(), dy.as_is(), dx.as_is());
-            sg.baseflow->pressure (
-                    0.0, basewall.p, dy.p, dx.p); // as_is()
-        }
-        largo_state dt, src;
-        largo_init_wall_baseflow(sg.workspace,
-                                 basewall.rescale(inv_Ma2),
-                                 dy      .rescale(inv_Ma2),
-                                 dt      .rescale(inv_Ma2),
-                                 dx      .rescale(inv_Ma2),
-                                 src     .rescale(inv_Ma2));
     }
 
     // Physical space is traversed linearly using a single offset 'offset'.
@@ -421,72 +367,11 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
         collect_instantaneous(scenario, o.grid, o.dgrid, sphys, common.sub);
     }
 
-    // Slow growth requires mean conserved state at collocation points.
-    // Abuse unused pieces within 'meanrms' to avoid allocating more storage.
-    if (SlowTreatment == slowgrowth::largo) {
-        meanrms[ndx::e  ].mean = common.sub.rhoE();
-        meanrms[ndx::mx ].mean = common.sub.rhou();
-        meanrms[ndx::my ].mean = common.sub.rhov();
-        meanrms[ndx::mz ].mean = common.sub.rhow();
-        meanrms[ndx::rho].mean = common.sub.rho();
-    }
-
-    // Slow growth requires mean pressure and pressure fluctuation profiles.
-    // Further abuse 'meanrms' to store the information after conserved state.
-    // The RMS of fluctuating pressure computation is numerically noisy
-    // hence forcing a non-negative difference prior to the square root.
-    if (SlowTreatment == slowgrowth::largo) {
-        meanrms.resize(meanrms.size() + 1);
-        meanrms.back().mean        = common.sub.p();
-        meanrms.back().fluctuating = (  common.sub.p2()
-                                      - common.sub.p().square() ).max(0).sqrt();
-    }
-
-    // Slow growth requires wall-normal derivative of every mean RMS quantity
-    std::vector<field_L2xz> meanrms_y(meanrms.size());
-    if (SlowTreatment == slowgrowth::largo) {
-        SUZERAIN_TIMER_SCOPED("mean and root-mean-square derivatives");
-        ArrayX2r tmp(Ny, 2);
-        std::vector<field_L2xz>::const_iterator src = meanrms.begin();
-        std::vector<field_L2xz>::const_iterator end = meanrms.end();
-        std::vector<field_L2xz>::      iterator dst = meanrms_y.begin();
-        for (/*just above*/; src != end; ++src, ++dst) {
-            tmp.col(0) = (*src).mean;
-            tmp.col(1) = (*src).fluctuating;
-            o.masslu()->solve(tmp.cols(), tmp.data(),
-                              tmp.innerStride(), tmp.outerStride());
-            (*dst).mean       .resizeLike(tmp.col(0));
-            (*dst).fluctuating.resizeLike(tmp.col(1));
-            o.cop.accumulate(1, 1.0, tmp.col(0).data(), tmp.innerStride(),
-                                0.0, (*dst).mean.data(), 1);
-            o.cop.accumulate(1, 1.0, tmp.col(1).data(), tmp.innerStride(),
-                                0.0, (*dst).fluctuating.data(), 1);
-        }
-    }
-
-    // Tensorially-consistent slow growth requires derivatives of "rqq" values
-    // TODO Avoid "rqq" collection overhead when non-consistent models used.
-    ArrayX5r rqq_y;
-    assert(rqq_y.cols() == swave_count);
-    if (SlowTreatment == slowgrowth::largo) {
-        SUZERAIN_TIMER_SCOPED("rqq quantity derivatives");
-        rqq_y.resize(Ny, NoChange);
-
-        rqq_y.col(ndx::rho) = common.sub.rho  ();
-        rqq_y.col(ndx::mx ) = common.sub.rhouu();
-        rqq_y.col(ndx::my ) = common.sub.rhovv();
-        rqq_y.col(ndx::mz ) = common.sub.rhoww();
-        rqq_y.col(ndx::e  ) = common.sub.rhoEE();
-
-        ArrayXr tmp;
-        for (int i = 0; i < rqq_y.cols(); ++i) {
-            tmp = rqq_y.col(i);
-            o.masslu()->solve(tmp.cols(), tmp.data(),
-                              tmp.innerStride(), tmp.outerStride());
-            o.cop.accumulate(1, 1.0, tmp.data(), tmp.innerStride(),
-                                0.0, rqq_y.col(i).data(), 1);
-        }
-    }
+    // Slow growth requires mean conserved state at collocation points,
+    // mean pressure and pressure fluctuation profiles, "rhoqq" values for
+    // q \in {u, v, w, E}, and wall-normal derivatives of everything.
+    sg_treater.gather_physical_cons(SlowTreatment, o, common.sub);
+    sg_treater.gather_physical_rqq (SlowTreatment, o, common.sub);
 
     // To track mean slow-growth forcing for Favre-averaged equation
     // residuals, we need to accumulate pointwise mean computations a la
@@ -508,169 +393,8 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
          j < o.dgrid.local_physical_end.y();
          ++j) {
 
-        // If necessary, Largo performs base flow computations prior to X-Z
-        if (SlowTreatment == slowgrowth::largo && sg.baseflow) {
-            SUZERAIN_TIMER_SCOPED("calling largo_prestep_baseflow");
-            largo_state base, dy, dx;
-            sg.baseflow->conserved(
-                    o.y(j), base.as_is(), dy.as_is(), dx.as_is());
-            sg.baseflow->pressure(
-                    o.y(j), base.p, dy.p, dx.p); // as_is()
-
-            // When a nontrivial inviscid base flow is present, compute
-            // model-appropriate residual so that it might be eradicated.  The
-            // base flow is intended to be stationary so any residual is a
-            // numerical artifact and not part of the intended problem.
-            largo_state dt, src;
-            if (!base.trivial()) {
-
-                // TODO Reference relevant equations from Largo model document
-                //
-                // The largo_prestep_baseflow(..., srcbase) parameter
-                // requires semi-trivial, model-specific computations.
-                // The differences lie in the treatment of slow derivatives.
-                Vector3r grad_rho, grad_e, grad_p;
-                Matrix3r grad_m;
-                if (sg.formulation.is_strictly_temporal()) {
-
-                    dt.rho = basewall.u() * dx.rho; // Modeled slow time
-                    dt.mx  = basewall.u() * dx.mx;  // derivative uses
-                    dt.my  = basewall.u() * dx.my;  // wall base flow
-                    dt.mz  = basewall.u() * dx.mz;
-                    dt.e   = basewall.u() * dx.e;
-
-                    grad_rho << 0, dy.rho, 0;       // Only account for
-                    grad_m   << 0, dy.mx,  0,       // wall-normal variation
-                                0, dy.my,  0,       // Euler residual below.
-                                0, dy.mz,  0;       // Notice spanwise trivial.
-                    grad_e   << 0, dy.e,   0;
-                    grad_p   << 0, dy.p,   0;
-
-                } else {
-
-                    dt.rho = 0;                     // Trivial slow time
-                    dt.mx  = 0;                     // derivative inherent
-                    dt.my  = 0;                     // to formulation
-                    dt.mz  = 0;
-                    dt.e   = 0;
-
-                    grad_rho << dx.rho, dy.rho, 0;  // Account for wall-normal
-                    grad_m   << dx.mx,  dy.mx,  0,  // and slow streamwise
-                                dx.my,  dy.my,  0,  // variation in Euler
-                                dx.mz,  dy.mz,  0;  // residual below.
-                    grad_e   << dx.e,   dy.e,   0;  // Notice spanwise trivial.
-                    grad_p   << dx.p,   dy.p,   0;
-
-                }
-
-                // Compute spatial right hand side for inviscid Euler equations
-                // agnostic of model-appropriate derivatives supplied above.
-                // Base flow state from local variable "base" inlined below.
-                const Vector3r m           (base.mx, base.my, base.mz);
-                const real_t   div_m   =   grad_m.trace();
-                const real_t   rhs_rho = - div_m;
-                const Vector3r u       =   rholut::u(base.rho, m);
-                const real_t   div_u   =   rholut::div_u(base.rho, grad_rho,
-                                                         m,        div_m);
-                const Vector3r rhs_m   = - rholut::div_u_outer_m(m, grad_m,
-                                                                 u, div_u)
-                                         - inv_Ma2 * grad_p;
-                const real_t   rhs_e   = - rholut::div_e_u(base.e, grad_e,
-                                                           u,      div_u)
-                                         - rholut::div_p_u(base.p, grad_p,
-                                                           u,      div_u);
-
-                // Compute largo_prestep_baseflow..., srcbase) for Largo
-                src.rho = dt.rho - rhs_rho;
-                src.mx  = dt.mx  - rhs_m.x();
-                src.my  = dt.my  - rhs_m.y();
-                src.mz  = dt.mz  - rhs_m.z();
-                src.e   = dt.e   - rhs_e;
-            }
-
-            largo_prestep_baseflow(sg.workspace,
-                                   base.rescale(inv_Ma2),
-                                   dy  .rescale(inv_Ma2),
-                                   dt  .rescale(inv_Ma2),
-                                   dx  .rescale(inv_Ma2),
-                                   src .rescale(inv_Ma2));
-        }
-
-        // If necessary, Largo performs Y-dependent computations prior to X-Z
-        if (SlowTreatment == slowgrowth::largo) {
-            SUZERAIN_TIMER_SCOPED("calling largo_prestep_seta_innery");
-
-            // Repack Y-dependent profiles into a form consumable by Largo
-            assert(meanrms.size() == swave_count + 1); // State plus pressure
-            largo_state mean  (meanrms  [ndx::e  ].mean[j],
-                               meanrms  [ndx::mx ].mean[j],
-                               meanrms  [ndx::my ].mean[j],
-                               meanrms  [ndx::mz ].mean[j],
-                               meanrms  [ndx::rho].mean[j],
-                               meanrms  .back()   .mean[j]);
-            largo_state mean_y(meanrms_y[ndx::e  ].mean[j],
-                               meanrms_y[ndx::mx ].mean[j],
-                               meanrms_y[ndx::my ].mean[j],
-                               meanrms_y[ndx::mz ].mean[j],
-                               meanrms_y[ndx::rho].mean[j],
-                               meanrms_y.back()   .mean[j]);
-            largo_state rms   (meanrms  [ndx::e  ].fluctuating[j],
-                               meanrms  [ndx::mx ].fluctuating[j],
-                               meanrms  [ndx::my ].fluctuating[j],
-                               meanrms  [ndx::mz ].fluctuating[j],
-                               meanrms  [ndx::rho].fluctuating[j],
-                               meanrms  .back()   .fluctuating[j]);
-            largo_state rms_y (meanrms_y[ndx::e  ].fluctuating[j],
-                               meanrms_y[ndx::mx ].fluctuating[j],
-                               meanrms_y[ndx::my ].fluctuating[j],
-                               meanrms_y[ndx::mz ].fluctuating[j],
-                               meanrms_y[ndx::rho].fluctuating[j],
-                               meanrms_y.back()   .fluctuating[j]);
-
-            // The "rqq" bits are accessed differently from RMS details
-            largo_state mean_rqq  (common.sub.rhoEE()[j],    // Notice pressure
-                                   common.sub.rhouu()[j],    // entry is NaN as
-                                   common.sub.rhovv()[j],    // it is allegedly
-                                   common.sub.rhoww()[j],    // unused.  This
-                                   common.sub.rho()  [j],    // NaN makes sure.
-                                   numeric_limits<real_t>::quiet_NaN());
-            largo_state mean_rqq_y(rqq_y(j, ndx::e  ),   // Ditto re: NaN
-                                   rqq_y(j, ndx::mx ),
-                                   rqq_y(j, ndx::my ),
-                                   rqq_y(j, ndx::mz ),
-                                   rqq_y(j, ndx::rho),
-                                   numeric_limits<real_t>::quiet_NaN());
-
-            // If requested, have Largo ignore all fluctuations (for debugging)
-            if (SUZERAIN_UNLIKELY(sg.ignore_fluctuations)) {
-                // Hide RMS fluctuations from Largo
-                rms.zero();
-                rms_y.zero();
-
-                // Have "rqq" quantities reflect only the mean profile
-                mean_rqq.rho     = mean.rho;
-                mean_rqq.mx      = mean.mx * mean.u();
-                mean_rqq.my      = mean.my * mean.v();
-                mean_rqq.mz      = mean.mz * mean.w();
-                mean_rqq.e       = mean.e  * mean.E();
-
-                // Have "rqq" derivatives reflect only the mean profile
-                mean_rqq_y.rho = mean_y.rho;
-                mean_rqq_y.mx  = mean.u()*(2*mean_y.mx - mean.u()*mean_y.rho);
-                mean_rqq_y.mx  = mean.v()*(2*mean_y.my - mean.v()*mean_y.rho);
-                mean_rqq_y.mx  = mean.w()*(2*mean_y.mz - mean.w()*mean_y.rho);
-                mean_rqq_y.e   = mean.E()*(2*mean_y.e  - mean.E()*mean_y.rho);
-            }
-
-            largo_prestep_seta_innery(sg.workspace,
-                                      o.y(j),
-                                      mean      .rescale(inv_Ma2        ),
-                                      rms       .rescale(inv_Ma2        ),
-                                      mean_rqq  .rescale(inv_Ma2*inv_Ma2),
-                                      mean_y    .rescale(inv_Ma2        ),
-                                      rms_y     .rescale(inv_Ma2        ),
-                                      mean_rqq_y.rescale(inv_Ma2*inv_Ma2));
-        }
+        // Prepare any y-dependent slow growth computation
+        sg_treater.inner_y(SlowTreatment, sg, inv_Ma2, j, o.y(j));
 
         // Precompute subtractive slow growth velocity for wall-normal
         // convective stability criterion (Euler_Eigensystem_3D_Temporal.nb)
@@ -729,6 +453,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
         const real_t inv_Re           = static_cast<int>(locallyviscous) / Re;
         const real_t Ma2_over_Re      = (Ma * Ma) * inv_Re;
         const real_t inv_Re_Pr_gamma1 = 1 / (Pr * gamma1) * inv_Re;
+        const real_t gamma_over_Pr    = gamma / Pr;
         const real_t maxdiffconst     = inv_Re
                                       * max(gamma/Pr, max(real_t(1), alpha));
         const real_t md_lambda2_x     = maxdiffconst * o.lambda2_x;
@@ -853,27 +578,15 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                                             div_u, grad_u, div_grad_u,
                                             grad_div_u);
 
-            // If necessary, Largo performs any final pointwise computations
-            if (SlowTreatment == slowgrowth::largo) {
-                largo_state qflow(e, m.x(), m.y(), m.z(), rho, p);
-                largo_prestep_seta_innerxz(sg.workspace,
-                                           qflow.rescale(inv_Ma2));
-            }
-
             // COMPUTE ANY SLOW GROWTH FORCING APPLIED TO THE FLOW
             //
             // Accumulation into each scalar right hand side is delayed
             // to improve striding when accessing sphys buffers below.
             largo_state slowgrowth_f;
-            switch (SlowTreatment) {
-            case slowgrowth::none:
-                assert(slowgrowth_f.trivial()); // NOP, but verify
-                break;
-            case slowgrowth::largo:
-                largo_seta(sg.workspace, 0., 1., slowgrowth_f.rescale(inv_Ma2));
-                break;
-            default:
-                SUZERAIN_ERROR_REPORT_UNIMPLEMENTED();
+            if (SlowTreatment != slowgrowth::none) {
+                largo_state state(e, m.x(), m.y(), m.z(), rho, p);
+                sg_treater.inner_xz(SlowTreatment, sg, inv_Ma2,
+                                    state, slowgrowth_f);
             }
             if (SlowTreatment != slowgrowth::none) {
                 barf_acc[ndx::e  ](slowgrowth_f.e  );             // SrhoE
