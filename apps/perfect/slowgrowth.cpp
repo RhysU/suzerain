@@ -52,6 +52,10 @@ slowgrowth::slowgrowth()
 {
 }
 
+slowgrowth::~slowgrowth()
+{
+}
+
 void
 slowgrowth::calculate_baseflow(
     const real_t inv_codeMa2,
