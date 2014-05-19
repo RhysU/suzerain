@@ -28,7 +28,15 @@
  * Declarations related to slow growth formulation selection.
  */
 
+#include <suzerain/largo_state.hpp>
+#include <suzerain/l2.hpp>
+#include <suzerain/state_fwd.hpp>
+
 namespace suzerain {
+
+// Forward declarations
+class operator_base;
+class specification_largo;
 
 namespace perfect {
 
@@ -39,12 +47,32 @@ public:
 
     /**
      * What slow growth sources are employed?
-     * All valid types will evaluate to true in a boolean context.
+     * All valid types evaluate to true in a boolean context.
      */
     enum type {
         none  = 1,  ///< No slow growth sources
         largo       ///< Slow growth sources computed by Largo library
     };
+
+    slowgrowth();
+
+    void
+    gatherwave_rms(const type slow_treatment,
+                   const operator_base &o,
+                   const contiguous_state<4,complex_t> &swave);
+
+    //initialize
+    //gatherphys_mean
+    //differentiate_meanrms
+    //inner_y
+    //inner_xz
+    //forcing_xyz
+
+private:
+
+    std::vector<field_L2xz> meanrms;
+
+    //largo_state basewall;
 
 };
 

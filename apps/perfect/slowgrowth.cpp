@@ -25,14 +25,47 @@
  * @copydoc slowgrowth.hpp
  */
 
+#include <largo/largo.h>
+
+#include <suzerain/common.hpp>
+#include <suzerain/operator_base.hpp>
+#include <suzerain/specification_largo.hpp>
+#include <suzerain/state.hpp>
+#include <suzerain/timers.h>
+
 #include "slowgrowth.hpp"
 
 namespace suzerain {
 
 namespace perfect {
 
-// Empty placeholder for any future content.  In the meantime, compiling this
-// file ensures slowgrowth.hpp has the appropriate #includes and syntax.
+slowgrowth::slowgrowth()
+    : meanrms(0)
+{
+}
+
+void
+slowgrowth::gatherwave_rms(const slowgrowth::type slow_treatment,
+                           const operator_base &o,
+                           const contiguous_state<4,complex_t> &swave)
+{
+    // Quick return sans timers whenever no work required
+    if (slow_treatment == slowgrowth::none) return;
+
+    SUZERAIN_TIMER_SCOPED("slowgrowth::gatherwave_rms");
+
+    // With conserved state being Fourier in X and Z but collocation in Y...
+    // ...collectively compute L^2_{xz} of state at each collocation point
+    meanrms = compute_field_L2xz(swave, o.grid, o.dgrid);
+
+    // ...and rescale to convert to root-mean-square (RMS) fluctuations
+    // (mean L2 values are uninteresting so also defensively NaN storage).
+    const real_t rms_adjust = 1 / sqrt(o.grid.L.x() * o.grid.L.z());
+    for (size_t i = 0; i < meanrms.size(); ++i) {
+        meanrms[i].mean.setConstant(std::numeric_limits<real_t>::quiet_NaN());
+        meanrms[i].fluctuating *= rms_adjust;
+    }
+}
 
 } // namespace perfect
 
