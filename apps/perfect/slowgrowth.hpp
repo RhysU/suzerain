@@ -35,6 +35,8 @@
 namespace suzerain {
 
 // Forward declarations
+class baseflow_interface;
+class largo_formulation;
 class operator_base;
 class specification_largo;
 
@@ -60,6 +62,17 @@ public:
     };
 
     slowgrowth();
+
+    void
+    calculate_baseflow(const real_t code_Ma,
+                       const largo_formulation &formulation,
+                       const shared_ptr<baseflow_interface> &baseflow,
+                       const real_t y,
+                       largo_state &base,
+                       largo_state &dy,
+                       largo_state &dt,
+                       largo_state &dx,
+                       largo_state &src) const;
 
     void
     initialize(const type slow_treatment,

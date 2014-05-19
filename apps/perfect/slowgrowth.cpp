@@ -30,9 +30,12 @@
 #include <largo/largo.h>
 
 #include <suzerain/common.hpp>
+#include <suzerain/baseflow.hpp>
 #include <suzerain/error.h>
+#include <suzerain/largo_formulation.hpp>
 #include <suzerain/ndx.hpp>
 #include <suzerain/operator_base.hpp>
+#include <suzerain/rholut.hpp>
 #include <suzerain/specification_largo.hpp>
 #include <suzerain/state.hpp>
 #include <suzerain/timers.h>
@@ -47,6 +50,105 @@ slowgrowth::slowgrowth()
     : meanrms(0)
     , meanrms_y(0)
 {
+}
+
+void
+slowgrowth::calculate_baseflow(
+    const real_t code_Ma,
+    const largo_formulation &formulation,
+    const shared_ptr<baseflow_interface> &baseflow,
+    const real_t y,
+    largo_state &base,
+    largo_state &dy,
+    largo_state &dt,
+    largo_state &dx,
+    largo_state &src) const
+{
+    // Prepare any necessary baseflow information at the wall
+    // assuming that baseflow state already matched code_Ma.
+    if (baseflow) {
+        baseflow->conserved(y, base.as_is(), dy.as_is(), dx.as_is());
+        baseflow->pressure (y, base.p,       dy.p,       dx.p);
+    } else {
+        base.zero();
+        dy.zero();
+        dx.zero();
+    }
+
+    // When a nontrivial inviscid base flow is present, compute
+    // model-appropriate residual so that it might be eradicated.  The base
+    // flow is intended to be stationary so any residual is a numerical
+    // artifact and not part of the intended problem.
+    if (base.trivial()) {
+
+        dt.zero();
+        src.zero();
+
+    } else {
+
+        // TODO Reference relevant equations from Largo model document
+        //
+        // The largo_prestep_baseflow(..., srcbase) parameter
+        // requires semi-trivial, model-specific computations.
+        // The differences lie in the treatment of slow derivatives.
+        Vector3r grad_rho, grad_e, grad_p;
+        Matrix3r grad_m;
+        if (formulation.is_strictly_temporal()) {
+
+            // Notice &this->basewall == &base works because base was populated
+            const real_t scale_u = basewall.u();
+
+            dt.rho = scale_u * dx.rho;      // Modeled slow time
+            dt.mx  = scale_u * dx.mx;       // derivative uses
+            dt.my  = scale_u * dx.my;       // wall base flow
+            dt.mz  = scale_u * dx.mz;
+            dt.e   = scale_u * dx.e;
+
+            grad_rho << 0, dy.rho, 0;       // Only account for
+            grad_m   << 0, dy.mx,  0,       // wall-normal variation
+                        0, dy.my,  0,       // Euler residual below.
+                        0, dy.mz,  0;       // Notice spanwise trivial.
+            grad_e   << 0, dy.e,   0;
+            grad_p   << 0, dy.p,   0;
+
+        } else {
+
+            dt.zero();  // Trivial slow time derivative inherent to formulation
+
+            grad_rho << dx.rho, dy.rho, 0;  // Account for wall-normal
+            grad_m   << dx.mx,  dy.mx,  0,  // and slow streamwise
+                        dx.my,  dy.my,  0,  // variation in Euler
+                        dx.mz,  dy.mz,  0;  // residual below.
+            grad_e   << dx.e,   dy.e,   0;  // Notice spanwise trivial.
+            grad_p   << dx.p,   dy.p,   0;
+
+        }
+
+        // Compute spatial right hand side for inviscid Euler equations
+        // agnostic of model-appropriate derivatives supplied above.
+        // Base flow state from local variable "base" inlined below.
+        const Vector3r m           (base.mx, base.my, base.mz);
+        const real_t   div_m   =   grad_m.trace();
+        const real_t   rhs_rho = - div_m;
+        const Vector3r u       =   rholut::u(base.rho, m);
+        const real_t   div_u   =   rholut::div_u(base.rho, grad_rho,
+                                                 m,        div_m);
+        const Vector3r rhs_m   = - rholut::div_u_outer_m(m, grad_m,
+                                                         u, div_u)
+                                 - grad_p / (code_Ma * code_Ma);
+        const real_t   rhs_e   = - rholut::div_e_u(base.e, grad_e,
+                                                   u,      div_u)
+                                 - rholut::div_p_u(base.p, grad_p,
+                                                   u,      div_u);
+
+        // Compute largo_prestep_baseflow..., srcbase) for Largo
+        src.rho = dt.rho - rhs_rho;
+        src.mx  = dt.mx  - rhs_m.x();
+        src.my  = dt.my  - rhs_m.y();
+        src.mz  = dt.mz  - rhs_m.z();
+        src.e   = dt.e   - rhs_e;
+
+    }
 }
 
 void
@@ -244,7 +346,6 @@ slowgrowth::gather_physical_rqq(
         break;
     }
 }
-
 
 } // namespace perfect
 
