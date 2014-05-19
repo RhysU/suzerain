@@ -65,17 +65,6 @@ public:
     slowgrowth();
 
     void
-    calculate_baseflow(const real_t inv_codeMa2,
-                       const largo_formulation &formulation,
-                       const shared_ptr<baseflow_interface> &baseflow,
-                       const real_t y,
-                       largo_state &base,
-                       largo_state &dy,
-                       largo_state &dt,
-                       largo_state &dx,
-                       largo_state &src) const;
-
-    void
     initialize(const implementation slow_treatment,
                const specification_largo &sg,
                const real_t inv_codeMa2,
@@ -109,6 +98,19 @@ public:
              const real_t inv_codeMa2,
              largo_state &local_state,
              largo_state &slowgrowth_forcing);
+
+protected:
+
+    void
+    calculate_baseflow(const real_t inv_codeMa2,
+                       const largo_formulation &formulation,
+                       const shared_ptr<baseflow_interface> &baseflow,
+                       const real_t y,
+                       largo_state &base,
+                       largo_state &dy,
+                       largo_state &dt,
+                       largo_state &dx,
+                       largo_state &src) const;
 
 private:
 
