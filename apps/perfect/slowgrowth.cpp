@@ -340,6 +340,116 @@ slowgrowth::gather_physical_rqq(
     }
 }
 
+void
+slowgrowth::inner_y(
+        const type slow_treatment,
+        const specification_largo &sg,
+        const real_t code_Ma,
+        const int j,
+        const real_t y_j)
+{
+    switch (slow_treatment) {
+    default:
+        SUZERAIN_ERROR_VOID_UNIMPLEMENTED();
+
+    case slowgrowth::none:
+        break;
+
+    case slowgrowth::largo:
+        {
+            SUZERAIN_TIMER_SCOPED("slowgrowth::inner_y");
+
+            // Scaling factor adjusting for code_Ma
+            const real_t inv_Ma2 = 1 / (code_Ma * code_Ma);
+
+            // Provide any baseflow-dependent information to Largo
+            if (sg.baseflow) {
+                largo_state base, dy, dt, dx, src;
+                calculate_baseflow(code_Ma, sg.formulation, sg.baseflow, y_j,
+                                   base, dy, dt, dx, src);
+                largo_prestep_baseflow(sg.workspace,
+                                       base.rescale(inv_Ma2),
+                                       dy  .rescale(inv_Ma2),
+                                       dt  .rescale(inv_Ma2),
+                                       dx  .rescale(inv_Ma2),
+                                       src .rescale(inv_Ma2));
+            }
+
+            // Repack Y-dependent profiles into a form consumable by Largo
+            assert(meanrms.size() == 5 + 1); // State plus pressure
+            largo_state mean  (meanrms  [ndx::e  ].mean[j],
+                               meanrms  [ndx::mx ].mean[j],
+                               meanrms  [ndx::my ].mean[j],
+                               meanrms  [ndx::mz ].mean[j],
+                               meanrms  [ndx::rho].mean[j],
+                               meanrms  .back()   .mean[j]);
+            largo_state mean_y(meanrms_y[ndx::e  ].mean[j],
+                               meanrms_y[ndx::mx ].mean[j],
+                               meanrms_y[ndx::my ].mean[j],
+                               meanrms_y[ndx::mz ].mean[j],
+                               meanrms_y[ndx::rho].mean[j],
+                               meanrms_y.back()   .mean[j]);
+            largo_state rms   (meanrms  [ndx::e  ].fluctuating[j],
+                               meanrms  [ndx::mx ].fluctuating[j],
+                               meanrms  [ndx::my ].fluctuating[j],
+                               meanrms  [ndx::mz ].fluctuating[j],
+                               meanrms  [ndx::rho].fluctuating[j],
+                               meanrms  .back()   .fluctuating[j]);
+            largo_state rms_y (meanrms_y[ndx::e  ].fluctuating[j],
+                               meanrms_y[ndx::mx ].fluctuating[j],
+                               meanrms_y[ndx::my ].fluctuating[j],
+                               meanrms_y[ndx::mz ].fluctuating[j],
+                               meanrms_y[ndx::rho].fluctuating[j],
+                               meanrms_y.back()   .fluctuating[j]);
+            largo_state mean_rqq  (rqq  (j, ndx::e  ),    // Notice pressure
+                                   rqq  (j, ndx::mx ),    // entry is NaN as
+                                   rqq  (j, ndx::my ),    // it is allegedly
+                                   rqq  (j, ndx::mz ),    // unused.  This
+                                   rqq  (j, ndx::rho),    // NaN makes sure.
+                                   std::numeric_limits<real_t>::quiet_NaN());
+            largo_state mean_rqq_y(rqq_y(j, ndx::e  ),    // Ditto re: NaN
+                                   rqq_y(j, ndx::mx ),
+                                   rqq_y(j, ndx::my ),
+                                   rqq_y(j, ndx::mz ),
+                                   rqq_y(j, ndx::rho),
+                                   std::numeric_limits<real_t>::quiet_NaN());
+
+            // If requested, have Largo ignore all fluctuations (for debugging)
+            if (SUZERAIN_UNLIKELY(sg.ignore_fluctuations)) {
+                // Hide RMS fluctuations from Largo
+                rms.zero();
+                rms_y.zero();
+
+                // Have "rqq" quantities reflect only the mean profile
+                mean_rqq.rho     = mean.rho;
+                mean_rqq.mx      = mean.mx * mean.u();
+                mean_rqq.my      = mean.my * mean.v();
+                mean_rqq.mz      = mean.mz * mean.w();
+                mean_rqq.e       = mean.e  * mean.E();
+
+                // Have "rqq" derivatives reflect only the mean profile
+                mean_rqq_y.rho = mean_y.rho;
+                mean_rqq_y.mx  = mean.u()*(2*mean_y.mx - mean.u()*mean_y.rho);
+                mean_rqq_y.mx  = mean.v()*(2*mean_y.my - mean.v()*mean_y.rho);
+                mean_rqq_y.mx  = mean.w()*(2*mean_y.mz - mean.w()*mean_y.rho);
+                mean_rqq_y.e   = mean.E()*(2*mean_y.e  - mean.E()*mean_y.rho);
+            }
+
+            // Present the baseflow information to Largo
+            largo_prestep_seta_innery(sg.workspace,
+                                      y_j,
+                                      mean      .rescale(inv_Ma2        ),
+                                      rms       .rescale(inv_Ma2        ),
+                                      mean_rqq  .rescale(inv_Ma2*inv_Ma2),
+                                      mean_y    .rescale(inv_Ma2        ),
+                                      rms_y     .rescale(inv_Ma2        ),
+                                      mean_rqq_y.rescale(inv_Ma2*inv_Ma2));
+
+        }
+        break;
+    }
+}
+
 } // namespace perfect
 
 } // namespace suzerain

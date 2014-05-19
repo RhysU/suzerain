@@ -95,7 +95,13 @@ public:
                         const operator_base &o,
                         const instantaneous &inst);
 
-    //inner_y
+    void
+    inner_y(const type slow_treatment,
+            const specification_largo &sg,
+            const real_t code_Ma,
+            const int j,
+            const real_t y_j);
+
     //inner_xz
     //forcing_xyz
 
