@@ -45,9 +45,10 @@ namespace perfect {
 // Forward declarations
 class instantaneous;
 
+// TODO Doxygen for class slowgrowth
 // TODO Class slowgrowth should be an interface towards polymorphism
 
-/** Provides scoping semantics for slowgrowth::type */
+/** Provides relatively clean API for applying slow growth forcing. */
 class slowgrowth {
 
 public:
