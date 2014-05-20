@@ -207,6 +207,12 @@
                            (( Srhow,             "Reynolds-averaged spanwise momentum contributions due to slow growth forcing"                 )) \
     ))(( Srho,             (( Srho,              "Reynolds-averaged mass contributions due to slow growth forcing"                              )) \
     ))(( Srhou_dot_u,      (( Srhou_dot_u,       "Reynolds-averaged energy contribution due to slow growth forcing work"                        )) \
+    ))(( S2rhoE,           (( S2rhoE,            "Reynolds-averaged squared total energy contributions due to slow growth forcing"              )) \
+    ))(( S2rhou,           (( S2rhou,            "Reynolds-averaged squared streamwise momentum contributions due to slow growth forcing"       )) \
+                           (( S2rhov,            "Reynolds-averaged squared wall-normal momentum contributions due to slow growth forcing"      )) \
+                           (( S2rhow,            "Reynolds-averaged squared spanwise momentum contributions due to slow growth forcing"         )) \
+    ))(( S2rho,            (( S2rho,             "Reynolds-averaged squared mass contributions due to slow growth forcing"                      )) \
+    ))(( S2rhou_dot_u,     (( S2rhou_dot_u,      "Reynolds-averaged squared energy contribution due to slow growth forcing work"                )) \
     ))
 
 /**

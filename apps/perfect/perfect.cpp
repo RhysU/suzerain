@@ -978,7 +978,7 @@ take_samples(const definition_scenario &scenario,
             largo_state slowgrowth_f;
             sg_treater.inner_xz(state, slowgrowth_f);
 
-            // Gather statistics based on slow growth forcing
+            // Gather basic slow growth forcing
             acc[ref::SrhoE      ](slowgrowth_f.e  );
             acc[ref::Srhou      ](slowgrowth_f.mx );
             acc[ref::Srhov      ](slowgrowth_f.my );
@@ -987,6 +987,16 @@ take_samples(const definition_scenario &scenario,
             acc[ref::Srhou_dot_u](  slowgrowth_f.mx*u.x()
                                   + slowgrowth_f.my*u.y()
                                   + slowgrowth_f.mz*u.z());
+
+            // Gather squared slow growth forcing to permit computing variances
+            acc[ref::SrhoE      ](std::pow(slowgrowth_f.e  , 2));
+            acc[ref::Srhou      ](std::pow(slowgrowth_f.mx , 2));
+            acc[ref::Srhov      ](std::pow(slowgrowth_f.my , 2));
+            acc[ref::Srhow      ](std::pow(slowgrowth_f.mz , 2));
+            acc[ref::Srho       ](std::pow(slowgrowth_f.rho, 2));
+            acc[ref::Srhou_dot_u](std::pow(  slowgrowth_f.mx*u.x()
+                                           + slowgrowth_f.my*u.y()
+                                           + slowgrowth_f.mz*u.z(), 2));
         } // end X // end Z
 
         // All accumulators should have seen a consistent number of samples
