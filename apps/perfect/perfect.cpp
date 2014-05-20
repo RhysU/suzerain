@@ -56,7 +56,6 @@
 #include <suzerain/rngstream.hpp>
 #include <suzerain/samples.hpp>
 #include <suzerain/shared_range.hpp>
-#include <suzerain/slowgrowth.hpp>
 #include <suzerain/specification_grid.hpp>
 #include <suzerain/specification_largo.hpp>
 #include <suzerain/specification_noise.hpp>
@@ -69,6 +68,7 @@
 #include "definition_scenario.hpp"
 #include "instantaneous.hpp"
 #include "references.hpp"
+#include "slowgrowth.hpp"
 
 using boost::numeric_cast;
 using std::size_t;

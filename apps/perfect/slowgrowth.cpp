@@ -25,7 +25,7 @@
  * @copydoc slowgrowth.hpp
  */
 
-#include <suzerain/slowgrowth.hpp>
+#include "slowgrowth.hpp"
 
 #include <largo/largo.h>
 
@@ -41,9 +41,9 @@
 #include <suzerain/support/logging.hpp>
 #include <suzerain/timers.h>
 
-// TODO Implementation is very perfect gas-specific
-
 namespace suzerain {
+
+namespace perfect {
 
 slowgrowth::slowgrowth(
         const specification_largo& sg,
@@ -445,5 +445,7 @@ slowgrowth::inner_xz(
         slowgrowth_forcing.zero();
     }
 }
+
+} // namespace perfect
 
 } // namespace suzerain

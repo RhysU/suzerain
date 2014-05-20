@@ -21,8 +21,8 @@
 //
 //--------------------------------------------------------------------------
 
-#ifndef SUZERAIN_SLOWGROWTH_HPP
-#define SUZERAIN_SLOWGROWTH_HPP
+#ifndef SUZERAIN_PERFECT_SLOWGROWTH_HPP
+#define SUZERAIN_PERFECT_SLOWGROWTH_HPP
 
 /** @file
  * Provides \ref slowgrowth to facilitate slow growth forcing usage.
@@ -37,6 +37,8 @@ namespace suzerain {
 // Forward declarations
 class operator_tools;
 class specification_largo;
+
+namespace perfect {
 
 // TODO Doxygen for class slowgrowth
 
@@ -159,6 +161,8 @@ private:
 
 };
 
+} // namespace perfect
+
 } // namespace suzerain
 
-#endif  /* SUZERAIN_SLOWGROWTH_HPP */
+#endif  /* SUZERAIN_PERFECT_SLOWGROWTH_HPP */
