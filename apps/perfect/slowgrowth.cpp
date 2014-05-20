@@ -237,18 +237,44 @@ slowgrowth::gather_wavexz(
 
     SUZERAIN_TIMER_SCOPED("slowgrowth::gather_wavexz");
 
-    // With state being Fourier in X and Z but collocation in Y...
-    // ...compute L^2_{xz} of state at each collocation point
-    meanrms = compute_field_L2xz(swave, otool.grid, otool.dgrid);
+    // Only models consuming conserved growth rates need RMS data,
+    // so we can save global communication in many circumstances.
+    if        (sg.formulation.expects_conserved_growth_rates()) {
 
-    // ...and rescale to convert to root-mean-square (RMS) fluctuations
-    // (mean L2 values are unused so also defensively NaN that storage)
-    const real_t rms_adjust = 1 / sqrt(otool.grid.L.x()*otool.grid.L.z());
-    for (size_t i = 0; i < meanrms.size(); ++i) {
-        meanrms[i].mean.setConstant(
-                std::numeric_limits<real_t>::quiet_NaN());
-        meanrms[i].fluctuating *= rms_adjust;
+        // With state being Fourier in X and Z but collocation in Y...
+        // ...compute L^2_{xz} of state at each collocation point
+        meanrms = compute_field_L2xz(swave, otool.grid, otool.dgrid);
+
+        // ...and rescale to convert to root-mean-square (RMS) fluctuations
+        // (mean L2 values are unused so also defensively NaN that storage)
+        const real_t rms_adjust = 1 / sqrt(otool.grid.L.x()*otool.grid.L.z());
+        for (size_t i = 0; i < meanrms.size(); ++i) {
+            meanrms[i].mean.setConstant(
+                    std::numeric_limits<real_t>::quiet_NaN());
+            meanrms[i].fluctuating *= rms_adjust;
+        }
+
+    } else if (sg.formulation.expects_specific_growth_rates()) {
+
+        // While no information is saved, the meanrms member
+        // must be resized to match that produced above so
+        // gather_physical_cons can populate meanrms.mean[i].
+        meanrms.resize(swave.shape()[0]);
+        for (size_t i = 0; i < meanrms.size(); ++i) {
+            meanrms[i].mean.setConstant(
+                    swave.shape()[1],
+                    std::numeric_limits<real_t>::quiet_NaN());
+            meanrms[i].fluctuating.setConstant(
+                    swave.shape()[1],
+                    std::numeric_limits<real_t>::quiet_NaN());
+        }
+
+    } else {
+
+        SUZERAIN_ERROR_VOID_UNIMPLEMENTED();
+
     }
+
 }
 
 slowgrowth::physical_cons::~physical_cons()
@@ -280,7 +306,7 @@ slowgrowth::gather_physical_cons(
     meanrms.resize(meanrms.size() + 1);
     meanrms.back().mean        = data.p();
     meanrms.back().fluctuating = (data.p2() - data.p().square())
-                                    .max(0).sqrt();
+                                 .max(0).sqrt();
 
     // Wall-normal derivatives of every mean RMS quantity are required
     meanrms_y.resize(meanrms.size());
@@ -292,7 +318,7 @@ slowgrowth::gather_physical_cons(
         tmp.col(0) = (*src).mean;
         tmp.col(1) = (*src).fluctuating;
         otool.masslu()->solve(tmp.cols(), tmp.data(),
-                                tmp.innerStride(), tmp.outerStride());
+                              tmp.innerStride(), tmp.outerStride());
         (*dst).mean       .resizeLike(tmp.col(0));
         (*dst).fluctuating.resizeLike(tmp.col(1));
         otool.cop.accumulate(1, 1.0, tmp.col(0).data(), tmp.innerStride(),
