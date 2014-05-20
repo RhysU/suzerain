@@ -39,8 +39,6 @@ libsuzerain_perfect_la_SOURCES += perfect.cpp
 libsuzerain_perfect_la_SOURCES += perfect.hpp
 libsuzerain_perfect_la_SOURCES += references.cpp
 libsuzerain_perfect_la_SOURCES += references.hpp
-libsuzerain_perfect_la_SOURCES += slowgrowth.hpp
-libsuzerain_perfect_la_SOURCES += slowgrowth.cpp
 libsuzerain_perfect_la_SOURCES += treatment_nonreflecting.cpp
 libsuzerain_perfect_la_SOURCES += treatment_nonreflecting.hpp
 

@@ -29,11 +29,11 @@
  */
 
 #include <suzerain/common.hpp>
+#include <suzerain/slowgrowth.hpp>
 
 #include "implicits.hpp"
 #include "instantaneous.hpp"
 #include "references.hpp"
-#include "slowgrowth.hpp"
 
 namespace suzerain {
 

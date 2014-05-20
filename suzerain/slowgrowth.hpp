@@ -21,15 +21,15 @@
 //
 //--------------------------------------------------------------------------
 
-#ifndef SUZERAIN_PERFECT_SLOWGROWTH_HPP
-#define SUZERAIN_PERFECT_SLOWGROWTH_HPP
+#ifndef SUZERAIN_SLOWGROWTH_HPP
+#define SUZERAIN_SLOWGROWTH_HPP
 
 /** @file
- * Declarations related to slow growth formulation selection.
+ * Declarations related to slow growth formulation implementation.
  */
 
-#include <suzerain/largo_state.hpp>
 #include <suzerain/l2.hpp>
+#include <suzerain/largo_state.hpp>
 #include <suzerain/state_fwd.hpp>
 
 namespace suzerain {
@@ -40,13 +40,12 @@ class largo_formulation;
 class operator_base;
 class specification_largo;
 
-namespace perfect {
-
 // TODO Doxygen for class slowgrowth
 // TODO Class slowgrowth should be an interface towards polymorphism
 
 /** Provides relatively clean API for applying slow growth forcing. */
-class slowgrowth {
+class slowgrowth
+{
 
 public:
 
@@ -151,8 +150,6 @@ private:
 
 };
 
-} // namespace perfect
-
 } // namespace suzerain
 
-#endif  /* SUZERAIN_PERFECT_SLOWGROWTH_HPP */
+#endif  /* SUZERAIN_SLOWGROWTH_HPP */

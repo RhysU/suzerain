@@ -40,6 +40,7 @@
 #include <suzerain/operator_base.hpp>
 #include <suzerain/physical_view.hpp>
 #include <suzerain/rholut.hpp>
+#include <suzerain/slowgrowth.hpp>
 #include <suzerain/specification_largo.hpp>
 #include <suzerain/state.hpp>
 #include <suzerain/support/support.hpp>
@@ -49,7 +50,6 @@
 #include "definition_scenario.hpp"
 #include "operator_common_block.hpp"
 #include "perfect.hpp"
-#include "slowgrowth.hpp"
 
 #pragma warning(push, disable:280 383 1572)
 

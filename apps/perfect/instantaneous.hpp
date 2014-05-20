@@ -30,9 +30,8 @@
 
 #include <suzerain/common.hpp>
 
+#include <suzerain/slowgrowth.hpp>
 #include <suzerain/treatment_constraint.hpp>
-
-#include "slowgrowth.hpp"
 
 namespace suzerain {
 
