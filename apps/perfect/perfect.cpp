@@ -662,8 +662,8 @@ take_samples(const definition_scenario &scenario,
     // (F, Y, Z, X) with contiguous (Y, Z, X) into a 2D (F, Y*Z*X) layout where
     // we know F a priori.  Reducing the dimensionality encourages linear
     // access and eases indexing overhead.
-    physical_view<aux::count> auxp(dgrid, auxw);
-    physical_view<state_count>sphys(dgrid, swave);
+    physical_view<aux::count>  auxp(dgrid, auxw);
+    physical_view<state_count> sphys(dgrid, swave);
     for (std::size_t i = 0; i < state_count; ++i) {
         dgrid.transform_wave_to_physical(&sphys.coeffRef(i,0));
     }
@@ -673,6 +673,18 @@ take_samples(const definition_scenario &scenario,
 
     // Physical space is traversed linearly using a single offset 'offset'.
     // The two loop structure is used as positions x(i), and z(k) unnecessary.
+    //
+    // Two traversals occur:
+    // (1) Computing mean profiles necessary for slow growth forcing.
+    // (2) Gathering the full suite of desired samples, including slow growth.
+
+    // Traversal:
+    // (1) Computing mean profiles necessary for slow growth forcing.
+    instantaneous inst;
+    collect_instantaneous(scenario, otool.grid, otool.dgrid, sphys, inst);
+
+    // Traversal:
+    // (2) Gathering the full suite of desired samples, including slow growth.
     for (int offset = 0, j = dgrid.local_physical_start.y();
          j < dgrid.local_physical_end.y();
          ++j) {
