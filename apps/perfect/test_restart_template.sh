@@ -70,8 +70,23 @@ banner "Upsample/downsample both homogeneous directions${OPER:+ ($OPER)}"
                      --restart_retain=1                                   \
                      --Nx=$((  $Nx)) --Nz=$((  $Nz))
     differ $exclude_datasets                                       \
+           --exclude-path=/max_rho_E   --exclude-path=/min_rho_E   \
+           --exclude-path=/max_rho_u   --exclude-path=/min_rho_u   \
+           --exclude-path=/max_rho_v   --exclude-path=/min_rho_v   \
+           --exclude-path=/max_rho_w   --exclude-path=/min_rho_w   \
+           --exclude-path=/max_rho     --exclude-path=/min_rho     \
            --exclude-path=/twopoint_kx --exclude-path=/twopoint_kz \
            ich0.h5 b0.h5
+    differ --use-system-epsilon ich0.h5 b0.h5 /max_rho_E
+    differ --use-system-epsilon ich0.h5 b0.h5 /max_rho_u
+    differ --use-system-epsilon ich0.h5 b0.h5 /max_rho_v
+    differ --use-system-epsilon ich0.h5 b0.h5 /max_rho_w
+    differ --use-system-epsilon ich0.h5 b0.h5 /max_rho
+    differ --use-system-epsilon ich0.h5 b0.h5 /min_rho_E
+    differ --use-system-epsilon ich0.h5 b0.h5 /min_rho_u
+    differ --use-system-epsilon ich0.h5 b0.h5 /min_rho_v
+    differ --use-system-epsilon ich0.h5 b0.h5 /min_rho_w
+    differ --use-system-epsilon ich0.h5 b0.h5 /min_rho
     differ --delta=3e-16 ich0.h5 b0.h5 /twopoint_kx
     differ --delta=3e-16 ich0.h5 b0.h5 /twopoint_kz
 )
