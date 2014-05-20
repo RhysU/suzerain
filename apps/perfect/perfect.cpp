@@ -56,6 +56,7 @@
 #include <suzerain/rngstream.hpp>
 #include <suzerain/samples.hpp>
 #include <suzerain/shared_range.hpp>
+#include <suzerain/slowgrowth.hpp>
 #include <suzerain/specification_grid.hpp>
 #include <suzerain/specification_largo.hpp>
 #include <suzerain/specification_noise.hpp>
@@ -539,7 +540,8 @@ add_noise(contiguous_state<4,complex_t> &state,
 std::auto_ptr<samples>
 take_samples(const definition_scenario &scenario,
              const specification_largo &sg,
-             const operator_tools& otool,
+             const operator_tools &otool,
+             const bspline &b,
              contiguous_state<4,complex_t> &swave,
              const real_t t)
 {
@@ -658,6 +660,14 @@ take_samples(const definition_scenario &scenario,
     otool.diffwave_accumulate(1, 0, 1., swave, ndx::rho,  0., auxw, aux::rho_x);
     otool.diffwave_accumulate(0, 1, 1., swave, ndx::rho,  0., auxw, aux::rho_z);
 
+    // Initialize slow growth treatment if necessary
+    slowgrowth sg_treater(sg, scenario.Ma);
+    sg_treater.initialize();
+
+    // With conserved state Fourier in X and Z but collocation in Y,
+    // gather any RMS-like information necessary for slow growth forcing.
+    sg_treater.gather_wavexz(otool, swave);
+
     // Collectively convert swave and auxw to physical space using parallel
     // FFTs. In physical space, we'll employ views to reshape the 4D row-major
     // (F, Y, Z, X) with contiguous (Y, Z, X) into a 2D (F, Y*Z*X) layout where
@@ -681,14 +691,21 @@ take_samples(const definition_scenario &scenario,
 
     // Traversal:
     // (1) Computing mean profiles necessary for slow growth forcing.
-    instantaneous inst;
-    collect_instantaneous(scenario, otool.grid, otool.dgrid, sphys, inst);
+    {
+        instantaneous inst;
+        collect_instantaneous(scenario, otool.grid, otool.dgrid, sphys, inst);
+        sg_treater.gather_physical_cons(otool, inst);
+        sg_treater.gather_physical_rqq (otool, inst);
+    }
 
     // Traversal:
     // (2) Gathering the full suite of desired samples, including slow growth.
     for (int offset = 0, j = dgrid.local_physical_start.y();
          j < dgrid.local_physical_end.y();
          ++j) {
+
+        // Prepare any y-dependent slow growth computation
+        sg_treater.inner_y(j, b.collocation_point(j));
 
         // Prepare logical indices using struct for scoping (e.g. ref::ux).
 #define COMPONENT(quantity, component, offset, description) component,
@@ -956,6 +973,14 @@ take_samples(const definition_scenario &scenario,
             acc[ref::rho2_omy_omz](rho2 * om.y() * om.z());
             acc[ref::rho2_omz_omz](rho2 * om.z() * om.z());
 
+            // Compute any slow growth forcing applied to the flow
+            largo_state state(e, m.x(), m.y(), m.z(), rho, p);
+            largo_state slowgrowth_f;
+            sg_treater.inner_xz(state, slowgrowth_f);
+
+            // Gather statistics based on slow growth forcing
+            // FIXME STARTHERE
+
         } // end X // end Z
 
         // All accumulators should have seen a consistent number of samples
@@ -998,7 +1023,7 @@ take_samples(const definition_scenario &scenario,
 // See comments there.
 std::auto_ptr<profile>
 take_profile(const definition_scenario &scenario,
-             const operator_tools& otool,
+             const operator_tools &otool,
              contiguous_state<4,complex_t> &swave)
 {
     // State enters method as coefficients in X, Y, and Z directions

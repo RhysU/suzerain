@@ -123,7 +123,9 @@ add_noise(contiguous_state<4,complex_t> &state,
  * SUZERAIN_SAMPLES_IMPLICIT.  This is an expensive, collective method.
  *
  * @param[in]     scenario Scenario parameters.
+ * @param[in]     sg       Slow growth specification in use.
  * @param[in]     otool    Operator definitions in use.
+ * @param[in]     b        B-spline basis for wall-normal direction.
  * @param[in,out] swave    Destroyed in the computation
  * @param[in]     t        Current simulation time
  *
@@ -132,7 +134,8 @@ add_noise(contiguous_state<4,complex_t> &state,
 std::auto_ptr<samples>
 take_samples(const definition_scenario &scenario,
              const specification_largo &sg,
-             const operator_tools& otool,
+             const operator_tools &otool,
+             const bspline &b,
              contiguous_state<4,complex_t> &swave,
              const real_t t);
 
@@ -148,7 +151,7 @@ take_samples(const definition_scenario &scenario,
  */
 std::auto_ptr<profile>
 take_profile(const definition_scenario &scenario,
-             const operator_tools& otool,
+             const operator_tools &otool,
              contiguous_state<4,complex_t> &swave);
 
 /**
