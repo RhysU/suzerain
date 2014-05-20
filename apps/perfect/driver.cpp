@@ -316,7 +316,7 @@ driver::compute_statistics(
     // Obtain mean samples from instantaneous fields stored in state_linear
     state_nonlinear->assign_from(*state_linear);
     shared_ptr<operator_tools> otool = obtain_operator_tools();
-    mean = take_samples(*scenario, *otool, *state_nonlinear, t);
+    mean = take_samples(*scenario, *sg, *otool, *state_nonlinear, t);
 
     // Obtain mean quantities computed via implicit forcing (when possible)
     if (common_block.imp.rows() == mean->storage.rows()) {

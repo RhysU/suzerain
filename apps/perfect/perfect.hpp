@@ -131,6 +131,7 @@ add_noise(contiguous_state<4,complex_t> &state,
  */
 std::auto_ptr<samples>
 take_samples(const definition_scenario &scenario,
+             const specification_largo &sg,
              const operator_tools& otool,
              contiguous_state<4,complex_t> &swave,
              const real_t t);
