@@ -35,7 +35,7 @@
 namespace suzerain {
 
 // Forward declarations
-class operator_base;
+class operator_tools;
 class specification_largo;
 
 // TODO Doxygen for class slowgrowth
@@ -57,7 +57,7 @@ public:
     initialize(const std::size_t substep_index = 0);
 
     void
-    gather_wavexz(const operator_base &o,
+    gather_wavexz(const operator_tools &otool,
                   const contiguous_state<4,complex_t> &swave);
 
     /**
@@ -94,7 +94,7 @@ public:
     };
 
     void
-    gather_physical_cons(const operator_base &o,
+    gather_physical_cons(const operator_tools &otool,
                          const physical_cons &data);
 
     /**
@@ -124,7 +124,7 @@ public:
     };
 
     void
-    gather_physical_rqq(const operator_base &o,
+    gather_physical_rqq(const operator_tools &otool,
                         const physical_rqq &data);
 
     void

@@ -34,7 +34,7 @@
 #include <suzerain/error.h>
 #include <suzerain/largo_formulation.hpp>
 #include <suzerain/ndx.hpp>
-#include <suzerain/operator_base.hpp>
+#include <suzerain/operator_tools.hpp>
 #include <suzerain/rholut.hpp>
 #include <suzerain/specification_largo.hpp>
 #include <suzerain/state.hpp>
@@ -194,7 +194,7 @@ slowgrowth::initialize(
 // TODO Avoid fluctuation computations when not required by formulation
 void
 slowgrowth::gather_wavexz(
-        const operator_base &o,
+        const operator_tools &otool,
         const contiguous_state<4,complex_t> &swave)
 {
     if (sg.formulation.enabled()) {
@@ -202,11 +202,11 @@ slowgrowth::gather_wavexz(
 
         // With state being Fourier in X and Z but collocation in Y...
         // ...compute L^2_{xz} of state at each collocation point
-        meanrms = compute_field_L2xz(swave, o.grid, o.dgrid);
+        meanrms = compute_field_L2xz(swave, otool.grid, otool.dgrid);
 
         // ...and rescale to convert to root-mean-square (RMS) fluctuations
         // (mean L2 values are unused so also defensively NaN that storage)
-        const real_t rms_adjust = 1 / sqrt(o.grid.L.x() * o.grid.L.z());
+        const real_t rms_adjust = 1 / sqrt(otool.grid.L.x()*otool.grid.L.z());
         for (size_t i = 0; i < meanrms.size(); ++i) {
             meanrms[i].mean.setConstant(
                     std::numeric_limits<real_t>::quiet_NaN());
@@ -221,7 +221,7 @@ slowgrowth::physical_cons::~physical_cons()
 
 void
 slowgrowth::gather_physical_cons(
-        const operator_base &o,
+        const operator_tools &otool,
         const slowgrowth::physical_cons &data)
 {
     if (sg.formulation.enabled()) {
@@ -247,21 +247,21 @@ slowgrowth::gather_physical_cons(
 
         // Wall-normal derivatives of every mean RMS quantity are required
         meanrms_y.resize(meanrms.size());
-        ArrayX2r tmp(o.dgrid.global_physical_extent.y(), 2);
+        ArrayX2r tmp(otool.dgrid.global_physical_extent.y(), 2);
         std::vector<field_L2xz>::const_iterator src = meanrms.begin();
         std::vector<field_L2xz>::const_iterator end = meanrms.end();
         std::vector<field_L2xz>::      iterator dst = meanrms_y.begin();
         for (/*just above*/; src != end; ++src, ++dst) {
             tmp.col(0) = (*src).mean;
             tmp.col(1) = (*src).fluctuating;
-            o.masslu()->solve(tmp.cols(), tmp.data(),
-                              tmp.innerStride(), tmp.outerStride());
+            otool.masslu()->solve(tmp.cols(), tmp.data(),
+                                  tmp.innerStride(), tmp.outerStride());
             (*dst).mean       .resizeLike(tmp.col(0));
             (*dst).fluctuating.resizeLike(tmp.col(1));
-            o.cop.accumulate(1, 1.0, tmp.col(0).data(), tmp.innerStride(),
-                                0.0, (*dst).mean.data(), 1);
-            o.cop.accumulate(1, 1.0, tmp.col(1).data(), tmp.innerStride(),
-                                0.0, (*dst).fluctuating.data(), 1);
+            otool.cop.accumulate(1, 1.0, tmp.col(0).data(), tmp.innerStride(),
+                                    0.0, (*dst).mean.data(), 1);
+            otool.cop.accumulate(1, 1.0, tmp.col(1).data(), tmp.innerStride(),
+                                    0.0, (*dst).fluctuating.data(), 1);
         }
     }
 }
@@ -272,14 +272,14 @@ slowgrowth::physical_rqq::~physical_rqq()
 
 void
 slowgrowth::gather_physical_rqq(
-        const operator_base &o,
+        const operator_tools &otool,
         const physical_rqq &data)
 {
     if (sg.formulation.enabled()) {
         SUZERAIN_TIMER_SCOPED("slowgrowth::gather_physical_rqq");
 
         // Obtain "rqq" values for tensorially-consistent homogenization
-        rqq.resize(o.dgrid.global_physical_extent.y(), NoChange);
+        rqq.resize(otool.dgrid.global_physical_extent.y(), NoChange);
         rqq.col(ndx::rho) = data.rho  ();
         rqq.col(ndx::mx ) = data.rhouu();
         rqq.col(ndx::my ) = data.rhovv();
@@ -291,10 +291,10 @@ slowgrowth::gather_physical_rqq(
         ArrayXr tmp;
         for (int i = 0; i < rqq_y.cols(); ++i) {
             tmp = rqq_y.col(i);
-            o.masslu()->solve(tmp.cols(), tmp.data(),
-                              tmp.innerStride(), tmp.outerStride());
-            o.cop.accumulate(1, 1.0, tmp.data(), tmp.innerStride(),
-                                0.0, rqq_y.col(i).data(), 1);
+            otool.masslu()->solve(tmp.cols(), tmp.data(),
+                                  tmp.innerStride(), tmp.outerStride());
+            otool.cop.accumulate(1, 1.0, tmp.data(), tmp.innerStride(),
+                                    0.0, rqq_y.col(i).data(), 1);
         }
     }
 }
