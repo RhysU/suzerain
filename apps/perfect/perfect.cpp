@@ -989,18 +989,21 @@ take_samples(const definition_scenario &scenario,
                                   + slowgrowth_f.mz*u.z());
 
             // Gather squared slow growth forcing to permit computing variances
-            acc[ref::SrhoE      ](std::pow(slowgrowth_f.e  , 2));
-            acc[ref::Srhou      ](std::pow(slowgrowth_f.mx , 2));
-            acc[ref::Srhov      ](std::pow(slowgrowth_f.my , 2));
-            acc[ref::Srhow      ](std::pow(slowgrowth_f.mz , 2));
-            acc[ref::Srho       ](std::pow(slowgrowth_f.rho, 2));
-            acc[ref::Srhou_dot_u](std::pow(  slowgrowth_f.mx*u.x()
-                                           + slowgrowth_f.my*u.y()
-                                           + slowgrowth_f.mz*u.z(), 2));
+            acc[ref::S2rhoE      ](std::pow(slowgrowth_f.e  , 2));
+            acc[ref::S2rhou      ](std::pow(slowgrowth_f.mx , 2));
+            acc[ref::S2rhov      ](std::pow(slowgrowth_f.my , 2));
+            acc[ref::S2rhow      ](std::pow(slowgrowth_f.mz , 2));
+            acc[ref::S2rho       ](std::pow(slowgrowth_f.rho, 2));
+            acc[ref::S2rhou_dot_u](std::pow(  slowgrowth_f.mx*u.x()
+                                            + slowgrowth_f.my*u.y()
+                                            + slowgrowth_f.mz*u.z(), 2));
         } // end X // end Z
 
         // All accumulators should have seen a consistent number of samples
-        assert(consistent_accumulation_counts(acc));
+#ifndef NDEBUG
+        const std::size_t miscreant = inconsistent_accumulation_count(acc);
+        assert(!miscreant);
+#endif
 
         // Extract y-specific sums into MPI-reduction-ready storage for y(j)
         using boost::accumulators::sum;
@@ -1286,7 +1289,10 @@ collect_references(const definition_scenario &scenario,
 
         // All accumulators should have seen a consistent number of samples
         // Failure usually indicates a coding indicator on add new quantities
-        assert(consistent_accumulation_counts(acc));
+#ifndef NDEBUG
+        const std::size_t miscreant = inconsistent_accumulation_count(acc);
+        assert(!miscreant);
+#endif
 
         // Store sums into common block in preparation for MPI Allreduce
         for (int i = 0; i < static_cast<int>(references::q::count); ++i) {
@@ -1380,7 +1386,10 @@ collect_instantaneous(const definition_scenario &scenario,
 
         // All accumulators should have seen a consistent number of samples
         // Failure usually indicates a coding indicator on add new quantities
-        assert(consistent_accumulation_counts(acc));
+#ifndef NDEBUG
+        const std::size_t miscreant = inconsistent_accumulation_count(acc);
+        assert(!miscreant);
+#endif
 
         // Store sums into common block in preparation for MPI Allreduce
         for (int i = 0; i < static_cast<int>(instantaneous::q::count); ++i) {

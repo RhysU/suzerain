@@ -332,21 +332,41 @@ bool all(InputIterator first, InputIterator last)
  *               which \e must specify <tt>boost::accumulators::tag::count</tt>
  *               for this method to compile.
  * @tparam N     The number of accumulators in the array.
- * @param acc    The array of accumulators to check.
+ * @param  acc   The array of accumulators to check.
  *
- * @return True if all accumulators saw the same number of invocations.
- *         False otherwise.
+ * @return Zero if all accumulators saw the same number of invocations.
+ *         Nonzero indicating the first accumulator possessing a count
+ *         not matching that of <code>acc[i]</code>.
  */
 template <typename FPT, typename Stats, std::size_t N>
-bool consistent_accumulation_counts(
+std::size_t inconsistent_accumulation_count(
     const array<boost::accumulators::accumulator_set<FPT, Stats>, N> acc)
 {
-    // TODO Rewrite using short-circuiting logic
     using boost::accumulators::count;
-    bool retval = true;
-    for (std::size_t i = 1; i < N; ++i)
-        retval |= count(acc.front()) == count(acc[i]);
-    return retval;
+    const std::size_t expected = count(acc.front());
+    for (std::size_t i = 1; i < N; ++i) {
+        const std::size_t observed = count(acc[i]);
+        if (expected != observed) {
+            return i;
+        }
+    }
+    return 0;
+}
+
+// Specialization of inconsistent_accumulation_count for degenerate length-0
+template <typename FPT, typename Stats>
+std::size_t inconsistent_accumulation_count(
+    const array<boost::accumulators::accumulator_set<FPT, Stats>, 0> acc)
+{
+    return 0;
+}
+
+// Specialization of inconsistent_accumulation_count for degenerate length-1
+template <typename FPT, typename Stats>
+std::size_t inconsistent_accumulation_count(
+    const array<boost::accumulators::accumulator_set<FPT, Stats>, 1> acc)
+{
+    return 0;
 }
 
 } // namespace suzerain
