@@ -228,27 +228,26 @@ slowgrowth::initialize(
     }
 }
 
-// TODO Avoid fluctuation computations when not required by formulation
 void
 slowgrowth::gather_wavexz(
         const operator_tools &otool,
         const contiguous_state<4,complex_t> &swave)
 {
-    if (sg.formulation.enabled()) {
-        SUZERAIN_TIMER_SCOPED("slowgrowth::gather_wavexz");
+    if (!sg.formulation.enabled()) return; // Quick return when possible
 
-        // With state being Fourier in X and Z but collocation in Y...
-        // ...compute L^2_{xz} of state at each collocation point
-        meanrms = compute_field_L2xz(swave, otool.grid, otool.dgrid);
+    SUZERAIN_TIMER_SCOPED("slowgrowth::gather_wavexz");
 
-        // ...and rescale to convert to root-mean-square (RMS) fluctuations
-        // (mean L2 values are unused so also defensively NaN that storage)
-        const real_t rms_adjust = 1 / sqrt(otool.grid.L.x()*otool.grid.L.z());
-        for (size_t i = 0; i < meanrms.size(); ++i) {
-            meanrms[i].mean.setConstant(
-                    std::numeric_limits<real_t>::quiet_NaN());
-            meanrms[i].fluctuating *= rms_adjust;
-        }
+    // With state being Fourier in X and Z but collocation in Y...
+    // ...compute L^2_{xz} of state at each collocation point
+    meanrms = compute_field_L2xz(swave, otool.grid, otool.dgrid);
+
+    // ...and rescale to convert to root-mean-square (RMS) fluctuations
+    // (mean L2 values are unused so also defensively NaN that storage)
+    const real_t rms_adjust = 1 / sqrt(otool.grid.L.x()*otool.grid.L.z());
+    for (size_t i = 0; i < meanrms.size(); ++i) {
+        meanrms[i].mean.setConstant(
+                std::numeric_limits<real_t>::quiet_NaN());
+        meanrms[i].fluctuating *= rms_adjust;
     }
 }
 
@@ -261,45 +260,45 @@ slowgrowth::gather_physical_cons(
         const operator_tools &otool,
         const slowgrowth::physical_cons &data)
 {
-    if (sg.formulation.enabled()) {
-        SUZERAIN_TIMER_SCOPED("slowgrowth::gather_physical_cons");
+    if (!sg.formulation.enabled()) return; // Quick return when possible
 
-        // Slow growth requires mean conserved state at collocation points.
-        // Abuse unused pieces within 'meanrms' to avoid more allocations.
-        SUZERAIN_ENSURE(meanrms.size() == 5);
-        meanrms[ndx::e  ].mean = data.rhoE();
-        meanrms[ndx::mx ].mean = data.rhou();
-        meanrms[ndx::my ].mean = data.rhov();
-        meanrms[ndx::mz ].mean = data.rhow();
-        meanrms[ndx::rho].mean = data.rho();
+    SUZERAIN_TIMER_SCOPED("slowgrowth::gather_physical_cons");
 
-        // Slow growth requires mean pressure and its fluctuation profiles.
-        // Abuse 'meanrms' to store the information after conserved state.
-        // The RMS of fluctuating pressure computation can be numerically
-        // noisy hence require a non-negative result prior to the sqrt.
-        meanrms.resize(meanrms.size() + 1);
-        meanrms.back().mean        = data.p();
-        meanrms.back().fluctuating = (data.p2() - data.p().square())
-                                     .max(0).sqrt();
+    // Slow growth requires mean conserved state at collocation points.
+    // Abuse unused pieces within 'meanrms' to avoid more allocations.
+    SUZERAIN_ENSURE(meanrms.size() == 5);
+    meanrms[ndx::e  ].mean = data.rhoE();
+    meanrms[ndx::mx ].mean = data.rhou();
+    meanrms[ndx::my ].mean = data.rhov();
+    meanrms[ndx::mz ].mean = data.rhow();
+    meanrms[ndx::rho].mean = data.rho();
 
-        // Wall-normal derivatives of every mean RMS quantity are required
-        meanrms_y.resize(meanrms.size());
-        ArrayX2r tmp(otool.dgrid.global_physical_extent.y(), 2);
-        std::vector<field_L2xz>::const_iterator src = meanrms.begin();
-        std::vector<field_L2xz>::const_iterator end = meanrms.end();
-        std::vector<field_L2xz>::      iterator dst = meanrms_y.begin();
-        for (/*just above*/; src != end; ++src, ++dst) {
-            tmp.col(0) = (*src).mean;
-            tmp.col(1) = (*src).fluctuating;
-            otool.masslu()->solve(tmp.cols(), tmp.data(),
-                                  tmp.innerStride(), tmp.outerStride());
-            (*dst).mean       .resizeLike(tmp.col(0));
-            (*dst).fluctuating.resizeLike(tmp.col(1));
-            otool.cop.accumulate(1, 1.0, tmp.col(0).data(), tmp.innerStride(),
-                                    0.0, (*dst).mean.data(), 1);
-            otool.cop.accumulate(1, 1.0, tmp.col(1).data(), tmp.innerStride(),
-                                    0.0, (*dst).fluctuating.data(), 1);
-        }
+    // Slow growth requires mean pressure and its fluctuation profiles.
+    // Abuse 'meanrms' to store the information after conserved state.
+    // The RMS of fluctuating pressure computation can be numerically
+    // noisy hence require a non-negative result prior to the sqrt.
+    meanrms.resize(meanrms.size() + 1);
+    meanrms.back().mean        = data.p();
+    meanrms.back().fluctuating = (data.p2() - data.p().square())
+                                    .max(0).sqrt();
+
+    // Wall-normal derivatives of every mean RMS quantity are required
+    meanrms_y.resize(meanrms.size());
+    ArrayX2r tmp(otool.dgrid.global_physical_extent.y(), 2);
+    std::vector<field_L2xz>::const_iterator src = meanrms.begin();
+    std::vector<field_L2xz>::const_iterator end = meanrms.end();
+    std::vector<field_L2xz>::      iterator dst = meanrms_y.begin();
+    for (/*just above*/; src != end; ++src, ++dst) {
+        tmp.col(0) = (*src).mean;
+        tmp.col(1) = (*src).fluctuating;
+        otool.masslu()->solve(tmp.cols(), tmp.data(),
+                                tmp.innerStride(), tmp.outerStride());
+        (*dst).mean       .resizeLike(tmp.col(0));
+        (*dst).fluctuating.resizeLike(tmp.col(1));
+        otool.cop.accumulate(1, 1.0, tmp.col(0).data(), tmp.innerStride(),
+                                0.0, (*dst).mean.data(), 1);
+        otool.cop.accumulate(1, 1.0, tmp.col(1).data(), tmp.innerStride(),
+                                0.0, (*dst).fluctuating.data(), 1);
     }
 }
 
@@ -312,27 +311,27 @@ slowgrowth::gather_physical_rqq(
         const operator_tools &otool,
         const physical_rqq &data)
 {
-    if (sg.formulation.enabled()) {
-        SUZERAIN_TIMER_SCOPED("slowgrowth::gather_physical_rqq");
+    if (!sg.formulation.enabled()) return; // Quick return when possible
 
-        // Obtain "rqq" values for tensorially-consistent homogenization
-        rqq.resize(otool.dgrid.global_physical_extent.y(), NoChange);
-        rqq.col(ndx::rho) = data.rho  ();
-        rqq.col(ndx::mx ) = data.rhouu();
-        rqq.col(ndx::my ) = data.rhovv();
-        rqq.col(ndx::mz ) = data.rhoww();
-        rqq.col(ndx::e  ) = data.rhoEE();
+    SUZERAIN_TIMER_SCOPED("slowgrowth::gather_physical_rqq");
 
-        // Compute derivatives of these "rqq" values
-        rqq_y = rqq;
-        ArrayXr tmp;
-        for (int i = 0; i < rqq_y.cols(); ++i) {
-            tmp = rqq_y.col(i);
-            otool.masslu()->solve(tmp.cols(), tmp.data(),
-                                  tmp.innerStride(), tmp.outerStride());
-            otool.cop.accumulate(1, 1.0, tmp.data(), tmp.innerStride(),
-                                    0.0, rqq_y.col(i).data(), 1);
-        }
+    // Obtain "rqq" values for tensorially-consistent homogenization
+    rqq.resize(otool.dgrid.global_physical_extent.y(), NoChange);
+    rqq.col(ndx::rho) = data.rho  ();
+    rqq.col(ndx::mx ) = data.rhouu();
+    rqq.col(ndx::my ) = data.rhovv();
+    rqq.col(ndx::mz ) = data.rhoww();
+    rqq.col(ndx::e  ) = data.rhoEE();
+
+    // Compute derivatives of these "rqq" values
+    rqq_y = rqq;
+    ArrayXr tmp;
+    for (int i = 0; i < rqq_y.cols(); ++i) {
+        tmp = rqq_y.col(i);
+        otool.masslu()->solve(tmp.cols(), tmp.data(),
+                                tmp.innerStride(), tmp.outerStride());
+        otool.cop.accumulate(1, 1.0, tmp.data(), tmp.innerStride(),
+                                0.0, rqq_y.col(i).data(), 1);
     }
 }
 
@@ -341,93 +340,93 @@ slowgrowth::inner_y(
         const int j,
         const real_t y_j)
 {
-    if (sg.formulation.enabled()) {
-        SUZERAIN_TIMER_SCOPED("slowgrowth::inner_y");
-        assert(sg.workspace);
+    if (!sg.formulation.enabled()) return; // Quick return when possible
 
-        // Provide any baseflow-dependent information to Largo
-        if (sg.baseflow) {
-            largo_state base, dy, dt, dx, src;
-            calculate_baseflow(y_j, base, dy, dt, dx, src);
-            largo_prestep_baseflow(sg.workspace,
-                                   base.rescale(inv_codeMa2),
-                                   dy  .rescale(inv_codeMa2),
-                                   dt  .rescale(inv_codeMa2),
-                                   dx  .rescale(inv_codeMa2),
-                                   src .rescale(inv_codeMa2));
-        }
+    SUZERAIN_TIMER_SCOPED("slowgrowth::inner_y");
+    assert(sg.workspace);
 
-        // Repack Y-dependent profiles into a form consumable by Largo
-        assert(meanrms.size() == 5 + 1); // State plus pressure
-        largo_state mean  (meanrms  [ndx::e  ].mean[j],
-                           meanrms  [ndx::mx ].mean[j],
-                           meanrms  [ndx::my ].mean[j],
-                           meanrms  [ndx::mz ].mean[j],
-                           meanrms  [ndx::rho].mean[j],
-                           meanrms  .back()   .mean[j]);
-        largo_state mean_y(meanrms_y[ndx::e  ].mean[j],
-                           meanrms_y[ndx::mx ].mean[j],
-                           meanrms_y[ndx::my ].mean[j],
-                           meanrms_y[ndx::mz ].mean[j],
-                           meanrms_y[ndx::rho].mean[j],
-                           meanrms_y.back()   .mean[j]);
-        largo_state rms   (meanrms  [ndx::e  ].fluctuating[j],
-                           meanrms  [ndx::mx ].fluctuating[j],
-                           meanrms  [ndx::my ].fluctuating[j],
-                           meanrms  [ndx::mz ].fluctuating[j],
-                           meanrms  [ndx::rho].fluctuating[j],
-                           meanrms  .back()   .fluctuating[j]);
-        largo_state rms_y (meanrms_y[ndx::e  ].fluctuating[j],
-                           meanrms_y[ndx::mx ].fluctuating[j],
-                           meanrms_y[ndx::my ].fluctuating[j],
-                           meanrms_y[ndx::mz ].fluctuating[j],
-                           meanrms_y[ndx::rho].fluctuating[j],
-                           meanrms_y.back()   .fluctuating[j]);
-        largo_state mean_rqq  (rqq  (j, ndx::e  ),    // Notice pressure
-                               rqq  (j, ndx::mx ),    // entry is NaN as
-                               rqq  (j, ndx::my ),    // it is allegedly
-                               rqq  (j, ndx::mz ),    // unused.  This
-                               rqq  (j, ndx::rho),    // NaN makes sure.
-                               std::numeric_limits<real_t>::quiet_NaN());
-        largo_state mean_rqq_y(rqq_y(j, ndx::e  ),    // Ditto re: NaN
-                               rqq_y(j, ndx::mx ),
-                               rqq_y(j, ndx::my ),
-                               rqq_y(j, ndx::mz ),
-                               rqq_y(j, ndx::rho),
-                               std::numeric_limits<real_t>::quiet_NaN());
-
-        // If requested, have Largo ignore all fluctuations (for debugging)
-        if (SUZERAIN_UNLIKELY(sg.ignore_fluctuations)) {
-            // Hide RMS fluctuations from Largo
-            rms.zero();
-            rms_y.zero();
-
-            // Have "rqq" quantities reflect only the mean profile
-            mean_rqq.rho   = mean.rho;
-            mean_rqq.mx    = mean.mx * mean.u();
-            mean_rqq.my    = mean.my * mean.v();
-            mean_rqq.mz    = mean.mz * mean.w();
-            mean_rqq.e     = mean.e  * mean.E();
-
-            // Have "rqq" derivatives reflect only the mean profile
-            mean_rqq_y.rho = mean_y.rho;
-            mean_rqq_y.mx  = mean.u()*(2*mean_y.mx - mean.u()*mean_y.rho);
-            mean_rqq_y.mx  = mean.v()*(2*mean_y.my - mean.v()*mean_y.rho);
-            mean_rqq_y.mx  = mean.w()*(2*mean_y.mz - mean.w()*mean_y.rho);
-            mean_rqq_y.e   = mean.E()*(2*mean_y.e  - mean.E()*mean_y.rho);
-        }
-
-        // Present the baseflow information to Largo
-        largo_prestep_seta_innery(
-                    sg.workspace,
-                    y_j,
-                    mean      .rescale(inv_codeMa2            ),
-                    rms       .rescale(inv_codeMa2            ),
-                    mean_rqq  .rescale(inv_codeMa2*inv_codeMa2),
-                    mean_y    .rescale(inv_codeMa2            ),
-                    rms_y     .rescale(inv_codeMa2            ),
-                    mean_rqq_y.rescale(inv_codeMa2*inv_codeMa2));
+    // Provide any baseflow-dependent information to Largo
+    if (sg.baseflow) {
+        largo_state base, dy, dt, dx, src;
+        calculate_baseflow(y_j, base, dy, dt, dx, src);
+        largo_prestep_baseflow(sg.workspace,
+                                base.rescale(inv_codeMa2),
+                                dy  .rescale(inv_codeMa2),
+                                dt  .rescale(inv_codeMa2),
+                                dx  .rescale(inv_codeMa2),
+                                src .rescale(inv_codeMa2));
     }
+
+    // Repack Y-dependent profiles into a form consumable by Largo
+    assert(meanrms.size() == 5 + 1); // State plus pressure
+    largo_state mean  (meanrms  [ndx::e  ].mean[j],
+                       meanrms  [ndx::mx ].mean[j],
+                       meanrms  [ndx::my ].mean[j],
+                       meanrms  [ndx::mz ].mean[j],
+                       meanrms  [ndx::rho].mean[j],
+                       meanrms  .back()   .mean[j]);
+    largo_state mean_y(meanrms_y[ndx::e  ].mean[j],
+                       meanrms_y[ndx::mx ].mean[j],
+                       meanrms_y[ndx::my ].mean[j],
+                       meanrms_y[ndx::mz ].mean[j],
+                       meanrms_y[ndx::rho].mean[j],
+                       meanrms_y.back()   .mean[j]);
+    largo_state rms   (meanrms  [ndx::e  ].fluctuating[j],
+                       meanrms  [ndx::mx ].fluctuating[j],
+                       meanrms  [ndx::my ].fluctuating[j],
+                       meanrms  [ndx::mz ].fluctuating[j],
+                       meanrms  [ndx::rho].fluctuating[j],
+                       meanrms  .back()   .fluctuating[j]);
+    largo_state rms_y (meanrms_y[ndx::e  ].fluctuating[j],
+                       meanrms_y[ndx::mx ].fluctuating[j],
+                       meanrms_y[ndx::my ].fluctuating[j],
+                       meanrms_y[ndx::mz ].fluctuating[j],
+                       meanrms_y[ndx::rho].fluctuating[j],
+                       meanrms_y.back()   .fluctuating[j]);
+    largo_state mean_rqq  (rqq  (j, ndx::e  ),    // Notice pressure
+                           rqq  (j, ndx::mx ),    // entry is NaN as
+                           rqq  (j, ndx::my ),    // it is allegedly
+                           rqq  (j, ndx::mz ),    // unused.  This
+                           rqq  (j, ndx::rho),    // NaN makes sure.
+                           std::numeric_limits<real_t>::quiet_NaN());
+    largo_state mean_rqq_y(rqq_y(j, ndx::e  ),    // Ditto re: NaN
+                           rqq_y(j, ndx::mx ),
+                           rqq_y(j, ndx::my ),
+                           rqq_y(j, ndx::mz ),
+                           rqq_y(j, ndx::rho),
+                           std::numeric_limits<real_t>::quiet_NaN());
+
+    // If requested, have Largo ignore all fluctuations (for debugging)
+    if (SUZERAIN_UNLIKELY(sg.ignore_fluctuations)) {
+        // Hide RMS fluctuations from Largo
+        rms.zero();
+        rms_y.zero();
+
+        // Have "rqq" quantities reflect only the mean profile
+        mean_rqq.rho   = mean.rho;
+        mean_rqq.mx    = mean.mx * mean.u();
+        mean_rqq.my    = mean.my * mean.v();
+        mean_rqq.mz    = mean.mz * mean.w();
+        mean_rqq.e     = mean.e  * mean.E();
+
+        // Have "rqq" derivatives reflect only the mean profile
+        mean_rqq_y.rho = mean_y.rho;
+        mean_rqq_y.mx  = mean.u()*(2*mean_y.mx - mean.u()*mean_y.rho);
+        mean_rqq_y.mx  = mean.v()*(2*mean_y.my - mean.v()*mean_y.rho);
+        mean_rqq_y.mx  = mean.w()*(2*mean_y.mz - mean.w()*mean_y.rho);
+        mean_rqq_y.e   = mean.E()*(2*mean_y.e  - mean.E()*mean_y.rho);
+    }
+
+    // Present the baseflow information to Largo
+    largo_prestep_seta_innery(
+                sg.workspace,
+                y_j,
+                mean      .rescale(inv_codeMa2            ),
+                rms       .rescale(inv_codeMa2            ),
+                mean_rqq  .rescale(inv_codeMa2*inv_codeMa2),
+                mean_y    .rescale(inv_codeMa2            ),
+                rms_y     .rescale(inv_codeMa2            ),
+                mean_rqq_y.rescale(inv_codeMa2*inv_codeMa2));
 }
 
 void
