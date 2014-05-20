@@ -96,7 +96,7 @@ namespace perfect {
  *         quantities for linearization.
  * \tparam Linearize What type of hybrid implicit/explicit linearization
  *         is employed?
- * \tparam SlowTreatment What type of slow growth forcing should be applied?
+ * \tparam SlowGrowth Is slow growth forcing being applied?
  * \tparam ManufacturedSolution What manufactured solution should be used to
  *         provide additional forcing (when enabled)?
  *
@@ -108,7 +108,7 @@ namespace perfect {
  */
 template <bool ZerothSubstep,
           linearize::type Linearize,
-          slowgrowth::implementation SlowTreatment,
+          bool SlowGrowth,
           class ManufacturedSolution>
 std::vector<real_t> apply_navier_stokes_spatial_operator(
             const definition_scenario &scenario,
@@ -141,14 +141,10 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
     using std::sqrt;
 
     // Compile-time template parameters are used to reduce jumps at runtime.
-    // Ensure someone didn't hand in a mismatched step, common block or sg.
-    if (ZerothSubstep)      SUZERAIN_ENSURE(substep_index == 0);
-    if (substep_index == 0) SUZERAIN_ENSURE(ZerothSubstep);
-    SUZERAIN_ENSURE(common.linearization  == Linearize);
-    SUZERAIN_ENSURE(common.slow_treatment == SlowTreatment);
-    if (sg.formulation.enabled()) {
-        SUZERAIN_ENSURE(SlowTreatment != slowgrowth::none);
-    }
+    // Ensure someone didn't hand in a mismatched substep, common block or sg.
+    SUZERAIN_ENSURE(ZerothSubstep == (substep_index == 0));
+    SUZERAIN_ENSURE(Linearize == common.linearization);
+    SUZERAIN_ENSURE(SlowGrowth == sg.formulation.enabled());
 
     // FIXME Ticket #2477 retrieve linearization-dependent CFL information
     // Afterwards, change the stable time step computation accordingly
@@ -314,19 +310,13 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
     o.diffwave_accumulate(1, 0, 1, auxw,  aux::rho_y, 0, auxw, aux::rho_xy);
     o.diffwave_accumulate(0, 1, 1, auxw,  aux::rho_y, 0, auxw, aux::rho_yz);
 
-    // Compute inviscid-only constants before any Y, X, or Z inner loops
-    const real_t inv_Ma2   = 1 / (Ma * Ma);
-    const real_t gamma1    = gamma - 1;
-    const real_t lambda1_x = o.lambda1_x;
-    const real_t lambda1_z = o.lambda1_z;
-
     // Initialize slow growth treatment if necessary
-    slowgrowth sg_treater;
-    sg_treater.initialize(SlowTreatment, sg, inv_Ma2, substep_index);
+    slowgrowth sg_treater(sg, Ma);
+    if (SlowGrowth) sg_treater.initialize(substep_index);
 
     // With conserved state Fourier in X and Z but collocation in Y,
     // gather any RMS-like information necessary for slow growth forcing.
-    sg_treater.gather_wavexz(SlowTreatment, o, swave);
+    if (SlowGrowth) sg_treater.gather_wavexz(o, swave);
 
     // Collectively convert swave and auxw to physical space using parallel
     // FFTs. In physical space, we'll employ views to reshape the 4D row-major
@@ -370,8 +360,8 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
     // Slow growth requires mean conserved state at collocation points,
     // mean pressure and pressure fluctuation profiles, "rhoqq" values for
     // q \in {u, v, w, E}, and wall-normal derivatives of everything.
-    sg_treater.gather_physical_cons(SlowTreatment, o, common.sub);
-    sg_treater.gather_physical_rqq (SlowTreatment, o, common.sub);
+    if (SlowGrowth) sg_treater.gather_physical_cons(o, common.sub);
+    if (SlowGrowth) sg_treater.gather_physical_rqq (o, common.sub);
 
     // To track mean slow-growth forcing for Favre-averaged equation
     // residuals, we need to accumulate pointwise mean computations a la
@@ -382,9 +372,15 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
     // overhead when no slow growth is active.
     typedef ArrayX6r barf_type; // The juvenile spatial average ("bar") of f
     barf_type barf;             // Index ndx::type with [5] being Srhou_dot_u
-    if (SlowTreatment != slowgrowth::none) {
+    if (SlowGrowth) {
         barf.setZero(Ny, barf_type::ColsAtCompileTime);
     }
+
+    // Compute inviscid-only constants before any Y, X, or Z inner loops
+    const real_t inv_Ma2   = 1 / (Ma * Ma);
+    const real_t gamma1    = gamma - 1;
+    const real_t lambda1_x = o.lambda1_x;
+    const real_t lambda1_z = o.lambda1_z;
 
     // Traversal:
     // (2) Computing the nonlinear equation right hand sides.
@@ -394,13 +390,12 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
          ++j) {
 
         // Prepare any y-dependent slow growth computation
-        sg_treater.inner_y(SlowTreatment, sg, inv_Ma2, j, o.y(j));
+        if (SlowGrowth) sg_treater.inner_y(j, o.y(j));
 
         // Precompute subtractive slow growth velocity for wall-normal
         // convective stability criterion (Euler_Eigensystem_3D_Temporal.nb)
         // assuming not one bit of slow growth is handled implicitly.
-        const real_t y_grdelta
-            = SlowTreatment == slowgrowth::none ? 0 : o.y(j)*sg.grdelta;
+        const real_t y_grdelta = SlowGrowth ? o.y(j)*sg.grdelta : 0;
 
         // Unpack appropriate wall-normal reference quantities
         const Vector3r ref_u              (common.ref.u         ()[j],
@@ -408,30 +403,30 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                                            common.ref.w         ()[j]);
         const real_t   ref_u2             (common.ref.u2        ()[j]);
         const Matrix3r ref_uu;
-        const_cast<Matrix3r&>(ref_uu) <<   common.ref.uu      ()[j],
-                                           common.ref.uv      ()[j],
-                                           common.ref.uw      ()[j],
-                                           common.ref.uv      ()[j],
-                                           common.ref.vv      ()[j],
-                                           common.ref.vw      ()[j],
-                                           common.ref.uw      ()[j],
-                                           common.ref.vw      ()[j],
-                                           common.ref.ww      ()[j];
+        const_cast<Matrix3r&>(ref_uu) <<   common.ref.uu        ()[j],
+                                           common.ref.uv        ()[j],
+                                           common.ref.uw        ()[j],
+                                           common.ref.uv        ()[j],
+                                           common.ref.vv        ()[j],
+                                           common.ref.vw        ()[j],
+                                           common.ref.uw        ()[j],
+                                           common.ref.vw        ()[j],
+                                           common.ref.ww        ()[j];
         const real_t   ref_nu             (common.ref.nu        ()[j]);
         const Vector3r ref_nuu            (common.ref.nu_u      ()[j],
                                            common.ref.nu_v      ()[j],
                                            common.ref.nu_w      ()[j]);
-        const real_t   ref_nuu2           (common.ref.nu_u2      ()[j]);
+        const real_t   ref_nuu2           (common.ref.nu_u2     ()[j]);
         const Matrix3r ref_nuuu;
-        const_cast<Matrix3r&>(ref_nuuu) << common.ref.nu_uu    ()[j],
-                                           common.ref.nu_uv    ()[j],
-                                           common.ref.nu_uw    ()[j],
-                                           common.ref.nu_uv    ()[j],
-                                           common.ref.nu_vv    ()[j],
-                                           common.ref.nu_vw    ()[j],
-                                           common.ref.nu_uw    ()[j],
-                                           common.ref.nu_vw    ()[j],
-                                           common.ref.nu_ww    ()[j];
+        const_cast<Matrix3r&>(ref_nuuu) << common.ref.nu_uu     ()[j],
+                                           common.ref.nu_uv     ()[j],
+                                           common.ref.nu_uw     ()[j],
+                                           common.ref.nu_uv     ()[j],
+                                           common.ref.nu_vv     ()[j],
+                                           common.ref.nu_vw     ()[j],
+                                           common.ref.nu_uw     ()[j],
+                                           common.ref.nu_vw     ()[j],
+                                           common.ref.nu_ww     ()[j];
         const Vector3r ref_e_gradrho      (common.ref.ex_gradrho()[j],
                                            common.ref.ey_gradrho()[j],
                                            common.ref.ez_gradrho()[j]);
@@ -583,12 +578,11 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             // Accumulation into each scalar right hand side is delayed
             // to improve striding when accessing sphys buffers below.
             largo_state slowgrowth_f;
-            if (SlowTreatment != slowgrowth::none) {
+            if (SlowGrowth) {
                 largo_state state(e, m.x(), m.y(), m.z(), rho, p);
-                sg_treater.inner_xz(SlowTreatment, sg, inv_Ma2,
-                                    state, slowgrowth_f);
+                sg_treater.inner_xz(state, slowgrowth_f);
             }
-            if (SlowTreatment != slowgrowth::none) {
+            if (SlowGrowth) {
                 barf_acc[ndx::e  ](slowgrowth_f.e  );             // SrhoE
                 barf_acc[ndx::mx ](slowgrowth_f.mx );             // Srhou
                 barf_acc[ndx::my ](slowgrowth_f.my );             // Srhov
@@ -937,7 +931,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
         assert(consistent_accumulation_counts(barf_acc));
 
         // Pack y-specific sums into barf storage for subsequent Allreduce
-        if (SlowTreatment != slowgrowth::none) {
+        if (SlowGrowth) {
             for (size_t m = 0; m < barf_acc.static_size; ++m) {
                 barf.col(m)[j] = boost::accumulators::sum(barf_acc[m]);
             }
@@ -996,7 +990,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
 
         if (   Linearize == linearize::rhome_xyz  // Fully implicit density
             && i == ndx::rho                      // Looking at density RHS
-            && SlowTreatment == slowgrowth::none  // No slow growth forcing
+            && !SlowGrowth                        // No slow growth forcing
             && !msoln) {                          // No manufactured solution
 
             // When the above conditions are all met, save some communications
@@ -1020,7 +1014,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
     // Perform any final substep bookkeepping regarding common.Srho{E,u,...}
     // This includes scaling barf results to account for varying substep length
     const real_t iota = method.iota(substep_index);
-    if (SlowTreatment == slowgrowth::none) {
+    if (!SlowGrowth) {
 
         // Update running slow growth forcing means to reflect nothing added
         common.imp.SrhoE()       += iota*( /*zero*/ - common.imp.SrhoE      ());

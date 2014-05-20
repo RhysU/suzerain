@@ -254,10 +254,7 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
     }
 
     // Initialize any requested slow growth forcing workspace
-    sg->workspace = NULL; // Defensive
-    common_block.slow_treatment = slowgrowth::none;
     if (sg->formulation.enabled()) {
-        common_block.slow_treatment = slowgrowth::largo;
         const std::string& model = sg->formulation.name();
         enum  { neq = 5, ns = 0, ntvar = 0 };
         static const char ransmodel[] = "dns";

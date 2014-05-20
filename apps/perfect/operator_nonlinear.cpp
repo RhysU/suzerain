@@ -75,70 +75,64 @@ std::vector<real_t> operator_nonlinear::apply_operator(
     // Dispatch to an optimized implementation depending on runtime settings.
     // Done since the compiler can theoretically hammer out much savings when
     // many small, localized jumps can be hoisted up to this level.  In
-    // practice, with ZerothSubstep, this has saved 1-2% of wall time.
-    switch (common.slow_treatment) {
+    // practice, with ZerothSubstep, explicitly this saved 1-2% of wall time.
+    if (sg.formulation.enabled()) {
 
-    case slowgrowth::none:
         switch (common.linearization) {
         case linearize::rhome_xyz:
             return (substep_index == 0)
-                 ? apply_navier_stokes_spatial_operator<true,
-                        linearize::rhome_xyz, slowgrowth::none>(ARGUMENTS)
-                 : apply_navier_stokes_spatial_operator<false,
-                        linearize::rhome_xyz, slowgrowth::none>(ARGUMENTS);
+                 ? apply_navier_stokes_spatial_operator<
+                        true,  linearize::rhome_xyz, true>(ARGUMENTS)
+                 : apply_navier_stokes_spatial_operator<
+                        false, linearize::rhome_xyz, true>(ARGUMENTS);
 
         case linearize::rhome_y:
             return (substep_index == 0)
-                 ? apply_navier_stokes_spatial_operator<true,
-                        linearize::rhome_y, slowgrowth::none>(ARGUMENTS)
-                 : apply_navier_stokes_spatial_operator<false,
-                        linearize::rhome_y, slowgrowth::none>(ARGUMENTS);
+                 ? apply_navier_stokes_spatial_operator<
+                        true,  linearize::rhome_y, true>(ARGUMENTS)
+                 : apply_navier_stokes_spatial_operator<
+                        false, linearize::rhome_y, true>(ARGUMENTS);
 
         case linearize::none:
             return (substep_index == 0)
-                 ? apply_navier_stokes_spatial_operator<true,
-                        linearize::none, slowgrowth::none>(ARGUMENTS)
-                 : apply_navier_stokes_spatial_operator<false,
-                        linearize::none, slowgrowth::none>(ARGUMENTS);
+                 ? apply_navier_stokes_spatial_operator<
+                        true,  linearize::none, true>(ARGUMENTS)
+                 : apply_navier_stokes_spatial_operator<
+                        false, linearize::none, true>(ARGUMENTS);
 
         default:
             SUZERAIN_ERROR_VAL_UNIMPLEMENTED(std::vector<real_t>());
             break;
         }
-        break;
 
-    case slowgrowth::largo:
+    } else {
+
         switch (common.linearization) {
         case linearize::rhome_xyz:
             return (substep_index == 0)
-                 ? apply_navier_stokes_spatial_operator<true,
-                        linearize::rhome_xyz, slowgrowth::largo>(ARGUMENTS)
-                 : apply_navier_stokes_spatial_operator<false,
-                        linearize::rhome_xyz, slowgrowth::largo>(ARGUMENTS);
+                 ? apply_navier_stokes_spatial_operator<
+                        true,  linearize::rhome_xyz, false>(ARGUMENTS)
+                 : apply_navier_stokes_spatial_operator<
+                        false, linearize::rhome_xyz, false>(ARGUMENTS);
 
         case linearize::rhome_y:
             return (substep_index == 0)
-                 ? apply_navier_stokes_spatial_operator<true,
-                        linearize::rhome_y, slowgrowth::largo>(ARGUMENTS)
-                 : apply_navier_stokes_spatial_operator<false,
-                        linearize::rhome_y, slowgrowth::largo>(ARGUMENTS);
+                 ? apply_navier_stokes_spatial_operator<
+                        true,  linearize::rhome_y, false>(ARGUMENTS)
+                 : apply_navier_stokes_spatial_operator<
+                        false, linearize::rhome_y, false>(ARGUMENTS);
 
         case linearize::none:
             return (substep_index == 0)
-                 ? apply_navier_stokes_spatial_operator<true,
-                        linearize::none, slowgrowth::largo>(ARGUMENTS)
-                 : apply_navier_stokes_spatial_operator<false,
-                        linearize::none, slowgrowth::largo>(ARGUMENTS);
+                 ? apply_navier_stokes_spatial_operator<
+                        true,  linearize::none, false>(ARGUMENTS)
+                 : apply_navier_stokes_spatial_operator<
+                        false, linearize::none, false>(ARGUMENTS);
 
         default:
             SUZERAIN_ERROR_VAL_UNIMPLEMENTED(std::vector<real_t>());
             break;
         }
-        break;
-
-    default:
-        SUZERAIN_ERROR_VAL_UNIMPLEMENTED(std::vector<real_t>());
-        break;
 
     }
 

@@ -34,8 +34,7 @@ namespace suzerain {
 namespace perfect {
 
 operator_common_block::operator_common_block()
-    : linearization(static_cast<linearize::type>(0))              // Bad=>false
-    , slow_treatment(static_cast<slowgrowth::implementation>(0))  // Bad=>false
+    : linearization(static_cast<linearize::type>(0)) // Invalid is "false"
 {
 }
 

@@ -25,7 +25,7 @@
 #define SUZERAIN_SLOWGROWTH_HPP
 
 /** @file
- * Declarations related to slow growth formulation implementation.
+ * Provides \ref slowgrowth to facilitate slow growth forcing usage.
  */
 
 #include <suzerain/l2.hpp>
@@ -35,40 +35,29 @@
 namespace suzerain {
 
 // Forward declarations
-class baseflow_interface;
-class largo_formulation;
 class operator_base;
 class specification_largo;
 
 // TODO Doxygen for class slowgrowth
-// TODO Class slowgrowth should be an interface towards polymorphism
 
-/** Provides relatively clean API for applying slow growth forcing. */
+/**
+ * Provides relatively clean API for applying slow growth forcing.
+ * Largo's APIs are good, but gathering the required information to
+ * use them is cumbersome, error-prone, and best not duplicated.
+ */
 class slowgrowth
 {
 
 public:
 
-    /**
-     * What slow growth forcing implementation is employed?
-     * All valid implementations evaluate to true in a boolean context.
-     */
-    enum implementation {
-        none  = 1,  ///< No slow growth sources
-        largo       ///< Slow growth sources computed by Largo library
-    };
-
-    slowgrowth();
+    slowgrowth(const specification_largo& sg,
+               const real_t code_Ma);
 
     void
-    initialize(const implementation slow_treatment,
-               const specification_largo &sg,
-               const real_t inv_codeMa2,
-               const std::size_t substep_index = 0);
+    initialize(const std::size_t substep_index = 0);
 
     void
-    gather_wavexz(const implementation slow_treatment,
-                  const operator_base &o,
+    gather_wavexz(const operator_base &o,
                   const contiguous_state<4,complex_t> &swave);
 
     /**
@@ -78,19 +67,34 @@ public:
     class physical_cons
     {
     public:
-        virtual ~physical_cons();                        ///< Virtual for interface
-        virtual ArrayXXr::ConstColXpr rhoE()  const = 0; ///< Total energy
-        virtual ArrayXXr::ConstColXpr rhou()  const = 0; ///< Streamwise momentum
-        virtual ArrayXXr::ConstColXpr rhov()  const = 0; ///< Wall-normal momentum
-        virtual ArrayXXr::ConstColXpr rhow()  const = 0; ///< Spanwise momentum
-        virtual ArrayXXr::ConstColXpr rho ()  const = 0; ///< Density
-        virtual ArrayXXr::ConstColXpr p   ()  const = 0; ///< Pressure
-        virtual ArrayXXr::ConstColXpr p2  ()  const = 0; ///< Pressure squared
+
+        /** Virtual for interface */
+        virtual ~physical_cons();
+
+        /** Total energy */
+        virtual ArrayXXr::ConstColXpr rhoE()  const = 0;
+
+        /** Streamwise momentum */
+        virtual ArrayXXr::ConstColXpr rhou()  const = 0;
+
+        /** Wall-normal momentum */
+        virtual ArrayXXr::ConstColXpr rhov()  const = 0;
+
+        /** Spanwise momentum */
+        virtual ArrayXXr::ConstColXpr rhow()  const = 0;
+
+        /** Density */
+        virtual ArrayXXr::ConstColXpr rho ()  const = 0;
+
+        /** Pressure */
+        virtual ArrayXXr::ConstColXpr p   ()  const = 0;
+
+        /** Pressure squared */
+        virtual ArrayXXr::ConstColXpr p2  ()  const = 0;
     };
 
     void
-    gather_physical_cons(const implementation slow_treatment,
-                         const operator_base &o,
+    gather_physical_cons(const operator_base &o,
                          const physical_cons &data);
 
     /**
@@ -100,45 +104,50 @@ public:
     class physical_rqq
     {
     public:
-        virtual ~physical_rqq();                         ///< Virtual for interface
-        virtual ArrayXXr::ConstColXpr rhoEE() const = 0; ///< Density times specific energy squared
-        virtual ArrayXXr::ConstColXpr rhouu() const = 0; ///< Density times streamwise velocity squared
-        virtual ArrayXXr::ConstColXpr rhovv() const = 0; ///< Density times wall-normal velocity squared
-        virtual ArrayXXr::ConstColXpr rhoww() const = 0; ///< Density times spanwise velocity squared
-        virtual ArrayXXr::ConstColXpr rho  () const = 0; ///< Density
+        /** Virtual for interface */
+        virtual ~physical_rqq();
+
+        /** Density times specific energy squared */
+        virtual ArrayXXr::ConstColXpr rhoEE() const = 0;
+
+        /** Density times streamwise velocity squared */
+        virtual ArrayXXr::ConstColXpr rhouu() const = 0;
+
+        /** Density times wall-normal velocity squared */
+        virtual ArrayXXr::ConstColXpr rhovv() const = 0;
+
+        /** Density times spanwise velocity squared */
+        virtual ArrayXXr::ConstColXpr rhoww() const = 0;
+
+        /** Density */
+        virtual ArrayXXr::ConstColXpr rho  () const = 0;
     };
 
     void
-    gather_physical_rqq(const implementation slow_treatment,
-                        const operator_base &o,
+    gather_physical_rqq(const operator_base &o,
                         const physical_rqq &data);
 
     void
-    inner_y(const implementation slow_treatment,
-            const specification_largo &sg,
-            const real_t inv_codeMa2,
-            const int j,
+    inner_y(const int j,
             const real_t y_j);
 
     void
-    inner_xz(const implementation slow_treatment,
-             const specification_largo &sg,
-             const real_t inv_codeMa2,
-             largo_state &local_state,
+    inner_xz(largo_state &local_state,
              largo_state &slowgrowth_forcing);
 
 protected:
 
     void
-    calculate_baseflow(const real_t inv_codeMa2,
-                       const largo_formulation &formulation,
-                       const shared_ptr<baseflow_interface> &baseflow,
-                       const real_t y,
+    calculate_baseflow(const real_t y,
                        largo_state &base,
                        largo_state &dy,
                        largo_state &dt,
                        largo_state &dx,
                        largo_state &src) const;
+
+    const specification_largo &sg;
+
+    const real_t inv_codeMa2;
 
 private:
 

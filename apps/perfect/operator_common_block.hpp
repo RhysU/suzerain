@@ -29,7 +29,6 @@
  */
 
 #include <suzerain/common.hpp>
-#include <suzerain/slowgrowth.hpp>
 
 #include "implicits.hpp"
 #include "instantaneous.hpp"
@@ -72,14 +71,6 @@ public:
      * by the paired linear and nonlinear operators.
      */
     linearize::type linearization;
-
-    /**
-     * Determines the general type of the slow growth treatment by the paired
-     * linear and nonlinear operators.  This is insufficient information to
-     * nail down the exact treatment in use as it may depend on other settings,
-     * e.g. \ref definition_largo in cases when the Largo library is employed.
-     */
-    slowgrowth::implementation slow_treatment;
 
     /** Call \c set_zero on each of \c ref, \c sub, and \c imp. */
     void set_zero(int Ny);
