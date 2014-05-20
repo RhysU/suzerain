@@ -61,9 +61,9 @@ class treatment
 public:
 
     /**
-    * Abstract interface for tracking instantaneous collocation point
-    * profiles taken to be inputs to constraint treatment logic.
-    */
+     * Abstract interface for tracking instantaneous collocation point
+     * profiles taken to be inputs to constraint treatment logic.
+     */
     class inputs
     {
     public:
@@ -80,9 +80,9 @@ public:
     };
 
     /**
-    * Abstract interface for tracking forcing collocation point profile
-    * outputs maintained by constraint treatment logic.
-    */
+     * Abstract interface for tracking forcing collocation point profile
+     * outputs maintained by constraint treatment logic.
+     */
     class outputs
     {
     public:
