@@ -161,6 +161,7 @@ slowgrowth::initialize(
 
         // Initialize the slow growth workspace
         // Avoids debugging-related memory allocation if at all possible
+        SUZERAIN_ENSURE(sg.workspace);
         SUZERAIN_ENSURE(sg.gramp_mean.size());
         SUZERAIN_ENSURE(sg.gramp_mean.size() == sg.gramp_rms.size());
         if (SUZERAIN_UNLIKELY(sg.ignore_gramp_mean || sg.ignore_gramp_rms)) {
@@ -306,6 +307,7 @@ slowgrowth::inner_y(
 {
     if (sg.formulation.enabled()) {
         SUZERAIN_TIMER_SCOPED("slowgrowth::inner_y");
+        assert(sg.workspace);
 
         // Provide any baseflow-dependent information to Largo
         if (sg.baseflow) {
@@ -398,6 +400,7 @@ slowgrowth::inner_xz(
         largo_state &slowgrowth_forcing)
 {
     if (sg.formulation.enabled()) {
+        assert(sg.workspace);
         largo_prestep_seta_innerxz(sg.workspace,
                                    local_state.rescale(inv_codeMa2));
         largo_seta(sg.workspace, 0., 1.,
