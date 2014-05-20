@@ -32,6 +32,8 @@
 
 #include <suzerain/treatment_constraint.hpp>
 
+#include "slowgrowth.hpp"
+
 namespace suzerain {
 
 namespace perfect {
@@ -49,6 +51,8 @@ class references;
  */
 class instantaneous
     : public virtual constraint::treatment::inputs
+    , public virtual slowgrowth::physical_cons
+    , public virtual slowgrowth::physical_rqq
     , protected ArrayXXr
 {
     typedef ArrayXXr super;

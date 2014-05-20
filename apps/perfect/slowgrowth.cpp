@@ -40,8 +40,6 @@
 #include <suzerain/state.hpp>
 #include <suzerain/timers.h>
 
-#include "instantaneous.hpp"
-
 namespace suzerain {
 
 namespace perfect {
@@ -242,11 +240,15 @@ slowgrowth::gather_wavexz(
     }
 }
 
+slowgrowth::physical_cons::~physical_cons()
+{
+}
+
 void
 slowgrowth::gather_physical_cons(
         const slowgrowth::implementation slow_treatment,
         const operator_base &o,
-        const instantaneous &inst)
+        const slowgrowth::physical_cons &data)
 {
     switch (slow_treatment) {
     default:
@@ -262,19 +264,19 @@ slowgrowth::gather_physical_cons(
             // Slow growth requires mean conserved state at collocation points.
             // Abuse unused pieces within 'meanrms' to avoid more allocations.
             SUZERAIN_ENSURE(meanrms.size() == 5);
-            meanrms[ndx::e  ].mean = inst.rhoE();
-            meanrms[ndx::mx ].mean = inst.rhou();
-            meanrms[ndx::my ].mean = inst.rhov();
-            meanrms[ndx::mz ].mean = inst.rhow();
-            meanrms[ndx::rho].mean = inst.rho();
+            meanrms[ndx::e  ].mean = data.rhoE();
+            meanrms[ndx::mx ].mean = data.rhou();
+            meanrms[ndx::my ].mean = data.rhov();
+            meanrms[ndx::mz ].mean = data.rhow();
+            meanrms[ndx::rho].mean = data.rho();
 
             // Slow growth requires mean pressure and its fluctuation profiles.
             // Abuse 'meanrms' to store the information after conserved state.
             // The RMS of fluctuating pressure computation can be numerically
             // noisy hence require a non-negative result prior to the sqrt.
             meanrms.resize(meanrms.size() + 1);
-            meanrms.back().mean        = inst.p();
-            meanrms.back().fluctuating = (inst.p2() - inst.p().square())
+            meanrms.back().mean        = data.p();
+            meanrms.back().fluctuating = (data.p2() - data.p().square())
                                          .max(0).sqrt();
 
             // Wall-normal derivatives of every mean RMS quantity are required
@@ -300,11 +302,15 @@ slowgrowth::gather_physical_cons(
     }
 }
 
+slowgrowth::physical_rqq::~physical_rqq()
+{
+}
+
 void
 slowgrowth::gather_physical_rqq(
         const slowgrowth::implementation slow_treatment,
         const operator_base &o,
-        const instantaneous &inst)
+        const physical_rqq &data)
 {
     switch (slow_treatment) {
     default:
@@ -319,11 +325,11 @@ slowgrowth::gather_physical_rqq(
 
             // Obtain "rqq" values for tensorially-consistent homogenization
             rqq.resize(o.dgrid.global_physical_extent.y(), NoChange);
-            rqq.col(ndx::rho) = inst.rho  ();
-            rqq.col(ndx::mx ) = inst.rhouu();
-            rqq.col(ndx::my ) = inst.rhovv();
-            rqq.col(ndx::mz ) = inst.rhoww();
-            rqq.col(ndx::e  ) = inst.rhoEE();
+            rqq.col(ndx::rho) = data.rho  ();
+            rqq.col(ndx::mx ) = data.rhouu();
+            rqq.col(ndx::my ) = data.rhovv();
+            rqq.col(ndx::mz ) = data.rhoww();
+            rqq.col(ndx::e  ) = data.rhoEE();
 
             // Compute derivatives of these "rqq" values
             rqq_y = rqq;

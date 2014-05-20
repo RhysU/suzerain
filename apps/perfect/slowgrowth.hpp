@@ -42,9 +42,6 @@ class specification_largo;
 
 namespace perfect {
 
-// Forward declarations
-class instantaneous;
-
 // TODO Doxygen for class slowgrowth
 // TODO Class slowgrowth should be an interface towards polymorphism
 
@@ -75,15 +72,47 @@ public:
                   const operator_base &o,
                   const contiguous_state<4,complex_t> &swave);
 
+    /**
+     * Abstract data source for \ref gather_physical_cons.  Each column
+     * represents a mean quantity indexed by collocation point.
+     */
+    class physical_cons
+    {
+    public:
+        virtual ~physical_cons();                        ///< Virtual for interface
+        virtual ArrayXXr::ConstColXpr rhoE()  const = 0; ///< Total energy
+        virtual ArrayXXr::ConstColXpr rhou()  const = 0; ///< Streamwise momentum
+        virtual ArrayXXr::ConstColXpr rhov()  const = 0; ///< Wall-normal momentum
+        virtual ArrayXXr::ConstColXpr rhow()  const = 0; ///< Spanwise momentum
+        virtual ArrayXXr::ConstColXpr rho ()  const = 0; ///< Density
+        virtual ArrayXXr::ConstColXpr p   ()  const = 0; ///< Pressure
+        virtual ArrayXXr::ConstColXpr p2  ()  const = 0; ///< Pressure squared
+    };
+
     void
     gather_physical_cons(const implementation slow_treatment,
                          const operator_base &o,
-                         const instantaneous &inst);
+                         const physical_cons &data);
+
+    /**
+     * Abstract data source for \ref gather_physical_rqq.  Each column
+     * represents a mean quantity indexed by collocation point.
+     */
+    class physical_rqq
+    {
+    public:
+        virtual ~physical_rqq();                         ///< Virtual for interface
+        virtual ArrayXXr::ConstColXpr rhoEE() const = 0; ///< Density times specific energy squared
+        virtual ArrayXXr::ConstColXpr rhouu() const = 0; ///< Density times streamwise velocity squared
+        virtual ArrayXXr::ConstColXpr rhovv() const = 0; ///< Density times wall-normal velocity squared
+        virtual ArrayXXr::ConstColXpr rhoww() const = 0; ///< Density times spanwise velocity squared
+        virtual ArrayXXr::ConstColXpr rho  () const = 0; ///< Density
+    };
 
     void
     gather_physical_rqq(const implementation slow_treatment,
                         const operator_base &o,
-                        const instantaneous &inst);
+                        const physical_rqq &data);
 
     void
     inner_y(const implementation slow_treatment,
