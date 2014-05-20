@@ -38,6 +38,7 @@
 #include <suzerain/rholut.hpp>
 #include <suzerain/specification_largo.hpp>
 #include <suzerain/state.hpp>
+#include <suzerain/support/logging.hpp>
 #include <suzerain/timers.h>
 
 // TODO Implementation is very perfect gas-specific
@@ -158,6 +159,41 @@ slowgrowth::initialize(
     if (sg.formulation.enabled() && substep_index == 0) {
 
         SUZERAIN_TIMER_SCOPED("slowgrowth::initialize");
+
+        // If necessary, allocate the Largo workspace.
+        // My apologies for breaking const-ness so disgustingly.
+        static const char who[] = "slowgrowth";
+        if (!sg.workspace) {
+            const std::string& model = sg.formulation.name();
+            enum  { neq = 5, ns = 0, ntvar = 0 };
+            static const char ransmodel[] = "dns";
+            INFO0(who, "Allocating Largo model \"" << model
+                  << "\" with neq=" << neq
+                  << ", ns=" << ns << ", ntvar=" << ntvar
+                  << ", ransmodel=" << ransmodel);
+            largo_allocate(const_cast<largo_workspace**>(&sg.workspace),
+                           model.c_str(), neq,
+                           ns, ntvar, ransmodel);
+            if (!sg.workspace) {
+                WARN0(who, "Largo could not allocate the requested model");
+            }
+            if ((boost::math::isnan)(sg.grdelta)) {
+                WARN0(who, "Slow growth rate grdelta is NaN");
+            }
+            if (sg.gramp_mean.empty()) {
+                WARN0(who, "Assuming trivial defect mean slow growth rates");
+                const_cast<std::vector<real_t>&>(sg.gramp_mean)
+                    .assign(neq + /*pressure*/1, 0.0);
+            }
+            if (sg.gramp_rms.empty()) {
+                WARN0(who, "Assuming trivial defect RMS slow growth rates");
+                const_cast<std::vector<real_t>&>(sg.gramp_rms)
+                    .assign(neq + /*pressure*/1, 0.0);
+            }
+            if (sg.ignore_fluctuations) {
+                WARN0(who, "Debugging option 'ignore_fluctuations' is active");
+            }
+        }
 
         // Initialize the slow growth workspace
         // Avoids debugging-related memory allocation if at all possible

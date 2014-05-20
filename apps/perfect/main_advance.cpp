@@ -26,7 +26,6 @@
  */
 
 #include <esio/esio.h>
-#include <largo/largo.h>
 
 #include <suzerain/common.hpp>
 #include <suzerain/baseflow.hpp>
@@ -253,28 +252,6 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
         state_linear->assign_from(*state_nonlinear);
     }
 
-    // Initialize any requested slow growth forcing workspace
-    if (sg->formulation.enabled()) {
-        const std::string& model = sg->formulation.name();
-        enum  { neq = 5, ns = 0, ntvar = 0 };
-        static const char ransmodel[] = "dns";
-        INFO0(who, "Allocating Largo model \"" << model << "\" with neq=" << neq
-              << ", ns=" << ns << ", ntvar=" << ntvar
-              << ", ransmodel=" << ransmodel);
-        largo_allocate(&sg->workspace, model.c_str(), neq,
-                       ns, ntvar, ransmodel);
-        if (!sg->workspace) {
-            FATAL0(who, "Largo could not allocate requested model");
-            return EXIT_FAILURE;
-        }
-        if ((isnan)(sg->grdelta)) {
-            WARN0(who, "Slow growth rate grdelta is NaN");
-        }
-        if (sg->ignore_fluctuations) {
-            WARN0(who, "Debugging option 'ignore_fluctuations' is active");
-        }
-    }
-
     // Prepare any necessary, problem-specific constraints
     common_block.imp.set_zero(dgrid->global_physical_extent.y());
     shared_ptr<constraint::treatment> constrainer(new constraint::treatment(
@@ -438,6 +415,9 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
         // All nondimensional expressions below in model document section 5.4.
         // Beware v_w used in wall-normal direction but used in energy result.
         if (sg->formulation.enabled()) {
+
+            // Largo workspaces are allocated at time of first use,
+            // but growth rates can and must be prepared beforehand.
 
             if (sg->gramp_mean.size()) {
                 INFO0(who, "Ignoring incoming, non-normative defect"
@@ -722,14 +702,6 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
                                                  controller->current_nt()),
                                 controller->current_t(),
                                 controller->current_nt());
-    }
-
-    // Deallocate any slow growth forcing workspace
-    if (sg->formulation.enabled()) {
-        if (sg->workspace) {
-            largo_deallocate(&sg->workspace);
-        }
-        sg->workspace = NULL; // Defensive
     }
 
     // Report error to the OS iff advance_control reported an error

@@ -28,6 +28,7 @@
 #include "driver.hpp"
 
 #include <esio/esio.h>
+#include <largo/largo.h>
 
 #include <suzerain/bl.h>
 #include <suzerain/channel.h>
@@ -67,6 +68,20 @@ driver::driver(
     , who("perfect")
 {
     this->fields = default_fields();
+}
+
+driver::~driver()
+{
+    // Deallocate any lazily allocated slow growth forcing workspace
+    if (sg.unique()) {
+        DEBUG0(who, "Deallocating largo_workspace");
+        if (sg->workspace) {
+            largo_deallocate(&sg->workspace);
+            sg->workspace = NULL;
+        }
+    } else {
+        DEBUG0(who, "Cowardly refusing to deallocate in-use largo_workspace");
+    }
 }
 
 std::vector<std::string>

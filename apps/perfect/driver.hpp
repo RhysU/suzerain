@@ -63,6 +63,9 @@ public:
            const std::string &description = "",
            const std::string &revstr = "");
 
+    /** Destructor for possibly cleaning up \ref sg, when safe. */
+    ~driver();
+
     /**
      * @copydoc driver_base::initialize
      *
