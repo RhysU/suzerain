@@ -320,12 +320,6 @@ driver::compute_statistics(
 
     // Obtain mean quantities computed via implicit forcing (when possible)
     if (common_block.imp.rows() == mean->storage.rows()) {
-        mean->SrhoE()         = common_block.imp.SrhoE();
-        mean->Srhou().col(0)  = common_block.imp.Srhou();
-        mean->Srhou().col(1)  = common_block.imp.Srhov();
-        mean->Srhou().col(2)  = common_block.imp.Srhow();
-        mean->Srho()          = common_block.imp.Srho();
-        mean->Srhou_dot_u()   = common_block.imp.Srhou_dot_u();
         mean->f().col(0)      = common_block.imp.fx();
         mean->f().col(1)      = common_block.imp.fy();
         mean->f().col(2)      = common_block.imp.fz();

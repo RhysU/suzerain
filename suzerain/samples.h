@@ -201,6 +201,12 @@
                            (( rho2_omy_omy,      "Reynolds-averaged (y,y)-component of squared density times vorticity times vorticity"         )) \
                            (( rho2_omy_omz,      "Reynolds-averaged (y,z)-component of squared density times vorticity times vorticity"         )) \
                            (( rho2_omz_omz,      "Reynolds-averaged (z,z)-component of squared density times vorticity times vorticity"         )) \
+    ))(( SrhoE,            (( SrhoE,             "Reynolds-averaged total energy contributions due to slow growth forcing"                      )) \
+    ))(( Srhou,            (( Srhou,             "Reynolds-averaged streamwise momentum contributions due to slow growth forcing"               )) \
+                           (( Srhov,             "Reynolds-averaged wall-normal momentum contributions due to slow growth forcing"              )) \
+                           (( Srhow,             "Reynolds-averaged spanwise momentum contributions due to slow growth forcing"                 )) \
+    ))(( Srho,             (( Srho,              "Reynolds-averaged mass contributions due to slow growth forcing"                              )) \
+    ))(( Srhou_dot_u,      (( Srhou_dot_u,       "Reynolds-averaged energy contribution due to slow growth forcing work"                        )) \
     ))
 
 /**
@@ -208,14 +214,8 @@
  * generally computed during implicit forcing.
  * \copydetails SUZERAIN_SAMPLES_WAVE
  */
-#define SUZERAIN_SAMPLES_IMPLICIT                                                                                                    \
-      (( SrhoE,        (( SrhoE,       "Reynolds-averaged total energy contributions due to slow growth forcing"                   )) \
-    ))(( Srhou,        (( Srhou,       "Reynolds-averaged streamwise momentum contributions due to slow growth forcing"            )) \
-                       (( Srhov,       "Reynolds-averaged wall-normal momentum contributions due to slow growth forcing"           )) \
-                       (( Srhow,       "Reynolds-averaged spanwise momentum contributions due to slow growth forcing"              )) \
-    ))(( Srho,         (( Srho,        "Reynolds-averaged mass contributions due to slow growth forcing"                           )) \
-    ))(( Srhou_dot_u,  (( Srhou_dot_u, "Reynolds-averaged energy contribution due to slow growth forcing work"                     )) \
-    ))(( f,            (( fx,          "Reynolds-averaged x-component of the momentum forcing"                                     )) \
+#define SUZERAIN_SAMPLES_IMPLICIT                                                                                                     \
+      (( f,            (( fx,          "Reynolds-averaged x-component of the momentum forcing"                                     )) \
                        (( fy,          "Reynolds-averaged y-component of the momentum forcing"                                     )) \
                        (( fz,          "Reynolds-averaged z-component of the momentum forcing"                                     )) \
     ))(( f_dot_u,      (( f_dot_u,     "Reynolds-averaged energy contribution due to momentum forcing work"                        )) \

@@ -29,12 +29,9 @@
  */
 
 #include <suzerain/error.h>
-#include <suzerain/l2.hpp>
 #include <suzerain/largo_state.hpp>
 #include <suzerain/lowstorage.hpp>
 #include <suzerain/math.hpp>
-#include <suzerain/mpi_datatype.hpp>
-#include <suzerain/mpi.hpp>
 #include <suzerain/multi_array.hpp>
 #include <suzerain/ndx.hpp>
 #include <suzerain/operator_base.hpp>
@@ -363,19 +360,6 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
     if (SlowGrowth) sg_treater.gather_physical_cons(o, common.sub);
     if (SlowGrowth) sg_treater.gather_physical_rqq (o, common.sub);
 
-    // To track mean slow-growth forcing for Favre-averaged equation
-    // residuals, we need to accumulate pointwise mean computations a la
-    // the gathering of instantaneous moments just above.  This requires
-    // gathering, Allreducing, rescaling, and then accounting for variable
-    // substep length.  Unfortunately, it must pervade the remainder
-    // of this method.  Attempt has been made to avoid incurring memory
-    // overhead when no slow growth is active.
-    typedef ArrayX6r barf_type; // The juvenile spatial average ("bar") of f
-    barf_type barf;             // Index ndx::type with [5] being Srhou_dot_u
-    if (SlowGrowth) {
-        barf.setZero(Ny, barf_type::ColsAtCompileTime);
-    }
-
     // Compute inviscid-only constants before any Y, X, or Z inner loops
     const real_t inv_Ma2   = 1 / (Ma * Ma);
     const real_t gamma1    = gamma - 1;
@@ -432,10 +416,6 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                                            common.ref.ez_gradrho()[j]);
         const real_t   ref_e_divm         (common.ref.e_divm    ()[j]);
         const real_t   ref_e_deltarho     (common.ref.e_deltarho()[j]);
-
-        // Prepare accumulators to acquire forcing as a function of y
-        // Construction/destruction automatically resets counts at each y(j)
-        array<summing_accumulator_type, barf_type::ColsAtCompileTime> barf_acc;
 
         // Redmine #2983 disables mu and lambda on the freestream boundary
         // to attempt adhering to Poinsot and Lele subsonic NRBC conditions
@@ -581,16 +561,6 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             if (SlowGrowth) {
                 largo_state state(e, m.x(), m.y(), m.z(), rho, p);
                 sg_treater.inner_xz(state, slowgrowth_f);
-            }
-            if (SlowGrowth) {
-                barf_acc[ndx::e  ](slowgrowth_f.e  );             // SrhoE
-                barf_acc[ndx::mx ](slowgrowth_f.mx );             // Srhou
-                barf_acc[ndx::my ](slowgrowth_f.my );             // Srhov
-                barf_acc[ndx::mz ](slowgrowth_f.mz );             // Srhow
-                barf_acc[ndx::rho](slowgrowth_f.rho);             // Srho
-                barf_acc.back()   (    slowgrowth_f.mx * u.x()    // Srhou_dot_u
-                                    +  slowgrowth_f.my * u.y()
-                                    +  slowgrowth_f.mz * u.z() );
             }
 
             // FORM ENERGY EQUATION RIGHT HAND SIDE
@@ -927,16 +897,6 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
 
         } // end X // end Z
 
-        // All accumulators should have seen a consistent number of samples
-        assert(consistent_accumulation_counts(barf_acc));
-
-        // Pack y-specific sums into barf storage for subsequent Allreduce
-        if (SlowGrowth) {
-            for (size_t m = 0; m < barf_acc.static_size; ++m) {
-                barf.col(m)[j] = boost::accumulators::sum(barf_acc[m]);
-            }
-        }
-
     } // end Y
     SUZERAIN_TIMER_END("nonlinear right hand sides");
 
@@ -1008,39 +968,6 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             o.zero_dealiasing_modes(swave, i);
 
         }
-
-    }
-
-    // Perform any final substep bookkeepping regarding common.Srho{E,u,...}
-    // This includes scaling barf results to account for varying substep length
-    const real_t iota = method.iota(substep_index);
-    if (!SlowGrowth) {
-
-        // Update running slow growth forcing means to reflect nothing added
-        common.imp.SrhoE()       += iota*( /*zero*/ - common.imp.SrhoE      ());
-        common.imp.Srhou()       += iota*( /*zero*/ - common.imp.Srhou      ());
-        common.imp.Srhov()       += iota*( /*zero*/ - common.imp.Srhov      ());
-        common.imp.Srhow()       += iota*( /*zero*/ - common.imp.Srhow      ());
-        common.imp.Srho ()       += iota*( /*zero*/ - common.imp.Srho       ());
-        common.imp.Srhou_dot_u() += iota*( /*zero*/ - common.imp.Srhou_dot_u());
-
-    } else {
-
-        // TODO Hide this Allreduce in some other communication process
-        // Allreduce and scale barf to produce the instantaneous global means
-        SUZERAIN_MPICHKR(MPI_Allreduce(MPI_IN_PLACE, barf.data(), barf.size(),
-                    mpi::datatype<barf_type::Scalar>::value,
-                    MPI_SUM, MPI_COMM_WORLD));
-        barf *= o.dgrid.chi();
-
-        // Account for varying substep length in finding running forcing means
-        // Dump results into the common block so that others may access them
-        common.imp.SrhoE()      +=iota*(barf.col(ndx::e  ) -common.imp.SrhoE      ());
-        common.imp.Srhou()      +=iota*(barf.col(ndx::mx ) -common.imp.Srhou      ());
-        common.imp.Srhov()      +=iota*(barf.col(ndx::my ) -common.imp.Srhov      ());
-        common.imp.Srhow()      +=iota*(barf.col(ndx::mz ) -common.imp.Srhow      ());
-        common.imp.Srho ()      +=iota*(barf.col(ndx::rho) -common.imp.Srho       ());
-        common.imp.Srhou_dot_u()+=iota*(barf.rightCols<1>()-common.imp.Srhou_dot_u());
 
     }
 

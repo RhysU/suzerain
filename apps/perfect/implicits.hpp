@@ -75,12 +75,6 @@ public:
 
     /** Logical indices for each scalar quantity that will be stored. */
     struct q { enum {
-        SrhoE,        //   FIXME Redmine #3089
-        Srhou,        //   FIXME Redmine #3089
-        Srhov,        //   FIXME Redmine #3089
-        Srhow,        //   FIXME Redmine #3089
-        Srho,         //   FIXME Redmine #3089
-        Srhou_dot_u,  //   FIXME Redmine #3089
         fx,           ///< @copydoc constraint::treatment::outputs::fx
         fy,           ///< @copydoc constraint::treatment::outputs::fy
         fz,           ///< @copydoc constraint::treatment::outputs::fz
@@ -101,12 +95,6 @@ public:
         count         ///< Sentry indicating how many quantities are tracked
     }; };
 
-    ColXpr      SrhoE()              { return col(q::SrhoE       ); } ///< @copydoc q::SrhoE
-    ColXpr      Srhou()              { return col(q::Srhou       ); } ///< @copydoc q::Srhou
-    ColXpr      Srhov()              { return col(q::Srhov       ); } ///< @copydoc q::Srhov
-    ColXpr      Srhow()              { return col(q::Srhow       ); } ///< @copydoc q::Srhow
-    ColXpr      Srho()               { return col(q::Srho        ); } ///< @copydoc q::Srho
-    ColXpr      Srhou_dot_u()        { return col(q::Srhou_dot_u ); } ///< @copydoc q::Srhou_dot_u
     ColXpr      fx()                 { return col(q::fx          ); } ///< @copydoc q::fx
     ColXpr      fy()                 { return col(q::fy          ); } ///< @copydoc q::fy
     ColXpr      fz()                 { return col(q::fz          ); } ///< @copydoc q::fz
@@ -125,12 +113,6 @@ public:
     ColXpr      Crhou_dot_u()        { return col(q::Crhou_dot_u ); } ///< @copydoc q::Crhou_dot_u
     ColXpr      C2rhou_dot_u()       { return col(q::C2rhou_dot_u); } ///< @copydoc q::C2rhou_dot_u
 
-    ConstColXpr SrhoE()        const { return col(q::SrhoE       ); } ///< @copydoc q::SrhoE
-    ConstColXpr Srhou()        const { return col(q::Srhou       ); } ///< @copydoc q::Srhou
-    ConstColXpr Srhov()        const { return col(q::Srhov       ); } ///< @copydoc q::Srhov
-    ConstColXpr Srhow()        const { return col(q::Srhow       ); } ///< @copydoc q::Srhow
-    ConstColXpr Srho()         const { return col(q::Srho        ); } ///< @copydoc q::Srho
-    ConstColXpr Srhou_dot_u()  const { return col(q::Srhou_dot_u ); } ///< @copydoc q::Srhou_dot_u
     ConstColXpr fx()           const { return col(q::fx          ); } ///< @copydoc q::fx
     ConstColXpr fy()           const { return col(q::fy          ); } ///< @copydoc q::fy
     ConstColXpr fz()           const { return col(q::fz          ); } ///< @copydoc q::fz

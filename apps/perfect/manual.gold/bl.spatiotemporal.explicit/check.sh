@@ -21,7 +21,8 @@ for dataset in /twopoint_kx /twopoint_kz /helm /metadata_generated            \
                /maxz_rho  /maxz_rho_E  /maxz_rho_u  /maxz_rho_v  /maxz_rho_w  \
                /min_rho   /min_rho_E   /min_rho_u   /min_rho_v   /min_rho_w   \
                /minx_rho  /minx_rho_E  /minx_rho_u  /minx_rho_v  /minx_rho_w  \
-               /minz_rho  /minz_rho_E  /minz_rho_u  /minz_rho_v  /minz_rho_w
+               /minz_rho  /minz_rho_E  /minz_rho_u  /minz_rho_v  /minz_rho_w  \
+               /bar_SrhoE /bar_Srhou /bar_Srho /bar_Srhou_dot_u
 do
     excludes+=" --exclude-path $dataset"
 done

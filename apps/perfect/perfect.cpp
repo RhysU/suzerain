@@ -979,8 +979,14 @@ take_samples(const definition_scenario &scenario,
             sg_treater.inner_xz(state, slowgrowth_f);
 
             // Gather statistics based on slow growth forcing
-            // FIXME STARTHERE
-
+            acc[ref::SrhoE      ](slowgrowth_f.e  );
+            acc[ref::Srhou      ](slowgrowth_f.mx );
+            acc[ref::Srhov      ](slowgrowth_f.my );
+            acc[ref::Srhow      ](slowgrowth_f.mz );
+            acc[ref::Srho       ](slowgrowth_f.rho);
+            acc[ref::Srhou_dot_u](  slowgrowth_f.mx*u.x()
+                                  + slowgrowth_f.my*u.y()
+                                  + slowgrowth_f.mz*u.z());
         } // end X // end Z
 
         // All accumulators should have seen a consistent number of samples
