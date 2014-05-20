@@ -262,10 +262,10 @@ slowgrowth::gather_wavexz(
         meanrms.resize(swave.shape()[0]);
         for (size_t i = 0; i < meanrms.size(); ++i) {
             meanrms[i].mean.setConstant(
-                    swave.shape()[1],
+                    otool.dgrid.global_physical_extent.y(),
                     std::numeric_limits<real_t>::quiet_NaN());
             meanrms[i].fluctuating.setConstant(
-                    swave.shape()[1],
+                    otool.dgrid.global_physical_extent.y(),
                     std::numeric_limits<real_t>::quiet_NaN());
         }
 
@@ -308,23 +308,54 @@ slowgrowth::gather_physical_cons(
     meanrms.back().fluctuating = (data.p2() - data.p().square())
                                  .max(0).sqrt();
 
-    // Wall-normal derivatives of every mean RMS quantity are required
+    // Differing wall-normal derivatives are needed depending on the model.
     meanrms_y.resize(meanrms.size());
-    ArrayX2r tmp(otool.dgrid.global_physical_extent.y(), 2);
-    std::vector<field_L2xz>::const_iterator src = meanrms.begin();
-    std::vector<field_L2xz>::const_iterator end = meanrms.end();
-    std::vector<field_L2xz>::      iterator dst = meanrms_y.begin();
-    for (/*just above*/; src != end; ++src, ++dst) {
-        tmp.col(0) = (*src).mean;
-        tmp.col(1) = (*src).fluctuating;
-        otool.masslu()->solve(tmp.cols(), tmp.data(),
-                              tmp.innerStride(), tmp.outerStride());
-        (*dst).mean       .resizeLike(tmp.col(0));
-        (*dst).fluctuating.resizeLike(tmp.col(1));
-        otool.cop.accumulate(1, 1.0, tmp.col(0).data(), tmp.innerStride(),
-                                0.0, (*dst).mean.data(), 1);
-        otool.cop.accumulate(1, 1.0, tmp.col(1).data(), tmp.innerStride(),
-                                0.0, (*dst).fluctuating.data(), 1);
+    if        (sg.formulation.expects_conserved_growth_rates()) {
+
+        // Wall-normal derivatives of every mean/RMS quantity are required
+        ArrayX2r tmp(otool.dgrid.global_physical_extent.y(), 2);
+        std::vector<field_L2xz>::const_iterator src = meanrms.begin();
+        std::vector<field_L2xz>::const_iterator end = meanrms.end();
+        std::vector<field_L2xz>::      iterator dst = meanrms_y.begin();
+        for (/*just above*/; src != end; ++src, ++dst) {
+            tmp.col(0) = (*src).mean;
+            tmp.col(1) = (*src).fluctuating;
+            otool.masslu()->solve(tmp.cols(), tmp.data(),
+                                  tmp.innerStride(), tmp.outerStride());
+            (*dst).mean       .resizeLike(tmp.col(0));
+            (*dst).fluctuating.resizeLike(tmp.col(1));
+            otool.cop.accumulate(1, 1.0, tmp.col(0).data(), tmp.innerStride(),
+                                    0.0, (*dst).mean.data(), 1);
+            otool.cop.accumulate(1, 1.0, tmp.col(1).data(), tmp.innerStride(),
+                                    0.0, (*dst).fluctuating.data(), 1);
+        }
+
+    } else if (sg.formulation.expects_specific_growth_rates()) {
+
+        // Wall-normal derivatives of only the mean quantities are needed
+        // and consequently we can use fluctuating storage as scratch space.
+        // (fluctuating derivatives unused so defensively NaN that storage)
+        std::vector<field_L2xz>::const_iterator src = meanrms.begin();
+        std::vector<field_L2xz>::const_iterator end = meanrms.end();
+        std::vector<field_L2xz>::      iterator dst = meanrms_y.begin();
+        for (/*just above*/; src != end; ++src, ++dst) {
+            (*dst).fluctuating = (*src).mean;
+            otool.masslu()->solve((*dst).fluctuating.cols(),
+                                  (*dst).fluctuating.data(),
+                                  (*dst).fluctuating.innerStride(),
+                                  (*dst).fluctuating.outerStride());
+            (*dst).mean.resizeLike((*dst).fluctuating);
+            otool.cop.accumulate(1, 1.0, (*dst).fluctuating.col(0).data(),
+                                         (*dst).fluctuating.innerStride(),
+                                    0.0, (*dst).mean.data(), 1);
+            (*dst).fluctuating.setConstant(
+                    std::numeric_limits<real_t>::quiet_NaN());
+        }
+
+    } else {
+
+        SUZERAIN_ERROR_VOID_UNIMPLEMENTED();
+
     }
 }
 
@@ -355,7 +386,7 @@ slowgrowth::gather_physical_rqq(
     for (int i = 0; i < rqq_y.cols(); ++i) {
         tmp = rqq_y.col(i);
         otool.masslu()->solve(tmp.cols(), tmp.data(),
-                                tmp.innerStride(), tmp.outerStride());
+                              tmp.innerStride(), tmp.outerStride());
         otool.cop.accumulate(1, 1.0, tmp.data(), tmp.innerStride(),
                                 0.0, rqq_y.col(i).data(), 1);
     }
