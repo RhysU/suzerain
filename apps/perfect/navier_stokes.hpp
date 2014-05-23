@@ -521,16 +521,17 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                                   rho, grad_rho, m, grad_m, e, grad_e,
                                   p, grad_p, T, grad_T,
                                   mu, grad_mu, lambda, grad_lambda);
-            const real_t nu         = mu / rho;
-            const real_t div_grad_p = rholut::div_grad_p(
-                                        gamma, Ma,
-                                        rho, grad_rho, div_grad_rho,
-                                        m, grad_m, div_grad_m,
-                                        e, grad_e, div_grad_e);
-            const real_t div_grad_T = rholut::div_grad_T(
-                                        gamma,
-                                        rho, grad_rho, div_grad_rho,
-                                        p, grad_p, div_grad_p);
+
+            // COMPUTE ANY SLOW GROWTH FORCING TO BE APPLIED TO THE FLOW
+            //
+            // Done eagerly as there is no data dependence on subsequent
+            // pointwise computations, which might permit more compiler and
+            // cache magic.  Not applied until each equation RHS is formed.
+            largo_state slowgrowth_f;
+            if (SlowGrowth) {
+                largo_state state(e, m.x(), m.y(), m.z(), rho, p);
+                sg_treater.inner_xz(state, slowgrowth_f);
+            }
 
             // Compute velocity-related quantities as well as
             // quantities related to the viscous stress tensor
@@ -541,7 +542,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             const real_t   div_u      = grad_u.trace();
             const Matrix3r tau        = rholut::tau(
                                             mu, lambda, div_u, grad_u);
-            const real_t div_m        = grad_m.trace();
+            const real_t   div_m      = grad_m.trace();
             const Vector3r grad_div_u = rholut::grad_div_u(
                                             rho, grad_rho, grad_grad_rho,
                                             m, div_m, grad_m, grad_div_m);
@@ -553,15 +554,16 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                                             div_u, grad_u, div_grad_u,
                                             grad_div_u);
 
-            // COMPUTE ANY SLOW GROWTH FORCING APPLIED TO THE FLOW
-            //
-            // Accumulation into each scalar right hand side is delayed
-            // to improve striding when accessing sphys buffers below.
-            largo_state slowgrowth_f;
-            if (SlowGrowth) {
-                largo_state state(e, m.x(), m.y(), m.z(), rho, p);
-                sg_treater.inner_xz(state, slowgrowth_f);
-            }
+            // Compute Laplacians related to the equation of state
+            const real_t div_grad_p = rholut::div_grad_p(
+                                        gamma, Ma,
+                                        rho, grad_rho, div_grad_rho,
+                                        m, grad_m, div_grad_m,
+                                        e, grad_e, div_grad_e);
+            const real_t div_grad_T = rholut::div_grad_T(
+                                        gamma,
+                                        rho, grad_rho, div_grad_rho,
+                                        p, grad_p, div_grad_p);
 
             // FORM ENERGY EQUATION RIGHT HAND SIDE
             sphys(ndx::e, offset) =
@@ -839,6 +841,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                 //
                 // We already absorbed maxdiffconst within md_lambda2_{x,y,z}
                 // to account for viscous, bulk viscous, and thermal effects.
+                const real_t nu    = mu / rho;
                 real_t diffusivity = nu;
                 switch (Linearize) {
                 // Implicit diffusion permits removing a reference value.
