@@ -72,6 +72,7 @@ class summary():
         self.planes.extend([('bar_rho_grad'+x+'_T',       'bar_rho_grad_T',       i     ) for i,  x        in enumerate(self.seq_xi)])
         self.planes.extend([('bar_rho_mu'  ,              'bar_rho_mu'    ,       None)]) 
         self.planes.extend([('bar_rho_rho' ,              'bar_rho_rho'   ,       None)]) 
+        self.planes.extend([('bar_'+x+'_'+y,              'bar_u_u'       ,       i     ) for i, (x, y)    in enumerate(self.seq_ui_uj)])
         self.planes.extend([('bar_rho_'+x+'_'+y,          'bar_rho_u_u'   ,       i     ) for i, (x, y)    in enumerate(self.seq_ui_uj)])
         self.planes.extend([('bar_rho_'+x+'_'+y+'_'+z,    'bar_rho_u_u_u' ,       i     ) for i, (x, y, z) in enumerate(self.seq_ui_uj_uk)])
         self.planes.extend([('bar_sym'+x+y+'_grad_u',     'bar_sym_grad_u',       i     ) for i, (x, y)    in enumerate(self.seq_xi_xj)])
@@ -185,17 +186,26 @@ class summary():
                 self.__dict__[var][index,:] = self.get_scalar(data, varindex)
 
         # Compute mean with arsel
-
         # Compute arsel for all variables
-        for var in [planes[0] for planes in self.planes]:
-            #print "... Computing for", var
-            for index in xrange(self.Ny):
-                t = ar.arsel(self.__dict__[var][:,index])
-                self.__dict__['mean_'   +var][index] = t.mu[0]
-                self.__dict__['sigma_'  +var][index] = t.mu_sigma[0]
-                self.__dict__['eff_N_'  +var][index] = t.eff_N[0]
-                self.__dict__['eff_var_'+var][index] = t.eff_var[0]
-                self.__dict__['T0_'     +var][index] = t.T0[0]
+        if self.nfiles == 1:
+            for var in [planes[0] for planes in self.planes]:
+                #print "... Computing for", var
+                for index in xrange(self.Ny):
+                    self.__dict__['mean_'   +var][index] = self.__dict__[var][0,index]
+                    self.__dict__['sigma_'  +var][index] = 0
+                    self.__dict__['eff_N_'  +var][index] = 0
+                    self.__dict__['eff_var_'+var][index] = 0
+                    self.__dict__['T0_'     +var][index] = 0
+        else:
+            for var in [planes[0] for planes in self.planes]:
+                #print "... Computing for", var
+                for index in xrange(self.Ny):
+                    t = ar.arsel(self.__dict__[var][:,index])
+                    self.__dict__['mean_'   +var][index] = t.mu[0]
+                    self.__dict__['sigma_'  +var][index] = t.mu_sigma[0]
+                    self.__dict__['eff_N_'  +var][index] = t.eff_N[0]
+                    self.__dict__['eff_var_'+var][index] = t.eff_var[0]
+                    self.__dict__['T0_'     +var][index] = t.T0[0]
 
 
     def init_line(self, var, a=1):
@@ -433,6 +443,7 @@ class summary():
         self.upp   = self.mean_bar_u - self.fav_u
         self.vpp   = self.mean_bar_v - self.fav_v
         self.wpp   = self.mean_bar_w - self.fav_w
+        self.Tpp   = self.mean_bar_T - self.fav_T
 
         # Reyolds stresses
         self.rho_upp_upp = self.get_rho_fpp_gpp(self.mean_bar_rho_u_u, self.mean_bar_rho, self.fav_u, self.fav_u)
@@ -462,7 +473,7 @@ class summary():
         self.fav_vpp_wpp = self.get_fav(self.rho_vpp_wpp, self.mean_bar_rho) 
         self.fav_wpp_wpp = self.get_fav(self.rho_wpp_wpp, self.mean_bar_rho) 
 
-        # Temperature velocity fluctuations
+        # Temperature-velocity Favre fluctuations
         self.rho_Tpp_upp = self.get_rho_fpp_gpp(self.mean_bar_rho_T_u, self.mean_bar_rho, self.fav_T, self.fav_u)
         self.rho_Tpp_vpp = self.get_rho_fpp_gpp(self.mean_bar_rho_T_v, self.mean_bar_rho, self.fav_T, self.fav_v)
         self.rho_Tpp_wpp = self.get_rho_fpp_gpp(self.mean_bar_rho_T_w, self.mean_bar_rho, self.fav_T, self.fav_w)
@@ -497,7 +508,14 @@ class summary():
                                      + self.mean_bar_tauyy * self.dy(self.mean_bar_v)
                                      + self.mean_bar_tauyz * self.dy(self.mean_bar_w)))
 
-        # RMS^2
+        # Reynolds average of Reynolds fluctuation pairs
+        self.up_up       = self.get_fp_gp(self.mean_bar_u_u, self.mean_bar_u, self.mean_bar_u)
+        self.up_vp       = self.get_fp_gp(self.mean_bar_u_v, self.mean_bar_u, self.mean_bar_v)
+        self.up_wp       = self.get_fp_gp(self.mean_bar_u_w, self.mean_bar_u, self.mean_bar_w)
+        self.vp_vp       = self.get_fp_gp(self.mean_bar_v_v, self.mean_bar_v, self.mean_bar_v)
+        self.vp_wp       = self.get_fp_gp(self.mean_bar_v_w, self.mean_bar_v, self.mean_bar_w)
+        self.wp_wp       = self.get_fp_gp(self.mean_bar_w_w, self.mean_bar_w, self.mean_bar_w)
+
         self.Tp_Tp       = self.get_fp_fp(self.mean_bar_T_T    , self.mean_bar_T  )
         self.rhop_rhop   = self.get_fp_fp(self.mean_bar_rho_rho, self.mean_bar_rho)
         self.pp_pp       = self.get_fp_fp(self.mean_bar_p_p    , self.mean_bar_p  )
@@ -521,14 +539,33 @@ class summary():
         del dy
 
         # Turbulent Mach based on Favre average of velocity fluctuations
-        self.Mt          = np.sqrt((self.rho_upp_upp + self.rho_vpp_vpp + self.rho_wpp_wpp)  / self.mean_bar_rho) / self.mean_bar_a
+        self.Mt            = np.sqrt((self.rho_upp_upp + self.rho_vpp_vpp + self.rho_wpp_wpp)  / self.mean_bar_rho) / self.mean_bar_a
+
+        # Prandtl Mixing length
+        self.mixing_length =  np.sqrt(np.abs(-self.fav_upp_vpp)) / self.dy(self.mean_bar_u)
 
         # Turbulent Prandtl
         kappa_u  = self.rho_upp_vpp / self.dy(self.fav_u)
         kappa_T  = self.rho_Tpp_vpp / self.dy(self.fav_T)
         self.Prt = kappa_u / kappa_T
-        del kappa_u
-        del kappa_T
+        del kappa_u, kappa_T
+
+        # Strong Reynolds Analogy(ies)
+        # ... evaluated through the convenience quantity G of 
+        # ... Morinishi etal, JFM, 2004  
+        def G_function(g=0, h=1):
+            num        = np.sqrt(self.Tp_Tp) / self.mean_bar_T 
+            den        = (self.mean_gamma-1) * np.power(self.mean_bar_M,2) * np.sqrt(self.up_up) / self.mean_bar_u
+            ghfactor   = h * np.abs(g * self.dy(self.Ttotal) / self.dy(self.mean_bar_T) - 1)
+            return num / den * ghfactor
+        # -- Reynolds (original)
+        self.G_SRA  = G_function()
+        # -- Gaviglio (1987)
+        self.G_GSRA = G_function(g=1, h=1)
+        # -- Rubesin  (1990)
+        self.G_RSRA = G_function(g=1, h=1.34)
+        # -- Huang    (1990)
+        self.G_HSRA = G_function(g=1, h=self.Prt)
 
         # Turbulent kinetic energy
         self.rhok = 0.5 * (self.rho_upp_upp + self.rho_vpp_vpp + self.rho_wpp_wpp)
@@ -638,6 +675,43 @@ class summary():
 
         # Generalized law of the wall, Van Driest transformed
         self.generalized_uwallVanDriest_plus = self.generalized_uwallVanDriest / self.u_tau
+
+        # Mixing length
+        self.mixing_length_plus = self.mixing_length / self.delta_nu
+
+        # Van Driest velocity, injection corrected, composite layer
+        def integrand_composite_plus(ku=0.41, A_plus=25.51, lmix='model'):
+            irho       = self.mean_bar_rho/self.wall_rho
+            imu        = self.mean_bar_mu/self.wall_mu
+            f_wallV    = (self.wall_V_plus * self.fav_u/self.u_tau + 1)
+            if lmix == "dns":
+                l_plus = self.mixing_length_plus
+            elif lmix == "model":
+                l_plus = self.mixing_length_model_plus(rho=irho, mu=imu)
+            l_plus_inc = self.mixing_length_model_plus()
+            num    = 1 + np.sqrt(4 * np.power(l_plus/imu, 2) * irho * f_wallV + 1)
+            den    = f_wallV / imu * (1 + np.sqrt(4 * np.power(l_plus_inc, 2) + 1))
+            ret    = num/den
+            ret[0] = 0
+            return ret
+
+        self.bar_uVanDriest_inj_composite_plus = np.zeros(self.Ny)
+        integrand = integrand_composite_plus()
+        for j in xrange(1,self.Ny):
+            du = (self.mean_bar_u[j] - self.mean_bar_u[j-1]) / self.u_tau
+            self.bar_uVanDriest_inj_composite_plus[j]  = (self.bar_uVanDriest_inj_composite_plus[j-1] 
+                        + 0.5 * ( integrand[j-1] + integrand[j  ]) * du)
+        del integrand
+        del du
+
+        self.bar_uVanDriest_inj_dns_plus = np.zeros(self.Ny)
+        integrand = integrand_composite_plus(lmix="dns")
+        for j in xrange(1,self.Ny):
+            du = (self.mean_bar_u[j] - self.mean_bar_u[j-1]) / self.u_tau
+            self.bar_uVanDriest_inj_dns_plus[j]  = (self.bar_uVanDriest_inj_dns_plus[j-1] 
+                        + 0.5 * ( integrand[j-1] + integrand[j  ]) * du)
+        del integrand
+        del du
 
         return
 
@@ -849,6 +923,12 @@ class summary():
         # TODO, compute baseflow info 
         return
 
+    def get_j_for_y_plus(self, y_plus):
+        for j, y in enumerate(self.y_plus):
+            if y > y_plus:
+                break
+        return j-1
+
     def dy(self, var):
         return np.ravel(np.dot(var, self.invD0T_D1T))
 
@@ -857,6 +937,15 @@ class summary():
 
     def get_u_loglaw_plus(self, kappa_vonKarman=0.4, B=4.7):
         return (1.0/kappa_vonKarman) * np.log(self.y_plus) + B
+
+    def mixing_length_model_plus(self
+            , rho    = 1
+            , mu     = 1
+            , wall_V = 0 
+            , ku=0.4, A_plus=26):
+        fav_u   = self.fav_u_plus
+        f_wallV = (wall_V * fav_u + 1)
+        return ku * self.y_plus * (1-np.exp(-self.y_plus*np.sqrt(rho*f_wallV)/mu/A_plus))
 
     # Some convenience functions:
     def get_fav(self, rho_f, rho):
@@ -876,13 +965,15 @@ class summary():
     
     def get_fp_gp(self, f_g, bar_f, bar_g):
         return f_g - bar_f * bar_g
-    
-    def get_fp_gpp(self, f_g, bar_f, bar_g):
-        return self.get_fp_gp(f_g, bar_f, bar_g)
-    
+
     def get_fp_fp(self, f_f, bar_f):
         return self.get_fp_gp(f_f, bar_f, bar_f)
 
+    def get_fp_gpp(self, f_g, bar_f, bar_g):
+        return self.get_fp_gp(f_g, bar_f, bar_g)
+    
+    def get_fpp_gpp(self, f_g, bar_f, bar_g, fav_f, fav_g):
+        return f_g + fav_f*fav_g - fav_f*bar_g - bar_f*fav_g
 
 
 def main(argv=None):
