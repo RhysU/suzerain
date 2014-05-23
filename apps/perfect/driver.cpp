@@ -677,10 +677,10 @@ driver::default_restart_interval(
                 // duration.
                 t /= 8;
             } else if (grid->one_sided()) {
-                // Two restarts per flow through in a boundary layer giving 20
-                // restarts in 10 flow throughs and, across O(50) flow throughs
+                // Four restarts per flow through in a boundary layer giving 40
+                // restarts in 10 flow throughs and, across O(25) flow throughs
                 // for a simulation campaign, O(100) restart files.
-                t /= 2;
+                t /= 4;
             } else {
                 SUZERAIN_ERROR_VOID_UNIMPLEMENTED();
             }
