@@ -1,19 +1,19 @@
 #!/usr/bin/env python
 """Usage: plan_suzerain.py HDF5FILE
 Get DNS planing information from a slow growth RANS solution.
-Options: 
+Options:
   -h  --help                            This help message.
       --dt                              Estimated time-step
       --Lx_over_delta_tgt               Target Lx over boundary layer thickness (default is 10)
       --Ly_over_delta_tgt               Target Ly over boundary layer thickness (default is 2.5)
       --Lz_over_delta_tgt               Target Lz over boundary layer thickness (default is 3)
-      --Dx_over_delta_nu_tgt            Target Dx^+ (Dx over viscous lenghtscale, default is 14)
-      --Dz_over_delta_nu_tgt            Target Dz^+ (Dz over viscous lenghtscale, default is 7)
-      --CPUh_performance                Cluster performance (CPU hours per million points per thousand timesteps, default is 170)
+      --Dx_over_delta_nu_tgt            Target Dx^+ (Dx over viscous length scale, default is 14)
+      --Dz_over_delta_nu_tgt            Target Dz^+ (Dz over viscous length scale, default is 7)
+      --CPUh_performance                Cluster performance (CPU hours per million points per thousand time steps, default is 170)
       --delta_factor                    Factor to scale the boundary layer thickness (default is 1)
       --y1_plus_tgt                     Target location of first break point in plus units (default is 0.6)
       --Dy_edge_over_delta_ref_tgt      Target mesh refinement at the boundary layer edge (Dy over reference thickness, default is 0.15 of displacement thickness)
-                                        NOTE: former option --Dy_edge_over_delta_star_tgt remains valid for backwards compatilibity
+                                        NOTE: former option --Dy_edge_over_delta_star_tgt remains valid for backwards compatibility
       --use_theta_reference             Use momentum thickness as reference thickness as outer resolution measure (default is False)
       --samples_per_turnover            Target number of samples per turnover (default is 10)
 
@@ -23,7 +23,7 @@ import sys
 import getopt
 import h5py
 import numpy as np
-import gb 
+import gb
 import matplotlib
 matplotlib.use('Agg')
 from matplotlib import pyplot
@@ -52,11 +52,11 @@ def getplan(hdf5file, dt):
     Lx=f['Lx'].value[0]
     Ly=f['Ly'].value[0]
     Lz=f['Lz'].value[0]
-    
+
     # Grab number of collocation points and B-spline order
     Ny=f['Ny'].value[0]
     k=f['k'].value
-    
+
     # Grab collocation points
     y = f['collocation_points_y'].value
 
@@ -131,7 +131,7 @@ def getplan(hdf5file, dt):
 
     # Done getting data
     f.close()
-    
+
     D0 = D0T.transpose()
     D1 = D1T.transpose()
 
@@ -177,7 +177,7 @@ def getplan(hdf5file, dt):
     rhoU_edge = rho_u_inf
     U_edge    = U_inf
     mu_edge   = mu_inf
- 
+
     # Compute delta_star (displacement thickness)
     delta_star = 0
     for j in xrange(0,Ny):
@@ -237,7 +237,7 @@ def getplan(hdf5file, dt):
 
     # Compute run parameters
     delta_tgt = delta * delta_factor
-    Lx_tgt = Lx_over_delta_tgt * delta_tgt  
+    Lx_tgt = Lx_over_delta_tgt * delta_tgt
     Ly_tgt = Ly_over_delta_tgt * delta_tgt
     Lz_tgt = Lz_over_delta_tgt * delta_tgt
     Dx_tgt = Dx_over_delta_nu_tgt * delta_nu
@@ -257,14 +257,14 @@ def getplan(hdf5file, dt):
       err_r = 2*tol_r
       # r is the stretching factor;
       # solve for the r that satisfies the y1_plus condition
-      # for this 
+      # for this
       while (abs(err_r) > tol_r and (rmax - rmin) > 1.0E-10):
         dy1 = 1/float(ny_mid)
         y_grid = np.zeros((ny_mid,1)).reshape(ny_mid,1)
         for j in xrange(0,ny_mid):
           xloc        = j * dy1
           y_grid[j,0] = gety(r_mid, Ly_tgt, xloc)
-        
+
         Dy_vec = np.zeros((ny_mid,1)).reshape(ny_mid,1)
         for j in xrange(0,ny_mid-1):
           Dy_vec[j,0] = y_grid[j+1,0]-y_grid[j,0]
@@ -283,7 +283,7 @@ def getplan(hdf5file, dt):
 
       # Assign the solution to r
       r = r_mid
-  
+
       # now evaluate if for this grid the criterion for dymax is satisfied
       for j in xrange(0,ny_mid):
         if (y_grid[j,0] < delta_tgt):
@@ -293,7 +293,7 @@ def getplan(hdf5file, dt):
 
       Dy_max_over_delta_ref_mid = (max(Dy_vec) / delta_star)[0]
       err_ny = (Dy_edge_over_delta_ref_mid-Dy_edge_over_delta_ref_tgt)/Dy_edge_over_delta_ref_mid
-      # if the dy at edge is larger than the target, 
+      # if the dy at edge is larger than the target,
       # increase the number of points,
       # decrease otherwise
       if (err_ny > tol_ny):
@@ -325,17 +325,17 @@ def getplan(hdf5file, dt):
 
     dt_sample         = turnover_tgt / samples_per_turnover
     nt_sample         = dt_sample / dt
- 
-    # Output run parameters 
-    print 
+
+    # Output run parameters
+    print
     print 'Run target parameters'
     print 'delta_factor                = ', delta_factor
     print 'turnover_tgt                = ', turnover_tgt
     print 'Nt_turnover_tgt             = ', Nt_turntime_tgt
     print 'Lx_over_delta_tgt           = ', Lx_over_delta_tgt
-    print 'Ly_over_delta_tgt           = ', Ly_over_delta_tgt 
-    print 'Lz_over_delta_tgt           = ', Lz_over_delta_tgt 
-    print 'Dx_over_delta_nu_tgt        = ', Dx_over_delta_nu_tgt 
+    print 'Ly_over_delta_tgt           = ', Ly_over_delta_tgt
+    print 'Lz_over_delta_tgt           = ', Lz_over_delta_tgt
+    print 'Dx_over_delta_nu_tgt        = ', Dx_over_delta_nu_tgt
     print 'Dz_over_delta_nu_tgt        = ', Dz_over_delta_nu_tgt
     print 'y1_plus_tgt                 = ', y1_plus_tgt
     if (use_theta_reference):
@@ -347,8 +347,8 @@ def getplan(hdf5file, dt):
     print 'Run setup and cost parameters'
     print 'htdelta                     = ', htdelta
     print 'Lx_tgt                      = ', Lx_tgt
-    print 'Ly_tgt                      = ', Ly_tgt 
-    print 'Lz_tgt                      = ', Lz_tgt 
+    print 'Ly_tgt                      = ', Ly_tgt
+    print 'Lz_tgt                      = ', Lz_tgt
     print 'Nx_tgt                      = ', Nx_tgt
     print 'Ny_tgt                      = ', Ny_tgt
     print 'Nz_tgt                      = ', Nz_tgt
@@ -360,9 +360,9 @@ def getplan(hdf5file, dt):
     print 'CPUh/turnover               = ', CPUh_turnover_tgt
     print 'samples_per_turnover        = ', samples_per_turnover
     print 'dt_sample                   = ', dt_sample
-    print 'nt_sample                   = ', nt_sample 
+    print 'nt_sample                   = ', nt_sample
 
-   
+
 
 def main(argv=None):
 
@@ -371,16 +371,16 @@ def main(argv=None):
         argv = sys.argv
 
     # Default optional parameters
-    global Lx_over_delta_tgt  
-    global Ly_over_delta_tgt 
-    global Lz_over_delta_tgt   
+    global Lx_over_delta_tgt
+    global Ly_over_delta_tgt
+    global Lz_over_delta_tgt
     global Dx_over_delta_nu_tgt
     global Dz_over_delta_nu_tgt
     global CPUh_performance
     global delta_factor
     global y1_plus_tgt
     global Dy_edge_over_delta_ref_tgt
-    global samples_per_turnover 
+    global samples_per_turnover
     global use_theta_reference
 
     dt                          =    0
@@ -399,7 +399,7 @@ def main(argv=None):
     # Parse and check incoming command line arguments
     try:
         try:
-            opts, args = getopt.getopt(argv[1:], "hn", 
+            opts, args = getopt.getopt(argv[1:], "hn",
                          [ "help"
                          , "dt="
                          , "Lx_over_delta_tgt="
@@ -439,9 +439,9 @@ def main(argv=None):
                 delta_factor = float(a)
             if o in ("--y1_plus_tgt"):
                 y1_plus_tgt = float(a)
-            # keep "delta_star" option for backwards-compatibility 
+            # keep "delta_star" option for backwards-compatibility
             if (o in ("--Dy_edge_over_delta_star_tgt") or
-                o in ("--Dy_edge_over_delta_ref_tgt" )   ): 
+                o in ("--Dy_edge_over_delta_ref_tgt" )   ):
                 Dy_edge_over_delta_ref_tgt = float(a)
             if o in ("--samples_per_turnover"):
                 samples_per_turnover = float(a)
@@ -462,7 +462,7 @@ def main(argv=None):
         print >>sys.stderr, "Only supports 1 file for now.  Sorry."
         return 2
 
-    # Get averaged parameters from multiple files   
+    # Get averaged parameters from multiple files
     for hdf5file in hdf5files:
         getplan(hdf5file, dt)
 
