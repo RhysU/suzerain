@@ -16,6 +16,7 @@ Options:
 File H5SUMMARY must have 1D /y and /t datasets to provide the meshgrid.
 Each DATASET must have extents matching the /y and /t dataset sizes.
 """
+from __future__ import print_function
 import getopt
 import h5py
 import matplotlib
@@ -65,7 +66,7 @@ def main(argv=None):
             if   o == "-c":
                 cstride = int(a)
             elif o in ("-h", "--help"):
-                print __doc__
+                print(__doc__)
                 return 0
             elif o == "-l":
                 linewidth = int(a)
@@ -82,10 +83,10 @@ def main(argv=None):
             elif o == "-Z":
                 zextents = tuple(float(r) for r in a.split(','))
         if len(args) < 2:
-            print >>sys.stderr, "Too few arguments.  See --help."
+            print("Too few arguments.  See --help.", file=sys.stderr)
             return 1
     except Usage as err:
-        print >>sys.stderr, err.msg
+        print(err.msg, file=sys.stderr)
         return 2
 
     # Push interactive mode off (in case we get used from IPython)
