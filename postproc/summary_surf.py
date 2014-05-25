@@ -25,14 +25,16 @@ import mpl_toolkits.mplot3d
 import numpy as np
 import sys
 
+
 class Usage(Exception):
     def __init__(self, msg):
         self.msg = msg
 
+
 def surface(y, t, ytplane, kwargs={}):
-    fig = plt.figure()
-    ax  = fig.gca(projection='3d')
-    Y,T = np.meshgrid(y, t)
+    fig  = plt.figure()
+    ax   = fig.gca(projection='3d')
+    Y, T = np.meshgrid(y, t)
     surf = ax.plot_surface(Y, T, ytplane,
                            vmin=np.min(ytplane), vmax=np.max(ytplane),
                            **kwargs)
@@ -41,6 +43,7 @@ def surface(y, t, ytplane, kwargs={}):
     else:
         cbar = None
     return (fig, ax, surf, cbar)
+
 
 def main(argv=None):
 
@@ -107,7 +110,7 @@ def main(argv=None):
     for dataname in args[1:]:
 
         # Load, truncating any irrelevant range or values
-        dataset = h5file[dataname][tb:te+1,yb:ye+1]
+        dataset = h5file[dataname][tb:te+1, yb:ye+1]
         if zextents:
             dataset[dataset < zextents[0]] = np.nan
             dataset[dataset > zextents[1]] = np.nan
@@ -134,6 +137,7 @@ def main(argv=None):
 
     # Pop interactive mode
     plt.interactive(was_interactive)
+
 
 if __name__ == "__main__":
     sys.exit(main())
