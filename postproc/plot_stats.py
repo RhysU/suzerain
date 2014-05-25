@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """Usage: plot_stats.py HDF5FILE
 Plot wall-normal profiles averaged over (X,Z) directions from HDF5FILE.
-Options: 
+Options:
   -f  --file_ext  Output file extension. Default is 'eps'.
   -h  --help      This help message.
       --plot_all  Generate secondary 'debug' type of plots.
@@ -13,7 +13,7 @@ import sys
 import getopt
 import h5py
 import numpy as np
-import gb 
+import gb
 import matplotlib
 matplotlib.use('Agg')
 from matplotlib import pyplot
@@ -116,12 +116,12 @@ def plot(hdf5file, fileext, ifile, plot_all):
     dyb = np.array(dyb).reshape(Ny-4,1)
 
     # load baseflow coefficients
-    base_rho   = None 
-    base_rho_u = None 
-    base_rho_v = None 
-    base_rho_w = None 
-    base_rho_E = None 
-    base_p     = None 
+    base_rho   = None
+    base_rho_u = None
+    base_rho_v = None
+    base_rho_w = None
+    base_rho_E = None
+    base_p     = None
     if "largo_baseflow" in f:
       if f['largo_baseflow'].attrs['coefficient_base'] == 'polynomial':
         baseflow_coeff = f['largo_baseflow'].value
@@ -135,7 +135,7 @@ def plot(hdf5file, fileext, ifile, plot_all):
         base_p     = np.zeros((Ny,1))
         for i in xrange(0,npoly):
           for j in xrange(0, Ny):
-            y_power_i = np.power(y[j,],i) 
+            y_power_i = np.power(y[j,],i)
             base_rho  [j,0] += y_power_i  * baseflow_coeff[0,i]
             base_rho_u[j,0] += y_power_i  * baseflow_coeff[1,i]
             base_rho_v[j,0] += y_power_i  * baseflow_coeff[2,i]
@@ -234,7 +234,7 @@ def plot(hdf5file, fileext, ifile, plot_all):
     pyplot.legend(loc=0)
     pyplot.savefig('bar_rho.' + fileext, bbox_inches='tight')
 
-    figid += 1   
+    figid += 1
     pyplot.figure(figid)
     key = "bar_rho_u" + str(ifile)
     if (ifile == 0 and base_rho_u is not None):
@@ -283,7 +283,7 @@ def plot(hdf5file, fileext, ifile, plot_all):
     pyplot.semilogx(y, np.sqrt(Tp_Tp)/T_col, linewidth=3, label=key)
     pyplot.legend(loc=0)
     pyplot.savefig('sqrt_Tp_Tp.' + fileext, bbox_inches='tight')
- 
+
     figid += 1
     pyplot.figure(figid)
     key = "bar_p" + str(ifile)
@@ -381,14 +381,14 @@ def plot(hdf5file, fileext, ifile, plot_all):
     pyplot.legend(loc=0)
     pyplot.savefig('dssqr_over_2nu.' + fileext, bbox_inches='tight')
 
-    figid += 1   
+    figid += 1
     pyplot.figure(figid)
     key = "fav_u" + str(ifile)
     pyplot.plot(y, fav_u[:,0], linewidth=3, label=key)
     pyplot.legend(loc=0)
     pyplot.savefig('fav_u.' + fileext, bbox_inches='tight')
 
-    figid += 1   
+    figid += 1
     pyplot.figure(figid)
     key = "fav_H" + str(ifile)
     pyplot.plot(y, fav_H[:,0], linewidth=3, label=key)
@@ -396,7 +396,7 @@ def plot(hdf5file, fileext, ifile, plot_all):
     pyplot.savefig('fav_H.' + fileext, bbox_inches='tight')
 
     if (plot_all):
-        figid += 1   
+        figid += 1
         pyplot.figure(figid)
         key = "fav_H_yy" + str(ifile)
         pyplot.plot(y, fav_H_yy[:,0], linewidth=0.1, label=key)
@@ -422,7 +422,7 @@ def main(argv=None):
     try:
         try:
             opts, args = getopt.getopt(argv[1:], "hf:n", ["help", "file_ext=", "plot_all"])
-        except getopt.error, msg:
+        except getopt.error as msg:
             raise Usage(msg)
         for o, a in opts:
             if o in ("-h", "--help"):
@@ -435,15 +435,15 @@ def main(argv=None):
         if len(args) < 1:
             print >>sys.stderr, "Incorrect number of arguments.  See --help."
             return 2
-    except Usage, err:
+    except Usage as err:
         print >>sys.stderr, err.msg
         return 2
 
     # Process each file in turn
     hdf5files = args
 
-    # Plot multiple files   
-    ifile = 0    
+    # Plot multiple files
+    ifile = 0
     for hdf5file in hdf5files:
         plot(hdf5file, fileext, ifile, plot_all)
         ifile += 1

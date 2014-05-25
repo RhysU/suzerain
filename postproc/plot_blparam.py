@@ -11,7 +11,7 @@ import sys
 import getopt
 import h5py
 import numpy as np
-import gb 
+import gb
 import matplotlib
 matplotlib.use('Agg')
 from matplotlib import pyplot
@@ -34,11 +34,11 @@ def getblparam(hdf5file):
     Lx=f['Lx'].value[0]
     Ly=f['Ly'].value[0]
     Lz=f['Lz'].value[0]
-    
+
     # Grab number of collocation points and B-spline order
     Ny=f['Ny'].value[0]
     k=f['k'].value
-    
+
     # Grab collocation points
     y = f['collocation_points_y'].value
 
@@ -113,7 +113,7 @@ def getblparam(hdf5file):
 
     # Done getting data
     f.close()
-    
+
     D0 = D0T.transpose()
     D1 = D1T.transpose()
 
@@ -137,8 +137,8 @@ def getblparam(hdf5file):
     W_inf      =  bar_u_coeff[Ny-1,2]
 
     # Grid parameters
-    y1         =  y[1] 
-    y1b        =  yb[1] 
+    y1         =  y[1]
+    y1b        =  yb[1]
 
     # Raw parameters
     p_wall     =  p_coeff[0,0]
@@ -158,7 +158,7 @@ def getblparam(hdf5file):
            jdelta += 1
         else:
            break
-    
+
     # compute delta by interpolation
     frac  = (0.99*U_inf - bar_u_col[j,0]) / (bar_u_col[jdelta+1,0] - bar_u_col[j,0])
     delta = (y[jdelta+1] - y[jdelta]) * frac + y[jdelta]
@@ -173,12 +173,12 @@ def getblparam(hdf5file):
     # Compute delta_star (displacement thickness)
     delta_star = 0
     for j in xrange(0,Ny):
-        delta_star += (1 - rho_u_col[j,0] / rhoU_edge) * i_weights[j,0] 
+        delta_star += (1 - rho_u_col[j,0] / rhoU_edge) * i_weights[j,0]
 
     # Compute theta (momentum thickness)
     theta = 0
     for j in xrange(0,Ny):
-        theta += rho_u_col[j,0] / rhoU_edge * (1 - bar_u_col[j,0] / U_edge) * i_weights[j,0] 
+        theta += rho_u_col[j,0] / rhoU_edge * (1 - bar_u_col[j,0] / U_edge) * i_weights[j,0]
 
     # Computed parameters
     Re_delta_star    = rho_edge * U_edge * delta_star / mu_edge
@@ -263,7 +263,7 @@ def getblparam(hdf5file):
     prms = np.append(prms, [dudy_wall         ])
     prms = np.append(prms, [tau_wall          ])
     prms = np.append(prms, [u_tau             ])
-    prms = np.append(prms, [delta_nu          ]) 
+    prms = np.append(prms, [delta_nu          ])
     prms = np.append(prms, [y1b_plus          ])
     prms = np.append(prms, [Re_tau            ])
     prms = np.append(prms, [Re_delta_star     ])
@@ -283,7 +283,7 @@ def getblparam(hdf5file):
     prms = np.append(prms, [Lz_over_delta     ])
     prms = np.append(prms, [turnover_time     ])
     prms = np.append(prms, [flowthrough_time  ])
-                                  
+
     return prms
 
 
@@ -300,7 +300,7 @@ def main(argv=None):
     try:
         try:
 	  opts, args = getopt.getopt(argv[1:], "hf:n", ["help", "file_ext="])
-        except getopt.error, msg:
+        except getopt.error as msg:
             raise Usage(msg)
         for o, a in opts:
             if o in ("-h", "--help"):
@@ -313,7 +313,7 @@ def main(argv=None):
         if len(args) < 1:
             print >>sys.stderr, "Incorrect number of arguments.  See --help."
             return 2
-    except Usage, err:
+    except Usage as err:
         print >>sys.stderr, err.msg
         return 2
 
@@ -336,7 +336,7 @@ def main(argv=None):
     head_table = np.append(head_table, ["dudy_wall               "])
     head_table = np.append(head_table, ["tau_wall                "])
     head_table = np.append(head_table, ["u_tau                   "])
-    head_table = np.append(head_table, ["delta_nu                "]) 
+    head_table = np.append(head_table, ["delta_nu                "])
     head_table = np.append(head_table, ["y1b_plus                "])
     head_table = np.append(head_table, ["Re_tau                  "])
     head_table = np.append(head_table, ["Re_delta_star           "])
@@ -364,7 +364,7 @@ def main(argv=None):
     hdf5files = args
     nfiles    = len(hdf5files)
 
-    # Get averaged parameters from multiple files  
+    # Get averaged parameters from multiple files
     # and append the results to the array
     prms_table = np.empty([0])
     for hdf5file in hdf5files:

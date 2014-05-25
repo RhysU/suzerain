@@ -4,7 +4,7 @@ Interpolate solution from a slow growth RANS simulation to a suzerain 'reacting'
 Input data must be in text format with the following column layout:
 {y, rho_diluter, rho_s, rho_u, rho_v, rho_E}, with rho_diluter the diluter density,
 rho_s the species densities (s=1, Ns).
-Options: 
+Options:
   -h  --help           This help message.
       --sgr_file=      Text file from sgr.
       --suzerain_file= HDF5 file from suzerain with proper metadata.
@@ -14,7 +14,7 @@ import sys
 import getopt
 import h5py
 import numpy as np
-import gb 
+import gb
 import matplotlib
 matplotlib.use('Agg')
 from matplotlib import pyplot
@@ -28,7 +28,7 @@ def getsgr2suz(datfile, hdf5file):
 
     # Grab sgr data
     # Number of field variables from sgr data
-    nvar   = data.shape[1] - 1 
+    nvar   = data.shape[1] - 1
 
     # Number of grid points in y from sgr
     ny_sgr = data.shape[0]
@@ -91,7 +91,7 @@ def getsgr2suz(datfile, hdf5file):
     frhoE[:,0,0] = np.interp(yf[:],y_sgr[:,0],rho_E [:,0])
 
     # Write fields to suzerain file
-    f['rho'  ][()]   = frho 
+    f['rho'  ][()]   = frho
     f['rho_u'][()]   = frhou
     f['rho_v'][()]   = frhov
     f['rho_w'][()]   = 0
@@ -103,15 +103,15 @@ def getsgr2suz(datfile, hdf5file):
 
     # Species
     frhos   = f['rho'].value  ## Placeholder for species field
-    
+
     # NOTE: s=0 is the diluter, skip writting it, but compute
     # lower and upper concentrations
-    frhos [:,0,0]   = np.interp(yf[:],y_sgr[:,0],rho_s [:,0]) 
+    frhos [:,0,0]   = np.interp(yf[:],y_sgr[:,0],rho_s [:,0])
     lower_cs[0]      = frhos[0,0,0]/ frho[0,0,0]
     upper_cs[0]      = frhos[Nyf-1,0,0]/ frho[Nyf-1,0,0]
-    for s in xrange(1,Ns): 
+    for s in xrange(1,Ns):
       rhos_key = 'rho_' + sname[s]
-      frhos [:,0,0]   = np.interp(yf[:],y_sgr[:,0],rho_s [:,s])  
+      frhos [:,0,0]   = np.interp(yf[:],y_sgr[:,0],rho_s [:,s])
       f[rhos_key.strip(' ')][()] = frhos
       lower_cs[s]      = frhos[0,0,0]/ frho[0,0,0]
       upper_cs[s]      = frhos[Nyf-1,0,0]/ frho[Nyf-1,0,0]
@@ -134,12 +134,12 @@ def main(argv=None):
     # Parse and check incoming command line arguments
     try:
         try:
-            opts, args = getopt.getopt(argv[1:], "hn", 
+            opts, args = getopt.getopt(argv[1:], "hn",
                          [ "help"
                            , "sgr_file="
                            , "suzerain_file="
                          ])
-        except getopt.error, msg:
+        except getopt.error as msg:
             raise Usage(msg)
         for o, a in opts:
             if o in ("-h", "--help"):
@@ -154,7 +154,7 @@ def main(argv=None):
         if len(args) > 0:
             print >>sys.stderr, "Incorrect number of arguments.  See --help."
             return 2
-    except Usage, err:
+    except Usage as err:
         print >>sys.stderr, err.msg
         return 2
 

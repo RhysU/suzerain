@@ -59,7 +59,7 @@ def main(argv=None):
     try:
         try:
             opts, args = getopt.getopt(argv[1:], "c:hl:o:r:t:T:Y:Z:", ["help"])
-        except getopt.error, msg:
+        except getopt.error as msg:
             raise Usage(msg)
         for o, a in opts:
             if   o == "-c":
@@ -84,7 +84,7 @@ def main(argv=None):
         if len(args) < 2:
             print >>sys.stderr, "Too few arguments.  See --help."
             return 1
-    except Usage, err:
+    except Usage as err:
         print >>sys.stderr, err.msg
         return 2
 

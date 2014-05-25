@@ -12,7 +12,7 @@ import sys
 import getopt
 import h5py
 import numpy as np
-import gb 
+import gb
 import matplotlib
 matplotlib.use('Agg')
 from matplotlib import pyplot
@@ -21,7 +21,7 @@ def getheader(infile):
 
     # Open file and read header
     f = open(infile,'r')
-    
+
     # Read first line
     head = f.readline()
     head = head.split()
@@ -33,7 +33,7 @@ def getheader(infile):
     # Delete unused columns
     del head[4]    # delete 'nt column'
     del head[0:3]  # delete first three columns
-    
+
     return head
 
 
@@ -106,7 +106,7 @@ def getstatus(infile,nskip,keys):
                         data.append(row)
 	            iskip += 1
 	        except ValueError:
-		    # if the conversion falis, 
+		    # if the conversion falis,
                     # discard and continue
 	            continue
 		# if key was in line, continue with the next line
@@ -115,7 +115,7 @@ def getstatus(infile,nskip,keys):
     # convert to numpy array and return
     data = np.array(data)
     return data
-    
+
 
 def main(argv=None):
 
@@ -126,13 +126,13 @@ def main(argv=None):
     # Default values
     nskip = 20
     fileext  = 'eps'
-    quantity = 'rms' 
+    quantity = 'rms'
 
     # Parse and check incoming command line arguments
     try:
         try:
 	  opts, args = getopt.getopt(argv[1:], "hs:f:", ["help","skip=","file_type=","quantity="])
-        except getopt.error, msg:
+        except getopt.error as msg:
             raise Usage(msg)
         for o, a in opts:
             if o in ("-h", "--help"):
@@ -147,7 +147,7 @@ def main(argv=None):
         if len(args) < 1:
             print >>sys.stderr, "Incorrect number of arguments.  See --help."
             return 2
-    except Usage, err:
+    except Usage as err:
         print >>sys.stderr, err.msg
         return 2
 
@@ -155,14 +155,14 @@ def main(argv=None):
     infiles = args
     nfiles  = len(infiles)
 
-    # Get data from multiple files  
+    # Get data from multiple files
     # and append the results to data_table
     data_table = np.empty([0])
 
-    # Keep track of the number of rows of data_table 
+    # Keep track of the number of rows of data_table
     rows = 0
 
-    # First input file determines the file 
+    # First input file determines the file
     # kind (rms, L2, bulk), and the header
 
     # Get suzerain keys for the requested quantity
@@ -171,7 +171,7 @@ def main(argv=None):
     # Get header from first input file
     head_table = getheader(infiles[0])
 
-    # Process each file in turn  
+    # Process each file in turn
     for infile in infiles:
         print "Processing", infile
         head  = getheader(infile)
@@ -194,6 +194,6 @@ def main(argv=None):
         pyplot.plot(data_table[:,0], data_table[:,figid], '-o',linewidth=3, label=key)
         pyplot.legend(loc=0)
         pyplot.savefig(key + '.' + fileext, bbox_inches='tight')
-  
+
 if __name__ == "__main__":
     sys.exit(main())

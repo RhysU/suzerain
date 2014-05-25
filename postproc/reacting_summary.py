@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 """Usage: reacting_summary.py HDF5FILES
-Obtain summary file from apps/reacting HDF5FILES, 
+Obtain summary file from apps/reacting HDF5FILES,
 or load an existing summary file.
-Options: 
+Options:
   -h  --help      This help message.
 """
 import ar
@@ -43,42 +43,42 @@ class summary():
         if self.Ns > 1:
             self.planes.extend([('bar_rho'+x                 ,'bar_rho_s'            , i     ) for i,  x     in enumerate(self.seq_ci)])
 
-        self.planes.extend([('bar_Cp' ,                   'bar_Cp' ,              None)]) 
-        self.planes.extend([('bar_Cv' ,                   'bar_Cv' ,              None)]) 
-        self.planes.extend([('bar_D0' ,                   'bar_D0' ,              None)]) 
-        self.planes.extend([('bar_E'  ,                   'bar_E'  ,              None)]) 
-        self.planes.extend([('bar_M'  ,                   'bar_M'  ,              None)]) 
-        self.planes.extend([('bar_M_M',                   'bar_M_M',              None)]) 
-        self.planes.extend([('bar_T'  ,                   'bar_T'  ,              None)]) 
-        self.planes.extend([('bar_T_T',                   'bar_T_T',              None)]) 
-        self.planes.extend([('bar_a'  ,                   'bar_a'  ,              None)]) 
-        self.planes.extend([('bar_a_a',                   'bar_a_a',              None)]) 
+        self.planes.extend([('bar_Cp' ,                   'bar_Cp' ,              None)])
+        self.planes.extend([('bar_Cv' ,                   'bar_Cv' ,              None)])
+        self.planes.extend([('bar_D0' ,                   'bar_D0' ,              None)])
+        self.planes.extend([('bar_E'  ,                   'bar_E'  ,              None)])
+        self.planes.extend([('bar_M'  ,                   'bar_M'  ,              None)])
+        self.planes.extend([('bar_M_M',                   'bar_M_M',              None)])
+        self.planes.extend([('bar_T'  ,                   'bar_T'  ,              None)])
+        self.planes.extend([('bar_T_T',                   'bar_T_T',              None)])
+        self.planes.extend([('bar_a'  ,                   'bar_a'  ,              None)])
+        self.planes.extend([('bar_a_a',                   'bar_a_a',              None)])
         self.planes.extend([('bar_grad'+x+'_T',           'bar_grad_T',           i     ) for i,  x        in enumerate(self.seq_xi)])
-        self.planes.extend([('bar_kappa',                 'bar_kappa',            None)]) 
+        self.planes.extend([('bar_kappa',                 'bar_kappa',            None)])
         self.planes.extend([('bar_kappa_grad'+x+'_T',     'bar_kappa_grad_T',     i     ) for i,  x        in enumerate(self.seq_xi)])
-        self.planes.extend([('bar_mu',                    'bar_mu',               None)]) 
+        self.planes.extend([('bar_mu',                    'bar_mu',               None)])
         self.planes.extend([('bar_mu_S'+x+y,              'bar_mu_S',             i     ) for i, (x, y)    in enumerate(self.seq_xi_xj)])
-        self.planes.extend([('bar_mu_div_u',              'bar_mu_div_u',         None)]) 
-        self.planes.extend([('bar_mu_mu'   ,              'bar_mu_mu'   ,         None)]) 
+        self.planes.extend([('bar_mu_div_u',              'bar_mu_div_u',         None)])
+        self.planes.extend([('bar_mu_mu'   ,              'bar_mu_mu'   ,         None)])
         self.planes.extend([('bar_nu'      ,              'bar_nu'      ,         None)])
-        self.planes.extend([('bar_p'       ,              'bar_p'       ,         None)]) 
-        self.planes.extend([('bar_p_div_u' ,              'bar_p_div_u' ,         None)]) 
+        self.planes.extend([('bar_p'       ,              'bar_p'       ,         None)])
+        self.planes.extend([('bar_p_div_u' ,              'bar_p_div_u' ,         None)])
         self.planes.extend([('bar_p_p'     ,              'bar_p_p'     ,         None)])
         self.planes.extend([('bar_p_'+x    ,              'bar_p_u'     ,         i     ) for i,  x        in enumerate(self.seq_ui)])
-        self.planes.extend([('bar_qb'      ,              'bar_qb',               None)]) 
+        self.planes.extend([('bar_qb'      ,              'bar_qb',               None)])
         self.planes.extend([('bar_rho_E_'+x,              'bar_rho_E_u',          i     ) for i,  x        in enumerate(self.seq_ui)])
         self.planes.extend([('bar_rho_T'   ,              'bar_rho_T',            None)])
         self.planes.extend([('bar_rho_T_'+x,              'bar_rho_T_u',          i     ) for i,  x        in enumerate(self.seq_ui)])
         self.planes.extend([('bar_rho_grad'+x+'_T',       'bar_rho_grad_T',       i     ) for i,  x        in enumerate(self.seq_xi)])
-        self.planes.extend([('bar_rho_mu'  ,              'bar_rho_mu'    ,       None)]) 
-        self.planes.extend([('bar_rho_rho' ,              'bar_rho_rho'   ,       None)]) 
+        self.planes.extend([('bar_rho_mu'  ,              'bar_rho_mu'    ,       None)])
+        self.planes.extend([('bar_rho_rho' ,              'bar_rho_rho'   ,       None)])
         self.planes.extend([('bar_'+x+'_'+y,              'bar_u_u'       ,       i     ) for i, (x, y)    in enumerate(self.seq_ui_uj)])
         self.planes.extend([('bar_rho_'+x+'_'+y,          'bar_rho_u_u'   ,       i     ) for i, (x, y)    in enumerate(self.seq_ui_uj)])
         self.planes.extend([('bar_rho_'+x+'_'+y+'_'+z,    'bar_rho_u_u_u' ,       i     ) for i, (x, y, z) in enumerate(self.seq_ui_uj_uk)])
         self.planes.extend([('bar_sym'+x+y+'_grad_u',     'bar_sym_grad_u',       i     ) for i, (x, y)    in enumerate(self.seq_xi_xj)])
         self.planes.extend([('bar_sym'+x+y+'_rho_grad_u', 'bar_sym_rho_grad_u',   i     ) for i, (x, y)    in enumerate(self.seq_xi_xj)])
         self.planes.extend([('bar_tau'+x+y ,              'bar_tau'       ,       i     ) for i, (x, y)    in enumerate(self.seq_xi_xj)])
-        self.planes.extend([('bar_tau_colon_grad_u' ,     'bar_tau_colon_grad_u', None)]) 
+        self.planes.extend([('bar_tau_colon_grad_u' ,     'bar_tau_colon_grad_u', None)])
         self.planes.extend([('bar_tauu'+x,                'bar_tau_u'     ,       i     ) for i,  x        in enumerate(self.seq_xi)])
         self.planes.extend([('bar_'+x,                    'bar_u'         ,       i     ) for i,  x        in enumerate(self.seq_ui)])
 
@@ -121,7 +121,7 @@ class summary():
         # Input variables
         self.inputscalars = ['t']
         self.inputdata    = list(set([planes[1] for planes in self.planes]))
- 
+
         # init scalar storage
         for scalar in self.scalars:
             self.init_line(scalar, self.nfiles)
@@ -226,11 +226,11 @@ class summary():
 
         # Roots of entries to exclude from cloning
         exclude_roots = ['bar', 'rho', 'bulk', 'min', 'max',
-                 'xmin', 'xmax', 'zmin', 'zmax', 'fneg', 
+                 'xmin', 'xmax', 'zmin', 'zmax', 'fneg',
                  'twopoint']
 
         # List of names to copy
-        names = [x for x in f.keys() 
+        names = [x for x in f.keys()
                  if not(x in exclude_vars or any([x.startswith(r) for r in exclude_roots]))]
 
         # Entries to copy with a different name
@@ -268,7 +268,7 @@ class summary():
             f[plane].attrs.create('eff_N'  , self.__dict__['eff_N_'  +plane])
             f[plane].attrs.create('eff_var', self.__dict__['eff_var_'+plane])
             f[plane].attrs.create('T0'     , self.__dict__['T0_'     +plane])
-       
+
         f.close()
 
 
@@ -280,10 +280,10 @@ class summary():
         # Input metadata
         self.metascalars = ['Nx', 'Ny', 'Nz', 'k', 'Lx', 'Ly', 'Lz']
         self.metalines   = ['breakpoints_y',
-                            'collocation_points_x', 
+                            'collocation_points_x',
                             'collocation_points_y',
-                            'collocation_points_z', 
-                            'Dy0T', 'Dy1T', 'Dy2T', 
+                            'collocation_points_z',
+                            'Dy0T', 'Dy1T', 'Dy2T',
                             'integration_weights']
 
         # Open first file to load metadata
@@ -328,7 +328,7 @@ class summary():
             self.coeff_baseflow_dx = None #np.zeros((6,2))
 
         # Process reference metadata
-        # Check if the first file is a sample file 
+        # Check if the first file is a sample file
         # or a summary file (by looking for y)
         if 'y' not in f.keys():
             self.y   = np.squeeze(f[line][()])
@@ -381,7 +381,7 @@ class summary():
             self.__dict__['eff_N_'  +plane] = np.squeeze(f[plane].attrs.get('eff_N'  ))
             self.__dict__['eff_var_'+plane] = np.squeeze(f[plane].attrs.get('eff_var'))
             self.__dict__['T0_'     +plane] = np.squeeze(f[plane].attrs.get('T0'     ))
-      
+
         f.close()
         return
 
@@ -460,18 +460,18 @@ class summary():
                                       ,self.__dict__['mean_bar_rho_%s_%s'      % (ui, uj    )]
                                       ,self.__dict__['mean_bar_rho_%s_%s'      % (    uj, uk)]
                                       ,self.__dict__['mean_bar_rho_%s_%s'      % (ui,     uk)]
-                                      ,self.mean_bar_rho                             
+                                      ,self.mean_bar_rho
                                       ,self.__dict__['fav_%s'                  %  ui         ]
                                       ,self.__dict__['fav_%s'                  %      uj     ]
                                       ,self.__dict__['fav_%s'                  %          uk ])
 
         # Favre Reyolds stresses
-        self.fav_upp_upp = self.get_fav(self.rho_upp_upp, self.mean_bar_rho) 
-        self.fav_upp_vpp = self.get_fav(self.rho_upp_vpp, self.mean_bar_rho) 
-        self.fav_upp_wpp = self.get_fav(self.rho_upp_wpp, self.mean_bar_rho) 
-        self.fav_vpp_vpp = self.get_fav(self.rho_vpp_vpp, self.mean_bar_rho) 
-        self.fav_vpp_wpp = self.get_fav(self.rho_vpp_wpp, self.mean_bar_rho) 
-        self.fav_wpp_wpp = self.get_fav(self.rho_wpp_wpp, self.mean_bar_rho) 
+        self.fav_upp_upp = self.get_fav(self.rho_upp_upp, self.mean_bar_rho)
+        self.fav_upp_vpp = self.get_fav(self.rho_upp_vpp, self.mean_bar_rho)
+        self.fav_upp_wpp = self.get_fav(self.rho_upp_wpp, self.mean_bar_rho)
+        self.fav_vpp_vpp = self.get_fav(self.rho_vpp_vpp, self.mean_bar_rho)
+        self.fav_vpp_wpp = self.get_fav(self.rho_vpp_wpp, self.mean_bar_rho)
+        self.fav_wpp_wpp = self.get_fav(self.rho_wpp_wpp, self.mean_bar_rho)
 
         # Temperature-velocity Favre fluctuations
         self.rho_Tpp_upp = self.get_rho_fpp_gpp(self.mean_bar_rho_T_u, self.mean_bar_rho, self.fav_T, self.fav_u)
@@ -503,7 +503,7 @@ class summary():
         # Tau fluctuations dot derivative of Favre velocity fluctuations
         # NOTE: Compute these ones explicitly
         #       Assume duppdx = duppdz = 0
-        self.taup_colon_grad_upp = (self.mean_bar_tau_colon_grad_u 
+        self.taup_colon_grad_upp = (self.mean_bar_tau_colon_grad_u
                                    - ( self.mean_bar_tauxy * self.dy(self.mean_bar_u)
                                      + self.mean_bar_tauyy * self.dy(self.mean_bar_v)
                                      + self.mean_bar_tauyz * self.dy(self.mean_bar_w)))
@@ -534,7 +534,7 @@ class summary():
         self.generalized_uwall  = np.zeros(self.Ny)
         for j in xrange(1,self.Ny):
             dy = self.y[j] - self.y[j-1]
-            self.generalized_uwall [j] = (self.generalized_uwall[j-1] 
+            self.generalized_uwall [j] = (self.generalized_uwall[j-1]
                     + 0.5 * self.mean_bar_tauxy[0] * (1/self.mean_bar_mu[j] + 1/self.mean_bar_mu[j-1]) * dy)
         del dy
 
@@ -551,10 +551,10 @@ class summary():
         del kappa_u, kappa_T
 
         # Strong Reynolds Analogy(ies)
-        # ... evaluated through the convenience quantity G of 
-        # ... Morinishi etal, JFM, 2004  
+        # ... evaluated through the convenience quantity G of
+        # ... Morinishi etal, JFM, 2004
         def G_function(g=0, h=1):
-            num        = np.sqrt(self.Tp_Tp) / self.mean_bar_T 
+            num        = np.sqrt(self.Tp_Tp) / self.mean_bar_T
             den        = (self.mean_gamma-1) * np.power(self.mean_bar_M,2) * np.sqrt(self.up_up) / self.mean_bar_u
             ghfactor   = h * np.abs(g * self.dy(self.Ttotal) / self.dy(self.mean_bar_T) - 1)
             return num / den * ghfactor
@@ -598,20 +598,20 @@ class summary():
         self.kbudget_compressibility_pressure = - self.vpp  * self.dy(self.mean_bar_p)
         self.kbudget_compressibility_tau      = ( self.upp  * self.dy(self.mean_bar_tauxy)
                                                 + self.vpp  * self.dy(self.mean_bar_tauyy)
-                                                + self.wpp  * self.dy(self.mean_bar_tauyz)) 
+                                                + self.wpp  * self.dy(self.mean_bar_tauyz))
         self.kbudget_compressibility_tke      = - self.rhok * self.dy(self.fav_v)
         self.kbudget_compressibility          = ( self.kbudget_compressibility_pressure
-                                                + self.kbudget_compressibility_tau     
+                                                + self.kbudget_compressibility_tau
                                                 + self.kbudget_compressibility_tke     )
 
         # -- sum (no slow growth source term)
-        self.kbudget_sum = ( self.kbudget_convection       
+        self.kbudget_sum = ( self.kbudget_convection
                            + self.kbudget_production
-                           + self.kbudget_transport 
-                           + self.kbudget_pressure_diffusion  
-                           + self.kbudget_pressure_dilatation 
-                           + self.kbudget_viscous_diffusion   
-                           - self.kbudget_viscous_dissipation 
+                           + self.kbudget_transport
+                           + self.kbudget_pressure_diffusion
+                           + self.kbudget_pressure_dilatation
+                           + self.kbudget_viscous_diffusion
+                           - self.kbudget_viscous_dissipation
                            + self.kbudget_compressibility     )
 
 
@@ -620,8 +620,8 @@ class summary():
         self.bar_uVanDriest = np.zeros(self.Ny)
         for j in xrange(1,self.Ny):
             du = self.mean_bar_u[j] - self.mean_bar_u[j-1]
-            self.bar_uVanDriest[j]  = (self.bar_uVanDriest[j-1] 
-                                      + 0.5 * ( np.sqrt(self.mean_bar_rho[j  ] / self.wall_rho) 
+            self.bar_uVanDriest[j]  = (self.bar_uVanDriest[j-1]
+                                      + 0.5 * ( np.sqrt(self.mean_bar_rho[j  ] / self.wall_rho)
                                               + np.sqrt(self.mean_bar_rho[j-1] / self.wall_rho)) * du)
         del du
 
@@ -629,8 +629,8 @@ class summary():
         self.bar_uVanDriest_inj = np.zeros(self.Ny)
         for j in xrange(1,self.Ny):
             du = self.mean_bar_u[j] - self.mean_bar_u[j-1]
-            self.bar_uVanDriest_inj[j]  = (self.bar_uVanDriest_inj[j-1] 
-                        + 0.5 * self.u_tau * ( np.sqrt(self.mean_bar_rho[j  ] / (self.wall_V * self.wall_rho * self.fav_u[j  ] + self.wall_rho * np.power(self.u_tau,2))) 
+            self.bar_uVanDriest_inj[j]  = (self.bar_uVanDriest_inj[j-1]
+                        + 0.5 * self.u_tau * ( np.sqrt(self.mean_bar_rho[j  ] / (self.wall_V * self.wall_rho * self.fav_u[j  ] + self.wall_rho * np.power(self.u_tau,2)))
                                              + np.sqrt(self.mean_bar_rho[j-1] / (self.wall_V * self.wall_rho * self.fav_u[j-1] + self.wall_rho * np.power(self.u_tau,2)))) * du)
 
         # Van Driest transformed version of y * dudy
@@ -649,17 +649,17 @@ class summary():
     def get_scaled_plus(self):
 
         # Favre averages
-        self.fav_u_plus = self.fav_u / self.u_tau 
-        self.fav_v_plus = self.fav_v / self.u_tau 
-        self.fav_w_plus = self.fav_w / self.u_tau 
+        self.fav_u_plus = self.fav_u / self.u_tau
+        self.fav_v_plus = self.fav_v / self.u_tau
+        self.fav_w_plus = self.fav_w / self.u_tau
 
         # Favre Reyolds stresses
-        self.fav_upp_upp_plus = self.fav_upp_upp / self.u_tau / self.u_tau 
-        self.fav_upp_vpp_plus = self.fav_upp_vpp / self.u_tau / self.u_tau 
-        self.fav_upp_wpp_plus = self.fav_upp_wpp / self.u_tau / self.u_tau 
-        self.fav_vpp_vpp_plus = self.fav_vpp_vpp / self.u_tau / self.u_tau 
-        self.fav_vpp_wpp_plus = self.fav_vpp_wpp / self.u_tau / self.u_tau 
-        self.fav_wpp_wpp_plus = self.fav_wpp_wpp / self.u_tau / self.u_tau 
+        self.fav_upp_upp_plus = self.fav_upp_upp / self.u_tau / self.u_tau
+        self.fav_upp_vpp_plus = self.fav_upp_vpp / self.u_tau / self.u_tau
+        self.fav_upp_wpp_plus = self.fav_upp_wpp / self.u_tau / self.u_tau
+        self.fav_vpp_vpp_plus = self.fav_vpp_vpp / self.u_tau / self.u_tau
+        self.fav_vpp_wpp_plus = self.fav_vpp_wpp / self.u_tau / self.u_tau
+        self.fav_wpp_wpp_plus = self.fav_wpp_wpp / self.u_tau / self.u_tau
 
         # y * dudy
         self.y_dudy_plus = self.y_dudy / self.u_tau
@@ -699,7 +699,7 @@ class summary():
         integrand = integrand_composite_plus()
         for j in xrange(1,self.Ny):
             du = (self.mean_bar_u[j] - self.mean_bar_u[j-1]) / self.u_tau
-            self.bar_uVanDriest_inj_composite_plus[j]  = (self.bar_uVanDriest_inj_composite_plus[j-1] 
+            self.bar_uVanDriest_inj_composite_plus[j]  = (self.bar_uVanDriest_inj_composite_plus[j-1]
                         + 0.5 * ( integrand[j-1] + integrand[j  ]) * du)
         del integrand
         del du
@@ -708,7 +708,7 @@ class summary():
         integrand = integrand_composite_plus(lmix="dns")
         for j in xrange(1,self.Ny):
             du = (self.mean_bar_u[j] - self.mean_bar_u[j-1]) / self.u_tau
-            self.bar_uVanDriest_inj_dns_plus[j]  = (self.bar_uVanDriest_inj_dns_plus[j-1] 
+            self.bar_uVanDriest_inj_dns_plus[j]  = (self.bar_uVanDriest_inj_dns_plus[j-1]
                         + 0.5 * ( integrand[j-1] + integrand[j  ]) * du)
         del integrand
         del du
@@ -720,17 +720,17 @@ class summary():
     def get_scaled_sl(self):
 
         # Favre averages
-        self.fav_u_sl = self.fav_u / self.u_tau_sl 
-        self.fav_v_sl = self.fav_v / self.u_tau_sl 
-        self.fav_w_sl = self.fav_w / self.u_tau_sl 
+        self.fav_u_sl = self.fav_u / self.u_tau_sl
+        self.fav_v_sl = self.fav_v / self.u_tau_sl
+        self.fav_w_sl = self.fav_w / self.u_tau_sl
 
         # Favre Reyolds stresses
-        self.fav_upp_upp_sl = self.fav_upp_upp / self.u_tau_sl / self.u_tau_sl 
-        self.fav_upp_vpp_sl = self.fav_upp_vpp / self.u_tau_sl / self.u_tau_sl 
-        self.fav_upp_wpp_sl = self.fav_upp_wpp / self.u_tau_sl / self.u_tau_sl 
-        self.fav_vpp_vpp_sl = self.fav_vpp_vpp / self.u_tau_sl / self.u_tau_sl 
-        self.fav_vpp_wpp_sl = self.fav_vpp_wpp / self.u_tau_sl / self.u_tau_sl 
-        self.fav_wpp_wpp_sl = self.fav_wpp_wpp / self.u_tau_sl / self.u_tau_sl 
+        self.fav_upp_upp_sl = self.fav_upp_upp / self.u_tau_sl / self.u_tau_sl
+        self.fav_upp_vpp_sl = self.fav_upp_vpp / self.u_tau_sl / self.u_tau_sl
+        self.fav_upp_wpp_sl = self.fav_upp_wpp / self.u_tau_sl / self.u_tau_sl
+        self.fav_vpp_vpp_sl = self.fav_vpp_vpp / self.u_tau_sl / self.u_tau_sl
+        self.fav_vpp_wpp_sl = self.fav_vpp_wpp / self.u_tau_sl / self.u_tau_sl
+        self.fav_wpp_wpp_sl = self.fav_wpp_wpp / self.u_tau_sl / self.u_tau_sl
 
         return
 
@@ -802,12 +802,12 @@ class summary():
         # Compute delta_star (displacement thickness)
         self.delta_star = 0
         for j, ru in enumerate(self.mean_bar_rho_u):
-            self.delta_star += (1 - ru / self.edge_rhoU) * self.iw[j] 
+            self.delta_star += (1 - ru / self.edge_rhoU) * self.iw[j]
 
         # Compute theta (momentum thickness)
         self.theta = 0
         for j, (ru, u) in enumerate(zip(self.mean_bar_rho_u, self.mean_bar_u)):
-            self.theta += ru / self.edge_rhoU * (1 - u / self.edge_U) * self.iw[j] 
+            self.theta += ru / self.edge_rhoU * (1 - u / self.edge_U) * self.iw[j]
 
         # Computed parameters
         self.Re_delta_star    = self.edge_rho * self.edge_U * self.delta_star / self.edge_mu
@@ -828,7 +828,7 @@ class summary():
         self.B_q              = self.wall_q     / (self.wall_rho * self.wall_Cp * self.u_tau * self.wall_T)
         self.F_injection      = self.wall_rho * self.wall_V / (self.inf_rho * self.inf_U)
 
-        # Box size and resolution parameters 
+        # Box size and resolution parameters
         self.Lx_over_delta    = self.Lx  / self.delta
         self.Ly_over_delta    = self.Ly  / self.delta
         self.Lz_over_delta    = self.Lz  / self.delta
@@ -860,67 +860,67 @@ class summary():
 
 
     def print_bl(self):
-        print "rho_wall           = ", self.wall_rho          
-        print "p_wall             = ", self.wall_p            
-        print "a_wall             = ", self.wall_a            
-        print "mu_wall            = ", self.wall_mu           
-        print "mu_inf             = ", self.inf_mu           
-        print "nu_wall            = ", self.wall_nu           
-        print "nu_inf             = ", self.inf_nu            
+        print "rho_wall           = ", self.wall_rho
+        print "p_wall             = ", self.wall_p
+        print "a_wall             = ", self.wall_a
+        print "mu_wall            = ", self.wall_mu
+        print "mu_inf             = ", self.inf_mu
+        print "nu_wall            = ", self.wall_nu
+        print "nu_inf             = ", self.inf_nu
         print "Cp_wall            = ", self.wall_Cp
         print "Cp_inf             = ", self.inf_Cp
         print "V_wall             = ", self.wall_V
         print "V_wall_plus        = ", self.wall_V_plus
         print "V_wall/U_edge      = ", self.wall_V / self.edge_U
-        print "U_edge             = ", self.edge_U            
-        print "U_inf              = ", self.inf_U            
-        print "V_inf              = ", self.inf_V             
-        print "W_inf              = ", self.inf_W             
-        print "T_inf              = ", self.inf_T           
+        print "U_edge             = ", self.edge_U
+        print "U_inf              = ", self.inf_U
+        print "V_inf              = ", self.inf_V
+        print "W_inf              = ", self.inf_W
+        print "T_inf              = ", self.inf_T
         print "T_total            = ", self.T_total
         print "T_wall/T_total     = ", self.wall_T / self.T_total
-        print "M_inf              = ", self.inf_M             
-        print "rho_inf            = ", self.inf_rho           
-        print "p_inf              = ", self.inf_p             
-        print "a_inf              = ", self.inf_a             
-        print "q_wall             = ", self.wall_q             
+        print "M_inf              = ", self.inf_M
+        print "rho_inf            = ", self.inf_rho
+        print "p_inf              = ", self.inf_p
+        print "a_inf              = ", self.inf_a
+        print "q_wall             = ", self.wall_q
 
-        print "delta_star         = ", self.delta_star        
-        print "theta              = ", self.theta             
-        print "delta              = ", self.delta             
-        print "H1                 = ", self.H1                
-        print "H2                 = ", self.H2            
+        print "delta_star         = ", self.delta_star
+        print "theta              = ", self.theta
+        print "delta              = ", self.delta
+        print "H1                 = ", self.H1
+        print "H2                 = ", self.H2
 
-        print "dudy_wall          = ", self.wall_dudy         
-        print "tau_wall           = ", self.wall_tau          
-        print "u_tau              = ", self.u_tau             
-        print "delta_nu           = ", self.delta_nu          
+        print "dudy_wall          = ", self.wall_dudy
+        print "tau_wall           = ", self.wall_tau
+        print "u_tau              = ", self.u_tau
+        print "delta_nu           = ", self.delta_nu
         print "Cf (skin friction) = ", self.skin_friction
         print "M_tau              = ", self.M_tau
         print "T_tau              = ", self.T_tau
         print "B_q                = ", self.B_q
         print "F_injection        = ", self.F_injection
 
-        print "Re_tau             = ", self.Re_tau            
-        print "Re_delta_star      = ", self.Re_delta_star     
-        print "Re_theta           = ", self.Re_theta          
-        print "Re_delta           = ", self.Re_delta         
+        print "Re_tau             = ", self.Re_tau
+        print "Re_delta_star      = ", self.Re_delta_star
+        print "Re_theta           = ", self.Re_theta
+        print "Re_delta           = ", self.Re_delta
 
-        print "y1b_plus           = ", self.y1b_plus       
-        print "Dx_plus            = ", self.Dx_plus           
-        print "Dz_plus            = ", self.Dz_plus          
-        print "Lx_over_delta      = ", self.Lx_over_delta     
-        print "Ly_over_delta      = ", self.Ly_over_delta     
-        print "Lz_over_delta      = ", self.Lz_over_delta    
-        print "nyb_below_5plus    = ", self.get_points_below( 5, self.yb_plus)     
-        print "nyb_below_10plus   = ", self.get_points_below(10, self.yb_plus)    
-        print "nyb_below_delta    = ", self.get_points_below(self.delta, self.yb) 
-        print "turnover_time      = ", self.turnover_time     
-        print "flowthrough_time   = ", self.flowthrough_time  
+        print "y1b_plus           = ", self.y1b_plus
+        print "Dx_plus            = ", self.Dx_plus
+        print "Dz_plus            = ", self.Dz_plus
+        print "Lx_over_delta      = ", self.Lx_over_delta
+        print "Ly_over_delta      = ", self.Ly_over_delta
+        print "Lz_over_delta      = ", self.Lz_over_delta
+        print "nyb_below_5plus    = ", self.get_points_below( 5, self.yb_plus)
+        print "nyb_below_10plus   = ", self.get_points_below(10, self.yb_plus)
+        print "nyb_below_delta    = ", self.get_points_below(self.delta, self.yb)
+        print "turnover_time      = ", self.turnover_time
+        print "flowthrough_time   = ", self.flowthrough_time
 
 
     def get_baseflow(self):
-        # TODO, compute baseflow info 
+        # TODO, compute baseflow info
         return
 
     def get_j_for_y_plus(self, y_plus):
@@ -941,7 +941,7 @@ class summary():
     def mixing_length_model_plus(self
             , rho    = 1
             , mu     = 1
-            , wall_V = 0 
+            , wall_V = 0
             , ku=0.4, A_plus=26):
         fav_u   = self.fav_u_plus
         f_wallV = (wall_V * fav_u + 1)
@@ -950,19 +950,19 @@ class summary():
     # Some convenience functions:
     def get_fav(self, rho_f, rho):
         return rho_f / rho
-    
+
     def get_rho_fpp_gpp(self, rho_f_g, rho, fav_f, fav_g):
         return rho_f_g - rho * fav_f * fav_g
-    
+
     def get_rho_fpp_fpp_gpp(self, rho_f_f_g, rho_f_f, rho_f_g, rho, fav_f, fav_g):
         return rho_f_f_g - 2 * rho_f_g * fav_f - rho_f_f* fav_g + 2 * rho * fav_g * fav_f * fav_f
-    
+
     def get_rho_fpp_gpp_hpp(self, rho_f_g_h, rho_f_g, rho_g_h, rho_f_h, rho, fav_f, fav_g, fav_h):
-        return (rho_f_g_h - (rho_f_g - rho * fav_f * fav_g) * fav_h 
-                          - (rho_g_h - rho * fav_g * fav_h) * fav_f 
+        return (rho_f_g_h - (rho_f_g - rho * fav_f * fav_g) * fav_h
+                          - (rho_g_h - rho * fav_g * fav_h) * fav_f
                           - (rho_f_h - rho * fav_f * fav_h) * fav_g
                           -            rho * fav_f * fav_g  * fav_h)
-    
+
     def get_fp_gp(self, f_g, bar_f, bar_g):
         return f_g - bar_f * bar_g
 
@@ -971,7 +971,7 @@ class summary():
 
     def get_fp_gpp(self, f_g, bar_f, bar_g):
         return self.get_fp_gp(f_g, bar_f, bar_g)
-    
+
     def get_fpp_gpp(self, f_g, bar_f, bar_g, fav_f, fav_g):
         return f_g + fav_f*fav_g - fav_f*bar_g - bar_f*fav_g
 
@@ -986,7 +986,7 @@ def main(argv=None):
     try:
         try:
             opts, args = getopt.getopt(argv[1:], "h", ["help"])
-        except getopt.error, msg:
+        except getopt.error as msg:
             raise Usage(msg)
         for o, a in opts:
             if o in ("-h", "--help"):
@@ -995,7 +995,7 @@ def main(argv=None):
         if len(args) < 1:
             print >>sys.stderr, "Incorrect number of arguments.  See --help."
             return 2
-    except Usage, err:
+    except Usage as err:
         print >>sys.stderr, err.msg
         return 2
 
@@ -1020,7 +1020,7 @@ def main(argv=None):
         hdf5files = ['summary.h5'],
         #conserved_only = conserved_only
     ))
-   
+
     # Initialize summary by loading summary file
     sum = summary(**input)
     sum.print_bl()

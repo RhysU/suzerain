@@ -415,7 +415,7 @@ def main(argv=None):
                          , "samples_per_turnover="
                          , "use_theta_reference"
                          ])
-        except getopt.error, msg:
+        except getopt.error as msg:
             raise Usage(msg)
         for o, a in opts:
             if o in ("-h", "--help"):
@@ -450,7 +450,7 @@ def main(argv=None):
         if len(args) < 1:
             print >>sys.stderr, "Incorrect number of arguments.  See --help."
             return 2
-    except Usage, err:
+    except Usage as err:
         print >>sys.stderr, err.msg
         return 2
 
