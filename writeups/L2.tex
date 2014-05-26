@@ -176,15 +176,15 @@ By direct computation we find
   B_{l^\prime}\!\left(y\right)
   \,d\!y
 \\ &=
-   L_x L_z \sum_{m} \sum_{n} \trans{\hat{u}_{m n}} M \overline{\hat{v}_{m n}}
+   L_x L_z \sum_{m} \sum_{n} \trans{\hat{u}_{m n}} G \overline{\hat{v}_{m n}}
    \quad\text{where}\quad
-   M = \int_0^{L_y} B_l\!\left(y\right) B_{l^\prime}\!\left(y\right) \,d\!y
+   G = \int_0^{L_y} B_l\!\left(y\right) B_{l^\prime}\!\left(y\right) \,d\!y
 \\ &=
-   L_x L_z \sum_{m} \sum_{n} \trans{\overline{\hat{v}_{m n}}} \trans{M} \hat{u}_{m n}
+   L_x L_z \sum_{m} \sum_{n} \trans{\overline{\hat{v}_{m n}}} \trans{G} \hat{u}_{m n}
 \\ &=
-   L_x L_z \sum_{m} \sum_{n} \htrans{\hat{v}_{m n}} M \hat{u}_{m n}
+   L_x L_z \sum_{m} \sum_{n} \htrans{\hat{v}_{m n}} G \hat{u}_{m n}
    \quad\text{since}\quad
-   M = \trans{M}
+   G = \trans{G}
    \label{eq:ip_uhvh_xyz}
    .
 \end{align}
@@ -201,7 +201,7 @@ The squared $L_{xyz}^2$ norm of a single field is therefore
     u^h
   \right>_{L^{2}_{xyz}}
  =
-   L_x L_z \sum_{m} \sum_{n} \htrans{\hat{u}_{m n}} M \hat{u}_{m n}
+   L_x L_z \sum_{m} \sum_{n} \htrans{\hat{u}_{m n}} G \hat{u}_{m n}
    \label{eq:L2uh}
    .
 \end{align}
@@ -210,7 +210,7 @@ In the above expressions the three-dimensional fields of transform coefficients,
 $\hat{u}_{l m n}$ and $\hat{v}_{l m n}$, are treated as two-dimensional
 collections of length $N_y$ vectors indexed by $m$ and $n$.  For a B-spline
 basis with piecewise polynomial order $k - 1$ giving rise to a real-valued,
-symmetric positive definite matrix $M$ with bandwidth $2k-1$, the computational
+symmetric positive definite matrix $G$ with bandwidth $2k-1$, the computational
 cost to find $\left< u^h , v^h \right>_{L^{2}_{xyz}}$ scales as $\OO{k N_x
 N_y^2 N_z}$.
 
