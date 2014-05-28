@@ -1600,7 +1600,7 @@ void summarize_boundary_layer_nature(
             sg->baseflow->pressure (delta99,
                                     base.p, dy.p, dx.p);
             edge99_p__x = dx.p;                                       // Direct
-            edge99_u__x = (dx.mx - dx.mx/base.rho*dx.rho) / base.rho; // Chained
+            edge99_u__x = (dx.mx - dx.rho*base.mx/base.rho)/base.rho; // Chained
         }
     }
     if (const int err = suzerain_bl_compute_pg(
