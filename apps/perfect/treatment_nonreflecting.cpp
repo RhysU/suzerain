@@ -99,11 +99,13 @@ treatment_nonreflecting::apply_operator(
 
     // State enters method as coefficients in X, Y, and Z directions
 
-    // Make a local, stride-1 copy of -I times upper boundary state values.
+    // If the k_x and k_z first-order NRBC terms are to be applied explicitly,
+    // make a local, stride-1 copy of -I times upper boundary state values.
     // Notice that boundary coefficients are 1-1 with boundary point values.
     // That is, applying the mass matrix is an ignorable NOP at the boundary.
-    Matrix5Xc negI_stash(5, swave.shape()[2] * swave.shape()[3]);
-    {
+    Matrix5Xc negI_stash;
+    if (linearization != linearize::rhome_xyz) {
+        negI_stash.resize(NoChange, swave.shape()[2] * swave.shape()[3]);
         const complex_t negI_unit(0, -1);
         const int ku = boost::numeric_cast<int>(swave.shape()[0]);
         const int l  = boost::numeric_cast<int>(swave.shape()[1]) - 1; // Upper
@@ -144,44 +146,82 @@ treatment_nonreflecting::apply_operator(
     const real_t twopioverLz_by_chi = twopiover(grid.L.z()) / dgrid.chi();
 
     // Traverse wavenumbers updating the RHS with the Giles boundary condition
-    // per "Implementation primarily within the nonlinear explicit operator"
     // TODO Could short circuit some of this traversal using dealiasing
-    using suzerain::inorder::wavenumber;
-    const int mu = boost::numeric_cast<int>(swave.shape()[2]);
-    for (int n = dkbz; n < dkez; ++n) {
-        const int wn = wavenumber(dNz, n);
-        const real_t kn_by_chi = twopioverLz_by_chi*wn;
+    if (negI_stash.size()) {
 
-        for (int m = dkbx; m < dkex; ++m) {
-            const int wm = wavenumber(dNx, m);
-            const real_t km_by_chi = twopioverLx_by_chi*wm;
+        // "Implementation primarily within the nonlinear explicit operator"
+        // which is also appropriate for wall-normal implicit treatment
+        assert(   linearization == linearize::none
+               || linearization == linearize::rhome_y);
+        using suzerain::inorder::wavenumber;
+        const int mu = boost::numeric_cast<int>(swave.shape()[2]);
+        for (int n = dkbz; n < dkez; ++n) {
+            const int wn = wavenumber(dNz, n);
+            const real_t kn_by_chi = twopioverLz_by_chi*wn;
 
-            // Accumulates kn/km NRBC terms before any possible ImPG swamping.
-            // The -I scaling has already been accommodated within negI_stash.
-            Vector5c tmp   = kn_by_chi
-                           * PG_BG_VL_S_RY.cast<complex_t>()
-                           * negI_stash.col((m - dkbx) + mu*(n - dkbz));
-            tmp.noalias() += km_by_chi
-                           * PG_CG_VL_S_RY.cast<complex_t>()
-                           * negI_stash.col((m - dkbx) + mu*(n - dkbz));
+            for (int m = dkbx; m < dkex; ++m) {
+                const int wm = wavenumber(dNx, m);
+                const real_t km_by_chi = twopioverLx_by_chi*wm;
 
-            // Pack upper boundary nonlinear RHS into contiguous buffer
-            Vector5c N;
-            for (int f = 0; f < N.size(); ++f) {
-                N(f) = swave[f][Ny - 1][m - dkbx][n - dkbz];
+                // Accumulates kn/km NRBC terms before possible ImPG swamping.
+                // The -I scaling has been accommodated within negI_stash.
+                Vector5c tmp   = kn_by_chi
+                               * PG_BG_VL_S_RY.cast<complex_t>()
+                               * negI_stash.col((m - dkbx) + mu*(n - dkbz));
+                tmp.noalias() += km_by_chi
+                               * PG_CG_VL_S_RY.cast<complex_t>()
+                               * negI_stash.col((m - dkbx) + mu*(n - dkbz));
+
+                // Pack upper boundary nonlinear RHS into contiguous buffer
+                Vector5c N;
+                for (int f = 0; f < N.size(); ++f) {
+                    N(f) = swave[f][Ny - 1][m - dkbx][n - dkbz];
+                }
+
+                // Project out unwanted characteristics from RHS and accumulate
+                // followed by projecting result back to conserved state
+                tmp.noalias() += ImPG_VL_S_RY.cast<complex_t>() * N;
+                N.noalias()    = inv_VL_S_RY.cast<complex_t>()  * tmp;
+
+                // Unpack new upper boundary RHS from the contiguous buffer
+                for (int f = 0; f < N.size(); ++f) {
+                    swave[f][Ny - 1][m - dkbx][n - dkbz] = N(f);
+                }
+
             }
-
-            // Project out unwanted characteristics from RHS and accumulate
-            // followed by projecting result back to conserved state
-            tmp.noalias() += ImPG_VL_S_RY.cast<complex_t>() * N;
-            N.noalias()    = inv_VL_S_RY.cast<complex_t>()  * tmp;
-
-            // Unpack new upper boundary RHS from the contiguous buffer
-            for (int f = 0; f < N.size(); ++f) {
-                swave[f][Ny - 1][m - dkbx][n - dkbz] = N(f);
-            }
-
         }
+
+    } else {
+
+        // "Implementation primarily within the linear implicit operator"
+        // which is appropriate for linear implicit work in three directions.
+        // TODO Decide on just one way to write the unpack/pack here and above.
+        assert(linearization == linearize::rhome_xyz);
+        const Matrix5r upper_nrbc_n = inv_VL_S_RY * ImPG_VL_S_RY;
+        for (int n = dkbz; n < dkez; ++n) {
+            for (int m = dkbx; m < dkex; ++m) {
+
+                // Unpack upper boundary RHS into a contiguous buffer
+                Vector5c N_hatV;
+                N_hatV(0) = swave[ndx::e  ][Ny - 1][m - dkbx][n - dkbz];
+                N_hatV(1) = swave[ndx::mx ][Ny - 1][m - dkbx][n - dkbz],
+                N_hatV(2) = swave[ndx::my ][Ny - 1][m - dkbx][n - dkbz],
+                N_hatV(3) = swave[ndx::mz ][Ny - 1][m - dkbx][n - dkbz],
+                N_hatV(4) = swave[ndx::rho][Ny - 1][m - dkbx][n - dkbz];
+
+                // Modify the packed RHS to remove unwanted characteristics
+                N_hatV.applyOnTheLeft(upper_nrbc_n.cast<complex_t>());
+
+                // Pack new upper boundary RHS from the contiguous buffer
+                swave[ndx::e  ][Ny - 1][m - dkbx][n - dkbz] = N_hatV(0);
+                swave[ndx::mx ][Ny - 1][m - dkbx][n - dkbz] = N_hatV(1),
+                swave[ndx::my ][Ny - 1][m - dkbx][n - dkbz] = N_hatV(2),
+                swave[ndx::mz ][Ny - 1][m - dkbx][n - dkbz] = N_hatV(3),
+                swave[ndx::rho][Ny - 1][m - dkbx][n - dkbz] = N_hatV(4);
+
+            }
+        }
+
     }
 
     return retval;
