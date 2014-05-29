@@ -183,7 +183,7 @@ protected:
      * When <code>grid.one_sided()</code>, set to the 5x5 column major matrix
      * \f${R^Y}^{-1} \left[V^L S\right]^{-1} \left[P^G    \right] \left[V^L
      * S\right] {R^Y}\f$ for upper NRBC on substep 0 during \ref apply_operator.
-     * Otherwide, ignored.
+     * Otherwise, ignored.
      *
      * \see suzerain_rholut_imexop_accumulate for details behind \c c suffix.
      */
