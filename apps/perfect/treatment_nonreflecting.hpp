@@ -36,6 +36,7 @@
 #include <suzerain/state_fwd.hpp>
 
 #include "definition_scenario.hpp"
+#include "linearize_type.hpp"
 
 namespace suzerain {
 
@@ -67,6 +68,7 @@ public:
      * After construction, #N must be provided.
      */
     treatment_nonreflecting(
+            const linearize::type& linearization,
             const definition_scenario& scenario,
             const specification_isothermal& isothermal,
             const specification_grid& grid,
@@ -170,6 +172,12 @@ protected:
     virtual void compute_giles_matrices_upper();
 
 private:
+
+    /**
+     * Determines the extent of the explicit nonreflecting treatment applied per
+     * the division of work by the paired linear and nonlinear operators.
+     */
+    const linearize::type& linearization;
 
     /** Helps to identify from whom logging messages are being emitted. */
     std::string who;

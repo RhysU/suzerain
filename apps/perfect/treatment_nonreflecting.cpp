@@ -32,6 +32,7 @@
 #include <suzerain/ndx.hpp>
 #include <suzerain/pencil_grid.hpp>
 #include <suzerain/specification_grid.hpp>
+#include <suzerain/timers.h>
 
 #include "definition_scenario.hpp"
 
@@ -54,6 +55,7 @@ namespace suzerain {
 namespace perfect {
 
 treatment_nonreflecting::treatment_nonreflecting(
+        const linearize::type& linearization,
         const definition_scenario &scenario,
         const specification_isothermal &isothermal,
         const specification_grid &grid,
@@ -63,16 +65,15 @@ treatment_nonreflecting::treatment_nonreflecting(
     : operator_base(grid, dgrid, cop, b)
     , scenario(scenario)
     , isothermal(isothermal)
+    , linearization(linearization)
     , who("treatment_nonreflecting")
 {
-#ifndef NDEBUG
     // Defensively NaN working storage to reduce misuse possibility
     VL_S_RY      .setConstant(std::numeric_limits<real_t>::quiet_NaN());
     PG_BG_VL_S_RY.setConstant(std::numeric_limits<real_t>::quiet_NaN());
     PG_CG_VL_S_RY.setConstant(std::numeric_limits<real_t>::quiet_NaN());
     ImPG_VL_S_RY .setConstant(std::numeric_limits<real_t>::quiet_NaN());
     inv_VL_S_RY  .setConstant(std::numeric_limits<real_t>::quiet_NaN());
-#endif
 }
 
 std::vector<real_t>
@@ -82,6 +83,13 @@ treatment_nonreflecting::apply_operator(
             const lowstorage::method_interface<complex_t> &method,
             const std::size_t substep_index) const
 {
+    // Simply delegate all processing unless the grid is one-sided.
+    if (!grid.one_sided()) {
+        return N->apply_operator(time, swave, method, substep_index);
+    }
+    // On a one-sided grid, the work is much more interesting...
+    SUZERAIN_TIMER_SCOPED("treatment_nonreflecting::apply_operator");
+
     // Implementation approach:
     //   1) Preserve the wavenumber-dependent state at the upper boundary
     //   2) Invoke the wrapped nonlinear operator in the usual fashion

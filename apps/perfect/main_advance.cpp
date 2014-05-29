@@ -624,7 +624,7 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
         if (grid->one_sided()) {
             INFO0(who, "Preparing nonreflecting upper boundary treatment");
             shared_ptr<treatment_nonreflecting> nonreflecting(
-                    new treatment_nonreflecting(
+                    new treatment_nonreflecting(common_block.linearization,
                         *scenario, *isothermal, *grid, *dgrid, *cop, *b));
             nonreflecting->N = N;
             N = nonreflecting;
