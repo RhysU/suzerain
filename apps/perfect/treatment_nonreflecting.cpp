@@ -72,7 +72,7 @@ treatment_nonreflecting::treatment_nonreflecting(
     VL_S_RY      .setConstant(std::numeric_limits<real_t>::quiet_NaN());
     PG_BG_VL_S_RY.setConstant(std::numeric_limits<real_t>::quiet_NaN());
     PG_CG_VL_S_RY.setConstant(std::numeric_limits<real_t>::quiet_NaN());
-    ImPG_VL_S_RY .setConstant(std::numeric_limits<real_t>::quiet_NaN());
+    PG_VL_S_RY   .setConstant(std::numeric_limits<real_t>::quiet_NaN());
     inv_VL_S_RY  .setConstant(std::numeric_limits<real_t>::quiet_NaN());
 }
 
@@ -147,6 +147,7 @@ treatment_nonreflecting::apply_operator(
 
     // Traverse wavenumbers updating the RHS with the Giles boundary condition
     // TODO Could short circuit some of this traversal using dealiasing
+    const Matrix5r ImPG_VL_S_RY = VL_S_RY - PG_VL_S_RY;
     if (negI_stash.size()) {
 
         // "Implementation primarily within the nonlinear explicit operator"
@@ -242,9 +243,8 @@ treatment_nonreflecting::compute_giles_matrices_upper()
                          VL_S_RY,
                          PG_BG_VL_S_RY,
                          PG_CG_VL_S_RY,
-                         ImPG_VL_S_RY,   // Adjusted below
+                         PG_VL_S_RY,
                          inv_VL_S_RY);
-    ImPG_VL_S_RY = VL_S_RY - ImPG_VL_S_RY;
 }
 
 } // namespace perfect

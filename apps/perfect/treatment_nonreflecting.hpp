@@ -103,7 +103,7 @@ public:
      *   <li>#VL_S_RY</li>
      *   <li>#PG_BG_VL_S_RY</li>
      *   <li>#PG_CG_VL_S_RY</li>
-     *   <li>#ImPG_VL_S_RY</li>
+     *   <li>#PG_VL_S_RY</li>
      *   <li>#invVL_S_RY</li>
      * </ol>
      * during invocation.
@@ -153,10 +153,10 @@ protected:
 
     /**
      * Wavenumber-independent matrix
-     * \f$ \left[I - P^G\right] \left[V^L S\right] R^Y \f$
+     * \f$ \left[P^G\right] \left[V^L S\right] R^Y \f$
      * used by apply_operator().
      */
-    Matrix5r ImPG_VL_S_RY;
+    Matrix5r PG_VL_S_RY;
 
     /**
      * Wavenumber-independent matrix
