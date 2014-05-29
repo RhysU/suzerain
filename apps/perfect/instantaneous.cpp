@@ -43,13 +43,15 @@ instantaneous::~instantaneous()
 }
 
 void
-instantaneous::set_zero(int Ny)
+instantaneous::set_zero(
+        int Ny)
 {
     super::setZero(Ny, q::count);
 }
 
 instantaneous&
-instantaneous::operator=(const references& that)
+instantaneous::operator=(
+        const references& that)
 {
     // Ensure adequate storage for the assignment (noticing transposed sizes)
     // FIXME Usage of q::count brittle wrt subclasses-- NoChange preferable
@@ -85,7 +87,9 @@ instantaneous::operator=(const references& that)
 }
 
 instantaneous&
-instantaneous::operator=(const samples& that)
+instantaneous::copy_from(
+        const operator_tools& otool,
+        const samples& that)
 {
     // Ensure adequate storage for the assignment
     // FIXME Usage of q::count brittle wrt subclasses-- NoChange preferable

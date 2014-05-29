@@ -153,11 +153,12 @@ public:
 
     /** @} */
 
-    /** Populate all quantities from \c that instance. */
+    /** Assign all quantities from \c that instance. */
     instantaneous& operator=(const references& that);
 
-    /** Populate all quantities from \c that instance. */
-    instantaneous& operator=(const samples& that);
+    /** Copy all quantities from \c that instance using \c otool. */
+    instantaneous& copy_from(const operator_tools& otool,
+                             const samples& that);
 };
 
 } // namespace perfect
