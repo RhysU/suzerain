@@ -99,8 +99,8 @@ public:
      * Uses, and on <tt>substep_index == 0</tt> updates, all of
      * <ol>
      *   <li>#VL_S_RY</li>
-     *   <li>#PG_BG_VL_S_RY_by_chi</li>
-     *   <li>#PG_CG_VL_S_RY_by_chi</li>
+     *   <li>#PG_BG_VL_S_RY</li>
+     *   <li>#PG_CG_VL_S_RY</li>
      *   <li>#ImPG_VL_S_RY</li>
      *   <li>#invVL_S_RY</li>
      * </ol>
@@ -137,17 +137,17 @@ protected:
 
     /**
      * Wavenumber-independent matrix
-     * \f$ \chi^{-1} \left[B^G\right] \left[V^L S\right] R^Y \f$
+     * \f$ \left[B^G\right] \left[V^L S\right] R^Y \f$
      * used by apply_operator().
      */
-    Matrix5r PG_BG_VL_S_RY_by_chi;
+    Matrix5r PG_BG_VL_S_RY;
 
     /**
      * Wavenumber-independent matrix
-     * \f$ \chi^{-1} \left[C^G\right] \left[V^L S\right] R^Y \f$
+     * \f$ \left[C^G\right] \left[V^L S\right] R^Y \f$
      * used by apply_operator().
      */
-    Matrix5r PG_CG_VL_S_RY_by_chi;
+    Matrix5r PG_CG_VL_S_RY;
 
     /**
      * Wavenumber-independent matrix
@@ -167,7 +167,7 @@ protected:
      * Invokes compute_giles_matrices() for upper boundary.
      * Broken out separately to help document reference state choices.
      */
-    void compute_giles_matrices_upper();
+    virtual void compute_giles_matrices_upper();
 
 private:
 

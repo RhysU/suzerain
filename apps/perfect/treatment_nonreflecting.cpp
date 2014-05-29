@@ -67,11 +67,11 @@ treatment_nonreflecting::treatment_nonreflecting(
 {
 #ifndef NDEBUG
     // Defensively NaN working storage to reduce misuse possibility
-    VL_S_RY             .setConstant(std::numeric_limits<real_t>::quiet_NaN());
-    PG_BG_VL_S_RY_by_chi.setConstant(std::numeric_limits<real_t>::quiet_NaN());
-    PG_CG_VL_S_RY_by_chi.setConstant(std::numeric_limits<real_t>::quiet_NaN());
-    ImPG_VL_S_RY        .setConstant(std::numeric_limits<real_t>::quiet_NaN());
-    inv_VL_S_RY         .setConstant(std::numeric_limits<real_t>::quiet_NaN());
+    VL_S_RY      .setConstant(std::numeric_limits<real_t>::quiet_NaN());
+    PG_BG_VL_S_RY.setConstant(std::numeric_limits<real_t>::quiet_NaN());
+    PG_CG_VL_S_RY.setConstant(std::numeric_limits<real_t>::quiet_NaN());
+    ImPG_VL_S_RY .setConstant(std::numeric_limits<real_t>::quiet_NaN());
+    inv_VL_S_RY  .setConstant(std::numeric_limits<real_t>::quiet_NaN());
 #endif
 }
 
@@ -132,8 +132,8 @@ treatment_nonreflecting::apply_operator(
     const int dNz  = grid.dN.z();
     const int dkbz = dgrid.local_wave_start.z();
     const int dkez = dgrid.local_wave_end.z();
-    const real_t twopioverLx = twopiover(grid.L.x());  // Weird looking...
-    const real_t twopioverLz = twopiover(grid.L.z());  // ...for FP control
+    const real_t twopioverLx_by_chi = twopiover(grid.L.x()) / dgrid.chi();
+    const real_t twopioverLz_by_chi = twopiover(grid.L.z()) / dgrid.chi();
 
     // Traverse wavenumbers updating the RHS with the Giles boundary condition
     // per "Implementation primarily within the nonlinear explicit operator"
@@ -142,19 +142,19 @@ treatment_nonreflecting::apply_operator(
     const int mu = boost::numeric_cast<int>(swave.shape()[2]);
     for (int n = dkbz; n < dkez; ++n) {
         const int wn = wavenumber(dNz, n);
-        const real_t kn = twopioverLz*wn;
+        const real_t kn_by_chi = twopioverLz_by_chi*wn;
 
         for (int m = dkbx; m < dkex; ++m) {
             const int wm = wavenumber(dNx, m);
-            const real_t km = twopioverLx*wm;
+            const real_t km_by_chi = twopioverLx_by_chi*wm;
 
             // Accumulates kn/km NRBC terms before any possible ImPG swamping.
             // The -I scaling has already been accommodated within negI_stash.
-            Vector5c tmp   = kn
-                           * PG_BG_VL_S_RY_by_chi.cast<complex_t>()
+            Vector5c tmp   = kn_by_chi
+                           * PG_BG_VL_S_RY.cast<complex_t>()
                            * negI_stash.col((m - dkbx) + mu*(n - dkbz));
-            tmp.noalias() += km
-                           * PG_CG_VL_S_RY_by_chi.cast<complex_t>()
+            tmp.noalias() += km_by_chi
+                           * PG_CG_VL_S_RY.cast<complex_t>()
                            * negI_stash.col((m - dkbx) + mu*(n - dkbz));
 
             // Pack upper boundary nonlinear RHS into contiguous buffer
@@ -192,12 +192,10 @@ treatment_nonreflecting::compute_giles_matrices_upper()
                          isothermal.upper_w,
                          std::sqrt(isothermal.upper_T),
                          VL_S_RY,
-                         PG_BG_VL_S_RY_by_chi, // Rescaled below
-                         PG_CG_VL_S_RY_by_chi, // Rescaled below
-                         ImPG_VL_S_RY,         // Adjusted below
+                         PG_BG_VL_S_RY,
+                         PG_CG_VL_S_RY,
+                         ImPG_VL_S_RY,   // Adjusted below
                          inv_VL_S_RY);
-    PG_BG_VL_S_RY_by_chi /= dgrid.chi();
-    PG_CG_VL_S_RY_by_chi /= dgrid.chi();
     ImPG_VL_S_RY = VL_S_RY - ImPG_VL_S_RY;
 }
 
