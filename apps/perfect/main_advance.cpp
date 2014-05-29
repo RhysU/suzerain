@@ -635,18 +635,15 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
 
     } else if (use_implicit) {
 
+        // Hybrid operators automatically incorporate NRBC whenever necessary
         INFO0(who, "Initializing hybrid implicit/explicit spatial operators");
         INFO0(who, "Implicit linearization employed: " << implicit);
         shared_ptr<operator_hybrid_isothermal> hybrid(
                     new operator_hybrid_isothermal(
                         solver_spec, *scenario, *isothermal,
                         *grid, *dgrid, *cop, *b, common_block));
-        if (grid->one_sided()) {
-            // FIXME Redmine #3109 requires treatment_nonreflecting addition
-            INFO0(who, "Preparing nonreflecting upper boundary treatment");
-            hybrid->N = N;
-            N = hybrid;
-        }
+        hybrid->N = N;
+        N = hybrid;
         constrainer->L = hybrid;  // Constrainer invokes hybrid linear operator
 
     } else {

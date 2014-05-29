@@ -31,9 +31,10 @@
 #include <suzerain/common.hpp>
 #include <suzerain/lowstorage.hpp>
 #include <suzerain/multi_array.hpp>
-#include <suzerain/operator_base.hpp>
 #include <suzerain/rholut_imexop.h>
 #include <suzerain/state_fwd.hpp>
+
+#include "treatment_nonreflecting.hpp"
 
 namespace suzerain {
 
@@ -52,16 +53,15 @@ class definition_scenario;
 
 /**
  * A hybrid implicit/explicit operator that providing isothermal wall conditions
- * and possibly a nonreflecting freestream. It requires interoperation with
- * operator_nonlinear, set on member #N, via operator_common_block.
+ * and possibly a nonreflecting freestream.  It requires interoperation with
+ * operator_nonlinear, set on member #N, via operator_common_block.  The
+ * operator includes, by way of subclassing \ref treatment_nonreflecting, the
+ * ability to provide nonreflecting boundary conditions when necessary.
  */
 class operator_hybrid_isothermal
-  : public operator_base,
-    public lowstorage::linear_operator<
+  : public treatment_nonreflecting
+  , public lowstorage::linear_operator<
         multi_array::ref<complex_t,4>,
-        contiguous_state<4,complex_t>
-    >
-  , public lowstorage::operator_nonlinear<
         contiguous_state<4,complex_t>
     >
 {
@@ -73,10 +73,16 @@ public:
         contiguous_state<4,complex_t>
     > linear;
 
-    /** The superclass specifying the nonlinear operator interface. */
+    /**
+     * The superclass specifying the nonlinear operator interface, which is
+     * acquired by way of inheritance from \ref treatment_nonreflecting.
+     */
     typedef lowstorage::operator_nonlinear<
         contiguous_state<4,complex_t>
     > nonlinear;
+
+    /** The operator from whom our gross behavior is inherited. */
+    typedef treatment_nonreflecting super;
 
     // See http://eigen.tuxfamily.org/dox/TopicStructHavingEigenMembers.html
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -130,31 +136,10 @@ public:
             const std::size_t substep_index,
             multi_array::ref<complex_t,4>* ic0 = NULL) const;
 
-    /**
-     * Delegates to #N, adjusting the result to achieve
-     * a nonreflecting upper boundary when grid.one_sided().
-     */
-    virtual std::vector<real_t> apply_operator(
-            const real_t time,
-            contiguous_state<4,complex_t> &swave,
-            const lowstorage::method_interface<complex_t> &method,
-            const std::size_t substep_index) const;
-
-    /** The operator whose behavior is modified by this instance. */
-    shared_ptr<lowstorage::operator_nonlinear<
-                contiguous_state<4,complex_t>
-            > > N;
-
 protected:
 
     /** Controls the solves performed during invert_mass_plus_scaled_operator */
     shared_ptr<bsmbsm_solver> solver;
-
-    /** The scenario in which the operator is used */
-    const definition_scenario& scenario;
-
-    /** The isothermal wall boundary details */
-    const specification_isothermal& isothermal;
 
     /** Houses data required for operator application and inversion */
     operator_common_block& common;
@@ -190,18 +175,10 @@ protected:
     Matrix5r upper_nrbc_c;
 
     /**
-     * When <code>grid.one_sided()</code>, set to the 5x5 column major matrix
-     * \f${R^Y}^{-1} \left[V^L S\right]^{-1} \left[I - P^G\right] \left[V^L
-     * S\right] {R^Y}\f$ for upper NRBC on substep 0 during \ref apply_operator.
-     * Otherwide, ignored.
+     * Invokes super::compute_giles_matrices() and then
+     * computes required derived information.
      */
-    Matrix5r upper_nrbc_n;
-
-    /**
-     * Invokes compute_giles_matrices() for upper boundary.
-     * Broken out separately to help document reference state choices.
-     */
-    void compute_giles_matrices_upper();
+    virtual void compute_giles_matrices_upper();
 
 private:
 
