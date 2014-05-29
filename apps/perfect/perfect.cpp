@@ -1307,7 +1307,7 @@ collect_references(const definition_scenario &scenario,
     refs *= dgrid.chi();
 }
 
-// This is a trimmed down version of collect_references.See comments there.
+// This is a trimmed down version of collect_references.  See comments there.
 void
 collect_instantaneous(const definition_scenario &scenario,
                       const specification_grid &grid,
