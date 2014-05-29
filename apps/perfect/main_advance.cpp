@@ -642,6 +642,7 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
                         solver_spec, *scenario, *isothermal,
                         *grid, *dgrid, *cop, *b, common_block));
         if (grid->one_sided()) {
+            // FIXME Redmine #3109 requires treatment_nonreflecting addition
             INFO0(who, "Preparing nonreflecting upper boundary treatment");
             hybrid->N = N;
             N = hybrid;
