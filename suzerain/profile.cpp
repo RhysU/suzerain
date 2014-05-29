@@ -50,15 +50,14 @@ profile& profile::operator=(const samples &q)
 
     // Copy profiles of interest from q
     this->rho()          = q.rho();
-    this->rho_u().col(0) = q.rho_u().col(0);
-    this->rho_u().col(1) = q.rho_u().col(1);
+    this->rho_u()        = q.rho_u();
+    this->rho_E()        = q.rho_E();
     this->a()            = q.a();
     this->H0()           = q.H0();
     this->ke()           = q.ke();
     this->T()            = q.T();
     this->mu()           = q.mu();
-    this->u().col(0)     = q.u().col(0);
-    this->u().col(1)     = q.u().col(1);
+    this->u()            = q.u();
 
     return *this;
 }
@@ -74,6 +73,8 @@ profile& profile::operator=(const summary &q)
     this->rho()          = q.bar_rho();
     this->rho_u().col(0) = q.bar_rho_u();
     this->rho_u().col(1) = q.bar_rho_v();
+    this->rho_u().col(2) = q.bar_rho_w();
+    this->rho_E()        = q.bar_rho_E();
     this->a()            = q.bar_a();
     this->H0()           = q.bar_H0();
     this->ke()           = q.bar_ke();
@@ -81,6 +82,7 @@ profile& profile::operator=(const summary &q)
     this->mu()           = q.bar_mu();
     this->u().col(0)     = q.bar_u();
     this->u().col(1)     = q.bar_v();
+    this->u().col(2)     = q.bar_w();
 
     return *this;
 }

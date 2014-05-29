@@ -37,7 +37,8 @@
  */
 #define SUZERAIN_PROFILE_WAVE \
     ((rho,   1)) /* scalar */ \
-    ((rho_u, 2)) /* vector */
+    ((rho_u, 3)) /* vector */ \
+    ((rho_E, 1)) /* scalar */
 
 /**
  * A Boost.Preprocessor sequence of tuples of quantities generally sampled  in
@@ -49,7 +50,7 @@
     ((ke,    1))  /* scalar */    \
     ((mu,    1))  /* scalar */    \
     ((T,     1))  /* scalar */    \
-    ((u,     2))  /* vector */
+    ((u,     3))  /* vector */
 
 /**
  * A Boost.Preprocessor sequence of tuples of all profile quantities.
