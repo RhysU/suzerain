@@ -37,6 +37,7 @@
 namespace suzerain {
 
 // Forward declarations
+class bsplineop;
 class samples;
 
 namespace perfect {
@@ -156,8 +157,8 @@ public:
     /** Assign all quantities from \c that instance. */
     instantaneous& operator=(const references& that);
 
-    /** Copy all quantities from \c that instance using \c otool. */
-    instantaneous& copy_from(const operator_tools& otool,
+    /** Copy all quantities from \c that instance using \c cop. */
+    instantaneous& copy_from(const bsplineop& cop,
                              const samples& that);
 };
 

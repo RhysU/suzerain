@@ -26,6 +26,7 @@
  */
 #include "instantaneous.hpp"
 
+#include <suzerain/bspline.hpp>
 #include <suzerain/samples.hpp>
 
 #include "references.hpp"
@@ -88,9 +89,11 @@ instantaneous::operator=(
 
 instantaneous&
 instantaneous::copy_from(
-        const operator_tools& otool,
+        const bsplineop& cop,
         const samples& that)
 {
+    SUZERAIN_ENSURE(cop.get()->method == SUZERAIN_BSPLINEOP_COLLOCATION_GREVILLE);
+
     // Ensure adequate storage for the assignment
     // FIXME Usage of q::count brittle wrt subclasses-- NoChange preferable
 #ifndef NDEBUG
@@ -100,27 +103,30 @@ instantaneous::copy_from(
     resize     (that.storage.rows(), q::count);
 #endif
 
-    // Assign the data quantity-by-quantity
-    //FIXME this->rho  () = that.rho  ();
-    //FIXME this->p    () = that.p    ();
-    //FIXME this->p2   () = that.p2   ();
-    //FIXME this->u    () = that.u    ();
-    //FIXME this->v    () = that.v    ();
-    //FIXME this->w    () = that.w    ();
-    //FIXME this->uu   () = that.uu   ();
-    //FIXME this->uv   () = that.uv   ();
-    //FIXME this->uw   () = that.uw   ();
-    //FIXME this->vv   () = that.vv   ();
-    //FIXME this->vw   () = that.vw   ();
-    //FIXME this->ww   () = that.ww   ();
-    //FIXME this->rhou () = that.rhou ();
-    //FIXME this->rhov () = that.rhov ();
-    //FIXME this->rhow () = that.rhow ();
-    //FIXME this->rhoE () = that.rhoE ();
-    //FIXME this->rhouu() = that.rhouu();
-    //FIXME this->rhovv() = that.rhovv();
-    //FIXME this->rhoww() = that.rhoww();
-    //FIXME this->rhoEE() = that.rhoEE();
+    // Convert data, quantity-by-quantity, from coefficients to point values
+    // Could perform multiple matvecs here in one shot , but why be error prone?
+    // Additionally, in-place matvec operations require an auxiliary buffer,
+    // so we wouldn't be saving much data movement in an amortizing operation.
+    cop.accumulate(0, 1.0, that.rho()    .col(0).data(), 1, 0.0, this->rho()  .data(), 1);
+    cop.accumulate(0, 1.0, that.p()      .col(0).data(), 1, 0.0, this->p()    .data(), 1);
+    cop.accumulate(0, 1.0, that.p2()     .col(0).data(), 1, 0.0, this->p2()   .data(), 1);
+    cop.accumulate(0, 1.0, that.u()      .col(0).data(), 1, 0.0, this->u()    .data(), 1);
+    cop.accumulate(0, 1.0, that.u()      .col(1).data(), 1, 0.0, this->v()    .data(), 1);
+    cop.accumulate(0, 1.0, that.u()      .col(2).data(), 1, 0.0, this->w()    .data(), 1);
+    cop.accumulate(0, 1.0, that.u_u()    .col(0).data(), 1, 0.0, this->uu()   .data(), 1);
+    cop.accumulate(0, 1.0, that.u_u()    .col(1).data(), 1, 0.0, this->uv()   .data(), 1);
+    cop.accumulate(0, 1.0, that.u_u()    .col(2).data(), 1, 0.0, this->uw()   .data(), 1);
+    cop.accumulate(0, 1.0, that.u_u()    .col(3).data(), 1, 0.0, this->vv()   .data(), 1);
+    cop.accumulate(0, 1.0, that.u_u()    .col(4).data(), 1, 0.0, this->vw()   .data(), 1);
+    cop.accumulate(0, 1.0, that.u_u()    .col(5).data(), 1, 0.0, this->ww()   .data(), 1);
+    cop.accumulate(0, 1.0, that.rho_u()  .col(0).data(), 1, 0.0, this->rhou() .data(), 1);
+    cop.accumulate(0, 1.0, that.rho_u()  .col(1).data(), 1, 0.0, this->rhov() .data(), 1);
+    cop.accumulate(0, 1.0, that.rho_u()  .col(2).data(), 1, 0.0, this->rhow() .data(), 1);
+    cop.accumulate(0, 1.0, that.rho_E()  .col(0).data(), 1, 0.0, this->rhoE() .data(), 1);
+    cop.accumulate(0, 1.0, that.rho_u_u().col(0).data(), 1, 0.0, this->rhouu().data(), 1);
+    cop.accumulate(0, 1.0, that.rho_u_u().col(3).data(), 1, 0.0, this->rhovv().data(), 1);
+    cop.accumulate(0, 1.0, that.rho_u_u().col(5).data(), 1, 0.0, this->rhoww().data(), 1);
+    cop.accumulate(0, 1.0, that.rho_E_E().col(0).data(), 1, 0.0, this->rhoEE().data(), 1);
 
     return *this;
 }
