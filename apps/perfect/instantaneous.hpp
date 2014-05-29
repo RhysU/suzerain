@@ -36,6 +36,9 @@
 
 namespace suzerain {
 
+// Forward declarations
+class samples;
+
 namespace perfect {
 
 // Forward declarations
@@ -152,6 +155,9 @@ public:
 
     /** Populate all quantities from \c that instance. */
     instantaneous& operator=(const references& that);
+
+    /** Populate all quantities from \c that instance. */
+    instantaneous& operator=(const samples& that);
 };
 
 } // namespace perfect

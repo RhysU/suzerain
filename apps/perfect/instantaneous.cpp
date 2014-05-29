@@ -26,6 +26,8 @@
  */
 #include "instantaneous.hpp"
 
+#include <suzerain/samples.hpp>
+
 #include "references.hpp"
 
 namespace suzerain {
@@ -58,7 +60,6 @@ instantaneous::operator=(const references& that)
 #endif
 
     // Assign the data quantity-by-quantity
-    // Notice target is stride-one while source is not
     this->rho  () = that.rho  ();
     this->p    () = that.p    ();
     this->p2   () = that.p2   ();
@@ -79,6 +80,43 @@ instantaneous::operator=(const references& that)
     this->rhovv() = that.rhovv();
     this->rhoww() = that.rhoww();
     this->rhoEE() = that.rhoEE();
+
+    return *this;
+}
+
+instantaneous&
+instantaneous::operator=(const samples& that)
+{
+    // Ensure adequate storage for the assignment
+    // FIXME Usage of q::count brittle wrt subclasses-- NoChange preferable
+#ifndef NDEBUG
+    setConstant(that.storage.rows(), q::count,
+                std::numeric_limits<Scalar>::quiet_NaN());
+#else
+    resize     (that.storage.rows(), q::count);
+#endif
+
+    // Assign the data quantity-by-quantity
+    //FIXME this->rho  () = that.rho  ();
+    //FIXME this->p    () = that.p    ();
+    //FIXME this->p2   () = that.p2   ();
+    //FIXME this->u    () = that.u    ();
+    //FIXME this->v    () = that.v    ();
+    //FIXME this->w    () = that.w    ();
+    //FIXME this->uu   () = that.uu   ();
+    //FIXME this->uv   () = that.uv   ();
+    //FIXME this->uw   () = that.uw   ();
+    //FIXME this->vv   () = that.vv   ();
+    //FIXME this->vw   () = that.vw   ();
+    //FIXME this->ww   () = that.ww   ();
+    //FIXME this->rhou () = that.rhou ();
+    //FIXME this->rhov () = that.rhov ();
+    //FIXME this->rhow () = that.rhow ();
+    //FIXME this->rhoE () = that.rhoE ();
+    //FIXME this->rhouu() = that.rhouu();
+    //FIXME this->rhovv() = that.rhovv();
+    //FIXME this->rhoww() = that.rhoww();
+    //FIXME this->rhoEE() = that.rhoEE();
 
     return *this;
 }
