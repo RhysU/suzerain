@@ -1081,7 +1081,7 @@ take_profile(const definition_scenario &scenario,
     }
 
     // Transform to obtain physical space view of state on collocation points
-    physical_view<state_count>sphys(dgrid, swave);
+    physical_view<state_count> sphys(dgrid, swave);
     for (std::size_t i = 0; i < state_count; ++i) {
         otool.zero_dealiasing_modes(swave, i);
         otool.bop_apply(0, 1., swave, i);
@@ -1171,6 +1171,31 @@ take_profile(const definition_scenario &scenario,
                           ret->physical().innerStride(),
                           ret->physical().outerStride());
 
+    // BEWARE: The 4-argument take_profile(...) below relies on
+    // the fact that swave has been converted to physical space
+    // as of the end of this method.
+
+    return ret;
+}
+
+std::auto_ptr<profile>
+take_profile(const definition_scenario &scenario,
+             const operator_tools &otool,
+             contiguous_state<4,complex_t> &swave,
+             instantaneous &inst)
+{
+    // We are only prepared to handle a fixed number of fields in this routine
+    enum { state_count = 5 };
+    assert(static_cast<int>(ndx::e  ) < state_count);
+    assert(static_cast<int>(ndx::mx ) < state_count);
+    assert(static_cast<int>(ndx::my ) < state_count);
+    assert(static_cast<int>(ndx::mz ) < state_count);
+    assert(static_cast<int>(ndx::rho) < state_count);
+
+    // Uses that above take_profile(...) destroys swave by conversion into sphys
+    std::auto_ptr<profile> ret = take_profile(scenario, otool, swave);
+    physical_view<state_count> sphys(otool.dgrid, swave);
+    collect_instantaneous(scenario, otool.grid, otool.dgrid, sphys, inst);
     return ret;
 }
 

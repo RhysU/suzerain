@@ -155,6 +155,24 @@ take_profile(const definition_scenario &scenario,
              contiguous_state<4,complex_t> &swave);
 
 /**
+ * Using the provided state, sample the mean solution profiles declared in \ref
+ * profile and \ref instantaneous.  This is a mildly expensive, collective
+ * method.
+ *
+ * @param[in]     scenario Scenario parameters.
+ * @param[in]     otool    Operator definitions in use.
+ * @param[in,out] swave    Destroyed in the computation.
+ * @param[out]    inst     Populated during the computation.
+ *
+ * @return Mean quantity profiles as B-spline coefficients.
+ */
+std::auto_ptr<profile>
+take_profile(const definition_scenario &scenario,
+             const operator_tools &otool,
+             contiguous_state<4,complex_t> &swave,
+             instantaneous &inst);
+
+/**
  * Using the provided state, find the mean reference quantities declared in \ref
  * references.  This is a mildly expensive, collective method.
  *
