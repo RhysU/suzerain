@@ -49,11 +49,11 @@ class pencil_grid;
 namespace perfect {
 
 /**
- * Provides explicitly-implemented, Giles-like nonreflecting boundary conditions
- * at the upper \f$y = L_y\f$ boundary.  Background and notation set within
- * <tt>writeups/perfect_gas.tex</tt> section entitled "Nonreflecting freestream
- * boundary conditions" and specifically "Implementation primarily within the
- * nonlinear explicit operator."
+ * When necessary, provides explicitly-implemented, Giles-like nonreflecting
+ * boundary conditions at the upper \f$y = L_y\f$ boundary.  Background and
+ * notation set within <tt>writeups/perfect_gas.tex</tt> section entitled
+ * "Nonreflecting freestream boundary conditions" and specifically
+ * "Implementation primarily within the nonlinear explicit operator."
  */
 class treatment_nonreflecting
     : public operator_base
