@@ -143,6 +143,14 @@
     ))(( rho2_T_u,         (( rho2_T_u,          "Reynolds-averaged x-component of density times temperature times momentum"                    )) \
                            (( rho2_T_v,          "Reynolds-averaged y-component of density times temperature times momentum"                    )) \
                            (( rho2_T_w,          "Reynolds-averaged z-component of density times temperature times momentum"                    )) \
+    ))(( rho_E_u,          (( rho_E_u,           "Reynolds-averaged x-component of total energy times velocity"                                 )) \
+                           (( rho_E_v,           "Reynolds-averaged y-component of total energy times velocity"                                 )) \
+                           (( rho_E_w,           "Reynolds-averaged z-component of total energy times velocity"                                 )) \
+    ))(( rho2_E_u,         (( rho2_E_u,          "Reynolds-averaged x-component of total energy times momentum"                                 )) \
+                           (( rho2_E_v,          "Reynolds-averaged y-component of total energy times momentum"                                 )) \
+                           (( rho2_E_w,          "Reynolds-averaged z-component of total energy times momentum"                                 )) \
+    ))(( rho_E_E,          (( rho_E_E,           "Reynolds-averaged density times the square of specific total energy"                          )) \
+    ))(( rho2_E_E,         (( rho2_E_E,          "Reynolds-averaged square of total energy"                                                     )) \
     ))(( rho_mu,           (( rho_mu,            "Reynolds-averaged dynamic viscosity times density"                                            )) \
     ))(( rho2_mu,          (( rho2_mu,           "Reynolds-averaged dynamic viscosity times squared density"                                    )) \
     ))(( mu_S,             (( mu_Sxx,            "Reynolds-averaged (x,x)-component of the deviatoric portion of the strain rate"               )) \

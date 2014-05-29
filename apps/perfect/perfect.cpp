@@ -901,6 +901,18 @@ take_samples(const definition_scenario &scenario,
             acc[ref::rho2_T_v](rho2 * T * u.y());
             acc[ref::rho2_T_w](rho2 * T * u.z());
 
+            acc[ref::rho_E_u](e * u.x());
+            acc[ref::rho_E_v](e * u.y());
+            acc[ref::rho_E_w](e * u.z());
+
+            acc[ref::rho2_E_u](e * m.x());
+            acc[ref::rho2_E_v](e * m.y());
+            acc[ref::rho2_E_w](e * m.z());
+
+            acc[ref::rho_E_E](e * e / rho);
+
+            acc[ref::rho2_E_E](e * e);
+
             acc[ref::rho_mu](rho * mu);
 
             acc[ref::rho2_mu](rho2 * mu);

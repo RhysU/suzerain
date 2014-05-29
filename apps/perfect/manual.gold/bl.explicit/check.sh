@@ -22,6 +22,7 @@ for dataset in /twopoint_kx /twopoint_kz /helm /metadata_generated            \
                /min_rho   /min_rho_E   /min_rho_u   /min_rho_v   /min_rho_w   \
                /minx_rho  /minx_rho_E  /minx_rho_u  /minx_rho_v  /minx_rho_w  \
                /minz_rho  /minz_rho_E  /minz_rho_u  /minz_rho_v  /minz_rho_w  \
+               /bar_rho_E_u /bar_rho2_E_u /bar_rho_E_E /bar_rho2_E_E          \
                /bar_SrhoE  /bar_Srhou  /bar_Srho  /bar_Srhou_dot_u            \
                /bar_S2rhoE /bar_S2rhou /bar_S2rho /bar_S2rhou_dot_u
 do
