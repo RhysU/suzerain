@@ -116,7 +116,10 @@ public:
         rhow,       ///< Quantity  \f$\rho u_z              \f$
         rhoE,       ///< Quantity  \f$\rho E                \f$
         rhouu,      ///< Quantity  \f$\rho u_x u_x          \f$
+        rhouv,      ///< Quantity  \f$\rho u_x u_y          \f$
+        rhouw,      ///< Quantity  \f$\rho u_x u_z          \f$
         rhovv,      ///< Quantity  \f$\rho u_y u_y          \f$
+        rhovw,      ///< Quantity  \f$\rho u_y u_z          \f$
         rhoww,      ///< Quantity  \f$\rho u_z u_z          \f$
         rhoEE,      ///< Quantity  \f$\rho E   E            \f$
         count       ///< Sentry indicating how many quantities are tracked
@@ -158,7 +161,10 @@ public:
     RowXpr      rhow()             { return row(q::rhow      ); } ///< @copydoc q::rhow
     RowXpr      rhoE()             { return row(q::rhoE      ); } ///< @copydoc q::rhoE
     RowXpr      rhouu()            { return row(q::rhouu     ); } ///< @copydoc q::rhouu
+    RowXpr      rhouv()            { return row(q::rhouv     ); } ///< @copydoc q::rhouv
+    RowXpr      rhouw()            { return row(q::rhouw     ); } ///< @copydoc q::rhouw
     RowXpr      rhovv()            { return row(q::rhovv     ); } ///< @copydoc q::rhovv
+    RowXpr      rhovw()            { return row(q::rhovw     ); } ///< @copydoc q::rhovw
     RowXpr      rhoww()            { return row(q::rhoww     ); } ///< @copydoc q::rhoww
     RowXpr      rhoEE()            { return row(q::rhoEE     ); } ///< @copydoc q::rhoEE
 
@@ -198,7 +204,10 @@ public:
     ConstRowXpr rhow()       const { return row(q::rhow      ); } ///< @copydoc q::rhow
     ConstRowXpr rhoE()       const { return row(q::rhoE      ); } ///< @copydoc q::rhoE
     ConstRowXpr rhouu()      const { return row(q::rhouu     ); } ///< @copydoc q::rhouu
+    ConstRowXpr rhouv()      const { return row(q::rhouv     ); } ///< @copydoc q::rhouv
+    ConstRowXpr rhouw()      const { return row(q::rhouw     ); } ///< @copydoc q::rhouw
     ConstRowXpr rhovv()      const { return row(q::rhovv     ); } ///< @copydoc q::rhovv
+    ConstRowXpr rhovw()      const { return row(q::rhovw     ); } ///< @copydoc q::rhovw
     ConstRowXpr rhoww()      const { return row(q::rhoww     ); } ///< @copydoc q::rhoww
     ConstRowXpr rhoEE()      const { return row(q::rhoEE     ); } ///< @copydoc q::rhoEE
 

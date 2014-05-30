@@ -105,53 +105,62 @@ public:
         rhow,       ///< Quantity \f$\rho u_z     \f$
         rhoE,       ///< Quantity \f$\rho E       \f$
         rhouu,      ///< Quantity \f$\rho u_x u_x \f$
+        rhouv,      ///< Quantity \f$\rho u_x u_y \f$
+        rhouw,      ///< Quantity \f$\rho u_x u_z \f$
         rhovv,      ///< Quantity \f$\rho u_y u_y \f$
+        rhovw,      ///< Quantity \f$\rho u_y u_z \f$
         rhoww,      ///< Quantity \f$\rho u_z u_z \f$
         rhoEE,      ///< Quantity \f$\rho E   E   \f$
         count       ///< Sentry indicating how many quantities are tracked
     }; };
 
-    ColXpr      rho()              { return col(q::rho  ); } ///< @copydoc q::rho  
-    ColXpr      p()                { return col(q::p    ); } ///< @copydoc q::p    
-    ColXpr      p2()               { return col(q::p2   ); } ///< @copydoc q::p2   
-    ColXpr      u()                { return col(q::u    ); } ///< @copydoc q::u    
-    ColXpr      v()                { return col(q::v    ); } ///< @copydoc q::v    
-    ColXpr      w()                { return col(q::w    ); } ///< @copydoc q::w    
-    ColXpr      uu()               { return col(q::uu   ); } ///< @copydoc q::uu   
-    ColXpr      uv()               { return col(q::uv   ); } ///< @copydoc q::uv   
-    ColXpr      uw()               { return col(q::uw   ); } ///< @copydoc q::uw   
-    ColXpr      vv()               { return col(q::vv   ); } ///< @copydoc q::vv   
-    ColXpr      vw()               { return col(q::vw   ); } ///< @copydoc q::vw   
-    ColXpr      ww()               { return col(q::ww   ); } ///< @copydoc q::ww   
-    ColXpr      rhou()             { return col(q::rhou ); } ///< @copydoc q::rhou 
-    ColXpr      rhov()             { return col(q::rhov ); } ///< @copydoc q::rhov 
-    ColXpr      rhow()             { return col(q::rhow ); } ///< @copydoc q::rhow 
-    ColXpr      rhoE()             { return col(q::rhoE ); } ///< @copydoc q::rhoE 
+    ColXpr      rho()              { return col(q::rho  ); } ///< @copydoc q::rho
+    ColXpr      p()                { return col(q::p    ); } ///< @copydoc q::p
+    ColXpr      p2()               { return col(q::p2   ); } ///< @copydoc q::p2
+    ColXpr      u()                { return col(q::u    ); } ///< @copydoc q::u
+    ColXpr      v()                { return col(q::v    ); } ///< @copydoc q::v
+    ColXpr      w()                { return col(q::w    ); } ///< @copydoc q::w
+    ColXpr      uu()               { return col(q::uu   ); } ///< @copydoc q::uu
+    ColXpr      uv()               { return col(q::uv   ); } ///< @copydoc q::uv
+    ColXpr      uw()               { return col(q::uw   ); } ///< @copydoc q::uw
+    ColXpr      vv()               { return col(q::vv   ); } ///< @copydoc q::vv
+    ColXpr      vw()               { return col(q::vw   ); } ///< @copydoc q::vw
+    ColXpr      ww()               { return col(q::ww   ); } ///< @copydoc q::ww
+    ColXpr      rhou()             { return col(q::rhou ); } ///< @copydoc q::rhou
+    ColXpr      rhov()             { return col(q::rhov ); } ///< @copydoc q::rhov
+    ColXpr      rhow()             { return col(q::rhow ); } ///< @copydoc q::rhow
+    ColXpr      rhoE()             { return col(q::rhoE ); } ///< @copydoc q::rhoE
     ColXpr      rhouu()            { return col(q::rhouu); } ///< @copydoc q::rhouu
+    ColXpr      rhouv()            { return col(q::rhouv); } ///< @copydoc q::rhouv
+    ColXpr      rhouw()            { return col(q::rhouw); } ///< @copydoc q::rhouw
     ColXpr      rhovv()            { return col(q::rhovv); } ///< @copydoc q::rhovv
+    ColXpr      rhovw()            { return col(q::rhovw); } ///< @copydoc q::rhovw
     ColXpr      rhoww()            { return col(q::rhoww); } ///< @copydoc q::rhoww
     ColXpr      rhoEE()            { return col(q::rhoEE); } ///< @copydoc q::rhoEE
 
-    ConstColXpr rho()        const { return col(q::rho  ); } ///< @copydoc q::rho   
-    ConstColXpr p()          const { return col(q::p    ); } ///< @copydoc q::p     
-    ConstColXpr p2()         const { return col(q::p2   ); } ///< @copydoc q::p2    
-    ConstColXpr u()          const { return col(q::u    ); } ///< @copydoc q::u     
-    ConstColXpr v()          const { return col(q::v    ); } ///< @copydoc q::v     
-    ConstColXpr w()          const { return col(q::w    ); } ///< @copydoc q::w     
-    ConstColXpr uu()         const { return col(q::uu   ); } ///< @copydoc q::uu    
-    ConstColXpr uv()         const { return col(q::uv   ); } ///< @copydoc q::uv    
-    ConstColXpr uw()         const { return col(q::uw   ); } ///< @copydoc q::uw    
-    ConstColXpr vv()         const { return col(q::vv   ); } ///< @copydoc q::vv    
-    ConstColXpr vw()         const { return col(q::vw   ); } ///< @copydoc q::vw    
-    ConstColXpr ww()         const { return col(q::ww   ); } ///< @copydoc q::ww    
-    ConstColXpr rhou()       const { return col(q::rhou ); } ///< @copydoc q::rhou  
-    ConstColXpr rhov()       const { return col(q::rhov ); } ///< @copydoc q::rhov  
-    ConstColXpr rhow()       const { return col(q::rhow ); } ///< @copydoc q::rhow  
-    ConstColXpr rhoE()       const { return col(q::rhoE ); } ///< @copydoc q::rhoE  
-    ConstColXpr rhouu()      const { return col(q::rhouu); } ///< @copydoc q::rhouu 
-    ConstColXpr rhovv()      const { return col(q::rhovv); } ///< @copydoc q::rhovv 
-    ConstColXpr rhoww()      const { return col(q::rhoww); } ///< @copydoc q::rhoww 
-    ConstColXpr rhoEE()      const { return col(q::rhoEE); } ///< @copydoc q::rhoEE 
+    ConstColXpr rho()        const { return col(q::rho  ); } ///< @copydoc q::rho
+    ConstColXpr p()          const { return col(q::p    ); } ///< @copydoc q::p
+    ConstColXpr p2()         const { return col(q::p2   ); } ///< @copydoc q::p2
+    ConstColXpr u()          const { return col(q::u    ); } ///< @copydoc q::u
+    ConstColXpr v()          const { return col(q::v    ); } ///< @copydoc q::v
+    ConstColXpr w()          const { return col(q::w    ); } ///< @copydoc q::w
+    ConstColXpr uu()         const { return col(q::uu   ); } ///< @copydoc q::uu
+    ConstColXpr uv()         const { return col(q::uv   ); } ///< @copydoc q::uv
+    ConstColXpr uw()         const { return col(q::uw   ); } ///< @copydoc q::uw
+    ConstColXpr vv()         const { return col(q::vv   ); } ///< @copydoc q::vv
+    ConstColXpr vw()         const { return col(q::vw   ); } ///< @copydoc q::vw
+    ConstColXpr ww()         const { return col(q::ww   ); } ///< @copydoc q::ww
+    ConstColXpr rhou()       const { return col(q::rhou ); } ///< @copydoc q::rhou
+    ConstColXpr rhov()       const { return col(q::rhov ); } ///< @copydoc q::rhov
+    ConstColXpr rhow()       const { return col(q::rhow ); } ///< @copydoc q::rhow
+    ConstColXpr rhoE()       const { return col(q::rhoE ); } ///< @copydoc q::rhoE
+    ConstColXpr rhouu()      const { return col(q::rhouu); } ///< @copydoc q::rhouu
+    ConstColXpr rhouv()      const { return col(q::rhouv); } ///< @copydoc q::rhouv
+    ConstColXpr rhouw()      const { return col(q::rhouw); } ///< @copydoc q::rhouw
+    ConstColXpr rhovv()      const { return col(q::rhovv); } ///< @copydoc q::rhovv
+    ConstColXpr rhovw()      const { return col(q::rhovw); } ///< @copydoc q::rhovw
+    ConstColXpr rhoww()      const { return col(q::rhoww); } ///< @copydoc q::rhoww
+    ConstColXpr rhoEE()      const { return col(q::rhoEE); } ///< @copydoc q::rhoEE
 
     /** @} */
 

@@ -81,7 +81,10 @@ instantaneous::operator=(
     this->rhow () = that.rhow ();
     this->rhoE () = that.rhoE ();
     this->rhouu() = that.rhouu();
+    this->rhouv() = that.rhouv();
+    this->rhouw() = that.rhouw();
     this->rhovv() = that.rhovv();
+    this->rhovw() = that.rhovw();
     this->rhoww() = that.rhoww();
     this->rhoEE() = that.rhoEE();
 
@@ -119,7 +122,10 @@ instantaneous::operator=(
     this->rhow()  = that.bar_rho_w();
     this->rhoE()  = that.bar_rho_E();
     this->rhouu() = that.bar_rho_u_u();
+    this->rhouv() = that.bar_rho_u_v();
+    this->rhouw() = that.bar_rho_u_w();
     this->rhovv() = that.bar_rho_v_v();
+    this->rhovw() = that.bar_rho_v_w();
     this->rhoww() = that.bar_rho_w_w();
     this->rhoEE() = that.bar_rho_E_E();
 
@@ -163,7 +169,10 @@ instantaneous::copy_from(
     cop.accumulate(0, 1.0, that.rho_u()  .col(2).data(), 1, 0.0, this->rhow() .data(), 1);
     cop.accumulate(0, 1.0, that.rho_E()  .col(0).data(), 1, 0.0, this->rhoE() .data(), 1);
     cop.accumulate(0, 1.0, that.rho_u_u().col(0).data(), 1, 0.0, this->rhouu().data(), 1);
+    cop.accumulate(0, 1.0, that.rho_u_u().col(1).data(), 1, 0.0, this->rhouv().data(), 1);
+    cop.accumulate(0, 1.0, that.rho_u_u().col(2).data(), 1, 0.0, this->rhouw().data(), 1);
     cop.accumulate(0, 1.0, that.rho_u_u().col(3).data(), 1, 0.0, this->rhovv().data(), 1);
+    cop.accumulate(0, 1.0, that.rho_u_u().col(4).data(), 1, 0.0, this->rhovw().data(), 1);
     cop.accumulate(0, 1.0, that.rho_u_u().col(5).data(), 1, 0.0, this->rhoww().data(), 1);
     cop.accumulate(0, 1.0, that.rho_E_E().col(0).data(), 1, 0.0, this->rhoEE().data(), 1);
 

@@ -33,6 +33,8 @@
 #include <suzerain/support/driver_base.hpp>
 #include <suzerain/support/support.hpp>
 
+#include "instantaneous.hpp"
+
 #pragma warning(disable:1419)
 
 namespace suzerain {

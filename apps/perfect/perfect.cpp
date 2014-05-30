@@ -1318,7 +1318,10 @@ collect_references(const definition_scenario &scenario,
             acc[references::q::rhow ](m.z()             );
             acc[references::q::rhoE ](e                 );
             acc[references::q::rhouu](m.x()* m.x() / rho);
+            acc[references::q::rhouv](m.x()* m.y() / rho);
+            acc[references::q::rhouw](m.x()* m.z() / rho);
             acc[references::q::rhovv](m.y()* m.y() / rho);
+            acc[references::q::rhovw](m.y()* m.z() / rho);
             acc[references::q::rhoww](m.z()* m.z() / rho);
             acc[references::q::rhoEE](e    * e     / rho);
 
@@ -1415,7 +1418,10 @@ collect_instantaneous(const definition_scenario &scenario,
             acc[instantaneous::q::rhow ](m.z()             );
             acc[instantaneous::q::rhoE ](e                 );
             acc[instantaneous::q::rhouu](m.x()* m.x() / rho);
+            acc[instantaneous::q::rhouv](m.x()* m.y() / rho);
+            acc[instantaneous::q::rhouw](m.x()* m.z() / rho);
             acc[instantaneous::q::rhovv](m.y()* m.y() / rho);
+            acc[instantaneous::q::rhovw](m.y()* m.z() / rho);
             acc[instantaneous::q::rhoww](m.z()* m.z() / rho);
             acc[instantaneous::q::rhoEE](e    * e     / rho);
 
