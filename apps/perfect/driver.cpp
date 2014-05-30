@@ -286,6 +286,25 @@ driver::log_quantities_of_interest(
     // Fluctuations only make sense to log when either X or Z is nontrivial
     const bool nontrivial_fluct_possible = grid->N.x() * grid->N.z() > 1;
     if (nontrivial_fluct_possible) {
+
+        // Prepare bulk weights to dot against coefficient representations
+        const VectorXr bulk = support::compute_bulk_weights(*b, *masslu);
+
+        // Columns index uu uv uw vv vw ww
+        MatrixX6r tmp(inst.rows(), 6);
+
+        // Prepare bulk of Reynolds-averaged velocity fluctuations
+        tmp.col(0) = inst.uu() - inst.u().square();
+        tmp.col(1) = inst.uv() - inst.u()*inst.v();
+        tmp.col(2) = inst.uw() - inst.u()*inst.w();
+        tmp.col(3) = inst.vv() - inst.v().square();
+        tmp.col(4) = inst.vw() - inst.v()*inst.w();
+        tmp.col(5) = inst.ww() - inst.w().square();
+        masslu->solve(tmp.cols(), tmp.data(),
+                      tmp.innerStride(), tmp.outerStride());
+        const Vector6r reynolds = bulk.transpose()*tmp;
+
+        // Prepare bulk of Favre-averaged velocity fluctuations
         // FIXME STARTHERE Redmine #3111
     }
 
