@@ -287,7 +287,7 @@ maybe_prefix_stresses(const std::string& prefix,
     }
 }
 
-// Show a "prefix total u v w" header just once
+// Often-reused logic to show a "prefix total u v w" header just once
 template <class Logger>
 static void
 maybe_prefix_prodterm(const std::string& prefix,
@@ -338,20 +338,29 @@ driver::log_quantities_of_interest(
         Array6r max_reynolds, ymax_reynolds;
         for (int j = 0; j < reynolds.cols(); ++j) {
             ArrayX6r::Index ndx;
-            max_reynolds[j]    = reynolds.col(j).maxCoeff(&ndx);
+            max_reynolds[j]  = reynolds.col(j).maxCoeff(&ndx);
             ymax_reynolds[j] = b->collocation_point(static_cast<int>(ndx));
         }
         Array6r max_favre, ymax_favre;
         for (int j = 0; j < favre.cols(); ++j) {
             ArrayX6r::Index ndx;
-            max_favre[j]    = favre.col(j).maxCoeff(&ndx);
+            max_favre[j]  = favre.col(j).maxCoeff(&ndx);
             ymax_favre[j] = b->collocation_point(static_cast<int>(ndx));
         }
-        Array6r max_prodterms, ymax_prodterms;
+        Array3r max_prodterms, ymax_prodterms;
         for (int j = 0; j < prodterms.cols(); ++j) {
             ArrayX3r::Index ndx;
-            max_prodterms[j]    = prodterms.col(j).maxCoeff(&ndx);
+            max_prodterms[j]  = prodterms.col(j).maxCoeff(&ndx);
             ymax_prodterms[j] = b->collocation_point(static_cast<int>(ndx));
+        }
+
+        // Compute derived information about overall production
+        ArrayX1r production = prodterms.rowwise().sum();
+        Array1r max_production, ymax_production;
+        for (int j = 0; j < production.cols(); ++j) {
+            ArrayX1r::Index ndx;
+            max_production[j]  = production.col(j).maxCoeff(&ndx);
+            ymax_production[j] = b->collocation_point(static_cast<int>(ndx));
         }
 
         // Find coefficient representations from collocation point values
@@ -361,29 +370,57 @@ driver::log_quantities_of_interest(
                       favre.innerStride(), favre.outerStride());
         masslu->solve(prodterms.cols(), prodterms.data(),
                       prodterms.innerStride(), prodterms.outerStride());
+        masslu->solve(production.cols(), production.data(),
+                      production.innerStride(), production.outerStride());
 
         // Reduce coefficients into bulk values
         const VectorXr bulk = support::compute_bulk_weights(*b, *masslu);
         {
             // Broken? reynolds .matrix().applyOnTheLeft(bulk.transpose());
             ArrayXXr tmp;
-            tmp = bulk.transpose() * reynolds .matrix();  reynolds  = tmp;
-            tmp = bulk.transpose() * favre    .matrix();  favre     = tmp;
-            tmp = bulk.transpose() * prodterms.matrix();  prodterms = tmp;
+            tmp = bulk.transpose() * reynolds  .matrix(); reynolds   = tmp;
+            tmp = bulk.transpose() * favre     .matrix(); favre      = tmp;
+            tmp = bulk.transpose() * prodterms .matrix(); prodterms  = tmp;
+            tmp = bulk.transpose() * production.matrix(); production = tmp;
         }
 
-        // Log a whole slew of information
+        // Log a whole slew of information about turbulent production
         {
-            const std::string name("reyno.prod");
+            const std::string name("prod.bulk");
             maybe_prefix_prodterm(prefix, name, header_shown[name]);
             std::ostringstream msg;
             msg << prefix
-                << ' ' << fullprec<>(prodterms.sum())
+                << ' ' << fullprec<>(production(0,0))
                 << ' ' << fullprec<>(prodterms(0,0))
                 << ' ' << fullprec<>(prodterms(0,1))
                 << ' ' << fullprec<>(prodterms(0,2));
             INFO0(name, msg.str());
         }
+        {
+            const std::string name("prod.max");
+            maybe_prefix_prodterm(prefix, name, header_shown[name]);
+            std::ostringstream msg;
+            msg << prefix
+                << ' ' << fullprec<>(max_production[0])
+                << ' ' << fullprec<>(max_prodterms[0])
+                << ' ' << fullprec<>(max_prodterms[1])
+                << ' ' << fullprec<>(max_prodterms[2]);
+            INFO0(name, msg.str());
+        }
+        {
+            const std::string name("prod.ymax");
+            maybe_prefix_prodterm(prefix, name, header_shown[name]);
+            std::ostringstream msg;
+            msg << prefix
+                << ' ' << fullprec<>(ymax_production[0])
+                << ' ' << fullprec<>(ymax_prodterms[0])
+                << ' ' << fullprec<>(ymax_prodterms[1])
+                << ' ' << fullprec<>(ymax_prodterms[2]);
+            INFO0(name, msg.str());
+        }
+
+        // Log information about bulk fluctuations
+        // Reynolds and then Favre to ease impromptu comparison
         {
             const std::string name("reyno.bulk");
             maybe_prefix_stresses(prefix, name, header_shown[name]);
@@ -410,6 +447,9 @@ driver::log_quantities_of_interest(
                 << ' ' << fullprec<>(favre(0,5));
             INFO0(name, msg.str());
         }
+
+        // Log information about maximum pointwise fluctuations
+        // Reynolds and then Favre to ease impromptu comparison
         {
             const std::string name("reyno.max");
             maybe_prefix_stresses(prefix, name, header_shown[name]);
@@ -436,6 +476,9 @@ driver::log_quantities_of_interest(
                 << ' ' << fullprec<>(max_favre[5]);
             INFO0(name, msg.str());
         }
+
+        // Log information about the location of maximum pointwise fluctuations
+        // Reynolds and then Favre to ease impromptu comparison
         {
             const std::string name("reyno.ymax");
             maybe_prefix_stresses(prefix, name, header_shown[name]);
