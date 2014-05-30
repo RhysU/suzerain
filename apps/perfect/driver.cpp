@@ -266,23 +266,41 @@ void driver::log_quantities_of_interest(
     this->log_quantities_of_interest(timeprefix, prof, inst);
 }
 
-// Often-reused logic to show a "t nt uu uv uw vv vw ww" header just once
+// Often-reused logic to show a "prefix uu uv uw vv vw ww" header just once
 template <class Logger>
 static void
-maybe_timeprefix_stress_identifiers(driver& d,
-                                    const std::string& timeprefix,
-                                    Logger& log,
-                                    bool& shown)
+maybe_prefix_stresses(const std::string& prefix,
+                      Logger& log,
+                      bool& shown)
 {
     if (!shown) {
         std::ostringstream msg;
-        msg << std::setw(timeprefix.size()) << d.build_timeprefix_description()
+        msg << prefix
             << ' ' << std::setw(fullprec<>::width) << "uu"
             << ' ' << std::setw(fullprec<>::width) << "uv"
             << ' ' << std::setw(fullprec<>::width) << "uw"
             << ' ' << std::setw(fullprec<>::width) << "vv"
             << ' ' << std::setw(fullprec<>::width) << "vw"
             << ' ' << std::setw(fullprec<>::width) << "ww";
+        INFO0(log, msg.str());
+        shown = true;
+    }
+}
+
+// Show a "prefix total u v w" header just once
+template <class Logger>
+static void
+maybe_prefix_prodterm(const std::string& prefix,
+                      Logger& log,
+                      bool& shown)
+{
+    if (!shown) {
+        std::ostringstream msg;
+        msg << prefix
+            << ' ' << std::setw(fullprec<>::width) << "total"
+            << ' ' << std::setw(fullprec<>::width) << "u"
+            << ' ' << std::setw(fullprec<>::width) << "v"
+            << ' ' << std::setw(fullprec<>::width) << "w";
         INFO0(log, msg.str());
         shown = true;
     }
@@ -317,23 +335,23 @@ driver::log_quantities_of_interest(
         compute_fluctuations(*cop, *masslu, inst, reynolds, favre, prodterms);
 
         // Find maximum term-by-term values and locations for those maximums
-        Array6r max_reynolds, maxloc_reynolds;
+        Array6r max_reynolds, ymax_reynolds;
         for (int j = 0; j < reynolds.cols(); ++j) {
             ArrayX6r::Index ndx;
             max_reynolds[j]    = reynolds.col(j).maxCoeff(&ndx);
-            maxloc_reynolds[j] = b->collocation_point(static_cast<int>(ndx));
+            ymax_reynolds[j] = b->collocation_point(static_cast<int>(ndx));
         }
-        Array6r max_favre, maxloc_favre;
+        Array6r max_favre, ymax_favre;
         for (int j = 0; j < favre.cols(); ++j) {
             ArrayX6r::Index ndx;
             max_favre[j]    = favre.col(j).maxCoeff(&ndx);
-            maxloc_favre[j] = b->collocation_point(static_cast<int>(ndx));
+            ymax_favre[j] = b->collocation_point(static_cast<int>(ndx));
         }
-        Array6r max_prodterms, maxloc_prodterms;
+        Array6r max_prodterms, ymax_prodterms;
         for (int j = 0; j < prodterms.cols(); ++j) {
             ArrayX3r::Index ndx;
             max_prodterms[j]    = prodterms.col(j).maxCoeff(&ndx);
-            maxloc_prodterms[j] = b->collocation_point(static_cast<int>(ndx));
+            ymax_prodterms[j] = b->collocation_point(static_cast<int>(ndx));
         }
 
         // Find coefficient representations from collocation point values
@@ -353,8 +371,97 @@ driver::log_quantities_of_interest(
             tmp = bulk.transpose() * favre    .matrix();  favre     = tmp;
             tmp = bulk.transpose() * prodterms.matrix();  prodterms = tmp;
         }
-        const real_t production = prodterms.sum();
 
+        // Log a whole slew of information
+        {
+            const std::string name("reyno.prod");
+            maybe_prefix_prodterm(prefix, name, header_shown[name]);
+            std::ostringstream msg;
+            msg << prefix
+                << ' ' << fullprec<>(prodterms.sum())
+                << ' ' << fullprec<>(prodterms(0,0))
+                << ' ' << fullprec<>(prodterms(0,1))
+                << ' ' << fullprec<>(prodterms(0,2));
+            INFO0(name, msg.str());
+        }
+        {
+            const std::string name("reyno.bulk");
+            maybe_prefix_stresses(prefix, name, header_shown[name]);
+            std::ostringstream msg;
+            msg << prefix
+                << ' ' << fullprec<>(reynolds(0,0))
+                << ' ' << fullprec<>(reynolds(0,1))
+                << ' ' << fullprec<>(reynolds(0,2))
+                << ' ' << fullprec<>(reynolds(0,3))
+                << ' ' << fullprec<>(reynolds(0,4))
+                << ' ' << fullprec<>(reynolds(0,5));
+            INFO0(name, msg.str());
+        }
+        {
+            const std::string name("favre.bulk");
+            maybe_prefix_stresses(prefix, name, header_shown[name]);
+            std::ostringstream msg;
+            msg << prefix
+                << ' ' << fullprec<>(favre(0,0))
+                << ' ' << fullprec<>(favre(0,1))
+                << ' ' << fullprec<>(favre(0,2))
+                << ' ' << fullprec<>(favre(0,3))
+                << ' ' << fullprec<>(favre(0,4))
+                << ' ' << fullprec<>(favre(0,5));
+            INFO0(name, msg.str());
+        }
+        {
+            const std::string name("reyno.max");
+            maybe_prefix_stresses(prefix, name, header_shown[name]);
+            std::ostringstream msg;
+            msg << prefix
+                << ' ' << fullprec<>(max_reynolds[0])
+                << ' ' << fullprec<>(max_reynolds[1])
+                << ' ' << fullprec<>(max_reynolds[2])
+                << ' ' << fullprec<>(max_reynolds[3])
+                << ' ' << fullprec<>(max_reynolds[4])
+                << ' ' << fullprec<>(max_reynolds[5]);
+            INFO0(name, msg.str());
+        }
+        {
+            const std::string name("favre.max");
+            maybe_prefix_stresses(prefix, name, header_shown[name]);
+            std::ostringstream msg;
+            msg << prefix
+                << ' ' << fullprec<>(max_favre[0])
+                << ' ' << fullprec<>(max_favre[1])
+                << ' ' << fullprec<>(max_favre[2])
+                << ' ' << fullprec<>(max_favre[3])
+                << ' ' << fullprec<>(max_favre[4])
+                << ' ' << fullprec<>(max_favre[5]);
+            INFO0(name, msg.str());
+        }
+        {
+            const std::string name("reyno.ymax");
+            maybe_prefix_stresses(prefix, name, header_shown[name]);
+            std::ostringstream msg;
+            msg << prefix
+                << ' ' << fullprec<>(ymax_reynolds[0])
+                << ' ' << fullprec<>(ymax_reynolds[1])
+                << ' ' << fullprec<>(ymax_reynolds[2])
+                << ' ' << fullprec<>(ymax_reynolds[3])
+                << ' ' << fullprec<>(ymax_reynolds[4])
+                << ' ' << fullprec<>(ymax_reynolds[5]);
+            INFO0(name, msg.str());
+        }
+        {
+            const std::string name("favre.ymax");
+            maybe_prefix_stresses(prefix, name, header_shown[name]);
+            std::ostringstream msg;
+            msg << prefix
+                << ' ' << fullprec<>(ymax_favre[0])
+                << ' ' << fullprec<>(ymax_favre[1])
+                << ' ' << fullprec<>(ymax_favre[2])
+                << ' ' << fullprec<>(ymax_favre[3])
+                << ' ' << fullprec<>(ymax_favre[4])
+                << ' ' << fullprec<>(ymax_favre[5]);
+            INFO0(name, msg.str());
+        }
     }
 
     // Prepare and log geometry-specific quantities of interest
