@@ -206,6 +206,39 @@ collect_instantaneous(const definition_scenario &scenario,
                       const physical_view<5> &sphys,
                       instantaneous &inst);
 
+
+/**
+ * Compute Reynolds-averaged and Favre-averaged fluctuation profiles as well as
+ * profiles of the three contributions to the TKE production term.  Wall-normal
+ * information is stored in the fast direction.
+ *
+ * @param[in]  cop       Collocation-based operators.
+ * @param[in]  masslu    A factored mass matrix corresponding to \c cop.
+ * @param[in]  inst      Information used to compute fluctuating quantities
+ * @param[out] reynolds  Profiles of \f$\overbar{{u}_i^\prime u_j^\prime}\f$
+ *                       versus $y$ ordered \f$uu\f$, \f$uv\f$, \f$uw\f$,
+ *                       \f$vv\f$, \f$vw\f$, \f$ww\f$.
+ * @param[out] favre     Profiles of \f$\widetilde{{u}_i^{\prime\prime}
+ *                       u_j^{\prime\prime}}\f$ versus $y$
+ *                       ordered \f$uu\f$, \f$uv\f$, \f$uw\f$,
+ *                       \f$vv\f$, \f$vw\f$, \f$ww\f$.
+ * @param[out] prodterms Profiles of production terms versus \f$y\f$
+ *                       ordered \f$-\bar{\rho}
+ *                       \widetilde{u^{\prime\prime}v^{\prime\prime}}
+ *                       \partial_y \tilde{u}\f$, \f$-\bar{\rho}
+ *                       \widetilde{v^{\prime\prime}v^{\prime\prime}}
+ *                       \partial_y \tilde{v}\f$, and \f$-\bar{\rho}
+ *                       \widetilde{v^{\prime\prime}w^{\prime\prime}}
+ *                       \partial_y \tilde{w}\f$.
+ */
+void
+compute_fluctuations(const bsplineop& cop,
+                     const bsplineop_lu &masslu,
+                     const instantaneous& inst,
+                     ArrayX6r &reynolds,
+                     ArrayX6r &favre,
+                     ArrayX3r &prodterms);
+
 /**
  * Use the boundary layer information in \c prof and possibly base flow
  * information in \c sg to compute many quantities of interest.  This is
