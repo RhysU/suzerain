@@ -28,6 +28,7 @@
 
 #include <suzerain/bspline.hpp>
 #include <suzerain/samples.hpp>
+#include <suzerain/summary.hpp>
 
 #include "references.hpp"
 
@@ -83,6 +84,44 @@ instantaneous::operator=(
     this->rhovv() = that.rhovv();
     this->rhoww() = that.rhoww();
     this->rhoEE() = that.rhoEE();
+
+    return *this;
+}
+
+instantaneous&
+instantaneous::operator=(
+        const summary& that)
+{
+    // Ensure adequate storage for the assignment
+    // FIXME Usage of q::count brittle wrt subclasses-- NoChange preferable
+#ifndef NDEBUG
+    setConstant(that.storage.rows(), q::count,
+                std::numeric_limits<Scalar>::quiet_NaN());
+#else
+    resize     (that.storage.rows(), q::count);
+#endif
+
+    // Assign the data quantity-by-quantity
+    this->rho()   = that.bar_rho();
+    this->p()     = that.bar_p();
+    this->p2()    = that.bar_p2();
+    this->u()     = that.bar_u();
+    this->v()     = that.bar_v();
+    this->w()     = that.bar_w();
+    this->uu()    = that.bar_u_u();
+    this->uv()    = that.bar_u_v();
+    this->uw()    = that.bar_u_w();
+    this->vv()    = that.bar_v_v();
+    this->vw()    = that.bar_v_w();
+    this->ww()    = that.bar_w_w();
+    this->rhou()  = that.bar_rho_u();
+    this->rhov()  = that.bar_rho_v();
+    this->rhow()  = that.bar_rho_w();
+    this->rhoE()  = that.bar_rho_E();
+    this->rhouu() = that.bar_rho_u_u();
+    this->rhovv() = that.bar_rho_v_v();
+    this->rhoww() = that.bar_rho_w_w();
+    this->rhoEE() = that.bar_rho_E_E();
 
     return *this;
 }
