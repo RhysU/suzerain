@@ -272,18 +272,25 @@ driver::log_quantities_of_interest(
         const profile& prof,
         const instantaneous& inst)
 {
-    if (grid->one_sided()) {
+    // A horrible way to cheaply grab a shared pointer to a masslu
+    // Uses internal knowledge of obtain_operator_tools requiring a dgrid
+    shared_ptr<const bsplineop_lu> masslu;
+    if (dgrid) {
+        masslu = obtain_operator_tools()->masslu();
+    } else {
+        shared_ptr<bsplineop_lu> t(new bsplineop_lu(*cop));
+        t->factor_mass(*cop);
+        masslu = t;
+    }
 
-        // A horrible way to cheaply grab a shared pointer to a masslu
-        // Uses internal knowledge of obtain_operator_tools requiring a dgrid
-        shared_ptr<const bsplineop_lu> masslu;
-        if (dgrid) {
-            masslu = obtain_operator_tools()->masslu();
-        } else {
-            shared_ptr<bsplineop_lu> t(new bsplineop_lu(*cop));
-            t->factor_mass(*cop);
-            masslu = t;
-        }
+    // Fluctuations only make sense to log when either X or Z is nontrivial
+    const bool nontrivial_fluct_possible = grid->N.x() * grid->N.z() > 1;
+    if (nontrivial_fluct_possible) {
+        // FIXME STARTHERE Redmine #3111
+    }
+
+    // Prepare and log geometry-specific quantities of interest
+    if (grid->one_sided()) {
 
         // Compute many details about the boundary layer for logging
         suzerain_bl_local       wall;
