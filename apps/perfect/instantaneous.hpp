@@ -46,6 +46,8 @@ namespace perfect {
 // Forward declarations
 class references;
 
+// TODO This data should likely be merged into suzerain::profile
+
 /**
  * Storage for holding quantities at collocation points computed during
  * nonlinear operator application which are required for statistics sampling
