@@ -3,6 +3,7 @@
 # LaTeX and BiBTeX source files
 TEXSOURCES  = skewadjoint.tex
 EXTRA_DIST  = references.bib
+EXTRA_DIST += workbooks   # Entire directory contents
 
 # Build and install writeups
 all-local:      pdf-local
