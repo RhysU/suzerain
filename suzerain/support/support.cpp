@@ -81,7 +81,7 @@ namespace support {
 #define COMMON_CONSOLE_CONFIG                                               \
     "log4j.appender.CONSOLE=org.apache.log4j.ConsoleAppender\n"             \
     "log4j.appender.CONSOLE.layout=org.apache.log4j.PatternLayout\n"        \
-    "log4j.appender.CONSOLE.layout.ConversionPattern=%-5p %8r %-11c %m%n\n"
+    "log4j.appender.CONSOLE.layout.ConversionPattern=%-5p %8r %-12c %m%n\n"
 
 const char log4cxx_config_console[] =
     "## Output INFO or higher messages on CONSOLE\n"
