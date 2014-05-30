@@ -294,6 +294,26 @@ driver::log_quantities_of_interest(
         ArrayX3r prodterms;
         compute_fluctuations(*cop, *masslu, inst, reynolds, favre, prodterms);
 
+        // Find maximum term-by-term values and locations for those maximums
+        Array6r max_reynolds, maxloc_reynolds;
+        for (int j = 0; j < reynolds.cols(); ++j) {
+            ArrayX6r::Index ndx;
+            max_reynolds[j]    = reynolds.col(j).maxCoeff(&ndx);
+            maxloc_reynolds[j] = b->collocation_point(static_cast<int>(ndx));
+        }
+        Array6r max_favre, maxloc_favre;
+        for (int j = 0; j < favre.cols(); ++j) {
+            ArrayX6r::Index ndx;
+            max_favre[j]    = favre.col(j).maxCoeff(&ndx);
+            maxloc_favre[j] = b->collocation_point(static_cast<int>(ndx));
+        }
+        Array6r max_prodterms, maxloc_prodterms;
+        for (int j = 0; j < prodterms.cols(); ++j) {
+            ArrayX3r::Index ndx;
+            max_prodterms[j]    = prodterms.col(j).maxCoeff(&ndx);
+            maxloc_prodterms[j] = b->collocation_point(static_cast<int>(ndx));
+        }
+
         // Find coefficient representations from collocation point values
         masslu->solve(reynolds.cols(), reynolds.data(),
                       reynolds.innerStride(), reynolds.outerStride());
