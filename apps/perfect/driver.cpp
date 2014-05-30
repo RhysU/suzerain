@@ -283,6 +283,49 @@ driver::log_quantities_of_interest(
         masslu = t;
     }
 
+    // Prepare and log geometry-specific quantities of interest
+    if (grid->one_sided()) {
+
+        // Compute many details about the boundary layer for logging
+        suzerain_bl_local       wall;
+        suzerain_bl_viscous     viscous;
+        suzerain_bl_local       edge;
+        suzerain_bl_local       edge99;
+        suzerain_bl_thicknesses thick;
+        suzerain_bl_reynolds    reynolds;
+        suzerain_bl_qoi         qoi;
+        suzerain_bl_pg          pg;
+        summarize_boundary_layer_nature(prof, *scenario, sg, *masslu, *b,
+                                        wall, viscous, thick,
+                                        edge, edge99,
+                                        reynolds, qoi, pg);
+
+        // Log messages using application-agnostic superclass functionality
+        this->log_quantities_boundary_layer(prefix,
+                                            &wall, &viscous, &thick,
+                                            &edge, &edge99,
+                                            &reynolds, &qoi, &pg);
+
+    } else if (grid->two_sided()) {
+
+        // Compute many details about the boundary layer for logging
+        suzerain_channel_local   wall;
+        suzerain_channel_viscous viscous;
+        suzerain_channel_local   center;
+        suzerain_channel_qoi     qoi;
+        summarize_channel_nature(prof, *scenario, *b,
+                                 wall, viscous, center, qoi);
+
+        // Log messages using application-agnostic superclass functionality
+        this->log_quantities_channel(prefix,
+                                     &wall, &viscous, &center, &qoi);
+
+    } else {
+
+        SUZERAIN_ERROR_REPORT_UNIMPLEMENTED();
+
+    }
+
     // Fluctuations only make sense to log when either X or Z is nontrivial
     const bool nontrivial_fluct_possible = grid->N.x() * grid->N.z() > 1;
     if (nontrivial_fluct_possible) {
@@ -335,48 +378,6 @@ driver::log_quantities_of_interest(
 
     }
 
-    // Prepare and log geometry-specific quantities of interest
-    if (grid->one_sided()) {
-
-        // Compute many details about the boundary layer for logging
-        suzerain_bl_local       wall;
-        suzerain_bl_viscous     viscous;
-        suzerain_bl_local       edge;
-        suzerain_bl_local       edge99;
-        suzerain_bl_thicknesses thick;
-        suzerain_bl_reynolds    reynolds;
-        suzerain_bl_qoi         qoi;
-        suzerain_bl_pg          pg;
-        summarize_boundary_layer_nature(prof, *scenario, sg, *masslu, *b,
-                                        wall, viscous, thick,
-                                        edge, edge99,
-                                        reynolds, qoi, pg);
-
-        // Log messages using application-agnostic superclass functionality
-        this->log_quantities_boundary_layer(prefix,
-                                            &wall, &viscous, &thick,
-                                            &edge, &edge99,
-                                            &reynolds, &qoi, &pg);
-
-    } else if (grid->two_sided()) {
-
-        // Compute many details about the boundary layer for logging
-        suzerain_channel_local   wall;
-        suzerain_channel_viscous viscous;
-        suzerain_channel_local   center;
-        suzerain_channel_qoi     qoi;
-        summarize_channel_nature(prof, *scenario, *b,
-                                 wall, viscous, center, qoi);
-
-        // Log messages using application-agnostic superclass functionality
-        this->log_quantities_channel(prefix,
-                                     &wall, &viscous, &center, &qoi);
-
-    } else {
-
-        SUZERAIN_ERROR_REPORT_UNIMPLEMENTED();
-
-    }
 }
 
 void
