@@ -87,6 +87,7 @@ public:
     ((M,                 1))  /* scalar           */ \
     ((Cv,                1))  /* scalar           */ \
     ((Cp,                1))  /* scalar           */ \
+    ((gamma,             1))  /* scalar           */ \
     ((mu,                1))  /* scalar           */ \
     ((nu,                1))  /* scalar           */ \
     ((kappa,             1))  /* scalar           */ \

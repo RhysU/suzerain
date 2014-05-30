@@ -43,8 +43,9 @@ class summary():
         if self.Ns > 1:
             self.planes.extend([('bar_rho'+x                 ,'bar_rho_s'            , i     ) for i,  x     in enumerate(self.seq_ci)])
 
-        self.planes.extend([('bar_Cp' ,                   'bar_Cp' ,              None)])
         self.planes.extend([('bar_Cv' ,                   'bar_Cv' ,              None)])
+        self.planes.extend([('bar_Cp' ,                   'bar_Cp' ,              None)])
+        self.planes.extend([('bar_gamma' ,                'bar_gamma' ,           None)])
         self.planes.extend([('bar_D0' ,                   'bar_D0' ,              None)])
         self.planes.extend([('bar_E'  ,                   'bar_E'  ,              None)])
         self.planes.extend([('bar_M'  ,                   'bar_M'  ,              None)])
@@ -538,8 +539,9 @@ class summary():
                     + 0.5 * self.mean_bar_tauxy[0] * (1/self.mean_bar_mu[j] + 1/self.mean_bar_mu[j-1]) * dy)
         del dy
 
-        # Turbulent Mach based on Favre average of velocity fluctuations
-        self.Mt            = np.sqrt((self.rho_upp_upp + self.rho_vpp_vpp + self.rho_wpp_wpp)  / self.mean_bar_rho) / self.mean_bar_a
+        # Turbulent Mach based on Reynolds and Favre average of velocity fluctuations
+        self.Mt       = np.sqrt(self.up_up + self.vp_vp + self.wp_wp) / self.mean_bar_a
+        self.Mt_Favre = np.sqrt((self.rho_upp_upp + self.rho_vpp_vpp + self.rho_wpp_wpp)  / self.mean_bar_rho) / self.mean_bar_a
 
         # Prandtl Mixing length
         self.mixing_length =  np.sqrt(np.abs(-self.fav_upp_vpp)) / self.dy(self.mean_bar_u)
@@ -550,22 +552,25 @@ class summary():
         self.Prt = kappa_u / kappa_T
         del kappa_u, kappa_T
 
+        # Total temperature, calorically perfect gas
+        self.CP_Ttotal = self.mean_bar_T + 0.5 * (self.mean_bar_u_u + self.mean_bar_v_v + self.mean_bar_w_w) / self.mean_bar_Cp
+
         # Strong Reynolds Analogy(ies)
         # ... evaluated through the convenience quantity G of
         # ... Morinishi etal, JFM, 2004
-        def G_function(g=0, h=1):
+        def CP_G_function(g=0, h=1):
             num        = np.sqrt(self.Tp_Tp) / self.mean_bar_T
-            den        = (self.mean_gamma-1) * np.power(self.mean_bar_M,2) * np.sqrt(self.up_up) / self.mean_bar_u
-            ghfactor   = h * np.abs(g * self.dy(self.Ttotal) / self.dy(self.mean_bar_T) - 1)
+            den        = (self.mean_bar_gamma-1) * np.power(self.mean_bar_M,2) * np.sqrt(self.up_up) / self.mean_bar_u
+            ghfactor   = h * np.abs(g * self.dy(self.CP_Ttotal) / self.dy(self.mean_bar_T) - 1)
             return num / den * ghfactor
         # -- Reynolds (original)
-        self.G_SRA  = G_function()
+        self.CP_G_SRA  = CP_G_function()
         # -- Gaviglio (1987)
-        self.G_GSRA = G_function(g=1, h=1)
+        self.CP_G_GSRA = CP_G_function(g=1, h=1)
         # -- Rubesin  (1990)
-        self.G_RSRA = G_function(g=1, h=1.34)
+        self.CP_G_RSRA = CP_G_function(g=1, h=1.34)
         # -- Huang    (1990)
-        self.G_HSRA = G_function(g=1, h=self.Prt)
+        self.CP_G_HSRA = CP_G_function(g=1, h=self.Prt)
 
         # Turbulent kinetic energy
         self.rhok = 0.5 * (self.rho_upp_upp + self.rho_vpp_vpp + self.rho_wpp_wpp)
@@ -986,7 +991,7 @@ def main(argv=None):
     try:
         try:
             opts, args = getopt.getopt(argv[1:], "h", ["help"])
-        except getopt.error as msg:
+        except getopt.error, msg:
             raise Usage(msg)
         for o, a in opts:
             if o in ("-h", "--help"):
@@ -995,7 +1000,7 @@ def main(argv=None):
         if len(args) < 1:
             print >>sys.stderr, "Incorrect number of arguments.  See --help."
             return 2
-    except Usage as err:
+    except Usage, err:
         print >>sys.stderr, err.msg
         return 2
 

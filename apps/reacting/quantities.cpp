@@ -710,6 +710,8 @@ quantities sample_quantities(
 
                 sum_Cp[0](Cp);
 
+                sum_gamma[0](Cp/Cv);
+
                 sum_mu[0](mu);
 
                 sum_nu[0](mu / rho);
