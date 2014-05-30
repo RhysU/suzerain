@@ -1448,6 +1448,60 @@ collect_instantaneous(const definition_scenario &scenario,
     inst *= dgrid.chi();
 }
 
+void
+compute_fluctuations(const bsplineop& cop,
+                     const bsplineop_lu &masslu,
+                     const instantaneous& inst,
+                     ArrayX6r &reynolds,
+                     ArrayX6r &favre,
+                     ArrayX3r &prodterms)
+{
+    // Compute Reynolds-averaged velocity fluctuations
+    reynolds.resize(inst.rows(), NoChange);
+    reynolds.col(0) = inst.uu() - inst.u().square();
+    reynolds.col(1) = inst.uv() - inst.u()*inst.v();
+    reynolds.col(2) = inst.uw() - inst.u()*inst.w();
+    reynolds.col(3) = inst.vv() - inst.v().square();
+    reynolds.col(4) = inst.vw() - inst.v()*inst.w();
+    reynolds.col(5) = inst.ww() - inst.w().square();
+
+    // Prepare pointwise \bar{\rho} \widetilde{u_i'' u_j''}
+    // which is NOT the final result for the method
+    favre.resize(inst.rows(), NoChange);
+    favre.col(0)=(inst.rhouu() - inst.rhou().square()   /inst.rho());
+    favre.col(1)=(inst.rhouv() - inst.rhou()*inst.rhov()/inst.rho());
+    favre.col(2)=(inst.rhouw() - inst.rhou()*inst.rhow()/inst.rho());
+    favre.col(3)=(inst.rhovv() - inst.rhov().square()   /inst.rho());
+    favre.col(4)=(inst.rhovw() - inst.rhov()*inst.rhow()/inst.rho());
+    favre.col(5)=(inst.rhovw() - inst.rhow().square()   /inst.rho());
+
+    // Compute the three separate contributions to production:
+    //     - \bar{\rho} \widetilde{u''\otimes{}u''} : \nabla\tilde{u} =
+    //         - bar_rho(y)*(    tilde_upp_vpp*tilde_u__y
+    //                         + tilde_vpp_vpp*tilde_v__y
+    //                         + tilde_vpp_wpp*tilde_w__y )
+    //
+    // Begin by forming pointwise \partial_y \tilde{u}_i
+    prodterms.resize(inst.rows(), NoChange);
+    prodterms.col(0) = inst.rhou();
+    prodterms.col(1) = inst.rhov();
+    prodterms.col(2) = inst.rhow();
+    prodterms.colwise() /= inst.rho();
+    masslu.solve(prodterms.cols(), prodterms.data(),
+                 prodterms.innerStride(), prodterms.outerStride());
+    cop.apply(1, prodterms.cols(), 1.0, prodterms.data(),
+              prodterms.innerStride(), prodterms.outerStride());
+    // End by scaling with the relevant fluctuation data.
+    // Notice \bar{\rho} already present in contents of tmp.
+    prodterms.col(0) *= - favre.col(1);
+    prodterms.col(1) *= - favre.col(3);
+    prodterms.col(2) *= - favre.col(4);
+
+    // Divide \bar{\rho} \widetilde{u_i'' u_j''} by \bar{\rho}
+    // to get the desired Favre-averaged fluctuations.
+    favre.colwise() /= inst.rho();
+}
+
 void summarize_boundary_layer_nature(
         const profile &prof,
         const definition_scenario &scenario,

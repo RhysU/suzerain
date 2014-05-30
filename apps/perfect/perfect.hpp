@@ -208,9 +208,9 @@ collect_instantaneous(const definition_scenario &scenario,
 
 
 /**
- * Compute Reynolds-averaged and Favre-averaged fluctuation profiles as well as
- * profiles of the three contributions to the TKE production term.  Wall-normal
- * information is stored in the fast direction.
+ * Compute pointwise Reynolds-averaged and Favre-averaged fluctuation profiles
+ * as well as profiles of the three contributions to the TKE production term.
+ * Wall-normal information is stored in the fast direction.
  *
  * @param[in]  cop       Collocation-based operators.
  * @param[in]  masslu    A factored mass matrix corresponding to \c cop.
