@@ -284,6 +284,7 @@ driver::log_quantities_of_interest(
     }
 
     // Fluctuations only make sense to log when either X or Z is nontrivial
+    // TODO Extract this into its own method as the logic is too long.
     const bool nontrivial_fluct_possible = grid->N.x() * grid->N.z() > 1;
     if (nontrivial_fluct_possible) {
 
@@ -291,7 +292,7 @@ driver::log_quantities_of_interest(
         const VectorXr bulk = support::compute_bulk_weights(*b, *masslu);
 
         // Columns index uu uv uw vv vw ww
-        MatrixX6r tmp(inst.rows(), 6);
+        ArrayX6r tmp(inst.rows(), 6);
 
         // Prepare bulk of Reynolds-averaged velocity fluctuations
         tmp.col(0) = inst.uu() - inst.u().square();
@@ -302,10 +303,52 @@ driver::log_quantities_of_interest(
         tmp.col(5) = inst.ww() - inst.w().square();
         masslu->solve(tmp.cols(), tmp.data(),
                       tmp.innerStride(), tmp.outerStride());
-        const Vector6r reynolds = bulk.transpose()*tmp;
+        const Array6r reynolds = bulk.transpose()*tmp.matrix();
+
+        // Prepare pointwise \bar{\rho} \widetilde{u_i'' u_j''}
+        tmp.col(0)=(inst.rhouu() - inst.rhou().square()    /inst.rho());
+        tmp.col(1)=(inst.rhouv() - inst.rhou()*inst.rhov()/inst.rho());
+        tmp.col(2)=(inst.rhouw() - inst.rhou()*inst.rhow()/inst.rho());
+        tmp.col(3)=(inst.rhovv() - inst.rhov().square()    /inst.rho());
+        tmp.col(4)=(inst.rhovw() - inst.rhov()*inst.rhow()/inst.rho());
+        tmp.col(5)=(inst.rhovw() - inst.rhow().square()    /inst.rho());
+
+        // Compute the three separate contributions to production:
+        //     - \bar{\rho} \widetilde{u''\otimes{}u''} : \nabla\tilde{u} =
+        //         - bar_rho(y)*(    tilde_upp_vpp*tilde_u__y
+        //                         + tilde_vpp_vpp*tilde_v__y
+        //                         + tilde_vpp_wpp*tilde_w__y )
+        //
+        // First form pointwise \partial_y \tilde{u}_i
+        ArrayX3r prodterms(inst.rows(), 3);
+        prodterms.col(0) = inst.rhou();
+        prodterms.col(1) = inst.rhov();
+        prodterms.col(2) = inst.rhow();
+        prodterms.colwise() /= inst.rho();
+        masslu->solve(prodterms.cols(), prodterms.data(),
+                      prodterms.innerStride(), prodterms.outerStride());
+        cop->apply(1, prodterms.cols(), 1.0, prodterms.data(),
+                   prodterms.innerStride(), prodterms.outerStride());
+        // Now, incorporate the fluctuation scaling factors.
+        // Notice \bar{\rho} already present in contents of tmp.
+        prodterms.col(0) *= - tmp.col(1);
+        prodterms.col(1) *= - tmp.col(3);
+        prodterms.col(2) *= - tmp.col(4);
+        // Find coefficient representation of each contribution
+        // (Could sum then invert, but choosing this route to avoid temporary)
+        masslu->solve(prodterms.cols(), prodterms.data(),
+                      prodterms.innerStride(), prodterms.outerStride());
+        // Now compute the bulk from the three separate contributions
+        // (Could sum then multiply, but Eigen syntax is defeating me)
+        const real_t production = (bulk.transpose()*prodterms.matrix()).sum();
 
         // Prepare bulk of Favre-averaged velocity fluctuations
-        // FIXME STARTHERE Redmine #3111
+        // which is just a rescaling of the contents of tmp.
+        tmp.colwise() /= inst.rho();
+        masslu->solve(tmp.cols(), tmp.data(),
+                      tmp.innerStride(), tmp.outerStride());
+        const Array6r favre = bulk.transpose()*tmp.matrix();
+
     }
 
     // Prepare and log geometry-specific quantities of interest
