@@ -269,13 +269,14 @@ void driver::log_quantities_of_interest(
 // Often-reused logic to show a "prefix uu uv uw vv vw ww" header just once
 template <class Logger>
 static void
-maybe_prefix_stresses(const std::string& prefix,
+maybe_prefix_stresses(driver &d,
+                      const std::string& prefix,
                       Logger& log,
                       bool& shown)
 {
     if (!shown) {
         std::ostringstream msg;
-        msg << prefix
+        msg << std::setw(prefix.size()) << d.build_timeprefix_description()
             << ' ' << std::setw(fullprec<>::width) << "uu"
             << ' ' << std::setw(fullprec<>::width) << "uv"
             << ' ' << std::setw(fullprec<>::width) << "uw"
@@ -290,13 +291,14 @@ maybe_prefix_stresses(const std::string& prefix,
 // Often-reused logic to show a "prefix total u v w" header just once
 template <class Logger>
 static void
-maybe_prefix_prodterm(const std::string& prefix,
+maybe_prefix_prodterm(driver &d,
+                      const std::string& prefix,
                       Logger& log,
                       bool& shown)
 {
     if (!shown) {
         std::ostringstream msg;
-        msg << prefix
+        msg << std::setw(prefix.size()) << d.build_timeprefix_description()
             << ' ' << std::setw(fullprec<>::width) << "total"
             << ' ' << std::setw(fullprec<>::width) << "u"
             << ' ' << std::setw(fullprec<>::width) << "v"
@@ -387,7 +389,7 @@ driver::log_quantities_of_interest(
         // Log a whole slew of information about turbulent production
         {
             const std::string name("prod.bulk");
-            maybe_prefix_prodterm(prefix, name, header_shown[name]);
+            maybe_prefix_prodterm(*this, prefix, name, header_shown[name]);
             std::ostringstream msg;
             msg << prefix
                 << ' ' << fullprec<>(production(0,0))
@@ -398,7 +400,7 @@ driver::log_quantities_of_interest(
         }
         {
             const std::string name("prod.max");
-            maybe_prefix_prodterm(prefix, name, header_shown[name]);
+            maybe_prefix_prodterm(*this, prefix, name, header_shown[name]);
             std::ostringstream msg;
             msg << prefix
                 << ' ' << fullprec<>(max_production[0])
@@ -409,7 +411,7 @@ driver::log_quantities_of_interest(
         }
         {
             const std::string name("prod.ymax");
-            maybe_prefix_prodterm(prefix, name, header_shown[name]);
+            maybe_prefix_prodterm(*this, prefix, name, header_shown[name]);
             std::ostringstream msg;
             msg << prefix
                 << ' ' << fullprec<>(ymax_production[0])
@@ -423,7 +425,7 @@ driver::log_quantities_of_interest(
         // Reynolds and then Favre to ease impromptu comparison
         {
             const std::string name("reyno.bulk");
-            maybe_prefix_stresses(prefix, name, header_shown[name]);
+            maybe_prefix_stresses(*this, prefix, name, header_shown[name]);
             std::ostringstream msg;
             msg << prefix
                 << ' ' << fullprec<>(reynolds(0,0))
@@ -436,7 +438,7 @@ driver::log_quantities_of_interest(
         }
         {
             const std::string name("favre.bulk");
-            maybe_prefix_stresses(prefix, name, header_shown[name]);
+            maybe_prefix_stresses(*this, prefix, name, header_shown[name]);
             std::ostringstream msg;
             msg << prefix
                 << ' ' << fullprec<>(favre(0,0))
@@ -452,7 +454,7 @@ driver::log_quantities_of_interest(
         // Reynolds and then Favre to ease impromptu comparison
         {
             const std::string name("reyno.max");
-            maybe_prefix_stresses(prefix, name, header_shown[name]);
+            maybe_prefix_stresses(*this, prefix, name, header_shown[name]);
             std::ostringstream msg;
             msg << prefix
                 << ' ' << fullprec<>(max_reynolds[0])
@@ -465,7 +467,7 @@ driver::log_quantities_of_interest(
         }
         {
             const std::string name("favre.max");
-            maybe_prefix_stresses(prefix, name, header_shown[name]);
+            maybe_prefix_stresses(*this, prefix, name, header_shown[name]);
             std::ostringstream msg;
             msg << prefix
                 << ' ' << fullprec<>(max_favre[0])
@@ -481,7 +483,7 @@ driver::log_quantities_of_interest(
         // Reynolds and then Favre to ease impromptu comparison
         {
             const std::string name("reyno.ymax");
-            maybe_prefix_stresses(prefix, name, header_shown[name]);
+            maybe_prefix_stresses(*this, prefix, name, header_shown[name]);
             std::ostringstream msg;
             msg << prefix
                 << ' ' << fullprec<>(ymax_reynolds[0])
@@ -494,7 +496,7 @@ driver::log_quantities_of_interest(
         }
         {
             const std::string name("favre.ymax");
-            maybe_prefix_stresses(prefix, name, header_shown[name]);
+            maybe_prefix_stresses(*this, prefix, name, header_shown[name]);
             std::ostringstream msg;
             msg << prefix
                 << ' ' << fullprec<>(ymax_favre[0])
