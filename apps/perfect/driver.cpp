@@ -46,6 +46,7 @@
 #include <suzerain/support/logging.hpp>
 #include <suzerain/support/support.hpp>
 
+#include "instantaneous.hpp"
 #include "perfect.hpp"
 
 namespace suzerain {
@@ -253,20 +254,23 @@ void driver::log_quantities_of_interest(
     // Otherwise compute from instantaneous fields stored in state_linear
     shared_ptr<operator_tools> otool = obtain_operator_tools();
     profile prof;
+    instantaneous inst;
     if (controller && mean && mean->t == t) {
         prof = *mean;
+        inst.copy_from(*cop, *mean);
     } else {
         state_nonlinear->assign_from(*state_linear);
-        prof = *take_profile(*scenario, *otool, *state_nonlinear);
+        prof = *take_profile(*scenario, *otool, *state_nonlinear, inst);
     }
 
-    this->log_quantities_of_interest(timeprefix, prof);
+    this->log_quantities_of_interest(timeprefix, prof, inst);
 }
 
 void
 driver::log_quantities_of_interest(
         const std::string& prefix,
-        const profile& prof)
+        const profile& prof,
+        const instantaneous& inst)
 {
     if (grid->one_sided()) {
 

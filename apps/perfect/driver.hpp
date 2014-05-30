@@ -166,7 +166,8 @@ public:
      */
     virtual void log_quantities_of_interest(
             const std::string& prefix,
-            const profile& prof);
+            const profile& prof,
+            const instantaneous& inst);
 
     /**
      * Collectively compute statistics from #state_linear saving them into

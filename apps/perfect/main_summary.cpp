@@ -71,11 +71,14 @@ struct driver_summary : public driver
                          final.nongrid().innerStride(),
                          final.nongrid().outerStride());
 
-            // Compute QoI given final profile in coefficient form
+            // Compute QoI given final profile information
             profile prof;
             prof = final;
+            instantaneous inst;
+            inst = final;
             log_quantities_of_interest(
-                    build_timeprefix_description("summary", "summary"), prof);
+                    build_timeprefix_description("summary", "summary"),
+                    prof, inst);
         }
 
         return status;
