@@ -126,6 +126,7 @@ SUZERAIN_GCC_DIAG_OFF(unused-variable);
 #include <boost/swap.hpp>
 #include <boost/typeof/typeof.hpp>
 #include <boost/type_traits.hpp>
+#include <boost/unordered_map.hpp>
 #include <boost/utility.hpp>
 
 // If possible, stop suppressing warnings from Eigen and Boost headers

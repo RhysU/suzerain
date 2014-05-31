@@ -811,7 +811,7 @@ protected:
      * Keys are logging-related header names, e.g. "state.RMS", with the value
      * indicating if the header has been output.
      */
-    std::map<std::string,bool> header_shown;
+    boost::unordered_map<std::string,bool> header_shown;
 
     /** Wall time elapsed during loading of state from the restart file */
     double wtime_load_restart;
