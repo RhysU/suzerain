@@ -336,33 +336,38 @@ driver::log_quantities_of_interest(
         ArrayX3r prodterms;
         compute_fluctuations(*cop, *masslu, inst, reynolds, favre, prodterms);
 
-        // Find maximum term-by-term values and locations for those maximums
-        Array6r max_reynolds, ymax_reynolds;
+        // Find absolute of maximum of columns (with signed results)
+        // as well as the locations for those maximums.
+        Array6r amax_reynolds, yamax_reynolds;
         for (int j = 0; j < reynolds.cols(); ++j) {
             ArrayX6r::Index ndx;
-            max_reynolds[j]  = reynolds.col(j).maxCoeff(&ndx);
-            ymax_reynolds[j] = b->collocation_point(static_cast<int>(ndx));
+            reynolds.col(j).abs().maxCoeff(&ndx);
+            amax_reynolds[j]  = reynolds.col(j)[ndx];
+            yamax_reynolds[j] = b->collocation_point(static_cast<int>(ndx));
         }
-        Array6r max_favre, ymax_favre;
+        Array6r amax_favre, yamax_favre;
         for (int j = 0; j < favre.cols(); ++j) {
             ArrayX6r::Index ndx;
-            max_favre[j]  = favre.col(j).maxCoeff(&ndx);
-            ymax_favre[j] = b->collocation_point(static_cast<int>(ndx));
+            favre.col(j).abs().maxCoeff(&ndx);
+            amax_favre[j]  = favre.col(j)[ndx];
+            yamax_favre[j] = b->collocation_point(static_cast<int>(ndx));
         }
-        Array3r max_prodterms, ymax_prodterms;
+        Array3r amax_prodterms, yamax_prodterms;
         for (int j = 0; j < prodterms.cols(); ++j) {
             ArrayX3r::Index ndx;
-            max_prodterms[j]  = prodterms.col(j).maxCoeff(&ndx);
-            ymax_prodterms[j] = b->collocation_point(static_cast<int>(ndx));
+            prodterms.col(j).abs().maxCoeff(&ndx);
+            amax_prodterms[j]  = prodterms.col(j)[ndx];
+            yamax_prodterms[j] = b->collocation_point(static_cast<int>(ndx));
         }
 
         // Compute derived information about overall production
         ArrayX1r production = prodterms.rowwise().sum();
-        Array1r max_production, ymax_production;
+        Array1r amax_production, yamax_production;
         for (int j = 0; j < production.cols(); ++j) {
             ArrayX1r::Index ndx;
-            max_production[j]  = production.col(j).maxCoeff(&ndx);
-            ymax_production[j] = b->collocation_point(static_cast<int>(ndx));
+            production.col(j).abs().maxCoeff(&ndx);
+            amax_production[j]  = production.col(j)[ndx];
+            yamax_production[j] = b->collocation_point(static_cast<int>(ndx));
         }
 
         // Find coefficient representations from collocation point values
@@ -399,25 +404,25 @@ driver::log_quantities_of_interest(
             INFO0(name, msg.str());
         }
         {
-            const std::string name("prod.max");
+            const std::string name("prod.amax");
             maybe_prefix_prodterm(*this, prefix, name, header_shown[name]);
             std::ostringstream msg;
             msg << prefix
-                << ' ' << fullprec<>(max_production[0])
-                << ' ' << fullprec<>(max_prodterms[0])
-                << ' ' << fullprec<>(max_prodterms[1])
-                << ' ' << fullprec<>(max_prodterms[2]);
+                << ' ' << fullprec<>(amax_production[0])
+                << ' ' << fullprec<>(amax_prodterms[0])
+                << ' ' << fullprec<>(amax_prodterms[1])
+                << ' ' << fullprec<>(amax_prodterms[2]);
             INFO0(name, msg.str());
         }
         {
-            const std::string name("prod.ymax");
+            const std::string name("prod.yamax");
             maybe_prefix_prodterm(*this, prefix, name, header_shown[name]);
             std::ostringstream msg;
             msg << prefix
-                << ' ' << fullprec<>(ymax_production[0])
-                << ' ' << fullprec<>(ymax_prodterms[0])
-                << ' ' << fullprec<>(ymax_prodterms[1])
-                << ' ' << fullprec<>(ymax_prodterms[2]);
+                << ' ' << fullprec<>(yamax_production[0])
+                << ' ' << fullprec<>(yamax_prodterms[0])
+                << ' ' << fullprec<>(yamax_prodterms[1])
+                << ' ' << fullprec<>(yamax_prodterms[2]);
             INFO0(name, msg.str());
         }
 
@@ -453,58 +458,58 @@ driver::log_quantities_of_interest(
         // Log information about maximum pointwise fluctuations
         // Reynolds and then Favre to ease impromptu comparison
         {
-            const std::string name("reyno.max");
+            const std::string name("reyno.amax");
             maybe_prefix_stresses(*this, prefix, name, header_shown[name]);
             std::ostringstream msg;
             msg << prefix
-                << ' ' << fullprec<>(max_reynolds[0])
-                << ' ' << fullprec<>(max_reynolds[1])
-                << ' ' << fullprec<>(max_reynolds[2])
-                << ' ' << fullprec<>(max_reynolds[3])
-                << ' ' << fullprec<>(max_reynolds[4])
-                << ' ' << fullprec<>(max_reynolds[5]);
+                << ' ' << fullprec<>(amax_reynolds[0])
+                << ' ' << fullprec<>(amax_reynolds[1])
+                << ' ' << fullprec<>(amax_reynolds[2])
+                << ' ' << fullprec<>(amax_reynolds[3])
+                << ' ' << fullprec<>(amax_reynolds[4])
+                << ' ' << fullprec<>(amax_reynolds[5]);
             INFO0(name, msg.str());
         }
         {
-            const std::string name("favre.max");
+            const std::string name("favre.amax");
             maybe_prefix_stresses(*this, prefix, name, header_shown[name]);
             std::ostringstream msg;
             msg << prefix
-                << ' ' << fullprec<>(max_favre[0])
-                << ' ' << fullprec<>(max_favre[1])
-                << ' ' << fullprec<>(max_favre[2])
-                << ' ' << fullprec<>(max_favre[3])
-                << ' ' << fullprec<>(max_favre[4])
-                << ' ' << fullprec<>(max_favre[5]);
+                << ' ' << fullprec<>(amax_favre[0])
+                << ' ' << fullprec<>(amax_favre[1])
+                << ' ' << fullprec<>(amax_favre[2])
+                << ' ' << fullprec<>(amax_favre[3])
+                << ' ' << fullprec<>(amax_favre[4])
+                << ' ' << fullprec<>(amax_favre[5]);
             INFO0(name, msg.str());
         }
 
         // Log information about the location of maximum pointwise fluctuations
         // Reynolds and then Favre to ease impromptu comparison
         {
-            const std::string name("reyno.ymax");
+            const std::string name("reyno.yamax");
             maybe_prefix_stresses(*this, prefix, name, header_shown[name]);
             std::ostringstream msg;
             msg << prefix
-                << ' ' << fullprec<>(ymax_reynolds[0])
-                << ' ' << fullprec<>(ymax_reynolds[1])
-                << ' ' << fullprec<>(ymax_reynolds[2])
-                << ' ' << fullprec<>(ymax_reynolds[3])
-                << ' ' << fullprec<>(ymax_reynolds[4])
-                << ' ' << fullprec<>(ymax_reynolds[5]);
+                << ' ' << fullprec<>(yamax_reynolds[0])
+                << ' ' << fullprec<>(yamax_reynolds[1])
+                << ' ' << fullprec<>(yamax_reynolds[2])
+                << ' ' << fullprec<>(yamax_reynolds[3])
+                << ' ' << fullprec<>(yamax_reynolds[4])
+                << ' ' << fullprec<>(yamax_reynolds[5]);
             INFO0(name, msg.str());
         }
         {
-            const std::string name("favre.ymax");
+            const std::string name("favre.yamax");
             maybe_prefix_stresses(*this, prefix, name, header_shown[name]);
             std::ostringstream msg;
             msg << prefix
-                << ' ' << fullprec<>(ymax_favre[0])
-                << ' ' << fullprec<>(ymax_favre[1])
-                << ' ' << fullprec<>(ymax_favre[2])
-                << ' ' << fullprec<>(ymax_favre[3])
-                << ' ' << fullprec<>(ymax_favre[4])
-                << ' ' << fullprec<>(ymax_favre[5]);
+                << ' ' << fullprec<>(yamax_favre[0])
+                << ' ' << fullprec<>(yamax_favre[1])
+                << ' ' << fullprec<>(yamax_favre[2])
+                << ' ' << fullprec<>(yamax_favre[3])
+                << ' ' << fullprec<>(yamax_favre[4])
+                << ' ' << fullprec<>(yamax_favre[5]);
             INFO0(name, msg.str());
         }
     }
