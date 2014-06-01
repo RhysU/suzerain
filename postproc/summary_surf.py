@@ -9,6 +9,7 @@ Options:
     -o OUTSUFFIX  Save the output file DATASET.OUTSUFFIX instead of displaying
     -r RSTRIDE    Downsample by providing rstride=RSTRIDE to plot_surface
     -t TITLE      Set the specified plot title
+    -C LEVELS     Instead of drawing surfaces, plot LEVELS contours.
     -T LO,HI      Limit plot extents to /t in [LO, HI]
     -Y LO,HI      Limit plot extents to /y in [LO, HI]
     -Z LO,HI      Limit plot extents to data values in [LO, HI]
@@ -35,14 +36,26 @@ def surface(y, t, ytplane, kwargs={}):
     fig  = plt.figure()
     ax   = fig.gca(projection='3d')
     Y, T = np.meshgrid(y, t)
-    surf = ax.plot_surface(Y, T, ytplane,
+    plot = ax.plot_surface(Y, T, ytplane,
                            vmin=np.min(ytplane), vmax=np.max(ytplane),
                            **kwargs)
     if 'cmap' in kwargs:
-        cbar = fig.colorbar(surf)
+        cbar = fig.colorbar(plot)
     else:
         cbar = None
-    return (fig, ax, surf, cbar)
+    return (fig, ax, plot, cbar)
+
+
+def contour(y, t, ytplane, levels, kwargs={}):
+    fig  = plt.figure()
+    ax   = fig.gca()
+    Y, T = np.meshgrid(y, t)
+    plot = ax.contourf(Y, T, ytplane, levels, **kwargs)
+    if 'cmap' in kwargs:
+        cbar = fig.colorbar(plot)
+    else:
+        cbar = None
+    return (fig, ax, plot, cbar)
 
 
 def main(argv=None):
@@ -56,13 +69,14 @@ def main(argv=None):
     linewidth = 0
     outsuffix = None
     rstride   = 1
+    levels    = 0
     title     = None
     textents  = (-np.inf, np.inf)
     yextents  = (-np.inf, np.inf)
     zextents  = None
     try:
         try:
-            opts, args = getopt.getopt(argv[1:], "c:hl:o:r:t:T:Y:Z:", ["help"])
+            opts, args = getopt.getopt(argv[1:], "c:hl:o:r:t:C:T:Y:Z:", ["help"])
         except getopt.error as msg:
             raise Usage(msg)
         for o, a in opts:
@@ -79,6 +93,8 @@ def main(argv=None):
                 rstride = int(a)
             elif o == "-t":
                 title = a
+            elif o == "-C":
+                levels = int(a)
             elif o == "-T":
                 textents = tuple(float(r) for r in a.split(','))
             elif o == "-Y":
@@ -116,15 +132,21 @@ def main(argv=None):
             dataset[dataset > zextents[1]] = np.nan
 
         # Plot, annotate, and possibly save
-        fig, ax, surf, cbar = surface(y, t, dataset, {
-                                       'cstride'  : cstride
-                                     , 'rstride'  : rstride
-                                     , 'cmap'     : matplotlib.cm.RdYlBu_r
-                                     , 'linewidth': linewidth
-                                     })
+        if (levels == 0):
+            fig, ax, plot, cbar = surface(y, t, dataset, {
+                                          'cstride'  : cstride
+                                        , 'rstride'  : rstride
+                                        , 'cmap'     : matplotlib.cm.RdYlBu_r
+                                        , 'linewidth': linewidth
+                                        })
+            ax.set_zlabel(dataname)
+        else:
+            fig, ax, plot, cbar = contour(y, t, dataset, levels, {
+                                          'cmap'     : matplotlib.cm.RdYlBu_r
+                                        , 'linewidth': linewidth
+                                        })
         ax.set_xlabel('Wall-normal distance')
         ax.set_ylabel('Simulation time')
-        ax.set_zlabel(dataname)
         if title:
             ax.set_title(title)
         if outsuffix:
