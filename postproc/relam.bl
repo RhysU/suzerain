@@ -1,6 +1,6 @@
 #!/bin/bash
-# Use gplot to quickly plot relaminarization tracking quantities versus time in
-# one or more directories.  Useful in conjunction with job management scripts.
+# Use gplot to plot turbulent quantities versus time in given directories to
+# assess relaminarization.  Useful in conjunction with job management scripts.
 
 declare -a state qoi bc log
 for dir in "$@"; do

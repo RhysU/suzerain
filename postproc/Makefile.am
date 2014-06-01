@@ -16,8 +16,8 @@ postproc_SCRIPTS += relam.bl
 postproc_SCRIPTS += remove_hdf5.py
 postproc_SCRIPTS += rename_hdf5.py
 postproc_SCRIPTS += sgr2suz.py
-postproc_SCRIPTS += sniff.bl
 postproc_SCRIPTS += spectra.py
+postproc_SCRIPTS += stationary.bl
 postproc_SCRIPTS += summary_surf.py
 
 # Required for AX_AM_MACROS
