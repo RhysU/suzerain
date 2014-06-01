@@ -1,9 +1,12 @@
 #!/usr/bin/env python
-"""Usage: summary_surf.py [OPTIONS...] H5SUMMARY DATASET...
-Produce surface plots for each named DATASET in the file H5SUMMARY.
+"""Usage: summary_surf.py    [OPTIONS...] H5SUMMARY DATASET...
+          summary_surf.py -f [OPTIONS...] H5SUMMARY DATASET1 DATASET2 DATASET3
+The first form produces surfaces for each named DATASET in the file H5SUMMARY.
+The second form plots DATASET1 - DATASET2*DATASET3 which can show fluctuations.
 
 Options:
     -c CSTRIDE    Downsample by providing cstride=CSTRIDE to plot_surface
+    -f            Plot fluctuating quantities using the second invocation type
     -h            Display this help message and exit
     -l LINEWIDTH  Set a non-zero linewidth=LINEWIDTH to plot_surface
     -o OUTSUFFIX  Save the output file DATASET.OUTSUFFIX instead of displaying
@@ -66,6 +69,7 @@ def main(argv=None):
 
     # Parse and check incoming command line arguments
     cstride   = 1
+    fluct     = False
     linewidth = 0
     outsuffix = None
     rstride   = 1
@@ -76,12 +80,15 @@ def main(argv=None):
     zextents  = None
     try:
         try:
-            opts, args = getopt.getopt(argv[1:], "c:hl:o:r:t:C:T:Y:Z:", ["help"])
+            opts, args = getopt.getopt(argv[1:],
+                                       "c:fhl:o:r:t:C:T:Y:Z:", ["help"])
         except getopt.error as msg:
             raise Usage(msg)
         for o, a in opts:
             if   o == "-c":
                 cstride = int(a)
+            if   o == "-f":
+                fluct = True
             elif o in ("-h", "--help"):
                 print(__doc__)
                 return 0
@@ -101,9 +108,14 @@ def main(argv=None):
                 yextents = tuple(float(r) for r in a.split(','))
             elif o == "-Z":
                 zextents = tuple(float(r) for r in a.split(','))
-        if len(args) < 2:
-            print("Too few arguments.  See --help.", file=sys.stderr)
-            return 1
+        if fluct:
+            if len(args) != 4:
+                print("Incorrect argument count.  See --help.", file=sys.stderr)
+                return 1
+        else:
+            if len(args) < 2:
+                print("Too few arguments.  See --help.", file=sys.stderr)
+                return 1
     except Usage as err:
         print(err.msg, file=sys.stderr)
         return 2
@@ -112,7 +124,7 @@ def main(argv=None):
     was_interactive = plt.isinteractive()
     plt.interactive(False)
 
-    # Open the HDF5 file, read, and then plot each dataset in turn
+    # Open the HDF5 file and read extent information
     # (Attempting to trim loaded data to be as small as possible)
     h5file = h5py.File(args[0], 'r')
     y      = h5file['/y'][()]
@@ -123,15 +135,29 @@ def main(argv=None):
     tb     = np.nonzero(t > textents[0])[0][ 0]
     te     = np.nonzero(t < textents[1])[0][-1]
     t      = t[tb:te+1]
-    for dataname in args[1:]:
 
-        # Load, truncating any irrelevant range or values
-        dataset = h5file[dataname][tb:te+1, yb:ye+1]
+    # Load everything, truncating any irrelevant range or values
+    data, name = [], []
+    for arg in args[1:]:
+        data.append(h5file[arg][tb:te+1, yb:ye+1])
+        name.append(arg)
         if zextents:
-            dataset[dataset < zextents[0]] = np.nan
-            dataset[dataset > zextents[1]] = np.nan
+            data[-1][data[-1] < zextents[0]] = np.nan
+            data[-1][data[-1] > zextents[1]] = np.nan
 
-        # Plot, annotate, and possibly save
+    # Compute derived fluctuating dataset, if requested
+    if fluct:
+        data3, name3 = data.pop(), name.pop()
+        data2, name2 = data.pop(), name.pop()
+        data1, name1 = data.pop(), name.pop()
+        assert len(data) == 0
+        assert len(name) == 0
+        data.append(data1 - data2*data3)
+        name.append("%s-%s*%s" % (name1, name2, name3))
+
+    # Plot each dataset, annotating, and possibly saving
+    for dataname, dataset in zip(name, data):
+
         if (levels == 0):
             fig, ax, plot, cbar = surface(y, t, dataset, {
                                           'cstride'  : cstride
