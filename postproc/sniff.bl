@@ -14,11 +14,12 @@ for dir in "$@"; do
     fi
 done
 
-gplot -il -g state.L2  -y state.L2  -f i=6:10 u 4:i w l ::: "${state[@]}"
-gplot -i  -g state.RMS -y state.RMS -f i=6:10 u 4:i w l ::: "${state[@]}"
-gplot -i  -g state.max -y state.max -f i=6:10 u 4:i w l ::: "${state[@]}"
-gplot -i  -g state.min -y state.min -f i=6:10 u 4:i w l ::: "${state[@]}"
+gplot -g state.L2  -y "L2 rho_E"           using 4:6  with l ::: "${state[@]}" &
+gplot -g state.RMS -y state.RMS  -f i=6:10 using 4:i  with l ::: "${state[@]}" &
+gplot -g state.max -y state.max  -f i=6:10 using 4:i  with l ::: "${state[@]}" &
+gplot -g state.min -y state.min  -f i=6:10 using 4:i  with l ::: "${state[@]}" &
 
-gplot -i  -g bl.thick -y bl.thick   -f i=6:11 u 4:i  w l ::: "${qoi[@]}"
-gplot -i  -g bl.Re    -y Re_delta2            u 4:8  w l ::: "${qoi[@]}"
-gplot -i  -g bl.qoi   -y Re_tau               u 4:11 w l ::: "${qoi[@]}"
+gplot -g bl.thick -y bl.thick    -f i=6:11 using 4:i  with l ::: "${qoi[@]}"   &
+gplot -g bl.Re    -y Re_delta2             using 4:8  with l ::: "${qoi[@]}"   &
+gplot -g bl.qoi   -y Re_tau                using 4:11 with l ::: "${qoi[@]}"   &
+wait
