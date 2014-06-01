@@ -11,6 +11,8 @@ for dir in "$@"; do
     fi
 done
 
+gplot -Gg bl.thick    -y shapefactor  using '4:($7/$8)'   w l ::: "${qoi[@]}" &
+
 gplot -Gg bl.visc     -y cf                    using 4:6  w l ::: "${qoi[@]}" &
 gplot -Gg bl.visc     -y Bq                    using 4:10 w l ::: "${qoi[@]}" &
 gplot -Gg bl.visc     -y v_wallplus            using 4:11 w l ::: "${qoi[@]}" &
