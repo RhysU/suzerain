@@ -35,12 +35,12 @@ class Usage(Exception):
         self.msg = msg
 
 
-def surface(y, t, ytplane, kwargs={}):
+def surface(x, y, xyplane, kwargs={}):
     fig  = plt.figure()
     ax   = fig.gca(projection='3d')
-    Y, T = np.meshgrid(y, t)
-    plot = ax.plot_surface(Y, T, ytplane,
-                           vmin=np.min(ytplane), vmax=np.max(ytplane),
+    X, Y = np.meshgrid(x, y)
+    plot = ax.plot_surface(X, Y, xyplane,
+                           vmin=np.min(xyplane), vmax=np.max(xyplane),
                            **kwargs)
     if 'cmap' in kwargs:
         cbar = fig.colorbar(plot)
@@ -49,11 +49,11 @@ def surface(y, t, ytplane, kwargs={}):
     return (fig, ax, plot, cbar)
 
 
-def contour(y, t, ytplane, levels, kwargs={}):
+def contour(x, y, xyplane, levels, kwargs={}):
     fig  = plt.figure()
     ax   = fig.gca()
-    Y, T = np.meshgrid(y, t)
-    plot = ax.contourf(Y, T, ytplane, levels, **kwargs)
+    X, Y = np.meshgrid(x, y)
+    plot = ax.contourf(X, Y, xyplane, levels, **kwargs)
     if 'cmap' in kwargs:
         cbar = fig.colorbar(plot)
     else:
@@ -165,14 +165,16 @@ def main(argv=None):
                                         , 'cmap'     : matplotlib.cm.RdYlBu_r
                                         , 'linewidth': linewidth
                                         })
+            ax.set_xlabel('Wall-normal distance')
+            ax.set_ylabel('Simulation time')
             ax.set_zlabel(dataname)
         else:
-            fig, ax, plot, cbar = contour(y, t, dataset, levels, {
+            fig, ax, plot, cbar = contour(t, y, dataset.transpose(), levels, {
                                           'cmap'     : matplotlib.cm.RdYlBu_r
                                         , 'linewidth': linewidth
                                         })
-        ax.set_xlabel('Wall-normal distance')
-        ax.set_ylabel('Simulation time')
+            ax.set_xlabel('Simulation time')
+            ax.set_ylabel('Wall-normal distance')
         if title:
             ax.set_title(title)
         if outsuffix:
