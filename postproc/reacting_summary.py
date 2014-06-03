@@ -666,6 +666,14 @@ class summary():
         self.fav_vpp_wpp_plus = self.fav_vpp_wpp / self.u_tau / self.u_tau
         self.fav_wpp_wpp_plus = self.fav_wpp_wpp / self.u_tau / self.u_tau
 
+        # Incompressible Reyolds stresses
+        self.up_up_plus = self.up_up / self.u_tau / self.u_tau
+        self.up_vp_plus = self.up_vp / self.u_tau / self.u_tau
+        self.up_wp_plus = self.up_wp / self.u_tau / self.u_tau
+        self.vp_vp_plus = self.vp_vp / self.u_tau / self.u_tau
+        self.vp_wp_plus = self.vp_wp / self.u_tau / self.u_tau
+        self.wp_wp_plus = self.wp_wp / self.u_tau / self.u_tau
+
         # y * dudy
         self.y_dudy_plus = self.y_dudy / self.u_tau
 
