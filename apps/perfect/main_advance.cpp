@@ -43,6 +43,7 @@
 #include <suzerain/support/definition_helm.hpp>
 #include <suzerain/support/definition_noise.hpp>
 #include <suzerain/support/logging.hpp>
+#include <suzerain/support/shared_esio_handle.hpp>
 
 #include "driver.hpp"
 #include "operator_hybrid_isothermal.hpp"
@@ -212,9 +213,7 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
                 = make_shared<definition_scenario>();
 
         // Load the restart details with state going into state_linear
-        shared_ptr<boost::remove_pointer<esio_handle>::type> h( // RAII
-                esio_handle_initialize(MPI_COMM_WORLD),
-                esio_handle_finalize);
+        support::shared_esio_handle h(MPI_COMM_WORLD);
         esio_file_open(h.get(), restart_file.c_str(), 0);
         restart_scenario.swap(scenario);                        // Push
         load_restart(h.get(), initial_t);

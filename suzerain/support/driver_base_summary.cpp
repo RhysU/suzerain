@@ -38,6 +38,7 @@
 #include <suzerain/support/definition_arsel.hpp>
 #include <suzerain/support/logging.hpp>
 #include <suzerain/support/program_options.hpp>
+#include <suzerain/support/shared_esio_handle.hpp>
 #include <suzerain/support/support.hpp>
 
 namespace suzerain {
@@ -158,9 +159,7 @@ driver_base::summary_run(
     // If so, load the target details per --target or positional arguments
     const bool projecting = use_dat || use_hdf5;
     if (projecting) {
-        shared_ptr<boost::remove_pointer<esio_handle>::type> h(
-                esio_handle_initialize(MPI_COMM_WORLD),
-                esio_handle_finalize);
+        shared_esio_handle h(MPI_COMM_WORLD);
 
         if (options.variables().count("target")) {
             esio_file_open(h.get(), tgtfile.c_str(), /*read-only*/0);
@@ -184,10 +183,8 @@ driver_base::summary_run(
             ++i) {
 
         // Open file from filename using a clean ESIO handle
+        shared_esio_handle h(MPI_COMM_WORLD);
         const string& filename = *i;
-        shared_ptr<boost::remove_pointer<esio_handle>::type> h(
-                esio_handle_initialize(MPI_COMM_WORLD),
-                esio_handle_finalize);
         esio_file_open(h.get(), filename.c_str(), /*read-only*/0);
 
         // Load summary, projecting as appropriate
@@ -277,9 +274,7 @@ driver_base::summary_run(
 
         // Create output file and store metadata per base class
         DEBUG0(who, "Creating file " << hdffile);
-        shared_ptr<boost::remove_pointer<esio_handle>::type> h(
-                esio_handle_initialize(MPI_COMM_WORLD),
-                esio_handle_finalize);
+        shared_esio_handle h(MPI_COMM_WORLD);
         esio_file_create(h.get(), hdffile.c_str(), clobber);
         save_metadata(h.get());
 
