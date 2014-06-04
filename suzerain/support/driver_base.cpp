@@ -1125,8 +1125,17 @@ void log_quantities_local_helper(
             << ' ' << fullprec<>(local->v);
         INFO0(name, msg.str());
         if (esioh) {
+            esio_handle h = esioh.get();
             prepare_quantity_container(
-                    esioh.get(), name, "Local derived state information");
+                    h, name, "Local derived state information");
+            esio_attribute_write(h, name, "a",     &local->a);
+            esio_attribute_write(h, name, "gamma", &local->gamma);
+            esio_attribute_write(h, name, "mu",    &local->mu);
+            esio_attribute_write(h, name, "Pr",    &local->Pr);
+            esio_attribute_write(h, name, "rho",   &local->rho);
+            esio_attribute_write(h, name, "T",     &local->T);
+            esio_attribute_write(h, name, "u",     &local->u);
+            esio_attribute_write(h, name, "v",     &local->v);
         }
     }
 }
@@ -1180,9 +1189,16 @@ void driver_base::log_quantities_boundary_layer(
             << ' ' << fullprec<>(qoi->v_wallplus);
         INFO0(name, msg.str());
         if (esioh) {
-            prepare_quantity_container(esioh.get(), name,
+            esio_handle h = esioh.get();
+            prepare_quantity_container(h, name,
                     "Viscous information per documentation of"
                     " suzerain_bl_viscous and suzerain_bl_qoi");
+            esio_attribute_write(h, name, "cf",         &qoi->cf);
+            esio_attribute_write(h, name, "delta_nu",   &viscous->delta_nu);
+            esio_attribute_write(h, name, "tau_w",      &viscous->tau_w);
+            esio_attribute_write(h, name, "u_tau",      &viscous->u_tau);
+            esio_attribute_write(h, name, "Bq",         &qoi->Bq);
+            esio_attribute_write(h, name, "v_wallplus", &qoi->v_wallplus);
         }
     }
 
@@ -1210,9 +1226,16 @@ void driver_base::log_quantities_boundary_layer(
             << ' ' << fullprec<>(thick->delta99);
         INFO0(name, msg.str());
         if (esioh) {
-            prepare_quantity_container(esioh.get(), name,
+            esio_handle h = esioh.get();
+            prepare_quantity_container(h, name,
                     "Thickness information per documentation of"
                     " suzerain_bl_thicknesses");
+            esio_attribute_write(h, name, "delta",   &thick->delta);
+            esio_attribute_write(h, name, "delta1",  &thick->delta1);
+            esio_attribute_write(h, name, "delta2",  &thick->delta2);
+            esio_attribute_write(h, name, "delta3",  &thick->delta3);
+            esio_attribute_write(h, name, "deltaH0", &thick->deltaH0);
+            esio_attribute_write(h, name, "delta99", &thick->delta99);
         }
     }
 
@@ -1246,9 +1269,16 @@ void driver_base::log_quantities_boundary_layer(
             << ' ' << fullprec<>(reynolds->delta99);
         INFO0(name, msg.str());
         if (esioh) {
-            prepare_quantity_container(esioh.get(), name,
+            esio_handle h = esioh.get();
+            prepare_quantity_container(h, name,
                     "Reynolds number information per documentation of"
                     " suzerain_bl_reynolds");
+            esio_attribute_write(h, name, "Re_delta",   &reynolds->delta);
+            esio_attribute_write(h, name, "Re_delta1",  &reynolds->delta1);
+            esio_attribute_write(h, name, "Re_delta2",  &reynolds->delta2);
+            esio_attribute_write(h, name, "Re_delta3",  &reynolds->delta3);
+            esio_attribute_write(h, name, "Re_deltaH0", &reynolds->deltaH0);
+            esio_attribute_write(h, name, "Re_delta99", &reynolds->delta99);
         }
     }
 
@@ -1267,19 +1297,27 @@ void driver_base::log_quantities_boundary_layer(
             INFO0(name, msg.str());
             msg.str("");
         }
+        const real_t Re_tau = thick->delta99 / viscous->delta_nu;
         msg << timeprefix
             << ' ' << fullprec<>(qoi->Ma_e)
             << ' ' << fullprec<>(qoi->Ma_tau)
             << ' ' << fullprec<>(qoi->ratio_rho)
             << ' ' << fullprec<>(qoi->ratio_nu)
             << ' ' << fullprec<>(qoi->ratio_T)
-            << ' ' << fullprec<>(thick->delta99 / viscous->delta_nu);
+            << ' ' << fullprec<>(Re_tau);
         INFO0(name, msg.str());
         if (esioh) {
-            prepare_quantity_container(esioh.get(), name,
+            esio_handle h = esioh.get();
+            prepare_quantity_container(h, name,
                     "Quantities of interest per documentation of"
                     " suzerain_bl_qoi, suzerain_bl_thicknesses,"
                     " and suzerain_bl_viscous");
+            esio_attribute_write(h, name, "Ma_e",      &qoi->Ma_e);
+            esio_attribute_write(h, name, "Ma_tau",    &qoi->Ma_tau);
+            esio_attribute_write(h, name, "ratio_rho", &qoi->ratio_rho);
+            esio_attribute_write(h, name, "ratio_nu",  &qoi->ratio_nu);
+            esio_attribute_write(h, name, "ratio_T",   &qoi->ratio_T);
+            esio_attribute_write(h, name, "Re_tau",    &Re_tau);
         }
     }
 
@@ -1289,7 +1327,8 @@ void driver_base::log_quantities_boundary_layer(
             bool& log_header_shown = header_shown[name];
             if (!log_header_shown) {
                 log_header_shown = true;
-                msg << setw(timeprefix.size()) << build_timeprefix_description()
+                msg << setw(timeprefix.size())
+                    << build_timeprefix_description()
                     << ' ' << setw(fullprec<>::width) << "Clauser"
                     << ' ' << setw(fullprec<>::width) << "Lambda_n"
                     << ' ' << setw(fullprec<>::width) << "Launder_e"
@@ -1308,9 +1347,16 @@ void driver_base::log_quantities_boundary_layer(
                 << ' ' << fullprec<>(pg->p_ex);
             INFO0(name, msg.str());
             if (esioh) {
-                prepare_quantity_container(esioh.get(), name,
+                esio_handle h = esioh.get();
+                prepare_quantity_container(h, name,
                         "Pressure gradient information per documentation of"
                         " suzerain_bl_pg");
+                esio_attribute_write(h, name, "Clauser",    &pg->Clauser);
+                esio_attribute_write(h, name, "Lambda_n",   &pg->Lambda_n);
+                esio_attribute_write(h, name, "Launder_e",  &pg->Launder_e);
+                esio_attribute_write(h, name, "Launder_w",  &pg->Launder_w);
+                esio_attribute_write(h, name, "Pohlhausen", &pg->Pohlhausen);
+                esio_attribute_write(h, name, "p_ex",       &pg->p_ex);
             }
         }
     }
@@ -1357,9 +1403,16 @@ void driver_base::log_quantities_channel(
             << ' ' << fullprec<>(qoi->v_wallplus);
         INFO0(name, msg.str());
         if (esioh) {
-            prepare_quantity_container(esioh.get(), name,
+            esio_handle h = esioh.get();
+            prepare_quantity_container(h, name,
                     "Viscous information per documentation of"
                     " suzerain_channel_viscous and suzerain_channel_qoi");
+            esio_attribute_write(h, name, "cf",         &qoi->cf);
+            esio_attribute_write(h, name, "delta_nu",   &viscous->delta_nu);
+            esio_attribute_write(h, name, "tau_w",      &viscous->tau_w);
+            esio_attribute_write(h, name, "u_tau",      &viscous->u_tau);
+            esio_attribute_write(h, name, "Bq",         &qoi->Bq);
+            esio_attribute_write(h, name, "v_wallplus", &qoi->v_wallplus);
         }
     }
 
@@ -1388,10 +1441,16 @@ void driver_base::log_quantities_channel(
             << ' ' << fullprec<>(qoi->Re_tau);
         INFO0(name, msg.str());
         if (esioh) {
-            prepare_quantity_container(esioh.get(), name,
+            esio_handle h = esioh.get();
+            prepare_quantity_container(h, name,
                     "Quantities of interest per documentation of"
                     " suzerain_channel_qoi, suzerain_channel_thicknesses,"
                     " and suzerain_channel_viscous");
+            esio_attribute_write(h, name, "Ma_c",   &qoi->Ma_c);
+            esio_attribute_write(h, name, "Ma_tau", &qoi->Ma_tau);
+            esio_attribute_write(h, name, "Pr_w",   &qoi->Pr_w);
+            esio_attribute_write(h, name, "Re_c",   &qoi->Re_c);
+            esio_attribute_write(h, name, "Re_tau", &qoi->Re_tau);
         }
     }
 }
