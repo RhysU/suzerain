@@ -46,6 +46,10 @@ class shared_esio_handle
 {
 public:
 
+    /** Constructor producing an empty handle evaluating to false. */
+    shared_esio_handle();
+
+    /** Constructor producing a valid handle across \c comm. */
     explicit shared_esio_handle(MPI_Comm comm);
 
 };

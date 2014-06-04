@@ -34,6 +34,11 @@ namespace suzerain {
 
 namespace support {
 
+shared_esio_handle::shared_esio_handle()
+    : shared_ptr<boost::remove_pointer<esio_handle>::type>()
+{
+}
+
 shared_esio_handle::shared_esio_handle(MPI_Comm comm)
     : shared_ptr<boost::remove_pointer<esio_handle>::type>(
                 esio_handle_initialize(comm),
