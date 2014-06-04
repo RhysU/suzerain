@@ -822,9 +822,12 @@ maybe_timeprefix_fields_identifiers(driver_base& db,
 {
     if (!shown) {
         std::ostringstream msg;
-        msg << std::setw(timeprefix.size()) << db.build_timeprefix_description();
+        msg << std::setw(timeprefix.size())
+            << db.build_timeprefix_description();
         for (size_t k = 0; k < db.fields.size(); ++k) {
-            msg << ' ' << std::setw(fullprec<>::width) << db.fields[k].identifier;
+            msg << ' '
+                << std::setw(fullprec<>::width)
+                << db.fields[k].identifier;
         }
         INFO0(log, msg.str());
         shown = true;
