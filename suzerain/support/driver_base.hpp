@@ -36,6 +36,7 @@
 #include <suzerain/support/definition_signal.hpp>
 #include <suzerain/support/definition_statistics.hpp>
 #include <suzerain/support/definition_time.hpp>
+#include <suzerain/support/shared_esio_handle.hpp>
 #include <suzerain/support/field.hpp>
 #include <suzerain/timecontroller.hpp>
 
@@ -380,6 +381,7 @@ public:
      * @param pg          Possibly computed by suzerain_bl_compute_pg().
      *                    If \c NULL, no pressure gradient-related information
      *                    will be logged.
+     * @param esioh       If provided, additionally store the information here.
      * @param name_wall   Logging name for wall-related information.
      *                    If \c NULL, this message will not be logged.
      * @param name_visc   Logging name for viscous-related quantities.
@@ -407,6 +409,7 @@ public:
             const suzerain_bl_reynolds     * const reynolds,
             const suzerain_bl_qoi          * const qoi,
             const suzerain_bl_pg           * const pg,
+            const shared_esio_handle& esioh = shared_esio_handle(),
             const char * const name_wall   =  "bl.wall",
             const char * const name_visc   =  "bl.visc",
             const char * const name_thick  =  "bl.thick",
@@ -431,6 +434,7 @@ public:
      * @param viscous     Possibly from suzerain_channel_compute_viscous().
      * @param center      Local information from the channel centerline.
      * @param qoi         Possibly from suzerain_channel_compute_qoi().
+     * @param esioh       If provided, additionally store the information here.
      * @param name_wall   Logging name for wall-related quantities.
      *                    If \c NULL, this message will not be logged.
      * @param name_visc   Logging name for viscous-related quantities.
@@ -446,6 +450,7 @@ public:
             const suzerain_channel_viscous * const viscous,
             const suzerain_channel_local   * const center,
             const suzerain_channel_qoi     * const qoi,
+            const shared_esio_handle& esioh = shared_esio_handle(),
             const char * const name_wall   = "chan.wall",
             const char * const name_visc   = "chan.visc",
             const char * const name_center = "chan.center",

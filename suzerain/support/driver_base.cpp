@@ -1075,7 +1075,8 @@ void log_quantities_local_helper(
         const std::string&  timeprefix,
         const Local * const local,
         const char  * const name,
-        bool&               header_shown)
+        bool&               header_shown,
+        const shared_esio_handle& esioh)
 {
     using std::setw;
 
@@ -1119,6 +1120,7 @@ void driver_base::log_quantities_boundary_layer(
         const suzerain_bl_reynolds    * const reynolds,
         const suzerain_bl_qoi         * const qoi,
         const suzerain_bl_pg          * const pg,
+        const shared_esio_handle& esioh,
         const char * const name_wall,
         const char * const name_visc,
         const char * const name_thick,
@@ -1131,7 +1133,7 @@ void driver_base::log_quantities_boundary_layer(
     using std::setw;
 
     log_quantities_local_helper(*this, timeprefix, wall, name_wall,
-                                header_shown[name_wall]);
+                                header_shown[name_wall], esioh);
 
     if (const char * const name = name_visc) {   // Evil, but helps avoid typos
         std::ostringstream msg;
@@ -1184,10 +1186,10 @@ void driver_base::log_quantities_boundary_layer(
     }
 
     log_quantities_local_helper(*this, timeprefix, edge, name_edge,
-                                header_shown[name_edge]);
+                                header_shown[name_edge], esioh);
 
     log_quantities_local_helper(*this, timeprefix, edge99, name_edge99,
-                                header_shown[name_edge99]);
+                                header_shown[name_edge99], esioh);
 
     if (const char * const name = name_Re) {
         std::ostringstream msg;
@@ -1273,6 +1275,7 @@ void driver_base::log_quantities_channel(
         const suzerain_channel_viscous * const viscous,
         const suzerain_channel_local   * const center,
         const suzerain_channel_qoi     * const qoi,
+        const shared_esio_handle& esioh,
         const char * const name_wall,
         const char * const name_visc,
         const char * const name_center,
@@ -1281,7 +1284,7 @@ void driver_base::log_quantities_channel(
     using std::setw;          // Brevity
 
     log_quantities_local_helper(*this, timeprefix, wall, name_wall,
-                                header_shown[name_wall]);
+                                header_shown[name_wall], esioh);
 
     if (const char * const name = name_visc) {
         std::ostringstream msg;
@@ -1309,7 +1312,7 @@ void driver_base::log_quantities_channel(
     }
 
     log_quantities_local_helper(*this, timeprefix, center, name_center,
-                                header_shown[name_center]);
+                                header_shown[name_center], esioh);
 
     if (const char * const name = name_qoi) {
         std::ostringstream msg;
