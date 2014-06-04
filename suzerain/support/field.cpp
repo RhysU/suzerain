@@ -444,6 +444,6 @@ void load_collocation_values(
     }
 }
 
-} // end namespace suzerain
-
 } // end namespace support
+
+} // end namespace suzerain
