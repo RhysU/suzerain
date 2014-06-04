@@ -80,7 +80,8 @@ driver_base::summary_run(
         int argc,
         char **argv,
         summary_pool_type& pool,
-        summary& final)
+        summary& final,
+        shared_esio_handle& esioh)
 {
     static const char who[] = "summary";
 
@@ -278,6 +279,9 @@ driver_base::summary_run(
         esio_file_create(h.get(), hdffile.c_str(), clobber);
         save_metadata(h.get());
 
+        // Metadata exists so tell the caller we made a summary file
+        esioh = h;
+
         // Determine vector of unique times in the pool and save as "/t"
         std::vector<real_t> t;
         t.reserve(pool.size());
@@ -347,22 +351,21 @@ driver_base::summary_run(
                 // TODO Parallelize IO after isolating/fixing segfault
                 #pragma omp critical
                 {
-                    esio_handle esioh = h.get();
                     const char * const name = summary::name[c];
-                    esio_plane_write(esioh, name, data.data(),
+                    esio_plane_write(h.get(), name, data.data(),
                                      data.outerStride(),
                                      data.innerStride());
-                    esio_attribute_writev(esioh, name, "eff_N",
+                    esio_attribute_writev(h.get(), name, "eff_N",
                             eff_N.data(), eff_N.size());
-                    esio_attribute_writev(esioh, name, "eff_var",
+                    esio_attribute_writev(h.get(), name, "eff_var",
                             eff_var.data(), eff_var.size());
-                    esio_attribute_writev(esioh, name, "mu",
+                    esio_attribute_writev(h.get(), name, "mu",
                             mu.data(), mu.size());
-                    esio_attribute_writev(esioh, name, "mu_sigma",
+                    esio_attribute_writev(h.get(), name, "mu_sigma",
                             mu_sigma.data(), mu_sigma.size());
-                    esio_attribute_writev(esioh, name, "p",
+                    esio_attribute_writev(h.get(), name, "p",
                             p.data(), p.size());
-                    esio_attribute_writev(esioh, name, "T",
+                    esio_attribute_writev(h.get(), name, "T",
                             T.data(), T.size());
                 }
             }

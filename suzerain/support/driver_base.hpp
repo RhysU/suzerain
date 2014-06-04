@@ -790,11 +790,17 @@ protected:
      * \param[out] final When \c pool has non-zero size,
      *                   either mean or final profile information
      *                   on collocation points suitable for further analysis.
+     * \param[out] esioh When an HDF5 summary file is produced,
+     *                   on return this will be a writeable handle into it.
      *
      * \return Success or failure suitable for return to the OS.
      */
     int
-    summary_run(int argc, char **argv, summary_pool_type& pool, summary& final);
+    summary_run(int argc,
+                char **argv,
+                summary_pool_type& pool,
+                summary& final,
+                shared_esio_handle& esioh);
 
     /**
      * @}

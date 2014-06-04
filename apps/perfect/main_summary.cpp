@@ -60,7 +60,8 @@ struct driver_summary : public driver
         // Invoke driver-agnostic summarization logic
         summary_pool_type pool;
         summary final;
-        const int status = summary_run(argc, argv, pool, final);
+        support::shared_esio_handle esioh;
+        const int status = summary_run(argc, argv, pool, final, esioh);
 
         // Perform driver-specific post-processing on nontrivial results
         if (pool.size()) {
