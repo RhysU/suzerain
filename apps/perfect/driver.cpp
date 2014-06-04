@@ -312,7 +312,8 @@ void
 driver::log_quantities_of_interest(
         const std::string& prefix,
         const profile& prof,
-        const instantaneous& inst)
+        const instantaneous& inst,
+        const support::shared_esio_handle& esioh)
 {
     // A horrible way to cheaply grab a shared pointer to a masslu
     // Uses internal knowledge of obtain_operator_tools requiring a dgrid
@@ -535,7 +536,8 @@ driver::log_quantities_of_interest(
         this->log_quantities_boundary_layer(prefix,
                                             &wall, &viscous, &thick,
                                             &edge, &edge99,
-                                            &reynolds, &qoi, &pg);
+                                            &reynolds, &qoi, &pg,
+                                            esioh);
 
     } else if (grid->two_sided()) {
 
@@ -549,7 +551,8 @@ driver::log_quantities_of_interest(
 
         // Log messages using application-agnostic superclass functionality
         this->log_quantities_channel(prefix,
-                                     &wall, &viscous, &center, &qoi);
+                                     &wall, &viscous, &center, &qoi,
+                                     esioh);
 
     } else {
 

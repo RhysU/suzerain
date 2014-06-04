@@ -33,6 +33,7 @@
 #include <suzerain/support/definition_largo.hpp>
 #include <suzerain/support/definition_radialflow.hpp>
 #include <suzerain/support/driver_base.hpp>
+#include <suzerain/support/shared_esio_handle.hpp>
 
 #include "definition_scenario.hpp"
 #include "manufactured_solution.hpp"
@@ -163,11 +164,16 @@ public:
     /**
      * Log a variety of quantities of interest for a boundary layer or channel
      * flow simulation given an extant profile.
+     *
+     * @see \ref log_quantities_boundary_layer
+     * @see \ref log_quantities_channel
      */
     virtual void log_quantities_of_interest(
             const std::string& prefix,
             const profile& prof,
-            const instantaneous& inst);
+            const instantaneous& inst,
+            const support::shared_esio_handle& esioh
+                = support::shared_esio_handle());
 
     /**
      * Collectively compute statistics from #state_linear saving them into
