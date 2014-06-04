@@ -168,6 +168,7 @@ nobase_pkginclude_HEADERS += support/overridable.hpp
 nobase_pkginclude_HEADERS += support/populatable.hpp
 nobase_pkginclude_HEADERS += support/program_options.hpp
 nobase_pkginclude_HEADERS += support/savable.hpp
+nobase_pkginclude_HEADERS += support/shared_esio_handle.hpp
 nobase_pkginclude_HEADERS += support/support.hpp
 nobase_pkginclude_HEADERS += suzerain-config.h
 nobase_pkginclude_HEADERS += svehla.h
@@ -380,6 +381,7 @@ libsupport_la_SOURCES       += support/logging.cpp
 libsupport_la_SOURCES       += support/overridable.cpp
 libsupport_la_SOURCES       += support/populatable.cpp
 libsupport_la_SOURCES       += support/program_options.cpp
+libsupport_la_SOURCES       += support/shared_esio_handle.cpp
 libsupport_la_SOURCES       += support/support.cpp
 
 # Clean up from Intel Compiler's -prof-gen output
