@@ -81,7 +81,7 @@ struct driver_summary : public driver
             inst = final;
             log_quantities_of_interest(
                     build_timeprefix_description("summary", "summary"),
-                    prof, inst);
+                    prof, inst, esioh);
         }
 
         return status;

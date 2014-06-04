@@ -1071,6 +1071,20 @@ driver_base::log_boundary_conditions(
     }
 }
 
+static
+void prepare_quantity_container(
+        esio_handle h,
+        const char * const location,
+        const char * const description)
+{
+    // Write out a "container" for holding other values as attributes
+    const int one = 1;
+    int procid;
+    esio_handle_comm_rank(h, &procid);
+    esio_line_establish(h, 1, 0, (procid == 0 ? 1 : 0));
+    esio_line_write(h, location, &one, 0, description);
+}
+
 // A building block called from both log_{channel,boundary_layer}_quantities
 template< class Local >
 void log_quantities_local_helper(
@@ -1110,6 +1124,10 @@ void log_quantities_local_helper(
             << ' ' << fullprec<>(local->u)
             << ' ' << fullprec<>(local->v);
         INFO0(name, msg.str());
+        if (esioh) {
+            prepare_quantity_container(
+                    esioh.get(), name, "Local derived state information");
+        }
     }
 }
 
@@ -1161,6 +1179,11 @@ void driver_base::log_quantities_boundary_layer(
             << ' ' << fullprec<>(qoi->Bq)
             << ' ' << fullprec<>(qoi->v_wallplus);
         INFO0(name, msg.str());
+        if (esioh) {
+            prepare_quantity_container(esioh.get(), name,
+                    "Viscous information per documentation of"
+                    " suzerain_bl_viscous and suzerain_bl_qoi");
+        }
     }
 
     if (const char * const name = name_thick) {
@@ -1186,6 +1209,11 @@ void driver_base::log_quantities_boundary_layer(
             << ' ' << fullprec<>(thick->deltaH0)
             << ' ' << fullprec<>(thick->delta99);
         INFO0(name, msg.str());
+        if (esioh) {
+            prepare_quantity_container(esioh.get(), name,
+                    "Thickness information per documentation of"
+                    " suzerain_bl_thicknesses");
+        }
     }
 
     log_quantities_local_helper(*this, timeprefix, edge, name_edge,
@@ -1217,6 +1245,11 @@ void driver_base::log_quantities_boundary_layer(
             << ' ' << fullprec<>(reynolds->deltaH0)
             << ' ' << fullprec<>(reynolds->delta99);
         INFO0(name, msg.str());
+        if (esioh) {
+            prepare_quantity_container(esioh.get(), name,
+                    "Reynolds number information per documentation of"
+                    " suzerain_bl_reynolds");
+        }
     }
 
     if (const char * const name = name_qoi) {
@@ -1242,6 +1275,12 @@ void driver_base::log_quantities_boundary_layer(
             << ' ' << fullprec<>(qoi->ratio_T)
             << ' ' << fullprec<>(thick->delta99 / viscous->delta_nu);
         INFO0(name, msg.str());
+        if (esioh) {
+            prepare_quantity_container(esioh.get(), name,
+                    "Quantities of interest per documentation of"
+                    " suzerain_bl_qoi, suzerain_bl_thicknesses,"
+                    " and suzerain_bl_viscous");
+        }
     }
 
     if (pg) {
@@ -1268,6 +1307,11 @@ void driver_base::log_quantities_boundary_layer(
                 << ' ' << fullprec<>(pg->Pohlhausen)
                 << ' ' << fullprec<>(pg->p_ex);
             INFO0(name, msg.str());
+            if (esioh) {
+                prepare_quantity_container(esioh.get(), name,
+                        "Pressure gradient information per documentation of"
+                        " suzerain_bl_pg");
+            }
         }
     }
 }
@@ -1312,6 +1356,11 @@ void driver_base::log_quantities_channel(
             << ' ' << fullprec<>(qoi->Bq)
             << ' ' << fullprec<>(qoi->v_wallplus);
         INFO0(name, msg.str());
+        if (esioh) {
+            prepare_quantity_container(esioh.get(), name,
+                    "Viscous information per documentation of"
+                    " suzerain_channel_viscous and suzerain_channel_qoi");
+        }
     }
 
     log_quantities_local_helper(*this, timeprefix, center, name_center,
@@ -1338,6 +1387,12 @@ void driver_base::log_quantities_channel(
             << ' ' << fullprec<>(qoi->Re_c)
             << ' ' << fullprec<>(qoi->Re_tau);
         INFO0(name, msg.str());
+        if (esioh) {
+            prepare_quantity_container(esioh.get(), name,
+                    "Quantities of interest per documentation of"
+                    " suzerain_channel_qoi, suzerain_channel_thicknesses,"
+                    " and suzerain_channel_viscous");
+        }
     }
 }
 
