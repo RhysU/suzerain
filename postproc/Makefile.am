@@ -2,6 +2,7 @@
 
 postprocdir       = $(pkgdatadir)/postproc
 postproc_SCRIPTS  = channel.m
+postproc_SCRIPTS += datatimes.sh
 postproc_SCRIPTS += frame.sh
 postproc_SCRIPTS += gb2ge.m
 postproc_SCRIPTS += gb.py
