@@ -146,10 +146,11 @@ def main(argv=None):
             data[-1][data[-1] > zextents[1]] = np.nan
 
     # Compute derived fluctuating dataset, if requested
+    # Notice the ensemble average of the latter two is performed
     if fluct:
-        data3, name3 = data.pop(), name.pop()
-        data2, name2 = data.pop(), name.pop()
-        data1, name1 = data.pop(), name.pop()
+        data3, name3 = data.pop(),            name.pop()
+        data2, name2 = np.mean(data.pop(),0), name.pop()
+        data1, name1 = np.mean(data.pop(),0), name.pop()
         assert len(data) == 0
         assert len(name) == 0
         data.append(data1 - data2*data3)
