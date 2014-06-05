@@ -352,9 +352,21 @@ driver_base::summary_run(
                 #pragma omp critical
                 {
                     const char * const name = summary::name[c];
+                    std::ostringstream comment;
+                    comment << "Instantaneous planar averages of "
+                            << summary::description[c]
+                            << " versus /y and /t."
+                               "  Attributes 'mu' and 'mu_sigma' are"
+                               " the ensemble mean and its estimated"
+                               " standard error versus /y."
+                               " Other attributes capture outputs from"
+                               " the autoregressive sampling uncertainty"
+                               " estimator (doi:10.1063/1.4866813)"
+                               " versus /y and require care to interpret.";
                     esio_plane_write(h.get(), name, data.data(),
                                      data.outerStride(),
-                                     data.innerStride());
+                                     data.innerStride(),
+                                     comment.str().c_str());
                     esio_attribute_writev(h.get(), name, "eff_N",
                             eff_N.data(), eff_N.size());
                     esio_attribute_writev(h.get(), name, "eff_var",
