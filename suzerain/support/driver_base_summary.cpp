@@ -359,7 +359,7 @@ driver_base::summary_run(
                                "  Attributes 'mu' and 'mu_sigma' are"
                                " the ensemble mean and its estimated"
                                " standard error versus /y."
-                               " Other attributes capture outputs from"
+                               "  Other attributes capture outputs from"
                                " the autoregressive sampling uncertainty"
                                " estimator (doi:10.1063/1.4866813)"
                                " versus /y and require care to interpret.";
