@@ -203,22 +203,22 @@ treatment_nonreflecting::apply_operator(
             for (int m = dkbx; m < dkex; ++m) {
 
                 // Unpack upper boundary RHS into a contiguous buffer
-                Vector5c N_hatV;
-                N_hatV(0) = swave[ndx::e  ][Ny - 1][m - dkbx][n - dkbz];
-                N_hatV(1) = swave[ndx::mx ][Ny - 1][m - dkbx][n - dkbz];
-                N_hatV(2) = swave[ndx::my ][Ny - 1][m - dkbx][n - dkbz];
-                N_hatV(3) = swave[ndx::mz ][Ny - 1][m - dkbx][n - dkbz];
-                N_hatV(4) = swave[ndx::rho][Ny - 1][m - dkbx][n - dkbz];
+                Vector5c N;
+                N[0] = swave[ndx::e  ][Ny - 1][m - dkbx][n - dkbz];
+                N[1] = swave[ndx::mx ][Ny - 1][m - dkbx][n - dkbz];
+                N[2] = swave[ndx::my ][Ny - 1][m - dkbx][n - dkbz];
+                N[3] = swave[ndx::mz ][Ny - 1][m - dkbx][n - dkbz];
+                N[4] = swave[ndx::rho][Ny - 1][m - dkbx][n - dkbz];
 
                 // Modify the packed RHS to remove unwanted characteristics
-                N_hatV.applyOnTheLeft(upper_nrbc_n.cast<complex_t>());
+                N.applyOnTheLeft(upper_nrbc_n.cast<complex_t>());
 
                 // Pack new upper boundary RHS from the contiguous buffer
-                swave[ndx::e  ][Ny - 1][m - dkbx][n - dkbz] = N_hatV(0);
-                swave[ndx::mx ][Ny - 1][m - dkbx][n - dkbz] = N_hatV(1);
-                swave[ndx::my ][Ny - 1][m - dkbx][n - dkbz] = N_hatV(2);
-                swave[ndx::mz ][Ny - 1][m - dkbx][n - dkbz] = N_hatV(3);
-                swave[ndx::rho][Ny - 1][m - dkbx][n - dkbz] = N_hatV(4);
+                swave[ndx::e  ][Ny - 1][m - dkbx][n - dkbz] = N[0];
+                swave[ndx::mx ][Ny - 1][m - dkbx][n - dkbz] = N[1];
+                swave[ndx::my ][Ny - 1][m - dkbx][n - dkbz] = N[2];
+                swave[ndx::mz ][Ny - 1][m - dkbx][n - dkbz] = N[3];
+                swave[ndx::rho][Ny - 1][m - dkbx][n - dkbz] = N[4];
 
             }
         }
