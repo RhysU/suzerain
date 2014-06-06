@@ -108,7 +108,7 @@ treatment_nonreflecting::apply_operator(
     // Notice that boundary coefficients are 1-1 with boundary point values.
     // That is, applying the mass matrix is an ignorable NOP at the boundary.
     Matrix5Xc negI_stash;
-    if (linearization != linearize::rhome_xyz) {
+    if (linearization == linearize::none) {
         negI_stash.resize(NoChange, swave.shape()[2] * swave.shape()[3]);
         const complex_t negI_unit(0, -1);
         const int ku = boost::numeric_cast<int>(swave.shape()[0]);
@@ -132,7 +132,9 @@ treatment_nonreflecting::apply_operator(
     // State is now collocation point values in Y direction
 
     // Prepare the matrices required to implement the boundary condition.
-    // The hideous const_cast is required due to timestepping API.
+    // The hideous const_cast is required due to timestepping API--
+    // The alternative would be making the members mutable, but catching
+    // any accidental modification elsewhere is worth this const_cast.
     if (substep_index == 0) {
         const_cast<treatment_nonreflecting*>(this)
                 ->compute_giles_matrices_upper();
@@ -146,8 +148,6 @@ treatment_nonreflecting::apply_operator(
     const int dNz  = grid.dN.z();
     const int dkbz = dgrid.local_wave_start.z();
     const int dkez = dgrid.local_wave_end.z();
-    const real_t twopioverLx_by_chi = twopiover(grid.L.x()) / dgrid.chi();
-    const real_t twopioverLz_by_chi = twopiover(grid.L.z()) / dgrid.chi();
 
     // Traverse wavenumbers updating the RHS with the Giles boundary condition
     // TODO Could short circuit some of this traversal using dealiasing
@@ -155,17 +155,21 @@ treatment_nonreflecting::apply_operator(
     if (negI_stash.size()) {
 
         // "Implementation primarily within the nonlinear explicit operator"
-        // which is also appropriate for wall-normal implicit treatment
-        assert(   linearization == linearize::none
-               || linearization == linearize::rhome_y);
-        using suzerain::inorder::wavenumber;
+        // which also looks appropriate for wall-normal implicit treatment.
+        // However, Redmine #3114 shows the wall-normal implicit case to be
+        // ill-posed and hence the alternate, lower-order else block is applied.
+        assert(linearization == linearize::none);
+
+        const real_t twopioverLx_by_chi = twopiover(grid.L.x()) / dgrid.chi();
+        const real_t twopioverLz_by_chi = twopiover(grid.L.z()) / dgrid.chi();
         const int mu = boost::numeric_cast<int>(swave.shape()[2]);
+
         for (int n = dkbz; n < dkez; ++n) {
-            const int wn = wavenumber(dNz, n);
+            const int wn = inorder::wavenumber(dNz, n);
             const real_t kn_by_chi = twopioverLz_by_chi*wn;
 
             for (int m = dkbx; m < dkex; ++m) {
-                const int wm = wavenumber(dNx, m);
+                const int wm = inorder::wavenumber(dNx, m);
                 const real_t km_by_chi = twopioverLx_by_chi*wm;
 
                 // Accumulates kn/km NRBC terms before possible ImPG swamping.
@@ -203,8 +207,11 @@ treatment_nonreflecting::apply_operator(
     } else {
 
         // "Implementation primarily within the linear implicit operator"
-        // which is appropriate for linear implicit work in three directions.
-        assert(linearization == linearize::rhome_xyz);
+        // which is appropriate for linear implicit work in three directions
+        // as well as wall-normal-only implicitness per Redmine #3114.
+        assert(   linearization == linearize::rhome_xyz
+               || linearization == linearize::rhome_y);
+
         const Matrix5r upper_nrbc_n = inv_VL_S_RY * ImPG_VL_S_RY;
         for (int n = dkbz; n < dkez; ++n) {
             for (int m = dkbx; m < dkex; ++m) {
