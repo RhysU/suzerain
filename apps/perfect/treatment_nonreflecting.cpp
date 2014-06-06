@@ -96,6 +96,10 @@ treatment_nonreflecting::apply_operator(
     //   3) Build the various matrices we need from the reference state.
     //   4) Prepare pre-computable products of the various matrices
     //   5) Modify the right hand side in a wave-number dependent fashion.
+    //
+    // Implementation currently works for only the 5-equation case
+    // (though, given correct Giles matrices, nothing prevents extension).
+    SUZERAIN_ENSURE(swave.shape()[0] == 5U);
 
     // State enters method as coefficients in X, Y, and Z directions
 
@@ -175,9 +179,11 @@ treatment_nonreflecting::apply_operator(
 
                 // Pack upper boundary nonlinear RHS into contiguous buffer
                 Vector5c N;
-                for (int f = 0; f < N.size(); ++f) {
-                    N(f) = swave[f][Ny - 1][m - dkbx][n - dkbz];
-                }
+                N[0] = swave[ndx::e  ][Ny - 1][m - dkbx][n - dkbz];
+                N[1] = swave[ndx::mx ][Ny - 1][m - dkbx][n - dkbz];
+                N[2] = swave[ndx::my ][Ny - 1][m - dkbx][n - dkbz];
+                N[3] = swave[ndx::mz ][Ny - 1][m - dkbx][n - dkbz];
+                N[4] = swave[ndx::rho][Ny - 1][m - dkbx][n - dkbz];
 
                 // Project out unwanted characteristics from RHS and accumulate
                 // followed by projecting result back to conserved state
@@ -185,9 +191,11 @@ treatment_nonreflecting::apply_operator(
                 N.noalias()    = inv_VL_S_RY.cast<complex_t>()  * tmp;
 
                 // Unpack new upper boundary RHS from the contiguous buffer
-                for (int f = 0; f < N.size(); ++f) {
-                    swave[f][Ny - 1][m - dkbx][n - dkbz] = N(f);
-                }
+                swave[ndx::e  ][Ny - 1][m - dkbx][n - dkbz] = N[0];
+                swave[ndx::mx ][Ny - 1][m - dkbx][n - dkbz] = N[1];
+                swave[ndx::my ][Ny - 1][m - dkbx][n - dkbz] = N[2];
+                swave[ndx::mz ][Ny - 1][m - dkbx][n - dkbz] = N[3];
+                swave[ndx::rho][Ny - 1][m - dkbx][n - dkbz] = N[4];
 
             }
         }
@@ -196,13 +204,12 @@ treatment_nonreflecting::apply_operator(
 
         // "Implementation primarily within the linear implicit operator"
         // which is appropriate for linear implicit work in three directions.
-        // TODO Decide on just one way to write the unpack/pack here and above.
         assert(linearization == linearize::rhome_xyz);
         const Matrix5r upper_nrbc_n = inv_VL_S_RY * ImPG_VL_S_RY;
         for (int n = dkbz; n < dkez; ++n) {
             for (int m = dkbx; m < dkex; ++m) {
 
-                // Unpack upper boundary RHS into a contiguous buffer
+                // Pack upper boundary RHS into a contiguous buffer
                 Vector5c N;
                 N[0] = swave[ndx::e  ][Ny - 1][m - dkbx][n - dkbz];
                 N[1] = swave[ndx::mx ][Ny - 1][m - dkbx][n - dkbz];
@@ -213,7 +220,7 @@ treatment_nonreflecting::apply_operator(
                 // Modify the packed RHS to remove unwanted characteristics
                 N.applyOnTheLeft(upper_nrbc_n.cast<complex_t>());
 
-                // Pack new upper boundary RHS from the contiguous buffer
+                // Unpack new upper boundary RHS from the contiguous buffer
                 swave[ndx::e  ][Ny - 1][m - dkbx][n - dkbz] = N[0];
                 swave[ndx::mx ][Ny - 1][m - dkbx][n - dkbz] = N[1];
                 swave[ndx::my ][Ny - 1][m - dkbx][n - dkbz] = N[2];
