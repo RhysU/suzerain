@@ -1,8 +1,242 @@
+What's new in suzerain 0.1.5
+----------------------------
+
+Production-ready for homogenized boundary layers.
+
+This release contains the following with tickets numbers referencing content
+from https://red.ices.utexas.edu/projects/suzerain:
+
+ * Feature #3088: Prepare coarse nondimensional boundary layer near CEV conditions
+ * Feature #3100: Final Coleman-like channel runs
+ * Feature #3109: Use higher order NRBC on wall-only implicit treatment
+ * Feature #3110: Prepare nondimensional boundary layer near CEV 3.199
+ * Feature #3111: Gather additional turbulence "health" traces
+ * Feature #3113: L2xyz on puzzling data
+ * Feature #3115: Get QoI into summary file
+ * Bug     #3089: Correct gathering of slow growth statistics
+ * Bug     #3108: Inconsistent edge vs edge99 in suzerain_bl_compute_reynolds
+ * Bug     #3114: Misbehaving higher-order NRBC for implicit=rhome_y 
+
+
+What's new in suzerain 0.1.4
+----------------------------
+
+Interim release to clear books of closed tickets.
+
+This release contains the following with tickets numbers referencing content
+from https://red.ices.utexas.edu/projects/suzerain:
+
+ * Feature # 795: Use AC_OPENMP in Suzerain build
+ * Feature #1845: Consider moving to new AX_PROG_{CC,FC,F77,CXX}_MPI macros
+ * Feature #1945: Rethink log4cxx configuration procedure
+ * Feature #2182: Add channel_plot wrapper of gnuplot geared for channel_mean
+ * Feature #2582: Collect Reynolds-averaged Reynolds stresses
+ * Feature #2583: Add various vorticity-related quantities to sampling routines
+ * Feature #2662: Collect terms mentioned in Luker, Hale, and Bowersox
+ * Feature #2665: Collect quantities from Latin and Bowersox table 3
+ * Feature #2782: Determine injection species concentrations
+ * Feature #2983: Exactly impose subsonic outflow viscous conditions
+ * Feature #2998: Compute two-point correlations
+ * Feature #3009: Output Re_tau as part of bl.wall
+ * Feature #3045: Summarize final boundary layer or channel from driver_base_summary
+ * Feature #3058: Prepare nondimensional boundary layer
+ * Feature #3066: Fix corespernode functionality within sbatch scripts
+ * Feature #3070: Check implicit NRBC performance on subsonic inflows
+ * Feature #3082: Scale Largo epsilon cutoffs from mean density
+ * Feature #3090: Compute more QoI from edge99, not edge
+ * Feature #3099: Make --undriven default behavior with baseflow
+ * Feature #3105: Get B-spline details into application startup
+ * Bug     #2599: Account for functionals of the expectation
+ * Bug     #3065: Please remove personal information from sbatch scripts
+ * Bug     #3078: largo_BL_spatiotemporal_consistent_preStep_baseflow ignores src_base
+ * Bug     #3097: Investigate sanity of changing Ny
+
+What's new in suzerain 0.1.2
+----------------------------
+
+Interim release to clear books of closed tickets.
+
+This release contains the following with tickets numbers referencing content
+from https://red.ices.utexas.edu/projects/suzerain:
+
+ * Feature #1536: Investigate slow growth in suzerain context
+ * Feature #1537: Investigate Rayleigh problem favorable pressure equivalent
+ * Feature #1729: Determine Suzerain's contribution to Victor's DNS run planning chart
+ * Feature #2129: Fix heat shield search space
+ * Feature #2366: Add tacc_affinity to TACC jobscripts
+ * Feature #2442: Fix column headers in channel_mean text output
+ * Feature #2463: Improve default restart file behavior
+ * Feature #2616: Add Ma_tau to channel_mean output
+ * Feature #2621: Add B_q to postproc/channel.m output
+ * Feature #2664: Compute skin friction
+ * Feature #2736: Move post-processing to shared driver infrastructure
+ * Feature #2853: Integral constraints need to use homogeneous BCs
+ * Feature #2856: Get RPATH working
+ * Feature #2979: Add implicit NRBC implementations
+ * Feature #2985: Fix compiler warnings on GCC 4.6
+ * Feature #2992: Investigate spatiotemporal slow growth in suzerain context
+ * Feature #2999: Investigate spatiotemporal slow growth with FPG baseflow
+ * Feature #3007: Add turnover time computation
+ * Feature #3022: Revisit what @scenario.Ma@ and @scenario.Re@ mean in the baseflow context
+ * Feature #3023: Add delta99
+ * Feature #3024: Merge ESIO/Underling builds as done with Largo
+ * Feature #3034: Avoid loss of timestep statistics on encountering NaN
+ * Feature #3036: Compute inviscid wave speeds for slow growth
+ * Feature #3037: Ensure delta working cleanly against FPG boundary layers
+ * Feature #3038: Generate FPG BLs for larger wall-normal domain extent
+ * Feature #3039: Investigate if --undriven=all causes FPG BL freestreams to drift
+ * Feature #3042: Add flowthrough time to QoI
+ * Feature #3046: Add simulation time per flowthrough or per turnover
+ * Feature #3052: Add functionality to allow the user to set the amplitude growth rate parameters
+ * Feature #3055: Log max an min values of state variables
+ * Feature #3056: Sample max and min values of state variables along y
+ * Feature #3057: Fix benign shadow warning
+ * Feature #3060: Change default restart_retain
+ * Feature #3061: Add cache_binary call to TACC jobscripts
+ * Feature #3068: Add default restart time for wall-driven channels
+ * Feature #3076: Codify some handy matplotlib commands
+ * Feature #3079: Rework L2 broadcasting logic to be robust in presence of race
+ * Feature #3080: SVNREV strings not making it into binaries
+ * Feature #3086: Check code unit scaling on tau_w and u_tau
+ * Support #3033: Get homogenized FPG baseflows behaving as expected
+ * Bug     #2809: Fix non-default zcgbsvx options
+ * Bug     #2973: Fix yelling when spec.lower_rho or spec.upper_rho inappropriate
+ * Bug     #2997: Correct largo_init for tensor-consistent SG models
+ * Bug     #3048: Value thick->delta inconsistent with edge->y
+ * Bug     #3073: zgbsv solver w/ NRBC may be broken in apps/perfect
+ * Bug     #3077: Enabling spatiotemporal consistent formulation kills all fluctuations
+
+
 What's new in suzerain 0.1.1
 ----------------------------
 
 Initial public release of Suzerain!
 
-This release contains the following
+This release contains the following with tickets numbers referencing content
+from https://red.ices.utexas.edu/projects/suzerain:
 
-    * TBD
+ * Feature  # 709: Create test plan/progression for Suzerain
+ * Feature  #1322: Design non-reflecting BCs for the freestream to be implemented in physical space
+ * Feature  #1446: Add banded matrix types to Octave
+ * Feature  #1609: Compute L2 as a function of wall-normal position
+ * Feature  #1912: Investigate Scalable Checkpoint Restart (SCR)
+ * Feature  #1918: Bring up Suzerain on Hera or Cab
+ * Feature  #2128: Add transpiration to model document
+ * Feature  #2183: Add implementation of linearized curl curl velocity term
+ * Feature  #2191: Restructure apps/ directory for additional binaries
+ * Feature  #2197: Have status_dt, restart_dt, statistics_dt work modulo some time
+ * Feature  #2287: Optimize banded matrix routines for "middle" conditions
+ * Feature  #2399: Preliminary testing of reflecting BCs
+ * Feature  #2480: Prepare a shared driver to use in both perfect/reacting
+ * Feature  #2481: Permit detecting channel vs boundary layer restart files
+ * Feature  #2484: Document implicit solve to being wall-normal only
+ * Feature  #2485: Reduce implicit solve to being wall-normal only
+ * Feature  #2488: Incorporate passive scalar capabilities
+ * Feature  #2489: Verify explicit for perfect gas against constant-coefficient MMS
+ * Feature  #2490: Incorporate reacting scalars through Cantera
+ * Feature  #2491: Implement non-reflecting BCs for the freestream in physical space
+ * Feature  #2492: Permit initializing channel vs boundary layer profiles
+ * Feature  #2493: Collect wall-normal mean profiles necessary for slow growth forcing
+ * Feature  #2494: Document slow growth within Suzerain
+ * Feature  #2495: Implement slow growth forcing within nonlinear.hpp
+ * Feature  #2497: Update ScenarioDefinition and restart format for slow growth parameters
+ * Feature  #2498: Verify reacting scalar computations
+ * Feature  #2500: Merge passive scalar capabilities with slow growth boundary layer
+ * Feature  #2501: Merge reacting flow capabilities with slow growth boundary layer
+ * Feature  #2502: Add slow growth forcing for chemical reactions
+ * Feature  #2503: Add slow growth pressure gradient capabilities
+ * Feature  #2504: Add passive scalars to Suzerain model document
+ * Feature  #2505: Implement wall transpiration for perfect gas only
+ * Feature  #2507: Implement wall transpiration for passive scalars
+ * Feature  #2508: Implement wall transpiration for reacting scalars
+ * Feature  #2509: Accommodate variable Prandtl number in formulation
+ * Feature  #2510: Add enthalpy diffusion to total energy equation
+ * Feature  #2511: Add freestream forcing for slow growth after step completes
+ * Feature  #2512: Perform scaling study on DOE system
+ * Feature  #2513: Ensure nondimensional code can be run dimensionally
+ * Feature  #2518: Accommodate variable gamma in formulation
+ * Feature  #2519: Accommodate non-power-law temperature in formulation
+ * Feature  #2520: Design how pressure is handled implicitly in reacting flow
+ * Feature  #2532: Prepare flux-based, fully explicit, dimensional formulation
+ * Feature  #2533: Design linearization for reacting equation of state
+ * Feature  #2534: Design filtering approach
+ * Feature  #2535: Implement fully explicit operator for zero or more species concentration equations
+ * Feature  #2536: Implement implicit, linearized operator
+ * Feature  #2537: Combine "R" and "L" as "N(u) = R(u) - Lu"
+ * Feature  #2553: Add explicit FLIBS configure check
+ * Feature  #2562: Track bulk density constraint in FANS averages
+ * Feature  #2570: Implement Cook and Cabot JCP 2005 Filter
+ * Feature  #2581: Move physical_view into libsuzerain
+ * Feature  #2584: Evaluate Cook and Cabot filter on DNS field from Suzerain
+ * Feature  #2585: Compute eigenstructure of Cook and Cabot filtering operator
+ * Feature  #2617: Add sqrt(T*) to gathered statistical quantities
+ * Feature  #2641: Update licensing for release
+ * Feature  #2663: Compute boundary-layer shape factor
+ * Feature  #2735: Test shared driver for use in both reacting/perfect
+ * Feature  #2748: Output centerline y grid vs spanwise/streamwise spacing
+ * Feature  #2780: r37469 breaks legacy field loading
+ * Feature  #2788: Implement filter source on flux-based formulation
+ * Feature  #2800: Consolidate init binaries in apps/reacting
+ * Feature  #2807: Banish HAVE_CONFIG_H from tests and apps/reacting
+ * Feature  #2808: Fix --solver=zgbsvx,equil=true
+ * Feature  #2828: Correct autoconf version requirement for Fortran usage
+ * Feature  #2829: Get -xHost into FCFLAGS from AX_CC_MAXOPT
+ * Feature  #2835: Permit monitoring state derivatives at the wall
+ * Feature  #2842: Add "viscous" filter capability
+ * Feature  #2843: Run tests for injecting and nonreflecting boundary conditions
+ * Feature  #2858: Add viscosity output for reacting
+ * Feature  #2859: Statistics gathering for reacting
+ * Feature  #2861: Tabulate suzerain_bspline_htstretch1_evdeltascale
+ * Feature  #2862: Revisit off-diagonal terms in "viscous" filter
+ * Feature  #2864: Implement non-reflecting upper boundary for reacting
+ * Feature  #2872: Move viscous filter implementation out of @apply_navier_stokes_spatial_operator@
+ * Feature  #2874: Investigate Timings in Suzerain for Varying B-Spline Orders
+ * Feature  #2897: Test slow growth for laminar flows
+ * Feature  #2929: Reuse on the reacting implementation the @constraint_treatment@ approach from perfect
+ * Feature  #2930: Permit constraining second derivatives at upper boundary
+ * Feature  #2963: Compute boundary layer quantities at status time
+ * Feature  #2980: Problem with thickness computation on temporal formulation
+ * Feature  #2981: BL quantity computation can bring down a simulation
+ * Feature  #2989: Construct integration coefficients for less than whole domain
+ * Feature  #2991: Mean freestream constraints must match baseflow
+ * Feature  #3000: Three thousand
+ * Feature  #3003: Mean freestream constraint enforcement profiles must match baseflow
+ * Feature  #3004: Output B_q as part of bl.qoi
+ * Feature  #3005: Recompute statistics if any is not present in the restart file, and when the advance timesteps is set to 0
+ * Feature  #3006: Allow to output the sample file only when recomputing statistics
+ * Feature  #3010: Integrate BL QoI only up to the edge
+ * Feature  #3018: what(): ...encountered ++table.lower_bound(y) == table.end()
+ * Feature  #3020: Revisit Te/Tw in baseflow computations
+ * Feature  #3021: Investigate deltaH and Re_deltaH results from #3010
+ * Support  #2487: Build common prerequisites on lonestar
+ * Support  #2796: sl6 build issue
+ * Support  #2821: Incorporate one-off P3DFFT into lib/p3dfft
+ * Support  #2891: Search for Memory Leak
+ * Support  #2895: Allow --with-esio or equivalent with suzerain
+ * Bug      #2473: channel_mean appears to be failing on restart files
+ * Bug      #2482: Determine why hybrid transform_wave_to_physical is 2x explicit-only case
+ * Bug      #2514: Double check autotools prereq versions are correct
+ * Bug      #2515: Determine why make check is failing for Victor on GCC debug builds
+ * Bug      #2557: Laminar 'channel --implicit --advance_nt=10 restart0.h5 --Nx=3 --Nz=10' fatal error
+ * Bug      #2595: HDF5 v1.8.8 or later breaks unit tests
+ * Bug      #2729: Pass 'make check' on Intel 12.1
+ * Bug      #2783: svn rev info leads to spurious test failures
+ * Bug      #2805: Failure of test_restart_explicit.sh for perfect implementation with intel/11.1
+ * Bug      #2813: suzerain/timers.h contains a glaring scoping issue
+ * Bug      #2818: Why is diter giving weird statistics?
+ * Bug      #2826: Isothermal, no-slip BC probably subtly broken
+ * Bug      #2833: Test failures on @gcc/4.6@ on @--enable-debug=info@
+ * Bug      #2838: wall_mass_fractions
+ * Bug      #2845: h5diff version detection b0rked on Lonestar
+ * Bug      #2857: Used Cp where I meant Cv
+ * Bug      #2868: explicit nan'ing on coleman-like channel
+ * Bug      #2871: apps/reacting/test_restart_multispecies_implicit.sh failing
+ * Bug      #2884: Get bulk_rho_E working for --explicit
+ * Bug      #2887: Instability in quiet channel field atop r39350
+ * Bug      #2971: Workaround -pedantic log4cxx issues on buildbot.ices.
+ * Bug      #2974: precision errors in apps/reacting unit testing
+ * Bug      #2996: Remove annoying messages for boundary layers
+ * Document #2572: Revisit breakpoint stretching to ensure it can be recreated from documentation
+ * Document #2824: Unify documentation for reacting flow
+ * Document #2869: reacting model doc not building correctly...
+ * Software Engineering #2483: Measure wall-normal-only implicit channel against explicit version

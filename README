@@ -5,7 +5,8 @@
 ---------------
 
 This document describes how to build suzerain from source code on Unix-like
-systems.
+systems.  For information on the numerics, please see the model documents
+under writeups/ that are build when a LaTeX installation is available.
 
 
 1. Dependencies
@@ -14,12 +15,17 @@ systems.
 The code depends upon the following libraries:
 
     1) GNU Scientific Library (GSL) from http://www.gnu.org/software/gsl/
-    2) Boost from http://www.boost.org/
-    3) Eigen from http://eigen.tuxfamily.org/
-    4) Log4cxx from http://logging.apache.org/log4cxx/
-    5) ESIO from https://red.ices.utexas.edu/projects/esio
-    6) underling from https://red.ices.utexas.edu/projects/underling
-    7) FFTW from http://www.fftw.org/
+    2) FFTW from http://www.fftw.org/ compiled with MPI support
+    3) Boost from http://www.boost.org/
+    4) Eigen from http://eigen.tuxfamily.org/
+    5) Apache Log4cxx from http://logging.apache.org/log4cxx/
+    6) ESIO from https://github.com/RhysU/ESIO
+
+The following optional dependencies are recommended for full functionality:
+
+    1) GRVY from https://red.ices.utexas.edu/projects/software/wiki/GRVY
+    2) Antioch from https://github.com/libantioch/antioch
+    3) underling from https://red.ices.utexas.edu/projects/underling
 
 
 2. Configuration
