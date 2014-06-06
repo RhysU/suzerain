@@ -64,9 +64,11 @@
     ))(( u,                (( u,                 "Reynolds-averaged streamwise velocity"                                                        )) \
                            (( v,                 "Reynolds-averaged wall-normal velocity"                                                       )) \
                            (( w,                 "Reynolds-averaged spanwise velocity"                                                          )) \
+    ))(( Ma,               (( Ma,                "Reynolds-averaged local Mach number"                                                          )) \
     ))(( rho2,             (( rho2,              "Reynolds-averaged squared density"                                                            )) \
     ))(( p2,               (( p2,                "Reynolds-averaged squared pressure"                                                           )) \
     ))(( T2,               (( T2,                "Reynolds-averaged squared temperature"                                                        )) \
+    ))(( Ma2,              (( Ma2,               "Reynolds-averaged squared local Mach number"                                                  )) \
     ))(( sym_grad_u,       (( symxx_grad_u,      "Symmetric part (x,x)-component of Reynolds-averaged velocity gradient"                        )) \
                            (( symxy_grad_u,      "Symmetric part (x,y)-component of Reynolds-averaged velocity gradient"                        )) \
                            (( symxz_grad_u,      "Symmetric part (x,z)-component of Reynolds-averaged velocity gradient"                        )) \
@@ -179,9 +181,12 @@
                            (( v_v_w,             "Reynolds-averaged (y,y,z)-component of velocity times velocity times velocity"                )) \
                            (( v_w_w,             "Reynolds-averaged (y,z,z)-component of velocity times velocity times velocity"                )) \
                            (( w_w_w,             "Reynolds-averaged (z,z,z)-component of velocity times velocity times velocity"                )) \
-    ))(( T_u,              (( T_u,               "Reynolds-averaged x-component of temperature times velocity"                                  )) \
-                           (( T_v,               "Reynolds-averaged y-component of temperature times velocity"                                  )) \
-                           (( T_w,               "Reynolds-averaged z-component of temperature times velocity"                                  )) \
+    ))(( T_u,              (( T_u,               "Reynolds-averaged x-component of velocity times temperature"                                  )) \
+                           (( T_v,               "Reynolds-averaged y-component of velocity times temperature"                                  )) \
+                           (( T_w,               "Reynolds-averaged z-component of velocity times temperature"                                  )) \
+    ))(( a_u,              (( a_u,               "Reynolds-averaged x-component of velocity times speed of sound"                               )) \
+                           (( a_v,               "Reynolds-averaged y-component of velocity times speed of sound"                               )) \
+                           (( a_w,               "Reynolds-averaged z-component of velocity times speed of sound"                               )) \
     ))(( om,               (( omx,               "Reynolds-averaged streamwise vorticity"                                                       )) \
                            (( omy,               "Reynolds-averaged wall-normal vorticity"                                                      )) \
                            (( omz,               "Reynolds-averaged spanwise vorticity"                                                         )) \

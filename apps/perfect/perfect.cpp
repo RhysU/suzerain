@@ -775,6 +775,7 @@ take_samples(const definition_scenario &scenario,
                 scenario.alpha, scenario.beta, scenario.gamma, scenario.Ma,
                 rho, grad_rho, m, grad_m, e, grad_e,
                 p, grad_p, T, grad_T, mu, grad_mu, lambda, grad_lambda);
+            const real_t a = std::sqrt(T);
 
             const Matrix3r tau = rholut::tau(
                                     mu, lambda, div_u, grad_u);
@@ -787,7 +788,7 @@ take_samples(const definition_scenario &scenario,
 
             acc[ref::T](T);
 
-            acc[ref::a](std::sqrt(T));
+            acc[ref::a](a);
 
             acc[ref::h0](e + p);
 
@@ -803,11 +804,17 @@ take_samples(const definition_scenario &scenario,
             acc[ref::v](u.y());
             acc[ref::w](u.z());
 
+            // Note code unit correction
+            acc[ref::Ma](scenario.Ma * (u.x() / a));
+
             acc[ref::rho2](rho2);
 
             acc[ref::p2](p * p);
 
             acc[ref::T2](T * T);
+
+            // Note code unit correction
+            acc[ref::Ma2](std::pow(scenario.Ma * (u.x() / a), 2));
 
             acc[ref::symxx_grad_u]( grad_u(0,0)                   );
             acc[ref::symxy_grad_u]((grad_u(0,1) + grad_u(1,0)) / 2);
@@ -951,6 +958,10 @@ take_samples(const definition_scenario &scenario,
             acc[ref::T_u](T * u.x());
             acc[ref::T_v](T * u.y());
             acc[ref::T_w](T * u.z());
+
+            acc[ref::a_u](a * u.x());
+            acc[ref::a_v](a * u.y());
+            acc[ref::a_w](a * u.z());
 
             acc[ref::omx](om.x());
             acc[ref::omy](om.y());
