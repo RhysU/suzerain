@@ -4,6 +4,7 @@
 //
 // Additional parenthesis are present for multiline statements to facilitate
 // automatic translation into valid Python source using only regexes...
+//     0) s/\/\//# /g
 //     1) s/(y)/   /g
 //     2) s/bar_/bar./g
 //     3) s/tilde_/tilde./g
