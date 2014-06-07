@@ -65,10 +65,14 @@
                            (( v,                 "Reynolds-averaged wall-normal velocity"                                                       )) \
                            (( w,                 "Reynolds-averaged spanwise velocity"                                                          )) \
     ))(( Ma,               (( Ma,                "Reynolds-averaged local Mach number"                                                          )) \
-    ))(( rho2,             (( rho2,              "Reynolds-averaged squared density"                                                            )) \
-    ))(( p2,               (( p2,                "Reynolds-averaged squared pressure"                                                           )) \
-    ))(( T2,               (( T2,                "Reynolds-averaged squared temperature"                                                        )) \
-    ))(( Ma2,              (( Ma2,               "Reynolds-averaged squared local Mach number"                                                  )) \
+    ))(( rho2,             (( rho2,              "Reynolds-averaged square of density"                                                          )) \
+    ))(( p2,               (( p2,                "Reynolds-averaged square of pressure"                                                         )) \
+    ))(( T2,               (( T2,                "Reynolds-averaged square of temperature"                                                      )) \
+    ))(( h02,              (( h02,               "Reynolds-averaged square of stagnation enthalpy"                                              )) \
+    ))(( H02,              (( H02,               "Reynolds-averaged square of stagnation enthalpy per unit mass"                                )) \
+    ))(( mu2,              (( mu2,               "Reynolds-averaged square of dynamic viscosity"                                                )) \
+    ))(( nu2,              (( nu2,               "Reynolds-averaged square of kinematic viscosity"                                              )) \
+    ))(( Ma2,              (( Ma2,               "Reynolds-averaged square of local Mach number"                                                )) \
     ))(( sym_grad_u,       (( symxx_grad_u,      "Symmetric part (x,x)-component of Reynolds-averaged velocity gradient"                        )) \
                            (( symxy_grad_u,      "Symmetric part (x,y)-component of Reynolds-averaged velocity gradient"                        )) \
                            (( symxz_grad_u,      "Symmetric part (x,z)-component of Reynolds-averaged velocity gradient"                        )) \
@@ -153,6 +157,8 @@
                            (( rho2_E_w,          "Reynolds-averaged z-component of total energy times momentum"                                 )) \
     ))(( rho_E_E,          (( rho_E_E,           "Reynolds-averaged density times the square of specific total energy"                          )) \
     ))(( rho2_E_E,         (( rho2_E_E,          "Reynolds-averaged square of total energy"                                                     )) \
+    ))(( rho_a,            (( rho_a,             "Reynolds-averaged speed of sound times density"                                               )) \
+    ))(( rho2_a,           (( rho2_a,            "Reynolds-averaged speed of sound times squared density"                                       )) \
     ))(( rho_mu,           (( rho_mu,            "Reynolds-averaged dynamic viscosity times density"                                            )) \
     ))(( rho2_mu,          (( rho2_mu,           "Reynolds-averaged dynamic viscosity times squared density"                                    )) \
     ))(( mu_S,             (( mu_Sxx,            "Reynolds-averaged (x,x)-component of the deviatoric portion of the strain rate"               )) \

@@ -813,6 +813,14 @@ take_samples(const definition_scenario &scenario,
 
             acc[ref::T2](T * T);
 
+            acc[ref::h02](std::pow(e + p, 2));
+
+            acc[ref::H02](std::pow((e + p) / rho, 2));
+
+            acc[ref::mu2](mu * mu);
+
+            acc[ref::nu2](std::pow(mu / rho, 2));
+
             // Note code unit correction
             acc[ref::Ma2](std::pow(scenario.Ma * (u.x() / a), 2));
 
@@ -919,6 +927,10 @@ take_samples(const definition_scenario &scenario,
             acc[ref::rho_E_E](e * e / rho);
 
             acc[ref::rho2_E_E](e * e);
+
+            acc[ref::rho_a](rho * a);
+
+            acc[ref::rho2_a](rho2 * a);
 
             acc[ref::rho_mu](rho * mu);
 
