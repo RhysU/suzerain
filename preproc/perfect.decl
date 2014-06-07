@@ -232,7 +232,8 @@ local_Prt = (tilde_upp_vpp * tilde_T__y) / (tilde_Tpp_vpp * tilde_u__y);
 local_nut = - Re * tilde_upp_vpp / tilde_u__y;
 
 // Local Reynolds number based on wall-normal distance y
-local_Re  = Re * bar_rho_u(y) * y / bar_mu(y);
+// See Huang et al 1995 (doi:10.1017/s0022112095004599) for why not bar_rho_u
+local_Re  = Re * (bar_rho(y) * bar_u(y) * y) / bar_mu(y);
 // }
 
 // Computation of Favre-averaged density equation residual per writeup {
