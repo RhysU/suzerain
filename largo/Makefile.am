@@ -16,10 +16,12 @@ EXTRA_DIST  += $(DX_CONFIG)
 EXTRA_DIST  += build-aux/sfmakedepend.pl
 EXTRA_DIST  += build-aux/update_license.pl
 
-dist-hook: docs
+dist-hook: dist-hook-scm dist-hook-docs
+dist-hook-scm:
 	: # Eliminate .svn and .git directories in dist tarball
 	find $(distdir)/ -name '.svn' -type d -exec rm {} \;
 	find $(distdir)/ -name '.git' -type d -exec rm {} \;
+dist-hook-docs:
 	: # Include generated documentation in the dist tarball
 	cp -rv $(top_builddir)/docs $(top_distdir)
 

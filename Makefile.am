@@ -25,8 +25,9 @@ DIST_SUBDIRS = lib largo build-aux suzerain tests fields apps \
 EXTRA_DIST  += AUTHORS astylerc bootstrap COPYING $(DX_CONFIG)
 EXTRA_DIST  += notebooks # Entire directory contents
 
-# Eliminate .svn and/or .git directories in dist tarball
-dist-hook:
+dist-hook: dist-hook-scm
+dist-hook-scm:
+	: # Eliminate .svn and/or .git directories in dist tarball
 	find $(distdir)/ -name '.svn' -type d -exec rm {} \;
 	find $(distdir)/ -name '.git' -type d -exec rm {} \;
 
