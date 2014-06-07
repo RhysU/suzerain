@@ -228,6 +228,72 @@ class symboltranscript(collections.OrderedDict):
                 return False
 
 
+def canonical(*exprs):
+    r'''
+    Produce a canonically ordered tuple of the provided SymPy expressions.
+    Older SymPy permitted tuple(sorted([f(x),g(x)])) but that breaks on 0.7.4
+    (refer to http://stackoverflow.com/questions/24093363/ for more details).
+    Workaround employs SymPy compare member method via sorted's key argument.
+
+    Canonical sorting of symbols:
+
+    >>> x, y = map(sympy.Symbol, 'xy')
+    >>> canonical(x, y)
+    (x, y)
+    >>> canonical(y, x)
+    (x, y)
+    >>> canonical(x, x)
+    (x, x)
+
+    Canonical sorting of functions of the same argument:
+
+    >>> f, g = map(sympy.Function, 'fg')
+    >>> canonical(f(x), g(x))
+    (f(x), g(x))
+    >>> canonical(g(x), f(x))
+    (f(x), g(x))
+
+    Canonical sorting of one function with different arguments:
+
+    >>> canonical(f(x), f(y))
+    (f(x), f(y))
+
+    >>> canonical(f(y), f(x))
+    (f(x), f(y))
+
+    >>> canonical(f(x), f(x))
+    (f(x), f(x))
+
+    Canonical sorting of one function invoked with differing arity:
+
+    >>> canonical(f(x, y), f(x))
+    (f(x), f(x, y))
+
+    '''
+    # Similar to functools.cmp_to_key() but without intermediate cmp function
+    class Key(object):
+        def __init__(self, obj, *args):
+            self.obj = obj
+
+        def __lt__(self, other):
+            return self.obj.compare(other.obj) < 0
+
+        def __gt__(self, other):
+            return self.obj.compare(other.obj) > 0
+
+        def __eq__(self, other):
+            return self.obj.compare(other.obj) == 0
+
+        def __le__(self, other):
+            return self.obj.compare(other.obj) <= 0
+
+        def __ge__(self, other):
+            return self.obj.compare(other.obj) >= 0
+
+        def __ne__(self, other):
+            return self.obj.compare(other.obj) != 0
+    return tuple(sorted(exprs, key=Key))
+
 
 def parser(statement_tuples):
     r'''
