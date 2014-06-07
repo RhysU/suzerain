@@ -257,10 +257,8 @@ def canonical(*exprs):
 
     >>> canonical(f(x), f(y))
     (f(x), f(y))
-
     >>> canonical(f(y), f(x))
     (f(x), f(y))
-
     >>> canonical(f(x), f(x))
     (f(x), f(x))
 
@@ -432,15 +430,15 @@ def prerequisites(f, df=None, ddf=None, order=2):
     for i in df.keys():
         if not df[i].is_zero:
             for s in df[i].atoms(AppliedUndef):
-                m.add((s,))
-            m.add((i, i))                    # Canonical
+                m.add(canonical(s))
+            m.add(canonical(i, i))
     # Term: +    2   \sum_{i<j} \sigma_{ij} f_{,i}(d) f_{,j}(d)
     for (i, j) in itertools.combinations(df.keys(), 2):
         fifj = (df[i] * df[j]).simplify()
         if not fifj.is_zero:
             for s in fifj.atoms(AppliedUndef):
-                m.add((s,))
-            m.add(tuple(sorted([i, j])))     # Canonicalize
+                m.add(canonical(s))
+            m.add(canonical(i, j))
 
     # Quantities necessary to compute first- or second order E[f(x)]
     assert order == 1 or order == 2
@@ -448,20 +446,20 @@ def prerequisites(f, df=None, ddf=None, order=2):
         ddf = mixed_partials(f, df)
     # Term:    f(d)
     for s in f.atoms(AppliedUndef):
-        m.add((s,))
+        m.add(canonical(s))
     if order > 1:
         # Term: + (1/2) \sum_{ i } \sigma_{ii} f_{,ii}(d)
         for i in ddf.keys():
             if not ddf[i][i].is_zero:
                 for s in ddf[i][i].atoms(AppliedUndef):
-                    m.add((s,))
-                m.add((i, i))                    # Canonical
+                    m.add(canonical(s))
+                m.add(canonical(i, i))
         # Term: +       \sum_{i<j} \sigma_{ij} f_{,ij}(d)
         for (i, j) in itertools.combinations(ddf.keys(), 2):
             if not ddf[i][j].is_zero:
                 for s in ddf[i][j].atoms(AppliedUndef):
                     m.add((s,))
-                m.add(tuple(sorted([i, j])))     # Canonicalize
+                m.add(canonical(i, j))
 
     return m
 
@@ -543,11 +541,11 @@ def expectation(f, ddf=None, order=2):
         # Term: + (1/2) \sum_{ i } \sigma_{ii} f_{,ii}(d)
         for i in ddf.keys():
             if not ddf[i][i].is_zero:
-                E[(i, i)] += (ddf[i][i] / 2).simplify()  # Canonical
+                E[canonical(i, i)] += (ddf[i][i] / 2).simplify()
         # Term: +       \sum_{i<j} \sigma_{ij} f_{,ij}(d)
         for (i, j) in itertools.combinations(ddf.keys(), 2):
             if not ddf[i][j].is_zero:
-                E[tuple(sorted([i, j]))] += ddf[i][j]    # Canonicalize
+                E[canonical(i, j)] += ddf[i][j]
 
     return E
 
@@ -592,12 +590,12 @@ def variance(f, df=None):
     # Term:          \sum_{ i } \sigma_{ii} f_{,i}^2(d)
     for i in df.keys():
         if not df[i].is_zero:
-            Var[(i, i)] += (df[i] ** 2).simplify()  # Canonical
+            Var[canonical(i, i)] += (df[i] ** 2).simplify()
     # Term: +    2   \sum_{i<j} \sigma_{ij} f_{,i}(d) f_{,j}(d)
     for (i, j) in itertools.combinations(df.keys(), 2):
         twofifj = (2 * df[i] * df[j]).simplify()
         if not twofifj.is_zero:
-            Var[tuple(sorted([i, j]))] += twofifj   # Canonicalize
+            Var[canonical(i, j)] += twofifj
 
     return Var
 
