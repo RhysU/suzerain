@@ -1008,6 +1008,35 @@ take_samples(const definition_scenario &scenario,
             acc[ref::rho2_omy_omz](rho2 * om.y() * om.z());
             acc[ref::rho2_omz_omz](rho2 * om.z() * om.z());
 
+            acc[ref::dxu_dxu](grad_u(0,0) * grad_u(0,0));
+            acc[ref::dxu_dyv](grad_u(0,0) * grad_u(1,1));
+            acc[ref::dxu_dzw](grad_u(0,0) * grad_u(2,2));
+            acc[ref::dyv_dyv](grad_u(1,1) * grad_u(1,1));
+            acc[ref::dyv_dzw](grad_u(1,1) * grad_u(2,2));
+            acc[ref::dzw_dzw](grad_u(2,2) * grad_u(2,2));
+
+            acc[ref::rho_dxu](rho * grad_u(0,0));
+            acc[ref::rho_dyv](rho * grad_u(1,1));
+            acc[ref::rho_dzw](rho * grad_u(2,2));
+
+            acc[ref::rho2_dxu](rho2 * grad_u(0,0));
+            acc[ref::rho2_dyv](rho2 * grad_u(1,1));
+            acc[ref::rho2_dzw](rho2 * grad_u(2,2));
+
+            acc[ref::rho_dxu_dxu](rho * grad_u(0,0) * grad_u(0,0));
+            acc[ref::rho_dxu_dyv](rho * grad_u(0,0) * grad_u(1,1));
+            acc[ref::rho_dxu_dzw](rho * grad_u(0,0) * grad_u(2,2));
+            acc[ref::rho_dyv_dyv](rho * grad_u(1,1) * grad_u(1,1));
+            acc[ref::rho_dyv_dzw](rho * grad_u(1,1) * grad_u(2,2));
+            acc[ref::rho_dzw_dzw](rho * grad_u(2,2) * grad_u(2,2));
+
+            acc[ref::rho2_dxu_dxu](rho2 * grad_u(0,0) * grad_u(0,0));
+            acc[ref::rho2_dxu_dyv](rho2 * grad_u(0,0) * grad_u(1,1));
+            acc[ref::rho2_dxu_dzw](rho2 * grad_u(0,0) * grad_u(2,2));
+            acc[ref::rho2_dyv_dyv](rho2 * grad_u(1,1) * grad_u(1,1));
+            acc[ref::rho2_dyv_dzw](rho2 * grad_u(1,1) * grad_u(2,2));
+            acc[ref::rho2_dzw_dzw](rho2 * grad_u(2,2) * grad_u(2,2));
+
             // Compute any slow growth forcing applied to the flow
             largo_state state(e, m.x(), m.y(), m.z(), rho, p);
             largo_state slowgrowth_f;

@@ -220,6 +220,30 @@
                            (( rho2_omy_omy,      "Reynolds-averaged (y,y)-component of squared density times vorticity times vorticity"         )) \
                            (( rho2_omy_omz,      "Reynolds-averaged (y,z)-component of squared density times vorticity times vorticity"         )) \
                            (( rho2_omz_omz,      "Reynolds-averaged (z,z)-component of squared density times vorticity times vorticity"         )) \
+    ))(( du_du,            (( dxu_dxu,           "Reynolds-averaged square of streamwise derivative of streamwise velocity"                     )) \
+                           (( dxu_dyv,           "Reynolds-averaged product of scalars (\\partial_x u)(\\partial_y v)"                          )) \
+                           (( dxu_dzw,           "Reynolds-averaged product of scalars (\\partial_x u)(\\partial_z w)"                          )) \
+                           (( dyv_dyv,           "Reynolds-averaged square of wall-normal derivative of wall-normal velocity"                   )) \
+                           (( dyv_dzw,           "Reynolds-averaged product of scalars (\\partial_y v)(\\partial_z w)"                          )) \
+                           (( dzw_dzw,           "Reynolds-averaged square of spanwise derivative of spanwise velocity"                         )) \
+    ))(( rho_du,           (( rho_dxu,           "Reynolds-averaged density times the streamwise derivative of streamwise velocity"             )) \
+                           (( rho_dyv,           "Reynolds-averaged density times the wall-normal derivative of wall-normal velocity"           )) \
+                           (( rho_dzw,           "Reynolds-averaged density times the spanwise derivative of spanwise velocity"                 )) \
+    ))(( rho2_du,          (( rho2_dxu,          "Reynolds-averaged squared density times the streamwise derivative of streamwise velocity"     )) \
+                           (( rho2_dyv,          "Reynolds-averaged squared density times the wall-normal derivative of wall-normal velocity"   )) \
+                           (( rho2_dzw,          "Reynolds-averaged squared density times the spanwise derivative of spanwise velocity"         )) \
+    ))(( rho_du_du,        (( rho_dxu_dxu,       "Reynolds-averaged density times square of streamwise derivative of streamwise velocity"       )) \
+                           (( rho_dxu_dyv,       "Reynolds-averaged density times product of scalars (\\partial_x u)(\\partial_y v)"            )) \
+                           (( rho_dxu_dzw,       "Reynolds-averaged density times product of scalars (\\partial_x u)(\\partial_z w)"            )) \
+                           (( rho_dyv_dyv,       "Reynolds-averaged density times square of wall-normal derivative of wall-normal velocity"     )) \
+                           (( rho_dyv_dzw,       "Reynolds-averaged density times product of scalars (\\partial_y v)(\\partial_z w)"            )) \
+                           (( rho_dzw_dzw,       "Reynolds-averaged density times square of spanwise derivative of spanwise velocity"           )) \
+    ))(( rho2_du_du,       (( rho2_dxu_dxu,      "Reynolds-averaged square of density times streamwise derivative of streamwise velocity"       )) \
+                           (( rho2_dxu_dyv,      "Reynolds-averaged squared density times product of scalars (\\partial_x u)(\\partial_y v)"    )) \
+                           (( rho2_dxu_dzw,      "Reynolds-averaged squared density times product of scalars (\\partial_x u)(\\partial_z w)"    )) \
+                           (( rho2_dyv_dyv,      "Reynolds-averaged square of density times wall-normal derivative of wall-normal velocity"     )) \
+                           (( rho2_dyv_dzw,      "Reynolds-averaged squared density times product of scalars (\\partial_y v)(\\partial_z w)"    )) \
+                           (( rho2_dzw_dzw,      "Reynolds-averaged square of density times spanwise derivative of spanwise velocity"           )) \
     ))(( SrhoE,            (( SrhoE,             "Reynolds-averaged total energy contributions due to slow growth forcing"                      )) \
     ))(( Srhou,            (( Srhou,             "Reynolds-averaged streamwise momentum contributions due to slow growth forcing"               )) \
                            (( Srhov,             "Reynolds-averaged wall-normal momentum contributions due to slow growth forcing"              )) \

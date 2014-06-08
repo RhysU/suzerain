@@ -24,6 +24,8 @@ for dataset in /twopoint_kx /twopoint_kz /helm /metadata_generated            \
                /minz_rho  /minz_rho_E  /minz_rho_u  /minz_rho_v  /minz_rho_w  \
                /bar_Ma /bar_Ma2 /bar_a_u                                      \
                /bar_h02 /bar_H02 /bar_mu2 /bar_nu2 /bar_rho_a /bar_rho2_a     \
+               /bar_du_du /bar_rho_du_du /bar_rho2_du_du                      \
+               /bar_rho_du /bar_rho2_du                                       \
                /bar_rho_E_u /bar_rho2_E_u /bar_rho_E_E /bar_rho2_E_E          \
                /bar_rho2_om_om                                                \
                /bar_SrhoE  /bar_Srhou  /bar_Srho  /bar_Srhou_dot_u            \
