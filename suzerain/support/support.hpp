@@ -176,6 +176,11 @@ compute_bulk_weights(bspline& b,
  * collocation point up to the j-th collocation point quantity's value at
  * collocation points using only a matrix-vector product.  Such integrals
  * arise during, e.g., application of the van Driest transformation.
+ *
+ * \warning Routine only tested based on output to summary files.
+ *          A transpose mistake is quite possible.  Verify that
+ *          <code>retval * y == y**2/2</code> before use in C++.
+ *          If it fails, fix it and also driver_base_summary.cpp.
  */
 MatrixXXr
 compute_cumulative_weights(bspline& b,

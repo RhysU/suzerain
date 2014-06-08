@@ -598,7 +598,7 @@ compute_cumulative_weights(bspline& b,
     masslu.solve(b.n(), invM.data(), 1, b.n());
 
     // Combine for collocation points -> cumulative integral operator
-    return intcoeff.transpose() * invM;
+    return invM.transpose() * intcoeff;
 }
 
 void
