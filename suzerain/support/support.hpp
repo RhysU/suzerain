@@ -164,12 +164,22 @@ load_bsplines(const esio_handle      h,
               shared_ptr<bsplineop>& cop);
 
 /**
- * Compute the integration weights necessary to compute a bulk quantity from the
+ * Compute the integration weights to compute a bulk quantity from the
  * quantity's value at collocation points using only a dot product.
  */
 VectorXr
 compute_bulk_weights(bspline& b,
                      const bsplineop_lu& masslu);
+
+/**
+ * Compute the integration weights to compute a cumulative integral from the 0th
+ * collocation point up to the j-th collocation point quantity's value at
+ * collocation points using only a matrix-vector product.  Such integrals
+ * arise during, e.g., application of the van Driest transformation.
+ */
+MatrixXXr
+compute_cumulative_weights(bspline& b,
+                           const bsplineop_lu& masslu);
 
 /** Save the current simulation time information */
 void

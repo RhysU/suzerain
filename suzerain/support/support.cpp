@@ -563,16 +563,42 @@ compute_bulk_weights(bspline& b,
     bulkcoeff /= b.collocation_point(b.n() - 1) - b.collocation_point(0);
 
     // Form M^-1 to map from collocation point values to coefficients
-    MatrixXXr mat = MatrixXXr::Identity(b.n(),b.n());
-    masslu.solve(b.n(), mat.data(), 1, b.n());
+    // Generally a bad idea numerically, but M should be decently conditioned
+    MatrixXXr invM = MatrixXXr::Identity(b.n(),b.n());
+    masslu.solve(b.n(), invM.data(), 1, b.n());
 
     // Dot the coefficients with each column of M^-1
+    // TODO Write this as a simple matrix-vector product
     VectorXr retval(b.n());
     for (int i = 0; i < b.n(); ++i) {
-        retval[i] = bulkcoeff.dot(mat.col(i));
+        retval[i] = bulkcoeff.dot(invM.col(i));
     }
 
     return retval;
+}
+
+// This could be made markedly more efficient, but
+// is by nature an infrequent operation so meh.
+MatrixXXr
+compute_cumulative_weights(bspline& b,
+                           const bsplineop_lu& masslu)
+{
+    // Obtain coefficient -> cumulative weights in columns
+    // working up from the 0th to the j-th collocation point.
+    MatrixXXr intcoeff(b.n(), b.n());
+    for (int j = 0; j < intcoeff.cols(); ++j) {
+        b.integration_coefficients(0, intcoeff.col(j).data(),
+                                   b.collocation_point(0),
+                                   b.collocation_point(j));
+    }
+
+    // Form M^-1 to map from collocation point values to coefficients
+    // Generally a bad idea numerically, but M should be decently conditioned
+    MatrixXXr invM = MatrixXXr::Identity(b.n(),b.n());
+    masslu.solve(b.n(), invM.data(), 1, b.n());
+
+    // Combine for collocation points -> cumulative integral operator
+    return intcoeff.transpose() * invM;
 }
 
 void
