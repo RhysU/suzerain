@@ -301,16 +301,26 @@ driver_base::summary_run(
                 final.y().data(), final.y().innerStride(),
                 summary::description[summary::offset::y]);
 
-        // Compute the bulk weights and then output those as well.
+        // Output the bulk and cumulative weights to ease integrating
         suzerain::bsplineop_lu masslu(*cop.get());
         masslu.factor_mass(*cop.get());
-        const VectorXr bulk_weights
-                = support::compute_bulk_weights(*b, masslu);
-        esio_line_establish(h.get(), bulk_weights.size(),
-                            0, bulk_weights.size());
-        esio_line_write(h.get(), "bulk_weights", bulk_weights.data(), 0,
-                        "Take dot product of these weights against any"
-                        " quantity to find the bulk value");
+        {
+            const VectorXr w = compute_bulk_weights(*b, masslu);
+            esio_line_establish(h.get(), w.size(), 0, w.size());
+            esio_line_write(h.get(), "bulk_weights", w.data(), 0,
+                    "Dot this weight vector with any quantity on collocation"
+                    " points to compute the bulk value over the domain");
+        }
+        {
+            const MatrixXXr w = compute_cumulative_weights(*b, masslu);
+            esio_plane_establish(h.get(), w.outerSize(), 0, w.outerSize(),
+                                          w.innerSize(), 0, w.innerSize());
+            esio_plane_write(h.get(), "cumulative_weights",
+                    w.data(), w.outerStride(), w.innerStride(),
+                    "Dot this matrix with any quantity on collocation"
+                    " points to compute the cumulative integral from"
+                    " the zeroth collocation point up to the j-th one");
+        }
 
         // Process each component's spatiotemporal trace...
         running_statistics<real_t,1> dtstats;
