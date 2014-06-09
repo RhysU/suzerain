@@ -1,7 +1,8 @@
 ## Process this file with automake to produce Makefile.in
 
 preprocdir       = $(pkgdatadir)/preproc
-preproc_SCRIPTS  = comp2suz_single.py gen_synth.py
+preproc_SCRIPTS  = comp2suz_single.py
+preproc_SCRIPTS += gen_synth.py
 preproc_SCRIPTS += propagation.py
 noinst_SCRIPTS   =
 preproc_DATA     =
