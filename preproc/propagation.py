@@ -270,6 +270,15 @@ def canonical(*exprs):
     return tuple(sympy.ordered(exprs))
 
 
+def natural(exprs):
+    r'''
+    Produce a naturally-ordered list of SymPy quantities using sympy.ordered.
+    Older SymPy permitted sorted([f(x),g(x)]) but that breaks on 0.7.4
+    (refer to http://stackoverflow.com/questions/24093363/ for more details).
+    '''
+    return list(sympy.ordered(exprs))
+
+
 def parser(statement_tuples):
     r'''
     Parse statements from (filename, lineno, statement) tuples into a
@@ -381,14 +390,14 @@ def prerequisites(f, df=None, ddf=None, order=2):
     return a set wherein unique tuples represents moments necessary to
     estimate E[f(x)] to first- or second order and Var[f(x)] to first order.
 
-    >>> sorted(prerequisites('1 + x*y + log(x/y)'))
-    []
+    >>> prerequisites('1 + x*y + log(x/y)')
+    set([])
 
-    >>> sorted(prerequisites('f(x)*g(y) + a'))
-    [(f(x),), (f(x), f(x)), (f(x), g(y)), (g(y),), (g(y), g(y))]
+    >>> natural(prerequisites('f(x)*g(y) + a'))
+    [(f(x),), (g(y),), (f(x), f(x)), (f(x), g(y)), (g(y), g(y))]
 
-    >>> sorted(prerequisites('f(x)*g(y) + a', order=2))
-    [(f(x),), (f(x), f(x)), (f(x), g(y)), (g(y),), (g(y), g(y))]
+    >>> natural(prerequisites('f(x)*g(y) + a', order=2))
+    [(f(x),), (g(y),), (f(x), f(x)), (f(x), g(y)), (g(y), g(y))]
     '''
     f = parse(f)
 
