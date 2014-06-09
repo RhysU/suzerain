@@ -278,8 +278,23 @@ canonical.__doc__ = r'''
 # (refer to http://stackoverflow.com/questions/24093363/ for more details).
 if (   distutils.version.LooseVersion(sympy.__version__)
      < distutils.version.LooseVersion('0.7.4')           ):
-    natural = lambda exprs: (  sorted(filter(lambda t: len(t) == 1, exprs))
-                             + sorted(filter(lambda t: len(t) != 1, exprs)))
+    # Robustly reproducing sympy.ordered semantics requires some effort
+    def natural_impl(exprs):
+        # First partition by length so (b,) comes before (a,a)
+        cases = [[]]
+        for expr in exprs:
+            try:
+                while len(cases) < len(expr):
+                    cases.append([])
+                cases[len(expr)-1].append(expr)
+            except TypeError:
+                cases[0].append(expr)
+        # Merge sorts from each length
+        retval = []
+        while cases:
+            retval.extend(sorted(cases.pop(0)))
+        return retval
+    natural = natural_impl
 else:
     natural = lambda exprs: list(sympy.ordered(exprs))
 
