@@ -228,11 +228,17 @@ class symboltranscript(collections.OrderedDict):
                 return False
 
 
-def canonical(*exprs):
-    r'''
+# Older SymPy permitted tuple(sorted([f(x),g(x)])) but that breaks on 0.7.4
+# (refer to http://stackoverflow.com/questions/24093363/ for more details).
+if (   distutils.version.LooseVersion(sympy.__version__)
+     < distutils.version.LooseVersion('0.7.4')           ):
+    canonical = lambda *exprs: tuple(sorted(exprs))
+else:
+    canonical = lambda *exprs: tuple(sympy.ordered(exprs))
+
+# Establish an identical docstring regardless of the implementation
+canonical.__doc__ = r'''
     Produce a canonically ordered tuple of the provided SymPy expressions.
-    Older SymPy permitted tuple(sorted([f(x),g(x)])) but that breaks on 0.7.4
-    (refer to http://stackoverflow.com/questions/24093363/ for more details).
 
     Canonical sorting of symbols:
 
@@ -267,16 +273,21 @@ def canonical(*exprs):
     (f(x), f(x, y))
 
     '''
-    return tuple(sympy.ordered(exprs))
 
+# Older SymPy permitted tuple(sorted([f(x),g(x)])) but that breaks on 0.7.4
+# (refer to http://stackoverflow.com/questions/24093363/ for more details).
+if (   distutils.version.LooseVersion(sympy.__version__)
+     < distutils.version.LooseVersion('0.7.4')           ):
+    natural = lambda exprs: (  sorted(filter(lambda t: len(t) == 1, exprs))
+                             + sorted(filter(lambda t: len(t) != 1, exprs)))
+else:
+    natural = lambda exprs: list(sympy.ordered(exprs))
 
-def natural(exprs):
-    r'''
-    Produce a naturally-ordered list of SymPy quantities using sympy.ordered.
-    Older SymPy permitted sorted([f(x),g(x)]) but that breaks on 0.7.4
-    (refer to http://stackoverflow.com/questions/24093363/ for more details).
+# Establish an identical docstring regardless of the implementation
+# Test coverage is achieved through the prerequisites(..) docstring.
+natural.__doc__ = r'''
+    Produce a naturally-ordered list of SymPy quantities suitable for display.
     '''
-    return list(sympy.ordered(exprs))
 
 
 def parser(statement_tuples):
