@@ -21,7 +21,7 @@ unset DISPLAY            # Avoid "Error in locking authority file" from xauth
 RESOURCE_LIST=$(qstat -j $JOB_ID | grep resource_list)
 H_RT=$(echo $RESOURCE_LIST | egrep -o 'h_rt=[0-9]+*' | egrep -o '[0-9]+')
 S_RT=$(echo $RESOURCE_LIST | egrep -o 's_rt=[0-9]+*' | egrep -o '[0-9]+')
-test -z "$S_RT" && S_RT=$(expr $H_RT - 75)
+test -z "$S_RT" && S_RT=$(expr $H_RT - 120)
 test "${S_RT:=0}" -lt 0 && S_RT=0
 
 # Provide defaults for environment variables used to build CMD (see below).
