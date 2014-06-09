@@ -1,12 +1,13 @@
 #!/usr/bin/env python
-"""Usage: summary_surf.py    [OPTIONS...] H5SUMMARY DATASET...
-          summary_surf.py -f [OPTIONS...] H5SUMMARY DATASET1 DATASET2 DATASET3
-The first form produces surfaces for each named DATASET in the file H5SUMMARY.
+"""Usage: summary_surf.py       [OPTIONS...] H5FILE DATASET...
+          summary_surf.py -[fF] [OPTIONS...] H5FILE DATASET1 DATASET2 DATASET3
+The first form produces surfaces for each named DATASET in the summary H5FILE.
 The second form plots DATASET1 - DATASET2*DATASET3 which can show fluctuations.
 
 Options:
     -c CSTRIDE    Downsample by providing cstride=CSTRIDE to plot_surface
     -f            Plot fluctuating quantities using the second invocation type
+    -F            Fluctuations as above but instantaneous NOT ensemble means
     -h            Display this help message and exit
     -l LINEWIDTH  Set a non-zero linewidth=LINEWIDTH to plot_surface
     -o OUTSUFFIX  Save the output file DATASET.OUTSUFFIX instead of displaying
@@ -17,7 +18,7 @@ Options:
     -Y LO,HI      Limit plot extents to /y in [LO, HI]
     -Z LO,HI      Limit plot extents to data values in [LO, HI]
 
-File H5SUMMARY must have 1D /y and /t datasets to provide the meshgrid.
+File H5FILE must have 1D /y and /t datasets to provide the meshgrid.
 Each DATASET must have extents matching the /y and /t dataset sizes.
 """
 from __future__ import print_function
@@ -69,7 +70,7 @@ def main(argv=None):
 
     # Parse and check incoming command line arguments
     cstride   = 1
-    fluct     = False
+    fluct     = 0
     linewidth = 0
     outsuffix = None
     rstride   = 1
@@ -81,14 +82,14 @@ def main(argv=None):
     try:
         try:
             opts, args = getopt.getopt(argv[1:],
-                                       "c:fhl:o:r:t:C:T:Y:Z:", ["help"])
+                                       "c:fhl:o:r:t:C:FT:Y:Z:", ["help"])
         except getopt.error as msg:
             raise Usage(msg)
         for o, a in opts:
             if   o == "-c":
                 cstride = int(a)
             if   o == "-f":
-                fluct = True
+                fluct = 1
             elif o in ("-h", "--help"):
                 print(__doc__)
                 return 0
@@ -102,6 +103,8 @@ def main(argv=None):
                 title = a
             elif o == "-C":
                 levels = int(a)
+            if   o == "-F":
+                fluct = 2
             elif o == "-T":
                 textents = tuple(float(r) for r in a.split(','))
             elif o == "-Y":
@@ -148,9 +151,15 @@ def main(argv=None):
     # Compute derived fluctuating dataset, if requested
     # Notice the ensemble average of the latter two is performed
     if fluct:
-        data3, name3 = data.pop(),            name.pop()
-        data2, name2 = np.mean(data.pop(),0), name.pop()
-        data1, name1 = np.mean(data.pop(),0), name.pop()
+        data3, name3 = data.pop(), name.pop()
+        if   fluct == 1:  # Ensemble means
+            data2, name2 = np.mean(data.pop(),0), name.pop()
+            data1, name1 = np.mean(data.pop(),0), name.pop()
+        elif fluct == 2:  # Instantaneous means
+            data2, name2 = data.pop(), name.pop()
+            data1, name1 = data.pop(), name.pop()
+        else:
+            assert False, "sanity error on fluct = %d" % fluct
         assert len(data) == 0
         assert len(name) == 0
         data.append(data1 - data2*data3)
