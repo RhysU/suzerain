@@ -681,8 +681,8 @@ def main(argv):
     retval = args.command(args)
 
     # Warn if the results are likely bogus due to an older SymPy version
-    if (   distutils.version.StrictVersion(sympy.__version__)
-         < distutils.version.StrictVersion('0.7.2')           ):
+    if (   distutils.version.LooseVersion(sympy.__version__)
+         < distutils.version.LooseVersion('0.7.2')           ):
         print('WARN: %s notes SymPy %s older than minimum 0.7.2'
               % (argv[0], sympy.__version__),
               file=sys.stderr)
