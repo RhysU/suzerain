@@ -473,7 +473,7 @@ class momentdict(collections.defaultdict):
             s.append('(')
             s.append(sym(self[1]))
             s.append(')\n')
-        for term in sorted(k for k in self.keys() if k != 1):
+        for term in natural(k for k in self.keys() if k != 1):
             s.append(p)
             s.append('E')
             s.append(str(list(term)))
@@ -712,9 +712,9 @@ def command_lib(args):
         decl = args.syms[qoi]
         freefunc.update(decl.atoms(AppliedUndef))
         freesyms.update(decl.free_symbols)
-    map(print, sorted(freefunc))
+    map(print, natural(freefunc))
     print()
-    map(print, sorted(freesyms))
+    map(print, natural(freesyms))
 
 
 def command_pre(args):
