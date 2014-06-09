@@ -14,7 +14,7 @@ postproc_SCRIPTS += plot_blparam.py
 postproc_SCRIPTS += plot_stats.py
 postproc_SCRIPTS += plot_status.py
 postproc_SCRIPTS += reacting_summary.py
-postproc_SCRIPTS += turbulence.bl
+postproc_SCRIPTS += relaminarize.bl
 postproc_SCRIPTS += remove_hdf5.py
 postproc_SCRIPTS += rename_hdf5.py
 postproc_SCRIPTS += select_files.py
@@ -22,6 +22,7 @@ postproc_SCRIPTS += sgr2suz.py
 postproc_SCRIPTS += spectra.py
 postproc_SCRIPTS += stationary.bl
 postproc_SCRIPTS += summary_surf.py
+postproc_SCRIPTS += turbulence.bl
 
 # To automatically synchronize uncertainty and postprocessing computations
 # generate Python code for pointwise computations using preproc/perfect.decl
