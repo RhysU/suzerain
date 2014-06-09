@@ -4,13 +4,13 @@
 //
 // Additional parenthesis are present for multiline statements to facilitate
 // translation into valid Python function source using only regexes...
-//     0) s/\/\//# /g
-//     1) s/(y)/   /g
-//     2) s/bar_/bar./g
-//     3) s/tilde_/tilde./g
-//     4) s/local_/local./g
-//     5) s/tke_/tke./g
-//     6) s/^/    /
+//     sed -e 's/\/\//# /g'       \
+//            's/(y)/   /g'       \
+//            's/bar_/bar./g'     \
+//            's/tilde_/tilde./g' \
+//            's/local_/local./g' \
+//            's/tke_/tke./g'     \
+//            's/^/    /'
 // ...assuming "bar", "tilde", "local", and "tke" are Bunch-like objects...
 //     class Bunch(dict):
 //         def __init__(self,**kw):
