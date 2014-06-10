@@ -125,6 +125,11 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
                           ->implicit_value("all"),
                       "Disable all or some physics-related driving forces"
                       " by specifying 'all' or 'rho', 'rho_u', etc.")
+        ("drive3hbl", boost::program_options::bool_switch(),
+                      "Enable driving freestream constraints for 3D,"
+                      " homogenized boundary layer problems.  Constraints"
+                      " are automatically enabled for 1D and 2D problems,"
+                      " but are disabled in 3D unless this option is provided.")
     ;
 
     // Initialize application and then process binary-specific options
@@ -564,13 +569,10 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
             // so the user might exactly recover the scenario of interest.
             // In three-dimensions, likely because of NRBC noise, destabilizes
             // the flow by perturbing the near wall in an aphysical manner.
-            if (grid->N.x() > 1 && grid->N.z() > 1) {
-                INFO0(who, "Assuming baseflow drives three-dimensional cases"
-                           " thus freestream constraints inactive");
-                constrainer->physical[ndx::e  ] = constrainer->none;
-                constrainer->physical[ndx::mx ] = constrainer->none;
-                constrainer->physical[ndx::rho] = constrainer->none;
-            } else {
+            // Per Redmine #3112 this can be overridden with --drive3hbl.
+            if (    grid->N.x() == 1
+                 || grid->N.z() == 1
+                 || options.variables()["drive3hbl"].as<bool>()) {
                 INFO0(who, "Matching freestream constraint enforcement"
                            " profile to baseflow");
                 largo_state state;
@@ -593,6 +595,11 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
                                 << fullprec<>(minval) << ", "
                                 << fullprec<>(maxval) << ']');
                 }
+            } else {
+                INFO0(who, "Freestream constraints subsequently disabled");
+                constrainer->physical[ndx::e  ] = constrainer->none;
+                constrainer->physical[ndx::mx ] = constrainer->none;
+                constrainer->physical[ndx::rho] = constrainer->none;
             }
         }
 
