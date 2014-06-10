@@ -1,7 +1,7 @@
 dnl ----------------------------------------------------
 dnl Package name, release number, description, and URL
 dnl ----------------------------------------------------
-AC_INIT([largo], [0.0.1], [topalian@ices.utexas.edu])
+AC_INIT([largo], [0.0.2], [topalian@ices.utexas.edu])
 AC_REVISION([$Id$])
 PACKAGE_DESCRIPTION="largo - slow growth terms for turbulence simulations"
 AC_SUBST([PACKAGE_DESCRIPTION])

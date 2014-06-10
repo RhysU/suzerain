@@ -1,7 +1,7 @@
 !!-----------------------------------------------------------------------bl-
 !!--------------------------------------------------------------------------
 !!
-!! largo 0.0.1: largo - slow growth terms for turbulence simulations
+!! largo 0.0.2: largo - slow growth terms for turbulence simulations
 !! http://pecos.ices.utexas.edu/
 !!
 !! Copyright (C) 2011-2014 The PECOS Development Team
