@@ -1,7 +1,7 @@
 dnl ------------------------------------------------
 dnl Package overview
 dnl ------------------------------------------------
-AC_INIT([suzerain],[0.1.5],[rhys@ices.utexas.edu],[suzerain],[https://red.ices.utexas.edu/projects/suzerain])
+AC_INIT([suzerain],[0.1.6],[rhys@ices.utexas.edu],[suzerain],[https://red.ices.utexas.edu/projects/suzerain])
 AC_REVISION([$Id$])
 
 dnl ------------------------------------------------

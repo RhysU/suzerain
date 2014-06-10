@@ -1,3 +1,31 @@
+What's new in suzerain 0.1.6
+----------------------------
+
+Operational and postprocessing fixes for production.
+
+This release contains the following with tickets numbers referencing content
+from https://red.ices.utexas.edu/projects/suzerain:
+
+ * Feature #1604: 1D spectra monitor
+ * Feature #2465: Reynolds- or Favre-mean nu, epsilon in Kolmogorov length scale?
+ * Feature #2471: Sample quantities in support of Reynolds averaging
+ * Feature #2563: Collect Nusselt and Stanton numbers
+ * Feature #2580: Add various squared fluctuating quantities to statistics
+ * Feature #2610: Add mean Favre-fluctuations
+ * Feature #2611: Use mean density, velocity not mean momentum in local_Re computation
+ * Feature #2612: Add y^* to post-processing scripts
+ * Feature #3112: Save some QoI in summary files
+ * Feature #3118: Sample quantities towards RMS Mach number profile
+ * Feature #3119: Add operator for wall-normal integration
+ * Feature #3120: Collect mean-square dilatation fluctuations
+ * Feature #3122: Add driver option to temporarily constrain freestream
+ * Feature #3123: Increase restart frequency for boundary layers
+ * Support #3124: Bump Largo to version 0.0.2
+ * Bug     #3116: Minor drift in sample time relative to restart?
+ * Bug     #3117: Fix dist-hook, etc overrides from version tracking
+ * Bug     #3121: Ensure --statistics_final=0 honored
+
+
 What's new in suzerain 0.1.5
 ----------------------------
 
