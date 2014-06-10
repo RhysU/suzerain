@@ -593,15 +593,35 @@ StopType timecontroller<TimeType,StepType,StopType>::advance(
         SUZERAIN_ENSURE(current_dt_ <= possible_dt);
 
         // Check callbacks and determine next callback simulation time
+        bool called_periodic = false;
         next_event_t = std::numeric_limits<TimeType>::max();
         typename EntryList::iterator iter = entries_.begin();
         while (iter != entries_.end()) {
 
             // Callback required?
-            if (SUZERAIN_UNLIKELY(    current_t_   == (*iter).next_t
-                                   || current_nt() == (*iter).next_nt)) {
+            bool call = false;
+            if (current_nt() == (*iter).next_nt) {
+                call = true;
+            } else if (called_periodic && (*iter).periodic) {
+                // Redmine #3116: Special handling for multiple periodic events
+                // possibly occurring to combat next_t drift due to their
+                // every_t being multiples of each other (but to only machine
+                // precision).  Selects min_dt as the "merging" tolerance
+                // as the user has already said timesteps less than min_dt
+                // are to be avoided per some physically-relevant criterion.
+                if ((*iter).next_t - current_t_ < min_dt_) {
+                    call = true;
+                }
+            } else if (current_t_ == (*iter).next_t) {
+                call = true;
+            }
 
-                // Perform required callback
+            // Perform callback and associated bookkeeping
+            if (call) {
+
+                // Tracks if any periodic callback has occurred at this time
+                if ((*iter).periodic) called_periodic = true;
+
                 // Must perform state updates prior to any possible abort
                 const StopType keep_advancing
                     = (*iter).callback(current_t_, current_nt());
