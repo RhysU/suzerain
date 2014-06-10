@@ -25,6 +25,6 @@ done
 # computing time differences between adjacent rows
 # to facilitate looking for "errant" samples
 paste <(sed -e '/./,$!d' -e '$a\' "$tmp1") "$tmp2" \
-    | sort -t$'\t' -n                  \
-    | awk -F$'\t' '{$3=$1-t;print;t=$1}'
+    | sort -t$'\t' -n                              \
+    | awk -F$'\t' '{$3=$1-t;print;t=$1}'           \
     | column -t
