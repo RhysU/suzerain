@@ -907,23 +907,20 @@ driver::default_restart_interval(
 
     }
 
-    // Have a domain size and a velocity?  Let's use the matching time scale.
+    // Have a domain size and a velocity?
     if (boost::math::isnormal(velocity)) {
         if (grid) {
+
+            // Let's start from the associated time scale.
             t = grid->L.x() / velocity;
-            if        (grid->two_sided()) {
-                // Eight restarts per flow through in a channel giving 80
-                // restarts in 10 flow throughs, a reasonable channel simulation
-                // duration.
-                t /= 8;
-            } else if (grid->one_sided()) {
-                // Four restarts per flow through in a boundary layer giving 40
-                // restarts in 10 flow throughs and, across O(25) flow throughs
-                // for a simulation campaign, O(100) restart files.
-                t /= 4;
-            } else {
-                SUZERAIN_ERROR_VOID_UNIMPLEMENTED();
-            }
+
+            // Eight restarts per flow through in a channel giving 80 restarts
+            // in 10 flow throughs, a reasonable channel simulation duration.
+            // Across O(25) flow throughs in a boundary layer campaign it
+            // produces O(200) restart files which is slighly excessive but
+            // increases data redundancy for these more expensive simulations.
+            t /= 8;
+
         } else {
             DEBUG0(who, "No grid details for default_restart_interval");
         }
