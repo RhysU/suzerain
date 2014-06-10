@@ -24,6 +24,7 @@ done
 # Sort the combined results to standard output,
 # computing time differences between adjacent rows
 # to facilitate looking for "errant" samples
-paste <(tail -n +2 "$tmp1") "$tmp2"    \
+paste <(sed -e '/./,$!d' -e '$a\' "$tmp1") "$tmp2" \
     | sort -t$'\t' -n                  \
     | awk -F$'\t' '{$3=$1-t;print;t=$1}'
+    | column -t
