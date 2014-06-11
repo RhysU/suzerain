@@ -36,7 +36,7 @@ perfect.py: $(top_srcdir)/preproc/perfect.decl Makefile.am
 	@echo '    gamma, Mach number, Reynolds number, and Prandtl number.' >> "$@"
 	@echo '    See, e.g., https://pypi.python.org/pypi/bunch re: Bunch.' >> "$@"
 	@echo '    """'                                                      >> "$@"
-	@$(SED) -e 's/\/\//# /g'       \
+	@$(SED) -e 's/\/\//# /'        \
 	        -e 's/(y)/   /g'       \
 	        -e 's/bar_/bar./g'     \
 	        -e 's/tilde_/tilde./g' \
