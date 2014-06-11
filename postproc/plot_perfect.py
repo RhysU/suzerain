@@ -11,10 +11,17 @@ File H5FILE should have been produced by the perfect_summary application.
 from __future__ import division, print_function
 import getopt
 import h5py
+import logging
 import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
+import os
 import sys
+
+
+# Prepare a logger to produce progress messages
+logging.basicConfig(level=logging.INFO, format='%(levelname)s %(message)s')
+l = logging.getLogger(os.path.splitext(os.path.basename(__file__))[0])
 
 
 class Bunch(dict):
@@ -24,7 +31,7 @@ class Bunch(dict):
         self.__dict__ = self
 
 
-class Mean(object):
+class Data(object):
     "Storage of data loaded and computed from a single summary file."
     def __init__(self, filename):
         "Load relevant Reynolds averaged information from filename"
@@ -65,6 +72,15 @@ class Mean(object):
             elif k.startswith("chan."):
                 self.__dict__[k[5:]] = Bunch(
                     **{a:b[0] for a,b in v.attrs.items()})
+
+        # Compute a whole mess of derived information, if possible
+        try:
+            from perfect import pointwise
+            pointwise(self.gamma, self.Ma, self.Re, self.Pr, self.y,
+                      self.bar, self.tilde, self.local, self.tke)
+        except ImportError:
+            l.warn("Pointwise computations not performed"
+                   " because module 'perfect' not found")
 
 
 class Usage(Exception):
