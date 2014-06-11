@@ -42,7 +42,7 @@ perfect.py: $(top_srcdir)/preproc/perfect.decl Makefile.am
 	        -e 's/tilde_/tilde./g' \
 	        -e 's/local_/local./g' \
 	        -e 's/tke_/tke./g'     \
-	        -e 's/^/    /' "$<" >> "$@"
+	        -e 's/^./    &/' "$<"  >> "$@"
 
 # Required for AX_AM_MACROS
 @INC_AMINCLUDE@
