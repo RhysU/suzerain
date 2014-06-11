@@ -8,12 +8,12 @@ postproc_SCRIPTS += gb2ge.m
 postproc_SCRIPTS += gb.py
 postproc_SCRIPTS += gplot
 postproc_SCRIPTS += orderest
+postproc_SCRIPTS += perfect_decl.py
 postproc_SCRIPTS += perfect.py
 postproc_SCRIPTS += plan_suzerain.py
 postproc_SCRIPTS += plot_blparam.py
 postproc_SCRIPTS += plot_stats.py
 postproc_SCRIPTS += plot_status.py
-postproc_SCRIPTS += plot_perfect.py
 postproc_SCRIPTS += reacting_summary.py
 postproc_SCRIPTS += relaminarize.bl
 postproc_SCRIPTS += remove_hdf5.py
@@ -27,7 +27,7 @@ postproc_SCRIPTS += turbulence.bl
 
 # To automatically synchronize uncertainty and postprocessing computations
 # generate Python code for pointwise computations using preproc/perfect.decl
-perfect.py: $(top_srcdir)/preproc/perfect.decl Makefile.am
+perfect_decl.py: $(top_srcdir)/preproc/perfect.decl Makefile.am
 	@echo Generating $@ from $<
 	@echo "# Generated from $+ at $(shell date)"                          > "$@"
 	@echo "def pointwise(gam, Ma, Re, Pr, y, bar, tilde, local, tke):"   >> "$@"

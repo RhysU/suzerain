@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""Usage: plot_perfect.py [OPTIONS...] H5FILE...
+"""Usage: perfect.py [OPTIONS...] H5FILE...
 Produces TBD
 
 Options:
@@ -34,7 +34,7 @@ class Bunch(dict):
 class Data(object):
     "Storage of data loaded and computed from a single summary file."
     def __init__(self, filename):
-        "Load relevant Reynolds averaged information from filename"
+        "Prepare averaged information and derived quantities from a filename"
 
         # Load file and prepare scalar and vector storage locations
         self.file  = h5py.File(filename, 'r')
@@ -75,7 +75,7 @@ class Data(object):
 
         # Compute a whole mess of derived information, if possible
         try:
-            from perfect import pointwise
+            from perfect_decl import pointwise
             pointwise(self.gamma, self.Ma, self.Re, self.Pr, self.y,
                       self.bar, self.tilde, self.local, self.tke)
         except ImportError:
