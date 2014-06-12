@@ -48,11 +48,13 @@ perfect_decl.py: $(abs_srcdir)/perfect_decl.raw Makefile.am
 	@echo '    gamma, Mach number, Reynolds number, and Prandtl number.' >> "$@"
 	@echo '    See, e.g., https://pypi.python.org/pypi/bunch re: Bunch.' >> "$@"
 	@echo '    """'                                                      >> "$@"
+	@echo '    from numpy import * # Permits base "sqrt", etc.'          >> "$@"
 	@$(SED) -e 's/\/\//# /'        \
 	        -e 's/(y)//g'          \
 	        -e 's/bar_/bar./g'     \
 	        -e 's/tilde_/tilde./g' \
 	        -e 's/local_/local./g' \
+	        -e 's/tke_/tke./g'     \
 	        -e 's/tke_/tke./g'     \
 	        -e 's/^./    &/' "$<"  >> "$@"
 
