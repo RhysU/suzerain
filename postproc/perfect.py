@@ -37,16 +37,16 @@ class Data(object):
         "Prepare averaged information and derived quantities from a filename"
 
         # Load file and prepare scalar and vector storage locations
-        self.file  = h5py.File(filename, 'r')
-        self.alpha = self.file['alpha'][0]
-        self.beta  = self.file['beta' ][0]
-        self.gamma = self.file['gamma'][0]
-        self.Ma    = self.file['Ma'   ][0]
-        self.Re    = self.file['Re'   ][0]
-        self.Pr    = self.file['Pr'   ][0]
-        self.y     = self.file['y'    ][()]
-
         # Automatically unpack a variety of data mapping it into Bunches
+        self.file = h5py.File(filename, 'r')
+        self.y    = self.file['y'][()]
+        self.code = Bunch(alpha = self.file['alpha'][0],
+                          beta  = self.file['beta' ][0],
+                          gamma = self.file['gamma'][0],
+                          Ma    = self.file['Ma'   ][0],
+                          Re    = self.file['Re'   ][0],
+                          Pr    = self.file['Pr'   ][0])
+
         # Additionally, "bl.*" or "chan.*" is mapped into self.*.
         self.bar    = Bunch()  # From "mu" attribute of bar_*
         self.local  = Bunch()  # Populated after construction
@@ -76,7 +76,8 @@ class Data(object):
         # Compute a whole mess of derived information, if possible
         try:
             from perfect_decl import pointwise
-            pointwise(self.gamma, self.Ma, self.Re, self.Pr, self.y,
+            pointwise(self.code.gamma,
+                      self.code.Ma, self.code.Re, self.code.Pr, self.y,
                       self.bar, self.tilde, self.local, self.tke)
         except ImportError:
             l.warn("Pointwise computations not performed"
