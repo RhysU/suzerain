@@ -373,8 +373,9 @@ save_bsplines(const esio_handle h,
     for (int k = 0; k <= cop.nderiv(); ++k) {
         snprintf(name, sizeof(name), "Dy%dT", k);
         snprintf(comment, sizeof(comment),
-                 "Wall-normal derivative trans(Dy%d(i,j)) = D%dT[j,ku+i-j] for"
-                 " 0 <= j < n, max(0,j-ku-1) <= i < min(m,j+kl)", k, k);
+                 "Banded wall-normal derivative trans(Dy%d(i,j)) = D%dT[j,ku+i-j]"
+                 " for 0 <= j < n, max(0,j-ku-1) <= i < min(m,j+kl) mapping"
+                 " B-spline coefficients to /collocation_points_y", k, k);
         const int lda = cop.ku(k) + 1 + cop.kl(k);
         esio_plane_establish(h,
                              cop.n(), 0, (procid == 0 ? cop.n() : 0),
@@ -391,8 +392,8 @@ save_bsplines(const esio_handle h,
     for (int k = 0; k <= gop.nderiv(); ++k) {
         snprintf(name, sizeof(name), "Gy%dT", k);
         snprintf(comment, sizeof(comment),
-                 "Wall-normal Galerkin L2 trans(Gy%d(i,j)) = G%dT[j,ku+i-j] for"
-                 " 0 <= j < n, max(0,j-ku-1) <= i < min(m,j+kl)", k, k);
+                 "Banded wall-normal Galerkin L2 trans(Gy%d(i,j)) = G%dT[j,ku+i-j]"
+                 " for 0 <= j < n, max(0,j-ku-1) <= i < min(m,j+kl)", k, k);
         const int lda = gop.ku(k) + 1 + gop.kl(k);
         esio_plane_establish(h,
                              gop.n(), 0, (procid == 0 ? gop.n() : 0),
