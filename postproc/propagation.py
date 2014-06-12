@@ -208,8 +208,17 @@ class symboltranscript(collections.OrderedDict):
         head, sep, tail = key.partition(daffsep)
         if sep and tail:
             if head in self:
-                val = daff(self[head], *list(tail))  # Generate derivative...
-                self[key] = val                      # ...and insert entry
+                # Generate derivative from known information
+                val = daff(self[head], *list(tail))
+                # Insert entry and record the insertion in the transcript.
+                # Requires emulating OrderedDict.__setitem__ as __contains__,
+                # below, falsely reports "key in self" prior to insertion.
+                # And, yes, this hack is wildly gross.
+                root = self._OrderedDict__root
+                last = root[0]
+                last[1] = root[0] \
+                        = self._OrderedDict__map[key] = [last, root, key]
+                dict.__setitem__(self, key, val)
                 return val
             else:
                 raise KeyError('%s depends on missing key %s' % (key, head))
