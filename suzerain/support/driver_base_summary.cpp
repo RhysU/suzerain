@@ -322,6 +322,38 @@ driver_base::summary_run(
                     " the zeroth collocation point up to the j-th one");
         }
 
+        // Output dense derivative operators mapping points-to-points so that
+        // users can differentiate using only a matrix-vector product.  Done as
+        // many environments wholly lack or make difficult banded operations.
+        {
+            // Form M^-1 to map from collocation point values to coefficients
+            MatrixXXr invM = MatrixXXr::Identity(b->n(),b->n());
+            masslu.solve(b->n(), invM.data(), 1, b->n());
+
+            // Repeatedly-used temporary storage
+            MatrixXXr D;
+            char name[8]      = {};
+            char comment[127] = {};
+
+            // Form dense product D^(k) M^-1 and store result
+            //
+            // \warning Routine only tested based on output to summary files.
+            //          A transpose mistake is quite possible.
+            for (int k = 1; k < b->k()-1; ++k) {
+                D = invM;                                        // Copy M^-1
+                cop->apply(k, b->n(), 1.0, D.data(), 1, b->n()); // Apply D^(k)
+                esio_plane_establish(h.get(), D.outerSize(), 0, D.outerSize(),
+                                              D.innerSize(), 0, D.innerSize());
+                snprintf(name, sizeof(name), "Dy%d", k);
+                snprintf(comment, sizeof(comment),
+                        "Dense wall-normal derivative Dy%d(i,j) mapping"
+                        " collocation points to collocation points", k);
+                D.transposeInPlace();
+                esio_plane_write(h.get(), name, D.data(),
+                        D.outerStride(), D.innerStride(), comment);
+            }
+        }
+
         // Process each component's spatiotemporal trace...
         running_statistics<real_t,1> dtstats;
         esio_plane_establish(h.get(), t.size(), 0, t.size(),
