@@ -28,10 +28,19 @@ postproc_SCRIPTS += summary_surf.py
 postproc_SCRIPTS += turbulence.bl
 
 # To automatically synchronize uncertainty and postprocessing computations
-# generate Python code for pointwise computations using preproc/perfect.decl
-perfect_decl.py: perfect.decl Makefile.am
-	@echo Generating $@ from $<
-	@echo "# Generated from $+ at $(shell date)"                          > "$@"
+# generate Python assignments for pointwise computations using perfect.decl.
+# The resulting file is COMMITTED as SymPy prerequisites are touchy.
+$(abs_srcdir)/perfect_decl.raw: perfect.decl propagation.py
+	@echo "# Generating $@ from $< (sensitive to SymPy version)" | tee "$@.tmp"
+	md5sum $+ | sed -e 's/^/# Based upon MD5 /' >> "$@.tmp"
+	"$(srcdir)/propagation.py" -d "$<" dec   >> "$@.tmp"
+	mv "$@.tmp" "$@"
+
+# Convert the perfect_decl.raw output into valid Python code
+CLEANFILES = perfect_decl.py *.pyc
+perfect_decl.py: $(abs_srcdir)/perfect_decl.raw Makefile.am
+	@echo "# Generating $@ from $+" | tee "$@"
+	@md5sum $+ | sed -e 's/^/# Based upon MD5 /'                         >> "$@"
 	@echo "def pointwise(gam, Ma, Re, Pr, y, bar, tilde, local, tke):"   >> "$@"
 	@echo '    """'                                                      >> "$@"
 	@echo '    Populate Bunch-like bar, tilde, local, tke from pointwise'>> "$@"
@@ -40,7 +49,7 @@ perfect_decl.py: perfect.decl Makefile.am
 	@echo '    See, e.g., https://pypi.python.org/pypi/bunch re: Bunch.' >> "$@"
 	@echo '    """'                                                      >> "$@"
 	@$(SED) -e 's/\/\//# /'        \
-	        -e 's/(y)/   /g'       \
+	        -e 's/(y)//g'          \
 	        -e 's/bar_/bar./g'     \
 	        -e 's/tilde_/tilde./g' \
 	        -e 's/local_/local./g' \
