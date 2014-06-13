@@ -38,9 +38,9 @@ tilde_w_w = bar_rho_w_w(y) / bar_rho(y);
 tilde_upp_upp = tilde_u_u - tilde_u**2;
 tilde_upp_vpp = tilde_u_v - tilde_u*tilde_v;
 tilde_upp_wpp = tilde_u_w - tilde_u*tilde_w;
-tilde_vpp_vpp = tilde_v_v - tilde_v*tilde_v;
+tilde_vpp_vpp = tilde_v_v - tilde_v**2;
 tilde_vpp_wpp = tilde_v_w - tilde_v*tilde_w;
-tilde_wpp_wpp = tilde_w_w - tilde_w*tilde_w;
+tilde_wpp_wpp = tilde_w_w - tilde_w**2;
 // }
 
 

@@ -1,5 +1,5 @@
 # Generating /workspace/rhys/Build/sz-gcc-debug/../sz/postproc/perfect_decl.raw from ../../sz/postproc/perfect.decl (sensitive to SymPy version)
-# Based upon MD5 71b93089750b4f8e0405eb060f7be042  ../../sz/postproc/perfect.decl
+# Based upon MD5 c7727354772a26c1aab08b0469e7466e  ../../sz/postproc/perfect.decl
 # Based upon MD5 b1a79135229d8411293c8455108b4e5d  ../../sz/postproc/propagation.py
 tilde_u = bar_rho_u(y)/bar_rho(y)
 tilde_v = bar_rho_v(y)/bar_rho(y)
