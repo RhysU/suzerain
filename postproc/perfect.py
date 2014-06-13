@@ -81,7 +81,7 @@ class Data(object):
                       self.bar, self.tilde, self.local, self.tke)
         except ImportError:
             l.warn("Pointwise computations not performed"
-                   " because module 'perfect' not found")
+                   " because module 'perfect_decl' not found")
 
 
 # TODO Smooth per B-splines using ' from scipy.interpolate import interp1d'
