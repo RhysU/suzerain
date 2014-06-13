@@ -225,18 +225,24 @@ treatment::invert_mass_plus_scaled_operator(
 
     // The implicitly applied integral constraints, as point values, must be
     // averaged across each substep to permit accounting for their impact on
-    // the Reynolds averaged equations using method_interface::iota as in
+    // the Reynolds averaged equations.
     //
-    //    mean += iota * ((sample / delta_t) - mean).
+    // Per discussion with M. K. Lee, the implicit operator used to compute cphi
+    // already accounts for variable substep effects and so only a simple
+    // in-place running average is necessary:
+    //
+    //    mean += (nsubsteps*(sample / delta_t) - mean) / (substep_index + 1)
     //
     // The delta_t accounts for step sizes already implicitly included in cphi.
+    // The correctness of this approach can be confirmed by running a 1D channel
+    // known a prior to be stationary followed by checking the total stress.
     //
     // Notice mx-related forcing is NOT scaled by Mach^2 when tracked
     // because our post-processing routines will account for Mach^2 factor.
     //
     // Notice physical[ndx::rho] constraint lumped into Crho BY DESIGN.
-    cphi               /= delta_t; // Henceforth includes 1/delta_t scaling!
-    const real_t iota   = method.iota(substep_index);
+    cphi               *= method.substeps() / delta_t;
+    const real_t iota   = static_cast<real_t>(1) / (substep_index + 1);
     out.fx()           += iota*(
                               cphi[mx]*physical[mx]->shape
                             - out.fx()
