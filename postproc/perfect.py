@@ -84,6 +84,76 @@ class Data(object):
                    " because module 'perfect' not found")
 
 
+# TODO Smooth per B-splines using ' from scipy.interpolate import interp1d'
+def plot_tke(data, horz=1, vert=1, thresh=25, ax=None, **plotargs):
+    """
+    Plot TKE budgets from data permitting rescaling and thresholding
+    """
+
+    # Get a new axis if one was not supplied
+    if not ax:
+        fig, ax = plt.subplots()
+
+    # Rescale the data as requested, permitting plus or star units.
+    # Merging constraint and forcing as they're identical physically
+    # and their separation is purely an artifact of the implementation.
+    y           = horz * data.y
+    convection  = vert * data.tke.convection
+    production  = vert * data.tke.production
+    dissipation = vert * data.tke.dissipation
+    transport   = vert * data.tke.transport
+    diffusion   = vert * data.tke.diffusion
+    pmassflux   = vert * data.tke.pmassflux
+    pdilatation = vert * data.tke.pdilatation
+    pheatflux   = vert * data.tke.pheatflux
+    forcing     = vert * (data.tke.forcing + data.tke.constraint)
+    slowgrowth  = vert * data.tke.slowgrowth
+
+    # Plotting cutoff based on magnitude of the production term
+    # following Guarini et al JFM 2000 page 23.
+    thresh = np.max(np.abs(production)) / thresh
+
+    # Produce plots in order of most to least likely to exceed thresh
+    # This causes any repeated linetypes to be fairly simple to distinguish
+    def pthresh(y, q, *args, **kwargs):
+        if np.max(np.abs(q)) > thresh:
+            ax.plot(y, q, *args, **kwargs)
+    # Likely to exceed threshold but we will check anyway
+    pthresh(y, production, linestyle='-',
+            label=r"$- \bar{\rho}\widetilde{u''\otimes{}u''}:\nabla\tilde{u}$",
+            **plotargs)
+    pthresh(y, dissipation, linestyle='-',
+            label=r"$- \bar{\rho}\epsilon / \mbox{Re}$",
+            **plotargs)
+    pthresh(y, transport, linestyle='--',
+            label=r"$- \nabla\cdot \bar{\rho} \widetilde{{u''}^{2}u''} / 2$",
+            **plotargs)
+    pthresh(y, diffusion, linestyle='-.',
+            label=r"$\nabla\cdot \overline{\tau{}u''}/\mbox{Re}$",
+            **plotargs)
+    pthresh(y, slowgrowth, linestyle=':',
+            label=r"$\overline{\mathscr{S}_{\rho{}u}\cdot{}u''}$",
+            **plotargs)
+    # Conceivable that these will not exceed the threshold
+    pthresh(y, pmassflux, linestyle='-',
+            label=r"$\bar{p}\nabla\cdot\overline{u''}/\mbox{Ma}^2$",
+            **plotargs)
+    pthresh(y, pdilatation, linestyle='--',
+            label=r"$\overline{p' \nabla\cdot{}u''}/\mbox{Ma}^2$",
+            **plotargs)
+    pthresh(y, pheatflux, linestyle='-.',
+            label=r"$-\nabla\cdot\bar{\rho}\widetilde{T''u''}/\gamma/\mbox{Ma}^2$",
+            **plotargs)
+    pthresh(y, convection, linestyle=':',
+            label=r"$- \nabla\cdot\bar{\rho}k\tilde{u}$",
+            **plotargs)
+    pthresh(y, forcing, linestyle=':',
+            label=r"$\overline{f\cdot{}u''}$",
+            **plotargs)
+
+    return ax
+
+
 class Usage(Exception):
     def __init__(self, msg):
         self.msg = msg
