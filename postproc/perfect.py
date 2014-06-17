@@ -16,6 +16,7 @@ import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 import os
+import pandas as pd
 import sys
 
 
@@ -152,6 +153,21 @@ def plot_tke(data, horz=1, vert=1, thresh=25, ax=None, **plotargs):
             **plotargs)
 
     return ax
+
+
+def evolution(pat, fnames):
+    """
+    Build a DataFrame from data within possibly many state.dat, qoi.dat, or
+    bc.dat files using the 4th column 't' as the index.  Logging level,
+    time since binary launch, and time step number information is omitted.
+    """
+    r = pd.DataFrame()
+    for fname in fnames:
+        f = os.popen('grep "%s" %s' % (pat, fname))
+        t = pd.read_table(f, index_col=3, sep=r"\s*")
+        t = t.drop(t.columns[0:2]+t.columns[3:4], axis=1)
+        r = r.combine_first(t)
+    return r
 
 
 class Usage(Exception):
