@@ -155,7 +155,7 @@ def plot_tke(data, horz=1, vert=1, thresh=25, ax=None, **plotargs):
     return ax
 
 
-def evolution(pat, fnames):
+def traceframe(grepkey, fnames):
     """
     Build a DataFrame from data within possibly many state.dat, qoi.dat, or
     bc.dat files using the 4th column 't' as the index.  Logging level,
@@ -163,11 +163,137 @@ def evolution(pat, fnames):
     """
     r = pd.DataFrame()
     for fname in fnames:
-        f = os.popen('grep "%s" %s' % (pat, fname))
+        f = os.popen('grep "%s" %s' % (grepkey, fname))
         t = pd.read_table(f, index_col=3, sep=r"\s*")
         t = t.drop(t.columns[0:2]+t.columns[3:4], axis=1)
         r = r.combine_first(t)
     return r
+
+def plot_relaminarization(dnames,
+                          Re_theta=None,
+                          Ma_e=None,
+                          ratio_T=None,
+                          v_wallplus=None,
+                          p_ex=None,
+                          delta99=None,
+                          **kwargs):
+    """
+    Prepare a relaminarization study plot given job directories dnames.
+    If provided, Ma_e, p_ex, etc. are used to plot target values.
+    """
+    # Load the data from various source files
+    pbulk = traceframe('prod.bulk',  (s+"/qoi.dat" for s in dnames))
+    pg    = traceframe('bl.pg',      (s+"/qoi.dat" for s in dnames))
+    qoi   = traceframe('bl.qoi',     (s+"/qoi.dat" for s in dnames))
+    Re    = traceframe('bl.Re',      (s+"/qoi.dat" for s in dnames))
+    thick = traceframe('bl.thick',   (s+"/qoi.dat" for s in dnames))
+    visc  = traceframe('bl.visc',    (s+"/qoi.dat" for s in dnames))
+    famax = traceframe('favre.amax', (s+"/qoi.dat" for s in dnames))
+
+    # Produce a relaminarization summary figure
+    fig = plt.figure(**kwargs)
+    def yinclude(axis, val):
+        ymin, ymax = axis.get_ylim()
+        ymin = min(ymin, val - (ymax - ymin)/50)
+        ymax = max(ymax, val + (ymax - ymin)/50)
+        axis.set_ylim([ymin, ymax])
+    #
+    ax = fig.add_subplot(911)
+    ax.ticklabel_format(useOffset=False)
+    ax.plot(Re.index, Re['Re_delta2'].values)
+    if Re_theta:
+        yinclude(ax, Re_theta)
+        ax.hlines(Re_theta, qoi.index.min(), qoi.index.max(), 'r', '-.')
+    ax.set_ylabel(r'$\mbox{Re}_{\theta}$')
+    ax.yaxis.set_major_locator(matplotlib.ticker.MaxNLocator(4))
+    ax.set_xticklabels([])
+    #
+    ax = fig.add_subplot(912)
+    ax.ticklabel_format(useOffset=False)
+    ax.plot(qoi.index, qoi['Ma_e'].values)
+    if Ma_e:
+        yinclude(ax, Ma_e)
+        ax.hlines(Ma_e, qoi.index.min(), qoi.index.max(), 'r', '-.')
+    ax.set_ylabel(r'$\mbox{Ma}_{e}$')
+    ax.yaxis.set_major_locator(matplotlib.ticker.MaxNLocator(4))
+    ax.set_xticklabels([])
+    #
+    ax = fig.add_subplot(913)
+    ax.ticklabel_format(useOffset=False)
+    ax.plot(qoi.index, qoi['ratio_T'].values)
+    if ratio_T:
+        yinclude(ax, ratio_T)
+        ax.hlines(ratio_T, qoi.index.min(), qoi.index.max(), 'r', '-.')
+    ax.set_ylabel(r'$T_e/T_w$')
+    ax.yaxis.set_major_locator(matplotlib.ticker.MaxNLocator(4))
+    ax.set_xticklabels([])
+    #
+    ax = fig.add_subplot(914)
+    ax.ticklabel_format(useOffset=False)
+    ax.plot(visc.index, visc['v_wallplus'].values)
+    if v_wallplus:
+        yinclude(ax, v_wallplus)
+        ax.hlines(v_wallplus, visc.index.min(), visc.index.max(), 'r', '-.')
+    ax.set_ylabel(r'$v_w^+$')
+    ax.yaxis.set_major_locator(matplotlib.ticker.MaxNLocator(4))
+    ax.set_xticklabels([])
+    #
+    ax = fig.add_subplot(915)
+    ax.ticklabel_format(useOffset=False)
+    ax.plot(pg.index, pg['p_ex'].values)
+    if p_ex:
+        yinclude(ax, p_ex)
+        ax.hlines(p_ex, pg.index.min(), pg.index.max(), 'r', '-.')
+    ax.set_ylabel(r'$p^\ast_{e,\xi}$')
+    ax.yaxis.set_major_locator(matplotlib.ticker.MaxNLocator(4))
+    ax.set_xticklabels([])
+    #
+    ax = fig.add_subplot(916)
+    ax.ticklabel_format(useOffset=False)
+    ax.plot(thick.index, thick['delta99'].values)
+    if delta99:
+        yinclude(ax, delta99)
+        ax.hlines(delta99, thick.index.min(), thick.index.max(), 'r', '-.')
+    ax.set_ylabel(r'$\delta_{99}$')
+    ax.yaxis.set_major_locator(matplotlib.ticker.MaxNLocator(4))
+    ax.set_xticklabels([])
+    #
+    ax = fig.add_subplot(917)
+    ax.ticklabel_format(useOffset=False)
+    ax.plot(pbulk.index, pbulk['total'].values)
+    ax.set_ylabel("bulk\n"
+                  #r"$\overline{\rho u'' \otimes{} u''}:\nabla\tilde{u}$",
+                  "production",
+                  multialignment='center')
+    ax.yaxis.set_major_locator(matplotlib.ticker.MaxNLocator(4))
+    ax.set_xticklabels([])
+    #
+    ax = fig.add_subplot(918)
+    ax.ticklabel_format(useOffset=False)
+    ax.plot(famax.index, np.abs(famax['uu'].values))
+    ax.plot(famax.index, np.abs(famax['uv'].values))
+    ax.plot(famax.index, np.abs(famax['uw'].values))
+    ax.plot(famax.index, np.abs(famax['vv'].values))
+    ax.plot(famax.index, np.abs(famax['vw'].values))
+    ax.plot(famax.index, np.abs(famax['ww'].values))
+    ax.set_yscale('log')
+    ax.set_ylabel("max\n"
+                  r"$\left|\widetilde{u_i''u_j''}\right|$",
+                  multialignment='center')
+    ax.yaxis.set_major_locator(matplotlib.ticker.MaxNLocator(4))
+    ax.set_xticklabels([])
+    #
+    ax = fig.add_subplot(919)
+    ax.ticklabel_format(useOffset=False)
+    ax.plot(visc.index, visc['cf'].values)
+    ax.set_ylabel(r'cf')
+    ax.yaxis.set_major_locator(matplotlib.ticker.MaxNLocator( 4))
+    ax.xaxis.set_major_locator(matplotlib.ticker.MaxNLocator(10))
+    #
+    fig.tight_layout()
+    fig.subplots_adjust(hspace=0.20)
+
+    return fig
 
 
 class Usage(Exception):
