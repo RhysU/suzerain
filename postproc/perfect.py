@@ -169,6 +169,9 @@ def traceframe(grepkey, fnames):
         r = r.combine_first(t)
     return r
 
+
+# TODO Split into two plots-- scenario tracking vs relaminarization
+# TODO Add Re_\tau as a precursor to fluctuation collapse
 def plot_relaminarization(dnames,
                           Re_theta=None,
                           Ma_e=None,
