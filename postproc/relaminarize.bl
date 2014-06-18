@@ -22,6 +22,7 @@ gplot -Gg bl.pg   -y p_ex       using 4:11 w l ::: "${qoi[@]}" &
 gplot -Gg bl.thick -y bl.thick -f i=6:11 using 4:i w l ::: "${qoi[@]}" &
 
 # Boundary layer nature
+gplot -Gg bl.qoi   -y Re_tau         using 4:11         w l ::: "${qoi[@]}" &
 gplot -Gg bl.visc  -y cf             using 4:6          w l ::: "${qoi[@]}" &
 gplot -Gg bl.visc  -y Bq             using 4:10         w l ::: "${qoi[@]}" &
 gplot -Gg bl.thick -y shapefactor    using '4:($7/$8)'  w l ::: "${qoi[@]}" &
