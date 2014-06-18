@@ -264,6 +264,7 @@ def plot_relaminarization(dnames,
     ax = fig.add_subplot(917)
     ax.ticklabel_format(useOffset=False)
     ax.plot(pbulk.index, pbulk['total'].values)
+    ax.set_yscale('log')
     ax.set_ylabel("bulk\n"
                   #r"$\overline{\rho u'' \otimes{} u''}:\nabla\tilde{u}$",
                   "production",

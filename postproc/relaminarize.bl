@@ -29,7 +29,7 @@ gplot -Gg bl.thick -y shapefactor    using '4:($7/$8)'  w l ::: "${qoi[@]}" &
 gplot -Gg bl.thick -y delta1/delta99 using '4:($7/$11)' w l ::: "${qoi[@]}" &
 
 # Production
-gplot -Gg prod.bulk  -y prod.bulk            using 4:6 w l ::: "${qoi[@]}" &
+gplot -lGg prod.bulk  -y prod.bulk   using 4:6          w l ::: "${qoi[@]}" &
 
 # Magnitudes of Favre-averaged Reynolds stress components
 gplot -lGg favre.amax -y '|favre.amax|' -f i=8:11 \
