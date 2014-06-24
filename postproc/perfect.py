@@ -134,11 +134,12 @@ def plot_profiles(d, lowfrac=None, **plotargs):
     # Plot upper left figure
     for k,v in m.iteritems():
         ax[0][0].plot(d.star.y, v, label=k)
-    ax[0][0].set_ylabel(r"$\mu$; $\sigma/\mu$")
+    ax[0][0].set_ylabel(r"$\mu$")
 
     # Plot upper right figure
     for k,v in m.iteritems():
         ax[0][1].plot(d.star.y, s.pop(0)/v, label=k)
+    ax[0][1].set_ylabel(r"$\sigma_\mu / \mu$")
     ax[0][1].set_yscale("log")
     if lowfrac:
         ax[0][1].set_ylim(bottom=lowfrac)
@@ -156,10 +157,11 @@ def plot_profiles(d, lowfrac=None, **plotargs):
     ax[1][0].plot(d.star.y, d.tilde.wpp_wpp/d.star.u**2, label=r"$\widetilde{w^{\prime\prime{}2}}$")
     ax[1][0].plot(d.star.y, d.tilde.upp_vpp/d.star.u**2, label=r"$\widetilde{u^{\prime\prime}v^{\prime\prime}}$")
     ax[1][0].plot(d.star.y, d.tilde.k      /d.star.u**2, label=r"$k$")
-    ax[1][0].set_ylabel(r"$\mu^\ast$; $\sigma/\mu$")
+    ax[1][0].set_ylabel(r"$\mu^\ast$")
 
     # Lower right figure
     # TODO
+    ax[1][1].set_ylabel(r"$\sigma_\mu / \mu$")
 
     # Truncate at half channel width, if applicable
     if d.htdelta >= 0:
@@ -171,9 +173,6 @@ def plot_profiles(d, lowfrac=None, **plotargs):
     # Add legends on rightmost images
     ax[0][1].legend(frameon=False)
     ax[1][1].legend(frameon=False)
-
-    # Tighten up the image
-    fig.tight_layout()
 
     return (fig, ax)
 
