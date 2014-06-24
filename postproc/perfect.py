@@ -74,6 +74,26 @@ class Data(object):
                 self.__dict__[k[5:]] = Bunch(
                     **{a:b[0] for a,b in v.attrs.items()})
 
+        # Compute scaling information per the incoming data, including...
+        if "visc" in self.__dict__ and "wall" in self.__dict__:
+
+            # ...classical incompressible plus units and...
+            self.plus   = Bunch()
+            self.plus.u = self.visc.u_tau
+            self.plus.y = (self.wall.rho*self.y*self.plus.u / self.wall.mu
+                          *self.code.Re)
+
+            # ...variable density star units per Huang et al JFM 1995
+            self.star   = Bunch()
+            self.star.u = np.sqrt(self.visc.tau_w / self.bar.rho)
+            self.star.y = (self.bar.rho*self.y*self.star.u / self.bar.mu
+                          *self.code.Re)
+
+        else:
+            l.warn("Star and plus unit computations not performed"
+                   " because /{bl,chan}.{visc,wall} not found")
+
+
         # Compute a whole mess of derived information, if possible
         try:
             from perfect_decl import pointwise
