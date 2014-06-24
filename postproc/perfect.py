@@ -113,32 +113,33 @@ def plot_profiles(d, lowfrac=None, **plotargs):
     Plot mean profiles, Favre-fluctuations  and their associated uncertainties
     """
     fig, ax = plt.subplots(2, 2, sharex=True, squeeze=False)
+    bar, tilde, sigma, star = d.bar, d.tilde, d.sigma, d.star
 
     #########################################################################
     # Build dictionary of means and list of standard deviations for upper row
     m = collections.OrderedDict()
     s = []
 
-    m[r"$\bar{\rho}$"] = d.bar.rho
-    s.append(d.sigma.rho)
+    m[r"$\bar{\rho}$"] = bar.rho
+    s.append(sigma.rho)
 
-    m[r"$\bar{u}$" ] = d.bar.u
-    s.append(d.sigma.u)
+    m[r"$\bar{u}$" ] = bar.u
+    s.append(sigma.u)
 
-    m[r"$\bar{T}$"] = d.bar.T
-    s.append(d.sigma.T)
+    m[r"$\bar{T}$"] = bar.T
+    s.append(sigma.T)
 
-    m[r"$\bar{\mu}$"] = d.bar.mu
-    s.append(d.sigma.mu)
+    m[r"$\bar{\mu}$"] = bar.mu
+    s.append(sigma.mu)
 
-    # Plot upper left figure
+    # Plot upper left subfigure
     for k,v in m.iteritems():
-        ax[0][0].plot(d.star.y, v, label=k)
+        ax[0][0].plot(star.y, v, label=k)
     ax[0][0].set_ylabel(r"$\mu$")
 
-    # Plot upper right figure
+    # Plot upper right subfigure
     for k,v in m.iteritems():
-        ax[0][1].plot(d.star.y, s.pop(0)/v, label=k)
+        ax[0][1].plot(star.y, s.pop(0)/v, label=k)
     ax[0][1].set_ylabel(r"$\sigma_\mu / \mu$")
     ax[0][1].set_yscale("log")
     if lowfrac:
@@ -151,24 +152,112 @@ def plot_profiles(d, lowfrac=None, **plotargs):
     m.clear()
     del s[:]
 
-    # Lower left figure
-    ax[1][0].plot(d.star.y, d.tilde.upp_upp/d.star.u**2, label=r"$\widetilde{u^{\prime\prime{}2}}$")
-    ax[1][0].plot(d.star.y, d.tilde.vpp_vpp/d.star.u**2, label=r"$\widetilde{v^{\prime\prime{}2}}$")
-    ax[1][0].plot(d.star.y, d.tilde.wpp_wpp/d.star.u**2, label=r"$\widetilde{w^{\prime\prime{}2}}$")
-    ax[1][0].plot(d.star.y, d.tilde.upp_vpp/d.star.u**2, label=r"$\widetilde{u^{\prime\prime}v^{\prime\prime}}$")
-    ax[1][0].plot(d.star.y, d.tilde.k      /d.star.u**2, label=r"$k$")
-    ax[1][0].set_ylabel(r"$\mu^\ast$")
+    m[r"$\widetilde{u^{\prime\prime{}2}}$"]              = tilde.upp_upp
+    # s.append(np.sqrt(
+    # ))
+    # Var[tilde_upp_upp] = (
+    #   bar.rho2         * ((bar.rho*bar.rho_u_u - 2*bar.rho_u**2)**2/bar.rho**6)
+    # + bar.rho2_u       * (4*(bar.rho*bar.rho_u_u - 2*bar.rho_u**2)*bar.rho_u/bar.rho**5)
+    # + bar.rho2_u_u     * (2*(-bar.rho*bar.rho_u_u + 2*bar.rho_u**2)/bar.rho**4)
+    # + bar.rho2_u_u     * (4*bar.rho_u**2/bar.rho**4)
+    # + bar.rho2_u_u_u   * (-4*bar.rho_u/bar.rho**3)
+    # + bar.rho2_u_u_u_u * (bar.rho**(-2))
+    # )
 
-    # Lower right figure
+    m[r"$\widetilde{v^{\prime\prime{}2}}$"]              = tilde.vpp_vpp
+    # s.append(np.sqrt(
+    # ))
+    # Var[tilde_vpp_vpp] = (
+    #   bar.rho2         * ((bar.rho*bar.rho_v_v - 2*bar.rho_v**2)**2/bar.rho**6)
+    # + bar.rho2_v       * (4*(bar.rho*bar.rho_v_v - 2*bar.rho_v**2)*bar.rho_v/bar.rho**5)
+    # + bar.rho2_v_v     * (2*(-bar.rho*bar.rho_v_v + 2*bar.rho_v**2)/bar.rho**4)
+    # + bar.rho2_v_v     * (4*bar.rho_v**2/bar.rho**4)
+    # + bar.rho2_v_v_v   * (-4*bar.rho_v/bar.rho**3)
+    # + bar.rho2_v_v_v_v * (bar.rho**(-2))
+    # )
+
+    m[r"$\widetilde{w^{\prime\prime{}2}}$"]              = tilde.wpp_wpp
+    # s.append(np.sqrt(
+    # ))
+    # Var[tilde_wpp_wpp] = (
+    #   bar.rho2         * ((bar.rho*bar.rho_w_w - 2*bar.rho_w**2)**2/bar.rho**6)
+    # + bar.rho2_w       * (4*(bar.rho*bar.rho_w_w - 2*bar.rho_w**2)*bar.rho_w/bar.rho**5)
+    # + bar.rho2_w_w     * (2*(-bar.rho*bar.rho_w_w + 2*bar.rho_w**2)/bar.rho**4)
+    # + bar_rho2_w_w     * (4*bar.rho_w**2/bar.rho**4)
+    # + bar_rho2_w_w_w   * (-4*bar.rho_w/bar.rho**3)
+    # + bar_rho2_w_w_w_w * (bar.rho**(-2))
+    # )
+
+    m[r"$\widetilde{u^{\prime\prime}v^{\prime\prime}}$"] = tilde.upp_vpp
+    # s.append(np.sqrt(
+    # ))
+    # Var[tilde_upp_vpp] = (
+    #   bar.rho2         * ((bar.rho*bar.rho_u_v - 2*bar.rho_u*bar.rho_v)**2/bar.rho**6)
+    # + bar.rho2_u       * (2*(bar.rho*bar.rho_u_v - 2*bar.rho_u*bar.rho_v)*bar.rho_v/bar.rho**5)
+    # + bar_rho2_u_v     * (2*(-bar.rho*bar.rho_u_v + 2*bar.rho_u*bar.rho_v)/bar.rho**4)
+    # + bar.rho2_v       * (2*(bar.rho*bar.rho_u_v - 2*bar.rho_u*bar.rho_v)*bar.rho_u/bar.rho**5)
+    # + bar.rho2_u_u     * (bar.rho_v**2/bar.rho**4)
+    # + bar_rho2_u_u_v   * (-2*bar.rho_v/bar.rho**3)
+    # + bar_rho2_u_v     * (2*bar.rho_u*bar.rho_v/bar.rho**4)
+    # + bar_rho2_u_u_v_v * (bar.rho**(-2))
+    # + bar_rho2_u_v_v   * (-2*bar.rho_u/bar.rho**3)
+    # + bar.rho2_v_v     * (bar.rho_u**2/bar.rho**4)
+    # )
+
+    m[r"$k$"]                                            = tilde.k
+    # s.append(np.sqrt(
+    # ))
+    # Var[tilde_k] = (
+    #   bar.rho2          * ((bar.rho*bar.rho_u_u + bar.rho*bar.rho_v_v + bar.rho*bar.rho_w_w - 2*bar.rho_u**2 - 2*bar.rho_v**2 - 2*bar.rho_w**2)**2/(4*bar.rho**6))
+    # + bar.rho2_u        * ((bar.rho*bar.rho_u_u + bar.rho*bar.rho_v_v + bar.rho*bar.rho_w_w - 2*bar.rho_u**2 - 2*bar.rho_v**2 - 2*bar.rho_w**2)*bar.rho_u/bar.rho**5)
+    # + bar.rho2_u_u      * ((-bar.rho*bar.rho_u_u/2 - bar.rho*bar.rho_v_v/2 - bar.rho*bar.rho_w_w/2 + bar.rho_u**2 + bar.rho_v**2 + bar.rho_w**2)/bar.rho**4)
+    # + bar.rho2_v        * ((bar.rho*bar.rho_u_u + bar.rho*bar.rho_v_v + bar.rho*bar.rho_w_w - 2*bar.rho_u**2 - 2*bar.rho_v**2 - 2*bar.rho_w**2)*bar.rho_v/bar.rho**5)
+    # + bar.rho2_v_v      * ((-bar.rho*bar.rho_u_u/2 - bar.rho*bar.rho_v_v/2 - bar.rho*bar.rho_w_w/2 + bar.rho_u**2 + bar.rho_v**2 + bar.rho_w**2)/bar.rho**4)
+    # + bar.rho2_w        * ((bar.rho*bar.rho_u_u + bar.rho*bar.rho_v_v + bar.rho*bar.rho_w_w - 2*bar.rho_u**2 - 2*bar.rho_v**2 - 2*bar.rho_w**2)*bar.rho_w/bar.rho**5)
+    # + bar.rho2_w_w      * ((-bar.rho*bar.rho_u_u/2 - bar.rho*bar.rho_v_v/2 - bar.rho*bar.rho_w_w/2 + bar.rho_u**2 + bar.rho_v**2 + bar.rho_w**2)/bar.rho**4)
+    # + bar.rho2_u_u      * (bar.rho_u**2/bar.rho**4)
+    # + bar.rho2_u_u_u    * (-bar.rho_u/bar.rho**3)
+    # + bar_rho2_u_v      * (2*bar.rho_u*bar.rho_v/bar.rho**4)
+    # + bar.rho2_u_v_v    * (-bar.rho_u/bar.rho**3)
+    # + bar.rho2_u_w      * (2*bar.rho_u*bar.rho_w/bar.rho**4)
+    # + bar.rho2_u_w_w    * (-bar.rho_u/bar.rho**3)
+    # + bar.rho2_u_u_u_u  * (1/(4*bar.rho**2))
+    # + bar.rho2_u_u_v    * (-bar.rho_v/bar.rho**3)
+    # + bar.rho2_u_u_v_v  * (1/(2*bar.rho**2))
+    # + bar.rho2_u_u_w    * (-bar.rho_w/bar.rho**3)
+    # + bar.rho2_u_u_w_w  * (1/(2*bar.rho**2))
+    # + bar.rho_2_v_v     * (bar.rho_v**2/bar.rho**4)
+    # + bar.rho_2_v_v_v   * (-bar.rho_v/bar.rho**3)
+    # + bar.rho2_v_w      * (2*bar.rho_v*bar.rho_w/bar.rho**4)
+    # + bar.rho2_v_w_w    * (-bar.rho_v/bar.rho**3)
+    # + bar.rho_2_v_v_v_v * (1/(4*bar.rho**2))
+    # + bar.rho2_v_v_w    * (-bar.rho_w/bar.rho**3)
+    # + bar.rho2_v_v_w_w  * (1/(2*bar.rho**2))
+    # + bar_rho2_w_w      * (bar.rho_w**2/bar.rho**4)
+    # + bar_rho2_w_w_w    * (-bar.rho_w/bar.rho**3)
+    # + bar_rho2_w_w_w_w  * (1/(4*bar.rho**2))
+    # )
+
+    # Plot lower left subfigure (includes normalization)
+    for k,v in m.iteritems():
+        ax[1][0].plot(star.y, v / star.u**2, label=k)
+    ax[1][0].set_ylabel(r"$\mu^\ast$")
+    ax[1][0].set_xlabel(r"$y^\ast$")
+
+    # Plot lower right subfigure
     # TODO
     ax[1][1].set_ylabel(r"$\sigma_\mu / \mu$")
+    ax[0][1].set_yscale("log")
+    ax[1][0].set_xlabel(r"$y^\ast$")
+    if lowfrac:
+        ax[0][1].set_ylim(bottom=lowfrac)
 
     # Truncate at half channel width, if applicable
     if d.htdelta >= 0:
-        ax[0][0].set_xlim(right=np.median(d.star.y))
-        ax[0][1].set_xlim(right=np.median(d.star.y))
-        ax[1][0].set_xlim(right=np.median(d.star.y))
-        ax[1][1].set_xlim(right=np.median(d.star.y))
+        ax[0][0].set_xlim(right=np.median(star.y))
+        ax[0][1].set_xlim(right=np.median(star.y))
+        ax[1][0].set_xlim(right=np.median(star.y))
+        ax[1][1].set_xlim(right=np.median(star.y))
 
     # Add legends on rightmost images
     ax[0][1].legend(frameon=False)
