@@ -9,11 +9,13 @@ Options:
 File H5FILE should have been produced by the perfect_summary application.
 """
 from __future__ import division, print_function
+import collections
 import getopt
 import h5py
 import logging
 import matplotlib
 import matplotlib.pyplot as plt
+import matplotlib.ticker as ticker
 import numpy as np
 import os
 import pandas as pd
@@ -39,14 +41,15 @@ class Data(object):
 
         # Load file and prepare scalar and vector storage locations
         # Automatically unpack a variety of data mapping it into Bunches
-        self.file = h5py.File(filename, 'r')
-        self.y    = self.file['y'][()]
-        self.code = Bunch(alpha = self.file['alpha'][0],
-                          beta  = self.file['beta' ][0],
-                          gamma = self.file['gamma'][0],
-                          Ma    = self.file['Ma'   ][0],
-                          Re    = self.file['Re'   ][0],
-                          Pr    = self.file['Pr'   ][0])
+        self.file    = h5py.File(filename, 'r')
+        self.y       = self.file['y'][()]
+        self.code    = Bunch(alpha = self.file['alpha'][0],
+                             beta  = self.file['beta' ][0],
+                             gamma = self.file['gamma'][0],
+                             Ma    = self.file['Ma'   ][0],
+                             Re    = self.file['Re'   ][0],
+                             Pr    = self.file['Pr'   ][0])
+        self.htdelta = self.file['htdelta'][0]
 
         # Additionally, "bl.*" or "chan.*" is mapped into self.*.
         self.bar    = Bunch()  # From "mu" attribute of bar_*
@@ -84,6 +87,7 @@ class Data(object):
                           *self.code.Re)
 
             # ...variable density star units per Huang et al JFM 1995
+            # (Beware this does weird things on the upper channel half)
             self.star   = Bunch()
             self.star.u = np.sqrt(self.visc.tau_w / self.bar.rho)
             self.star.y = (self.bar.rho*self.y*self.star.u / self.bar.mu
@@ -103,6 +107,75 @@ class Data(object):
         except ImportError:
             l.warn("Pointwise computations not performed"
                    " because module 'perfect_decl' not found")
+
+def plot_profiles(d, lowfrac=None, **plotargs):
+    """
+    Plot mean profiles, Favre-fluctuations  and their associated uncertainties
+    """
+    fig, ax = plt.subplots(2, 2, sharex=True, squeeze=False)
+
+    #########################################################################
+    # Build dictionary of means and list of standard deviations for upper row
+    m = collections.OrderedDict()
+    s = []
+
+    m[r"$\bar{\rho}$"] = d.bar.rho
+    s.append(d.sigma.rho)
+
+    m[r"$\bar{u}$" ] = d.bar.u
+    s.append(d.sigma.u)
+
+    m[r"$\bar{T}$"] = d.bar.T
+    s.append(d.sigma.T)
+
+    m[r"$\bar{\mu}$"] = d.bar.mu
+    s.append(d.sigma.mu)
+
+    # Plot upper left figure
+    for k,v in m.iteritems():
+        ax[0][0].plot(d.star.y, v, label=k)
+    ax[0][0].set_ylabel(r"$\mu$; $\sigma/\mu$")
+
+    # Plot upper right figure
+    for k,v in m.iteritems():
+        ax[0][1].plot(d.star.y, s.pop(0)/v, label=k)
+    ax[0][1].set_yscale("log")
+    if lowfrac:
+        ax[0][1].set_ylim(bottom=lowfrac)
+
+    #########################################################################
+    # Build dictionary of means and list of standard deviations for lower row
+    # Variance expressions from postproc/propagation.py -d perfect.decl
+    # Unknown correlations are assumed independent for FIXME w/ Redmine #3132
+    m.clear()
+    del s[:]
+
+    # Lower left figure
+    ax[1][0].plot(d.star.y, d.tilde.upp_upp/d.star.u**2, label=r"$\widetilde{u^{\prime\prime{}2}}$")
+    ax[1][0].plot(d.star.y, d.tilde.vpp_vpp/d.star.u**2, label=r"$\widetilde{v^{\prime\prime{}2}}$")
+    ax[1][0].plot(d.star.y, d.tilde.wpp_wpp/d.star.u**2, label=r"$\widetilde{w^{\prime\prime{}2}}$")
+    ax[1][0].plot(d.star.y, d.tilde.upp_vpp/d.star.u**2, label=r"$\widetilde{u^{\prime\prime}v^{\prime\prime}}$")
+    ax[1][0].plot(d.star.y, d.tilde.k      /d.star.u**2, label=r"$k$")
+    ax[1][0].set_ylabel(r"$\mu^\ast$; $\sigma/\mu$")
+
+    # Lower right figure
+    # TODO
+
+    # Truncate at half channel width, if applicable
+    if d.htdelta >= 0:
+        ax[0][0].set_xlim(right=np.median(d.star.y))
+        ax[0][1].set_xlim(right=np.median(d.star.y))
+        ax[1][0].set_xlim(right=np.median(d.star.y))
+        ax[1][1].set_xlim(right=np.median(d.star.y))
+
+    # Add legends on rightmost images
+    ax[0][1].legend(frameon=False)
+    ax[1][1].legend(frameon=False)
+
+    # Tighten up the image
+    fig.tight_layout()
+
+    return (fig, ax)
 
 
 # TODO Smooth per B-splines using ' from scipy.interpolate import interp1d'
