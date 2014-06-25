@@ -115,9 +115,9 @@ class Data(object):
             l.warn("Star and plus unit computations not performed"
                    " because /{bl,chan}.{visc,wall} not found")
 
-        # Per Redmine #3132 and r45447 some quantities may be missing.  Only
-        # when data is unavailable, neglect correlations to estimate it.  This
-        # is forwards compatible and yells when data is missing.  So it goes.
+        # As of r45447 some quantities may be missing.  ONLY WHEN DATA IS
+        # UNAVAILABLE, neglect correlations to estimate it.  Ugly but forwards
+        # compatible with loud yelling when data is missing.  So it goes.
         maybe_assume_uncorrelated(self.bar, "rho2_u",       "rho", "rho_u")
         maybe_assume_uncorrelated(self.bar, "rho2_v",       "rho", "rho_v")
         maybe_assume_uncorrelated(self.bar, "rho2_w",       "rho", "rho_w")
@@ -180,7 +180,6 @@ def plot_profiles(d, lowfrac=None, **plotargs):
     #########################################################################
     # Build dictionary of means and list of standard deviations for lower row
     # Variance expressions from postproc/propagation.py -d perfect.decl
-    # Unknown correlations are assumed independent for FIXME w/ Redmine #3132
     m.clear()
     del s[:]
 
@@ -267,10 +266,11 @@ def plot_profiles(d, lowfrac=None, **plotargs):
     ax[1][0].set_xlabel(r"$y^\ast$")
 
     # Plot lower right subfigure
-    # TODO
+    for k,v in m.iteritems():
+        ax[1][1].plot(star.y, s.pop(0)/v, label=k)
     ax[1][1].set_ylabel(r"$\sigma_\mu / \mu$")
-    ax[0][1].set_yscale("log")
-    ax[1][0].set_xlabel(r"$y^\ast$")
+    ax[1][1].set_yscale("log")
+    ax[1][1].set_xlabel(r"$y^\ast$")
     if lowfrac:
         ax[0][1].set_ylim(bottom=lowfrac)
 
