@@ -117,18 +117,6 @@ class Data(object):
             l.warn("Star and plus unit computations not performed"
                    " because /{bl,chan}.{visc,wall} not found")
 
-        # Guess possibly absent standard errors from lower order quantities
-        # Uses highest possible moments as they should have greatest error
-        maybe_assume_uncorrelated(self.sigma, "rho2_u"      , "u", "rho2"      )
-        maybe_assume_uncorrelated(self.sigma, "rho2_v"      , "v", "rho2"      )
-        maybe_assume_uncorrelated(self.sigma, "rho2_w"      , "w", "rho2"      )
-        maybe_assume_uncorrelated(self.sigma, "rho2_u_u_u_u", "u", "rho2_u_u_u")
-        maybe_assume_uncorrelated(self.sigma, "rho2_u_u_v_v", "u", "rho2_u_v_v")
-        maybe_assume_uncorrelated(self.sigma, "rho2_u_u_w_w", "u", "rho2_u_w_w")
-        maybe_assume_uncorrelated(self.sigma, "rho2_v_v_v_v", "v", "rho2_v_v_v")
-        maybe_assume_uncorrelated(self.sigma, "rho2_v_v_w_w", "v", "rho2_v_w_w")
-        maybe_assume_uncorrelated(self.sigma, "rho2_w_w_w_w", "w", "rho2_w_w_w")
-
         # Compute a whole mess of derived information, if possible
         try:
             from perfect_decl import pointwise
@@ -148,7 +136,7 @@ def plot_profiles(d, lowfrac=None, **plotargs):
     bar, tilde, sigma, star = d.bar, d.tilde, d.sigma, d.star
 
     #########################################################################
-    # Build dictionary of means and list of standard deviations for upper row
+    # Build dictionary of means and list of standard errors for upper row
     m = collections.OrderedDict()
     s = []
 
@@ -178,85 +166,85 @@ def plot_profiles(d, lowfrac=None, **plotargs):
         ax[0][1].set_ylim(bottom=lowfrac)
 
     #########################################################################
-    # Build dictionary of means and standard devations for lower row
+    # Build dictionary of means and standard errors for lower row
     # Variance expressions from postproc/propagation.py -d perfect.decl
     m.clear()
     del s[:]
 
     m[r"$\widetilde{u^{\prime\prime{}2}}$"]              = tilde.upp_upp
     s.append(
-        sigma.rho2         * ((bar.rho*bar.rho_u_u - 2*bar.rho_u**2)**2/bar.rho**6)
-      + sigma.rho2_u       * (4*(bar.rho*bar.rho_u_u - 2*bar.rho_u**2)*bar.rho_u/bar.rho**5)
-      + sigma.rho2_u_u     * (2*(-bar.rho*bar.rho_u_u + 2*bar.rho_u**2)/bar.rho**4)
-      + sigma.rho2_u_u     * (4*bar.rho_u**2/bar.rho**4)
-      + sigma.rho2_u_u_u   * (-4*bar.rho_u/bar.rho**3)
-      + sigma.rho2_u_u_u_u * (bar.rho**(-2))
+        sigma.rho        * ((bar.rho*bar.rho_u_u - 2*bar.rho_u**2)**2/bar.rho**6)
+      # sigma.rho2_u     * (4*(bar.rho*bar.rho_u_u - 2*bar.rho_u**2)*bar.rho_u/bar.rho**5)
+      # sigma.rho2_u_u   * (2*(-bar.rho*bar.rho_u_u + 2*bar.rho_u**2)/bar.rho**4)
+      + sigma.rho_u      * (4*bar.rho_u**2/bar.rho**4)
+      # sigma.rho2_u_u_u * (-4*bar.rho_u/bar.rho**3)
+      + sigma.rho_u_u    * (bar.rho**(-2))
     )
 
     m[r"$\widetilde{v^{\prime\prime{}2}}$"]              = tilde.vpp_vpp
     s.append(
-        sigma.rho2         * ((bar.rho*bar.rho_v_v - 2*bar.rho_v**2)**2/bar.rho**6)
-      + sigma.rho2_v       * (4*(bar.rho*bar.rho_v_v - 2*bar.rho_v**2)*bar.rho_v/bar.rho**5)
-      + sigma.rho2_v_v     * (2*(-bar.rho*bar.rho_v_v + 2*bar.rho_v**2)/bar.rho**4)
-      + sigma.rho2_v_v     * (4*bar.rho_v**2/bar.rho**4)
-      + sigma.rho2_v_v_v   * (-4*bar.rho_v/bar.rho**3)
-      + sigma.rho2_v_v_v_v * (bar.rho**(-2))
+        sigma.rho        * ((bar.rho*bar.rho_v_v - 2*bar.rho_v**2)**2/bar.rho**6)
+      # sigma.rho2_v     * (4*(bar.rho*bar.rho_v_v - 2*bar.rho_v**2)*bar.rho_v/bar.rho**5)
+      # sigma.rho2_v_v   * (2*(-bar.rho*bar.rho_v_v + 2*bar.rho_v**2)/bar.rho**4)
+      + sigma.rho_v      * (4*bar.rho_v**2/bar.rho**4)
+      # sigma.rho2_v_v_v * (-4*bar.rho_v/bar.rho**3)
+      + sigma.rho_v_v    * (bar.rho**(-2))
     )
 
     m[r"$\widetilde{w^{\prime\prime{}2}}$"]              = tilde.wpp_wpp
     s.append(
-        sigma.rho2         * ((bar.rho*bar.rho_w_w - 2*bar.rho_w**2)**2/bar.rho**6)
-      + sigma.rho2_w       * (4*(bar.rho*bar.rho_w_w - 2*bar.rho_w**2)*bar.rho_w/bar.rho**5)
-      + sigma.rho2_w_w     * (2*(-bar.rho*bar.rho_w_w + 2*bar.rho_w**2)/bar.rho**4)
-      + sigma.rho2_w_w     * (4*bar.rho_w**2/bar.rho**4)
-      + sigma.rho2_w_w_w   * (-4*bar.rho_w/bar.rho**3)
-      + sigma.rho2_w_w_w_w * (bar.rho**(-2))
+        sigma.rho        * ((bar.rho*bar.rho_w_w - 2*bar.rho_w**2)**2/bar.rho**6)
+      # sigma.rho2_w     * (4*(bar.rho*bar.rho_w_w - 2*bar.rho_w**2)*bar.rho_w/bar.rho**5)
+      # sigma.rho2_w_w   * (2*(-bar.rho*bar.rho_w_w + 2*bar.rho_w**2)/bar.rho**4)
+      + sigma.rho_w      * (4*bar.rho_w**2/bar.rho**4)
+      # sigma.rho2_w_w_w * (-4*bar.rho_w/bar.rho**3)
+      + sigma.rho_w_w    * (bar.rho**(-2))
     )
 
     m[r"$\widetilde{u^{\prime\prime}v^{\prime\prime}}$"] = tilde.upp_vpp
     s.append(
-        sigma.rho2         * ((bar.rho*bar.rho_u_v - 2*bar.rho_u*bar.rho_v)**2/bar.rho**6)
-      + sigma.rho2_u       * (2*(bar.rho*bar.rho_u_v - 2*bar.rho_u*bar.rho_v)*bar.rho_v/bar.rho**5)
-      + sigma.rho2_u_v     * (2*(-bar.rho*bar.rho_u_v + 2*bar.rho_u*bar.rho_v)/bar.rho**4)
-      + sigma.rho2_v       * (2*(bar.rho*bar.rho_u_v - 2*bar.rho_u*bar.rho_v)*bar.rho_u/bar.rho**5)
-      + sigma.rho2_u_u     * (bar.rho_v**2/bar.rho**4)
-      + sigma.rho2_u_u_v   * (-2*bar.rho_v/bar.rho**3)
-      + sigma.rho2_u_v     * (2*bar.rho_u*bar.rho_v/bar.rho**4)
-      + sigma.rho2_u_u_v_v * (bar.rho**(-2))
-      + sigma.rho2_u_v_v   * (-2*bar.rho_u/bar.rho**3)
-      + sigma.rho2_v_v     * (bar.rho_u**2/bar.rho**4)
+        sigma.rho        * ((bar.rho*bar.rho_u_v - 2*bar.rho_u*bar.rho_v)**2/bar.rho**6)
+      # sigma.rho2_u     * (2*(bar.rho*bar.rho_u_v - 2*bar.rho_u*bar.rho_v)*bar.rho_v/bar.rho**5)
+      # sigma.rho2_u_v   * (2*(-bar.rho*bar.rho_u_v + 2*bar.rho_u*bar.rho_v)/bar.rho**4)
+      # sigma.rho2_v     * (2*(bar.rho*bar.rho_u_v - 2*bar.rho_u*bar.rho_v)*bar.rho_u/bar.rho**5)
+      + sigma.rho_u      * (bar.rho_v**2/bar.rho**4)
+      # sigma.rho2_u_u_v * (-2*bar.rho_v/bar.rho**3)
+      # sigma.rho2_u_v   * (2*bar.rho_u*bar.rho_v/bar.rho**4)
+      + sigma.rho_u_v    * (bar.rho**(-2))
+      # sigma.rho2_u_v_v * (-2*bar.rho_u/bar.rho**3)
+      + sigma.rho_v      * (bar.rho_u**2/bar.rho**4)
     )
 
     m[r"$k$"]                                            = tilde.k
     s.append(
-        sigma.rho2          * ((bar.rho*bar.rho_u_u + bar.rho*bar.rho_v_v + bar.rho*bar.rho_w_w - 2*bar.rho_u**2 - 2*bar.rho_v**2 - 2*bar.rho_w**2)**2/(4*bar.rho**6))
-      + sigma.rho2_u        * ((bar.rho*bar.rho_u_u + bar.rho*bar.rho_v_v + bar.rho*bar.rho_w_w - 2*bar.rho_u**2 - 2*bar.rho_v**2 - 2*bar.rho_w**2)*bar.rho_u/bar.rho**5)
-      + sigma.rho2_u_u      * ((-bar.rho*bar.rho_u_u/2 - bar.rho*bar.rho_v_v/2 - bar.rho*bar.rho_w_w/2 + bar.rho_u**2 + bar.rho_v**2 + bar.rho_w**2)/bar.rho**4)
-      + sigma.rho2_v        * ((bar.rho*bar.rho_u_u + bar.rho*bar.rho_v_v + bar.rho*bar.rho_w_w - 2*bar.rho_u**2 - 2*bar.rho_v**2 - 2*bar.rho_w**2)*bar.rho_v/bar.rho**5)
-      + sigma.rho2_v_v      * ((-bar.rho*bar.rho_u_u/2 - bar.rho*bar.rho_v_v/2 - bar.rho*bar.rho_w_w/2 + bar.rho_u**2 + bar.rho_v**2 + bar.rho_w**2)/bar.rho**4)
-      + sigma.rho2_w        * ((bar.rho*bar.rho_u_u + bar.rho*bar.rho_v_v + bar.rho*bar.rho_w_w - 2*bar.rho_u**2 - 2*bar.rho_v**2 - 2*bar.rho_w**2)*bar.rho_w/bar.rho**5)
-      + sigma.rho2_w_w      * ((-bar.rho*bar.rho_u_u/2 - bar.rho*bar.rho_v_v/2 - bar.rho*bar.rho_w_w/2 + bar.rho_u**2 + bar.rho_v**2 + bar.rho_w**2)/bar.rho**4)
-      + sigma.rho2_u_u      * (bar.rho_u**2/bar.rho**4)
-      + sigma.rho2_u_u_u    * (-bar.rho_u/bar.rho**3)
-      + sigma.rho2_u_v      * (2*bar.rho_u*bar.rho_v/bar.rho**4)
-      + sigma.rho2_u_v_v    * (-bar.rho_u/bar.rho**3)
-      + sigma.rho2_u_w      * (2*bar.rho_u*bar.rho_w/bar.rho**4)
-      + sigma.rho2_u_w_w    * (-bar.rho_u/bar.rho**3)
-      + sigma.rho2_u_u_u_u  * (1/(4*bar.rho**2))
-      + sigma.rho2_u_u_v    * (-bar.rho_v/bar.rho**3)
-      + sigma.rho2_u_u_v_v  * (1/(2*bar.rho**2))
-      + sigma.rho2_u_u_w    * (-bar.rho_w/bar.rho**3)
-      + sigma.rho2_u_u_w_w  * (1/(2*bar.rho**2))
-      + sigma.rho2_v_v      * (bar.rho_v**2/bar.rho**4)
-      + sigma.rho2_v_v_v    * (-bar.rho_v/bar.rho**3)
-      + sigma.rho2_v_w      * (2*bar.rho_v*bar.rho_w/bar.rho**4)
-      + sigma.rho2_v_w_w    * (-bar.rho_v/bar.rho**3)
-      + sigma.rho2_v_v_v_v  * (1/(4*bar.rho**2))
-      + sigma.rho2_v_v_w    * (-bar.rho_w/bar.rho**3)
-      + sigma.rho2_v_v_w_w  * (1/(2*bar.rho**2))
-      + sigma.rho2_w_w      * (bar.rho_w**2/bar.rho**4)
-      + sigma.rho2_w_w_w    * (-bar.rho_w/bar.rho**3)
-      + sigma.rho2_w_w_w_w  * (1/(4*bar.rho**2))
+        sigma.rho          * ((bar.rho*bar.rho_u_u + bar.rho*bar.rho_v_v + bar.rho*bar.rho_w_w - 2*bar.rho_u**2 - 2*bar.rho_v**2 - 2*bar.rho_w**2)**2/(4*bar.rho**6))
+      # sigma.rho2_u       * ((bar.rho*bar.rho_u_u + bar.rho*bar.rho_v_v + bar.rho*bar.rho_w_w - 2*bar.rho_u**2 - 2*bar.rho_v**2 - 2*bar.rho_w**2)*bar.rho_u/bar.rho**5)
+      # sigma.rho2_u_u     * ((-bar.rho*bar.rho_u_u/2 - bar.rho*bar.rho_v_v/2 - bar.rho*bar.rho_w_w/2 + bar.rho_u**2 + bar.rho_v**2 + bar.rho_w**2)/bar.rho**4)
+      # sigma.rho2_v       * ((bar.rho*bar.rho_u_u + bar.rho*bar.rho_v_v + bar.rho*bar.rho_w_w - 2*bar.rho_u**2 - 2*bar.rho_v**2 - 2*bar.rho_w**2)*bar.rho_v/bar.rho**5)
+      # sigma.rho2_v_v     * ((-bar.rho*bar.rho_u_u/2 - bar.rho*bar.rho_v_v/2 - bar.rho*bar.rho_w_w/2 + bar.rho_u**2 + bar.rho_v**2 + bar.rho_w**2)/bar.rho**4)
+      # sigma.rho2_w       * ((bar.rho*bar.rho_u_u + bar.rho*bar.rho_v_v + bar.rho*bar.rho_w_w - 2*bar.rho_u**2 - 2*bar.rho_v**2 - 2*bar.rho_w**2)*bar.rho_w/bar.rho**5)
+      # sigma.rho2_w_w     * ((-bar.rho*bar.rho_u_u/2 - bar.rho*bar.rho_v_v/2 - bar.rho*bar.rho_w_w/2 + bar.rho_u**2 + bar.rho_v**2 + bar.rho_w**2)/bar.rho**4)
+      + sigma.rho_u        * (bar.rho_u**2/bar.rho**4)
+      # sigma.rho2_u_u_u   * (-bar.rho_u/bar.rho**3)
+      # sigma.rho2_u_v     * (2*bar.rho_u*bar.rho_v/bar.rho**4)
+      # sigma.rho2_u_v_v   * (-bar.rho_u/bar.rho**3)
+      # sigma.rho2_u_w     * (2*bar.rho_u*bar.rho_w/bar.rho**4)
+      # sigma.rho2_u_w_w   * (-bar.rho_u/bar.rho**3)
+      + sigma.rho_u_u      * (1/(4*bar.rho**2))
+      # sigma.rho2_u_u_v   * (-bar.rho_v/bar.rho**3)
+      # sigma.rho2_u_u_v_v * (1/(2*bar.rho**2))
+      # sigma.rho2_u_u_w   * (-bar.rho_w/bar.rho**3)
+      # sigma.rho2_u_u_w_w * (1/(2*bar.rho**2))
+      + sigma.rho_v        * (bar.rho_v**2/bar.rho**4)
+      # sigma.rho2_v_v_v   * (-bar.rho_v/bar.rho**3)
+      # sigma.rho2_v_w     * (2*bar.rho_v*bar.rho_w/bar.rho**4)
+      # sigma.rho2_v_w_w   * (-bar.rho_v/bar.rho**3)
+      + sigma.rho_v_v      * (1/(4*bar.rho**2))
+      # sigma.rho2_v_v_w   * (-bar.rho_w/bar.rho**3)
+      # sigma.rho2_v_v_w_w * (1/(2*bar.rho**2))
+      + sigma.rho_w        * (bar.rho_w**2/bar.rho**4)
+      # sigma.rho2_w_w_w   * (-bar.rho_w/bar.rho**3)
+      + sigma.rho_w_w      * (1/(4*bar.rho**2))
     )
 
     # Plot lower left subfigure (includes normalization)
