@@ -128,7 +128,7 @@ class Data(object):
                    " because module 'perfect_decl' not found")
 
 
-def plot_profiles(d, lowfrac=None, **plotargs):
+def plot_profiles(d, fbottom=None, ftop=None, **plotargs):
     """
     Plot mean primitive profiles, their RMS fluctuations, and uncertainties.
     """
@@ -162,8 +162,10 @@ def plot_profiles(d, lowfrac=None, **plotargs):
         ax[0][1].plot(star.y, s.pop(0)/v, label=k)
     ax[0][1].set_ylabel(r"$\sigma_\mu / \mu$")
     ax[0][1].set_yscale("log")
-    if lowfrac:
-        ax[0][1].set_ylim(bottom=lowfrac)
+    if fbottom:
+        ax[0][1].set_ylim(bottom=fbottom)
+    if ftop:
+        ax[0][1].set_ylim(top=ftop)
 
     #########################################################################
     # Build dictionary of means and standard errors for lower row
@@ -259,8 +261,10 @@ def plot_profiles(d, lowfrac=None, **plotargs):
     ax[1][1].set_ylabel(r"$\sigma_\mu / \left|\mu\right|$")
     ax[1][1].set_yscale("log")
     ax[1][1].set_xlabel(r"$y^\ast$")
-    if lowfrac:
-        ax[0][1].set_ylim(bottom=lowfrac)
+    if fbottom:
+        ax[1][1].set_ylim(bottom=fbottom)
+    if ftop:
+        ax[1][1].set_ylim(top=ftop)
 
     # Truncate at half channel width, if applicable
     if d.htdelta >= 0:
