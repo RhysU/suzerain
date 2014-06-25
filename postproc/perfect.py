@@ -118,16 +118,16 @@ class Data(object):
         # As of r45447 some quantities may be missing.  ONLY WHEN DATA IS
         # UNAVAILABLE, neglect correlations to estimate it.  Ugly but forwards
         # compatible with loud yelling when data is missing.  So it goes.
-        maybe_assume_uncorrelated(self.bar, "rho2_u",       "rho", "rho_u")
-        maybe_assume_uncorrelated(self.bar, "rho2_v",       "rho", "rho_v")
-        maybe_assume_uncorrelated(self.bar, "rho2_w",       "rho", "rho_w")
-        maybe_assume_uncorrelated(self.bar, "rho2_u_v",     "rho_u", "rho_v")
-        maybe_assume_uncorrelated(self.bar, "rho2_u_u_u_u", "rho_u_u")
-        maybe_assume_uncorrelated(self.bar, "rho2_u_u_v_v", "rho_u_u", "rho_v_v")
-        maybe_assume_uncorrelated(self.bar, "rho2_u_u_w_w", "rho_u_u", "rho_w_w")
-        maybe_assume_uncorrelated(self.bar, "rho2_v_v_v_v", "rho_v_v")
-        maybe_assume_uncorrelated(self.bar, "rho2_v_v_w_w", "rho_v_v", "rho_w_w")
-        maybe_assume_uncorrelated(self.bar, "rho2_w_w_w_w", "rho_w_w")
+        maybe_assume_uncorrelated(self.bar, "rho2_u",       "rho2", "u")
+        maybe_assume_uncorrelated(self.bar, "rho2_u_u_u_u", "u",    "rho2_u_u_u")
+        maybe_assume_uncorrelated(self.bar, "rho2_u_u_v_v", "u",    "rho2_u_v_v")
+        maybe_assume_uncorrelated(self.bar, "rho2_u_u_w_w", "u",    "rho2_u_w_w")
+        maybe_assume_uncorrelated(self.bar, "rho2_u_v",     "rho2", "u_v")
+        maybe_assume_uncorrelated(self.bar, "rho2_v",       "rho2", "v")
+        maybe_assume_uncorrelated(self.bar, "rho2_v_v_v_v", "v",    "rho2_v_v_v")
+        maybe_assume_uncorrelated(self.bar, "rho2_v_v_w_w", "v",    "rho2_v_w_w")
+        maybe_assume_uncorrelated(self.bar, "rho2_w",       "rho2", "w")
+        maybe_assume_uncorrelated(self.bar, "rho2_w_w_w_w", "w",    "rho2_w_w_w")
 
         # Compute a whole mess of derived information, if possible
         try:
@@ -165,12 +165,12 @@ def plot_profiles(d, lowfrac=None, **plotargs):
     s.append(sigma.mu)
 
     # Plot upper left subfigure
-    for k,v in m.iteritems():
+    for k, v in m.iteritems():
         ax[0][0].plot(star.y, v, label=k)
     ax[0][0].set_ylabel(r"$\mu$")
 
     # Plot upper right subfigure
-    for k,v in m.iteritems():
+    for k, v in m.iteritems():
         ax[0][1].plot(star.y, s.pop(0)/v, label=k)
     ax[0][1].set_ylabel(r"$\sigma_\mu / \mu$")
     ax[0][1].set_yscale("log")
@@ -178,43 +178,43 @@ def plot_profiles(d, lowfrac=None, **plotargs):
         ax[0][1].set_ylim(bottom=lowfrac)
 
     #########################################################################
-    # Build dictionary of means and list of standard deviations for lower row
+    # Build dictionary of means and list of variances for lower row
     # Variance expressions from postproc/propagation.py -d perfect.decl
     m.clear()
     del s[:]
 
     m[r"$\widetilde{u^{\prime\prime{}2}}$"]              = tilde.upp_upp
-    s.append(np.sqrt(
+    s.append(
         bar.rho2         * ((bar.rho*bar.rho_u_u - 2*bar.rho_u**2)**2/bar.rho**6)
       + bar.rho2_u       * (4*(bar.rho*bar.rho_u_u - 2*bar.rho_u**2)*bar.rho_u/bar.rho**5)
       + bar.rho2_u_u     * (2*(-bar.rho*bar.rho_u_u + 2*bar.rho_u**2)/bar.rho**4)
       + bar.rho2_u_u     * (4*bar.rho_u**2/bar.rho**4)
       + bar.rho2_u_u_u   * (-4*bar.rho_u/bar.rho**3)
       + bar.rho2_u_u_u_u * (bar.rho**(-2))
-    ))
+    )
 
     m[r"$\widetilde{v^{\prime\prime{}2}}$"]              = tilde.vpp_vpp
-    s.append(np.sqrt(
+    s.append(
         bar.rho2         * ((bar.rho*bar.rho_v_v - 2*bar.rho_v**2)**2/bar.rho**6)
       + bar.rho2_v       * (4*(bar.rho*bar.rho_v_v - 2*bar.rho_v**2)*bar.rho_v/bar.rho**5)
       + bar.rho2_v_v     * (2*(-bar.rho*bar.rho_v_v + 2*bar.rho_v**2)/bar.rho**4)
       + bar.rho2_v_v     * (4*bar.rho_v**2/bar.rho**4)
       + bar.rho2_v_v_v   * (-4*bar.rho_v/bar.rho**3)
       + bar.rho2_v_v_v_v * (bar.rho**(-2))
-    ))
+    )
 
     m[r"$\widetilde{w^{\prime\prime{}2}}$"]              = tilde.wpp_wpp
-    s.append(np.sqrt(
+    s.append(
         bar.rho2         * ((bar.rho*bar.rho_w_w - 2*bar.rho_w**2)**2/bar.rho**6)
       + bar.rho2_w       * (4*(bar.rho*bar.rho_w_w - 2*bar.rho_w**2)*bar.rho_w/bar.rho**5)
       + bar.rho2_w_w     * (2*(-bar.rho*bar.rho_w_w + 2*bar.rho_w**2)/bar.rho**4)
       + bar.rho2_w_w     * (4*bar.rho_w**2/bar.rho**4)
       + bar.rho2_w_w_w   * (-4*bar.rho_w/bar.rho**3)
       + bar.rho2_w_w_w_w * (bar.rho**(-2))
-    ))
+    )
 
     m[r"$\widetilde{u^{\prime\prime}v^{\prime\prime}}$"] = tilde.upp_vpp
-    s.append(np.sqrt(
+    s.append(
         bar.rho2         * ((bar.rho*bar.rho_u_v - 2*bar.rho_u*bar.rho_v)**2/bar.rho**6)
       + bar.rho2_u       * (2*(bar.rho*bar.rho_u_v - 2*bar.rho_u*bar.rho_v)*bar.rho_v/bar.rho**5)
       + bar.rho2_u_v     * (2*(-bar.rho*bar.rho_u_v + 2*bar.rho_u*bar.rho_v)/bar.rho**4)
@@ -225,10 +225,10 @@ def plot_profiles(d, lowfrac=None, **plotargs):
       + bar.rho2_u_u_v_v * (bar.rho**(-2))
       + bar.rho2_u_v_v   * (-2*bar.rho_u/bar.rho**3)
       + bar.rho2_v_v     * (bar.rho_u**2/bar.rho**4)
-    ))
+    )
 
     m[r"$k$"]                                            = tilde.k
-    s.append(np.sqrt(
+    s.append(
         bar.rho2          * ((bar.rho*bar.rho_u_u + bar.rho*bar.rho_v_v + bar.rho*bar.rho_w_w - 2*bar.rho_u**2 - 2*bar.rho_v**2 - 2*bar.rho_w**2)**2/(4*bar.rho**6))
       + bar.rho2_u        * ((bar.rho*bar.rho_u_u + bar.rho*bar.rho_v_v + bar.rho*bar.rho_w_w - 2*bar.rho_u**2 - 2*bar.rho_v**2 - 2*bar.rho_w**2)*bar.rho_u/bar.rho**5)
       + bar.rho2_u_u      * ((-bar.rho*bar.rho_u_u/2 - bar.rho*bar.rho_v_v/2 - bar.rho*bar.rho_w_w/2 + bar.rho_u**2 + bar.rho_v**2 + bar.rho_w**2)/bar.rho**4)
@@ -257,18 +257,18 @@ def plot_profiles(d, lowfrac=None, **plotargs):
       + bar.rho2_w_w      * (bar.rho_w**2/bar.rho**4)
       + bar.rho2_w_w_w    * (-bar.rho_w/bar.rho**3)
       + bar.rho2_w_w_w_w  * (1/(4*bar.rho**2))
-    ))
+    )
 
     # Plot lower left subfigure (includes normalization)
-    for k,v in m.iteritems():
+    for k, v in m.iteritems():
         ax[1][0].plot(star.y, v / star.u**2, label=k)
     ax[1][0].set_ylabel(r"$\mu^\ast$")
     ax[1][0].set_xlabel(r"$y^\ast$")
 
-    # Plot lower right subfigure
-    for k,v in m.iteritems():
-        ax[1][1].plot(star.y, s.pop(0)/v, label=k)
-    ax[1][1].set_ylabel(r"$\sigma_\mu / \mu$")
+    # Plot lower right subfigure (includes normalization)
+    for k, v in m.iteritems():
+        ax[1][1].plot(star.y, np.sqrt(s.pop(0))/np.abs(v), label=k)
+    ax[1][1].set_ylabel(r"$\sigma_\mu / \left|\mu\right|$")
     ax[1][1].set_yscale("log")
     ax[1][1].set_xlabel(r"$y^\ast$")
     if lowfrac:
