@@ -34,6 +34,24 @@ class Bunch(dict):
         self.__dict__ = self
 
 
+def maybe_assume_uncorrelated(data, keyAB, keyA, keyB=None, warn=True):
+    """
+    If "AB" is not in dictionary data then assume Cov(A,B) = 0 implying
+    E[AB] =  E[A] * E[B].  This is obviously not ideal from a rigor
+    perspective and therefore warnings are emitted whenever warn is True.
+    """
+    if keyAB in data:
+        pass
+    elif keyB is None:
+        data[keyAB] = data[keyA]**2
+        l.warn("Obtained unknown %s by neglecting higher moment of %s"
+               % (keyAB, keyA))
+    else:
+        data[keyAB] = data[keyA] * data[keyB]
+        l.warn("Obtained unknown %s by assuming %s and %s are uncorrelated"
+               % (keyAB, keyA, keyB))
+
+
 class Data(object):
     "Storage of data loaded and computed from a single summary file."
     def __init__(self, filename):
@@ -97,6 +115,11 @@ class Data(object):
             l.warn("Star and plus unit computations not performed"
                    " because /{bl,chan}.{visc,wall} not found")
 
+        # Per Redmine #3132 and r45447 some quantities may be missing.  Only
+        # when data is unavailable, neglect correlations to estimate it.  This
+        # is forwards compatible and yells when data is missing.  So it goes.
+        maybe_assume_uncorrelated(self.bar, "rho2_u",       "rho", "rho_u")
+        maybe_assume_uncorrelated(self.bar, "rho2_u_u_u_u", "rho_u_u")
 
         # Compute a whole mess of derived information, if possible
         try:
@@ -107,6 +130,7 @@ class Data(object):
         except ImportError:
             l.warn("Pointwise computations not performed"
                    " because module 'perfect_decl' not found")
+
 
 def plot_profiles(d, lowfrac=None, **plotargs):
     """
@@ -153,16 +177,14 @@ def plot_profiles(d, lowfrac=None, **plotargs):
     del s[:]
 
     m[r"$\widetilde{u^{\prime\prime{}2}}$"]              = tilde.upp_upp
-    # s.append(np.sqrt(
-    # ))
-    # Var[tilde_upp_upp] = (
-    #   bar.rho2         * ((bar.rho*bar.rho_u_u - 2*bar.rho_u**2)**2/bar.rho**6)
-    # + bar.rho2_u       * (4*(bar.rho*bar.rho_u_u - 2*bar.rho_u**2)*bar.rho_u/bar.rho**5)
-    # + bar.rho2_u_u     * (2*(-bar.rho*bar.rho_u_u + 2*bar.rho_u**2)/bar.rho**4)
-    # + bar.rho2_u_u     * (4*bar.rho_u**2/bar.rho**4)
-    # + bar.rho2_u_u_u   * (-4*bar.rho_u/bar.rho**3)
-    # + bar.rho2_u_u_u_u * (bar.rho**(-2))
-    # )
+    s.append(np.sqrt(
+        bar.rho2         * ((bar.rho*bar.rho_u_u - 2*bar.rho_u**2)**2/bar.rho**6)
+      + bar.rho2_u       * (4*(bar.rho*bar.rho_u_u - 2*bar.rho_u**2)*bar.rho_u/bar.rho**5)
+      + bar.rho2_u_u     * (2*(-bar.rho*bar.rho_u_u + 2*bar.rho_u**2)/bar.rho**4)
+      + bar.rho2_u_u     * (4*bar.rho_u**2/bar.rho**4)
+      + bar.rho2_u_u_u   * (-4*bar.rho_u/bar.rho**3)
+      + bar.rho2_u_u_u_u * (bar.rho**(-2))
+    ))
 
     m[r"$\widetilde{v^{\prime\prime{}2}}$"]              = tilde.vpp_vpp
     # s.append(np.sqrt(
