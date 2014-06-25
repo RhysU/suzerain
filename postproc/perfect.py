@@ -44,11 +44,11 @@ def maybe_assume_uncorrelated(data, keyAB, keyA, keyB=None, warn=True):
         pass
     elif keyB is None:
         data[keyAB] = data[keyA]**2
-        l.warn("Obtained unknown %s by neglecting higher moment of %s"
+        l.warn("Estimated unknown %s by neglecting higher moment of %s"
                % (keyAB, keyA))
     else:
         data[keyAB] = data[keyA] * data[keyB]
-        l.warn("Obtained unknown %s by assuming %s and %s are uncorrelated"
+        l.warn("Estimated unknown %s by assuming %s and %s are uncorrelated"
                % (keyAB, keyA, keyB))
 
 
@@ -113,10 +113,21 @@ class Data(object):
             self.star.u = np.sqrt(self.visc.tau_w / self.bar.rho)
             self.star.y = (self.bar.rho*self.y*self.star.u / self.bar.mu
                           *self.code.Re)
-
         else:
             l.warn("Star and plus unit computations not performed"
                    " because /{bl,chan}.{visc,wall} not found")
+
+        # Guess possibly absent standard errors from lower order quantities
+        # Uses highest possible moments as they should have greatest error
+        maybe_assume_uncorrelated(self.sigma, "rho2_u"      , "u", "rho2"      )
+        maybe_assume_uncorrelated(self.sigma, "rho2_v"      , "v", "rho2"      )
+        maybe_assume_uncorrelated(self.sigma, "rho2_w"      , "w", "rho2"      )
+        maybe_assume_uncorrelated(self.sigma, "rho2_u_u_u_u", "u", "rho2_u_u_u")
+        maybe_assume_uncorrelated(self.sigma, "rho2_u_u_v_v", "u", "rho2_u_v_v")
+        maybe_assume_uncorrelated(self.sigma, "rho2_u_u_w_w", "u", "rho2_u_w_w")
+        maybe_assume_uncorrelated(self.sigma, "rho2_v_v_v_v", "v", "rho2_v_v_v")
+        maybe_assume_uncorrelated(self.sigma, "rho2_v_v_w_w", "v", "rho2_v_w_w")
+        maybe_assume_uncorrelated(self.sigma, "rho2_w_w_w_w", "w", "rho2_w_w_w")
 
         # Compute a whole mess of derived information, if possible
         try:
@@ -134,7 +145,7 @@ def plot_profiles(d, lowfrac=None, **plotargs):
     Plot mean primitive profiles, their RMS fluctuations, and uncertainties.
     """
     fig, ax = plt.subplots(2, 2, sharex=True, squeeze=False)
-    bar, tilde, sigma, plus = d.bar, d.tilde, d.sigma, d.plus
+    bar, tilde, sigma, star = d.bar, d.tilde, d.sigma, d.star
 
     #########################################################################
     # Build dictionary of means and list of standard deviations for upper row
@@ -155,12 +166,12 @@ def plot_profiles(d, lowfrac=None, **plotargs):
 
     # Plot upper left subfigure
     for k, v in m.iteritems():
-        ax[0][0].plot(plus.y, v, label=k)
+        ax[0][0].plot(star.y, v, label=k)
     ax[0][0].set_ylabel(r"$\mu$")
 
     # Plot upper right subfigure
     for k, v in m.iteritems():
-        ax[0][1].plot(plus.y, s.pop(0)/v, label=k)
+        ax[0][1].plot(star.y, s.pop(0)/v, label=k)
     ax[0][1].set_ylabel(r"$\sigma_\mu / \mu$")
     ax[0][1].set_yscale("log")
     if lowfrac:
@@ -174,89 +185,89 @@ def plot_profiles(d, lowfrac=None, **plotargs):
 
     m[r"$\widetilde{u^{\prime\prime{}2}}$"]              = tilde.upp_upp
     s.append(
-        bar.rho2         * ((bar.rho*bar.rho_u_u - 2*bar.rho_u**2)**2/bar.rho**6)
-      + bar.rho2_u       * (4*(bar.rho*bar.rho_u_u - 2*bar.rho_u**2)*bar.rho_u/bar.rho**5)
-      + bar.rho2_u_u     * (2*(-bar.rho*bar.rho_u_u + 2*bar.rho_u**2)/bar.rho**4)
-      + bar.rho2_u_u     * (4*bar.rho_u**2/bar.rho**4)
-      + bar.rho2_u_u_u   * (-4*bar.rho_u/bar.rho**3)
-      + bar.rho2_u_u_u_u * (bar.rho**(-2))
+        sigma.rho2         * ((bar.rho*bar.rho_u_u - 2*bar.rho_u**2)**2/bar.rho**6)
+      + sigma.rho2_u       * (4*(bar.rho*bar.rho_u_u - 2*bar.rho_u**2)*bar.rho_u/bar.rho**5)
+      + sigma.rho2_u_u     * (2*(-bar.rho*bar.rho_u_u + 2*bar.rho_u**2)/bar.rho**4)
+      + sigma.rho2_u_u     * (4*bar.rho_u**2/bar.rho**4)
+      + sigma.rho2_u_u_u   * (-4*bar.rho_u/bar.rho**3)
+      + sigma.rho2_u_u_u_u * (bar.rho**(-2))
     )
 
     m[r"$\widetilde{v^{\prime\prime{}2}}$"]              = tilde.vpp_vpp
     s.append(
-        bar.rho2         * ((bar.rho*bar.rho_v_v - 2*bar.rho_v**2)**2/bar.rho**6)
-      + bar.rho2_v       * (4*(bar.rho*bar.rho_v_v - 2*bar.rho_v**2)*bar.rho_v/bar.rho**5)
-      + bar.rho2_v_v     * (2*(-bar.rho*bar.rho_v_v + 2*bar.rho_v**2)/bar.rho**4)
-      + bar.rho2_v_v     * (4*bar.rho_v**2/bar.rho**4)
-      + bar.rho2_v_v_v   * (-4*bar.rho_v/bar.rho**3)
-      + bar.rho2_v_v_v_v * (bar.rho**(-2))
+        sigma.rho2         * ((bar.rho*bar.rho_v_v - 2*bar.rho_v**2)**2/bar.rho**6)
+      + sigma.rho2_v       * (4*(bar.rho*bar.rho_v_v - 2*bar.rho_v**2)*bar.rho_v/bar.rho**5)
+      + sigma.rho2_v_v     * (2*(-bar.rho*bar.rho_v_v + 2*bar.rho_v**2)/bar.rho**4)
+      + sigma.rho2_v_v     * (4*bar.rho_v**2/bar.rho**4)
+      + sigma.rho2_v_v_v   * (-4*bar.rho_v/bar.rho**3)
+      + sigma.rho2_v_v_v_v * (bar.rho**(-2))
     )
 
     m[r"$\widetilde{w^{\prime\prime{}2}}$"]              = tilde.wpp_wpp
     s.append(
-        bar.rho2         * ((bar.rho*bar.rho_w_w - 2*bar.rho_w**2)**2/bar.rho**6)
-      + bar.rho2_w       * (4*(bar.rho*bar.rho_w_w - 2*bar.rho_w**2)*bar.rho_w/bar.rho**5)
-      + bar.rho2_w_w     * (2*(-bar.rho*bar.rho_w_w + 2*bar.rho_w**2)/bar.rho**4)
-      + bar.rho2_w_w     * (4*bar.rho_w**2/bar.rho**4)
-      + bar.rho2_w_w_w   * (-4*bar.rho_w/bar.rho**3)
-      + bar.rho2_w_w_w_w * (bar.rho**(-2))
+        sigma.rho2         * ((bar.rho*bar.rho_w_w - 2*bar.rho_w**2)**2/bar.rho**6)
+      + sigma.rho2_w       * (4*(bar.rho*bar.rho_w_w - 2*bar.rho_w**2)*bar.rho_w/bar.rho**5)
+      + sigma.rho2_w_w     * (2*(-bar.rho*bar.rho_w_w + 2*bar.rho_w**2)/bar.rho**4)
+      + sigma.rho2_w_w     * (4*bar.rho_w**2/bar.rho**4)
+      + sigma.rho2_w_w_w   * (-4*bar.rho_w/bar.rho**3)
+      + sigma.rho2_w_w_w_w * (bar.rho**(-2))
     )
 
     m[r"$\widetilde{u^{\prime\prime}v^{\prime\prime}}$"] = tilde.upp_vpp
     s.append(
-        bar.rho2         * ((bar.rho*bar.rho_u_v - 2*bar.rho_u*bar.rho_v)**2/bar.rho**6)
-      + bar.rho2_u       * (2*(bar.rho*bar.rho_u_v - 2*bar.rho_u*bar.rho_v)*bar.rho_v/bar.rho**5)
-      + bar.rho2_u_v     * (2*(-bar.rho*bar.rho_u_v + 2*bar.rho_u*bar.rho_v)/bar.rho**4)
-      + bar.rho2_v       * (2*(bar.rho*bar.rho_u_v - 2*bar.rho_u*bar.rho_v)*bar.rho_u/bar.rho**5)
-      + bar.rho2_u_u     * (bar.rho_v**2/bar.rho**4)
-      + bar.rho2_u_u_v   * (-2*bar.rho_v/bar.rho**3)
-      + bar.rho2_u_v     * (2*bar.rho_u*bar.rho_v/bar.rho**4)
-      + bar.rho2_u_u_v_v * (bar.rho**(-2))
-      + bar.rho2_u_v_v   * (-2*bar.rho_u/bar.rho**3)
-      + bar.rho2_v_v     * (bar.rho_u**2/bar.rho**4)
+        sigma.rho2         * ((bar.rho*bar.rho_u_v - 2*bar.rho_u*bar.rho_v)**2/bar.rho**6)
+      + sigma.rho2_u       * (2*(bar.rho*bar.rho_u_v - 2*bar.rho_u*bar.rho_v)*bar.rho_v/bar.rho**5)
+      + sigma.rho2_u_v     * (2*(-bar.rho*bar.rho_u_v + 2*bar.rho_u*bar.rho_v)/bar.rho**4)
+      + sigma.rho2_v       * (2*(bar.rho*bar.rho_u_v - 2*bar.rho_u*bar.rho_v)*bar.rho_u/bar.rho**5)
+      + sigma.rho2_u_u     * (bar.rho_v**2/bar.rho**4)
+      + sigma.rho2_u_u_v   * (-2*bar.rho_v/bar.rho**3)
+      + sigma.rho2_u_v     * (2*bar.rho_u*bar.rho_v/bar.rho**4)
+      + sigma.rho2_u_u_v_v * (bar.rho**(-2))
+      + sigma.rho2_u_v_v   * (-2*bar.rho_u/bar.rho**3)
+      + sigma.rho2_v_v     * (bar.rho_u**2/bar.rho**4)
     )
 
     m[r"$k$"]                                            = tilde.k
     s.append(
-        bar.rho2          * ((bar.rho*bar.rho_u_u + bar.rho*bar.rho_v_v + bar.rho*bar.rho_w_w - 2*bar.rho_u**2 - 2*bar.rho_v**2 - 2*bar.rho_w**2)**2/(4*bar.rho**6))
-      + bar.rho2_u        * ((bar.rho*bar.rho_u_u + bar.rho*bar.rho_v_v + bar.rho*bar.rho_w_w - 2*bar.rho_u**2 - 2*bar.rho_v**2 - 2*bar.rho_w**2)*bar.rho_u/bar.rho**5)
-      + bar.rho2_u_u      * ((-bar.rho*bar.rho_u_u/2 - bar.rho*bar.rho_v_v/2 - bar.rho*bar.rho_w_w/2 + bar.rho_u**2 + bar.rho_v**2 + bar.rho_w**2)/bar.rho**4)
-      + bar.rho2_v        * ((bar.rho*bar.rho_u_u + bar.rho*bar.rho_v_v + bar.rho*bar.rho_w_w - 2*bar.rho_u**2 - 2*bar.rho_v**2 - 2*bar.rho_w**2)*bar.rho_v/bar.rho**5)
-      + bar.rho2_v_v      * ((-bar.rho*bar.rho_u_u/2 - bar.rho*bar.rho_v_v/2 - bar.rho*bar.rho_w_w/2 + bar.rho_u**2 + bar.rho_v**2 + bar.rho_w**2)/bar.rho**4)
-      + bar.rho2_w        * ((bar.rho*bar.rho_u_u + bar.rho*bar.rho_v_v + bar.rho*bar.rho_w_w - 2*bar.rho_u**2 - 2*bar.rho_v**2 - 2*bar.rho_w**2)*bar.rho_w/bar.rho**5)
-      + bar.rho2_w_w      * ((-bar.rho*bar.rho_u_u/2 - bar.rho*bar.rho_v_v/2 - bar.rho*bar.rho_w_w/2 + bar.rho_u**2 + bar.rho_v**2 + bar.rho_w**2)/bar.rho**4)
-      + bar.rho2_u_u      * (bar.rho_u**2/bar.rho**4)
-      + bar.rho2_u_u_u    * (-bar.rho_u/bar.rho**3)
-      + bar.rho2_u_v      * (2*bar.rho_u*bar.rho_v/bar.rho**4)
-      + bar.rho2_u_v_v    * (-bar.rho_u/bar.rho**3)
-      + bar.rho2_u_w      * (2*bar.rho_u*bar.rho_w/bar.rho**4)
-      + bar.rho2_u_w_w    * (-bar.rho_u/bar.rho**3)
-      + bar.rho2_u_u_u_u  * (1/(4*bar.rho**2))
-      + bar.rho2_u_u_v    * (-bar.rho_v/bar.rho**3)
-      + bar.rho2_u_u_v_v  * (1/(2*bar.rho**2))
-      + bar.rho2_u_u_w    * (-bar.rho_w/bar.rho**3)
-      + bar.rho2_u_u_w_w  * (1/(2*bar.rho**2))
-      + bar.rho2_v_v      * (bar.rho_v**2/bar.rho**4)
-      + bar.rho2_v_v_v    * (-bar.rho_v/bar.rho**3)
-      + bar.rho2_v_w      * (2*bar.rho_v*bar.rho_w/bar.rho**4)
-      + bar.rho2_v_w_w    * (-bar.rho_v/bar.rho**3)
-      + bar.rho2_v_v_v_v  * (1/(4*bar.rho**2))
-      + bar.rho2_v_v_w    * (-bar.rho_w/bar.rho**3)
-      + bar.rho2_v_v_w_w  * (1/(2*bar.rho**2))
-      + bar.rho2_w_w      * (bar.rho_w**2/bar.rho**4)
-      + bar.rho2_w_w_w    * (-bar.rho_w/bar.rho**3)
-      + bar.rho2_w_w_w_w  * (1/(4*bar.rho**2))
+        sigma.rho2          * ((bar.rho*bar.rho_u_u + bar.rho*bar.rho_v_v + bar.rho*bar.rho_w_w - 2*bar.rho_u**2 - 2*bar.rho_v**2 - 2*bar.rho_w**2)**2/(4*bar.rho**6))
+      + sigma.rho2_u        * ((bar.rho*bar.rho_u_u + bar.rho*bar.rho_v_v + bar.rho*bar.rho_w_w - 2*bar.rho_u**2 - 2*bar.rho_v**2 - 2*bar.rho_w**2)*bar.rho_u/bar.rho**5)
+      + sigma.rho2_u_u      * ((-bar.rho*bar.rho_u_u/2 - bar.rho*bar.rho_v_v/2 - bar.rho*bar.rho_w_w/2 + bar.rho_u**2 + bar.rho_v**2 + bar.rho_w**2)/bar.rho**4)
+      + sigma.rho2_v        * ((bar.rho*bar.rho_u_u + bar.rho*bar.rho_v_v + bar.rho*bar.rho_w_w - 2*bar.rho_u**2 - 2*bar.rho_v**2 - 2*bar.rho_w**2)*bar.rho_v/bar.rho**5)
+      + sigma.rho2_v_v      * ((-bar.rho*bar.rho_u_u/2 - bar.rho*bar.rho_v_v/2 - bar.rho*bar.rho_w_w/2 + bar.rho_u**2 + bar.rho_v**2 + bar.rho_w**2)/bar.rho**4)
+      + sigma.rho2_w        * ((bar.rho*bar.rho_u_u + bar.rho*bar.rho_v_v + bar.rho*bar.rho_w_w - 2*bar.rho_u**2 - 2*bar.rho_v**2 - 2*bar.rho_w**2)*bar.rho_w/bar.rho**5)
+      + sigma.rho2_w_w      * ((-bar.rho*bar.rho_u_u/2 - bar.rho*bar.rho_v_v/2 - bar.rho*bar.rho_w_w/2 + bar.rho_u**2 + bar.rho_v**2 + bar.rho_w**2)/bar.rho**4)
+      + sigma.rho2_u_u      * (bar.rho_u**2/bar.rho**4)
+      + sigma.rho2_u_u_u    * (-bar.rho_u/bar.rho**3)
+      + sigma.rho2_u_v      * (2*bar.rho_u*bar.rho_v/bar.rho**4)
+      + sigma.rho2_u_v_v    * (-bar.rho_u/bar.rho**3)
+      + sigma.rho2_u_w      * (2*bar.rho_u*bar.rho_w/bar.rho**4)
+      + sigma.rho2_u_w_w    * (-bar.rho_u/bar.rho**3)
+      + sigma.rho2_u_u_u_u  * (1/(4*bar.rho**2))
+      + sigma.rho2_u_u_v    * (-bar.rho_v/bar.rho**3)
+      + sigma.rho2_u_u_v_v  * (1/(2*bar.rho**2))
+      + sigma.rho2_u_u_w    * (-bar.rho_w/bar.rho**3)
+      + sigma.rho2_u_u_w_w  * (1/(2*bar.rho**2))
+      + sigma.rho2_v_v      * (bar.rho_v**2/bar.rho**4)
+      + sigma.rho2_v_v_v    * (-bar.rho_v/bar.rho**3)
+      + sigma.rho2_v_w      * (2*bar.rho_v*bar.rho_w/bar.rho**4)
+      + sigma.rho2_v_w_w    * (-bar.rho_v/bar.rho**3)
+      + sigma.rho2_v_v_v_v  * (1/(4*bar.rho**2))
+      + sigma.rho2_v_v_w    * (-bar.rho_w/bar.rho**3)
+      + sigma.rho2_v_v_w_w  * (1/(2*bar.rho**2))
+      + sigma.rho2_w_w      * (bar.rho_w**2/bar.rho**4)
+      + sigma.rho2_w_w_w    * (-bar.rho_w/bar.rho**3)
+      + sigma.rho2_w_w_w_w  * (1/(4*bar.rho**2))
     )
 
     # Plot lower left subfigure (includes normalization)
     for k, v in m.iteritems():
-        ax[1][0].plot(plus.y, v / plus.u**2, label=k)
+        ax[1][0].plot(star.y, v / star.u**2, label=k)
     ax[1][0].set_ylabel(r"$\mu^\ast$")
     ax[1][0].set_xlabel(r"$y^\ast$")
 
     # Plot lower right subfigure (includes normalization)
     for k, v in m.iteritems():
-        ax[1][1].plot(plus.y, np.sqrt(s.pop(0))/np.abs(v), label=k)
+        ax[1][1].plot(star.y, np.sqrt(s.pop(0))/np.abs(v), label=k)
     ax[1][1].set_ylabel(r"$\sigma_\mu / \left|\mu\right|$")
     ax[1][1].set_yscale("log")
     ax[1][1].set_xlabel(r"$y^\ast$")
@@ -265,10 +276,10 @@ def plot_profiles(d, lowfrac=None, **plotargs):
 
     # Truncate at half channel width, if applicable
     if d.htdelta >= 0:
-        ax[0][0].set_xlim(right=np.median(plus.y))
-        ax[0][1].set_xlim(right=np.median(plus.y))
-        ax[1][0].set_xlim(right=np.median(plus.y))
-        ax[1][1].set_xlim(right=np.median(plus.y))
+        ax[0][0].set_xlim(right=np.median(star.y))
+        ax[0][1].set_xlim(right=np.median(star.y))
+        ax[1][0].set_xlim(right=np.median(star.y))
+        ax[1][1].set_xlim(right=np.median(star.y))
 
     # Add legends on rightmost images
     ax[0][1].legend(frameon=False)
