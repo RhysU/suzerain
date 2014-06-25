@@ -40,18 +40,19 @@ $(abs_srcdir)/perfect_decl.raw: perfect.decl propagation.py
 CLEANFILES = perfect_decl.py *.pyc
 perfect_decl.py: $(abs_srcdir)/perfect_decl.raw Makefile.am
 	@echo "# Generating $@ from $+" | tee "$@"
-	@md5sum $+ | sed -e 's/^/# Based upon MD5 /'                         >> "$@"
-	@echo "def pointwise(gam, Ma, Re, Pr, y, bar, tilde, local, tke):"   >> "$@"
-	@echo '    """'                                                      >> "$@"
-	@echo '    Populate Bunch-like bar, tilde, local, tke from pointwise'>> "$@"
-	@echo '    collocation point data in bar on gridpoints y per scalars'>> "$@"
-	@echo '    gamma, Mach number, Reynolds number, and Prandtl number.' >> "$@"
-	@echo '    See, e.g., https://pypi.python.org/pypi/bunch re: Bunch.' >> "$@"
-	@echo '    """'                                                      >> "$@"
-	@echo '    from numpy import * # Permits base "sqrt", etc.'          >> "$@"
+	@md5sum $+ | sed -e 's/^/# Based upon MD5 /'                            >> "$@"
+	@echo 'from numpy import * # Permits unadorned "np.sqrt", etc.'         >> "$@"
+	@echo 'def pointwise(gam, Ma, Re, Pr, y, bar, rms, tilde, local, tke):' >> "$@"
+	@echo '    """'                                                         >> "$@"
+	@echo '    Populate Bunch-like bar, rms, tilde, etc. from pointwise'    >> "$@"
+	@echo '    collocation point data in bar on gridpoints y per scalars'   >> "$@"
+	@echo '    gamma, Mach number, Reynolds number, and Prandtl number.'    >> "$@"
+	@echo '    See, e.g., https://pypi.python.org/pypi/bunch re: Bunch.'    >> "$@"
+	@echo '    """'                                                         >> "$@"
 	@$(SED) -e 's/\/\//# /'        \
 	        -e 's/(y)//g'          \
 	        -e 's/bar_/bar./g'     \
+	        -e 's/rms_/rms./g'     \
 	        -e 's/tilde_/tilde./g' \
 	        -e 's/local_/local./g' \
 	        -e 's/tke_/tke./g'     \

@@ -7,6 +7,7 @@
 //     sed -e 's/\/\//# /g'       \
 //         -e 's/(y)/   /g'       \
 //         -e 's/bar_/bar./g'     \
+//         -e 's/rms_/rms./g'     \
 //         -e 's/tilde_/tilde./g' \
 //         -e 's/local_/local./g' \
 //         -e 's/tke_/tke./g'     \
@@ -17,6 +18,7 @@
 //             dict.__init__(self,kw)
 //             self.__dict__ = self
 // ...where https://pypi.python.org/pypi/bunch is recommended for use.
+
 
 // Favre-averaged specific state {
 tilde_u = bar_rho_u(y) / bar_rho(y);
@@ -34,7 +36,7 @@ tilde_v_w = bar_rho_v_w(y) / bar_rho(y);
 tilde_w_w = bar_rho_w_w(y) / bar_rho(y);
 // }
 
-// Favre-fluctuating Reynolds stresses
+// Favre-fluctuating Reynolds stresses {
 tilde_upp_upp = tilde_u_u - tilde_u**2;
 tilde_upp_vpp = tilde_u_v - tilde_u*tilde_v;
 tilde_upp_wpp = tilde_u_w - tilde_u*tilde_w;
@@ -43,6 +45,27 @@ tilde_vpp_wpp = tilde_v_w - tilde_v*tilde_w;
 tilde_wpp_wpp = tilde_w_w - tilde_w**2;
 // }
 
+// Reynolds-averaged root-mean-squared-fluctuation profiles {
+rms_rho   = sqrt(bar_rho2(y)    - bar_rho(y)   **2);
+rms_p     = sqrt(bar_p2(y)      - bar_p(y)     **2);
+rms_T     = sqrt(bar_T2(y)      - bar_T(y)     **2);
+rms_h0    = sqrt(bar_h02(y)     - bar_h0(y)    **2);
+rms_H0    = sqrt(bar_H02(y)     - bar_H0(y)    **2);
+rms_mu    = sqrt(bar_mu2(y)     - bar_mu(y)    **2);
+rms_nu    = sqrt(bar_nu2(y)     - bar_nu(y)    **2);
+rms_Ma    = sqrt(bar_Ma2(y)     - bar_Ma(y)    **2);
+rms_u     = sqrt(bar_u_u(y)     - bar_u(y)     **2);
+rms_v     = sqrt(bar_v_v(y)     - bar_v(y)     **2);
+rms_w     = sqrt(bar_w_w(y)     - bar_w(y)     **2);
+rms_omx   = sqrt(bar_omx_omx(y) - bar_omx(y)   **2);
+rms_omy   = sqrt(bar_omy_omy(y) - bar_omy(y)   **2);
+rms_omz   = sqrt(bar_omz_omz(y) - bar_omz(y)   **2);
+rms_Srho  = sqrt(bar_S2rho(y)   - bar_Srho(y)  **2);
+rms_Srhou = sqrt(bar_S2rhou(y)  - bar_Srhou(y) **2);
+rms_Srhov = sqrt(bar_S2rhov(y)  - bar_Srhov(y) **2);
+rms_Srhow = sqrt(bar_S2rhow(y)  - bar_Srhow(y) **2);
+rms_SrhoE = sqrt(bar_S2rhoE(y)  - bar_SrhoE(y) **2);
+// }
 
 // Favre-averaged turbulent kinetic energy, internal energy, dissipation
 // Note "gamma" is the gamma function to SymPy, and so "gam" is chosen.

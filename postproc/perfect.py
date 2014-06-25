@@ -71,6 +71,7 @@ class Data(object):
 
         # Additionally, "bl.*" or "chan.*" is mapped into self.*.
         self.bar    = Bunch()  # From "mu" attribute of bar_*
+        self.rms    = Bunch()  # Populated after construction
         self.local  = Bunch()  # Populated after construction
         self.lower  = Bunch()  # From lower_*
         self.sigma  = Bunch()  # From "mu_sigma" attribute of bar_*
@@ -84,6 +85,8 @@ class Data(object):
                 self.sigma[k[4:]] = v.attrs["mu_sigma"]
             elif k.startswith("lower_"):
                 self.lower[k[6:]] = v[()]
+            elif k.startswith("rms_"):
+                self.rms[k[6:]] = v[()]
             elif k.startswith("upper_"):
                 self.upper[k[6:]] = v[()]
             elif k.endswith("_weights"):
@@ -115,26 +118,12 @@ class Data(object):
             l.warn("Star and plus unit computations not performed"
                    " because /{bl,chan}.{visc,wall} not found")
 
-        # As of r45447 some quantities may be missing.  ONLY WHEN DATA IS
-        # UNAVAILABLE, neglect correlations to estimate it.  Ugly but forwards
-        # compatible with loud yelling when data is missing.  So it goes.
-        maybe_assume_uncorrelated(self.bar, "rho2_u",       "rho2", "u")
-        maybe_assume_uncorrelated(self.bar, "rho2_u_u_u_u", "u",    "rho2_u_u_u")
-        maybe_assume_uncorrelated(self.bar, "rho2_u_u_v_v", "u",    "rho2_u_v_v")
-        maybe_assume_uncorrelated(self.bar, "rho2_u_u_w_w", "u",    "rho2_u_w_w")
-        maybe_assume_uncorrelated(self.bar, "rho2_u_v",     "rho2", "u_v")
-        maybe_assume_uncorrelated(self.bar, "rho2_v",       "rho2", "v")
-        maybe_assume_uncorrelated(self.bar, "rho2_v_v_v_v", "v",    "rho2_v_v_v")
-        maybe_assume_uncorrelated(self.bar, "rho2_v_v_w_w", "v",    "rho2_v_w_w")
-        maybe_assume_uncorrelated(self.bar, "rho2_w",       "rho2", "w")
-        maybe_assume_uncorrelated(self.bar, "rho2_w_w_w_w", "w",    "rho2_w_w_w")
-
         # Compute a whole mess of derived information, if possible
         try:
             from perfect_decl import pointwise
             pointwise(self.code.gamma,
                       self.code.Ma, self.code.Re, self.code.Pr, self.y,
-                      self.bar, self.tilde, self.local, self.tke)
+                      self.bar, self.rms, self.tilde, self.local, self.tke)
         except ImportError:
             l.warn("Pointwise computations not performed"
                    " because module 'perfect_decl' not found")
@@ -142,10 +131,10 @@ class Data(object):
 
 def plot_profiles(d, lowfrac=None, **plotargs):
     """
-    Plot mean profiles, Favre-fluctuations  and their associated uncertainties
+    Plot mean primitive profiles, their RMS fluctuations, and uncertainties.
     """
     fig, ax = plt.subplots(2, 2, sharex=True, squeeze=False)
-    bar, tilde, sigma, star = d.bar, d.tilde, d.sigma, d.star
+    bar, tilde, sigma, plus = d.bar, d.tilde, d.sigma, d.plus
 
     #########################################################################
     # Build dictionary of means and list of standard deviations for upper row
@@ -166,19 +155,19 @@ def plot_profiles(d, lowfrac=None, **plotargs):
 
     # Plot upper left subfigure
     for k, v in m.iteritems():
-        ax[0][0].plot(star.y, v, label=k)
+        ax[0][0].plot(plus.y, v, label=k)
     ax[0][0].set_ylabel(r"$\mu$")
 
     # Plot upper right subfigure
     for k, v in m.iteritems():
-        ax[0][1].plot(star.y, s.pop(0)/v, label=k)
+        ax[0][1].plot(plus.y, s.pop(0)/v, label=k)
     ax[0][1].set_ylabel(r"$\sigma_\mu / \mu$")
     ax[0][1].set_yscale("log")
     if lowfrac:
         ax[0][1].set_ylim(bottom=lowfrac)
 
     #########################################################################
-    # Build dictionary of means and list of variances for lower row
+    # Build dictionary of means and standard devations for lower row
     # Variance expressions from postproc/propagation.py -d perfect.decl
     m.clear()
     del s[:]
@@ -261,13 +250,13 @@ def plot_profiles(d, lowfrac=None, **plotargs):
 
     # Plot lower left subfigure (includes normalization)
     for k, v in m.iteritems():
-        ax[1][0].plot(star.y, v / star.u**2, label=k)
+        ax[1][0].plot(plus.y, v / plus.u**2, label=k)
     ax[1][0].set_ylabel(r"$\mu^\ast$")
     ax[1][0].set_xlabel(r"$y^\ast$")
 
     # Plot lower right subfigure (includes normalization)
     for k, v in m.iteritems():
-        ax[1][1].plot(star.y, np.sqrt(s.pop(0))/np.abs(v), label=k)
+        ax[1][1].plot(plus.y, np.sqrt(s.pop(0))/np.abs(v), label=k)
     ax[1][1].set_ylabel(r"$\sigma_\mu / \left|\mu\right|$")
     ax[1][1].set_yscale("log")
     ax[1][1].set_xlabel(r"$y^\ast$")
@@ -276,10 +265,10 @@ def plot_profiles(d, lowfrac=None, **plotargs):
 
     # Truncate at half channel width, if applicable
     if d.htdelta >= 0:
-        ax[0][0].set_xlim(right=np.median(star.y))
-        ax[0][1].set_xlim(right=np.median(star.y))
-        ax[1][0].set_xlim(right=np.median(star.y))
-        ax[1][1].set_xlim(right=np.median(star.y))
+        ax[0][0].set_xlim(right=np.median(plus.y))
+        ax[0][1].set_xlim(right=np.median(plus.y))
+        ax[1][0].set_xlim(right=np.median(plus.y))
+        ax[1][1].set_xlim(right=np.median(plus.y))
 
     # Add legends on rightmost images
     ax[0][1].legend(frameon=False)
