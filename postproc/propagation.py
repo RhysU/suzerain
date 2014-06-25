@@ -489,7 +489,7 @@ class momentdict(collections.defaultdict):
     r'''
     A map detailing how to compute some approximate moment like E[f(x)]
     or Var[f(x)].  Keys in the map are either 1 or tuples representing
-    covariance scaling factors pre-multiplying the maps' values.
+    standard errors scaling factors pre-multiplying the maps' values.
     The maps' values should be evaluated using sample means.
     '''
     def __init__(self):
@@ -510,7 +510,7 @@ class momentdict(collections.defaultdict):
             s.append(')\n')
         for term in natural(k for k in self.keys() if k != 1):
             s.append(p)
-            s.append('E')
+            s.append('SE')
             s.append(str(list(term)))
             s.append(' * (')
             s.append(sym(self[term]))
