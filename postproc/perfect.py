@@ -157,8 +157,10 @@ def esterrcov(sigma, raw):
         # ...obtain correlation matrix with unit diagonal
         t = np.corrcoef(dat, bias=1)
         # ...scale correlation by squared standard error
+        # to obtain a covariance matrix.
         for i, key in enumerate(raw):
-            t[i,:] *= sigma[key][j]**2
+            t[i,:] *= sigma[key][j]
+            t[:,i] *= sigma[key][j]
         # ...and store the result into out
         out[:, :, j] = t
 
