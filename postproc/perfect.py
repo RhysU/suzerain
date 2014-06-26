@@ -143,6 +143,13 @@ def plot_profiles(d, fbottom=None, ftop=None, **fig_kw):
     m[r"$\bar{\rho}$"] = bar.rho
     s.append(sigma.rho)
 
+    ## \tilde{u} and \tilde{T} would be options but the plain mean looks nicer
+    #m[r"$\tilde{u}$"] = tilde.u
+    #s.append(np.sqrt(
+    #    sigma.rho    * (bar.rho_u**2/bar.rho**4)
+    #  # sigma.rho2_u * (-2*bar.rho_u/bar.rho**3)
+    #  + sigma.rho_u  * (bar.rho**(-2))
+    #))
     m[r"$\bar{u}$" ] = bar.u
     s.append(sigma.u)
 
