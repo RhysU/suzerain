@@ -128,11 +128,11 @@ class Data(object):
                    " because module 'perfect_decl' not found")
 
 
-def plot_profiles(d, fbottom=None, ftop=None, **plotargs):
+def plot_profiles(d, fbottom=None, ftop=None, **fig_kw):
     """
     Plot mean primitive profiles, their RMS fluctuations, and uncertainties.
     """
-    fig, ax = plt.subplots(2, 2, sharex=True, squeeze=False)
+    fig, ax = plt.subplots(2, 2, sharex=True, squeeze=False, **fig_kw)
     bar, tilde, sigma, star = d.bar, d.tilde, d.sigma, d.star
 
     #########################################################################
@@ -170,6 +170,7 @@ def plot_profiles(d, fbottom=None, ftop=None, **plotargs):
     #########################################################################
     # Build dictionary of means and standard errors for lower row
     # Variance expressions from postproc/propagation.py -d perfect.decl
+    # TODO Revisit the off-diagonal terms with more rigor-- all are suspect
     m.clear()
     del s[:]
 
@@ -274,8 +275,8 @@ def plot_profiles(d, fbottom=None, ftop=None, **plotargs):
         ax[1][1].set_xlim(right=np.median(star.y))
 
     # Add legends on rightmost images
-    ax[0][1].legend(frameon=False)
-    ax[1][1].legend(frameon=False)
+    ax[0][1].legend(frameon=False, loc='best')
+    ax[1][1].legend(frameon=False, loc='best')
 
     return (fig, ax)
 
