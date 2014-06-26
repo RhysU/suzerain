@@ -128,6 +128,43 @@ class Data(object):
                    " because module 'perfect_decl' not found")
 
 
+def esterrcov(sigma, raw):
+    """
+    Given an OrderedDict "raw" mapping keys to (t,y)-temporal traces and
+    "sigma" mapping those keys to y-dependent standard error estimates,
+    produce an empirical covariance matrix for the given keys returning
+    squared standard errors on the diagonal.
+    """
+    # Check incoming arguments
+    if not raw:
+        raise ValueError("One or more keys must be provided")
+    for k in raw.iterkeys():
+        if k not in sigma:
+            raise KeyError("Key %s not in sigma" % k)
+
+    # Preallocate space to pack incoming data and store results
+    ex = raw.itervalues().next()
+    nt, ny = ex.shape
+    nv = len(raw)
+    out = np.empty((nv, nv, ny), dtype=ex.dtype, order='C')
+    dat = np.empty((nv, nt),     dtype=ex.dtype, order='C')
+
+    # Process each y location in turn...
+    for j in xrange(ny):
+        # ...pack temporal trace into dat buffer
+        for i, key in enumerate(raw):
+            dat[i, :] = raw[key][:,j]
+        # ...obtain correlation matrix with unit diagonal
+        t = np.corrcoef(dat, bias=1)
+        # ...scale correlation by squared standard error
+        for i, key in enumerate(raw):
+            t[i,:] *= sigma[key][j]**2
+        # ...and store the result into out
+        out[:, :, j] = t
+
+    return out
+
+
 def plot_profiles(d, fbottom=None, ftop=None, **fig_kw):
     """
     Plot mean primitive profiles, their RMS fluctuations, and uncertainties.
