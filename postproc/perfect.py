@@ -146,9 +146,9 @@ def plot_profiles(d, fbottom=None, ftop=None, **fig_kw):
     ## \tilde{u} and \tilde{T} would be options but the plain mean looks nicer
     #m[r"$\tilde{u}$"] = tilde.u
     #s.append(np.sqrt(
-    #    sigma.rho    * (bar.rho_u**2/bar.rho**4)
-    #  # sigma.rho2_u * (-2*bar.rho_u/bar.rho**3)
-    #  + sigma.rho_u  * (bar.rho**(-2))
+    #    sigma.rho**2   * (bar.rho_u**2/bar.rho**4)
+    #  # sigma.rho2_u   * (-2*bar.rho_u/bar.rho**3)
+    #  + sigma.rho_u**2 * (bar.rho**(-2))
     #))
     m[r"$\bar{u}$" ] = bar.u
     s.append(sigma.u)
@@ -183,78 +183,78 @@ def plot_profiles(d, fbottom=None, ftop=None, **fig_kw):
 
     m[r"$\widetilde{u^{\prime\prime{}2}}$"]              = tilde.upp_upp
     s.append(
-        sigma.rho        * ((bar.rho*bar.rho_u_u - 2*bar.rho_u**2)**2/bar.rho**6)
+        sigma.rho**2     * ((bar.rho*bar.rho_u_u - 2*bar.rho_u**2)**2/bar.rho**6)
       # sigma.rho2_u     * (4*(bar.rho*bar.rho_u_u - 2*bar.rho_u**2)*bar.rho_u/bar.rho**5)
       # sigma.rho2_u_u   * (2*(-bar.rho*bar.rho_u_u + 2*bar.rho_u**2)/bar.rho**4)
-      + sigma.rho_u      * (4*bar.rho_u**2/bar.rho**4)
+      + sigma.rho_u**2   * (4*bar.rho_u**2/bar.rho**4)
       # sigma.rho2_u_u_u * (-4*bar.rho_u/bar.rho**3)
-      + sigma.rho_u_u    * (bar.rho**(-2))
+      + sigma.rho_u_u**2 * (bar.rho**(-2))
     )
 
     m[r"$\widetilde{v^{\prime\prime{}2}}$"]              = tilde.vpp_vpp
     s.append(
-        sigma.rho        * ((bar.rho*bar.rho_v_v - 2*bar.rho_v**2)**2/bar.rho**6)
+        sigma.rho**2     * ((bar.rho*bar.rho_v_v - 2*bar.rho_v**2)**2/bar.rho**6)
       # sigma.rho2_v     * (4*(bar.rho*bar.rho_v_v - 2*bar.rho_v**2)*bar.rho_v/bar.rho**5)
       # sigma.rho2_v_v   * (2*(-bar.rho*bar.rho_v_v + 2*bar.rho_v**2)/bar.rho**4)
-      + sigma.rho_v      * (4*bar.rho_v**2/bar.rho**4)
+      + sigma.rho_v**2   * (4*bar.rho_v**2/bar.rho**4)
       # sigma.rho2_v_v_v * (-4*bar.rho_v/bar.rho**3)
-      + sigma.rho_v_v    * (bar.rho**(-2))
+      + sigma.rho_v_v**2 * (bar.rho**(-2))
     )
 
     m[r"$\widetilde{w^{\prime\prime{}2}}$"]              = tilde.wpp_wpp
     s.append(
-        sigma.rho        * ((bar.rho*bar.rho_w_w - 2*bar.rho_w**2)**2/bar.rho**6)
+        sigma.rho**2     * ((bar.rho*bar.rho_w_w - 2*bar.rho_w**2)**2/bar.rho**6)
       # sigma.rho2_w     * (4*(bar.rho*bar.rho_w_w - 2*bar.rho_w**2)*bar.rho_w/bar.rho**5)
       # sigma.rho2_w_w   * (2*(-bar.rho*bar.rho_w_w + 2*bar.rho_w**2)/bar.rho**4)
-      + sigma.rho_w      * (4*bar.rho_w**2/bar.rho**4)
+      + sigma.rho_w**2   * (4*bar.rho_w**2/bar.rho**4)
       # sigma.rho2_w_w_w * (-4*bar.rho_w/bar.rho**3)
-      + sigma.rho_w_w    * (bar.rho**(-2))
+      + sigma.rho_w_w**2 * (bar.rho**(-2))
     )
 
     m[r"$\widetilde{u^{\prime\prime}v^{\prime\prime}}$"] = tilde.upp_vpp
     s.append(
-        sigma.rho        * ((bar.rho*bar.rho_u_v - 2*bar.rho_u*bar.rho_v)**2/bar.rho**6)
+        sigma.rho**2     * ((bar.rho*bar.rho_u_v - 2*bar.rho_u*bar.rho_v)**2/bar.rho**6)
       # sigma.rho2_u     * (2*(bar.rho*bar.rho_u_v - 2*bar.rho_u*bar.rho_v)*bar.rho_v/bar.rho**5)
       # sigma.rho2_u_v   * (2*(-bar.rho*bar.rho_u_v + 2*bar.rho_u*bar.rho_v)/bar.rho**4)
       # sigma.rho2_v     * (2*(bar.rho*bar.rho_u_v - 2*bar.rho_u*bar.rho_v)*bar.rho_u/bar.rho**5)
-      + sigma.rho_u      * (bar.rho_v**2/bar.rho**4)
+      + sigma.rho_u**2   * (bar.rho_v**2/bar.rho**4)
       # sigma.rho2_u_u_v * (-2*bar.rho_v/bar.rho**3)
       # sigma.rho2_u_v   * (2*bar.rho_u*bar.rho_v/bar.rho**4)
-      + sigma.rho_u_v    * (bar.rho**(-2))
+      + sigma.rho_u_v**2 * (bar.rho**(-2))
       # sigma.rho2_u_v_v * (-2*bar.rho_u/bar.rho**3)
-      + sigma.rho_v      * (bar.rho_u**2/bar.rho**4)
+      + sigma.rho_v**2   * (bar.rho_u**2/bar.rho**4)
     )
 
     m[r"$k$"]                                            = tilde.k
     s.append(
-        sigma.rho          * ((bar.rho*bar.rho_u_u + bar.rho*bar.rho_v_v + bar.rho*bar.rho_w_w - 2*bar.rho_u**2 - 2*bar.rho_v**2 - 2*bar.rho_w**2)**2/(4*bar.rho**6))
+        sigma.rho**2       * ((bar.rho*bar.rho_u_u + bar.rho*bar.rho_v_v + bar.rho*bar.rho_w_w - 2*bar.rho_u**2 - 2*bar.rho_v**2 - 2*bar.rho_w**2)**2/(4*bar.rho**6))
       # sigma.rho2_u       * ((bar.rho*bar.rho_u_u + bar.rho*bar.rho_v_v + bar.rho*bar.rho_w_w - 2*bar.rho_u**2 - 2*bar.rho_v**2 - 2*bar.rho_w**2)*bar.rho_u/bar.rho**5)
       # sigma.rho2_u_u     * ((-bar.rho*bar.rho_u_u/2 - bar.rho*bar.rho_v_v/2 - bar.rho*bar.rho_w_w/2 + bar.rho_u**2 + bar.rho_v**2 + bar.rho_w**2)/bar.rho**4)
       # sigma.rho2_v       * ((bar.rho*bar.rho_u_u + bar.rho*bar.rho_v_v + bar.rho*bar.rho_w_w - 2*bar.rho_u**2 - 2*bar.rho_v**2 - 2*bar.rho_w**2)*bar.rho_v/bar.rho**5)
       # sigma.rho2_v_v     * ((-bar.rho*bar.rho_u_u/2 - bar.rho*bar.rho_v_v/2 - bar.rho*bar.rho_w_w/2 + bar.rho_u**2 + bar.rho_v**2 + bar.rho_w**2)/bar.rho**4)
       # sigma.rho2_w       * ((bar.rho*bar.rho_u_u + bar.rho*bar.rho_v_v + bar.rho*bar.rho_w_w - 2*bar.rho_u**2 - 2*bar.rho_v**2 - 2*bar.rho_w**2)*bar.rho_w/bar.rho**5)
       # sigma.rho2_w_w     * ((-bar.rho*bar.rho_u_u/2 - bar.rho*bar.rho_v_v/2 - bar.rho*bar.rho_w_w/2 + bar.rho_u**2 + bar.rho_v**2 + bar.rho_w**2)/bar.rho**4)
-      + sigma.rho_u        * (bar.rho_u**2/bar.rho**4)
+      + sigma.rho_u**2     * (bar.rho_u**2/bar.rho**4)
       # sigma.rho2_u_u_u   * (-bar.rho_u/bar.rho**3)
       # sigma.rho2_u_v     * (2*bar.rho_u*bar.rho_v/bar.rho**4)
       # sigma.rho2_u_v_v   * (-bar.rho_u/bar.rho**3)
       # sigma.rho2_u_w     * (2*bar.rho_u*bar.rho_w/bar.rho**4)
       # sigma.rho2_u_w_w   * (-bar.rho_u/bar.rho**3)
-      + sigma.rho_u_u      * (1/(4*bar.rho**2))
+      + sigma.rho_u_u**2   * (1/(4*bar.rho**2))
       # sigma.rho2_u_u_v   * (-bar.rho_v/bar.rho**3)
       # sigma.rho2_u_u_v_v * (1/(2*bar.rho**2))
       # sigma.rho2_u_u_w   * (-bar.rho_w/bar.rho**3)
       # sigma.rho2_u_u_w_w * (1/(2*bar.rho**2))
-      + sigma.rho_v        * (bar.rho_v**2/bar.rho**4)
+      + sigma.rho_v**2     * (bar.rho_v**2/bar.rho**4)
       # sigma.rho2_v_v_v   * (-bar.rho_v/bar.rho**3)
       # sigma.rho2_v_w     * (2*bar.rho_v*bar.rho_w/bar.rho**4)
       # sigma.rho2_v_w_w   * (-bar.rho_v/bar.rho**3)
-      + sigma.rho_v_v      * (1/(4*bar.rho**2))
+      + sigma.rho_v_v**2   * (1/(4*bar.rho**2))
       # sigma.rho2_v_v_w   * (-bar.rho_w/bar.rho**3)
       # sigma.rho2_v_v_w_w * (1/(2*bar.rho**2))
-      + sigma.rho_w        * (bar.rho_w**2/bar.rho**4)
+      + sigma.rho_w**2     * (bar.rho_w**2/bar.rho**4)
       # sigma.rho2_w_w_w   * (-bar.rho_w/bar.rho**3)
-      + sigma.rho_w_w      * (1/(4*bar.rho**2))
+      + sigma.rho_w_w**2   * (1/(4*bar.rho**2))
     )
 
     # Plot lower left subfigure (includes normalization)
