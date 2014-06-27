@@ -347,7 +347,7 @@ def plot_profiles(d, fbottom=None, ftop=None, **fig_kw):
     ax[0][1].legend(frameon=False, loc='best')
     ax[1][1].legend(frameon=False, loc='best')
 
-    return (fig, ax)
+    return fig
 
 
 # TODO Smooth per B-splines using ' from scipy.interpolate import interp1d'
@@ -417,7 +417,7 @@ def plot_tke(data, horz=1, vert=1, thresh=25, ax=None, **plotargs):
             label=r"$\overline{f\cdot{}u''}$",
             **plotargs)
 
-    return ax
+    return fig
 
 
 def traceframe(grepkey, fnames):
