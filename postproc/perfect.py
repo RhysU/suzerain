@@ -71,6 +71,7 @@ class Data(object):
 
         # Additionally, "bl.*" or "chan.*" is mapped into self.*.
         self.bar    = Bunch()  # From "mu" attribute of bar_*
+        self.bulk   = Bunch()  # Populated after construction
         self.rms    = Bunch()  # Populated after construction
         self.local  = Bunch()  # Populated after construction
         self.lower  = Bunch()  # From lower_*
@@ -83,6 +84,8 @@ class Data(object):
             if   k.startswith("bar_"):
                 self.bar  [k[4:]] = v.attrs["mu"]
                 self.sigma[k[4:]] = v.attrs["mu_sigma"]
+            elif k.startswith("bulk_"):
+                self.bulk[k[4:]] = v[0]
             elif k.startswith("lower_"):
                 self.lower[k[6:]] = v[()]
             elif k.startswith("rms_"):
