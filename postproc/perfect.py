@@ -354,7 +354,7 @@ def plot_profiles(d, fbottom=None, ftop=None, **fig_kw):
 
 
 # TODO Smooth per B-splines using ' from scipy.interpolate import interp1d'
-def plot_tke(data, horz=1, vert=1, thresh=25, ax=None, **plotargs):
+def plot_tke(data, y=None, vert=1, thresh=25, ax=None, **plotargs):
     """
     Plot TKE budgets from data permitting rescaling and thresholding
     """
@@ -366,7 +366,7 @@ def plot_tke(data, horz=1, vert=1, thresh=25, ax=None, **plotargs):
     # Rescale the data as requested, permitting plus or star units.
     # Merging constraint and forcing as they're identical physically
     # and their separation is purely an artifact of the implementation.
-    y           = horz * data.y
+    if y is None: y = data.y
     convection  = vert * data.tke.convection
     production  = vert * data.tke.production
     dissipation = vert * data.tke.dissipation
