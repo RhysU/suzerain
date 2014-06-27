@@ -182,13 +182,6 @@ def plot_profiles(d, fbottom=None, ftop=None, **fig_kw):
     m[r"$\bar{\rho}$"] = bar.rho
     s.append(sigma.rho)
 
-    ## \tilde{u} and \tilde{T} would be options but the plain mean looks nicer
-    #m[r"$\tilde{u}$"] = tilde.u
-    #s.append(np.sqrt(
-    #    sigma.rho**2   * (bar.rho_u**2/bar.rho**4)
-    #  # sigma.rho2_u   * (-2*bar.rho_u/bar.rho**3)
-    #  + sigma.rho_u**2 * (bar.rho**(-2))
-    #))
     m[r"$\bar{u}$" ] = bar.u
     s.append(sigma.u)
 
@@ -216,90 +209,120 @@ def plot_profiles(d, fbottom=None, ftop=None, **fig_kw):
     #########################################################################
     # Build dictionary of means and standard errors for lower row
     # Variance expressions from postproc/propagation.py -d perfect.decl
-    # TODO Revisit the off-diagonal terms with more rigor-- all are suspect
+    raw = collections.OrderedDict()
     m.clear()
     del s[:]
 
-    m[r"$\widetilde{u^{\prime\prime{}2}}$"]              = tilde.upp_upp
+    m[r"$\widetilde{u^{\prime\prime{}2}}$"] = tilde.upp_upp
+    raw.clear()
+    raw["rho"    ] = d.file["bar_rho"    ][()]
+    raw["rho_u"  ] = d.file["bar_rho_u"  ][()]
+    raw["rho_u_u"] = d.file["bar_rho_u_u"][()]
+    cov = esterrcov(sigma, raw)
     s.append(
-        sigma.rho**2     * ((bar.rho*bar.rho_u_u - 2*bar.rho_u**2)**2/bar.rho**6)
-      # sigma.rho2_u     * (4*(bar.rho*bar.rho_u_u - 2*bar.rho_u**2)*bar.rho_u/bar.rho**5)
-      # sigma.rho2_u_u   * (2*(-bar.rho*bar.rho_u_u + 2*bar.rho_u**2)/bar.rho**4)
-      + sigma.rho_u**2   * (4*bar.rho_u**2/bar.rho**4)
-      # sigma.rho2_u_u_u * (-4*bar.rho_u/bar.rho**3)
-      + sigma.rho_u_u**2 * (bar.rho**(-2))
+        cov[0,0,:] * ((bar.rho*bar.rho_u_u - 2*bar.rho_u**2)**2/bar.rho**6)
+      + cov[0,1,:] * (4*(bar.rho*bar.rho_u_u - 2*bar.rho_u**2)*bar.rho_u/bar.rho**5)
+      + cov[0,2,:] * (2*(-bar.rho*bar.rho_u_u + 2*bar.rho_u**2)/bar.rho**4)
+      + cov[1,1,:] * (4*bar.rho_u**2/bar.rho**4)
+      + cov[1,2,:] * (-4*bar.rho_u/bar.rho**3)
+      + cov[2,2,:] * (bar.rho**(-2))
     )
 
-    m[r"$\widetilde{v^{\prime\prime{}2}}$"]              = tilde.vpp_vpp
+    m[r"$\widetilde{v^{\prime\prime{}2}}$"] = tilde.vpp_vpp
+    raw.clear()
+    raw["rho"    ] = d.file["bar_rho"    ][()]
+    raw["rho_v"  ] = d.file["bar_rho_v"  ][()]
+    raw["rho_v_v"] = d.file["bar_rho_v_v"][()]
+    cov = esterrcov(sigma, raw)
     s.append(
-        sigma.rho**2     * ((bar.rho*bar.rho_v_v - 2*bar.rho_v**2)**2/bar.rho**6)
-      # sigma.rho2_v     * (4*(bar.rho*bar.rho_v_v - 2*bar.rho_v**2)*bar.rho_v/bar.rho**5)
-      # sigma.rho2_v_v   * (2*(-bar.rho*bar.rho_v_v + 2*bar.rho_v**2)/bar.rho**4)
-      + sigma.rho_v**2   * (4*bar.rho_v**2/bar.rho**4)
-      # sigma.rho2_v_v_v * (-4*bar.rho_v/bar.rho**3)
-      + sigma.rho_v_v**2 * (bar.rho**(-2))
+        cov[0,0,:] * ((bar.rho*bar.rho_v_v - 2*bar.rho_v**2)**2/bar.rho**6)
+      + cov[0,1,:] * (4*(bar.rho*bar.rho_v_v - 2*bar.rho_v**2)*bar.rho_v/bar.rho**5)
+      + cov[0,2,:] * (2*(-bar.rho*bar.rho_v_v + 2*bar.rho_v**2)/bar.rho**4)
+      + cov[1,1,:] * (4*bar.rho_v**2/bar.rho**4)
+      + cov[1,2,:] * (-4*bar.rho_v/bar.rho**3)
+      + cov[2,2,:] * (bar.rho**(-2))
     )
 
-    m[r"$\widetilde{w^{\prime\prime{}2}}$"]              = tilde.wpp_wpp
+    m[r"$\widetilde{w^{\prime\prime{}2}}$"] = tilde.wpp_wpp
+    raw.clear()
+    raw["rho"    ] = d.file["bar_rho"    ][()]
+    raw["rho_w"  ] = d.file["bar_rho_w"  ][()]
+    raw["rho_w_w"] = d.file["bar_rho_w_w"][()]
+    cov = esterrcov(sigma, raw)
     s.append(
-        sigma.rho**2     * ((bar.rho*bar.rho_w_w - 2*bar.rho_w**2)**2/bar.rho**6)
-      # sigma.rho2_w     * (4*(bar.rho*bar.rho_w_w - 2*bar.rho_w**2)*bar.rho_w/bar.rho**5)
-      # sigma.rho2_w_w   * (2*(-bar.rho*bar.rho_w_w + 2*bar.rho_w**2)/bar.rho**4)
-      + sigma.rho_w**2   * (4*bar.rho_w**2/bar.rho**4)
-      # sigma.rho2_w_w_w * (-4*bar.rho_w/bar.rho**3)
-      + sigma.rho_w_w**2 * (bar.rho**(-2))
+        cov[0,0,:] * ((bar.rho*bar.rho_w_w - 2*bar.rho_w**2)**2/bar.rho**6)
+      + cov[0,1,:] * (4*(bar.rho*bar.rho_w_w - 2*bar.rho_w**2)*bar.rho_w/bar.rho**5)
+      + cov[0,2,:] * (2*(-bar.rho*bar.rho_w_w + 2*bar.rho_w**2)/bar.rho**4)
+      + cov[1,1,:] * (4*bar.rho_w**2/bar.rho**4)
+      + cov[1,2,:] * (-4*bar.rho_w/bar.rho**3)
+      + cov[2,2,:] * (bar.rho**(-2))
     )
 
     m[r"$\widetilde{u^{\prime\prime}v^{\prime\prime}}$"] = tilde.upp_vpp
+    raw.clear()
+    raw["rho"    ] = d.file["bar_rho"    ][()]
+    raw["rho_u"  ] = d.file["bar_rho_u"  ][()]
+    raw["rho_u_v"] = d.file["bar_rho_u_v"][()]
+    raw["rho_v"  ] = d.file["bar_rho_v"  ][()]
+    cov = esterrcov(sigma, raw)
     s.append(
-        sigma.rho**2     * ((bar.rho*bar.rho_u_v - 2*bar.rho_u*bar.rho_v)**2/bar.rho**6)
-      # sigma.rho2_u     * (2*(bar.rho*bar.rho_u_v - 2*bar.rho_u*bar.rho_v)*bar.rho_v/bar.rho**5)
-      # sigma.rho2_u_v   * (2*(-bar.rho*bar.rho_u_v + 2*bar.rho_u*bar.rho_v)/bar.rho**4)
-      # sigma.rho2_v     * (2*(bar.rho*bar.rho_u_v - 2*bar.rho_u*bar.rho_v)*bar.rho_u/bar.rho**5)
-      + sigma.rho_u**2   * (bar.rho_v**2/bar.rho**4)
-      # sigma.rho2_u_u_v * (-2*bar.rho_v/bar.rho**3)
-      # sigma.rho2_u_v   * (2*bar.rho_u*bar.rho_v/bar.rho**4)
-      + sigma.rho_u_v**2 * (bar.rho**(-2))
-      # sigma.rho2_u_v_v * (-2*bar.rho_u/bar.rho**3)
-      + sigma.rho_v**2   * (bar.rho_u**2/bar.rho**4)
+        cov[0,0,:] * ((bar.rho*bar.rho_u_v - 2*bar.rho_u*bar.rho_v)**2/bar.rho**6)
+      + cov[0,1,:] * (2*(bar.rho*bar.rho_u_v - 2*bar.rho_u*bar.rho_v)*bar.rho_v/bar.rho**5)
+      + cov[0,2,:] * (2*(-bar.rho*bar.rho_u_v + 2*bar.rho_u*bar.rho_v)/bar.rho**4)
+      + cov[0,3,:] * (2*(bar.rho*bar.rho_u_v - 2*bar.rho_u*bar.rho_v)*bar.rho_u/bar.rho**5)
+      + cov[1,1,:] * (bar.rho_v**2/bar.rho**4)
+      + cov[1,2,:] * (-2*bar.rho_v/bar.rho**3)
+      + cov[1,3,:] * (2*bar.rho_u*bar.rho_v/bar.rho**4)
+      + cov[2,2,:] * (bar.rho**(-2))
+      + cov[2,3,:] * (-2*bar.rho_u/bar.rho**3)
+      + cov[3,3,:] * (bar.rho_u**2/bar.rho**4)
     )
 
-    m[r"$k$"]                                            = tilde.k
+    m[r"$k$"] = tilde.k
+    raw.clear()
+    raw["rho"    ] = d.file["bar_rho"    ][()]
+    raw["rho_u"  ] = d.file["bar_rho_u"  ][()]
+    raw["rho_u_u"] = d.file["bar_rho_u_u"][()]
+    raw["rho_v"  ] = d.file["bar_rho_v"  ][()]
+    raw["rho_v_v"] = d.file["bar_rho_v_v"][()]
+    raw["rho_w"  ] = d.file["bar_rho_w"  ][()]
+    raw["rho_w_w"] = d.file["bar_rho_w_w"][()]
+    cov = esterrcov(sigma, raw)
     s.append(
-        sigma.rho**2       * ((bar.rho*bar.rho_u_u + bar.rho*bar.rho_v_v + bar.rho*bar.rho_w_w - 2*bar.rho_u**2 - 2*bar.rho_v**2 - 2*bar.rho_w**2)**2/(4*bar.rho**6))
-      # sigma.rho2_u       * ((bar.rho*bar.rho_u_u + bar.rho*bar.rho_v_v + bar.rho*bar.rho_w_w - 2*bar.rho_u**2 - 2*bar.rho_v**2 - 2*bar.rho_w**2)*bar.rho_u/bar.rho**5)
-      # sigma.rho2_u_u     * ((-bar.rho*bar.rho_u_u/2 - bar.rho*bar.rho_v_v/2 - bar.rho*bar.rho_w_w/2 + bar.rho_u**2 + bar.rho_v**2 + bar.rho_w**2)/bar.rho**4)
-      # sigma.rho2_v       * ((bar.rho*bar.rho_u_u + bar.rho*bar.rho_v_v + bar.rho*bar.rho_w_w - 2*bar.rho_u**2 - 2*bar.rho_v**2 - 2*bar.rho_w**2)*bar.rho_v/bar.rho**5)
-      # sigma.rho2_v_v     * ((-bar.rho*bar.rho_u_u/2 - bar.rho*bar.rho_v_v/2 - bar.rho*bar.rho_w_w/2 + bar.rho_u**2 + bar.rho_v**2 + bar.rho_w**2)/bar.rho**4)
-      # sigma.rho2_w       * ((bar.rho*bar.rho_u_u + bar.rho*bar.rho_v_v + bar.rho*bar.rho_w_w - 2*bar.rho_u**2 - 2*bar.rho_v**2 - 2*bar.rho_w**2)*bar.rho_w/bar.rho**5)
-      # sigma.rho2_w_w     * ((-bar.rho*bar.rho_u_u/2 - bar.rho*bar.rho_v_v/2 - bar.rho*bar.rho_w_w/2 + bar.rho_u**2 + bar.rho_v**2 + bar.rho_w**2)/bar.rho**4)
-      + sigma.rho_u**2     * (bar.rho_u**2/bar.rho**4)
-      # sigma.rho2_u_u_u   * (-bar.rho_u/bar.rho**3)
-      # sigma.rho2_u_v     * (2*bar.rho_u*bar.rho_v/bar.rho**4)
-      # sigma.rho2_u_v_v   * (-bar.rho_u/bar.rho**3)
-      # sigma.rho2_u_w     * (2*bar.rho_u*bar.rho_w/bar.rho**4)
-      # sigma.rho2_u_w_w   * (-bar.rho_u/bar.rho**3)
-      + sigma.rho_u_u**2   * (1/(4*bar.rho**2))
-      # sigma.rho2_u_u_v   * (-bar.rho_v/bar.rho**3)
-      # sigma.rho2_u_u_v_v * (1/(2*bar.rho**2))
-      # sigma.rho2_u_u_w   * (-bar.rho_w/bar.rho**3)
-      # sigma.rho2_u_u_w_w * (1/(2*bar.rho**2))
-      + sigma.rho_v**2     * (bar.rho_v**2/bar.rho**4)
-      # sigma.rho2_v_v_v   * (-bar.rho_v/bar.rho**3)
-      # sigma.rho2_v_w     * (2*bar.rho_v*bar.rho_w/bar.rho**4)
-      # sigma.rho2_v_w_w   * (-bar.rho_v/bar.rho**3)
-      + sigma.rho_v_v**2   * (1/(4*bar.rho**2))
-      # sigma.rho2_v_v_w   * (-bar.rho_w/bar.rho**3)
-      # sigma.rho2_v_v_w_w * (1/(2*bar.rho**2))
-      + sigma.rho_w**2     * (bar.rho_w**2/bar.rho**4)
-      # sigma.rho2_w_w_w   * (-bar.rho_w/bar.rho**3)
-      + sigma.rho_w_w**2   * (1/(4*bar.rho**2))
+      + cov[0,0,:] * ((bar.rho*bar.rho_u_u + bar.rho*bar.rho_v_v + bar.rho*bar.rho_w_w - 2*bar.rho_u**2 - 2*bar.rho_v**2 - 2*bar.rho_w**2)**2/(4*bar.rho**6))
+      + cov[0,1,:] * ((bar.rho*bar.rho_u_u + bar.rho*bar.rho_v_v + bar.rho*bar.rho_w_w - 2*bar.rho_u**2 - 2*bar.rho_v**2 - 2*bar.rho_w**2)*bar.rho_u/bar.rho**5)
+      + cov[0,2,:] * ((-bar.rho*bar.rho_u_u/2 - bar.rho*bar.rho_v_v/2 - bar.rho*bar.rho_w_w/2 + bar.rho_u**2 + bar.rho_v**2 + bar.rho_w**2)/bar.rho**4)
+      + cov[0,3,:] * ((bar.rho*bar.rho_u_u + bar.rho*bar.rho_v_v + bar.rho*bar.rho_w_w - 2*bar.rho_u**2 - 2*bar.rho_v**2 - 2*bar.rho_w**2)*bar.rho_v/bar.rho**5)
+      + cov[0,4,:] * ((-bar.rho*bar.rho_u_u/2 - bar.rho*bar.rho_v_v/2 - bar.rho*bar.rho_w_w/2 + bar.rho_u**2 + bar.rho_v**2 + bar.rho_w**2)/bar.rho**4)
+      + cov[0,5,:] * ((bar.rho*bar.rho_u_u + bar.rho*bar.rho_v_v + bar.rho*bar.rho_w_w - 2*bar.rho_u**2 - 2*bar.rho_v**2 - 2*bar.rho_w**2)*bar.rho_w/bar.rho**5)
+      + cov[0,6,:] * ((-bar.rho*bar.rho_u_u/2 - bar.rho*bar.rho_v_v/2 - bar.rho*bar.rho_w_w/2 + bar.rho_u**2 + bar.rho_v**2 + bar.rho_w**2)/bar.rho**4)
+      + cov[1,1,:] * (bar.rho_u**2/bar.rho**4)
+      + cov[1,2,:] * (-bar.rho_u/bar.rho**3)
+      + cov[1,3,:] * (2*bar.rho_u*bar.rho_v/bar.rho**4)
+      + cov[1,4,:] * (-bar.rho_u/bar.rho**3)
+      + cov[1,5,:] * (2*bar.rho_u*bar.rho_w/bar.rho**4)
+      + cov[1,6,:] * (-bar.rho_u/bar.rho**3)
+      + cov[2,2,:] * (1/(4*bar.rho**2))
+      + cov[2,3,:] * (-bar.rho_v/bar.rho**3)
+      + cov[2,4,:] * (1/(2*bar.rho**2))
+      + cov[2,5,:] * (-bar.rho_w/bar.rho**3)
+      + cov[2,6,:] * (1/(2*bar.rho**2))
+      + cov[3,3,:] * (bar.rho_v**2/bar.rho**4)
+      + cov[3,4,:] * (-bar.rho_v/bar.rho**3)
+      + cov[3,5,:] * (2*bar.rho_v*bar.rho_w/bar.rho**4)
+      + cov[3,6,:] * (-bar.rho_v/bar.rho**3)
+      + cov[4,4,:] * (1/(4*bar.rho**2))
+      + cov[4,5,:] * (-bar.rho_w/bar.rho**3)
+      + cov[4,6,:] * (1/(2*bar.rho**2))
+      + cov[5,5,:] * (bar.rho_w**2/bar.rho**4)
+      + cov[5,6,:] * (-bar.rho_w/bar.rho**3)
+      + cov[6,6,:] * (1/(4*bar.rho**2))
     )
 
     # Plot lower left subfigure (includes normalization)
     for k, v in m.iteritems():
         ax[1][0].plot(star.y, v / star.u**2, label=k)
-    ax[1][0].set_ylabel(r"$\mu^\ast$")
+    ax[1][0].set_ylabel(r"$\mu / u_\tau^{\ast{}2}$")
     ax[1][0].set_xlabel(r"$y^\ast$")
 
     # Plot lower right subfigure (includes normalization)
