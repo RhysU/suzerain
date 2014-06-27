@@ -354,19 +354,21 @@ def plot_profiles(d, fbottom=None, ftop=None, **fig_kw):
 
 
 # TODO Smooth per B-splines using ' from scipy.interpolate import interp1d'
-def plot_tke(data, y=None, vert=1, thresh=25, ax=None, **plotargs):
+def plot_tke(data, y=None, vert=1, thresh=25, ax=None, full=False, **plotargs):
     """
-    Plot TKE budgets from data permitting rescaling and thresholding
+    Plot TKE budgets from data permitting rescaling and thresholding.
+    If data is from a channel, the two halves are averaged unless full is True.
     """
 
     # Get a new axis if one was not supplied
     if not ax:
         fig, ax = plt.subplots()
 
-    # Rescale the data as requested, permitting plus or star units.
+    # Rescale the data as requested, permitting plus units.
     # Merging constraint and forcing as they're identical physically
     # and their separation is purely an artifact of the implementation.
-    if y is None: y = data.y
+    if y is None:
+        y = data.y
     convection  = vert * data.tke.convection
     production  = vert * data.tke.production
     dissipation = vert * data.tke.dissipation
@@ -377,6 +379,20 @@ def plot_tke(data, y=None, vert=1, thresh=25, ax=None, **plotargs):
     pheatflux   = vert * data.tke.pheatflux
     forcing     = vert * (data.tke.forcing + data.tke.constraint)
     slowgrowth  = vert * data.tke.slowgrowth
+
+
+    # In channels, when requested, average the upper and lower data
+    if data.htdelta >= 0 and not full:
+        convection  = (convection  + np.flipud(convection )) / 2
+        production  = (production  + np.flipud(production )) / 2
+        dissipation = (dissipation + np.flipud(dissipation)) / 2
+        transport   = (transport   + np.flipud(transport  )) / 2
+        diffusion   = (diffusion   + np.flipud(diffusion  )) / 2
+        pmassflux   = (pmassflux   + np.flipud(pmassflux  )) / 2
+        pdilatation = (pdilatation + np.flipud(pdilatation)) / 2
+        pheatflux   = (pheatflux   + np.flipud(pheatflux  )) / 2
+        forcing     = (forcing     + np.flipud(forcing    )) / 2
+        slowgrowth  = (slowgrowth  + np.flipud(slowgrowth )) / 2
 
     # Plotting cutoff based on magnitude of the production term
     # following Guarini et al JFM 2000 page 23.
@@ -419,6 +435,10 @@ def plot_tke(data, y=None, vert=1, thresh=25, ax=None, **plotargs):
     pthresh(y, forcing, linestyle=':',
             label=r"$\overline{f\cdot{}u''}$",
             **plotargs)
+
+    # In channels, when requested, show only the lower half
+    if data.htdelta >= 0 and not full:
+        ax.set_xlim(left=y[0], right=np.median(y))
 
     return fig
 
