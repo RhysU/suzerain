@@ -13,7 +13,6 @@ import collections
 import getopt
 import h5py
 import logging
-import matplotlib
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 import numpy as np
@@ -22,7 +21,7 @@ import pandas as pd
 import sys
 
 
-# Prepare a logger to produce progress messages
+# Prepare a logger to produce messages
 logging.basicConfig(level=logging.INFO, format='%(levelname)s %(message)s')
 l = logging.getLogger(os.path.splitext(os.path.basename(__file__))[0])
 
@@ -53,8 +52,17 @@ def maybe_assume_uncorrelated(data, keyAB, keyA, keyB=None, warn=True):
 
 
 class Data(object):
-    "Storage of data loaded and computed from a single summary file."
-    def __init__(self, filename):
+    """
+    Storage of data loaded and computed from a single summary file.
+
+    When enforceSymmetry is True and the file represents channel data,
+    the upper and lower halves of the channel are assumed to be
+    symmetric causing the profile data to be averaged.
+    """
+
+
+    # FIXME Correct symmetry enforcement for antisymmetric quantities
+    def __init__(self, filename, enforceSymmetry=False):
         "Prepare averaged information and derived quantities from a filename"
 
         # Load file and prepare scalar and vector storage locations
@@ -88,8 +96,6 @@ class Data(object):
                 self.bulk[k[4:]] = v[0]
             elif k.startswith("lower_"):
                 self.lower[k[6:]] = v[()]
-            elif k.startswith("rms_"):
-                self.rms[k[6:]] = v[()]
             elif k.startswith("upper_"):
                 self.upper[k[6:]] = v[()]
             elif k.endswith("_weights"):
@@ -100,6 +106,27 @@ class Data(object):
             elif k.startswith("chan."):
                 self.__dict__[k[5:]] = Bunch(
                     **{a:b[0] for a,b in v.attrs.items()})
+
+        # Employ symmetry assumptions, if requested and applicable
+        # to improve mean estimates and associated uncertainties.
+        # Based upon
+        #     X ~ N(\mu_x, \sigma_x^2)
+        #     Y ~ N(\mu_y, \sigma_y^2)
+        #     Z = a X + b Y
+        #       ~ N(a \mu_x + b \mu_y, a^2 \sigma_x^2 + b^2 \sigma_y^2)
+        # implying
+        #     std(Z) = sqrt(std(x)**2 + std(y)**2) / 2
+        # which leads to the computations below.
+        # Notice self.file is NOT adjusted, only mean profile information,
+        # and also that the domain is not truncated to only the lower half.
+        if self.htdelta >= 0 and enforceSymmetry:
+            for k, v in self.bar.iteritems():
+                self.bar[k] = (v + np.flipud(v)) / 2
+            for k, v in self.sigma.iteritems():
+                self.sigma[k] = np.sqrt(v**2 + np.flipud(v)**2) / 2
+            self.enforceSymmetry = True
+        else:
+            self.enforceSymmetry = False
 
         # Compute scaling information per the incoming data, including...
         if "visc" in self.__dict__ and "wall" in self.__dict__:
@@ -131,51 +158,58 @@ class Data(object):
                    " because module 'perfect_decl' not found")
 
 
-def esterrcov(sigma, raw):
-    """
-    Given an OrderedDict "raw" mapping keys to (t,y)-temporal traces and
-    "sigma" mapping those keys to y-dependent standard error estimates,
-    produce an empirical covariance matrix for the given keys returning
-    squared standard errors on the diagonal.
-    """
-    # Check incoming arguments
-    if not raw:
-        raise ValueError("One or more keys must be provided")
-    for k in raw.iterkeys():
-        if k not in sigma:
-            raise KeyError("Key %s not in sigma" % k)
+    # FIXME Correct symmetry enforcement for antisymmetric quantities
+    def esterrcov(self, *keys):
+        """
+        Produce an y-dependent empirical covariance matrix for the given
+        keys returning squared standard errors from self.sigma on
+        the diagonal.
+        """
+        # Check incoming arguments
+        if not keys:
+            raise ValueError("One or more keys must be provided")
+        for k in keys:
+            if k not in self.sigma:
+                raise KeyError("Key %s not in sigma" % k)
+            if "bar_"+k not in self.file:
+                raise KeyError("Key %s not in sigma" % "bar_"+k)
 
-    # Preallocate space to pack incoming data and store results
-    ex = raw.itervalues().next()
-    nt, ny = ex.shape
-    nv = len(raw)
-    out = np.empty((nv, nv, ny), dtype=ex.dtype, order='C')
-    dat = np.empty((nv, nt),     dtype=ex.dtype, order='C')
+        # Preallocate space to pack incoming data and store results
+        ex = self.file["bar_"+k]
+        nt, ny = ex.shape
+        nv = len(keys)
+        out = np.empty((nv, nv, ny), dtype=ex.dtype, order='C')
+        dat = np.empty((nv, nt),     dtype=ex.dtype, order='C')
 
-    # Process each y location in turn...
-    for j in xrange(ny):
-        # ...pack temporal trace into dat buffer
-        for i, key in enumerate(raw):
-            dat[i, :] = raw[key][:,j]
-        # ...obtain correlation matrix with unit diagonal
-        t = np.corrcoef(dat, bias=1)
-        # ...scale correlation by squared standard error
-        # to obtain a covariance matrix.
-        for i, key in enumerate(raw):
-            t[i,:] *= sigma[key][j]
-            t[:,i] *= sigma[key][j]
-        # ...and store the result into out
-        out[:, :, j] = t
+        # Process each y location in turn...
+        for j in xrange(ny):
+            # ...pack temporal trace into dat buffer
+            # (if needed averaging with the opposite channel half)
+            for i, key in enumerate(keys):
+                dat[i, :] = self.file["bar_"+key][:,j]
+            if self.enforceSymmetry:
+                for i, key in enumerate(keys):
+                    dat[i, :] += self.file["bar_"+key][:,ny-1-j]
+                dat /= 2
+            # ...obtain correlation matrix with unit diagonal
+            t = np.corrcoef(dat, bias=1)
+            # ...scale correlation by squared standard error
+            # to obtain a covariance matrix.
+            for i, key in enumerate(keys):
+                t[i,:] *= self.sigma[key][j]
+                t[:,i] *= self.sigma[key][j]
+            # ...and store the result into out
+            out[:, :, j] = t
 
-    return out
+        return out
 
 
-def plot_profiles(d, fbottom=None, ftop=None, **fig_kw):
+def plot_profiles(data, fbottom=None, ftop=None, **fig_kw):
     """
     Plot mean primitive profiles, their RMS fluctuations, and uncertainties.
     """
     fig, ax = plt.subplots(2, 2, sharex=True, squeeze=False, **fig_kw)
-    bar, tilde, sigma, star = d.bar, d.tilde, d.sigma, d.star
+    bar, tilde, sigma, star = data.bar, data.tilde, data.sigma, data.star
 
     #########################################################################
     # Build dictionary of means and list of standard errors for upper row
@@ -212,16 +246,13 @@ def plot_profiles(d, fbottom=None, ftop=None, **fig_kw):
     #########################################################################
     # Build dictionary of means and standard errors for lower row
     # Variance expressions from postproc/propagation.py -d perfect.decl
-    raw = collections.OrderedDict()
     m.clear()
     del s[:]
 
     m[r"$\widetilde{u^{\prime\prime{}2}}$"] = tilde.upp_upp
-    raw.clear()
-    raw["rho"    ] = d.file["bar_rho"    ][()]
-    raw["rho_u"  ] = d.file["bar_rho_u"  ][()]
-    raw["rho_u_u"] = d.file["bar_rho_u_u"][()]
-    cov = esterrcov(sigma, raw)
+    cov = data.esterrcov("rho",
+                         "rho_u",
+                         "rho_u_u")
     s.append(
         cov[0,0,:] * ((bar.rho*bar.rho_u_u - 2*bar.rho_u**2)**2/bar.rho**6)
       + cov[0,1,:] * (4*(bar.rho*bar.rho_u_u - 2*bar.rho_u**2)*bar.rho_u/bar.rho**5)
@@ -232,11 +263,9 @@ def plot_profiles(d, fbottom=None, ftop=None, **fig_kw):
     )
 
     m[r"$\widetilde{v^{\prime\prime{}2}}$"] = tilde.vpp_vpp
-    raw.clear()
-    raw["rho"    ] = d.file["bar_rho"    ][()]
-    raw["rho_v"  ] = d.file["bar_rho_v"  ][()]
-    raw["rho_v_v"] = d.file["bar_rho_v_v"][()]
-    cov = esterrcov(sigma, raw)
+    cov = data.esterrcov("rho",
+                         "rho_v",
+                         "rho_v_v")
     s.append(
         cov[0,0,:] * ((bar.rho*bar.rho_v_v - 2*bar.rho_v**2)**2/bar.rho**6)
       + cov[0,1,:] * (4*(bar.rho*bar.rho_v_v - 2*bar.rho_v**2)*bar.rho_v/bar.rho**5)
@@ -247,11 +276,9 @@ def plot_profiles(d, fbottom=None, ftop=None, **fig_kw):
     )
 
     m[r"$\widetilde{w^{\prime\prime{}2}}$"] = tilde.wpp_wpp
-    raw.clear()
-    raw["rho"    ] = d.file["bar_rho"    ][()]
-    raw["rho_w"  ] = d.file["bar_rho_w"  ][()]
-    raw["rho_w_w"] = d.file["bar_rho_w_w"][()]
-    cov = esterrcov(sigma, raw)
+    cov = data.esterrcov("rho",
+                         "rho_w",
+                         "rho_w_w")
     s.append(
         cov[0,0,:] * ((bar.rho*bar.rho_w_w - 2*bar.rho_w**2)**2/bar.rho**6)
       + cov[0,1,:] * (4*(bar.rho*bar.rho_w_w - 2*bar.rho_w**2)*bar.rho_w/bar.rho**5)
@@ -262,12 +289,10 @@ def plot_profiles(d, fbottom=None, ftop=None, **fig_kw):
     )
 
     m[r"$\widetilde{u^{\prime\prime}v^{\prime\prime}}$"] = tilde.upp_vpp
-    raw.clear()
-    raw["rho"    ] = d.file["bar_rho"    ][()]
-    raw["rho_u"  ] = d.file["bar_rho_u"  ][()]
-    raw["rho_u_v"] = d.file["bar_rho_u_v"][()]
-    raw["rho_v"  ] = d.file["bar_rho_v"  ][()]
-    cov = esterrcov(sigma, raw)
+    cov = data.esterrcov("rho",
+                         "rho_u",
+                         "rho_u_v",
+                         "rho_v")
     s.append(
         cov[0,0,:] * ((bar.rho*bar.rho_u_v - 2*bar.rho_u*bar.rho_v)**2/bar.rho**6)
       + cov[0,1,:] * (2*(bar.rho*bar.rho_u_v - 2*bar.rho_u*bar.rho_v)*bar.rho_v/bar.rho**5)
@@ -282,15 +307,13 @@ def plot_profiles(d, fbottom=None, ftop=None, **fig_kw):
     )
 
     m[r"$k$"] = tilde.k
-    raw.clear()
-    raw["rho"    ] = d.file["bar_rho"    ][()]
-    raw["rho_u"  ] = d.file["bar_rho_u"  ][()]
-    raw["rho_u_u"] = d.file["bar_rho_u_u"][()]
-    raw["rho_v"  ] = d.file["bar_rho_v"  ][()]
-    raw["rho_v_v"] = d.file["bar_rho_v_v"][()]
-    raw["rho_w"  ] = d.file["bar_rho_w"  ][()]
-    raw["rho_w_w"] = d.file["bar_rho_w_w"][()]
-    cov = esterrcov(sigma, raw)
+    cov = data.esterrcov("rho",
+                         "rho_u",
+                         "rho_u_u",
+                         "rho_v",
+                         "rho_v_v",
+                         "rho_w",
+                         "rho_w_w")
     s.append(
       + cov[0,0,:] * ((bar.rho*bar.rho_u_u + bar.rho*bar.rho_v_v + bar.rho*bar.rho_w_w - 2*bar.rho_u**2 - 2*bar.rho_v**2 - 2*bar.rho_w**2)**2/(4*bar.rho**6))
       + cov[0,1,:] * ((bar.rho*bar.rho_u_u + bar.rho*bar.rho_v_v + bar.rho*bar.rho_w_w - 2*bar.rho_u**2 - 2*bar.rho_v**2 - 2*bar.rho_w**2)*bar.rho_u/bar.rho**5)
@@ -340,7 +363,7 @@ def plot_profiles(d, fbottom=None, ftop=None, **fig_kw):
         ax[1][1].set_ylim(top=ftop)
 
     # Truncate at half channel width, if applicable
-    if d.htdelta >= 0:
+    if data.htdelta >= 0:
         ax[0][0].set_xlim(right=np.median(star.y))
         ax[0][1].set_xlim(right=np.median(star.y))
         ax[1][0].set_xlim(right=np.median(star.y))
@@ -354,49 +377,22 @@ def plot_profiles(d, fbottom=None, ftop=None, **fig_kw):
 
 
 # TODO Smooth per B-splines using ' from scipy.interpolate import interp1d'
-def plot_tke(data, y=None, vert=1, thresh=25, ax=None, full=False, **plotargs):
+def plot_tke(data, y=None, vert=1, thresh=25, ax=None, **plotargs):
     """
     Plot TKE budgets from data permitting rescaling and thresholding.
-    If data is from a channel, the two halves are averaged unless full is True.
     """
 
     # Get a new axis if one was not supplied
     if not ax:
         fig, ax = plt.subplots()
 
-    # Rescale the data as requested, permitting plus units.
-    # Merging constraint and forcing as they're identical physically
-    # and their separation is purely an artifact of the implementation.
+    # Plot along y unless requested otherwise
     if y is None:
         y = data.y
-    convection  = vert * data.tke.convection
-    production  = vert * data.tke.production
-    dissipation = vert * data.tke.dissipation
-    transport   = vert * data.tke.transport
-    diffusion   = vert * data.tke.diffusion
-    pmassflux   = vert * data.tke.pmassflux
-    pdilatation = vert * data.tke.pdilatation
-    pheatflux   = vert * data.tke.pheatflux
-    forcing     = vert * (data.tke.forcing + data.tke.constraint)
-    slowgrowth  = vert * data.tke.slowgrowth
-
-
-    # In channels, when requested, average the upper and lower data
-    if data.htdelta >= 0 and not full:
-        convection  = (convection  + np.flipud(convection )) / 2
-        production  = (production  + np.flipud(production )) / 2
-        dissipation = (dissipation + np.flipud(dissipation)) / 2
-        transport   = (transport   + np.flipud(transport  )) / 2
-        diffusion   = (diffusion   + np.flipud(diffusion  )) / 2
-        pmassflux   = (pmassflux   + np.flipud(pmassflux  )) / 2
-        pdilatation = (pdilatation + np.flipud(pdilatation)) / 2
-        pheatflux   = (pheatflux   + np.flipud(pheatflux  )) / 2
-        forcing     = (forcing     + np.flipud(forcing    )) / 2
-        slowgrowth  = (slowgrowth  + np.flipud(slowgrowth )) / 2
 
     # Plotting cutoff based on magnitude of the production term
     # following Guarini et al JFM 2000 page 23.
-    thresh = np.max(np.abs(production)) / thresh
+    thresh = np.max(np.abs(data.tke.production)) / thresh
 
     # Produce plots in order of most to least likely to exceed thresh
     # This causes any repeated linetypes to be fairly simple to distinguish
@@ -404,41 +400,37 @@ def plot_tke(data, y=None, vert=1, thresh=25, ax=None, full=False, **plotargs):
         if np.max(np.abs(q)) > thresh:
             ax.plot(y, q, *args, **kwargs)
     # Likely to exceed threshold but we will check anyway
-    pthresh(y, production, linestyle='-',
+    pthresh(y, vert * data.tke.production, linestyle='-',
             label=r"$- \bar{\rho}\widetilde{u''\otimes{}u''}:\nabla\tilde{u}$",
             **plotargs)
-    pthresh(y, dissipation, linestyle='-',
+    pthresh(y, vert * data.tke.dissipation, linestyle='-',
             label=r"$- \bar{\rho}\epsilon / \mbox{Re}$",
             **plotargs)
-    pthresh(y, transport, linestyle='--',
+    pthresh(y, vert * data.tke.transport, linestyle='--',
             label=r"$- \nabla\cdot \bar{\rho} \widetilde{{u''}^{2}u''} / 2$",
             **plotargs)
-    pthresh(y, diffusion, linestyle='-.',
+    pthresh(y, vert * data.tke.diffusion, linestyle='-.',
             label=r"$\nabla\cdot \overline{\tau{}u''}/\mbox{Re}$",
             **plotargs)
-    pthresh(y, slowgrowth, linestyle=':',
+    pthresh(y, vert * data.tke.slowgrowth, linestyle=':',
             label=r"$\overline{\mathscr{S}_{\rho{}u}\cdot{}u''}$",
             **plotargs)
     # Conceivable that these will not exceed the threshold
-    pthresh(y, pmassflux, linestyle='-',
+    pthresh(y, vert * data.tke.pmassflux, linestyle='-',
             label=r"$\bar{p}\nabla\cdot\overline{u''}/\mbox{Ma}^2$",
             **plotargs)
-    pthresh(y, pdilatation, linestyle='--',
+    pthresh(y, vert * data.tke.pdilatation, linestyle='--',
             label=r"$\overline{p' \nabla\cdot{}u''}/\mbox{Ma}^2$",
             **plotargs)
-    pthresh(y, pheatflux, linestyle='-.',
+    pthresh(y, vert * data.tke.pheatflux, linestyle='-.',
             label=r"$-\nabla\cdot\bar{\rho}\widetilde{T''u''}/\gamma/\mbox{Ma}^2$",
             **plotargs)
-    pthresh(y, convection, linestyle=':',
+    pthresh(y, vert * data.tke.convection, linestyle=':',
             label=r"$- \nabla\cdot\bar{\rho}k\tilde{u}$",
             **plotargs)
-    pthresh(y, forcing, linestyle=':',
+    pthresh(y, vert * (data.tke.forcing + data.tke.constraint), linestyle=':',
             label=r"$\overline{f\cdot{}u''}$",
             **plotargs)
-
-    # In channels, when requested, show only the lower half
-    if data.htdelta >= 0 and not full:
-        ax.set_xlim(left=y[0], right=np.median(y))
 
     return fig
 
@@ -496,7 +488,7 @@ def plot_relaminarization(dnames,
         yinclude(ax, Re_theta)
         ax.hlines(Re_theta, qoi.index.min(), qoi.index.max(), 'r', '-.')
     ax.set_ylabel(r'$\mbox{Re}_{\theta}$')
-    ax.yaxis.set_major_locator(matplotlib.ticker.MaxNLocator(4))
+    ax.yaxis.set_major_locator(ticker.MaxNLocator(4))
     ax.set_xticklabels([])
     #
     ax = fig.add_subplot(912)
@@ -506,7 +498,7 @@ def plot_relaminarization(dnames,
         yinclude(ax, Ma_e)
         ax.hlines(Ma_e, qoi.index.min(), qoi.index.max(), 'r', '-.')
     ax.set_ylabel(r'$\mbox{Ma}_{e}$')
-    ax.yaxis.set_major_locator(matplotlib.ticker.MaxNLocator(4))
+    ax.yaxis.set_major_locator(ticker.MaxNLocator(4))
     ax.set_xticklabels([])
     #
     ax = fig.add_subplot(913)
@@ -516,7 +508,7 @@ def plot_relaminarization(dnames,
         yinclude(ax, ratio_T)
         ax.hlines(ratio_T, qoi.index.min(), qoi.index.max(), 'r', '-.')
     ax.set_ylabel(r'$T_e/T_w$')
-    ax.yaxis.set_major_locator(matplotlib.ticker.MaxNLocator(4))
+    ax.yaxis.set_major_locator(ticker.MaxNLocator(4))
     ax.set_xticklabels([])
     #
     ax = fig.add_subplot(914)
@@ -526,7 +518,7 @@ def plot_relaminarization(dnames,
         yinclude(ax, v_wallplus)
         ax.hlines(v_wallplus, visc.index.min(), visc.index.max(), 'r', '-.')
     ax.set_ylabel(r'$v_w^+$')
-    ax.yaxis.set_major_locator(matplotlib.ticker.MaxNLocator(4))
+    ax.yaxis.set_major_locator(ticker.MaxNLocator(4))
     ax.set_xticklabels([])
     #
     ax = fig.add_subplot(915)
@@ -536,7 +528,7 @@ def plot_relaminarization(dnames,
         yinclude(ax, p_ex)
         ax.hlines(p_ex, pg.index.min(), pg.index.max(), 'r', '-.')
     ax.set_ylabel(r'$p^\ast_{e,\xi}$')
-    ax.yaxis.set_major_locator(matplotlib.ticker.MaxNLocator(4))
+    ax.yaxis.set_major_locator(ticker.MaxNLocator(4))
     ax.set_xticklabels([])
     #
     ax = fig.add_subplot(916)
@@ -546,7 +538,7 @@ def plot_relaminarization(dnames,
         yinclude(ax, delta99)
         ax.hlines(delta99, thick.index.min(), thick.index.max(), 'r', '-.')
     ax.set_ylabel(r'$\delta_{99}$')
-    ax.yaxis.set_major_locator(matplotlib.ticker.MaxNLocator(4))
+    ax.yaxis.set_major_locator(ticker.MaxNLocator(4))
     ax.set_xticklabels([])
     #
     ax = fig.add_subplot(917)
@@ -557,7 +549,7 @@ def plot_relaminarization(dnames,
                   #r"$\overline{\rho u'' \otimes{} u''}:\nabla\tilde{u}$",
                   "production",
                   multialignment='center')
-    ax.yaxis.set_major_locator(matplotlib.ticker.MaxNLocator(4))
+    ax.yaxis.set_major_locator(ticker.MaxNLocator(4))
     ax.set_xticklabels([])
     #
     ax = fig.add_subplot(918)
@@ -572,15 +564,15 @@ def plot_relaminarization(dnames,
     ax.set_ylabel("max\n"
                   r"$\left|\widetilde{u_i''u_j''}\right|$",
                   multialignment='center')
-    ax.yaxis.set_major_locator(matplotlib.ticker.MaxNLocator(4))
+    ax.yaxis.set_major_locator(ticker.MaxNLocator(4))
     ax.set_xticklabels([])
     #
     ax = fig.add_subplot(919)
     ax.ticklabel_format(useOffset=False)
     ax.plot(visc.index, visc['cf'].values)
     ax.set_ylabel(r'cf')
-    ax.yaxis.set_major_locator(matplotlib.ticker.MaxNLocator( 4))
-    ax.xaxis.set_major_locator(matplotlib.ticker.MaxNLocator(10))
+    ax.yaxis.set_major_locator(ticker.MaxNLocator( 4))
+    ax.xaxis.set_major_locator(ticker.MaxNLocator(10))
     #
     fig.tight_layout()
     fig.subplots_adjust(hspace=0.20)
