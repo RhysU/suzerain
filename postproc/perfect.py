@@ -93,7 +93,7 @@ class Data(object):
                 self.bar  [k[4:]] = v.attrs["mu"]
                 self.sigma[k[4:]] = v.attrs["mu_sigma"]
             elif k.startswith("bulk_"):
-                self.bulk[k[4:]] = v[0]
+                self.bulk[k[5:]] = v[0]
             elif k.startswith("lower_"):
                 self.lower[k[6:]] = v[()]
             elif k.startswith("upper_"):
