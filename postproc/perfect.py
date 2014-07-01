@@ -392,7 +392,7 @@ def plot_tke(data, y=None, vert=1, thresh=25, ax=None, **plotargs):
 
     # Plotting cutoff based on magnitude of the production term
     # following Guarini et al JFM 2000 page 23.
-    thresh = np.max(np.abs(data.tke.production)) / thresh
+    thresh = np.max(np.abs(vert * data.tke.production)) / thresh
 
     # Produce plots in order of most to least likely to exceed thresh
     # This causes any repeated linetypes to be fairly simple to distinguish
