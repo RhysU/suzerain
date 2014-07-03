@@ -1,0 +1,151 @@
+# Generated /workspace/rhys/Build/sz-gcc-debug/../sz/postproc/perfect_decl.py from /workspace/rhys/Build/sz-gcc-debug/../sz/postproc/perfect_decl.raw ../../sz/postproc/Makefile.am
+# Based upon MD5 9aaeca6444408600f53f339cac54bb07  /workspace/rhys/Build/sz-gcc-debug/../sz/postproc/perfect_decl.raw
+# Based upon MD5 46d2f5d1f7e4e8c7254b2897ae881f35  ../../sz/postproc/Makefile.am
+def pointwise(gam, Ma, Re, Pr, y, bar, rms, tilde, local, tke):
+    """
+    Populate Bunch-like bar, rms, tilde, etc. from pointwise
+    collocation point data in bar on gridpoints y per scalars
+    gamma, Mach number, Reynolds number, and Prandtl number.
+    See, e.g., https://pypi.python.org/pypi/bunch re: Bunch.
+    """
+    from numpy import abs, sqrt
+    # Generating /workspace/rhys/Build/sz-gcc-debug/../sz/postproc/perfect_decl.raw from ../../sz/postproc/perfect.decl (sensitive to SymPy version)
+    # Based upon MD5 839ae3514d930d28aef728ab383b4cf7  ../../sz/postproc/perfect.decl
+    # Based upon MD5 31faffca6a9c14dbed1cafe3c60a65bf  ../../sz/postproc/propagation.py
+    tilde.u = bar.rho_u/bar.rho
+    tilde.v = bar.rho_v/bar.rho
+    tilde.w = bar.rho_w/bar.rho
+    tilde.E = bar.rho_E/bar.rho
+    tilde.u_u = bar.rho_u_u/bar.rho
+    tilde.u_v = bar.rho_u_v/bar.rho
+    tilde.u_w = bar.rho_u_w/bar.rho
+    tilde.v_v = bar.rho_v_v/bar.rho
+    tilde.v_w = bar.rho_v_w/bar.rho
+    tilde.w_w = bar.rho_w_w/bar.rho
+    tilde.upp_upp = bar.rho_u_u/bar.rho - bar.rho_u**2/bar.rho**2
+    tilde.upp_vpp = bar.rho_u_v/bar.rho - bar.rho_u*bar.rho_v/bar.rho**2
+    tilde.upp_wpp = bar.rho_u_w/bar.rho - bar.rho_u*bar.rho_w/bar.rho**2
+    tilde.vpp_vpp = bar.rho_v_v/bar.rho - bar.rho_v**2/bar.rho**2
+    tilde.vpp_wpp = bar.rho_v_w/bar.rho - bar.rho_v*bar.rho_w/bar.rho**2
+    tilde.wpp_wpp = bar.rho_w_w/bar.rho - bar.rho_w**2/bar.rho**2
+    rms.rho = sqrt(-bar.rho**2 + bar.rho2)
+    rms.p = sqrt(-bar.p**2 + bar.p2)
+    rms.T = sqrt(-bar.T**2 + bar.T2)
+    rms.h0 = sqrt(-bar.h0**2 + bar.h02)
+    rms.H0 = sqrt(-bar.H0**2 + bar.H02)
+    rms.mu = sqrt(-bar.mu**2 + bar.mu2)
+    rms.nu = sqrt(-bar.nu**2 + bar.nu2)
+    rms.Ma = sqrt(-bar.Ma**2 + bar.Ma2)
+    rms.u = sqrt(-bar.u**2 + bar.u_u)
+    rms.v = sqrt(-bar.v**2 + bar.v_v)
+    rms.w = sqrt(-bar.w**2 + bar.w_w)
+    rms.omx = sqrt(-bar.omx**2 + bar.omx_omx)
+    rms.omy = sqrt(-bar.omy**2 + bar.omy_omy)
+    rms.omz = sqrt(-bar.omz**2 + bar.omz_omz)
+    rms.Srho = sqrt(bar.S2rho - bar.Srho**2)
+    rms.Srhou = sqrt(bar.S2rhou - bar.Srhou**2)
+    rms.Srhov = sqrt(bar.S2rhov - bar.Srhov**2)
+    rms.Srhow = sqrt(bar.S2rhow - bar.Srhow**2)
+    rms.SrhoE = sqrt(bar.S2rhoE - bar.SrhoE**2)
+    tilde.k = bar.rho_u_u/(2*bar.rho) + bar.rho_v_v/(2*bar.rho) + bar.rho_w_w/(2*bar.rho) - bar.rho_u**2/(2*bar.rho**2) - bar.rho_v**2/(2*bar.rho**2) - bar.rho_w**2/(2*bar.rho**2)
+    tilde.T = gam*(gam - 1)*(-Ma**2*(bar.rho_u_u/(2*bar.rho) + bar.rho_v_v/(2*bar.rho) + bar.rho_w_w/(2*bar.rho)) + bar.rho_E/bar.rho)
+    tilde.H = (gam - 1)*(-Ma**2*(bar.rho_u_u/(2*bar.rho) + bar.rho_v_v/(2*bar.rho) + bar.rho_w_w/(2*bar.rho)) + bar.rho_E/bar.rho) + bar.rho_E/bar.rho
+    tilde.u__y = (bar.rho*bar.rho_u__y - bar.rho__y*bar.rho_u)/bar.rho**2
+    tilde.v__y = (bar.rho*bar.rho_v__y - bar.rho__y*bar.rho_v)/bar.rho**2
+    tilde.w__y = (bar.rho*bar.rho_w__y - bar.rho__y*bar.rho_w)/bar.rho**2
+    bar.tau_colon_grad_upp = -(bar.rho*bar.rho_u__y - bar.rho__y*bar.rho_u)*bar.tauxy/bar.rho**2 - (bar.rho*bar.rho_v__y - bar.rho__y*bar.rho_v)*bar.tauyy/bar.rho**2 - (bar.rho*bar.rho_w__y - bar.rho__y*bar.rho_w)*bar.tauyz/bar.rho**2 + bar.tau_colon_grad_u
+    tilde.epsilon = (-(bar.rho*bar.rho_u__y - bar.rho__y*bar.rho_u)*bar.tauxy/bar.rho**2 - (bar.rho*bar.rho_v__y - bar.rho__y*bar.rho_v)*bar.tauyy/bar.rho**2 - (bar.rho*bar.rho_w__y - bar.rho__y*bar.rho_w)*bar.tauyz/bar.rho**2 + bar.tau_colon_grad_u)/bar.rho
+    bar.rhop_up = -bar.rho*bar.u + bar.rho_u
+    bar.rhop_vp = -bar.rho*bar.v + bar.rho_v
+    bar.rhop_wp = -bar.rho*bar.w + bar.rho_w
+    bar.upp = bar.u - bar.rho_u/bar.rho
+    bar.vpp = bar.v - bar.rho_v/bar.rho
+    bar.wpp = bar.w - bar.rho_w/bar.rho
+    bar.f_dot_upp = bar.f_dot_u - bar.fx*bar.rho_u/bar.rho - bar.fy*bar.rho_v/bar.rho - bar.fz*bar.rho_w/bar.rho
+    bar.Srhou_dot_upp = -bar.Srhou*bar.rho_u/bar.rho + bar.Srhou_dot_u - bar.Srhov*bar.rho_v/bar.rho - bar.Srhow*bar.rho_w/bar.rho
+    bar.Crhou_dot_upp = -bar.Crhou*bar.rho_u/bar.rho + bar.Crhou_dot_u - bar.Crhov*bar.rho_v/bar.rho - bar.Crhow*bar.rho_w/bar.rho
+    bar.tauuppx = bar.tauux - bar.rho_u*bar.tauxx/bar.rho - bar.rho_v*bar.tauxy/bar.rho - bar.rho_w*bar.tauxz/bar.rho
+    bar.tauuppy = bar.tauuy - bar.rho_u*bar.tauxy/bar.rho - bar.rho_v*bar.tauyy/bar.rho - bar.rho_w*bar.tauyz/bar.rho
+    bar.tauuppz = bar.tauuz - bar.rho_u*bar.tauxz/bar.rho - bar.rho_v*bar.tauyz/bar.rho - bar.rho_w*bar.tauzz/bar.rho
+    bar.pp_div_upp = -bar.p*bar.v__y + bar.p_div_u
+    tilde.u_u_u = bar.rho_u_u_u/bar.rho
+    tilde.u_u_v = bar.rho_u_u_v/bar.rho
+    tilde.u_u_w = bar.rho_u_u_w/bar.rho
+    tilde.u_v_v = bar.rho_u_v_v/bar.rho
+    tilde.u_v_w = bar.rho_u_v_w/bar.rho
+    tilde.u_w_w = bar.rho_u_w_w/bar.rho
+    tilde.v_v_v = bar.rho_v_v_v/bar.rho
+    tilde.v_v_w = bar.rho_v_v_w/bar.rho
+    tilde.v_w_w = bar.rho_v_w_w/bar.rho
+    tilde.w_w_w = bar.rho_w_w_w/bar.rho
+    tilde.u2u = bar.rho_u_u_u/bar.rho + bar.rho_u_v_v/bar.rho + bar.rho_u_w_w/bar.rho
+    tilde.u2v = bar.rho_u_u_v/bar.rho + bar.rho_v_v_v/bar.rho + bar.rho_v_w_w/bar.rho
+    tilde.u2w = bar.rho_u_u_w/bar.rho + bar.rho_v_v_w/bar.rho + bar.rho_w_w_w/bar.rho
+    tilde.upp2upp = 2*(bar.rho_u**2/bar.rho**2 + bar.rho_v**2/bar.rho**2 + bar.rho_w**2/bar.rho**2)*bar.rho_u/bar.rho - (bar.rho_u_u/bar.rho + bar.rho_v_v/bar.rho + bar.rho_w_w/bar.rho)*bar.rho_u/bar.rho + bar.rho_u_u_u/bar.rho + bar.rho_u_v_v/bar.rho + bar.rho_u_w_w/bar.rho - 2*bar.rho_u*bar.rho_u_u/bar.rho**2 - 2*bar.rho_u_v*bar.rho_v/bar.rho**2 - 2*bar.rho_u_w*bar.rho_w/bar.rho**2
+    tilde.upp2vpp = 2*(bar.rho_u**2/bar.rho**2 + bar.rho_v**2/bar.rho**2 + bar.rho_w**2/bar.rho**2)*bar.rho_v/bar.rho - (bar.rho_u_u/bar.rho + bar.rho_v_v/bar.rho + bar.rho_w_w/bar.rho)*bar.rho_v/bar.rho + bar.rho_u_u_v/bar.rho + bar.rho_v_v_v/bar.rho + bar.rho_v_w_w/bar.rho - 2*bar.rho_u*bar.rho_u_v/bar.rho**2 - 2*bar.rho_v*bar.rho_v_v/bar.rho**2 - 2*bar.rho_v_w*bar.rho_w/bar.rho**2
+    tilde.upp2wpp = 2*(bar.rho_u**2/bar.rho**2 + bar.rho_v**2/bar.rho**2 + bar.rho_w**2/bar.rho**2)*bar.rho_w/bar.rho - (bar.rho_u_u/bar.rho + bar.rho_v_v/bar.rho + bar.rho_w_w/bar.rho)*bar.rho_w/bar.rho + bar.rho_u_u_w/bar.rho + bar.rho_v_v_w/bar.rho + bar.rho_w_w_w/bar.rho - 2*bar.rho_u*bar.rho_u_w/bar.rho**2 - 2*bar.rho_v*bar.rho_v_w/bar.rho**2 - 2*bar.rho_w*bar.rho_w_w/bar.rho**2
+    tilde.T_u = bar.rho_T_u/bar.rho
+    tilde.T_v = bar.rho_T_v/bar.rho
+    tilde.T_w = bar.rho_T_w/bar.rho
+    tilde.Tpp_upp = -gam*(gam - 1)*(-Ma**2*(bar.rho_u_u/(2*bar.rho) + bar.rho_v_v/(2*bar.rho) + bar.rho_w_w/(2*bar.rho)) + bar.rho_E/bar.rho)*bar.rho_u/bar.rho + bar.rho_T_u/bar.rho
+    tilde.Tpp_vpp = -gam*(gam - 1)*(-Ma**2*(bar.rho_u_u/(2*bar.rho) + bar.rho_v_v/(2*bar.rho) + bar.rho_w_w/(2*bar.rho)) + bar.rho_E/bar.rho)*bar.rho_v/bar.rho + bar.rho_T_v/bar.rho
+    tilde.Tpp_wpp = -gam*(gam - 1)*(-Ma**2*(bar.rho_u_u/(2*bar.rho) + bar.rho_v_v/(2*bar.rho) + bar.rho_w_w/(2*bar.rho)) + bar.rho_E/bar.rho)*bar.rho_w/bar.rho + bar.rho_T_w/bar.rho
+    tilde.mu = bar.rho_mu/bar.rho
+    tilde.nu = bar.mu/bar.rho
+    bar.mupp = bar.mu - bar.rho_mu/bar.rho
+    bar.nupp = -bar.mu/bar.rho + bar.nu
+    tilde.symxx_grad_u = bar.symxx_rho_grad_u/bar.rho
+    tilde.symxy_grad_u = bar.symxy_rho_grad_u/bar.rho
+    tilde.symxz_grad_u = bar.symxz_rho_grad_u/bar.rho
+    tilde.symyy_grad_u = bar.symyy_rho_grad_u/bar.rho
+    tilde.symyz_grad_u = bar.symyz_rho_grad_u/bar.rho
+    tilde.symzz_grad_u = bar.symzz_rho_grad_u/bar.rho
+    tilde.Sxx = 2*bar.symxx_rho_grad_u/(3*bar.rho) - bar.symyy_rho_grad_u/(3*bar.rho) - bar.symzz_rho_grad_u/(3*bar.rho)
+    tilde.Sxy = bar.symxy_rho_grad_u/bar.rho
+    tilde.Sxz = bar.symxz_rho_grad_u/bar.rho
+    tilde.Syy = -bar.symxx_rho_grad_u/(3*bar.rho) + 2*bar.symyy_rho_grad_u/(3*bar.rho) - bar.symzz_rho_grad_u/(3*bar.rho)
+    tilde.Syz = bar.symyz_rho_grad_u/bar.rho
+    tilde.Szz = -bar.symxx_rho_grad_u/(3*bar.rho) - bar.symyy_rho_grad_u/(3*bar.rho) + 2*bar.symzz_rho_grad_u/(3*bar.rho)
+    tilde.nupp_Sppxx = -(2*bar.symxx_rho_grad_u/(3*bar.rho) - bar.symyy_rho_grad_u/(3*bar.rho) - bar.symzz_rho_grad_u/(3*bar.rho))*bar.mu/bar.rho + bar.mu_Sxx/bar.rho
+    tilde.nupp_Sppxy = -bar.mu*bar.symxy_rho_grad_u/bar.rho**2 + bar.mu_Sxy/bar.rho
+    tilde.nupp_Sppxz = -bar.mu*bar.symxz_rho_grad_u/bar.rho**2 + bar.mu_Sxz/bar.rho
+    tilde.nupp_Sppyy = -(-bar.symxx_rho_grad_u/(3*bar.rho) + 2*bar.symyy_rho_grad_u/(3*bar.rho) - bar.symzz_rho_grad_u/(3*bar.rho))*bar.mu/bar.rho + bar.mu_Syy/bar.rho
+    tilde.nupp_Sppyz = -bar.mu*bar.symyz_rho_grad_u/bar.rho**2 + bar.mu_Syz/bar.rho
+    tilde.nupp_Sppzz = -(-bar.symxx_rho_grad_u/(3*bar.rho) - bar.symyy_rho_grad_u/(3*bar.rho) + 2*bar.symzz_rho_grad_u/(3*bar.rho))*bar.mu/bar.rho + bar.mu_Szz/bar.rho
+    tilde.nupp_div_upp = -(bar.symxx_rho_grad_u/bar.rho + bar.symyy_rho_grad_u/bar.rho + bar.symzz_rho_grad_u/bar.rho)*bar.mu/bar.rho + bar.mu_div_u/bar.rho
+    tilde.nupp_gradxTpp = (-bar.mu*bar.rho_gradx_T/bar.rho + bar.mu_gradx_T)/bar.rho
+    tilde.nupp_gradyTpp = (-bar.mu*bar.rho_grady_T/bar.rho + bar.mu_grady_T)/bar.rho
+    tilde.nupp_gradzTpp = (-bar.mu*bar.rho_gradz_T/bar.rho + bar.mu_gradz_T)/bar.rho
+    local.Ma = Ma*bar.u/bar.a
+    local.Mat = Ma*sqrt(bar.rho_u_u/bar.rho + bar.rho_v_v/bar.rho + bar.rho_w_w/bar.rho - bar.rho_u**2/bar.rho**2 - bar.rho_v**2/bar.rho**2 - bar.rho_w**2/bar.rho**2)/bar.a
+    tilde.T__y = -gam*(gam - 1)*(Ma**2*((bar.rho_u_u__y + bar.rho_v_v__y + bar.rho_w_w__y)*bar.rho - bar.rho__y*bar.rho_u_u - bar.rho__y*bar.rho_v_v - bar.rho__y*bar.rho_w_w) - 2*bar.rho*bar.rho_E__y + 2*bar.rho_E*bar.rho__y)/(2*bar.rho**2)
+    local.Prt = -gam*(gam - 1)*(bar.rho_u_v/bar.rho - bar.rho_u*bar.rho_v/bar.rho**2)*(Ma**2*((bar.rho_u_u__y + bar.rho_v_v__y + bar.rho_w_w__y)*bar.rho - bar.rho__y*bar.rho_u_u - bar.rho__y*bar.rho_v_v - bar.rho__y*bar.rho_w_w) - 2*bar.rho*bar.rho_E__y + 2*bar.rho_E*bar.rho__y)/(2*(bar.rho*bar.rho_u__y - bar.rho__y*bar.rho_u)*(-gam*(gam - 1)*(-Ma**2*(bar.rho_u_u/(2*bar.rho) + bar.rho_v_v/(2*bar.rho) + bar.rho_w_w/(2*bar.rho)) + bar.rho_E/bar.rho)*bar.rho_v/bar.rho + bar.rho_T_v/bar.rho))
+    local.nut = -Re*(bar.rho_u_v/bar.rho - bar.rho_u*bar.rho_v/bar.rho**2)*bar.rho**2/(bar.rho*bar.rho_u__y - bar.rho__y*bar.rho_u)
+    local.Re = Re*y*bar.rho*bar.u/bar.mu
+    bar.rho__t = bar.Crho + bar.Srho - bar.rho_v__y
+    tilde.upp_vpp__y = (bar.rho**2*bar.rho_u_v__y - bar.rho*bar.rho__y*bar.rho_u_v - bar.rho*bar.rho_u*bar.rho_v__y - bar.rho*bar.rho_u__y*bar.rho_v + 2*bar.rho__y*bar.rho_u*bar.rho_v)/bar.rho**3
+    bar.rho_u__t = -(bar.rho_u_v/bar.rho - bar.rho_u*bar.rho_v/bar.rho**2)*bar.rho__y - (bar.rho*bar.rho_v__y - bar.rho__y*bar.rho_v)*bar.rho_u/bar.rho**2 - (bar.rho**2*bar.rho_u_v__y - bar.rho*bar.rho__y*bar.rho_u_v - bar.rho*bar.rho_u*bar.rho_v__y - bar.rho*bar.rho_u__y*bar.rho_v + 2*bar.rho__y*bar.rho_u*bar.rho_v)/bar.rho**2 + bar.Crhou + bar.Srhou + bar.fx - bar.rho_u__y*bar.rho_v/bar.rho + bar.tauxy__y/Re
+    tilde.vpp_vpp__y = (bar.rho**2*bar.rho_v_v__y - bar.rho*bar.rho__y*bar.rho_v_v - 2*bar.rho*bar.rho_v*bar.rho_v__y + 2*bar.rho__y*bar.rho_v**2)/bar.rho**3
+    bar.rho_v__t = -(bar.rho_v_v/bar.rho - bar.rho_v**2/bar.rho**2)*bar.rho__y - (bar.rho*bar.rho_v__y - bar.rho__y*bar.rho_v)*bar.rho_v/bar.rho**2 - (bar.rho**2*bar.rho_v_v__y - bar.rho*bar.rho__y*bar.rho_v_v - 2*bar.rho*bar.rho_v*bar.rho_v__y + 2*bar.rho__y*bar.rho_v**2)/bar.rho**2 + bar.Crhov + bar.Srhov + bar.fy - bar.p__y - bar.rho_v*bar.rho_v__y/bar.rho + bar.tauyy__y/Re
+    tilde.vpp_wpp__y = (bar.rho**2*bar.rho_v_w__y - bar.rho*bar.rho__y*bar.rho_v_w - bar.rho*bar.rho_v*bar.rho_w__y - bar.rho*bar.rho_v__y*bar.rho_w + 2*bar.rho__y*bar.rho_v*bar.rho_w)/bar.rho**3
+    bar.rho_w__t = -(bar.rho_v_w/bar.rho - bar.rho_v*bar.rho_w/bar.rho**2)*bar.rho__y - (bar.rho*bar.rho_v__y - bar.rho__y*bar.rho_v)*bar.rho_w/bar.rho**2 - (bar.rho**2*bar.rho_v_w__y - bar.rho*bar.rho__y*bar.rho_v_w - bar.rho*bar.rho_v*bar.rho_w__y - bar.rho*bar.rho_v__y*bar.rho_w + 2*bar.rho__y*bar.rho_v*bar.rho_w)/bar.rho**2 + bar.Crhow + bar.Srhow + bar.fz - bar.rho_v*bar.rho_w__y/bar.rho + bar.tauyz__y/Re
+    tilde.H__y = -((gam - 1)*(Ma**2*((-bar.rho__y*bar.rho_u_u - bar.rho__y*bar.rho_v_v - bar.rho__y*bar.rho_w_w)*bar.rho + (bar.rho_u_u__y + bar.rho_v_v__y + bar.rho_w_w__y)*bar.rho**2)*bar.rho**3 - 2*bar.rho**5*bar.rho_E__y + 2*bar.rho**4*bar.rho_E*bar.rho__y)*bar.rho**3 - 2*bar.rho**8*bar.rho_E__y + 2*bar.rho**7*bar.rho_E*bar.rho__y)/(2*bar.rho**9)
+    tilde.upp2vpp__y = (bar.rho**3*bar.rho_u_u_v__y + bar.rho**3*bar.rho_v_v_v__y + bar.rho**3*bar.rho_v_w_w__y - bar.rho**2*bar.rho__y*bar.rho_u_u_v - bar.rho**2*bar.rho__y*bar.rho_v_v_v - bar.rho**2*bar.rho__y*bar.rho_v_w_w - 2*bar.rho**2*bar.rho_u*bar.rho_u_v__y - 2*bar.rho**2*bar.rho_u__y*bar.rho_u_v - bar.rho**2*bar.rho_u_u*bar.rho_v__y - bar.rho**2*bar.rho_u_u__y*bar.rho_v - 3*bar.rho**2*bar.rho_v*bar.rho_v_v__y - bar.rho**2*bar.rho_v*bar.rho_w_w__y - 3*bar.rho**2*bar.rho_v__y*bar.rho_v_v - bar.rho**2*bar.rho_v__y*bar.rho_w_w - 2*bar.rho**2*bar.rho_v_w*bar.rho_w__y - 2*bar.rho**2*bar.rho_v_w__y*bar.rho_w + 4*bar.rho*bar.rho__y*bar.rho_u*bar.rho_u_v + 2*bar.rho*bar.rho__y*bar.rho_u_u*bar.rho_v + 6*bar.rho*bar.rho__y*bar.rho_v*bar.rho_v_v + 2*bar.rho*bar.rho__y*bar.rho_v*bar.rho_w_w + 4*bar.rho*bar.rho__y*bar.rho_v_w*bar.rho_w + 2*bar.rho*bar.rho_u**2*bar.rho_v__y + 4*bar.rho*bar.rho_u*bar.rho_u__y*bar.rho_v + 6*bar.rho*bar.rho_v**2*bar.rho_v__y + 4*bar.rho*bar.rho_v*bar.rho_w*bar.rho_w__y + 2*bar.rho*bar.rho_v__y*bar.rho_w**2 - 6*bar.rho__y*bar.rho_u**2*bar.rho_v - 6*bar.rho__y*bar.rho_v**3 - 6*bar.rho__y*bar.rho_v*bar.rho_w**2)/bar.rho**4
+    bar.tauuppy__y = (bar.rho**2*bar.tauuy__y - bar.rho*bar.rho_u*bar.tauxy__y - bar.rho*bar.rho_u__y*bar.tauxy - bar.rho*bar.rho_v*bar.tauyy__y - bar.rho*bar.rho_v__y*bar.tauyy - bar.rho*bar.rho_w*bar.tauyz__y - bar.rho*bar.rho_w__y*bar.tauyz + bar.rho__y*bar.rho_u*bar.tauxy + bar.rho__y*bar.rho_v*bar.tauyy + bar.rho__y*bar.rho_w*bar.tauyz)/bar.rho**2
+    tilde.nu__y = (-bar.mu*bar.rho__y + bar.mu__y*bar.rho)/bar.rho**2
+    tilde.Tpp_vpp__y = (gam*(gam - 1)*(Ma**2*(bar.rho_u_u/bar.rho + bar.rho_v_v/bar.rho + bar.rho_w_w/bar.rho) - 2*bar.rho_E/bar.rho)*bar.rho_v__y/2 - gam*(gam - 1)*(Ma**2*(bar.rho_u_u/bar.rho + bar.rho_v_v/bar.rho + bar.rho_w_w/bar.rho) - 2*bar.rho_E/bar.rho)*bar.rho__y*bar.rho_v/(2*bar.rho) + gam*(gam - 1)*(Ma**2*(bar.rho_u_u__y/bar.rho + bar.rho_v_v__y/bar.rho + bar.rho_w_w__y/bar.rho - bar.rho__y*bar.rho_u_u/bar.rho**2 - bar.rho__y*bar.rho_v_v/bar.rho**2 - bar.rho__y*bar.rho_w_w/bar.rho**2) - 2*bar.rho_E__y/bar.rho + 2*bar.rho_E*bar.rho__y/bar.rho**2)*bar.rho_v/2 + bar.rho_T_v__y - bar.rho_T_v*bar.rho__y/bar.rho)/bar.rho
+    bar.rho_E__t = -Ma**2*((2*(bar.rho_u**2/bar.rho**2 + bar.rho_v**2/bar.rho**2 + bar.rho_w**2/bar.rho**2)*bar.rho_v/bar.rho - (bar.rho_u_u/bar.rho + bar.rho_v_v/bar.rho + bar.rho_w_w/bar.rho)*bar.rho_v/bar.rho + bar.rho_u_u_v/bar.rho + bar.rho_v_v_v/bar.rho + bar.rho_v_w_w/bar.rho - 2*bar.rho_u*bar.rho_u_v/bar.rho**2 - 2*bar.rho_v*bar.rho_v_v/bar.rho**2 - 2*bar.rho_v_w*bar.rho_w/bar.rho**2)*bar.rho__y + (bar.rho**3*bar.rho_u_u_v__y + bar.rho**3*bar.rho_v_v_v__y + bar.rho**3*bar.rho_v_w_w__y - bar.rho**2*bar.rho__y*bar.rho_u_u_v - bar.rho**2*bar.rho__y*bar.rho_v_v_v - bar.rho**2*bar.rho__y*bar.rho_v_w_w - 2*bar.rho**2*bar.rho_u*bar.rho_u_v__y - 2*bar.rho**2*bar.rho_u__y*bar.rho_u_v - bar.rho**2*bar.rho_u_u*bar.rho_v__y - bar.rho**2*bar.rho_u_u__y*bar.rho_v - 3*bar.rho**2*bar.rho_v*bar.rho_v_v__y - bar.rho**2*bar.rho_v*bar.rho_w_w__y - 3*bar.rho**2*bar.rho_v__y*bar.rho_v_v - bar.rho**2*bar.rho_v__y*bar.rho_w_w - 2*bar.rho**2*bar.rho_v_w*bar.rho_w__y - 2*bar.rho**2*bar.rho_v_w__y*bar.rho_w + 4*bar.rho*bar.rho__y*bar.rho_u*bar.rho_u_v + 2*bar.rho*bar.rho__y*bar.rho_u_u*bar.rho_v + 6*bar.rho*bar.rho__y*bar.rho_v*bar.rho_v_v + 2*bar.rho*bar.rho__y*bar.rho_v*bar.rho_w_w + 4*bar.rho*bar.rho__y*bar.rho_v_w*bar.rho_w + 2*bar.rho*bar.rho_u**2*bar.rho_v__y + 4*bar.rho*bar.rho_u*bar.rho_u__y*bar.rho_v + 6*bar.rho*bar.rho_v**2*bar.rho_v__y + 4*bar.rho*bar.rho_v*bar.rho_w*bar.rho_w__y + 2*bar.rho*bar.rho_v__y*bar.rho_w**2 - 6*bar.rho__y*bar.rho_u**2*bar.rho_v - 6*bar.rho__y*bar.rho_v**3 - 6*bar.rho__y*bar.rho_v*bar.rho_w**2)/bar.rho**3)/2 + Ma**2*(bar.fx*bar.rho_u/bar.rho + bar.fy*bar.rho_v/bar.rho + bar.fz*bar.rho_w/bar.rho) + Ma**2*(bar.f_dot_u - bar.fx*bar.rho_u/bar.rho - bar.fy*bar.rho_v/bar.rho - bar.fz*bar.rho_w/bar.rho) - Ma**2*((bar.rho_u_v/bar.rho - bar.rho_u*bar.rho_v/bar.rho**2)*bar.rho_u__y + (bar.rho_v_v/bar.rho - bar.rho_v**2/bar.rho**2)*bar.rho_v__y + (bar.rho_v_w/bar.rho - bar.rho_v*bar.rho_w/bar.rho**2)*bar.rho_w__y + (bar.rho**2*bar.rho_v_v__y - bar.rho*bar.rho__y*bar.rho_v_v - 2*bar.rho*bar.rho_v*bar.rho_v__y + 2*bar.rho__y*bar.rho_v**2)*bar.rho_v/bar.rho**3 + (bar.rho**2*bar.rho_u_v__y - bar.rho*bar.rho__y*bar.rho_u_v - bar.rho*bar.rho_u*bar.rho_v__y - bar.rho*bar.rho_u__y*bar.rho_v + 2*bar.rho__y*bar.rho_u*bar.rho_v)*bar.rho_u/bar.rho**3 + (bar.rho**2*bar.rho_v_w__y - bar.rho*bar.rho__y*bar.rho_v_w - bar.rho*bar.rho_v*bar.rho_w__y - bar.rho*bar.rho_v__y*bar.rho_w + 2*bar.rho__y*bar.rho_v*bar.rho_w)*bar.rho_w/bar.rho**3) + Ma**2*((bar.rho*bar.rho_u__y - bar.rho__y*bar.rho_u)*bar.tauxy/bar.rho**2 + (bar.rho*bar.rho_v__y - bar.rho__y*bar.rho_v)*bar.tauyy/bar.rho**2 + (bar.rho*bar.rho_w__y - bar.rho__y*bar.rho_w)*bar.tauyz/bar.rho**2 + bar.rho_u*bar.tauxy__y/bar.rho + bar.rho_v*bar.tauyy__y/bar.rho + bar.rho_w*bar.tauyz__y/bar.rho)/Re + Ma**2*(bar.rho**2*bar.tauuy__y - bar.rho*bar.rho_u*bar.tauxy__y - bar.rho*bar.rho_u__y*bar.tauxy - bar.rho*bar.rho_v*bar.tauyy__y - bar.rho*bar.rho_v__y*bar.tauyy - bar.rho*bar.rho_w*bar.tauyz__y - bar.rho*bar.rho_w__y*bar.tauyz + bar.rho__y*bar.rho_u*bar.tauxy + bar.rho__y*bar.rho_v*bar.tauyy + bar.rho__y*bar.rho_w*bar.tauyz)/(Re*bar.rho**2) - ((gam - 1)*(-Ma**2*(bar.rho_u_u/(2*bar.rho) + bar.rho_v_v/(2*bar.rho) + bar.rho_w_w/(2*bar.rho)) + bar.rho_E/bar.rho) + bar.rho_E/bar.rho)*bar.rho_v__y + ((gam - 1)*(Ma**2*((-bar.rho__y*bar.rho_u_u - bar.rho__y*bar.rho_v_v - bar.rho__y*bar.rho_w_w)*bar.rho + (bar.rho_u_u__y + bar.rho_v_v__y + bar.rho_w_w__y)*bar.rho**2)*bar.rho**3 - 2*bar.rho**5*bar.rho_E__y + 2*bar.rho**4*bar.rho_E*bar.rho__y)*bar.rho**3 - 2*bar.rho**8*bar.rho_E__y + 2*bar.rho**7*bar.rho_E*bar.rho__y)*bar.rho_v/(2*bar.rho**9) + bar.CrhoE + bar.SrhoE + bar.qb - (gam*(gam - 1)*(Ma**2*(bar.rho_u_u/bar.rho + bar.rho_v_v/bar.rho + bar.rho_w_w/bar.rho) - 2*bar.rho_E/bar.rho)*bar.rho_v__y/2 - gam*(gam - 1)*(Ma**2*(bar.rho_u_u/bar.rho + bar.rho_v_v/bar.rho + bar.rho_w_w/bar.rho) - 2*bar.rho_E/bar.rho)*bar.rho__y*bar.rho_v/(2*bar.rho) + gam*(gam - 1)*(Ma**2*(bar.rho_u_u__y/bar.rho + bar.rho_v_v__y/bar.rho + bar.rho_w_w__y/bar.rho - bar.rho__y*bar.rho_u_u/bar.rho**2 - bar.rho__y*bar.rho_v_v/bar.rho**2 - bar.rho__y*bar.rho_w_w/bar.rho**2) - 2*bar.rho_E__y/bar.rho + 2*bar.rho_E*bar.rho__y/bar.rho**2)*bar.rho_v/2 + (-gam*(gam - 1)*(-Ma**2*(bar.rho_u_u/(2*bar.rho) + bar.rho_v_v/(2*bar.rho) + bar.rho_w_w/(2*bar.rho)) + bar.rho_E/bar.rho)*bar.rho_v/bar.rho + bar.rho_T_v/bar.rho)*bar.rho__y + bar.rho_T_v__y - bar.rho_T_v*bar.rho__y/bar.rho)/(gam - 1) + ((-bar.mu*bar.rho__y + bar.mu__y*bar.rho)*bar.rho_grady_T/bar.rho**2 + bar.mu*bar.rho_grady_T__y/bar.rho)/(Pr*Re*(gam - 1)) + ((-bar.mu*bar.rho_grady_T/bar.rho + bar.mu_grady_T)*bar.rho__y/bar.rho - bar.mu*bar.rho_grady_T/bar.rho + bar.mu_grady_T)/(Pr*Re*(gam - 1))
+    tilde.k__y = (bar.rho**2*bar.rho_u_u__y/2 + bar.rho**2*bar.rho_v_v__y/2 + bar.rho**2*bar.rho_w_w__y/2 - bar.rho*bar.rho__y*bar.rho_u_u/2 - bar.rho*bar.rho__y*bar.rho_v_v/2 - bar.rho*bar.rho__y*bar.rho_w_w/2 - bar.rho*bar.rho_u*bar.rho_u__y - bar.rho*bar.rho_v*bar.rho_v__y - bar.rho*bar.rho_w*bar.rho_w__y + bar.rho__y*bar.rho_u**2 + bar.rho__y*bar.rho_v**2 + bar.rho__y*bar.rho_w**2)/bar.rho**3
+    tke.convection = -(bar.rho_u_u/(2*bar.rho) + bar.rho_v_v/(2*bar.rho) + bar.rho_w_w/(2*bar.rho) - bar.rho_u**2/(2*bar.rho**2) - bar.rho_v**2/(2*bar.rho**2) - bar.rho_w**2/(2*bar.rho**2))*bar.rho_v__y - (bar.rho**2*bar.rho_u_u__y/2 + bar.rho**2*bar.rho_v_v__y/2 + bar.rho**2*bar.rho_w_w__y/2 - bar.rho*bar.rho__y*bar.rho_u_u/2 - bar.rho*bar.rho__y*bar.rho_v_v/2 - bar.rho*bar.rho__y*bar.rho_w_w/2 - bar.rho*bar.rho_u*bar.rho_u__y - bar.rho*bar.rho_v*bar.rho_v__y - bar.rho*bar.rho_w*bar.rho_w__y + bar.rho__y*bar.rho_u**2 + bar.rho__y*bar.rho_v**2 + bar.rho__y*bar.rho_w**2)*bar.rho_v/bar.rho**3
+    tke.production = -((bar.rho_u_v/bar.rho - bar.rho_u*bar.rho_v/bar.rho**2)*(bar.rho*bar.rho_u__y - bar.rho__y*bar.rho_u)/bar.rho**2 + (bar.rho_v_v/bar.rho - bar.rho_v**2/bar.rho**2)*(bar.rho*bar.rho_v__y - bar.rho__y*bar.rho_v)/bar.rho**2 + (bar.rho_v_w/bar.rho - bar.rho_v*bar.rho_w/bar.rho**2)*(bar.rho*bar.rho_w__y - bar.rho__y*bar.rho_w)/bar.rho**2)*bar.rho
+    tke.dissipation = ((bar.rho*bar.rho_u__y - bar.rho__y*bar.rho_u)*bar.tauxy/bar.rho**2 + (bar.rho*bar.rho_v__y - bar.rho__y*bar.rho_v)*bar.tauyy/bar.rho**2 + (bar.rho*bar.rho_w__y - bar.rho__y*bar.rho_w)*bar.tauyz/bar.rho**2 - bar.tau_colon_grad_u)/Re
+    tke.transport = -(2*(bar.rho_u**2/bar.rho**2 + bar.rho_v**2/bar.rho**2 + bar.rho_w**2/bar.rho**2)*bar.rho_v/bar.rho - (bar.rho_u_u/bar.rho + bar.rho_v_v/bar.rho + bar.rho_w_w/bar.rho)*bar.rho_v/bar.rho + bar.rho_u_u_v/bar.rho + bar.rho_v_v_v/bar.rho + bar.rho_v_w_w/bar.rho - 2*bar.rho_u*bar.rho_u_v/bar.rho**2 - 2*bar.rho_v*bar.rho_v_v/bar.rho**2 - 2*bar.rho_v_w*bar.rho_w/bar.rho**2)*bar.rho__y/2 - (bar.rho**3*bar.rho_u_u_v__y + bar.rho**3*bar.rho_v_v_v__y + bar.rho**3*bar.rho_v_w_w__y - bar.rho**2*bar.rho__y*bar.rho_u_u_v - bar.rho**2*bar.rho__y*bar.rho_v_v_v - bar.rho**2*bar.rho__y*bar.rho_v_w_w - 2*bar.rho**2*bar.rho_u*bar.rho_u_v__y - 2*bar.rho**2*bar.rho_u__y*bar.rho_u_v - bar.rho**2*bar.rho_u_u*bar.rho_v__y - bar.rho**2*bar.rho_u_u__y*bar.rho_v - 3*bar.rho**2*bar.rho_v*bar.rho_v_v__y - bar.rho**2*bar.rho_v*bar.rho_w_w__y - 3*bar.rho**2*bar.rho_v__y*bar.rho_v_v - bar.rho**2*bar.rho_v__y*bar.rho_w_w - 2*bar.rho**2*bar.rho_v_w*bar.rho_w__y - 2*bar.rho**2*bar.rho_v_w__y*bar.rho_w + 4*bar.rho*bar.rho__y*bar.rho_u*bar.rho_u_v + 2*bar.rho*bar.rho__y*bar.rho_u_u*bar.rho_v + 6*bar.rho*bar.rho__y*bar.rho_v*bar.rho_v_v + 2*bar.rho*bar.rho__y*bar.rho_v*bar.rho_w_w + 4*bar.rho*bar.rho__y*bar.rho_v_w*bar.rho_w + 2*bar.rho*bar.rho_u**2*bar.rho_v__y + 4*bar.rho*bar.rho_u*bar.rho_u__y*bar.rho_v + 6*bar.rho*bar.rho_v**2*bar.rho_v__y + 4*bar.rho*bar.rho_v*bar.rho_w*bar.rho_w__y + 2*bar.rho*bar.rho_v__y*bar.rho_w**2 - 6*bar.rho__y*bar.rho_u**2*bar.rho_v - 6*bar.rho__y*bar.rho_v**3 - 6*bar.rho__y*bar.rho_v*bar.rho_w**2)/(2*bar.rho**3)
+    tke.diffusion = (bar.rho**2*bar.tauuy__y - bar.rho*bar.rho_u*bar.tauxy__y - bar.rho*bar.rho_u__y*bar.tauxy - bar.rho*bar.rho_v*bar.tauyy__y - bar.rho*bar.rho_v__y*bar.tauyy - bar.rho*bar.rho_w*bar.tauyz__y - bar.rho*bar.rho_w__y*bar.tauyz + bar.rho__y*bar.rho_u*bar.tauxy + bar.rho__y*bar.rho_v*bar.tauyy + bar.rho__y*bar.rho_w*bar.tauyz)/(Re*bar.rho**2)
+    bar.vpp__y = bar.v__y - bar.rho_v__y/bar.rho + bar.rho__y*bar.rho_v/bar.rho**2
+    tke.pmassflux = (bar.v__y - bar.rho_v__y/bar.rho + bar.rho__y*bar.rho_v/bar.rho**2)*bar.p/Ma**2
+    tke.pdilatation = (-bar.p*bar.v__y + bar.p_div_u)/Ma**2
+    tke.pheatflux = (-(-gam*(gam - 1)*(-Ma**2*(bar.rho_u_u/(2*bar.rho) + bar.rho_v_v/(2*bar.rho) + bar.rho_w_w/(2*bar.rho)) + bar.rho_E/bar.rho)*bar.rho_v/bar.rho + bar.rho_T_v/bar.rho)*bar.rho__y/gam + (-gam*(gam - 1)*(Ma**2*(bar.rho_u_u/bar.rho + bar.rho_v_v/bar.rho + bar.rho_w_w/bar.rho) - 2*bar.rho_E/bar.rho)*bar.rho_v__y/2 + gam*(gam - 1)*(Ma**2*(bar.rho_u_u/bar.rho + bar.rho_v_v/bar.rho + bar.rho_w_w/bar.rho) - 2*bar.rho_E/bar.rho)*bar.rho__y*bar.rho_v/(2*bar.rho) - gam*(gam - 1)*(Ma**2*(bar.rho_u_u__y/bar.rho + bar.rho_v_v__y/bar.rho + bar.rho_w_w__y/bar.rho - bar.rho__y*bar.rho_u_u/bar.rho**2 - bar.rho__y*bar.rho_v_v/bar.rho**2 - bar.rho__y*bar.rho_w_w/bar.rho**2) - 2*bar.rho_E__y/bar.rho + 2*bar.rho_E*bar.rho__y/bar.rho**2)*bar.rho_v/2 - bar.rho_T_v__y + bar.rho_T_v*bar.rho__y/bar.rho)/gam)/Ma**2
+    tke.forcing = bar.f_dot_u - bar.fx*bar.rho_u/bar.rho - bar.fy*bar.rho_v/bar.rho - bar.fz*bar.rho_w/bar.rho
+    tke.slowgrowth = -bar.Srhou*bar.rho_u/bar.rho + bar.Srhou_dot_u - bar.Srhov*bar.rho_v/bar.rho - bar.Srhow*bar.rho_w/bar.rho
+    tke.constraint = -bar.Crhou*bar.rho_u/bar.rho + bar.Crhou_dot_u - bar.Crhov*bar.rho_v/bar.rho - bar.Crhow*bar.rho_w/bar.rho
+    bar.rho_k__t = -((bar.rho_u_v/bar.rho - bar.rho_u*bar.rho_v/bar.rho**2)*(bar.rho*bar.rho_u__y - bar.rho__y*bar.rho_u)/bar.rho**2 + (bar.rho_v_v/bar.rho - bar.rho_v**2/bar.rho**2)*(bar.rho*bar.rho_v__y - bar.rho__y*bar.rho_v)/bar.rho**2 + (bar.rho_v_w/bar.rho - bar.rho_v*bar.rho_w/bar.rho**2)*(bar.rho*bar.rho_w__y - bar.rho__y*bar.rho_w)/bar.rho**2)*bar.rho - (bar.rho_u_u/(2*bar.rho) + bar.rho_v_v/(2*bar.rho) + bar.rho_w_w/(2*bar.rho) - bar.rho_u**2/(2*bar.rho**2) - bar.rho_v**2/(2*bar.rho**2) - bar.rho_w**2/(2*bar.rho**2))*bar.rho_v__y - (2*(bar.rho_u**2/bar.rho**2 + bar.rho_v**2/bar.rho**2 + bar.rho_w**2/bar.rho**2)*bar.rho_v/bar.rho - (bar.rho_u_u/bar.rho + bar.rho_v_v/bar.rho + bar.rho_w_w/bar.rho)*bar.rho_v/bar.rho + bar.rho_u_u_v/bar.rho + bar.rho_v_v_v/bar.rho + bar.rho_v_w_w/bar.rho - 2*bar.rho_u*bar.rho_u_v/bar.rho**2 - 2*bar.rho_v*bar.rho_v_v/bar.rho**2 - 2*bar.rho_v_w*bar.rho_w/bar.rho**2)*bar.rho__y/2 - (bar.rho**2*bar.rho_u_u__y/2 + bar.rho**2*bar.rho_v_v__y/2 + bar.rho**2*bar.rho_w_w__y/2 - bar.rho*bar.rho__y*bar.rho_u_u/2 - bar.rho*bar.rho__y*bar.rho_v_v/2 - bar.rho*bar.rho__y*bar.rho_w_w/2 - bar.rho*bar.rho_u*bar.rho_u__y - bar.rho*bar.rho_v*bar.rho_v__y - bar.rho*bar.rho_w*bar.rho_w__y + bar.rho__y*bar.rho_u**2 + bar.rho__y*bar.rho_v**2 + bar.rho__y*bar.rho_w**2)*bar.rho_v/bar.rho**3 - (bar.rho**3*bar.rho_u_u_v__y + bar.rho**3*bar.rho_v_v_v__y + bar.rho**3*bar.rho_v_w_w__y - bar.rho**2*bar.rho__y*bar.rho_u_u_v - bar.rho**2*bar.rho__y*bar.rho_v_v_v - bar.rho**2*bar.rho__y*bar.rho_v_w_w - 2*bar.rho**2*bar.rho_u*bar.rho_u_v__y - 2*bar.rho**2*bar.rho_u__y*bar.rho_u_v - bar.rho**2*bar.rho_u_u*bar.rho_v__y - bar.rho**2*bar.rho_u_u__y*bar.rho_v - 3*bar.rho**2*bar.rho_v*bar.rho_v_v__y - bar.rho**2*bar.rho_v*bar.rho_w_w__y - 3*bar.rho**2*bar.rho_v__y*bar.rho_v_v - bar.rho**2*bar.rho_v__y*bar.rho_w_w - 2*bar.rho**2*bar.rho_v_w*bar.rho_w__y - 2*bar.rho**2*bar.rho_v_w__y*bar.rho_w + 4*bar.rho*bar.rho__y*bar.rho_u*bar.rho_u_v + 2*bar.rho*bar.rho__y*bar.rho_u_u*bar.rho_v + 6*bar.rho*bar.rho__y*bar.rho_v*bar.rho_v_v + 2*bar.rho*bar.rho__y*bar.rho_v*bar.rho_w_w + 4*bar.rho*bar.rho__y*bar.rho_v_w*bar.rho_w + 2*bar.rho*bar.rho_u**2*bar.rho_v__y + 4*bar.rho*bar.rho_u*bar.rho_u__y*bar.rho_v + 6*bar.rho*bar.rho_v**2*bar.rho_v__y + 4*bar.rho*bar.rho_v*bar.rho_w*bar.rho_w__y + 2*bar.rho*bar.rho_v__y*bar.rho_w**2 - 6*bar.rho__y*bar.rho_u**2*bar.rho_v - 6*bar.rho__y*bar.rho_v**3 - 6*bar.rho__y*bar.rho_v*bar.rho_w**2)/(2*bar.rho**3) - bar.Crhou*bar.rho_u/bar.rho + bar.Crhou_dot_u - bar.Crhov*bar.rho_v/bar.rho - bar.Crhow*bar.rho_w/bar.rho - bar.Srhou*bar.rho_u/bar.rho + bar.Srhou_dot_u - bar.Srhov*bar.rho_v/bar.rho - bar.Srhow*bar.rho_w/bar.rho + bar.f_dot_u - bar.fx*bar.rho_u/bar.rho - bar.fy*bar.rho_v/bar.rho - bar.fz*bar.rho_w/bar.rho + ((bar.rho*bar.rho_u__y - bar.rho__y*bar.rho_u)*bar.tauxy/bar.rho**2 + (bar.rho*bar.rho_v__y - bar.rho__y*bar.rho_v)*bar.tauyy/bar.rho**2 + (bar.rho*bar.rho_w__y - bar.rho__y*bar.rho_w)*bar.tauyz/bar.rho**2 - bar.tau_colon_grad_u)/Re + (bar.rho**2*bar.tauuy__y - bar.rho*bar.rho_u*bar.tauxy__y - bar.rho*bar.rho_u__y*bar.tauxy - bar.rho*bar.rho_v*bar.tauyy__y - bar.rho*bar.rho_v__y*bar.tauyy - bar.rho*bar.rho_w*bar.tauyz__y - bar.rho*bar.rho_w__y*bar.tauyz + bar.rho__y*bar.rho_u*bar.tauxy + bar.rho__y*bar.rho_v*bar.tauyy + bar.rho__y*bar.rho_w*bar.tauyz)/(Re*bar.rho**2) + (-bar.p*bar.v__y + bar.p_div_u)/Ma**2 + (-(-gam*(gam - 1)*(-Ma**2*(bar.rho_u_u/(2*bar.rho) + bar.rho_v_v/(2*bar.rho) + bar.rho_w_w/(2*bar.rho)) + bar.rho_E/bar.rho)*bar.rho_v/bar.rho + bar.rho_T_v/bar.rho)*bar.rho__y/gam + (-gam*(gam - 1)*(Ma**2*(bar.rho_u_u/bar.rho + bar.rho_v_v/bar.rho + bar.rho_w_w/bar.rho) - 2*bar.rho_E/bar.rho)*bar.rho_v__y/2 + gam*(gam - 1)*(Ma**2*(bar.rho_u_u/bar.rho + bar.rho_v_v/bar.rho + bar.rho_w_w/bar.rho) - 2*bar.rho_E/bar.rho)*bar.rho__y*bar.rho_v/(2*bar.rho) - gam*(gam - 1)*(Ma**2*(bar.rho_u_u__y/bar.rho + bar.rho_v_v__y/bar.rho + bar.rho_w_w__y/bar.rho - bar.rho__y*bar.rho_u_u/bar.rho**2 - bar.rho__y*bar.rho_v_v/bar.rho**2 - bar.rho__y*bar.rho_w_w/bar.rho**2) - 2*bar.rho_E__y/bar.rho + 2*bar.rho_E*bar.rho__y/bar.rho**2)*bar.rho_v/2 - bar.rho_T_v__y + bar.rho_T_v*bar.rho__y/bar.rho)/gam)/Ma**2 + (bar.v__y - bar.rho_v__y/bar.rho + bar.rho__y*bar.rho_v/bar.rho**2)*bar.p/Ma**2

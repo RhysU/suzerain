@@ -9,7 +9,7 @@ postproc_SCRIPTS += gb2ge.m
 postproc_SCRIPTS += gb.py
 postproc_SCRIPTS += gplot
 postproc_SCRIPTS += orderest
-postproc_SCRIPTS += perfect_decl.py
+postproc_SCRIPTS += $(abs_srcdir)/perfect_decl.py
 postproc_SCRIPTS += perfect.py
 postproc_SCRIPTS += plan_suzerain.py
 postproc_SCRIPTS += plot_blparam.py
@@ -26,22 +26,23 @@ postproc_SCRIPTS += spectra.py
 postproc_SCRIPTS += stationary.bl
 postproc_SCRIPTS += summary_surf.py
 postproc_SCRIPTS += turbulence.bl
+CLEANFILES        = *.pyc
 
 # To automatically synchronize uncertainty and postprocessing computations
 # generate Python assignments for pointwise computations using perfect.decl.
 # The resulting file is COMMITTED as SymPy prerequisites are touchy.
 $(abs_srcdir)/perfect_decl.raw: perfect.decl propagation.py
-	@echo "# Generating $@ from $< (sensitive to SymPy version)" | tee "$@.tmp"
+	@echo "# Generated $@ from $< (sensitive to SymPy version)" | tee "$@.tmp"
 	md5sum $+ | sed -e 's/^/# Based upon MD5 /' >> "$@.tmp"
 	"$(srcdir)/propagation.py" -d "$<" dec   >> "$@.tmp"
 	mv "$@.tmp" "$@"
 
 # Convert the perfect_decl.raw output into valid Python code
-CLEANFILES = perfect_decl.py *.pyc
-perfect_decl.py: $(abs_srcdir)/perfect_decl.raw Makefile.am
-	@echo "# Generating $@ from $+" | tee "$@"
+# The file is COMMITTED so that postprocessing does not require building
+# because being able to analyze data from the source tree is useful.
+$(abs_srcdir)/perfect_decl.py: $(abs_srcdir)/perfect_decl.raw Makefile.am
+	@echo "# Generated $@ from $+" | tee "$@"
 	@md5sum $+ | sed -e 's/^/# Based upon MD5 /'                            >> "$@"
-	@echo 'from numpy import * # Permits unadorned "np.sqrt", etc.'         >> "$@"
 	@echo 'def pointwise(gam, Ma, Re, Pr, y, bar, rms, tilde, local, tke):' >> "$@"
 	@echo '    """'                                                         >> "$@"
 	@echo '    Populate Bunch-like bar, rms, tilde, etc. from pointwise'    >> "$@"
@@ -49,6 +50,7 @@ perfect_decl.py: $(abs_srcdir)/perfect_decl.raw Makefile.am
 	@echo '    gamma, Mach number, Reynolds number, and Prandtl number.'    >> "$@"
 	@echo '    See, e.g., https://pypi.python.org/pypi/bunch re: Bunch.'    >> "$@"
 	@echo '    """'                                                         >> "$@"
+	@echo '    from numpy import abs, sqrt'                                 >> "$@"
 	@$(SED) -e 's/\/\//# /'        \
 	        -e 's/(y)//g'          \
 	        -e 's/bar_/bar./g'     \
