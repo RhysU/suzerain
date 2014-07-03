@@ -24,8 +24,9 @@ The code depends upon the following libraries:
 The following optional dependencies are recommended for full functionality:
 
     1) GRVY from https://red.ices.utexas.edu/projects/software/wiki/GRVY
-    2) Antioch from https://github.com/libantioch/antioch
-    3) underling from https://red.ices.utexas.edu/projects/underling
+    2) SymPy from http://sympy.org
+    3) Antioch from https://github.com/libantioch/antioch
+    4) underling from https://red.ices.utexas.edu/projects/underling
 
 
 2. Configuration
