@@ -18,7 +18,7 @@ adhering to a host of ill-documented restrictions.  All shapes must match!
 """
 # TODO Accept normalization constants to display results in wall units
 
-import collections
+from collections import namedtuple
 import gb
 import getopt
 import h5py
@@ -38,29 +38,49 @@ logging.basicConfig(level=logging.INFO, format='%(levelname)s %(message)s')
 log = logging.getLogger(os.path.splitext(os.path.basename(__file__))[0])
 
 
+# Primitive variables expected to be found in every H5RESTART file
+primitive, primitive_pairs = ['T', 'u', 'v', 'w', 'r'], []
+for i in xrange(0, len(primitive)):
+    for j in xrange(i, len(primitive)):
+        primitive_pairs.append(primitive[i] + primitive[j])
+
+
+# Define, at the module level, SpectralData and friends for primitive-only case
+# These will be redefined in process(...), if necessary, for reacting data but
+# this definition permits pickling and unpickling to work on non-reacting data.
+SpectralData  = namedtuple('SpectralData', ['y', 'k'] + primitive_pairs)
+PhysicalData  = namedtuple('PhysicalData', ['y', 'x'] + primitive_pairs)
+
+
+# The return type from the process(...) method just below.
+ProcessResult = namedtuple('ProcessResult',
+                           ['Ekx', 'Ekz', 'Rx', 'Rz', 'Rkx', 'Rkz', 'bar'])
+
+
 def process(kx, kz, Lx, Lz, Nx, Nz, Rkx, Rkz, bar, y, Ns, sn, **kwargs):
     """Distill loaded Rkx, etc. data into easy-to-use form."""
 
-    # Generate string of variable names
-    vars = ['T', 'u', 'v', 'w', 'r']
-    for s in sn:
-        vars.append('c'+s)
-    # DEBUG print "Variables : ", vars
-    nvars = len(vars)
+    # When any species are present, we must redefine namedtuple classes as the
+    # default versions provided above are insufficient due to species data.
+    # An atrocious hack to permit (un)pickling simple, inert data.  Sorry.
+    global SpectralData, PhysicalData
+    vars = primitive[:]
+    if not sn:
+        pairs = primitive_pairs[:]
+    else:
+        for s in sn:
+            vars.append('c'+s)
+        for i in xrange(0, len(vars)):
+            for j in xrange(i, len(vars)):
+                pairs.append(vars[i] + vars[j])
+        SpectralData = namedtuple('SpectralData', ['y', 'k'] + pairs)
+        PhysicalData = namedtuple('PhysicalData', ['y', 'x'] + pairs)
 
     # Generate product of mean fields along with pairs of variables
-    PAIRS     = []
-    npairs    = nvars * (nvars+1) / 2
-    bar_pairs = np.empty((npairs, len(y)))
+    bar_pairs = np.empty((len(pairs), len(y)))
     for i in xrange(0,len(vars)):
         for j in xrange(i,len(vars)):
-            PAIRS.append(vars[i] + vars[j])
-            bar_pairs[len(PAIRS)-1,:] = np.multiply(bar[i,:],bar[j,:])
-
-    SpectralData  = collections.namedtuple('SpectralData', ['y', 'k'] + PAIRS)
-    PhysicalData  = collections.namedtuple('PhysicalData', ['y', 'x'] + PAIRS)
-    ProcessResult = collections.namedtuple('ProcessResult',
-                                           ['Ekx', 'Ekz', 'Rx', 'Rz', 'Rkx', 'Rkz', 'bar'])
+            bar_pairs[len(pairs)-1,:] = np.multiply(bar[i,:],bar[j,:])
 
     Rx = fft.irfft(Nx * Rkx, axis=1)  # Non-normalized inverse FFT
     Rz = fft.ifft (Nz * Rkz, axis=1)  # Non-normalized inverse FFT
@@ -291,20 +311,18 @@ def main(argv=None):
     plt.interactive(False)
 
     # Load and process all incoming data into easy-to-use form
+    log.info("Loading data")
     data = load(args, verbose)
-    if verbose:
-        log.info("Processing all loaded data")
+    log.info("Processing data")
     res  = process(**data)
     (Ekx, Ekz, Rx, Rz, Rkx, Rkz, bar) = res
 
     # If requested, first pickle results to ease post mortem on crash
-    # (it currently requires jumping through hoops to load these pickles).
     if outpickle:
-        if verbose:
-            log.info("Pickling data to %s" % (outpickle,))
+        log.info("Pickling data to %s" % (outpickle,))
         pickle.dump(res, open(outpickle, "wb"), -1)
 
-    # Prepare spectra at each requested y index
+    log.info("Preparing spectra at each requested y index")
     for j in yindex:
         # Spectra in x direction
         fig  = plt.figure()
@@ -388,9 +406,11 @@ def main(argv=None):
             fig.savefig(str(j)+'.cospectra.kz.'+outsuffix)
             plt.close(fig)
 
-    # Prepare contour plots for kx and kz if requested
+    # If requested....
     if do_contour:
-        for index, name in enumerate(PAIRS):
+        log.info("Preparing contour plots for kx and kz")
+
+        for index, name in enumerate(Ekx._fields):
             index += 2 # Hack based on knowledge of SpectralData
             (fig, ax, c1, c2, cbar) = contour(Ekx.k, Ekx.y, Ekx[index])
             ax.set_title("Spectra: " + name)
@@ -400,7 +420,7 @@ def main(argv=None):
                 fig.savefig(name+'.kx.'+outsuffix)
                 plt.close(fig)
 
-        for index, name in enumerate(PAIRS):
+        for index, name in enumerate(Ekz._fields):
             index += 2 # Hack based on knowledge of SpectralData
             (fig, ax, c1, c2, cbar) = contour(Ekz.k, Ekz.y, Ekz[index])
             ax.set_title("Spectra: " + name)
