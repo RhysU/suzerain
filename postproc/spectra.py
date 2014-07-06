@@ -7,6 +7,7 @@ Options:
     -h            Display this help message and exit
     -o OUTSUFFIX  Save the output files *.OUTSUFFIX instead of displaying
     -p OUTPICKLE  Pickle the two point and spectra into file OUTPICKLE
+    -v            Increase verbosity, including status of H5RESTART loads
     -y YINDEX     Plot spectra at wall-normal location YINDEX
 
 Each H5RESTART should have been made by Suzerain perfect_advance (or similar),
@@ -21,13 +22,21 @@ import collections
 import gb
 import getopt
 import h5py
+import logging
 import matplotlib
 import matplotlib.pyplot as plt
 import matplotlib.ticker
 import numpy as np
 import numpy.fft as fft
+import os
 import pickle
 import sys
+
+
+# Prepare a logger to produce messages
+logging.basicConfig(level=logging.INFO, format='%(levelname)s %(message)s')
+log = logging.getLogger(os.path.splitext(os.path.basename(__file__))[0])
+
 
 def process(kx, kz, Lx, Lz, Nx, Nz, Rkx, Rkz, bar, y, Ns, sn, **kwargs):
     """Distill loaded Rkx, etc. data into easy-to-use form."""
@@ -100,7 +109,7 @@ def process(kx, kz, Lx, Lz, Nx, Nz, Rkx, Rkz, bar, y, Ns, sn, **kwargs):
     return ProcessResult(Ekx, Ekz, Rx, Rz, Rkx, Rkz, bar)
 
 
-def load(h5filenames):
+def load(h5filenames, verbose=False):
     """Load the data required by process() into a dict from named files.
     Averages of /twopoint_kx and /twopoint_kz are taken across all inputs.
     Other results reflect only the metadata from the last file loaded.
@@ -114,7 +123,11 @@ def load(h5filenames):
     bar_cs  = None
     d       = {}
     D0      = None
-    for h5filename in h5filenames:
+    for ndx, h5filename in enumerate(h5filenames):
+        if verbose:
+            log.info("Loading %d/%d: %s"
+                     % (ndx+1, len(h5filenames), h5filename))
+
         h5file = h5py.File(h5filename, 'r')
         Ns = 0
         sname = []
@@ -245,10 +258,11 @@ def main(argv=None):
     do_contour = False
     outpickle  = None
     outsuffix  = None
+    verbose    = False
     yindex     = []
     try:
         try:
-            opts, args = getopt.getopt(argv[1:], "cho:p:y:", ["help"])
+            opts, args = getopt.getopt(argv[1:], "cho:p:vy:", ["help"])
         except getopt.error as msg:
             raise Usage(msg)
         for o, a in opts:
@@ -261,6 +275,8 @@ def main(argv=None):
                 outsuffix = a
             elif o == "-p":
                 outpickle = a
+            elif o == "-v":
+                verbose = True
             elif o == "-y":
                 yindex.append(int(a))
         if len(args) < 1:
@@ -275,13 +291,17 @@ def main(argv=None):
     plt.interactive(False)
 
     # Load and process all incoming data into easy-to-use form
-    data = load(args)
+    data = load(args, verbose)
+    if verbose:
+        log.info("Processing all loaded data")
     res  = process(**data)
     (Ekx, Ekz, Rx, Rz, Rkx, Rkz, bar) = res
 
     # If requested, first pickle results to ease post mortem on crash
     # (it currently requires jumping through hoops to load these pickles).
     if outpickle:
+        if verbose:
+            log.info("Pickling data to %s" % (outpickle,))
         pickle.dump(res, open(outpickle, "wb"), -1)
 
     # Prepare spectra at each requested y index
