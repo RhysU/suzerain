@@ -61,27 +61,27 @@ ProcessResult = namedtuple('ProcessResult',
 def process(kx, kz, Lx, Lz, Nx, Nz, Rkx, Rkz, bar, y, Ns, sn, **kwargs):
     """Distill loaded Rkx, etc. data into easy-to-use form."""
 
+    # Build up the list of variables and then pairwise products of interest
+    vars = primitive[:]
+    if sn:
+        for s in sn:
+            vars.append('c'+s)
+    pairs = []
+    bar_pairs = np.empty(( (len(vars)*(len(vars)+1))/2, len(y)) )
+    for i in xrange(0, len(vars)):
+        for j in xrange(i, len(vars)):
+            bar_pairs[len(pairs),:] = np.multiply(bar[i,:],bar[j,:])
+            pairs.append(vars[i] + vars[j])
+
     # When any species are present, we must redefine namedtuple classes as the
     # default versions provided above are insufficient due to species data.
     # An atrocious hack to permit (un)pickling simple, inert data.  Sorry.
     global SpectralData, PhysicalData
-    vars = primitive[:]
-    if not sn:
-        pairs = primitive_pairs[:]
-    else:
-        for s in sn:
-            vars.append('c'+s)
-        for i in xrange(0, len(vars)):
-            for j in xrange(i, len(vars)):
-                pairs.append(vars[i] + vars[j])
+    if sn:
         SpectralData = namedtuple('SpectralData', ['y', 'k'] + pairs)
         PhysicalData = namedtuple('PhysicalData', ['y', 'x'] + pairs)
-
-    # Generate product of mean fields along with pairs of variables
-    bar_pairs = np.empty((len(pairs), len(y)))
-    for i in xrange(0,len(vars)):
-        for j in xrange(i,len(vars)):
-            bar_pairs[len(pairs)-1,:] = np.multiply(bar[i,:],bar[j,:])
+    else:
+        assert(pairs == primitive_pairs)
 
     Rx = fft.irfft(Nx * Rkx, axis=1)  # Non-normalized inverse FFT
     Rz = fft.ifft (Nz * Rkz, axis=1)  # Non-normalized inverse FFT
