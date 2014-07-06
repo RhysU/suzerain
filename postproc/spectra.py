@@ -7,6 +7,7 @@ Options:
     -h            Display this help message and exit
     -o OUTSUFFIX  Save the output files *.OUTSUFFIX instead of displaying
     -p OUTPICKLE  Pickle the two point and spectra into file OUTPICKLE
+    -P INPICKLE   Load spectra from INPICKLE and not H5RESTART arguments
     -v            Increase verbosity, including status of H5RESTART loads
     -y YINDEX     Plot spectra at wall-normal location YINDEX
 
@@ -276,13 +277,14 @@ def main(argv=None):
 
     # Parse and check incoming command line arguments
     do_contour = False
+    inpickle   = None
     outpickle  = None
     outsuffix  = None
     verbose    = False
     yindex     = []
     try:
         try:
-            opts, args = getopt.getopt(argv[1:], "cho:p:vy:", ["help"])
+            opts, args = getopt.getopt(argv[1:], "cho:p:vy:P:", ["help"])
         except getopt.error as msg:
             raise Usage(msg)
         for o, a in opts:
@@ -295,11 +297,13 @@ def main(argv=None):
                 outsuffix = a
             elif o == "-p":
                 outpickle = a
+            elif o == "-P":
+                inpickle = a
             elif o == "-v":
                 verbose = True
             elif o == "-y":
                 yindex.append(int(a))
-        if len(args) < 1:
+        if len(args) < 1 and not inpickle:
             print >>sys.stderr, "Too few arguments.  See --help."
             return 1
     except Usage as err:
@@ -310,11 +314,17 @@ def main(argv=None):
     was_interactive = plt.isinteractive()
     plt.interactive(False)
 
-    # Load and process all incoming data into easy-to-use form
-    log.info("Loading data")
-    data = load(args, verbose)
-    log.info("Processing data")
-    res  = process(**data)
+    # Load and process incoming data
+    if inpickle:
+        log.info("Loading processed results from pickle file")
+        res = pickle.load(open(inpickle, "rb"))
+    else:
+        log.info("Loading data from restart files")
+        data = load(args, verbose)
+        log.info("Processing loaded data")
+        res  = process(**data)
+
+    # Unpack processed information into conveniently named variables
     (Ekx, Ekz, Rx, Rz, Rkx, Rkz, bar) = res
 
     # If requested, first pickle results to ease post mortem on crash
