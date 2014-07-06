@@ -118,7 +118,7 @@ def process(kx, kz, Lx, Lz, Nx, Nz, Rkx, Rkz, bar, y, Ns, sn, **kwargs):
 
     # Only half of two-point is interesting as they are periodic and even
     Rx = Rx[:, :(Rx.shape[1]/2+1), :]
-    Rz = Rz[:, :(Rz.shape[1]/2+1), :]
+    Rz = Rz[:, :(Rz.shape[1]/2+1), :].real # Truncate small imag() part
     # Subtract mean contribution
     for i in xrange(Rx.shape[1]):
         Rx[:,i,:] -= bar_pairs
