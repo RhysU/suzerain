@@ -208,8 +208,18 @@ def plot_profiles(data, fbottom=None, ftop=None, **fig_kw):
     """
     Plot mean primitive profiles, their RMS fluctuations, and uncertainties.
     """
-    fig, ax = plt.subplots(2, 2, sharex=True, squeeze=False, **fig_kw)
+    fig, ax = plt.subplots(2, 2,
+                           sharex=(data.htdelta >= 0),
+                           squeeze=False, **fig_kw)
     bar, tilde, sigma, star = data.bar, data.tilde, data.sigma, data.star
+
+    # Change our x axes slightly depending on channel versus boundary layer
+    if data.htdelta >= 0:
+        x  = star.y
+        xl = None
+    else:
+        x  = data.y/data.thick.delta99
+        xl = r"$y/\delta_{99}$"
 
     #########################################################################
     # Build dictionary of means and list of standard errors for upper row
@@ -230,14 +240,17 @@ def plot_profiles(data, fbottom=None, ftop=None, **fig_kw):
 
     # Plot upper left subfigure
     for k, v in m.iteritems():
-        ax[0][0].plot(star.y, v, label=k)
+        ax[0][0].plot(x, v, label=k)
+    if xl:
+        ax[0][0].set_xlabel(xl)
     ax[0][0].set_ylabel(r"$\mu$")
 
     # Plot upper right subfigure
     for k, v in m.iteritems():
-        ax[0][1].plot(star.y, s.pop(0)/v, label=k)
+        ax[0][1].semilogy(x, s.pop(0)/v, label=k)
+    if xl:
+        ax[0][1].set_xlabel(xl)
     ax[0][1].set_ylabel(r"$\sigma_\mu / \mu$")
-    ax[0][1].set_yscale("log")
     if fbottom:
         ax[0][1].set_ylim(bottom=fbottom)
     if ftop:
@@ -348,26 +361,31 @@ def plot_profiles(data, fbottom=None, ftop=None, **fig_kw):
     # Plot lower left subfigure (includes normalization)
     for k, v in m.iteritems():
         ax[1][0].plot(star.y, v / star.u**2, label=k)
-    ax[1][0].set_ylabel(r"$\mu / u_\tau^{\ast{}2}$")
     ax[1][0].set_xlabel(r"$y^\ast$")
+    ax[1][0].set_ylabel(r"$\mu / u_\tau^{\ast{}2}$")
 
     # Plot lower right subfigure (includes normalization)
     for k, v in m.iteritems():
-        ax[1][1].plot(star.y, np.sqrt(s.pop(0))/np.abs(v), label=k)
-    ax[1][1].set_ylabel(r"$\sigma_\mu / \left|\mu\right|$")
-    ax[1][1].set_yscale("log")
+        ax[1][1].semilogy(star.y, np.sqrt(s.pop(0))/np.abs(v), label=k)
     ax[1][1].set_xlabel(r"$y^\ast$")
+    ax[1][1].set_ylabel(r"$\sigma_\mu / \left|\mu\right|$")
     if fbottom:
         ax[1][1].set_ylim(bottom=fbottom)
     if ftop:
         ax[1][1].set_ylim(top=ftop)
 
-    # Truncate at half channel width, if applicable
     if data.htdelta >= 0:
+        # Truncate at half channel width
         ax[0][0].set_xlim(right=np.median(star.y))
         ax[0][1].set_xlim(right=np.median(star.y))
         ax[1][0].set_xlim(right=np.median(star.y))
         ax[1][1].set_xlim(right=np.median(star.y))
+    else:
+        # Truncate at boundary layer thickness
+        ax[0][0].set_xlim(right=1.0)
+        ax[0][1].set_xlim(right=1.0)
+        ax[1][0].set_xlim(right=star.y[np.argmax(data.y/data.thick.delta99 >= 1.0)])
+        ax[1][1].set_xlim(right=star.y[np.argmax(data.y/data.thick.delta99 >= 1.0)])
 
     # Add legends on rightmost images
     ax[0][1].legend(frameon=False, loc='best')
