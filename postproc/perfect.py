@@ -380,16 +380,18 @@ def plot_profiles(data, fbottom=None, ftop=None, **fig_kw):
         ax[0][1].set_xlim(right=np.median(star.y))
         ax[1][0].set_xlim(right=np.median(star.y))
         ax[1][1].set_xlim(right=np.median(star.y))
+        # Add legends on rightmost images
+        ax[0][1].legend(frameon=False, loc='best')
+        ax[1][1].legend(frameon=False, loc='best')
     else:
         # Truncate at boundary layer thickness
         ax[0][0].set_xlim(right=1.0)
         ax[0][1].set_xlim(right=1.0)
         ax[1][0].set_xlim(right=star.y[np.argmax(data.y/data.thick.delta99 >= 1.0)])
         ax[1][1].set_xlim(right=star.y[np.argmax(data.y/data.thick.delta99 >= 1.0)])
-
-    # Add legends on rightmost images
-    ax[0][1].legend(frameon=False, loc='best')
-    ax[1][1].legend(frameon=False, loc='best')
+        # Add legends on leftmost images
+        ax[0][0].legend(frameon=False, loc='best')
+        ax[1][0].legend(frameon=False, loc='best')
 
     return fig
 
