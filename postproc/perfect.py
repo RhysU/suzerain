@@ -466,10 +466,8 @@ def plot_tke(data, y=None, vert=1, thresh=None, merge_pflux=False,
     pthresh(y, vert * data.tke.diffusion, linestyle='-.',
             label=r"$\nabla\cdot \overline{\tau{}u''}/\mbox{Re}$",
             **plotargs)
-    pthresh(y, vert * data.tke.slowgrowth, linestyle=':',
-            label=r"$\overline{\mathscr{S}_{\rho{}u}\cdot{}u''}$",
-            **plotargs)
     # Conceivable that these will not exceed the threshold
+    # Permit two different ways to view the pressure terms per merge_pflux
     if merge_pflux:
         pthresh(y,   vert * data.tke.pmassflux
                    + vert * data.tke.pheatflux, linestyle='-.',
@@ -498,6 +496,9 @@ def plot_tke(data, y=None, vert=1, thresh=None, merge_pflux=False,
             **plotargs)
     pthresh(y, vert * (data.tke.forcing + data.tke.constraint), linestyle=':',
             label=r"$\overline{f\cdot{}u''}$",
+            **plotargs)
+    pthresh(y, vert * data.tke.slowgrowth, linestyle=':',
+            label=r"$\overline{\mathscr{S}_{\rho{}u}\cdot{}u''}$",
             **plotargs)
 
     return ax.figure
