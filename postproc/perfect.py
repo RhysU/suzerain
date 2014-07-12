@@ -473,11 +473,10 @@ def plot_tke(data, y=None, vert=1, thresh=None, merge_pflux=False,
     if merge_pflux:
         pthresh(y,   vert * data.tke.pmassflux
                    + vert * data.tke.pheatflux, linestyle='-.',
-                label=r"\shortstack[l]{$\left("
-                      r"\bar{p}\nabla\cdot\overline{u''}/\mbox{Ma}^2"
-                      r"\right.$\\$\left."
-                      r"-\nabla\cdot\bar{\rho}\widetilde{T''u''}/\gamma/\mbox{Ma}^2"
-                      r"\right)$}",
+                label=r"$\left("
+                      r"\bar{p}\nabla\cdot\overline{u''}"
+                      r"-\nabla\cdot\bar{\rho}\widetilde{T''u''}/\gamma"
+                      r"\right)/\mbox{Ma}^2$",
                 **plotargs)
         # Pressure dilatation appears inside conditional to preserve ordering
         pthresh(y, vert * data.tke.pdilatation, linestyle='--',
