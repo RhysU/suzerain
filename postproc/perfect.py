@@ -414,8 +414,11 @@ def plot_tke(data, y=None, vert=1, thresh=None, merge_pressure=False,
     Plot TKE budgets from data permitting rescaling and thresholding.
 
     If thresh is not None, it is taken as the fraction of maximum
-    production used as a cutoff for suppressing lines.  Guarini et al
-    2000 used 25.
+    production used as a cutoff for suppressing lines.  Positive
+    thresh retains only lines with maxima above that value while
+    negative thresh retains only lines with maxima below that value.
+    Guarini et al 2000 used 25.  Regardless, identically zero curves
+    are always suppressed.
 
     If merge_pressure is True, the three pressure-related terms scaled
     by the inverse Mach number squared are reported as a single curve.
@@ -429,15 +432,22 @@ def plot_tke(data, y=None, vert=1, thresh=None, merge_pressure=False,
     if y is None:
         y = data.y
 
-    # Plotting cutoff based on magnitude of the production term
-    # following Guarini et al JFM 2000 page 23.
-    if thresh is not None:
-        thresh = np.max(np.abs(vert * data.tke.production)) / thresh
+    # Plotting cutoff based on magnitude of the production term.
+    max_production = np.max(np.abs(vert * data.tke.production))
     def pthresh(y, q, *args, **kwargs):
-        if thresh is not None and np.max(np.abs(q)) > thresh:
+        max_q = np.max(np.abs(q))
+        if max_q == 0:
+            pass # Always suppress identically zero data
+        elif thresh is None:
             return ax.plot(y, q, *args, **kwargs)
+        elif thresh >= 0:
+            if max_q >= max_production / +thresh:
+                return ax.plot(y, q, *args, **kwargs)
+        elif thresh < 0:
+            if max_q < max_production /  -thresh:
+                return ax.plot(y, q, *args, **kwargs)
         else:
-            return ax.plot(y, q, *args, **kwargs)
+            assert False, "Sanity error"
 
     # Produce plots in order of most to least likely to exceed thresh
     # This causes any repeated linetypes to be fairly simple to distinguish
