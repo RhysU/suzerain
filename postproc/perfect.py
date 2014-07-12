@@ -13,6 +13,7 @@ import collections
 import getopt
 import h5py
 import logging
+import matplotlib
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 import numpy as np
@@ -20,6 +21,16 @@ import os
 import pandas as pd
 import sys
 
+# Some of the labels used in the plotting routines require \mathscr
+# Jump through some extra hoops to make sure we don't introduce
+# duplicates into the preamble.
+def unique_append(l, v):
+    if v not in l:
+        l.append(v)
+unique_append(matplotlib.rcParams['text.latex.preamble'],
+              r'\usepackage[charter]{mathdesign}')
+
+matplotlib.rcParams['text.latex.preamble'].append(r'\usepackage[charter]{mathdesign}')
 
 # Prepare a logger to produce messages
 logging.basicConfig(level=logging.INFO, format='%(levelname)s %(message)s')
@@ -397,9 +408,17 @@ def plot_profiles(data, fbottom=None, ftop=None, **fig_kw):
 
 
 # TODO Smooth per B-splines using ' from scipy.interpolate import interp1d'
-def plot_tke(data, y=None, vert=1, thresh=25, ax=None, **plotargs):
+def plot_tke(data, y=None, vert=1, thresh=None, merge_pressure=False,
+             ax=None, **plotargs):
     """
     Plot TKE budgets from data permitting rescaling and thresholding.
+
+    If thresh is not None, it is taken as the fraction of maximum
+    production used as a cutoff for suppressing lines.  Guarini et al
+    2000 used 25.
+
+    If merge_pressure is True, the three pressure-related terms scaled
+    by the inverse Mach number squared are reported as a single curve.
     """
 
     # Get a new axis if one was not supplied
@@ -412,13 +431,16 @@ def plot_tke(data, y=None, vert=1, thresh=25, ax=None, **plotargs):
 
     # Plotting cutoff based on magnitude of the production term
     # following Guarini et al JFM 2000 page 23.
-    thresh = np.max(np.abs(vert * data.tke.production)) / thresh
+    if thresh is not None:
+        thresh = np.max(np.abs(vert * data.tke.production)) / thresh
+    def pthresh(y, q, *args, **kwargs):
+        if thresh is not None and np.max(np.abs(q)) > thresh:
+            return ax.plot(y, q, *args, **kwargs)
+        else:
+            return ax.plot(y, q, *args, **kwargs)
 
     # Produce plots in order of most to least likely to exceed thresh
     # This causes any repeated linetypes to be fairly simple to distinguish
-    def pthresh(y, q, *args, **kwargs):
-        if np.max(np.abs(q)) > thresh:
-            ax.plot(y, q, *args, **kwargs)
     # Likely to exceed threshold but we will check anyway
     pthresh(y, vert * data.tke.production, linestyle='-',
             label=r"$- \bar{\rho}\widetilde{u''\otimes{}u''}:\nabla\tilde{u}$",
@@ -436,15 +458,22 @@ def plot_tke(data, y=None, vert=1, thresh=25, ax=None, **plotargs):
             label=r"$\overline{\mathscr{S}_{\rho{}u}\cdot{}u''}$",
             **plotargs)
     # Conceivable that these will not exceed the threshold
-    pthresh(y, vert * data.tke.pmassflux, linestyle='-',
-            label=r"$\bar{p}\nabla\cdot\overline{u''}/\mbox{Ma}^2$",
-            **plotargs)
-    pthresh(y, vert * data.tke.pdilatation, linestyle='--',
-            label=r"$\overline{p' \nabla\cdot{}u''}/\mbox{Ma}^2$",
-            **plotargs)
-    pthresh(y, vert * data.tke.pheatflux, linestyle='-.',
-            label=r"$-\nabla\cdot\bar{\rho}\widetilde{T''u''}/\gamma/\mbox{Ma}^2$",
-            **plotargs)
+    if merge_pressure:
+        pthresh(y,   vert * data.tke.pmassflux
+                   + vert * data.tke.pdilatation
+                   + vert * data.tke.pheatflux, linestyle='-.',
+                label=r"$\Pi$",
+                **plotargs)
+    else:
+        pthresh(y, vert * data.tke.pmassflux, linestyle='-',
+                label=r"$\bar{p}\nabla\cdot\overline{u''}/\mbox{Ma}^2$",
+                **plotargs)
+        pthresh(y, vert * data.tke.pdilatation, linestyle='--',
+                label=r"$\overline{p' \nabla\cdot{}u''}/\mbox{Ma}^2$",
+                **plotargs)
+        pthresh(y, vert * data.tke.pheatflux, linestyle='-.',
+                label=r"$-\nabla\cdot\bar{\rho}\widetilde{T''u''}/\gamma/\mbox{Ma}^2$",
+                **plotargs)
     pthresh(y, vert * data.tke.convection, linestyle=':',
             label=r"$- \nabla\cdot\bar{\rho}k\tilde{u}$",
             **plotargs)
