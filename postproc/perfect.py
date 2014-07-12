@@ -404,7 +404,7 @@ def plot_profiles(data, fbottom=None, ftop=None, **fig_kw):
         ax[0][0].legend(frameon=False, loc='best')
         ax[1][0].legend(frameon=False, loc='best')
 
-    return ax.figure
+    return fig
 
 
 # TODO Smooth per B-splines using ' from scipy.interpolate import interp1d'
@@ -500,7 +500,7 @@ def plot_tke(data, y=None, vert=1, thresh=None, merge_pflux=False,
             label=r"$\overline{f\cdot{}u''}$",
             **plotargs)
 
-    return fig
+    return ax.figure
 
 
 def traceframe(grepkey, fnames):
