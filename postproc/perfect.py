@@ -408,7 +408,7 @@ def plot_profiles(data, fbottom=None, ftop=None, **fig_kw):
 
 
 # TODO Smooth per B-splines using ' from scipy.interpolate import interp1d'
-def plot_tke(data, y=None, vert=1, thresh=None, merge_pressure=False,
+def plot_tke(data, y=None, vert=1, thresh=None, merge_pflux=False,
              ax=None, **plotargs):
     """
     Plot TKE budgets from data permitting rescaling and thresholding.
@@ -420,8 +420,10 @@ def plot_tke(data, y=None, vert=1, thresh=None, merge_pressure=False,
     Guarini et al 2000 used 25.  Regardless, identically zero curves
     are always suppressed.
 
-    If merge_pressure is True, the three pressure-related terms scaled
-    by the inverse Mach number squared are reported as a single curve.
+    If merge_pflux is True, these two pressure-related flux terms
+         \bar{p}\nabla\cdot\overline{u''}/\mbox{Ma}^2$
+        -\nabla\cdot\bar{\rho}\widetilde{T''u''}/\gamma/\mbox{Ma}^2$
+    are reported as a single curve.
     """
 
     # Get a new axis if one was not supplied
@@ -468,16 +470,24 @@ def plot_tke(data, y=None, vert=1, thresh=None, merge_pressure=False,
             label=r"$\overline{\mathscr{S}_{\rho{}u}\cdot{}u''}$",
             **plotargs)
     # Conceivable that these will not exceed the threshold
-    if merge_pressure:
+    if merge_pflux:
         pthresh(y,   vert * data.tke.pmassflux
-                   + vert * data.tke.pdilatation
                    + vert * data.tke.pheatflux, linestyle='-.',
-                label=r"$\Pi$",
+                label=r"\shortstack[l]{$\left("
+                      r"\bar{p}\nabla\cdot\overline{u''}/\mbox{Ma}^2"
+                      r"\right.$\\$\left."
+                      r"-\nabla\cdot\bar{\rho}\widetilde{T''u''}/\gamma/\mbox{Ma}^2"
+                      r"\right)$}",
+                **plotargs)
+        # Pressure dilatation appears inside conditional to preserve ordering
+        pthresh(y, vert * data.tke.pdilatation, linestyle='--',
+                label=r"$\overline{p' \nabla\cdot{}u''}/\mbox{Ma}^2$",
                 **plotargs)
     else:
         pthresh(y, vert * data.tke.pmassflux, linestyle='-',
                 label=r"$\bar{p}\nabla\cdot\overline{u''}/\mbox{Ma}^2$",
                 **plotargs)
+        # Pressure dilatation appears inside conditional to preserve ordering
         pthresh(y, vert * data.tke.pdilatation, linestyle='--',
                 label=r"$\overline{p' \nabla\cdot{}u''}/\mbox{Ma}^2$",
                 **plotargs)
