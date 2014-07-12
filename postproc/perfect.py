@@ -404,7 +404,7 @@ def plot_profiles(data, fbottom=None, ftop=None, **fig_kw):
         ax[0][0].legend(frameon=False, loc='best')
         ax[1][0].legend(frameon=False, loc='best')
 
-    return fig
+    return ax.figure
 
 
 # TODO Smooth per B-splines using ' from scipy.interpolate import interp1d'
