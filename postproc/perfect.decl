@@ -320,7 +320,7 @@ bar_rho_w__t = (
     // + \nabla\cdot\left( \frac{\bar{\tau}}{\Reynolds} \right)
        + bar_tauyz__y(y) / Re
     // - \nabla\cdot\left( \bar{\rho} \widetilde{u''\otimes{}u''} \right)
-       - bar_rho(y)*tilde_vpp_wpp__y(y) - tilde_vpp_wpp*bar_rho__y(y)
+       - bar_rho(y)*tilde_vpp_wpp__y - tilde_vpp_wpp*bar_rho__y(y)
     // + \bar{f}
        + bar_fz(y)
     // + \overline{\mathscr{S}_{\rho{}u}}
@@ -353,7 +353,7 @@ bar_rho_E__t = (
     // + \Mach^{2} \nabla\cdot\left(
     //       \frac{\overline{\tau{}u''}}{\Reynolds}
     //   \right)
-       + (Ma*Ma/Re)*( bar_tauuppy__y(y) )
+       + (Ma*Ma/Re)*( bar_tauuppy__y )
     // + \frac{1}{\gamma-1} \nabla\cdot\left(
     //     \frac{ \bar{\mu} \widetilde{\nabla{}T} }{\Reynolds\Prandtl}
     //   \right)
@@ -409,7 +409,7 @@ tke_dissipation = - bar_rho(y)*tilde_epsilon / Re;
 tke_transport = - bar_rho(y)*tilde_upp2vpp__y/2 - tilde_upp2vpp*bar_rho__y(y)/2;
 
 // + \nabla\cdot\left( \frac{\overline{\tau{}u''}}{\Reynolds} \right)
-tke_diffusion = + bar_tauuppy__y(y)/Re;
+tke_diffusion = + bar_tauuppy__y/Re;
 
 // Name chosen per discussion on page 216 of Lele 1994 Annual Review
 // + \frac{1}{\Mach^2} \left(
