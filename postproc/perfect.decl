@@ -297,7 +297,7 @@ bar_rho_v__t = (
     // - \nabla\cdot(\tilde{u}\otimes\bar{\rho}\tilde{u})
        - tilde_v*bar_rho_v__y(y) - bar_rho_v(y)*tilde_v__y
     // - \frac{1}{\Mach^2}\nabla{}\bar{p}
-       - bar_p__y(y)
+       - bar_p__y(y) / Ma**2
     // + \nabla\cdot\left( \frac{\bar{\tau}}{\Reynolds} \right)
        + bar_tauyy__y(y) / Re
     // - \nabla\cdot\left( \bar{\rho} \widetilde{u''\otimes{}u''} \right)
