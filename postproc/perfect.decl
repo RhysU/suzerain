@@ -365,7 +365,7 @@ bar_rho_E__t = (
     //          { \Reynolds\Prandtl }
     //   \right)
        + (
-            bar_rho(y)*tilde_nupp_gradyTpp + tilde_nupp_gradyTpp*bar_rho__y(y)
+            bar_rho(y)*tilde_nupp_gradyTpp__y + tilde_nupp_gradyTpp*bar_rho__y(y)
          ) / ((gam-1)*Re*Pr)
     // - \frac{1}{\gamma-1} \nabla\cdot\left(
     //      \bar{\rho} \widetilde{T''u''}
