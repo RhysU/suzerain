@@ -407,6 +407,7 @@ def plot_profiles(data, fbottom=None, ftop=None, **fig_kw):
 
 
 # TODO Smooth per B-splines using ' from scipy.interpolate import interp1d'
+# TODO Add a show_residual option like plot_rho, plot_rho_u, etc.
 def plot_tke(data, y=None, vert=1, thresh=None, merge_pflux=False,
              ax=None, **plotargs):
     """
@@ -504,7 +505,7 @@ def plot_tke(data, y=None, vert=1, thresh=None, merge_pflux=False,
 
 
 # TODO Smooth per B-splines using ' from scipy.interpolate import interp1d'
-def plot_rho(data, y=None, vert=1, ax=None, **plotargs):
+def plot_rho(data, y=None, vert=1, show_residual=False, ax=None, **plotargs):
     """
     Plot density budgets from data permitting rescaling.
     """
@@ -532,15 +533,21 @@ def plot_rho(data, y=None, vert=1, ax=None, **plotargs):
     )
 
     # Produce the plot for nontrivial quantities
+    if show_residual:
+        residual = np.zeros_like(y)
     for key, val in curves.iteritems():
+        if show_residual:
+            residual += val
         if np.abs(val).max() > 0:
             ax.plot(y, vert * val, label=key, **plotargs)
+    if show_residual:
+        ax.plot(y, vert * residual, 'k:', label="Residual")
 
     return ax.figure
 
 
 # TODO Smooth per B-splines using ' from scipy.interpolate import interp1d'
-def plot_rho_u(data, y=None, vert=1, ax=None, **plotargs):
+def plot_rho_u(data, y=None, vert=1, ax=None, show_residual=False, **plotargs):
     """
     Plot streamwise momentum budgets from data permitting rescaling.
     """
@@ -581,15 +588,21 @@ def plot_rho_u(data, y=None, vert=1, ax=None, **plotargs):
     )
 
     # Produce the plot for nontrivial quantities
+    if show_residual:
+        residual = np.zeros_like(y)
     for key, val in curves.iteritems():
+        if show_residual:
+            residual += val
         if np.abs(val).max() > 0:
             ax.plot(y, vert * val, label=key, **plotargs)
+    if show_residual:
+        ax.plot(y, vert * residual, 'k:', label="Residual")
 
     return ax.figure
 
 
 # TODO Smooth per B-splines using ' from scipy.interpolate import interp1d'
-def plot_rho_v(data, y=None, vert=1, ax=None, **plotargs):
+def plot_rho_v(data, y=None, vert=1, ax=None, show_residual=False, **plotargs):
     """
     Plot wall-normal momentum budgets from data permitting rescaling.
     """
@@ -630,15 +643,21 @@ def plot_rho_v(data, y=None, vert=1, ax=None, **plotargs):
     )
 
     # Produce the plot for nontrivial quantities
+    if show_residual:
+        residual = np.zeros_like(y)
     for key, val in curves.iteritems():
+        if show_residual:
+            residual += val
         if np.abs(val).max() > 0:
             ax.plot(y, vert * val, label=key, **plotargs)
+    if show_residual:
+        ax.plot(y, vert * residual, 'k:', label="Residual")
 
     return ax.figure
 
 
 # TODO Smooth per B-splines using ' from scipy.interpolate import interp1d'
-def plot_rho_w(data, y=None, vert=1, ax=None, **plotargs):
+def plot_rho_w(data, y=None, vert=1, ax=None, show_residual=False, **plotargs):
     """
     Plot spanwise momentum budgets from data permitting rescaling.
     """
@@ -679,15 +698,21 @@ def plot_rho_w(data, y=None, vert=1, ax=None, **plotargs):
     )
 
     # Produce the plot for nontrivial quantities
+    if show_residual:
+        residual = np.zeros_like(y)
     for key, val in curves.iteritems():
+        if show_residual:
+            residual += val
         if np.abs(val).max() > 0:
             ax.plot(y, vert * val, label=key, **plotargs)
+    if show_residual:
+        ax.plot(y, vert * residual, 'k:', label="Residual")
 
     return ax.figure
 
 
 # TODO Smooth per B-splines using ' from scipy.interpolate import interp1d'
-def plot_rho_E(data, y=None, vert=1, ax=None, **plotargs):
+def plot_rho_E(data, y=None, vert=1, ax=None, show_residual=False, **plotargs):
     """
     Plot total energy budgets from data permitting rescaling.
     """
@@ -730,7 +755,7 @@ def plot_rho_E(data, y=None, vert=1, ax=None, **plotargs):
     )
     curves[r"$  \frac{1}{\gamma-1} \nabla\cdot\left. \frac{ \bar{\rho} \widetilde{\nu'' \left(\nabla{}T\right)''} } { \textrm{Re}\textrm{Pr} } \right.$"] = (
        + (
-            data.bar.rho*data.tilde.nupp_gradyTpp + data.tilde.nupp_gradyTpp*data.bar.rho__y
+            data.bar.rho*data.tilde.nupp_gradyTpp__y + data.tilde.nupp_gradyTpp*data.bar.rho__y
          ) / ((data.code.gamma-1)*data.code.Re*data.code.Pr)
     )
     curves[r"$- \frac{1}{\gamma-1} \nabla\cdot\left. \bar{\rho} \widetilde{T''u''} \right.$"] = (
@@ -755,9 +780,15 @@ def plot_rho_E(data, y=None, vert=1, ax=None, **plotargs):
     )
 
     # Produce the plot for nontrivial quantities
+    if show_residual:
+        residual = np.zeros_like(y)
     for key, val in curves.iteritems():
+        if show_residual:
+            residual += val
         if np.abs(val).max() > 0:
             ax.plot(y, vert * val, label=key, **plotargs)
+    if show_residual:
+        ax.plot(y, vert * residual, 'k:', label="Residual")
 
     return ax.figure
 
