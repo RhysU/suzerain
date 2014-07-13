@@ -33,7 +33,7 @@ CLEANFILES        = *.pyc
 # The resulting file is COMMITTED as SymPy prerequisites are touchy.
 $(abs_srcdir)/perfect_decl.raw: perfect.decl propagation.py
 	@echo "# Generated $@ from $< (sensitive to SymPy version)" | tee "$@.tmp"
-	md5sum $+ | sed -e 's/^/# Based upon MD5 /' >> "$@.tmp"
+	md5sum $+ | $(SED) -e 's/^/# Based upon MD5 /' >> "$@.tmp"
 	"$(srcdir)/propagation.py" -d "$<" dec   >> "$@.tmp"
 	mv "$@.tmp" "$@"
 
@@ -42,7 +42,7 @@ $(abs_srcdir)/perfect_decl.raw: perfect.decl propagation.py
 # because being able to analyze data from the source tree is useful.
 $(abs_srcdir)/perfect_decl.py: $(abs_srcdir)/perfect_decl.raw Makefile.am
 	@echo "# Generated $@ from $+" | tee "$@"
-	@md5sum $+ | sed -e 's/^/# Based upon MD5 /'                            >> "$@"
+	@md5sum $+ | $(SED) -e 's/^/# Based upon MD5 /'                         >> "$@"
 	@echo 'def pointwise(gam, Ma, Re, Pr, y, bar, rms, tilde, local, tke):' >> "$@"
 	@echo '    """'                                                         >> "$@"
 	@echo '    Populate Bunch-like bar, rms, tilde, etc. from pointwise'    >> "$@"
