@@ -21,6 +21,7 @@ import os
 import pandas as pd
 import sys
 
+matplotlib.rcParams['text.usetex'] = True
 # Some of the labels used in the plotting routines require \mathscr
 # Jump through some extra hoops to make sure we don't introduce
 # duplicates into the preamble.
@@ -29,8 +30,6 @@ def unique_append(l, v):
         l.append(v)
 unique_append(matplotlib.rcParams['text.latex.preamble'],
               r'\usepackage[charter]{mathdesign}')
-
-matplotlib.rcParams['text.latex.preamble'].append(r'\usepackage[charter]{mathdesign}')
 
 # Prepare a logger to produce messages
 logging.basicConfig(level=logging.INFO, format='%(levelname)s %(message)s')
@@ -220,7 +219,7 @@ def plot_profiles(data, fbottom=None, ftop=None, **fig_kw):
     Plot mean primitive profiles, their RMS fluctuations, and uncertainties.
     """
     fig, ax = plt.subplots(2, 2,
-                           sharex=(data.htdelta >= 0),
+                           sharex='all' if (data.htdelta >= 0) else 'none',
                            squeeze=False, **fig_kw)
     bar, tilde, sigma, star = data.bar, data.tilde, data.sigma, data.star
 
@@ -454,52 +453,311 @@ def plot_tke(data, y=None, vert=1, thresh=None, merge_pflux=False,
     # Produce plots in order of most to least likely to exceed thresh
     # This causes any repeated linetypes to be fairly simple to distinguish
     # Likely to exceed threshold but we will check anyway
-    pthresh(y, vert * data.tke.production, linestyle='-',
+    pthresh(y, vert * data.tke.production,
             label=r"$- \bar{\rho}\widetilde{u''\otimes{}u''}:\nabla\tilde{u}$",
             **plotargs)
-    pthresh(y, vert * data.tke.dissipation, linestyle='-',
+    pthresh(y, vert * data.tke.dissipation,
             label=r"$- \bar{\rho}\epsilon / \mbox{Re}$",
             **plotargs)
-    pthresh(y, vert * data.tke.transport, linestyle='--',
+    pthresh(y, vert * data.tke.transport,
             label=r"$- \nabla\cdot \bar{\rho} \widetilde{{u''}^{2}u''} / 2$",
             **plotargs)
-    pthresh(y, vert * data.tke.diffusion, linestyle='-.',
+    pthresh(y, vert * data.tke.diffusion,
             label=r"$\nabla\cdot \overline{\tau{}u''}/\mbox{Re}$",
             **plotargs)
     # Conceivable that these will not exceed the threshold
     # Permit two different ways to view the pressure terms per merge_pflux
     if merge_pflux:
         pthresh(y,   vert * data.tke.pmassflux
-                   + vert * data.tke.pheatflux, linestyle='-.',
+                   + vert * data.tke.pheatflux,
                 label=r"$\left("
                       r"\bar{p}\nabla\cdot\overline{u''}"
                       r"-\nabla\cdot\bar{\rho}\widetilde{T''u''}/\gamma"
                       r"\right)/\mbox{Ma}^2$",
                 **plotargs)
         # Pressure dilatation appears inside conditional to preserve ordering
-        pthresh(y, vert * data.tke.pdilatation, linestyle='--',
+        pthresh(y, vert * data.tke.pdilatation,
                 label=r"$\overline{p' \nabla\cdot{}u''}/\mbox{Ma}^2$",
                 **plotargs)
     else:
-        pthresh(y, vert * data.tke.pmassflux, linestyle='-',
+        pthresh(y, vert * data.tke.pmassflux,
                 label=r"$\bar{p}\nabla\cdot\overline{u''}/\mbox{Ma}^2$",
                 **plotargs)
         # Pressure dilatation appears inside conditional to preserve ordering
-        pthresh(y, vert * data.tke.pdilatation, linestyle='--',
+        pthresh(y, vert * data.tke.pdilatation,
                 label=r"$\overline{p' \nabla\cdot{}u''}/\mbox{Ma}^2$",
                 **plotargs)
-        pthresh(y, vert * data.tke.pheatflux, linestyle='-.',
+        pthresh(y, vert * data.tke.pheatflux,
                 label=r"$-\nabla\cdot\bar{\rho}\widetilde{T''u''}/\gamma/\mbox{Ma}^2$",
                 **plotargs)
-    pthresh(y, vert * data.tke.convection, linestyle=':',
+    pthresh(y, vert * data.tke.convection,
             label=r"$- \nabla\cdot\bar{\rho}k\tilde{u}$",
             **plotargs)
-    pthresh(y, vert * (data.tke.forcing + data.tke.constraint), linestyle=':',
+    pthresh(y, vert * (data.tke.forcing + data.tke.constraint),
             label=r"$\overline{f\cdot{}u''}$",
             **plotargs)
-    pthresh(y, vert * data.tke.slowgrowth, linestyle=':',
+    pthresh(y, vert * data.tke.slowgrowth,
             label=r"$\overline{\mathscr{S}_{\rho{}u}\cdot{}u''}$",
             **plotargs)
+
+    return ax.figure
+
+
+# TODO Smooth per B-splines using ' from scipy.interpolate import interp1d'
+def plot_rho(data, y=None, vert=1, ax=None, **plotargs):
+    """
+    Plot density budgets from data permitting rescaling.
+    """
+
+    # Get a new axis if one was not supplied
+    if not ax:
+        fig, ax = plt.subplots()
+
+    # Plot along y unless requested otherwise
+    if y is None:
+        y = data.y
+
+    # Gather all pointwise quantities into a label -> value dictionary
+    curves = collections.OrderedDict()
+
+    # See perfect.decl for more background
+    curves[r"$- \nabla\cdot\bar{\rho}\tilde{u}$"] = (
+       - data.bar.rho_v__y
+    )
+    curves[r"$  \overline{\mathscr{S}_{\rho}}$"] = (
+       + data.bar.Srho
+    )
+    curves[r"$  \overline{\mathscr{C}_{\rho}}$"] = (
+       + data.bar.Crho
+    )
+
+    # Produce the plot for nontrivial quantities
+    for key, val in curves.iteritems():
+        if np.abs(val).max() > 0:
+            ax.plot(y, vert * val, label=key, **plotargs)
+
+    return ax.figure
+
+
+# TODO Smooth per B-splines using ' from scipy.interpolate import interp1d'
+def plot_rho_u(data, y=None, vert=1, ax=None, **plotargs):
+    """
+    Plot streamwise momentum budgets from data permitting rescaling.
+    """
+
+    # Get a new axis if one was not supplied
+    if not ax:
+        fig, ax = plt.subplots()
+
+    # Plot along y unless requested otherwise
+    if y is None:
+        y = data.y
+
+    # Gather all pointwise quantities into a label -> value dictionary
+    curves = collections.OrderedDict()
+
+    # See perfect.decl for more background
+    curves[r"$- \nabla\cdot\left.\tilde{u}\otimes\bar{\rho}\tilde{u}\right.$"] = (
+       - data.tilde.v*data.bar.rho_u__y - data.bar.rho_u*data.tilde.v__y
+    )
+    curves[r"$- \frac{1}{\textrm{Ma}^2}\nabla{}\bar{p}$"] = (
+       - np.zeros_like(y) / data.code.Ma**2
+    )
+    curves[r"$  \nabla\cdot\left. \bar{\tau}/\textrm{Re} \right.$"] = (
+       + data.bar.tauxy__y / data.code.Re
+    )
+    curves[r"$- \nabla\cdot\left. \bar{\rho} \widetilde{u''\otimes{}u''} \right.$"] = (
+       - data.bar.rho*data.tilde.upp_vpp__y
+       - data.tilde.upp_vpp*data.bar.rho__y
+    )
+    curves[r"$  \bar{f}$"] = (
+       + data.bar.fx
+    )
+    curves[r"$  \overline{\mathscr{S}_{\rho{}u}}$"] = (
+       + data.bar.Srhou
+    )
+    curves[r"$  \overline{\mathscr{C}_{\rho{}u}}$"] = (
+       + data.bar.Crhou
+    )
+
+    # Produce the plot for nontrivial quantities
+    for key, val in curves.iteritems():
+        if np.abs(val).max() > 0:
+            ax.plot(y, vert * val, label=key, **plotargs)
+
+    return ax.figure
+
+
+# TODO Smooth per B-splines using ' from scipy.interpolate import interp1d'
+def plot_rho_v(data, y=None, vert=1, ax=None, **plotargs):
+    """
+    Plot wall-normal momentum budgets from data permitting rescaling.
+    """
+
+    # Get a new axis if one was not supplied
+    if not ax:
+        fig, ax = plt.subplots()
+
+    # Plot along y unless requested otherwise
+    if y is None:
+        y = data.y
+
+    # Gather all pointwise quantities into a label -> value dictionary
+    curves = collections.OrderedDict()
+
+    # See perfect.decl for more background
+    curves[r"$- \nabla\cdot\left.\tilde{u}\otimes\bar{\rho}\tilde{u}\right.$"] = (
+       - data.tilde.v*data.bar.rho_v__y - data.bar.rho_v*data.tilde.v__y
+    )
+    curves[r"$- \frac{1}{\textrm{Ma}^2}\nabla{}\bar{p}$"] = (
+       - data.bar.p__y / data.code.Ma**2
+    )
+    curves[r"$  \nabla\cdot\left. \bar{\tau}/\textrm{Re} \right.$"] = (
+       + data.bar.tauyy__y / data.code.Re
+    )
+    curves[r"$- \nabla\cdot\left. \bar{\rho} \widetilde{u''\otimes{}u''} \right.$"] = (
+       - data.bar.rho*data.tilde.vpp_vpp__y
+       - data.tilde.vpp_vpp*data.bar.rho__y
+    )
+    curves[r"$  \bar{f}$"] = (
+       + data.bar.fy
+    )
+    curves[r"$  \overline{\mathscr{S}_{\rho{}u}}$"] = (
+       + data.bar.Srhov
+    )
+    curves[r"$  \overline{\mathscr{C}_{\rho{}u}}$"] = (
+       + data.bar.Crhov
+    )
+
+    # Produce the plot for nontrivial quantities
+    for key, val in curves.iteritems():
+        if np.abs(val).max() > 0:
+            ax.plot(y, vert * val, label=key, **plotargs)
+
+    return ax.figure
+
+
+# TODO Smooth per B-splines using ' from scipy.interpolate import interp1d'
+def plot_rho_w(data, y=None, vert=1, ax=None, **plotargs):
+    """
+    Plot spanwise momentum budgets from data permitting rescaling.
+    """
+
+    # Get a new axis if one was not supplied
+    if not ax:
+        fig, ax = plt.subplots()
+
+    # Plot along y unless requested otherwise
+    if y is None:
+        y = data.y
+
+    # Gather all pointwise quantities into a label -> value dictionary
+    curves = collections.OrderedDict()
+
+    # See perfect.decl for more background
+    curves[r"$- \nabla\cdot\left.\tilde{u}\otimes\bar{\rho}\tilde{u}\right.$"] = (
+       - data.tilde.v*data.bar.rho_w__y - data.bar.rho_w*data.tilde.v__y
+    )
+    curves[r"$- \frac{1}{\textrm{Ma}^2}\nabla{}\bar{p}$"] = (
+       - np.zeros_like(y) / data.code.Ma**2
+    )
+    curves[r"$  \nabla\cdot\left. \bar{\tau}/\textrm{Re} \right.$"] = (
+       + data.bar.tauyz__y / data.code.Re
+    )
+    curves[r"$- \nabla\cdot\left. \bar{\rho} \widetilde{u''\otimes{}u''} \right.$"] = (
+       - data.bar.rho*data.tilde.vpp_wpp__y
+       - data.tilde.vpp_wpp*data.bar.rho__y
+    )
+    curves[r"$  \bar{f}$"] = (
+       + data.bar.fz
+    )
+    curves[r"$  \overline{\mathscr{S}_{\rho{}u}}$"] = (
+       + data.bar.Srhow
+    )
+    curves[r"$  \overline{\mathscr{C}_{\rho{}u}}$"] = (
+       + data.bar.Crhow
+    )
+
+    # Produce the plot for nontrivial quantities
+    for key, val in curves.iteritems():
+        if np.abs(val).max() > 0:
+            ax.plot(y, vert * val, label=key, **plotargs)
+
+    return ax.figure
+
+
+# TODO Smooth per B-splines using ' from scipy.interpolate import interp1d'
+def plot_rho_E(data, y=None, vert=1, ax=None, **plotargs):
+    """
+    Plot total energy budgets from data permitting rescaling.
+    """
+
+    # Get a new axis if one was not supplied
+    if not ax:
+        fig, ax = plt.subplots()
+
+    # Plot along y unless requested otherwise
+    if y is None:
+        y = data.y
+
+    # Gather all pointwise quantities into a label -> value dictionary
+    curves = collections.OrderedDict()
+
+    # See perfect.decl for more background
+    curves[r"$- \nabla\cdot\bar{\rho}\tilde{H}\tilde{u}$"] = (
+       - data.bar.rho_v*data.tilde.H__y - data.tilde.H*data.bar.rho_v__y
+    )
+    curves[r"$  \textrm{Ma}^{2} \nabla\cdot\left. \frac{\bar{\tau} \tilde{u}}{\textrm{Re}} \right.$"] = (
+       + (data.code.Ma**2/data.code.Re)*( data.tilde.u*data.bar.tauxy__y + data.bar.tauxy*data.tilde.u__y
+                                        + data.tilde.v*data.bar.tauyy__y + data.bar.tauyy*data.tilde.v__y
+                                        + data.tilde.w*data.bar.tauyz__y + data.bar.tauyz*data.tilde.w__y )
+    )
+    curves[r"$- \textrm{Ma}^{2} \nabla\cdot\left( \bar{\rho} \widetilde{u''\otimes{}u''} \right) \tilde{u}$"] = (
+       - (data.code.Ma**2)*( data.bar.rho_u*data.tilde.upp_vpp__y+data.tilde.upp_vpp*data.bar.rho_u__y
+                           + data.bar.rho_v*data.tilde.vpp_vpp__y+data.tilde.vpp_vpp*data.bar.rho_v__y
+                           + data.bar.rho_w*data.tilde.vpp_wpp__y+data.tilde.vpp_wpp*data.bar.rho_w__y )
+    )
+    curves[r"$- \frac{1}{2}\textrm{Ma}^{2} \nabla\cdot\left. \bar{\rho}\widetilde{{u''}^{2}u''} \right.$"] = (
+       - (data.code.Ma*data.code.Ma/2)*( data.bar.rho*data.tilde.upp2vpp__y + data.tilde.upp2vpp*data.bar.rho__y )
+    )
+    curves[r"$  \textrm{Ma}^{2} \nabla\cdot\left. \frac{\overline{\tau{}u''}}{\textrm{Re}} \right.$"] = (
+       + (data.code.Ma*data.code.Ma/data.code.Re)*( data.bar.tauuppy__y )
+    )
+    curves[r"$  \frac{1}{\gamma-1} \nabla\cdot\left. \frac{ \bar{\mu} \widetilde{\nabla{}T} }{\textrm{Re}\textrm{Pr}} \right.$"] = (
+       + (
+            data.tilde.nu*data.bar.rho_grady_T__y + data.bar.rho_grady_T*data.tilde.nu__y
+         ) / ((data.code.gamma-1)*data.code.Re*data.code.Pr)
+    )
+    curves[r"$  \frac{1}{\gamma-1} \nabla\cdot\left. \frac{ \bar{\rho} \widetilde{\nu'' \left(\nabla{}T\right)''} } { \textrm{Re}\textrm{Pr} } \right.$"] = (
+       + (
+            data.bar.rho*data.tilde.nupp_gradyTpp + data.tilde.nupp_gradyTpp*data.bar.rho__y
+         ) / ((data.code.gamma-1)*data.code.Re*data.code.Pr)
+    )
+    curves[r"$- \frac{1}{\gamma-1} \nabla\cdot\left. \bar{\rho} \widetilde{T''u''} \right.$"] = (
+       - (
+            data.bar.rho*data.tilde.Tpp_vpp__y + data.tilde.Tpp_vpp*data.bar.rho__y
+         ) / (data.code.gamma-1)
+    )
+    curves[r"$  \textrm{Ma}^{2} \bar{f}\cdot\tilde{u}$"] = (
+       + data.code.Ma*data.code.Ma*(data.bar.fx*data.tilde.u + data.bar.fy*data.tilde.v + data.bar.fz*data.tilde.w)
+    )
+    curves[r"$  \textrm{Ma}^{2} \overline{f\cdot{}u''}$"] = (
+       + data.code.Ma*data.code.Ma*data.bar.f_dot_upp
+    )
+    curves[r"$  \bar{q}_b$"] = (
+       + data.bar.qb
+    )
+    curves[r"$  \overline{\mathscr{S}_{\rho{}E}}$"] = (
+       + data.bar.SrhoE
+    )
+    curves[r"$  \overline{\mathscr{C}_{\rho{}E}}$"] = (
+       + data.bar.CrhoE
+    )
+
+    # Produce the plot for nontrivial quantities
+    for key, val in curves.iteritems():
+        if np.abs(val).max() > 0:
+            ax.plot(y, vert * val, label=key, **plotargs)
 
     return ax.figure
 
