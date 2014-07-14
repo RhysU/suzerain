@@ -31,10 +31,12 @@ Nz = a['Nz'][0]
 Lx = a['Lx'][0]
 Ly = a['Ly'][0]
 Lz = a['Lz'][0]
+ht = a['htdelta'][0]
 y  = a['collocation_points_y'][()]
 
 print("Nx:               %s" % Nx)
 print("Ny:               %s" % Ny)
+print("htdelta:          %s" % ht)
 print("Nz:               %s" % Nz)
 
 print("\\Delta{}x^{+}:    %s" % (Lx / Nx / float(delta_nu)))
