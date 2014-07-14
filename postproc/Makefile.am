@@ -20,6 +20,7 @@ postproc_SCRIPTS += reacting_summary.py
 postproc_SCRIPTS += relaminarize.bl
 postproc_SCRIPTS += remove_hdf5.py
 postproc_SCRIPTS += rename_hdf5.py
+postproc_SCRIPTS += rescheck.py
 postproc_SCRIPTS += select_files.py
 postproc_SCRIPTS += sgr2suz.py
 postproc_SCRIPTS += spectra.py
