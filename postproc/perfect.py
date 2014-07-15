@@ -833,17 +833,11 @@ def plot_relaminarization(dnames,
 
     # Produce a relaminarization summary figure
     fig = plt.figure(**kwargs)
-    def yinclude(axis, val):
-        ymin, ymax = axis.get_ylim()
-        ymin = min(ymin, val - (ymax - ymin)/50)
-        ymax = max(ymax, val + (ymax - ymin)/50)
-        axis.set_ylim([ymin, ymax])
     #
     ax = fig.add_subplot(911)
     ax.ticklabel_format(useOffset=False)
     ax.plot(Re.index, Re['Re_delta2'].values)
     if Re_theta:
-        yinclude(ax, Re_theta)
         ax.hlines(Re_theta, qoi.index.min(), qoi.index.max(), 'r', '-.')
     ax.set_ylabel(r'$\mbox{Re}_{\theta}$')
     ax.yaxis.set_major_locator(ticker.MaxNLocator(4))
@@ -853,7 +847,6 @@ def plot_relaminarization(dnames,
     ax.ticklabel_format(useOffset=False)
     ax.plot(qoi.index, qoi['Ma_e'].values)
     if Ma_e:
-        yinclude(ax, Ma_e)
         ax.hlines(Ma_e, qoi.index.min(), qoi.index.max(), 'r', '-.')
     ax.set_ylabel(r'$\mbox{Ma}_{e}$')
     ax.yaxis.set_major_locator(ticker.MaxNLocator(4))
@@ -863,7 +856,6 @@ def plot_relaminarization(dnames,
     ax.ticklabel_format(useOffset=False)
     ax.plot(qoi.index, qoi['ratio_T'].values)
     if ratio_T:
-        yinclude(ax, ratio_T)
         ax.hlines(ratio_T, qoi.index.min(), qoi.index.max(), 'r', '-.')
     ax.set_ylabel(r'$T_e/T_w$')
     ax.yaxis.set_major_locator(ticker.MaxNLocator(4))
@@ -873,7 +865,6 @@ def plot_relaminarization(dnames,
     ax.ticklabel_format(useOffset=False)
     ax.plot(visc.index, visc['v_wallplus'].values)
     if v_wallplus:
-        yinclude(ax, v_wallplus)
         ax.hlines(v_wallplus, visc.index.min(), visc.index.max(), 'r', '-.')
     ax.set_ylabel(r'$v_w^+$')
     ax.yaxis.set_major_locator(ticker.MaxNLocator(4))
@@ -883,7 +874,6 @@ def plot_relaminarization(dnames,
     ax.ticklabel_format(useOffset=False)
     ax.plot(pg.index, pg['p_ex'].values)
     if p_ex:
-        yinclude(ax, p_ex)
         ax.hlines(p_ex, pg.index.min(), pg.index.max(), 'r', '-.')
     ax.set_ylabel(r'$p^\ast_{e,\xi}$')
     ax.yaxis.set_major_locator(ticker.MaxNLocator(4))
@@ -893,7 +883,6 @@ def plot_relaminarization(dnames,
     ax.ticklabel_format(useOffset=False)
     ax.plot(thick.index, thick['delta99'].values)
     if delta99:
-        yinclude(ax, delta99)
         ax.hlines(delta99, thick.index.min(), thick.index.max(), 'r', '-.')
     ax.set_ylabel(r'$\delta_{99}$')
     ax.yaxis.set_major_locator(ticker.MaxNLocator(4))
@@ -903,11 +892,13 @@ def plot_relaminarization(dnames,
     ax.ticklabel_format(useOffset=False)
     ax.plot(pbulk.index, pbulk['total'].values)
     ax.set_yscale('log')
-    ax.set_ylabel("bulk\n"
+    ax.set_ylabel("Integrated\n"
                   #r"$\overline{\rho u'' \otimes{} u''}:\nabla\tilde{u}$",
                   "production",
                   multialignment='center')
-    ax.yaxis.set_major_locator(ticker.MaxNLocator(4))
+    ax.yaxis.set_major_locator(ticker.LogLocator(base=1000))
+    if ax.get_ylim()[0] < 1e-9:
+        ax.set_ylim(bottom=1e-9)
     ax.set_xticklabels([])
     #
     ax = fig.add_subplot(918)
@@ -922,18 +913,25 @@ def plot_relaminarization(dnames,
     ax.set_ylabel("max\n"
                   r"$\left|\widetilde{u_i''u_j''}\right|$",
                   multialignment='center')
-    ax.yaxis.set_major_locator(ticker.MaxNLocator(4))
+    if ax.get_ylim()[0] < 1e-8:
+        ax.set_ylim(bottom=1e-8)
+    ax.yaxis.set_major_locator(ticker.LogLocator(base=1000))
     ax.set_xticklabels([])
     #
     ax = fig.add_subplot(919)
     ax.ticklabel_format(useOffset=False)
     ax.plot(visc.index, visc['cf'].values)
-    ax.set_ylabel(r'cf')
+    ax.set_ylabel(r'$c_f$')
     ax.yaxis.set_major_locator(ticker.MaxNLocator( 4))
     ax.xaxis.set_major_locator(ticker.MaxNLocator(10))
     #
+    ax.set_xlabel(r'Reference time $t\,u_0 / l_0$')
+    #
+    for ax in fig.axes:
+        ax.margins(0.025, 0.08)
+    #
     fig.tight_layout()
-    fig.subplots_adjust(hspace=0.20)
+    fig.subplots_adjust(hspace=0.10)
 
     return fig
 
