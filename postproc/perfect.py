@@ -13,6 +13,7 @@ import collections
 import getopt
 import h5py
 import logging
+import math
 import matplotlib
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
@@ -34,6 +35,7 @@ unique_append(matplotlib.rcParams['text.latex.preamble'],
 # Prepare a logger to produce messages
 logging.basicConfig(level=logging.INFO, format='%(levelname)s %(message)s')
 l = logging.getLogger(os.path.splitext(os.path.basename(__file__))[0])
+
 
 
 class Bunch(dict):
@@ -808,6 +810,132 @@ def traceframe(grepkey, fnames):
     return r
 
 
+# I wanted the newer matplotlib LogLocator so I stole it.  C'est dommage.
+class LogLocator(ticker.Locator):
+    """
+    Determine the tick locations for log axes
+    """
+
+    def __init__(self, base=10.0, subs=[1.0], numdecs=4, numticks=15):
+        """
+        place ticks on the location= base**i*subs[j]
+        """
+        self.base(base)
+        self.subs(subs)
+        self.numticks = numticks
+        self.numdecs = numdecs
+
+    def base(self, base):
+        """
+        set the base of the log scaling (major tick every base**i, i integer)
+        """
+        self._base = base + 0.0
+
+    def subs(self, subs):
+        """
+        set the minor ticks the log scaling every base**i*subs[j]
+        """
+        if subs is None:
+            self._subs = None  # autosub
+        else:
+            self._subs = np.asarray(subs) + 0.0
+
+    def __call__(self):
+        'Return the locations of the ticks'
+        vmin, vmax = self.axis.get_view_interval()
+        return self.tick_values(vmin, vmax)
+
+    def tick_values(self, vmin, vmax):
+        b = self._base
+        # dummy axis has no axes attribute
+        if hasattr(self.axis, 'axes') and self.axis.axes.name == 'polar':
+            vmax = math.ceil(math.log(vmax) / math.log(b))
+            decades = np.arange(vmax - self.numdecs, vmax)
+            ticklocs = b ** decades
+
+            return ticklocs
+
+        if vmin <= 0.0:
+            if self.axis is not None:
+                vmin = self.axis.get_minpos()
+
+            if vmin <= 0.0 or not np.isfinite(vmin):
+                raise ValueError(
+                    "Data has no positive values, and therefore can not be "
+                    "log-scaled.")
+
+        vmin = math.log(vmin) / math.log(b)
+        vmax = math.log(vmax) / math.log(b)
+
+        if vmax < vmin:
+            vmin, vmax = vmax, vmin
+
+        numdec = math.floor(vmax) - math.ceil(vmin)
+
+        if self._subs is None:  # autosub
+            if numdec > 10:
+                subs = np.array([1.0])
+            elif numdec > 6:
+                subs = np.arange(2.0, b, 2.0)
+            else:
+                subs = np.arange(2.0, b)
+        else:
+            subs = self._subs
+
+        stride = 1
+        while numdec / stride + 1 > self.numticks:
+            stride += 1
+
+        decades = np.arange(math.floor(vmin) - stride,
+                            math.ceil(vmax) + 2 * stride, stride)
+        if hasattr(self, '_transform'):
+            ticklocs = self._transform.inverted().transform(decades)
+            if len(subs) > 1 or (len(subs == 1) and subs[0] != 1.0):
+                ticklocs = np.ravel(np.outer(subs, ticklocs))
+        else:
+            if len(subs) > 1 or (len(subs == 1) and subs[0] != 1.0):
+                ticklocs = []
+                for decadeStart in b ** decades:
+                    ticklocs.extend(subs * decadeStart)
+            else:
+                ticklocs = b ** decades
+
+        return self.raise_if_exceeds(np.asarray(ticklocs))
+
+    def view_limits(self, vmin, vmax):
+        'Try to choose the view limits intelligently'
+        b = self._base
+
+        if vmax < vmin:
+            vmin, vmax = vmax, vmin
+
+        if self.axis.axes.name == 'polar':
+            vmax = math.ceil(math.log(vmax) / math.log(b))
+            vmin = b ** (vmax - self.numdecs)
+            return vmin, vmax
+
+        minpos = self.axis.get_minpos()
+
+        if minpos <= 0 or not np.isfinite(minpos):
+            raise ValueError(
+                "Data has no positive values, and therefore can not be "
+                "log-scaled.")
+
+        if vmin <= minpos:
+            vmin = minpos
+
+        if not is_decade(vmin, self._base):
+            vmin = decade_down(vmin, self._base)
+        if not is_decade(vmax, self._base):
+            vmax = decade_up(vmax, self._base)
+
+        if vmin == vmax:
+            vmin = decade_down(vmin, self._base)
+            vmax = decade_up(vmax, self._base)
+        result = mtransforms.nonsingular(vmin, vmax)
+        return result
+
+
 # TODO Split into two plots-- scenario tracking vs relaminarization
 # TODO Add Re_\tau as a precursor to fluctuation collapse
 def plot_relaminarization(dnames,
@@ -891,12 +1019,16 @@ def plot_relaminarization(dnames,
     ax = fig.add_subplot(917)
     ax.ticklabel_format(useOffset=False)
     ax.plot(pbulk.index, pbulk['total'].values)
-    ax.set_yscale('log')
     ax.set_ylabel("Integrated\n"
                   #r"$\overline{\rho u'' \otimes{} u''}:\nabla\tilde{u}$",
                   "production",
                   multialignment='center')
-    ax.yaxis.set_major_locator(ticker.LogLocator(base=1000))
+    if np.log10(pbulk['total'].values.max() / pbulk['total'].values.min()) > 1:
+        ax.set_yscale('log')
+        ax.yaxis.set_major_locator(LogLocator(numticks=3))
+    else:
+        ax.set_yscale('linear')
+        ax.yaxis.set_major_locator(ticker.MaxNLocator(3))
     if ax.get_ylim()[0] < 1e-9:
         ax.set_ylim(bottom=1e-9)
     ax.set_xticklabels([])
@@ -915,7 +1047,7 @@ def plot_relaminarization(dnames,
                   multialignment='center')
     if ax.get_ylim()[0] < 1e-8:
         ax.set_ylim(bottom=1e-8)
-    ax.yaxis.set_major_locator(ticker.LogLocator(base=1000))
+    ax.yaxis.set_major_locator(LogLocator(numticks=3))
     ax.set_xticklabels([])
     #
     ax = fig.add_subplot(919)
@@ -925,7 +1057,7 @@ def plot_relaminarization(dnames,
     ax.yaxis.set_major_locator(ticker.MaxNLocator( 4))
     ax.xaxis.set_major_locator(ticker.MaxNLocator(10))
     #
-    ax.set_xlabel(r'Reference time $t\,u_0 / l_0$')
+    ax.set_xlabel(r'Nondimensional time $t\,u_0 / l_0$')
     #
     for ax in fig.axes:
         ax.margins(0.025, 0.08)
