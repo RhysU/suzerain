@@ -12,15 +12,29 @@ assert os.path.isdir(sys.argv[1])
 datf = sys.argv[1]+"/qoi.dat"
 hdf5 = sys.argv[1]+"/restart00000.h5"
 
-print("state.dat:        %s" % datf)
+delta_nu = None
+u_tau    = None
+delta99  = None
+print("qoi.dat:          %s" % datf)
 for line in open(datf, 'r'):
-    if line.find(' bl.visc ')   != -1:
-        delta_nu = line.split()[6]
-        continue
-    if line.find(' chan.visc ') != -1:
-        delta_nu = line.split()[6]
+    if    line.find('.visc ') != -1:
+        s = line.split()
+        delta_nu = s[6]
+        u_tau    = s[8]
+    elif line.find('.thick ') != -1:
+        s = line.split()
+        delta99 = s[10]
 
 print("delta_nu:         %s" % delta_nu)
+delta_nu = float(delta_nu)
+
+print("u_tau:            %s" % u_tau)
+u_tau = float(u_tau)
+
+if delta99:
+    print("delta99:          %s" % delta99)
+    delta99 = float(delta99)
+    print("u_tau/delta99:    %s" % (u_tau/delta99))
 
 print("restart00000.h5:  %s" % hdf5)
 a = h5py.File(hdf5, 'r')
@@ -39,8 +53,8 @@ print("Ny:               %s" % Ny)
 print("htdelta:          %s" % ht)
 print("Nz:               %s" % Nz)
 
-print("\\Delta{}x^{+}:    %s" % (Lx / Nx / float(delta_nu)))
-print("\\Delta{}z^{+}:    %s" % (Lz / Nz / float(delta_nu)))
+print("\\Delta{}x^{+}:    %s" % (Lx / Nx / delta_nu))
+print("\\Delta{}z^{+}:    %s" % (Lz / Nz / delta_nu))
 
 y /= float(delta_nu)
 t = np.abs(y - 10).argmin()
