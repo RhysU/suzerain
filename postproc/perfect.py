@@ -221,7 +221,7 @@ def plot_profiles(data, fbottom=None, ftop=None, **fig_kw):
     Plot mean primitive profiles, their RMS fluctuations, and uncertainties.
     """
     fig, ax = plt.subplots(2, 2,
-                           sharex='all' if (data.htdelta >= 0) else 'none',
+                           sharex=('all' if (data.htdelta >= 0) else False),
                            squeeze=False, **fig_kw)
     bar, tilde, sigma, star = data.bar, data.tilde, data.sigma, data.star
 
