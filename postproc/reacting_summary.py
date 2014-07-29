@@ -118,6 +118,8 @@ class summary():
                         print "--- removing", var, ", not in file"
                 f.close()
 
+        # Set quantities to ignore if not loaded
+        self.set_ignore()
 
         # Input variables
         self.inputscalars = ['t']
@@ -430,6 +432,29 @@ class summary():
                 break
         return pb
 
+    def set_ignore(self):
+        # Set quantities to ignore 
+        self.mean_bar_rho_T   = None
+        self.mean_bar_p_u     = None
+        self.mean_bar_p_v     = None
+        self.mean_bar_p_w     = None
+        self.mean_bar_u_u     = None
+        self.mean_bar_u_v     = None
+        self.mean_bar_u_w     = None
+        self.mean_bar_v_v     = None
+        self.mean_bar_v_w     = None
+        self.mean_bar_w_w     = None
+        self.mean_bar_T_T     = None 
+        self.mean_bar_rho_rho = None
+        self.mean_bar_p_p     = None
+        self.mean_bar_a_a     = None
+        self.mean_bar_M_M     = None
+        self.mean_bar_mu_mu   = None
+        self.mean_bar_M       = None
+        self.mean_bar_gamma   = None
+        self.mean_bar_Cp      = None
+        self.mean_bar_Cv      = None
+
     def get_mean_derived(self):
         # Favre averages
         self.fav_u = self.get_fav(self.mean_bar_rho_u, self.mean_bar_rho)
@@ -444,7 +469,8 @@ class summary():
         self.upp   = self.mean_bar_u - self.fav_u
         self.vpp   = self.mean_bar_v - self.fav_v
         self.wpp   = self.mean_bar_w - self.fav_w
-        self.Tpp   = self.mean_bar_T - self.fav_T
+        if self.fav_T is not None:
+            self.Tpp   = self.mean_bar_T - self.fav_T
 
         # Reyolds stresses
         self.rho_upp_upp = self.get_rho_fpp_gpp(self.mean_bar_rho_u_u, self.mean_bar_rho, self.fav_u, self.fav_u)
@@ -540,29 +566,52 @@ class summary():
         del dy
 
         # Turbulent Mach based on Reynolds and Favre average of velocity fluctuations
-        self.Mt       = np.sqrt(self.up_up + self.vp_vp + self.wp_wp) / self.mean_bar_a
+        if (self.up_up      is None or 
+            self.vp_vp      is None or
+            self.wp_wp      is None or
+            self.mean_bar_a is None):
+            self.Mt = None
+        else:
+            self.Mt = np.sqrt(self.up_up + self.vp_vp + self.wp_wp) / self.mean_bar_a
+    
         self.Mt_Favre = np.sqrt((self.rho_upp_upp + self.rho_vpp_vpp + self.rho_wpp_wpp)  / self.mean_bar_rho) / self.mean_bar_a
 
         # Prandtl Mixing length
         self.mixing_length =  np.sqrt(np.abs(-self.fav_upp_vpp)) / self.dy(self.mean_bar_u)
 
         # Turbulent Prandtl
-        kappa_u  = self.rho_upp_vpp / self.dy(self.fav_u)
-        kappa_T  = self.rho_Tpp_vpp / self.dy(self.fav_T)
-        self.Prt = kappa_u / kappa_T
-        del kappa_u, kappa_T
+        if (self.rho_Tpp_vpp is None):
+            self.Prt = None
+        else:
+            kappa_u  = self.rho_upp_vpp / self.dy(self.fav_u)
+            kappa_T  = self.rho_Tpp_vpp / self.dy(self.fav_T)
+            self.Prt = kappa_u / kappa_T
+            del kappa_u, kappa_T
 
         # Total temperature, calorically perfect gas
-        self.CP_Ttotal = self.mean_bar_T + 0.5 * (self.mean_bar_u_u + self.mean_bar_v_v + self.mean_bar_w_w) / self.mean_bar_Cp
+        if (self.mean_bar_u_u      is None or 
+            self.mean_bar_v_v      is None or
+            self.mean_bar_w_w      is None or
+            self.mean_bar_Cp       is None):
+            self.CP_Ttotal = None
+        else:
+            self.CP_Ttotal = self.mean_bar_T + 0.5 * (self.mean_bar_u_u + self.mean_bar_v_v + self.mean_bar_w_w) / self.mean_bar_Cp
 
         # Strong Reynolds Analogy(ies)
         # ... evaluated through the convenience quantity G of
         # ... Morinishi etal, JFM, 2004
         def CP_G_function(g=0, h=1):
-            num        = np.sqrt(self.Tp_Tp) / self.mean_bar_T
-            den        = (self.mean_bar_gamma-1) * np.power(self.mean_bar_M,2) * np.sqrt(self.up_up) / self.mean_bar_u
-            ghfactor   = h * np.abs(g * self.dy(self.CP_Ttotal) / self.dy(self.mean_bar_T) - 1)
-            return num / den * ghfactor
+            if (self.Tp_Tp          is None or
+                self.mean_bar_gamma is None or 
+                self.mean_bar_M     is None or 
+                self.up_up          is None or 
+                self.CP_Ttotal      is None):
+                return None
+            else:
+                num        = np.sqrt(self.Tp_Tp) / self.mean_bar_T
+                den        = (self.mean_bar_gamma-1) * np.power(self.mean_bar_M,2) * np.sqrt(self.up_up) / self.mean_bar_u
+                ghfactor   = h * np.abs(g * self.dy(self.CP_Ttotal) / self.dy(self.mean_bar_T) - 1)
+                return num / den * ghfactor
         # -- Reynolds (original)
         self.CP_G_SRA  = CP_G_function()
         # -- Gaviglio (1987)
@@ -587,7 +636,10 @@ class summary():
         self.kbudget_transport = - 0.5 * (self.dy(self.rho_upp_upp_vpp) + self.dy(self.rho_vpp_vpp_vpp) + self.dy(self.rho_vpp_wpp_wpp))
 
         # -- pressure diffusion
-        self.kbudget_pressure_diffusion  = - self.dy(self.pp_vpp)
+        if self.pp_vpp is None:
+            self.kbudget_pressure_diffusion  = None
+        else:
+            self.kbudget_pressure_diffusion  = - self.dy(self.pp_vpp)
 
         # -- pressure dilatation
         # -- NOTE: computed explicitly, assuming dudx=dwdz=0
@@ -610,14 +662,17 @@ class summary():
                                                 + self.kbudget_compressibility_tke     )
 
         # -- sum (no slow growth source term)
-        self.kbudget_sum = ( self.kbudget_convection
-                           + self.kbudget_production
-                           + self.kbudget_transport
-                           + self.kbudget_pressure_diffusion
-                           + self.kbudget_pressure_dilatation
-                           + self.kbudget_viscous_diffusion
-                           - self.kbudget_viscous_dissipation
-                           + self.kbudget_compressibility     )
+        if self.kbudget_pressure_diffusion is None:
+            self.kbudget_sum = None 
+        else:
+            self.kbudget_sum = ( self.kbudget_convection
+                               + self.kbudget_production
+                               + self.kbudget_transport
+                               + self.kbudget_pressure_diffusion
+                               + self.kbudget_pressure_dilatation
+                               + self.kbudget_viscous_diffusion
+                               - self.kbudget_viscous_dissipation
+                               + self.kbudget_compressibility     )
 
 
     def get_transformed(self):
@@ -667,12 +722,18 @@ class summary():
         self.fav_wpp_wpp_plus = self.fav_wpp_wpp / self.u_tau / self.u_tau
 
         # Incompressible Reyolds stresses
-        self.up_up_plus = self.up_up / self.u_tau / self.u_tau
-        self.up_vp_plus = self.up_vp / self.u_tau / self.u_tau
-        self.up_wp_plus = self.up_wp / self.u_tau / self.u_tau
-        self.vp_vp_plus = self.vp_vp / self.u_tau / self.u_tau
-        self.vp_wp_plus = self.vp_wp / self.u_tau / self.u_tau
-        self.wp_wp_plus = self.wp_wp / self.u_tau / self.u_tau
+        if self.up_up      is not None:
+            self.up_up_plus = self.up_up / self.u_tau / self.u_tau
+        if self.up_vp      is not None:
+            self.up_vp_plus = self.up_vp / self.u_tau / self.u_tau
+        if self.up_wp      is not None:
+            self.up_wp_plus = self.up_wp / self.u_tau / self.u_tau
+        if self.vp_vp      is not None:
+            self.vp_vp_plus = self.vp_vp / self.u_tau / self.u_tau
+        if self.vp_wp      is not None:
+            self.vp_wp_plus = self.vp_wp / self.u_tau / self.u_tau
+        if self.wp_wp      is not None:
+            self.wp_wp_plus = self.wp_wp / self.u_tau / self.u_tau
 
         # y * dudy
         self.y_dudy_plus = self.y_dudy / self.u_tau
@@ -764,34 +825,34 @@ class summary():
         self.y1b    =  self.yb[1]
 
         # Wall values
-        self.wall_p     =  self.mean_bar_p            [0]
-        self.wall_a     =  self.mean_bar_a            [0]
-        self.wall_M     =  self.mean_bar_M            [0]
-        self.wall_Cp    =  self.mean_bar_Cp           [0]
-        self.wall_Cv    =  self.mean_bar_Cv           [0]
-        self.wall_rho   =  self.mean_bar_rho          [0]
-        self.wall_mu    =  self.mean_bar_mu           [0]
-        self.wall_nu    =  self.mean_bar_nu           [0]
-        self.wall_D0    =  self.mean_bar_D0           [0]
-        self.wall_Cp    =  self.mean_bar_Cp           [0]
-        self.wall_q     = -self.mean_bar_kappa_grady_T[0]
-        self.wall_H     =  self.fav_H                 [0]
-        self.wall_dudy  =  self.dy(self.mean_bar_u)   [0]
+        self.wall_p     =  self.get_wall( self.mean_bar_p            )
+        self.wall_a     =  self.get_wall( self.mean_bar_a            )
+        self.wall_M     =  self.get_wall( self.mean_bar_M            )
+        self.wall_Cp    =  self.get_wall( self.mean_bar_Cp           )
+        self.wall_Cv    =  self.get_wall( self.mean_bar_Cv           ) 
+        self.wall_rho   =  self.get_wall( self.mean_bar_rho          ) 
+        self.wall_mu    =  self.get_wall( self.mean_bar_mu           ) 
+        self.wall_nu    =  self.get_wall( self.mean_bar_nu           ) 
+        self.wall_D0    =  self.get_wall( self.mean_bar_D0           ) 
+        self.wall_Cp    =  self.get_wall( self.mean_bar_Cp           ) 
+        self.wall_q     =  self.get_wall(-self.mean_bar_kappa_grady_T)
+        self.wall_H     =  self.get_wall( self.fav_H                 )
+        self.wall_dudy  =  self.get_wall( self.dy(self.mean_bar_u)   )
 
         # Edge values
-        self.inf_p      =  self.mean_bar_p            [-1]
-        self.inf_a      =  self.mean_bar_a            [-1]
-        self.inf_M      =  self.mean_bar_M            [-1]
-        self.inf_Cp     =  self.mean_bar_Cp           [-1]
-        self.inf_Cv     =  self.mean_bar_Cv           [-1]
-        self.inf_rho    =  self.mean_bar_rho          [-1]
-        self.inf_mu     =  self.mean_bar_mu           [-1]
-        self.inf_nu     =  self.mean_bar_nu           [-1]
-        self.inf_D0     =  self.mean_bar_D0           [-1]
-        self.inf_Cp     =  self.mean_bar_Cp           [-1]
-        self.inf_q      = -self.mean_bar_kappa_grady_T[-1]
-        self.inf_H      =  self.fav_H                 [-1]
-        self.inf_dudy   =  self.dy(self.mean_bar_u)   [-1]
+        self.inf_p      =  self.get_inf( self.mean_bar_p            )
+        self.inf_a      =  self.get_inf( self.mean_bar_a            )
+        self.inf_M      =  self.get_inf( self.mean_bar_M            )
+        self.inf_Cp     =  self.get_inf( self.mean_bar_Cp           )
+        self.inf_Cv     =  self.get_inf( self.mean_bar_Cv           )
+        self.inf_rho    =  self.get_inf( self.mean_bar_rho          )
+        self.inf_mu     =  self.get_inf( self.mean_bar_mu           )
+        self.inf_nu     =  self.get_inf( self.mean_bar_nu           )
+        self.inf_D0     =  self.get_inf( self.mean_bar_D0           )
+        self.inf_Cp     =  self.get_inf( self.mean_bar_Cp           )
+        self.inf_q      =  self.get_inf(-self.mean_bar_kappa_grady_T)
+        self.inf_H      =  self.get_inf( self.fav_H                 )
+        self.inf_dudy   =  self.get_inf( self.dy(self.mean_bar_u)   )
 
         # Compute delta (BL thickness)
         jdelta = self.Ny-1
@@ -835,10 +896,22 @@ class summary():
         self.turnover_time    = self.delta      / self.u_tau
         self.flowthrough_time = self.Lx         / self.edge_U
         self.skin_friction    = 2.0 * np.power((self.u_tau/self.edge_U),2) * self.wall_rho/self.edge_rho
-        self.T_total          = self.inf_H      / self.inf_Cp
+        if self.inf_Cp is None:
+            self.T_total          = None
+        else:
+            self.T_total          = self.inf_H      / self.inf_Cp
+
         self.M_tau            = self.u_tau      / self.wall_a
-        self.T_tau            = self.wall_q     / (self.wall_rho * self.wall_Cp * self.u_tau)
-        self.B_q              = self.wall_q     / (self.wall_rho * self.wall_Cp * self.u_tau * self.wall_T)
+        if self.wall_Cp is None:
+            self.T_tau            = None
+        else:
+            self.T_tau            = self.wall_q     / (self.wall_rho * self.wall_Cp * self.u_tau)
+
+        if self.wall_Cp is None:
+            self.B_q              = None
+        else:
+            self.B_q              = self.wall_q     / (self.wall_rho * self.wall_Cp * self.u_tau * self.wall_T)
+
         self.F_injection      = self.wall_rho * self.wall_V / (self.inf_rho * self.inf_U)
 
         # Box size and resolution parameters
@@ -891,7 +964,10 @@ class summary():
         print "W_inf              = ", self.inf_W
         print "T_inf              = ", self.inf_T
         print "T_total            = ", self.T_total
-        print "T_wall/T_total     = ", self.wall_T / self.T_total
+
+        if self.T_total is not None:
+            print "T_wall/T_total     = ", self.wall_T / self.T_total
+
         print "M_inf              = ", self.inf_M
         print "rho_inf            = ", self.inf_rho
         print "p_inf              = ", self.inf_p
@@ -961,11 +1037,31 @@ class summary():
         return ku * self.y_plus * (1-np.exp(-self.y_plus*np.sqrt(rho*f_wallV)/mu/A_plus))
 
     # Some convenience functions:
+    def get_wall(self, f):
+        if f is None:
+            return None
+        else:
+            return f[0]
+
+    def get_inf(self, f):
+        if f is None:
+            return None
+        else:
+            return f[-1]
+
     def get_fav(self, rho_f, rho):
-        return rho_f / rho
+        if rho_f is None:
+            return None
+        else:
+            return rho_f / rho
 
     def get_rho_fpp_gpp(self, rho_f_g, rho, fav_f, fav_g):
-        return rho_f_g - rho * fav_f * fav_g
+        if (rho_f_g is None or
+            fav_f   is None or
+            fav_g   is None):
+            return None
+        else:
+            return rho_f_g - rho * fav_f * fav_g
 
     def get_rho_fpp_fpp_gpp(self, rho_f_f_g, rho_f_f, rho_f_g, rho, fav_f, fav_g):
         return rho_f_f_g - 2 * rho_f_g * fav_f - rho_f_f* fav_g + 2 * rho * fav_g * fav_f * fav_f
@@ -977,7 +1073,12 @@ class summary():
                           -            rho * fav_f * fav_g  * fav_h)
 
     def get_fp_gp(self, f_g, bar_f, bar_g):
-        return f_g - bar_f * bar_g
+        if (f_g   is None or
+            bar_f is None or
+            bar_g is None):
+            return None
+        else:
+            return f_g - bar_f * bar_g
 
     def get_fp_fp(self, f_f, bar_f):
         return self.get_fp_gp(f_f, bar_f, bar_f)
