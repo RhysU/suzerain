@@ -795,18 +795,29 @@ def plot_rho_E(data, y=None, vert=1, ax=None, show_residual=False, **plotargs):
     return ax.figure
 
 
-def traceframe(grepkey, fnames):
+def traceframe(grepkey, fnames, zerotime=False):
     """
-    Build a DataFrame from data within possibly many state.dat, qoi.dat, or
-    bc.dat files using the 4th column 't' as the index.  Logging level,
+    Build a DataFrame from data within possibly many state.dat, qoi.dat,
+    or bc.dat files using the 4th column 't' as the index.  Logging level,
     time since binary launch, and time step number information is omitted.
+    If zerotime is True, time will be shifted so the first time
+    index is zero.
     """
     r = pd.DataFrame()
+
     for fname in fnames:
         f = os.popen('grep "%s" %s' % (grepkey, fname))
         t = pd.read_table(f, index_col=3, sep=r"\s*")
         t = t.drop(t.columns[0:2]+t.columns[3:4], axis=1)
         r = r.combine_first(t)
+
+    # Based on http://stackoverflow.com/questions/14110721
+    # Inplace=True would be nice but it isn't available in older Pandas
+    if zerotime:
+        t = r.reset_index()
+        t.t -= t.t[0]
+        r = t.set_index(['t'])
+
     return r
 
 
@@ -945,19 +956,20 @@ def plot_relaminarization(dnames,
                           v_wallplus=None,
                           p_ex=None,
                           delta99=None,
+                          zerotime=False,
                           **kwargs):
     """
     Prepare a relaminarization study plot given job directories dnames.
     If provided, Ma_e, p_ex, etc. are used to plot target values.
     """
     # Load the data from various source files
-    pbulk = traceframe('prod.bulk',  (s+"/qoi.dat" for s in dnames))
-    pg    = traceframe('bl.pg',      (s+"/qoi.dat" for s in dnames))
-    qoi   = traceframe('bl.qoi',     (s+"/qoi.dat" for s in dnames))
-    Re    = traceframe('bl.Re',      (s+"/qoi.dat" for s in dnames))
-    thick = traceframe('bl.thick',   (s+"/qoi.dat" for s in dnames))
-    visc  = traceframe('bl.visc',    (s+"/qoi.dat" for s in dnames))
-    famax = traceframe('favre.amax', (s+"/qoi.dat" for s in dnames))
+    pbulk = traceframe('prod.bulk',  (s+"/qoi.dat" for s in dnames), zerotime)
+    pg    = traceframe('bl.pg',      (s+"/qoi.dat" for s in dnames), zerotime)
+    qoi   = traceframe('bl.qoi',     (s+"/qoi.dat" for s in dnames), zerotime)
+    Re    = traceframe('bl.Re',      (s+"/qoi.dat" for s in dnames), zerotime)
+    thick = traceframe('bl.thick',   (s+"/qoi.dat" for s in dnames), zerotime)
+    visc  = traceframe('bl.visc',    (s+"/qoi.dat" for s in dnames), zerotime)
+    famax = traceframe('favre.amax', (s+"/qoi.dat" for s in dnames), zerotime)
 
     # Produce a relaminarization summary figure
     fig = plt.figure(**kwargs)
