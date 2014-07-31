@@ -1067,11 +1067,11 @@ def plot_relaminarization(dnames,
     ax.plot(visc.index, visc['cf'].values)
     ax.set_ylabel(r'$c_f$')
     ax.yaxis.set_major_locator(ticker.MaxNLocator( 4))
-    ax.xaxis.set_major_locator(ticker.MaxNLocator(10))
     #
     ax.set_xlabel(r'Nondimensional time $t\,u_0 / l_0$')
     #
     for ax in fig.axes:
+        ax.xaxis.set_major_locator(ticker.MaxNLocator(10))
         ax.margins(0.025, 0.08)
     #
     fig.tight_layout()
