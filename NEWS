@@ -1,3 +1,17 @@
+What's new in suzerain 0.1.7
+----------------------------
+
+Postprocessing in support of Rhys' dissertation
+
+This release contains the following with tickets numbers referencing content
+from https://red.ices.utexas.edu/projects/suzerain:
+
+ * Feature #2164: Create post-processing scripts based on HDF5 channel_mean output
+ * Feature #3127: Add derivative operators to summary file
+ * Feature #3128: Correct running averages of implicit forcing
+ * Bug #2444: Determine why FANS budget isn't coming back nearly zero
+
+
 What's new in suzerain 0.1.6
 ----------------------------
 

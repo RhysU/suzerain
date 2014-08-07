@@ -1,6 +1,6 @@
-# Generated perfect_decl.py from perfect_decl.raw Makefile.am
-# Based upon MD5 6b8c96485fb75443f29d230919569236  perfect_decl.raw
-# Based upon MD5 46d2f5d1f7e4e8c7254b2897ae881f35  Makefile.am
+# Generated /workspace/rhys/Build/sz-gcc-debug/../sz/postproc/perfect_decl.py from /workspace/rhys/Build/sz-gcc-debug/../sz/postproc/perfect_decl.raw ../../sz/postproc/Makefile.am
+# Based upon MD5 6b8c96485fb75443f29d230919569236  /workspace/rhys/Build/sz-gcc-debug/../sz/postproc/perfect_decl.raw
+# Based upon MD5 840fd69e96e9ab60e478f76e9a012fc8  ../../sz/postproc/Makefile.am
 def pointwise(gam, Ma, Re, Pr, y, bar, rms, tilde, local, tke):
     """
     Populate Bunch-like bar, rms, tilde, etc. from pointwise

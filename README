@@ -4,9 +4,9 @@
 0. Introduction
 ---------------
 
-This document describes how to build suzerain from source code on Unix-like
+This document describes how to build Suzerain from source code on Unix-like
 systems.  For information on the numerics, please see the model documents
-under writeups/ that are build when a LaTeX installation is available.
+under writeups/ that are built when a LaTeX installation is available.
 
 
 1. Dependencies
@@ -53,4 +53,14 @@ src directory.  Related documentation will be built in the doc subdirectory.
 4. Testing
 --------------
 
-Unit tests can be compiled and run using 'make check'.
+Automated tests can be compiled and run using 'make check'.
+
+
+5. Attribution
+--------------
+
+If you find Suzerain useful towards publishing research, please consider citing:
+
+Rhys Ulerich.  Reducing Turbulence- and Transition-Driven Uncertainty in
+Aerothermodynamic Heating Predictions for Blunt-Bodied Reentry Vehicles.  PhD
+thesis, The University of Texas at Austin, 2014.
