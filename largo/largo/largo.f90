@@ -49,7 +49,9 @@ module largo
 #endif
 
 ! Use each largo module exporting all publicly visible symbols from each one
-  use largo_workspace
+! Rename conflicting type aliases from largo_workspace to avoid ambiguity with
+! this module's own iso_c_binding renames (gfortran 10+ rejects duplicates)
+  use largo_workspace, lws_ptr => largo_ptr, lws_wptr => largo_workspace_ptr
   use largo_bl_spatial
   use largo_bl_spatial_first_order
   use largo_bl_spatial_mixed
