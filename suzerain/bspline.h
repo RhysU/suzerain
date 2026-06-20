@@ -87,7 +87,6 @@ extern "C" {
  * @param[in] dB Temporary storage to use of size <tt>w->k</tt> by
  *            no less than <tt>nderiv + 1</tt>.
  * @param[in] w Workspace to use.
- * @param[in] dw Workspace to use.
  *
  * @return ::SUZERAIN_SUCCESS on success.  On error calls suzerain_error() and
  *      returns one of #suzerain_error_status.
@@ -103,8 +102,7 @@ suzerain_bspline_linear_combination(
     double * values,
     const size_t ldvalues,
     gsl_matrix *dB,
-    gsl_bspline_workspace *w,
-    gsl_bspline_deriv_workspace *dw);
+    gsl_bspline_workspace *w);
 
 /**
  * Evaluate a function and its derivatives based upon a linear combination of
@@ -143,7 +141,6 @@ suzerain_bspline_linear_combination(
  * @param[in] dB Temporary storage to use of size <tt>w->k</tt> by
  *            no less than <tt>nderiv + 1</tt>.
  * @param[in] w Workspace to use.
- * @param[in] dw Workspace to use.
  *
  * @return ::SUZERAIN_SUCCESS on success.  On error calls suzerain_error() and
  *      returns one of #suzerain_error_status.
@@ -159,12 +156,11 @@ suzerain_bspline_linear_combination_complex(
     complex_double *values,
     const size_t ldvalues,
     gsl_matrix *dB,
-    gsl_bspline_workspace *w,
-    gsl_bspline_deriv_workspace *dw);
+    gsl_bspline_workspace *w);
 
 /**
  * Using the function specified by B-spline coefficients \c coeffs
- * for basis \c w and \c dw, find the \c location at which the
+ * for basis \c w, find the \c location at which the
  * function's \c nderiv derivative crosses \c value within the region
  * <tt>[lower, upper]</tt>.  The crossing must be known <i>a priori</i>
  * to exist by the intermediate value theorem.  If multiple crossings
@@ -189,7 +185,6 @@ suzerain_bspline_linear_combination_complex(
  * @param[in] dB Temporary storage to use of size <tt>w->k</tt> by
  *            no less than <tt>nderiv + 1</tt>.
  * @param[in] w Workspace to use.
- * @param[in] dw Workspace to use.
  *
  * @return ::SUZERAIN_SUCCESS on success and returns the answer in
  * <code>*location</code>.  If convergence is slow, ::SUZERAIN_CONTINUE
@@ -211,8 +206,7 @@ suzerain_bspline_crossing(
     const double epsrel,
     double * location,
     gsl_matrix *dB,
-    gsl_bspline_workspace *w,
-    gsl_bspline_deriv_workspace *dw);
+    gsl_bspline_workspace *w);
 
 /**
  * Compute the coefficients \f$ \gamma_{i} \f$ for <code>0 <= i < w->n</code>
@@ -231,7 +225,6 @@ suzerain_bspline_crossing(
  * @param[in]  dB Temporary storage to use of size <tt>w->k</tt> by
  *             no less than <tt>nderiv + 1</tt>.
  * @param[in]  w Workspace to use (which sets the integration bounds).
- * @param[in]  dw Workspace to use.
  *
  * @return ::SUZERAIN_SUCCESS on success.  On error calls suzerain_error() and
  *      returns one of #suzerain_error_status.
@@ -244,8 +237,7 @@ suzerain_bspline_integration_coefficients(
     double lo,
     double hi,
     gsl_matrix *dB,
-    gsl_bspline_workspace *w,
-    gsl_bspline_deriv_workspace *dw);
+    gsl_bspline_workspace *w);
 
 /**
  * Compute the "distance" between two B-spline workspaces.  Distance is "huge"
@@ -321,8 +313,7 @@ suzerain_bspline_linear_combination_matrix(
     double *a,
     double *lda,
     gsl_matrix *dB,
-    gsl_bspline_workspace *w,
-    gsl_bspline_deriv_workspace dw);
+    gsl_bspline_workspace *w);
 #endif /* SUZERAIN_PARSED_BY_DOXYGEN */
 
 /**

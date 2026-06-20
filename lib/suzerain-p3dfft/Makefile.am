@@ -20,6 +20,7 @@ noinst_HEADERS = p3dfft_internal.h p3dfft_s.h p3dfft_d.h
 AM_CPPFLAGS     += $(FFTW3_CFLAGS)  # Make FFTW available for compilation
 AM_CPPFLAGS     += -DFFTW           # Always use FFTW for the FFTs
 AM_CPPFLAGS     += -DSTRIDE1        # Always use stride one packing option
+AM_FCFLAGS       = $(FFTW3_FCFLAGS) $(FCFLAGS_ALLOW_ARGUMENT_MISMATCH)
 AM_LIBTOOLFLAGS  = --tag=FC         # Link with Fortran toolchain
 
 # Install a convenience library containing our one-off version of P3DFFT 2.3.

@@ -46,12 +46,9 @@
 namespace suzerain {
 
 /**
- * Provides a thin RAII wrapper for a combined
- * <code>gsl_bspline_workspace</code> and
- * <code>gsl_bspline_deriv_workspace</code>.  The wrapper includes convenience
- * methods to simplify working with the GSL API.
- * Non-constant methods are not
- * thread-safe.
+ * Provides a thin RAII wrapper for a <code>gsl_bspline_workspace</code>.
+ * The wrapper includes convenience methods to simplify working with the GSL
+ * API.  Non-constant methods are not thread-safe.
  */
 class bspline : public boost::noncopyable {
 public:
@@ -80,13 +77,11 @@ public:
      * @param nbreak   Number of breakpoints.
      * @param breakpts Strictly increasing breakpoint locations.
      *
-     * @see gsl_bspline_alloc(), gsl_bspline_deriv_alloc(), and
-     *      gsl_bspline_knots()
+     * @see gsl_bspline_alloc() and gsl_bspline_knots()
      */
     bspline(int k, const from_breakpoints &tag,
             int nbreak, const real_t * breakpts)
         : bw(gsl_bspline_alloc(k, nbreak)),
-          dbw(gsl_bspline_deriv_alloc(k)),
           db_(gsl_matrix_alloc(k, k))
     {
         SUZERAIN_UNUSED(tag);
@@ -109,14 +104,12 @@ public:
      * @param[out] abserr     Absolute error over all approximated \c abscissae
      *                        when not NULL.
      *
-     * @see gsl_bspline_alloc(), gsl_bspline_deriv_alloc(), and
-     *      gsl_bspline_knots_greville() with the latter detailing the best
-     *      approximation requirements.
+     * @see gsl_bspline_alloc() and gsl_bspline_knots_greville() with the
+     *      latter detailing the best approximation requirements.
      */
     bspline(int k, const from_abscissae &tag,
             int nabscissae, const real_t * abscissae, real_t * abserr = NULL)
         : bw(gsl_bspline_alloc(k, /* nbreak == */ nabscissae - k + 2)),
-          dbw(gsl_bspline_deriv_alloc(k)),
           db_(gsl_matrix_alloc(k, k))
     {
         SUZERAIN_UNUSED(tag);
@@ -128,7 +121,6 @@ public:
     /** @see gsl_bspline_free */
     ~bspline() {
         gsl_matrix_free(db_);
-        gsl_bspline_deriv_free(dbw);
         gsl_bspline_free(bw);
     }
 
@@ -137,9 +129,6 @@ public:
 
     /** The wrapped GSL B-spline workspace. */
     gsl_bspline_workspace * const bw;
-
-    /** The wrapped GSL B-spline derivative workspace. */
-    gsl_bspline_deriv_workspace * const dbw;
 
     /**
      * @copybrief  suzerain_bsplineop_workspace#k
@@ -215,7 +204,7 @@ public:
                            const std::size_t ldvalues = 0)
     {
         return suzerain_bspline_linear_combination(nderiv, coeffs, npoints,
-                points, values, ldvalues, db_, bw, dbw);
+                points, values, ldvalues, db_, bw);
     }
 
     /**
@@ -230,7 +219,7 @@ public:
     {
         return suzerain_bspline_linear_combination(nderiv, coeffs,
                 1, &point, // Evaluate at one single point
-                values, ldvalues, db_, bw, dbw);
+                values, ldvalues, db_, bw);
     }
 
     /**
@@ -254,7 +243,7 @@ public:
                 reinterpret_cast<const complex_t *>(coeffs),
                 npoints, points,
                 reinterpret_cast<complex_t *>(values),
-                ldvalues, db_, bw, dbw);
+                ldvalues, db_, bw);
     }
 
     /**
@@ -277,7 +266,7 @@ public:
                 reinterpret_cast<const complex_t *>(coeffs),
                 1, &point, // Evaluate at one single point
                 reinterpret_cast<complex_t *>(values),
-                ldvalues, db_, bw, dbw);
+                ldvalues, db_, bw);
     }
 
     /**
@@ -296,7 +285,7 @@ public:
     {
         return suzerain_bspline_crossing(
                 nderiv, coeffs, value, lower, upper,
-                maxiter, epsabs, epsrel, location, db_, bw, dbw);
+                maxiter, epsabs, epsrel, location, db_, bw);
     }
 
     /**
@@ -310,7 +299,7 @@ public:
             const real_t hi =  std::numeric_limits<real_t>::max())
     {
         return suzerain_bspline_integration_coefficients(
-                nderiv, coeffs, 1, lo, hi, db_, bw, dbw);
+                nderiv, coeffs, 1, lo, hi, db_, bw);
     }
 
     /**
@@ -334,7 +323,7 @@ public:
         // Populate the real components
         return suzerain_bspline_integration_coefficients(
                 nderiv, reinterpret_cast<real_t *>(coeffs),
-                sizeof(complex_t)/sizeof(real_t), lo, hi, db_, bw, dbw);
+                sizeof(complex_t)/sizeof(real_t), lo, hi, db_, bw);
     }
 
     /**
@@ -364,7 +353,7 @@ public:
               int nderiv,
               enum suzerain_bsplineop_method method
                     = SUZERAIN_BSPLINEOP_COLLOCATION_GREVILLE)
-        : w_(suzerain_bsplineop_alloc(b.bw, b.dbw, nderiv, method)) {}
+        : w_(suzerain_bsplineop_alloc(b.bw, nderiv, method)) {}
 
     ~bsplineop() { suzerain_bsplineop_free(w_); }
 

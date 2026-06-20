@@ -12,6 +12,18 @@ PKG_CHECK_MODULES(FFTW3,m4_default([$1],[fftw3 > 3.2]))
 AC_SUBST(FFTW3_CFLAGS)
 AC_SUBST(FFTW3_LIBS)
 
+# Determine Fortran include flags for fftw3.f
+# pkg-config may omit -I for standard paths, but Fortran include directives
+# need explicit -I flags to locate fftw3.f
+FFTW3_FCFLAGS="$FFTW3_CFLAGS"
+if test -z "$FFTW3_FCFLAGS"; then
+    fftw3_includedir=`$PKG_CONFIG --variable=includedir fftw3 2>/dev/null`
+    if test -n "$fftw3_includedir" && test -f "$fftw3_includedir/fftw3.f"; then
+        FFTW3_FCFLAGS="-I$fftw3_includedir"
+    fi
+fi
+AC_SUBST(FFTW3_FCFLAGS)
+
 # Prepare for FFTW threading search
 ax_fftw3_libs_pre=`echo  $FFTW3_LIBS | $SED -e 's/-lfftw3.*$//'`
 ax_fftw3_libs_post=`echo $FFTW3_LIBS | $SED -e 's/^.*-lfftw3/-lfftw3/'`
