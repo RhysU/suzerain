@@ -52,8 +52,7 @@ suzerain_bspline_linear_combination(
     double * values,
     const size_t ldvalues,
     gsl_matrix *dB,
-    gsl_bspline_workspace *w,
-    gsl_bspline_deriv_workspace *dw)
+    gsl_bspline_workspace *w)
 {
     /* Parameter sanity checks */
     if (SUZERAIN_UNLIKELY(ldvalues && ldvalues < npoints)) {
@@ -67,7 +66,7 @@ suzerain_bspline_linear_combination(
     for (size_t i = 0; i < npoints; ++i) {
 
         gsl_bspline_deriv_eval_nonzero(points[i], nderiv,
-                dB, &istart, &iend, w, dw);
+                dB, &istart, &iend, w);
 
         const double * coeff_start = coeffs + istart;
 
@@ -92,8 +91,7 @@ suzerain_bspline_linear_combination_complex(
     complex_double *values,
     const size_t ldvalues,
     gsl_matrix *dB,
-    gsl_bspline_workspace *w,
-    gsl_bspline_deriv_workspace *dw)
+    gsl_bspline_workspace *w)
 {
     /* Parameter sanity checks */
     if (SUZERAIN_UNLIKELY(ldvalues && ldvalues < npoints)) {
@@ -107,7 +105,7 @@ suzerain_bspline_linear_combination_complex(
     for (size_t i = 0; i < npoints; ++i) {
 
         gsl_bspline_deriv_eval_nonzero(points[i], nderiv,
-                dB, &istart, &iend, w, dw);
+                dB, &istart, &iend, w);
 
         const complex_double * coeff_start = coeffs + istart;
 
@@ -131,7 +129,6 @@ typedef struct {
     const double                *coeffs;
     gsl_matrix                  *dB;
     gsl_bspline_workspace       *w;
-    gsl_bspline_deriv_workspace *dw;
     double                       offset; // Additive constant
 } linear_combination_params;
 
@@ -143,7 +140,7 @@ double linear_combination_function(
     double retval = GSL_NAN;
     linear_combination_params * p = (linear_combination_params *) params;
     suzerain_bspline_linear_combination(
-            p->nderiv, p->coeffs, 1U, &x, &retval, 0U, p->dB, p->w, p->dw);
+            p->nderiv, p->coeffs, 1U, &x, &retval, 0U, p->dB, p->w);
     return retval + p->offset;
 }
 
@@ -163,11 +160,10 @@ suzerain_bspline_crossing_internal(
     double * location,
     gsl_matrix *dB,
     gsl_bspline_workspace *w,
-    gsl_bspline_deriv_workspace *dw,
     gsl_root_fsolver *s)
 {
     // Wrap the incoming parameters into an gsl_function for evaluation
-    linear_combination_params params = { nderiv, coeffs, dB, w, dw, -value };
+    linear_combination_params params = { nderiv, coeffs, dB, w, -value };
     gsl_function f                   = { linear_combination_function, &params};
 
     // Initialize fsolver on [lower, upper]
@@ -204,8 +200,7 @@ suzerain_bspline_crossing(
     const double epsrel,
     double * location,
     gsl_matrix *dB,
-    gsl_bspline_workspace *w,
-    gsl_bspline_deriv_workspace *dw)
+    gsl_bspline_workspace *w)
 {
     // Initialize fsolver to use Brent-Dekker
     // Bracketing, rather than fdfsolver, avoids exiting user-specified region
@@ -217,7 +212,7 @@ suzerain_bspline_crossing(
     // Invoke internal method relying on pre-existing workspace
     const int status = suzerain_bspline_crossing_internal(
             nderiv, coeffs, value, lower, upper, maxiter,
-            epsabs, epsrel, location, dB, w, dw, s);
+            epsabs, epsrel, location, dB, w, s);
 
     // Clean up and return
     gsl_root_fsolver_free(s);
@@ -232,8 +227,7 @@ suzerain_bspline_integration_coefficients(
     double lo,
     double hi,
     gsl_matrix *dB,
-    gsl_bspline_workspace *w,
-    gsl_bspline_deriv_workspace *dw)
+    gsl_bspline_workspace *w)
 {
     /* Obtain an appropriate order Gauss-Legendre integration rule */
     gsl_integration_glfixed_table * const tbl
@@ -269,7 +263,7 @@ suzerain_bspline_integration_coefficients(
                 /* Evaluate basis functions at point xj */
                 size_t kstart, kend;
                 gsl_bspline_deriv_eval_nonzero(xj, nderiv,
-                        dB, &kstart, &kend, w, dw);
+                        dB, &kstart, &kend, w);
 
                 /* Accumulate weighted basis evaluations into coeffs */
                 for (size_t k = kstart; k <= kend; ++k) {

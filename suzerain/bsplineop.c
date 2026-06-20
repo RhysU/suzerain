@@ -48,7 +48,6 @@ int
 suzerain_bsplineop_determine_operator_bandwidths(
         gsl_matrix *db,
         gsl_bspline_workspace *bw,
-        gsl_bspline_deriv_workspace *dbw,
         suzerain_bsplineop_workspace *w);
 
 static
@@ -56,7 +55,6 @@ int
 suzerain_bsplineop_determine_collocation_bandwidths(
         gsl_matrix *db,
         gsl_bspline_workspace *bw,
-        gsl_bspline_deriv_workspace *dbw,
         suzerain_bsplineop_workspace *w);
 
 static
@@ -69,7 +67,6 @@ int
 suzerain_bsplineop_create_operators(
         gsl_matrix *db,
         gsl_bspline_workspace *bw,
-        gsl_bspline_deriv_workspace *dbw,
         suzerain_bsplineop_workspace *w);
 
 static
@@ -77,7 +74,6 @@ int
 suzerain_bsplineop_create_collocation_operator_transposes(
         gsl_matrix *db,
         gsl_bspline_workspace *bw,
-        gsl_bspline_deriv_workspace *dbw,
         suzerain_bsplineop_workspace *w);
 
 static
@@ -85,7 +81,6 @@ int
 suzerain_bsplineop_create_galerkin_operators(
         gsl_matrix *db,
         gsl_bspline_workspace *bw,
-        gsl_bspline_deriv_workspace *dbw,
         suzerain_bsplineop_workspace *w);
 
 static
@@ -100,14 +95,12 @@ compute_banded_collocation_derivative_submatrix_transpose(
     const int npoints,
     const double * points,
     gsl_bspline_workspace * bw,
-    gsl_bspline_deriv_workspace * dbw,
     gsl_matrix * db,
     double ** const D);
 
 suzerain_bsplineop_workspace *
 suzerain_bsplineop_alloc(
     gsl_bspline_workspace *bw,
-    gsl_bspline_deriv_workspace *dbw,
     int nderiv,
     enum suzerain_bsplineop_method method)
 {
@@ -154,7 +147,7 @@ suzerain_bsplineop_alloc(
     w->nderiv = nderiv;
 
     /* Storage parameters for BLAS/lapack-compatible general band matrix */
-    if (suzerain_bsplineop_determine_operator_bandwidths(db, bw, dbw, w)) {
+    if (suzerain_bsplineop_determine_operator_bandwidths(db, bw, w)) {
         gsl_matrix_free(db);
         suzerain_bsplineop_free(w);
         SUZERAIN_ERROR_NULL("failure determining operator bandwidths",
@@ -194,7 +187,7 @@ suzerain_bsplineop_alloc(
     }
 
     /* Calculate operator matrices */
-    if (suzerain_bsplineop_create_operators(db, bw, dbw, w)) {
+    if (suzerain_bsplineop_create_operators(db, bw, w)) {
         gsl_matrix_free(db);
         suzerain_bsplineop_free(w);
         SUZERAIN_ERROR_NULL("Error creating operator matrices",
@@ -391,14 +384,13 @@ int
 suzerain_bsplineop_determine_operator_bandwidths(
         gsl_matrix *db,
         gsl_bspline_workspace *bw,
-        gsl_bspline_deriv_workspace *dbw,
         suzerain_bsplineop_workspace *w)
 {
     /* Compute the operator bandwidths based on the supplied method */
     switch (w->method) {
     case SUZERAIN_BSPLINEOP_COLLOCATION_GREVILLE:
         return suzerain_bsplineop_determine_collocation_bandwidths(
-                db, bw, dbw, w);
+                db, bw, w);
     case SUZERAIN_BSPLINEOP_GALERKIN_L2:
         return suzerain_bsplineop_determine_galerkin_bandwidths(w);
     default:
@@ -411,7 +403,6 @@ int
 suzerain_bsplineop_determine_collocation_bandwidths(
         gsl_matrix *db,
         gsl_bspline_workspace *bw,
-        gsl_bspline_deriv_workspace *dbw,
         suzerain_bsplineop_workspace *w)
 {
     /* Initially set maximum collocation operator band storage parameters */
@@ -466,7 +457,7 @@ suzerain_bsplineop_determine_collocation_bandwidths(
     if (compute_banded_collocation_derivative_submatrix_transpose(
              0, 0,
              w->nderiv, w->kl, w->ku, w->ld,
-             w->k, ul_points, bw, dbw, db, ul_D_T)) {
+             w->k, ul_points, bw, db, ul_D_T)) {
         suzerain_blas_free(scratch[0]);
         suzerain_blas_free(scratch);
         suzerain_blas_free(points);
@@ -477,7 +468,7 @@ suzerain_bsplineop_determine_collocation_bandwidths(
     if (compute_banded_collocation_derivative_submatrix_transpose(
              lr_offset, lr_offset,
              w->nderiv, w->kl, w->ku, w->ld,
-             w->k, lr_points, bw, dbw, db, lr_D_T)) {
+             w->k, lr_points, bw, db, lr_D_T)) {
         suzerain_blas_free(scratch[0]);
         suzerain_blas_free(scratch);
         suzerain_blas_free(points);
@@ -543,16 +534,15 @@ int
 suzerain_bsplineop_create_operators(
         gsl_matrix *db,
         gsl_bspline_workspace *bw,
-        gsl_bspline_deriv_workspace *dbw,
         suzerain_bsplineop_workspace *w)
 {
     /* Compute the operator bandwidths based on the supplied method */
     switch (w->method) {
     case SUZERAIN_BSPLINEOP_COLLOCATION_GREVILLE:
         return suzerain_bsplineop_create_collocation_operator_transposes(
-                db, bw, dbw, w);
+                db, bw, w);
     case SUZERAIN_BSPLINEOP_GALERKIN_L2:
-        return suzerain_bsplineop_create_galerkin_operators(db, bw, dbw, w);
+        return suzerain_bsplineop_create_galerkin_operators(db, bw, w);
     default:
         SUZERAIN_ERROR("unknown method", SUZERAIN_ESANITY);
     }
@@ -563,7 +553,6 @@ int
 suzerain_bsplineop_create_collocation_operator_transposes(
         gsl_matrix *db,
         gsl_bspline_workspace *bw,
-        gsl_bspline_deriv_workspace *dbw,
         suzerain_bsplineop_workspace *w)
 {
     /* Evaluate basis at collocation points: d^k/dx^k B_i(\xi_j) */
@@ -579,7 +568,7 @@ suzerain_bsplineop_create_collocation_operator_transposes(
     /* Compute the full derivative operator matrix's transpose */
     if (compute_banded_collocation_derivative_submatrix_transpose(
              0, 0, w->nderiv, w->kl, w->ku, w->ld,
-             w->n, points, bw, dbw, db, w->D_T)) {
+             w->n, points, bw, db, w->D_T)) {
         suzerain_blas_free(points);
         SUZERAIN_ERROR("Error computing operator matrices", SUZERAIN_ESANITY);
     }
@@ -601,7 +590,6 @@ compute_banded_collocation_derivative_submatrix_transpose(
     const int npoints,
     const double * points,
     gsl_bspline_workspace * bw,
-    gsl_bspline_deriv_workspace * dbw,
     gsl_matrix * db,
     double ** const D_T)
 {
@@ -616,7 +604,7 @@ compute_banded_collocation_derivative_submatrix_transpose(
     for (int i = 0; i < npoints; ++i) {
         size_t dbjstart, dbjend;
         gsl_bspline_deriv_eval_nonzero(points[i], nderiv, db,
-                                       &dbjstart, &dbjend, bw, dbw);
+                                       &dbjstart, &dbjend, bw);
 
         /* Coerce dbjstart/dbjend to stay within the submatrix of interest */
         const size_t jstart = GSL_MAX(dbjstart, (size_t) joffset);
@@ -673,7 +661,6 @@ int
 suzerain_bsplineop_create_galerkin_operators(
         gsl_matrix *db,
         gsl_bspline_workspace *bw,
-        gsl_bspline_deriv_workspace *dbw,
         suzerain_bsplineop_workspace *w)
 {
     /* PRECONDITION: D[0]...D[nderiv] must have been filled with zeros */
@@ -716,7 +703,7 @@ suzerain_bsplineop_create_galerkin_operators(
                 size_t istart, iend;
                 gsl_bspline_deriv_eval_nonzero(xk, w->nderiv,
                                                db, &istart, &iend,
-                                               bw, dbw);
+                                               bw);
 
                 /* ...scale by the corresponding Gauss weight...         */
                 /* ...times the i-th DOF evaluated at the Gauss point... */
