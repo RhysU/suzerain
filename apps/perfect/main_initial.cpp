@@ -140,7 +140,7 @@ suzerain::perfect::driver_initial::run(int argc, char **argv)
     timedef = make_shared<support::definition_time>(/* per Venugopal */ 0.72);
 
     // Establish default MMS parameters and plug into program options
-    msoln = make_shared<manufactured_solution>(
+    msoln = boost::make_shared<manufactured_solution>(
             manufactured_solution::default_caption
             + " (active only when --mms supplied)");
 

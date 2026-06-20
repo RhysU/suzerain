@@ -1642,8 +1642,7 @@ void summarize_boundary_layer_nature(
                                 prof.rho_u().col(0).data(),
                                 prof.u().col(0).data(),
                                 &thick,
-                                b.bw,
-                                b.dbw)) {
+                                b.bw)) {
             WARNONCE0("profile",
                       "suzerain_bl_compute_thicknesses(...) returned "
                       << err << " (" << suzerain_strerror(err) << ")");
@@ -1660,8 +1659,7 @@ void summarize_boundary_layer_nature(
                                 coeffs_inviscid.col(2).data(),
                                 coeffs_inviscid.col(3).data(),
                                 &thick,
-                                b.bw,
-                                b.dbw)) {
+                                b.bw)) {
             WARNONCE0("profile",
                       "suzerain_bl_compute_thicknesses_baseflow(...) returned "
                       << err << " (" << suzerain_strerror(err) << ")");
