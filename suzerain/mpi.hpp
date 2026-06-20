@@ -58,7 +58,7 @@ std::string error_string(const int errorcode);
  *
  * @throw std::logic_error if MPI_Init has not been called.
  */
-void ensure_mpi_initialized() throw (std::logic_error);
+void ensure_mpi_initialized();
 
 /**
  * Determine the size of the group associated with a communicator.

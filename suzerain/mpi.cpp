@@ -53,7 +53,7 @@ std::string error_string(const int errorcode)
     return retval.str();
 }
 
-void ensure_mpi_initialized() throw (std::logic_error)
+void ensure_mpi_initialized()
 {
     int flag;
     MPI_Initialized(&flag);

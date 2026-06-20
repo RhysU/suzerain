@@ -83,8 +83,7 @@ using namespace log4cxx::helpers;
  * Logger Hierarchy named at construction time.  See the addAppenderEvent()
  * implementation for the necessary evil.
  */
-class SubversiveASHEL : public virtual spi::HierarchyEventListener,
-                        public virtual ObjectImpl
+class SubversiveASHEL : public virtual spi::HierarchyEventListener
 {
 public:
     DECLARE_LOG4CXX_OBJECT(SubversiveASHEL)
@@ -93,13 +92,13 @@ public:
             LOG4CXX_CAST_ENTRY(HierarchyEventListener)
     END_LOG4CXX_CAST_MAP()
 
-    virtual void removeAppenderEvent(
-        const LoggerPtr&, const AppenderPtr&) { /* NOP */ }
+    void removeAppenderEvent(
+        const Logger*, const Appender*) override { /* NOP */ }
 
-    virtual void addAppenderEvent(
-        const LoggerPtr &logger, const AppenderPtr &appender);
+    void addAppenderEvent(
+        const Logger *logger, const Appender *appender) override;
 
-    virtual void setTarget(const LogString& target);
+    void setTarget(const LogString& target);
 
 protected:
 
@@ -116,24 +115,35 @@ void SubversiveASHEL::setTarget(const LogString& target)
     this->target = target;
 }
 
-void SubversiveASHEL::addAppenderEvent(const LoggerPtr &logger,
-                                       const AppenderPtr &appender)
+void SubversiveASHEL::addAppenderEvent(const Logger *logger,
+                                       const Appender *appender)
 {
     if (!this->target.length())
         throw RuntimeException("SubversiveASHEL::setTarget() not called");
 
     // Do nothing if logger is at or below this->target.
-    LoggerPtr ancestor = logger;
+    LoggerPtr ancestor = Logger::getLogger(logger->getName());
     do {
         if (0 == this->target.compare(ancestor->getName())) return;
-    } while (ancestor = ancestor->getParent());
+    } while ((ancestor = ancestor->getParent()));
+
+    // Find the AppenderPtr matching the raw pointer
+    LoggerPtr loggerPtr = Logger::getLogger(logger->getName());
+    AppenderPtr appenderPtr;
+    for (auto& a : loggerPtr->getAllAppenders()) {
+        if (a.get() == appender) {
+            appenderPtr = a;
+            break;
+        }
+    }
+    if (!appenderPtr) return;
 
     // Suppress adding of appenders outside of this->target's subloggers
-    const_cast<LoggerPtr&>(logger)->removeAppender(appender);
+    loggerPtr->removeAppender(appenderPtr);
 
     // Add appenders intended for RootLogger to this->target
-    if (0 == logger->getParent()) {
-        Logger::getLogger(target)->addAppender(appender);
+    if (!loggerPtr->getParent()) {
+        Logger::getLogger(target)->addAppender(appenderPtr);
     }
 }
 
@@ -205,7 +215,7 @@ void initialize(MPI_Comm, const char * const default_conf)
 
     // For ranks > 0 create a HierarchyEventListener managed by the repository
     if (worldrank > 0) {
-        SubversiveASHEL *p = new SubversiveASHEL();
+        auto p = std::make_shared<SubversiveASHEL>();
         p->setTarget(worldrankname);
         LogManager::getLoggerRepository()->addHierarchyEventListener(p);
     }

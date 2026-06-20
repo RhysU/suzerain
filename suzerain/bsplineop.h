@@ -187,8 +187,6 @@ typedef struct suzerain_bsplineop_workspace {
  *
  * @param[in] bw  A \c gsl_bspline_workspace instance which fixes the B-spline
  *                basis function order and breakpoints.
- * @param[in] dbw A \c gsl_bspline_deriv_workspace with an order
- *                at least that of \c bw.
  * @param[in] nderiv Highest derivative operator requested.  The zeroth
  *                   through \c nderiv-th operator will be available in
  *                   banded matrix form.
@@ -202,7 +200,6 @@ typedef struct suzerain_bsplineop_workspace {
 suzerain_bsplineop_workspace *
 suzerain_bsplineop_alloc(
     gsl_bspline_workspace *bw,
-    gsl_bspline_deriv_workspace *dbw,
     int nderiv,
     enum suzerain_bsplineop_method method);
 

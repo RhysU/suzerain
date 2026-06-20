@@ -44,7 +44,6 @@ namespace validation {
  */
 template< typename T >
 void ensure_positive(T t, const char * name = NULL)
-throw(std::invalid_argument)
 {
     // NOTE: t has non-const, non-reference type to avoid std::bind2nd issues
 
@@ -70,7 +69,6 @@ throw(std::invalid_argument)
 template< typename T >
 typename boost::disable_if<boost::is_unsigned<T> >::type
     ensure_nonnegative(T t, const char * name = NULL)
-throw(std::invalid_argument)
 {
     // NOTE: t has non-const, non-reference type to avoid std::bind2nd issues
 
@@ -95,7 +93,6 @@ throw(std::invalid_argument)
 template< typename T >
 typename boost::enable_if<boost::is_unsigned<T> >::type
 ensure_nonnegative(T t, const char * name = NULL)
-throw(std::invalid_argument)
 {
     // NOTE: t has non-const, non-reference type to avoid std::bind2nd issues
 
@@ -116,7 +113,6 @@ throw(std::invalid_argument)
 template< typename T >
 void ensure_bounded(T t, T lower, T upper, bool lower_inclusive = true,
     bool upper_inclusive = true, const char * name = NULL)
-throw(std::invalid_argument)
 {
     // NOTE: t has non-const, non-reference type to avoid std::bind2nd issues
 

@@ -50,23 +50,6 @@ array<
 }
 
 /**
- * Convert a 3 element array from XYZ to YXZ ordering.
- *
- * @param xyz to convert.
- *
- * @return A copy of <tt>xyz</tt> with the elements reordered.
- */
-template< typename EigenDenseType >
-array<
-    typename EigenDenseType::Scalar, 3
-> to_yxz(const EigenDenseType& xyz)
-{
-    array<typename EigenDenseType::Scalar,3> retval
-            = {{ xyz[1], xyz[0], xyz[2] }};
-    return retval;
-}
-
-/**
  * Convert a 3 element array from XYZ to YXZ ordering with an
  * additional element prepended.
  *
@@ -83,27 +66,6 @@ array<
          const RandomAccessContainer& xyz)
 {
     array<typename RandomAccessContainer::value_type,4> retval
-            = {{ prepend, xyz[1], xyz[0], xyz[2] }};
-    return retval;
-}
-
-/**
- * Convert a 3 element array from XYZ to YXZ ordering with an
- * additional element prepended.
- *
- * @param prepend to prepend.
- * @param xyz to convert.
- *
- * @return A copy of <tt>xyz</tt> with the elements reordered
- *         and <tt>prepend</tt> prepended.
- */
-template< typename EigenDenseType >
-array<
-    typename EigenDenseType::Scalar, 4
-> to_yxz(const typename EigenDenseType::Scalar& prepend,
-         const EigenDenseType& xyz)
-{
-    array<typename EigenDenseType::Scalar,4> retval
             = {{ prepend, xyz[1], xyz[0], xyz[2] }};
     return retval;
 }
@@ -126,23 +88,6 @@ array<
 }
 
 /**
- * Convert a 3 element array from XYZ to XZY ordering.
- *
- * @param xyz to convert.
- *
- * @return A copy of <tt>xyz</tt> with the elements reordered.
- */
-template< typename EigenDenseType >
-array<
-    typename EigenDenseType::Scalar, 3
-> to_xzy(const EigenDenseType& xyz)
-{
-    array<typename EigenDenseType::Scalar,3> retval
-            = {{ xyz[0], xyz[2], xyz[1] }};
-    return retval;
-}
-
-/**
  * Convert a 3 element array from XYZ to XZY ordering with an additional
  * element prepended.
  *
@@ -158,26 +103,6 @@ array<typename RandomAccessContainer::value_type, 4> to_xzy(
         const RandomAccessContainer& xyz)
 {
     array<typename RandomAccessContainer::value_type,4> retval
-        = {{ prepend, xyz[0], xyz[2], xyz[1] }};
-    return retval;
-}
-
-/**
- * Convert a 3 element array from XYZ to XZY ordering with an additional
- * element prepended.
- *
- * @param prepend to prepend.
- * @param xyz to convert.
- *
- * @return A copy of <tt>xyz</tt> with the elements reordered
- *         and <tt>prepend</tt> prepended.
- */
-template< typename EigenDenseType, typename U >
-array<typename EigenDenseType::Scalar, 4> to_xzy(
-        const U& prepend,
-        const EigenDenseType& xyz)
-{
-    array<typename EigenDenseType::Scalar,4> retval
         = {{ prepend, xyz[0], xyz[2], xyz[1] }};
     return retval;
 }
