@@ -27,6 +27,9 @@
 
 #include <suzerain/support/application_base.hpp>
 
+#ifdef SUZERAIN_HAVE_MKL
+extern "C" void mkl_free_buffers(void);
+#endif
 #include <esio/esio.h>
 #include <esio/error.h>
 #include <fftw3.h>
@@ -34,9 +37,6 @@
 # include <fftw3-mpi.h>
 # include <underling/underling.h>
 # include <underling/error.h>
-#endif
-#ifdef SUZERAIN_HAVE_MKL
-# include <mkl.h>
 #endif
 
 #include <suzerain/countof.h>
@@ -100,11 +100,8 @@ application_base::initialize(int argc, char **argv)
     logging::initialize(MPI_COMM_WORLD,              // Initialize logging
                         this->log4cxx_config().c_str());
 #ifdef SUZERAIN_HAVE_MKL                             // Finalize MKL at exit
-#if INTEL_MKL_VERSION < 110002
-    atexit(MKL_FreeBuffers);
-#else
     atexit(mkl_free_buffers);
-#endif
+
 #endif
     atexit(fftw_cleanup);                            // Finalize FFTW at exit
     atexit(fftw_forget_wisdom);                      // Finalize FFTW at exit
@@ -365,7 +362,7 @@ application_base::establish_state_storage(
     if (linear_nfields) {
         state_linear = make_shared<
                     state_linear_type
-                >(to_yxz(linear_nfields, dgrid->local_wave_extent));
+                >(to_yxz(static_cast<int>(linear_nfields), dgrid->local_wave_extent));
         DEBUG("Linear state shape      (FYXZ): "
               << shape_array(*state_linear));
         DEBUG("Linear state strides    (FYXZ): "

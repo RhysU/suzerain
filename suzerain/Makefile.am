@@ -253,7 +253,7 @@ EXTRA_libblasetal_la_SOURCES += blas_et_al/sbmv.def
 # it won't compile without libbase_la_CPPFLAGS, it belongs in libbase.la.
 noinst_LTLIBRARIES          += libbspline.la
 libbspline_la_LDFLAGS        = # Convenience-only
-libbspline_la_CPPFLAGS       = $(libblasetal_la_CPPFLAGS) # Append!
+libbspline_la_CPPFLAGS       = $(libsuzerain_la_CPPFLAGS) $(BOOST_CPPFLAGS) # Append!
 libbspline_la_CPPFLAGS      += $(GSL_CFLAGS)
 libbspline_la_SOURCES        = bsmbsm.c
 libbspline_la_SOURCES       += bspline.c

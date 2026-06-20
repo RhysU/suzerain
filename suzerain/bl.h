@@ -134,8 +134,7 @@ suzerain_bl_find_edge(
     double upperbnd,
     double * location,
     gsl_matrix * dB,
-    gsl_bspline_workspace * w,
-    gsl_bspline_deriv_workspace * dw);
+    gsl_bspline_workspace * w);
 
 /**
  * Find the boundary layer edge within <tt>[lowerbnd, upperbnd]</tt> given a
@@ -146,14 +145,13 @@ suzerain_bl_find_edge(
  * physically ill-defined, particularly when an inviscid baseflow is employed.
  *
  * \param[in ] coeffs_u  Coefficient representation of \f$u\f$
- *                       using the basis provided in \c w and \c dw.
+ *                       using the basis provided in \c w.
  * \param[in]  lowerbnd  Lower bound (inclusive) for the search.
  * \param[in]  upperbnd  Upper bound (inclusive) for the search.
  * \param[out] location  Location at which edge is detected.
  * \param[in]  dB        Temporary storage to use of size <tt>w->k</tt> by
  *                       no less than <tt>1</tt>.
  * \param[in]  w         Workspace to use.
- * \param[in]  dw        Workspace to use.
  *
  * \return ::SUZERAIN_SUCCESS on success and returns the answer in
  * <code>*location</code>.  On recoverable error (e.g., no edge detected) sets
@@ -168,8 +166,7 @@ suzerain_bl_find_edge99(
     double upperbnd,
     double * location,
     gsl_matrix * dB,
-    gsl_bspline_workspace * w,
-    gsl_bspline_deriv_workspace * dw);
+    gsl_bspline_workspace * w);
 
 /**
  * Compute the displacement thickness \f$\delta_1\f$ (sometimes written
@@ -385,8 +382,7 @@ suzerain_bl_compute_thicknesses(
     const double * coeffs_rhou,
     const double * coeffs_u,
     suzerain_bl_thicknesses * thick,
-    gsl_bspline_workspace * w,
-    gsl_bspline_deriv_workspace * dw);
+    gsl_bspline_workspace * w);
 
 /**
  * Boundary layer Reynolds numbers of interest.  These are computed from the
@@ -766,8 +762,7 @@ suzerain_bl_compute_thicknesses_baseflow(
     const double                * const coeffs_inv_u,
     const double                * const coeffs_inv_v,
     suzerain_bl_thicknesses     * const thick,
-    gsl_bspline_workspace       * const w,
-    gsl_bspline_deriv_workspace * const dw);
+    gsl_bspline_workspace       * const w);
 
 #ifdef __cplusplus
 } /* extern "C" */

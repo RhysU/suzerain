@@ -80,8 +80,7 @@ suzerain_bl_find_edge(
     const double upperbnd,
     double * location,
     gsl_matrix *dB,
-    gsl_bspline_workspace *w,
-    gsl_bspline_deriv_workspace *dw)
+    gsl_bspline_workspace *w)
 {
     /* Everything hinges on the second derivative of H0 crossing 0.0 */
     enum { nderiv = 2, threshold = 0 };
@@ -106,7 +105,7 @@ suzerain_bl_find_edge(
     /* Start by evaluating function on the trimmed lower bound... */
     double flower = GSL_NAN, lower = GSL_MAX(lowerbnd, breakpts[ilo]);
     suzerain_bspline_linear_combination(
-            nderiv, coeffs_H0, 1, &lower, &flower, 0, dB, w, dw);
+            nderiv, coeffs_H0, 1, &lower, &flower, 0, dB, w);
 
     /* ...look breakpoint-by-breakpoint for upwards crossing of threshold... */
     double fupper = GSL_NAN, upper = GSL_NAN;
@@ -116,14 +115,14 @@ suzerain_bl_find_edge(
         upper = breakpts[i];
         if (upper > upperbnd) break;
         suzerain_bspline_linear_combination(
-                nderiv, coeffs_H0, 1, &upper, &fupper, 0, dB, w, dw);
+                nderiv, coeffs_H0, 1, &upper, &fupper, 0, dB, w);
 
         /* ...when found, polish the crossing bracket into a location... */
         if (flower < threshold && fupper >= threshold) {
             const double epsabs = 10*GSL_DBL_EPSILON;
             status = suzerain_bspline_crossing(
                     nderiv, coeffs_H0, threshold, &lower, &upper, 100,
-                    epsabs, /*not relative*/ 0, location, dB, w, dw);
+                    epsabs, /*not relative*/ 0, location, dB, w);
             break;
         }
 
@@ -140,8 +139,7 @@ suzerain_bl_find_edge99(
     double upperbnd,
     double * location,
     gsl_matrix *dB,
-    gsl_bspline_workspace *w,
-    gsl_bspline_deriv_workspace *dw)
+    gsl_bspline_workspace *w)
 {
     /* Velocity at infinity taken from final B_spline collocation point */
     /* which happens to be the value of the final coefficient. */
@@ -149,7 +147,7 @@ suzerain_bl_find_edge99(
     *location  = GSL_NAN;
     return suzerain_bspline_crossing(
             0, coeffs_u, 0.99*coeffs_u[w->n - 1], &lowerbnd, &upperbnd, 255,
-            10*GSL_DBL_EPSILON, /*not relative*/ 0, location, dB, w, dw);
+            10*GSL_DBL_EPSILON, /*not relative*/ 0, location, dB, w);
 }
 
 int
@@ -344,8 +342,7 @@ suzerain_bl_compute_thicknesses(
     const double * coeffs_rhou,
     const double * coeffs_u,
     suzerain_bl_thicknesses * thick,
-    gsl_bspline_workspace * w,
-    gsl_bspline_deriv_workspace * dw)
+    gsl_bspline_workspace * w)
 {
     FILL_WITH_NANS(thick);
 
@@ -371,7 +368,7 @@ suzerain_bl_compute_thicknesses(
     tmp = suzerain_bl_find_edge99(
             coeffs_u, gsl_bspline_breakpoint(0, w),
             gsl_bspline_breakpoint(w->nbreak-1, w),
-            &thick->delta99, dB, w, dw);
+            &thick->delta99, dB, w);
     if (status == SUZERAIN_SUCCESS) status = tmp;
 
     tmp = suzerain_bl_displacement_thickness(
@@ -392,20 +389,20 @@ suzerain_bl_compute_thicknesses(
                 coeffs_H0,
                 gsl_bspline_breakpoint(0, w) + thick->delta1,
                 gsl_bspline_breakpoint(w->nbreak-1, w),
-                &thick->delta, dB, w, dw);
+                &thick->delta, dB, w);
     } else if (!gsl_isnan(thick->delta99)) {
         tmp = suzerain_bl_find_edge(  // Assuming sane Prandtl number
                 coeffs_H0,
                 gsl_bspline_breakpoint(0, w) + thick->delta99 / 4,
                 gsl_bspline_breakpoint(w->nbreak-1, w),
-                &thick->delta, dB, w, dw);
+                &thick->delta, dB, w);
     }
     if (tmp != SUZERAIN_SUCCESS) {
         tmp = suzerain_bl_find_edge(
                 coeffs_H0,
                 gsl_bspline_breakpoint(0, w),
                 gsl_bspline_breakpoint(w->nbreak-1, w),
-                &thick->delta, dB, w, dw);
+                &thick->delta, dB, w);
     }
     if (status == SUZERAIN_SUCCESS) status = tmp;
 
@@ -1225,8 +1222,7 @@ suzerain_bl_compute_thicknesses_baseflow(
     const double                * const coeffs_inv_u,
     const double                * const coeffs_inv_v,
     suzerain_bl_thicknesses     * const thick,
-    gsl_bspline_workspace       * const w,
-    gsl_bspline_deriv_workspace * const dw)
+    gsl_bspline_workspace       * const w)
 {
     FILL_WITH_NANS(thick);
 
@@ -1279,7 +1275,7 @@ suzerain_bl_compute_thicknesses_baseflow(
         const int tmp = suzerain_bl_find_edge99(
             coeffs_vis_u, gsl_bspline_breakpoint(0, w),
             gsl_bspline_breakpoint(w->nbreak-1, w),
-            &thick->delta99, dB, w, dw);
+            &thick->delta99, dB, w);
         if (status == SUZERAIN_SUCCESS) status = tmp;
     }
 
@@ -1324,20 +1320,20 @@ suzerain_bl_compute_thicknesses_baseflow(
                     coeffs_vis_H0,
                     gsl_bspline_breakpoint(0, w) + thick->delta1,
                     gsl_bspline_breakpoint(w->nbreak-1, w),
-                    &thick->delta, dB, w, dw);
+                    &thick->delta, dB, w);
         } else if (!gsl_isnan(thick->delta99)) {
             tmp = suzerain_bl_find_edge(  // Assuming sane Prandtl number
                     coeffs_vis_H0,
                     gsl_bspline_breakpoint(0, w) + thick->delta99 / 4,
                     gsl_bspline_breakpoint(w->nbreak-1, w),
-                    &thick->delta, dB, w, dw);
+                    &thick->delta, dB, w);
         }
         if (tmp != SUZERAIN_SUCCESS) {
             tmp = suzerain_bl_find_edge(
                     coeffs_vis_H0,
                     gsl_bspline_breakpoint(0, w),
                     gsl_bspline_breakpoint(w->nbreak-1, w),
-                    &thick->delta, dB, w, dw);
+                    &thick->delta, dB, w);
         }
         if (status == SUZERAIN_SUCCESS) status = tmp;
     }
