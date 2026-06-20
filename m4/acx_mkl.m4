@@ -188,7 +188,7 @@ if test "${with_mkl}" != no ; then
     AC_LANG_PUSH([C])
     AC_MSG_NOTICE([Ensuring we can use Intel MKL routines using a known link line])
     AC_CHECK_HEADER([mkl.h],[acx_mkl_found_header=yes],[acx_mkl_found_header=no])
-    AC_SEARCH_LIBS(MKLGetVersion,[],[acx_mkl_found_library=yes],[acx_mkl_found_library=no])
+    AC_SEARCH_LIBS(mkl_get_version,[],[acx_mkl_found_library=yes],[acx_mkl_found_library=no])
     AC_SEARCH_LIBS(dgemm,[],[acx_mkl_found_blas=yes],[acx_mkl_found_blas=no])
     AC_SEARCH_LIBS(dgbtrf,[],[acx_mkl_found_lapack=yes],[acx_mkl_found_lapack=no])
     AC_LANG_POP([C])
