@@ -18,8 +18,8 @@ if ! which mpiexec >/dev/null 2>/dev/null; then
 fi
 
 set -e # Fail on first error
-mpiexec -np 1 ./test_diffwave_p3dfft
+mpiexec --allow-run-as-root -np 1 ./test_diffwave_p3dfft
 echo
-mpiexec -np 2 ./test_diffwave_p3dfft
+mpiexec --allow-run-as-root -np 2 ./test_diffwave_p3dfft
 echo
-mpiexec -np 4 ./test_diffwave_p3dfft
+mpiexec --allow-run-as-root -np 4 ./test_diffwave_p3dfft

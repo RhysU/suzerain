@@ -198,8 +198,8 @@ BOOST_AUTO_TEST_CASE( complex_access )
         for (index k = 0; k < (index) p.wave.shape()[2]; ++k) {
             for (index j = 0; j < (index) p.wave.shape()[1]; ++j) {
 #pragma warning(push,disable:810 2259)
-                p.wave[i][j][k].real() = (i - 123) * (j - 123) * (k - 123);
-                p.wave[i][j][k].imag() = (i + 123) * (j + 123) * (k + 123);
+                p.wave[i][j][k].real((i - 123) * (j - 123) * (k - 123));
+                p.wave[i][j][k].imag((i + 123) * (j + 123) * (k + 123));
 #pragma warning(pop)
             }
         }

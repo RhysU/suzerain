@@ -806,14 +806,14 @@ bool init_unit_test_suite() {
 
             { // Register test_gbddddmv_s case
                 std::ostringstream name;
-                name << BOOST_TEST_STRINGIZE(test_gbddddmv_s) << ' ' << gbddddmv_tc[i];
+                name << BOOST_TEST_STRINGIZE(test_gbddddmv_s) << ' ' << r;
                 master_test_suite().add(make_test_case(
                         &test_gbddddmv_s, name.str(), &r, &r + 1));
             }
 
             { // Register test_gbddddmv_d case
                 std::ostringstream name;
-                name << BOOST_TEST_STRINGIZE(test_gbddddmv_d) << ' ' << gbddddmv_tc[i];
+                name << BOOST_TEST_STRINGIZE(test_gbddddmv_d) << ' ' << r;
                 master_test_suite().add(make_test_case(
                         &test_gbddddmv_d, name.str(), &r, &r + 1));
             }

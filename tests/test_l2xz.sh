@@ -18,10 +18,10 @@ if ! which mpiexec >/dev/null 2>/dev/null; then
 fi
 
 set -e # Fail on first error
-mpiexec -np 1 ./test_l2xz
+mpiexec --allow-run-as-root -np 1 ./test_l2xz
 echo
-mpiexec -np 2 ./test_l2xz --Pa=2
+mpiexec --allow-run-as-root -np 2 ./test_l2xz --Pa=2
 echo
-mpiexec -np 2 ./test_l2xz --Pb=2
+mpiexec --allow-run-as-root -np 2 ./test_l2xz --Pb=2
 echo
-mpiexec -np 4 ./test_l2xz
+mpiexec --allow-run-as-root -np 4 ./test_l2xz

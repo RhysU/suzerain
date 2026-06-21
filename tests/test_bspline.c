@@ -34,10 +34,10 @@
 
 static void alloc_workspaces(
         size_t k, size_t nbreak, const double * breakpoints,
-        gsl_bspline_workspace **w, gsl_bspline_deriv_workspace **dw,
+        gsl_bspline_workspace **w,
         gsl_matrix **scratch);
 static void free_workspaces(
-        gsl_bspline_workspace **w, gsl_bspline_deriv_workspace **dw,
+        gsl_bspline_workspace **w,
         gsl_matrix **scratch);
 
 static void test_integration_coefficients();
@@ -75,25 +75,22 @@ main(int argc, char **argv)
 
 static void alloc_workspaces(
         size_t k, size_t nbreak, const double * breakpoints,
-        gsl_bspline_workspace **w, gsl_bspline_deriv_workspace **dw,
+        gsl_bspline_workspace **w,
         gsl_matrix **scratch)
 {
         gsl_vector_const_view bv
             = gsl_vector_const_view_array(breakpoints, nbreak);
         *w = gsl_bspline_alloc(k, nbreak);
         gsl_bspline_knots(&bv.vector, *w);
-        *dw = gsl_bspline_deriv_alloc(k);
         *scratch = gsl_matrix_alloc(k, k);
 }
 
 static void free_workspaces(
-        gsl_bspline_workspace **w, gsl_bspline_deriv_workspace **dw,
+        gsl_bspline_workspace **w,
         gsl_matrix **scratch)
 {
     gsl_matrix_free(*scratch);
     *scratch = NULL;
-    gsl_bspline_deriv_free(*dw);
-    *dw = NULL;
     gsl_bspline_free(*w);
     *w = NULL;
 }
@@ -112,13 +109,12 @@ static void test_integration_coefficients()
 {
     const double b[] = { 0.0, 1.0, 2.0, 3.0 };
     gsl_bspline_workspace *w;
-    gsl_bspline_deriv_workspace *dw;
     gsl_matrix *scratch;
 
     /* Piecewise constants */
     /* Integrating partial regions and reversed limits tested too */
     {
-        alloc_workspaces(1, sizeof(b)/sizeof(b[0]), b, &w, &dw, &scratch);
+        alloc_workspaces(1, sizeof(b)/sizeof(b[0]), b, &w, &scratch);
         const size_t inc = 1;
         const double case0[] = {  1.0,  1.0,  1.0,  1.0 };  // \int_{-oo}^{oo}
         const double case1[] = {  0.5,  1.0,  0.5,  0.0 };  // \int_{0.5}^{2.5}
@@ -128,7 +124,7 @@ static void test_integration_coefficients()
         gsl_vector_set_all(coeffs, -555.0);
         gsl_test(suzerain_bspline_integration_coefficients(
                 0 , gsl_vector_ptr(coeffs,0), inc,
-                -GSL_DBL_MAX, GSL_DBL_MAX, scratch, w, dw),
+                -GSL_DBL_MAX, GSL_DBL_MAX, scratch, w),
                 "integration_coefficients 0 constant");
         for (size_t i = 0; i < w->n; ++i) {
             gsl_test_rel(gsl_vector_get(coeffs, i), case0[i],
@@ -139,7 +135,7 @@ static void test_integration_coefficients()
         gsl_vector_set_all(coeffs, -555.0);
         gsl_test(suzerain_bspline_integration_coefficients(
                 0 , gsl_vector_ptr(coeffs,0), inc,
-                0.5, 2.5, scratch, w, dw),
+                0.5, 2.5, scratch, w),
                 "integration_coefficients 0 constant");
         for (size_t i = 0; i < w->n; ++i) {
             gsl_test_rel(gsl_vector_get(coeffs, i), case1[i],
@@ -150,7 +146,7 @@ static void test_integration_coefficients()
         gsl_vector_set_all(coeffs, -555.0);
         gsl_test(suzerain_bspline_integration_coefficients(
                 0 , gsl_vector_ptr(coeffs,0), inc,
-                2.5, 0.5, scratch, w, dw),
+                2.5, 0.5, scratch, w),
                 "integration_coefficients 0 constant");
         for (size_t i = 0; i < w->n; ++i) {
             gsl_test_rel(gsl_vector_get(coeffs, i), case2[i],
@@ -159,12 +155,12 @@ static void test_integration_coefficients()
         }
 
         gsl_vector_free(coeffs);
-        free_workspaces(&w, &dw, &scratch);
+        free_workspaces(&w, &scratch);
     }
 
     /* Piecewise linears with strided coefficient storage */
     {
-        alloc_workspaces(2, sizeof(b)/sizeof(b[0]), b, &w, &dw, &scratch);
+        alloc_workspaces(2, sizeof(b)/sizeof(b[0]), b, &w, &scratch);
         const size_t inc = 2;
         const double e0[] = { .5, -555, 1, -555, 1, -555, .5, -555};
         const double e1[] = { -1, -555, 0, -555, 0, -555,  1, -555};
@@ -174,7 +170,7 @@ static void test_integration_coefficients()
         gsl_vector_set_all(coeffs, -555.0);
         gsl_test(suzerain_bspline_integration_coefficients(
                 0 , gsl_vector_ptr(coeffs,0), inc,
-                -GSL_DBL_MAX, GSL_DBL_MAX, scratch, w, dw),
+                -GSL_DBL_MAX, GSL_DBL_MAX, scratch, w),
                 "integration_coefficients 0 linear");
         for (size_t i = 0; i < w->n; ++i) {
             gsl_test_rel(gsl_vector_get(coeffs, 2*i), e0[2*i],
@@ -188,7 +184,7 @@ static void test_integration_coefficients()
         gsl_vector_set_all(coeffs, -555.0);
         gsl_test(suzerain_bspline_integration_coefficients(
                 1 , gsl_vector_ptr(coeffs,0), inc,
-                -GSL_DBL_MAX, GSL_DBL_MAX, scratch, w, dw),
+                -GSL_DBL_MAX, GSL_DBL_MAX, scratch, w),
                 "integration_coefficients 1 linear");
         for (size_t i = 0; i < w->n; ++i) {
             gsl_test_rel(gsl_vector_get(coeffs, 2*i), e1[2*i],
@@ -202,7 +198,7 @@ static void test_integration_coefficients()
         gsl_vector_set_all(coeffs, -555.0);
         gsl_test(suzerain_bspline_integration_coefficients(
                 0 , gsl_vector_ptr(coeffs,0), inc,
-                GSL_DBL_MAX, -GSL_DBL_MAX, scratch, w, dw),
+                GSL_DBL_MAX, -GSL_DBL_MAX, scratch, w),
                 "integration_coefficients 0 linear");
         for (size_t i = 0; i < w->n; ++i) {
             gsl_test_rel(gsl_vector_get(coeffs, 2*i), -1*e0[2*i],
@@ -216,7 +212,7 @@ static void test_integration_coefficients()
         gsl_vector_set_all(coeffs, -555.0);
         gsl_test(suzerain_bspline_integration_coefficients(
                 1 , gsl_vector_ptr(coeffs,0), inc,
-                GSL_DBL_MAX, -GSL_DBL_MAX, scratch, w, dw),
+                GSL_DBL_MAX, -GSL_DBL_MAX, scratch, w),
                 "integration_coefficients 1 linear");
         for (size_t i = 0; i < w->n; ++i) {
             gsl_test_rel(gsl_vector_get(coeffs, 2*i), -1*e1[2*i],
@@ -227,12 +223,12 @@ static void test_integration_coefficients()
         }
 
         gsl_vector_free(coeffs);
-        free_workspaces(&w, &dw, &scratch);
+        free_workspaces(&w, &scratch);
     }
 
     /* Piecewise quadratics */
     {
-        alloc_workspaces(3, sizeof(b)/sizeof(b[0]), b, &w, &dw, &scratch);
+        alloc_workspaces(3, sizeof(b)/sizeof(b[0]), b, &w, &scratch);
         const size_t inc = 1;
         const double e0[] = { 1./3, 2./3, 1, 2./3, 1./3 };
         const double e1[] = {   -1,    0, 0,    0,    1 };
@@ -242,7 +238,7 @@ static void test_integration_coefficients()
         gsl_vector_set_all(coeffs, -555.0);
         gsl_test(suzerain_bspline_integration_coefficients(
                 0 , gsl_vector_ptr(coeffs,0), inc,
-                -GSL_DBL_MAX, GSL_DBL_MAX, scratch, w, dw),
+                -GSL_DBL_MAX, GSL_DBL_MAX, scratch, w),
                 "integration_coefficients 0 quadratic");
         for (size_t i = 0; i < w->n; ++i) {
             gsl_test_rel(gsl_vector_get(coeffs, i), e0[i],
@@ -253,7 +249,7 @@ static void test_integration_coefficients()
         gsl_vector_set_all(coeffs, -555.0);
         gsl_test(suzerain_bspline_integration_coefficients(
                 1 , gsl_vector_ptr(coeffs,0), inc,
-                -GSL_DBL_MAX, GSL_DBL_MAX, scratch, w, dw),
+                -GSL_DBL_MAX, GSL_DBL_MAX, scratch, w),
                 "integration_coefficients 1 quadratic");
         for (size_t i = 0; i < w->n; ++i) {
             gsl_test_rel(gsl_vector_get(coeffs, i), e1[i],
@@ -264,7 +260,7 @@ static void test_integration_coefficients()
         gsl_vector_set_all(coeffs, -555.0);
         gsl_test(suzerain_bspline_integration_coefficients(
                 2 , gsl_vector_ptr(coeffs,0), inc,
-                -GSL_DBL_MAX, GSL_DBL_MAX, scratch, w, dw),
+                -GSL_DBL_MAX, GSL_DBL_MAX, scratch, w),
                 "integration_coefficients 2 quadratic");
         for (size_t i = 0; i < w->n; ++i) {
             gsl_test_rel(gsl_vector_get(coeffs, i), e2[i],
@@ -273,12 +269,12 @@ static void test_integration_coefficients()
         }
 
         gsl_vector_free(coeffs);
-        free_workspaces(&w, &dw, &scratch);
+        free_workspaces(&w, &scratch);
     }
 
     /* Piecewise cubics */
     {
-        alloc_workspaces(4, sizeof(b)/sizeof(b[0]), b, &w, &dw, &scratch);
+        alloc_workspaces(4, sizeof(b)/sizeof(b[0]), b, &w, &scratch);
         const size_t inc = 1;
         const double e0[] = { 1./4, 1./2, 3./4, 3./4, 1./2, 1./4 };
         const double e1[] = {   -1,    0,    0,    0,    0,    1 };
@@ -290,7 +286,7 @@ static void test_integration_coefficients()
         gsl_vector_set_all(coeffs, -555.0);
         gsl_test(suzerain_bspline_integration_coefficients(
                 0 , gsl_vector_ptr(coeffs,0), inc,
-                -GSL_DBL_MAX, GSL_DBL_MAX, scratch, w, dw),
+                -GSL_DBL_MAX, GSL_DBL_MAX, scratch, w),
                 "integration_coefficients 0 cubic");
         for (size_t i = 0; i < w->n; ++i) {
             gsl_test_rel(gsl_vector_get(coeffs, i), e0[i],
@@ -301,7 +297,7 @@ static void test_integration_coefficients()
         gsl_vector_set_all(coeffs, -555.0);
         gsl_test(suzerain_bspline_integration_coefficients(
                 1 , gsl_vector_ptr(coeffs,0), inc,
-                -GSL_DBL_MAX, GSL_DBL_MAX, scratch, w, dw),
+                -GSL_DBL_MAX, GSL_DBL_MAX, scratch, w),
                 "integration_coefficients 1 cubic");
         for (size_t i = 0; i < w->n; ++i) {
             gsl_test_rel(gsl_vector_get(coeffs, i), e1[i],
@@ -312,7 +308,7 @@ static void test_integration_coefficients()
         gsl_vector_set_all(coeffs, -555.0);
         gsl_test(suzerain_bspline_integration_coefficients(
                 2 , gsl_vector_ptr(coeffs,0), inc,
-                -GSL_DBL_MAX, GSL_DBL_MAX, scratch, w, dw),
+                -GSL_DBL_MAX, GSL_DBL_MAX, scratch, w),
                 "integration_coefficients 2 cubic");
         for (size_t i = 0; i < w->n; ++i) {
             gsl_test_rel(gsl_vector_get(coeffs, i), e2[i],
@@ -323,7 +319,7 @@ static void test_integration_coefficients()
         gsl_vector_set_all(coeffs, -555.0);
         gsl_test(suzerain_bspline_integration_coefficients(
                 3 , gsl_vector_ptr(coeffs,0), inc,
-                -GSL_DBL_MAX, GSL_DBL_MAX, scratch, w, dw),
+                -GSL_DBL_MAX, GSL_DBL_MAX, scratch, w),
                 "integration_coefficients 3 cubic");
         for (size_t i = 0; i < w->n; ++i) {
             gsl_test_rel(gsl_vector_get(coeffs, i), e3[i],
@@ -332,7 +328,7 @@ static void test_integration_coefficients()
         }
 
         gsl_vector_free(coeffs);
-        free_workspaces(&w, &dw, &scratch);
+        free_workspaces(&w, &scratch);
     }
 }
 
@@ -340,9 +336,8 @@ static void test_linear_combination()
 {
     const double b[] = { 0.0, 1.0, 2.0, 3.0 };
     gsl_bspline_workspace *w;
-    gsl_bspline_deriv_workspace *dw;
     gsl_matrix *scratch;
-    alloc_workspaces(4, sizeof(b)/sizeof(b[0]), b, &w, &dw, &scratch);
+    alloc_workspaces(4, sizeof(b)/sizeof(b[0]), b, &w, &scratch);
     gsl_vector *coeffs = gsl_vector_alloc(w->n);
 
     /* Check that we have a partition of unity at the breakpoints */
@@ -358,7 +353,7 @@ static void test_linear_combination()
         gsl_test(suzerain_bspline_linear_combination(
                     w->k - 1, gsl_vector_const_ptr(coeffs, 0),
                     sizeof(b)/sizeof(b[0]), b, gsl_vector_ptr(values, 0),
-                    ldvalues, scratch, w, dw),
+                    ldvalues, scratch, w),
                 "linear_combination unity multiple");
         for (size_t i = 0; i < ldvalues; ++i) {
             gsl_test_rel(gsl_vector_get(values, i), 1.0, GSL_DBL_EPSILON*1000,
@@ -375,7 +370,7 @@ static void test_linear_combination()
         gsl_test(suzerain_bspline_linear_combination(
                     w->k - 1, gsl_vector_const_ptr(coeffs, 0),
                     sizeof(b)/sizeof(b[0]), b, gsl_vector_ptr(values, 0),
-                    0, scratch, w, dw),
+                    0, scratch, w),
                 "linear_combination unity single");
         for (size_t i = 0; i < ldvalues; ++i) {
             gsl_test_abs(gsl_vector_get(values, i), 0.0, GSL_DBL_EPSILON,
@@ -402,7 +397,7 @@ static void test_linear_combination()
         gsl_test(suzerain_bspline_linear_combination(
                     w->k - 1, gsl_vector_const_ptr(coeffs, 0),
                     ldvalues,  points, gsl_vector_ptr(values, 0),
-                    ldvalues, scratch, w, dw),
+                    ldvalues, scratch, w),
                 "linear_combination basis 2");
         gsl_test_rel(gsl_vector_get(values, 0), 1./4.,  GSL_DBL_EPSILON*1000,
                 "linear_combination basis 2 deriv %d", 0);
@@ -416,7 +411,7 @@ static void test_linear_combination()
         gsl_vector_set_all(values, -555.0);
         gsl_test(suzerain_bspline_linear_combination(
                 w->k - 1, gsl_vector_const_ptr(coeffs, 0), ldvalues,  points,
-                gsl_vector_ptr(values, 0), ldvalues, scratch, w, dw),
+                gsl_vector_ptr(values, 0), ldvalues, scratch, w),
                 "linear_combination basis 3");
         gsl_test_rel(gsl_vector_get(values, 0), 7./12., GSL_DBL_EPSILON*1000,
                 "linear_combination basis 3 deriv %d", 0);
@@ -430,7 +425,7 @@ static void test_linear_combination()
         gsl_vector_set_all(values, -555.0);
         gsl_test(suzerain_bspline_linear_combination(
                 w->k - 1, gsl_vector_const_ptr(coeffs, 0), ldvalues,  points,
-                gsl_vector_ptr(values, 0), ldvalues, scratch, w, dw),
+                gsl_vector_ptr(values, 0), ldvalues, scratch, w),
                 "linear_combination basis 4");
         gsl_test_rel(gsl_vector_get(values, 0), 1./6., GSL_DBL_EPSILON*1000,
                 "linear_combination basis 4 deriv %d", 0);
@@ -445,7 +440,7 @@ static void test_linear_combination()
         gsl_vector_set_all(values, -555.0);
         gsl_test(suzerain_bspline_linear_combination(
                 w->k - 1, gsl_vector_const_ptr(coeffs, 0), ldvalues,  points,
-                gsl_vector_ptr(values, 0), ldvalues, scratch, w, dw),
+                gsl_vector_ptr(values, 0), ldvalues, scratch, w),
                 "linear_combination basis 5");
         gsl_test_abs(gsl_vector_get(values, 0), 0., GSL_DBL_EPSILON*1000,
                 "linear_combination basis 5 deriv %d", 0);
@@ -464,7 +459,7 @@ static void test_linear_combination()
         gsl_vector_set(coeffs, 5, GSL_NAN);
         gsl_test(suzerain_bspline_linear_combination(
                 w->k - 1, gsl_vector_const_ptr(coeffs, 0), ldvalues,  points,
-                gsl_vector_ptr(values, 0), ldvalues, scratch, w, dw),
+                gsl_vector_ptr(values, 0), ldvalues, scratch, w),
                 "linear_combination linear combination multiple");
         gsl_test_abs(gsl_vector_get(values, 0), 23./12., GSL_DBL_EPSILON*1000,
                 "linear_combination linear combination deriv %d", 0);
@@ -476,7 +471,7 @@ static void test_linear_combination()
         /* Linear combination of basis functions for second deriv */
         gsl_test(suzerain_bspline_linear_combination(
                 2, gsl_vector_const_ptr(coeffs, 0), ldvalues,  points,
-                gsl_vector_ptr(values, 0), 0, scratch, w, dw),
+                gsl_vector_ptr(values, 0), 0, scratch, w),
                 "linear_combination linear combination single");
         gsl_test_abs(gsl_vector_get(values, 0), -1./2., GSL_DBL_EPSILON*1000,
                 "linear_combination linear combination single value");
@@ -485,16 +480,15 @@ static void test_linear_combination()
     }
 
     gsl_vector_free(coeffs);
-    free_workspaces(&w, &dw, &scratch);
+    free_workspaces(&w, &scratch);
 }
 
 static void test_linear_combination_complex()
 {
     const double b[] = { 0.0, 1.0, 2.0, 3.0 };
     gsl_bspline_workspace *w;
-    gsl_bspline_deriv_workspace *dw;
     gsl_matrix *scratch;
-    alloc_workspaces(4, sizeof(b)/sizeof(b[0]), b, &w, &dw, &scratch);
+    alloc_workspaces(4, sizeof(b)/sizeof(b[0]), b, &w, &scratch);
     gsl_vector_complex *coeffs = gsl_vector_complex_alloc(w->n);
 
     /* Check that we have a partition of unity at the breakpoints */
@@ -513,7 +507,7 @@ static void test_linear_combination_complex()
                 (complex_double *) gsl_vector_complex_const_ptr(coeffs, 0),
                 sizeof(b)/sizeof(b[0]), b,
                 (complex_double *) gsl_vector_complex_ptr(values, 0),
-                ldvalues, scratch, w, dw),
+                ldvalues, scratch, w),
                 "linear_combination_complex real unity multiple");
         for (size_t i = 0; i < ldvalues; ++i) {
             gsl_test_rel(GSL_REAL(gsl_vector_complex_get(values, i)), 1.0,
@@ -538,7 +532,7 @@ static void test_linear_combination_complex()
                 (complex_double *) gsl_vector_complex_const_ptr(coeffs, 0),
                 sizeof(b)/sizeof(b[0]), b,
                 (complex_double *) gsl_vector_complex_ptr(values, 0),
-                0, scratch, w, dw),
+                0, scratch, w),
                 "linear_combination_complex real unity single");
         for (size_t i = 0; i < ldvalues; ++i) {
             gsl_test_abs(GSL_REAL(gsl_vector_complex_get(values, i)), 0.0,
@@ -558,7 +552,7 @@ static void test_linear_combination_complex()
                 (complex_double *) gsl_vector_complex_const_ptr(coeffs, 0),
                 sizeof(b)/sizeof(b[0]), b,
                 (complex_double *) gsl_vector_complex_ptr(values, 0),
-                ldvalues, scratch, w, dw),
+                ldvalues, scratch, w),
                 "linear_combination_complex imag unity multiple");
         for (size_t i = 0; i < ldvalues; ++i) {
             gsl_test_abs(GSL_REAL(gsl_vector_complex_get(values, i)), 0.0,
@@ -583,7 +577,7 @@ static void test_linear_combination_complex()
                 (complex_double *) gsl_vector_complex_const_ptr(coeffs, 0),
                 sizeof(b)/sizeof(b[0]), b,
                 (complex_double *) gsl_vector_complex_ptr(values, 0),
-                0, scratch, w, dw),
+                0, scratch, w),
                 "linear_combination_complex imag unity single");
         for (size_t i = 0; i < ldvalues; ++i) {
             gsl_test_abs(GSL_REAL(gsl_vector_complex_get(values, i)), 0.0,
@@ -612,7 +606,7 @@ static void test_linear_combination_complex()
                     (complex_double *) gsl_vector_complex_const_ptr(coeffs, 0),
                     ldvalues, points,
                     (complex_double *) gsl_vector_complex_ptr(values, 0),
-                    ldvalues, scratch, w, dw),
+                    ldvalues, scratch, w),
                 "linear_combination_complex basis 2");
         gsl_test_rel(GSL_REAL(gsl_vector_complex_get(values, 0)), 1./4.,
                 GSL_DBL_EPSILON*1000,
@@ -642,7 +636,7 @@ static void test_linear_combination_complex()
                     (complex_double *) gsl_vector_complex_const_ptr(coeffs, 0),
                     ldvalues, points,
                     (complex_double *) gsl_vector_complex_ptr(values, 0),
-                    ldvalues, scratch, w, dw),
+                    ldvalues, scratch, w),
                 "linear_combination_complex basis 3");
         gsl_test_rel(GSL_REAL(gsl_vector_complex_get(values, 0)), 7./12.,
                 GSL_DBL_EPSILON*1000,
@@ -672,7 +666,7 @@ static void test_linear_combination_complex()
                     (complex_double *) gsl_vector_complex_const_ptr(coeffs, 0),
                     ldvalues, points,
                     (complex_double *) gsl_vector_complex_ptr(values, 0),
-                    ldvalues, scratch, w, dw),
+                    ldvalues, scratch, w),
                 "linear_combination_complex basis 4");
         gsl_test_rel(GSL_REAL(gsl_vector_complex_get(values, 0)), 1./6.,
                 GSL_DBL_EPSILON*1000,
@@ -703,7 +697,7 @@ static void test_linear_combination_complex()
                     (complex_double *) gsl_vector_complex_const_ptr(coeffs, 0),
                     ldvalues, points,
                     (complex_double *) gsl_vector_complex_ptr(values, 0),
-                    ldvalues, scratch, w, dw),
+                    ldvalues, scratch, w),
                 "linear_combination_complex basis 5");
         gsl_test_abs(GSL_REAL(gsl_vector_complex_get(values, 0)), 0.,
                 GSL_DBL_EPSILON,
@@ -737,7 +731,7 @@ static void test_linear_combination_complex()
                     (complex_double *) gsl_vector_complex_const_ptr(coeffs, 0),
                     ldvalues, points,
                     (complex_double *) gsl_vector_complex_ptr(values, 0),
-                    ldvalues, scratch, w, dw),
+                    ldvalues, scratch, w),
                 "linear_combination_complex linear combination");
         gsl_test_rel(GSL_REAL(gsl_vector_complex_get(values, 0)), 23./12.,
                 GSL_DBL_EPSILON*1000,
@@ -764,7 +758,7 @@ static void test_linear_combination_complex()
                     (complex_double *) gsl_vector_complex_const_ptr(coeffs, 0),
                     ldvalues, points,
                     (complex_double *) gsl_vector_complex_ptr(values, 0),
-                    0, scratch, w, dw),
+                    0, scratch, w),
                 "linear_combination_complex linear combination single");
         gsl_test_rel(GSL_REAL(gsl_vector_complex_get(values, 0)),  -1./2.,
                 GSL_DBL_EPSILON*1000,
@@ -777,7 +771,7 @@ static void test_linear_combination_complex()
     }
 
     gsl_vector_complex_free(coeffs);
-    free_workspaces(&w, &dw, &scratch);
+    free_workspaces(&w, &scratch);
 }
 
 static void test_crossing()
@@ -789,9 +783,8 @@ static void test_crossing()
     const double coeffs[] = { 4., 5./2, 1, -11./24, 7./24, 55./24, 5., 25./4 };
 
     gsl_bspline_workspace *w;
-    gsl_bspline_deriv_workspace *dw;
     gsl_matrix *scratch;
-    alloc_workspaces(k, sizeof(b)/sizeof(b[0]), b, &w, &dw, &scratch);
+    alloc_workspaces(k, sizeof(b)/sizeof(b[0]), b, &w, &scratch);
 
     /* Check, via linear_combination, that we can recover x**2 at abscissae. */
     /* This is a zeroth-order test that the coefficients are sane. */
@@ -800,7 +793,7 @@ static void test_crossing()
         double g[] = {-2., -13./8, -9./8, -1./4, 7./8, 13./8, 9./4, 5./2};
         double v[] = { 0.,     0.,    0.,    0.,   0.,    0.,   0.,   0.};
         suzerain_bspline_linear_combination(0, coeffs, sizeof(g)/sizeof(g[0]),
-                                            g, v, 0, scratch, w, dw);
+                                            g, v, 0, scratch, w);
         for (size_t i = 0; i < sizeof(g)/sizeof(g[0]); ++i) {
             gsl_test_rel(v[i], g[i]*g[i], 100*GSL_DBL_EPSILON,
                          "%s: reproduce x**2 at collocation point %d",
@@ -813,7 +806,7 @@ static void test_crossing()
         double lower = -0.5, upper = 2.5, location = GSL_NAN;
         const int status = suzerain_bspline_crossing(
                 0, coeffs, 1.0, &lower, &upper, 100,
-                GSL_DBL_EPSILON, GSL_DBL_EPSILON, &location, scratch, w, dw);
+                GSL_DBL_EPSILON, GSL_DBL_EPSILON, &location, scratch, w);
         gsl_test(status, "GSL_SUCCESS at %s:%d", __FILE__, __LINE__);
         gsl_test_rel(location, 1.0, GSL_SQRT_DBL_EPSILON,
                      "Test for 0th derivative 1-crossing of x**2 at x = 1");
@@ -824,7 +817,7 @@ static void test_crossing()
         double lower = -2.0, upper = 0.5, location = GSL_NAN;
         const int status = suzerain_bspline_crossing(
                 0, coeffs, 1.0, &lower, &upper, 100,
-                GSL_DBL_EPSILON, GSL_DBL_EPSILON, &location, scratch, w, dw);
+                GSL_DBL_EPSILON, GSL_DBL_EPSILON, &location, scratch, w);
         gsl_test(status, "GSL_SUCCESS at %s:%d", __FILE__, __LINE__);
         gsl_test_rel(location, -1.0, GSL_SQRT_DBL_EPSILON,
                      "Test for 0th derivative 1-crossing of x**2 at x = -1");
@@ -835,7 +828,7 @@ static void test_crossing()
         double lower = -2.0, upper = 2.5, location = GSL_NAN;
         const int status = suzerain_bspline_crossing(
                 1, coeffs, 1.0, &lower, &upper, 100,
-                GSL_DBL_EPSILON, GSL_DBL_EPSILON, &location, scratch, w, dw);
+                GSL_DBL_EPSILON, GSL_DBL_EPSILON, &location, scratch, w);
         gsl_test(status, "GSL_SUCCESS at %s:%d", __FILE__, __LINE__);
         gsl_test_rel(location, 0.5, GSL_SQRT_DBL_EPSILON,
                      "Test for 1st derivative 1-crossing of x**2 at x = 1/2");
@@ -846,13 +839,13 @@ static void test_crossing()
         double lower = -0.5, upper = 2.5, location = 555;
         const int status = suzerain_bspline_crossing(
                 0, coeffs, 9.0, &lower, &upper, 100,
-                GSL_DBL_EPSILON, GSL_DBL_EPSILON, &location, scratch, w, dw);
+                GSL_DBL_EPSILON, GSL_DBL_EPSILON, &location, scratch, w);
         gsl_test(!status, "Failure expected at %s:%d", __FILE__, __LINE__);
         gsl_test(!gsl_isnan(location), "Failure produces NaN at %s:%d",
                  __FILE__, __LINE__);
     }
 
-    free_workspaces(&w, &dw, &scratch);
+    free_workspaces(&w, &scratch);
 }
 
 static void test_spacing_greville_abscissae()
@@ -861,12 +854,11 @@ static void test_spacing_greville_abscissae()
 
     const double b[] = { -3, 2, 9, 12, 21 };
     gsl_bspline_workspace *w;
-    gsl_bspline_deriv_workspace *dw;
     gsl_matrix *scratch;
 
     {
         const int k = 2;
-        alloc_workspaces(k, sizeof(b)/sizeof(b[0]), b, &w, &dw, &scratch);
+        alloc_workspaces(k, sizeof(b)/sizeof(b[0]), b, &w, &scratch);
         gsl_test_rel(suzerain_bspline_spacing_greville_abscissae(0, w),
                      5, GSL_DBL_EPSILON, msg, k, 0);
         gsl_test_rel(suzerain_bspline_spacing_greville_abscissae(1, w),
@@ -877,12 +869,12 @@ static void test_spacing_greville_abscissae()
                      3, GSL_DBL_EPSILON, msg, k, 3);
         gsl_test_rel(suzerain_bspline_spacing_greville_abscissae(4, w),
                      9, GSL_DBL_EPSILON, msg, k, 4);
-        free_workspaces(&w, &dw, &scratch);
+        free_workspaces(&w, &scratch);
     }
 
     {
         const int k = 3;
-        alloc_workspaces(k, sizeof(b)/sizeof(b[0]), b, &w, &dw, &scratch);
+        alloc_workspaces(k, sizeof(b)/sizeof(b[0]), b, &w, &scratch);
         gsl_test_rel(suzerain_bspline_spacing_greville_abscissae(0, w),
                      2.5, GSL_DBL_EPSILON, msg, k, 0);
         gsl_test_rel(suzerain_bspline_spacing_greville_abscissae(1, w),
@@ -895,7 +887,7 @@ static void test_spacing_greville_abscissae()
                      4.5, GSL_DBL_EPSILON, msg, k, 4);
         gsl_test_rel(suzerain_bspline_spacing_greville_abscissae(5, w),
                      4.5, GSL_DBL_EPSILON, msg, k, 5);
-        free_workspaces(&w, &dw, &scratch);
+        free_workspaces(&w, &scratch);
     }
 }
 
@@ -905,12 +897,11 @@ static void test_spacing_breakpoints()
 
     const double b[] = { -3, 2, 9, 12, 21 };
     gsl_bspline_workspace *w;
-    gsl_bspline_deriv_workspace *dw;
     gsl_matrix *scratch;
 
     {
         const int k = 2;
-        alloc_workspaces(k, sizeof(b)/sizeof(b[0]), b, &w, &dw, &scratch);
+        alloc_workspaces(k, sizeof(b)/sizeof(b[0]), b, &w, &scratch);
         gsl_test_rel(suzerain_bspline_spacing_breakpoints(0, w),
                      5, GSL_DBL_EPSILON, msg, k, 0);
         gsl_test_rel(suzerain_bspline_spacing_breakpoints(1, w),
@@ -921,12 +912,12 @@ static void test_spacing_breakpoints()
                      3, GSL_DBL_EPSILON, msg, k, 3);
         gsl_test_rel(suzerain_bspline_spacing_breakpoints(4, w),
                      9, GSL_DBL_EPSILON, msg, k, 4);
-        free_workspaces(&w, &dw, &scratch);
+        free_workspaces(&w, &scratch);
     }
 
     {
         const int k = 3;
-        alloc_workspaces(k, sizeof(b)/sizeof(b[0]), b, &w, &dw, &scratch);
+        alloc_workspaces(k, sizeof(b)/sizeof(b[0]), b, &w, &scratch);
         gsl_test_rel(suzerain_bspline_spacing_breakpoints(0, w),
                      5.0, GSL_DBL_EPSILON, msg, k, 0);
         gsl_test_rel(suzerain_bspline_spacing_breakpoints(1, w),
@@ -939,7 +930,7 @@ static void test_spacing_breakpoints()
                      3.0, GSL_DBL_EPSILON, msg, k, 4);
         gsl_test_rel(suzerain_bspline_spacing_breakpoints(5, w),
                      9.0, GSL_DBL_EPSILON, msg, k, 5);
-        free_workspaces(&w, &dw, &scratch);
+        free_workspaces(&w, &scratch);
     }
 }
 

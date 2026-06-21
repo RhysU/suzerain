@@ -24,8 +24,9 @@
 #ifndef PECOS_SUZERAIN_TEST_TOOLS_HPP
 #define PECOS_SUZERAIN_TEST_TOOLS_HPP
 
-#include <boost/test/floating_point_comparison.hpp>
+#include <boost/test/tools/floating_point_comparison.hpp>
 #include <boost/test/test_tools.hpp>
+#include <boost/test/parameterized_test.hpp>
 
 #include <suzerain/common.hpp>
 #include <suzerain/complex.hpp>
@@ -34,7 +35,7 @@
 #include <suzerain/multi_array.hpp>
 
 #ifdef SUZERAIN_HAVE_MKL
-#include <mkl.h>
+extern "C" void mkl_free_buffers(void);
 #endif
 
 #define CHECK_GBMATRIX_CLOSE(                                        \
@@ -138,10 +139,10 @@ _suzerain_check_gbmatrix_close(
     // Any further error messages are useless if the above tests fail
     // so short circuit the remainder of the test if any did.
     if (checkequality) {
-        const boost::test_tools::close_at_tolerance<FPT> is_close
-            = boost::test_tools::close_at_tolerance<FPT>(
-                boost::test_tools::percent_tolerance(percent_tolerance));
-        using boost::test_tools::check_is_small;
+        const boost::math::fpc::close_at_tolerance<FPT> is_close
+            = boost::math::fpc::close_at_tolerance<FPT>(
+                boost::math::fpc::percent_tolerance(percent_tolerance));
+        using boost::math::fpc::is_small;
 
         for (int j = 0; j < e_n; ++j) {
             for (int i = 0; i < e_m; ++i) {
@@ -159,7 +160,7 @@ _suzerain_check_gbmatrix_close(
                     const FPT r_value = r[r_offset];
                     const FPT e_value = e[e_offset];
                     if (e_value == FPT(0)) {
-                        if (!check_is_small(r_value, small_tolerance)) {
+                        if (!is_small(r_value, small_tolerance)) {
                             errors << "\nMismatch of expected zero to "
                                 << small_tolerance << " at index ("
                                 << std::setw(2) << i << ","
@@ -474,9 +475,9 @@ bool check_close_collections(const FPT *left_begin, const FPT *left_end,
                              const FPT *right_begin, const FPT *right_end,
                              FPT percent_tolerance)
 {
-    const ::boost::test_tools::close_at_tolerance<FPT> is_close
-        = ::boost::test_tools::close_at_tolerance<FPT>(
-                ::boost::test_tools::percent_tolerance(percent_tolerance));
+    const ::boost::math::fpc::close_at_tolerance<FPT> is_close
+        = ::boost::math::fpc::close_at_tolerance<FPT>(
+                ::boost::math::fpc::percent_tolerance(percent_tolerance));
 
     int pos = 0;
     bool res = true;
@@ -882,23 +883,33 @@ public:
 private:
     suzerain_error_handler_t * previous_;
 };
-#pragma warning(pop)
 
-#ifdef SUZERAIN_HAVE_MKL
-#include <mkl_service.h>
-#endif
 class BlasCleanupFixture {
 public:
     BlasCleanupFixture() {
 #ifdef SUZERAIN_HAVE_MKL
-#if INTEL_MKL_VERSION < 110002
-        MKL_FreeBuffers();
-#else
         mkl_free_buffers();
-#endif
 #endif
     }
 };
+
+namespace boost { namespace unit_test {
+
+template<typename ParamType, typename ParamIter>
+inline test_case*
+make_test_case( void (*test_func)( ParamType ),
+                const_string  tc_name,
+                ParamIter     par_begin,
+                ParamIter     par_end )
+{
+    (void)par_end;
+    return new test_case(
+        ut_detail::normalize_test_case_name(tc_name),
+        __FILE__, __LINE__,
+        boost::bind(test_func, *par_begin));
+}
+
+}} // namespace boost::unit_test
 
 #pragma warning(pop)
 #endif // PECOS_SUZERAIN_TEST_TOOLS_HPP
