@@ -26,7 +26,7 @@
  * Templated functionality used within kahan.c
  */
 
-// -no-unsafe-math-optimizations or similar should be enable for compilation!
+#pragma GCC optimize("no-unsafe-math-optimizations")
 
 // #include-time parameters available followed by a sample usage.
 // Each of these are #undef-ed at the end of this template file
