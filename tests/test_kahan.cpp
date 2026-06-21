@@ -28,26 +28,26 @@
 
 #include <suzerain/common.hpp>
 
-static volatile double naive_sum3(const double *d)
+static double __attribute__((optimize("-fno-fast-math"))) naive_sum3(const double *d)
 {
-    volatile double s = d[0];
+    double s = d[0];
     s += d[1];
     s += d[2];
     return s;
 }
 
-static volatile double naive_sum4(const double *d)
+static double __attribute__((optimize("-fno-fast-math"))) naive_sum4(const double *d)
 {
-    volatile double s = d[0];
+    double s = d[0];
     s += d[1];
     s += d[2];
     s += d[3];
     return s;
 }
 
-static volatile double naive_sum5(const double *d)
+static double __attribute__((optimize("-fno-fast-math"))) naive_sum5(const double *d)
 {
-    volatile double s = d[0];
+    double s = d[0];
     s += d[1];
     s += d[2];
     s += d[3];
