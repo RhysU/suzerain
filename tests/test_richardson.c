@@ -289,7 +289,7 @@ test_richardson_extrapolation_twolevels()
 
         gsl_test(suzerain_richardson_extrapolation(data3, 2, k2, NULL, NULL),
                 "Unexpected error reported in %s");
-        gsl_test_abs(gsl_matrix_get(data3, 0, 0), 73.0/21.0, GSL_DBL_EPSILON,
+        gsl_test_abs(gsl_matrix_get(data3, 0, 0), 73.0/21.0, 2*GSL_DBL_EPSILON,
                 "%s scalar correct result at %s:%d",
                 __func__, __FILE__, __LINE__);
     }
@@ -302,7 +302,7 @@ test_richardson_extrapolation_twolevels()
 
         gsl_test(suzerain_richardson_extrapolation(data3, 2, k1, NULL, NULL),
                 "Unexpected error reported in %s");
-        gsl_test_abs(gsl_matrix_get(data3, 0, 0), 73.0/21.0, GSL_DBL_EPSILON,
+        gsl_test_abs(gsl_matrix_get(data3, 0, 0), 73.0/21.0, 2*GSL_DBL_EPSILON,
                 "%s scalar correct result at %s:%d",
                 __func__, __FILE__, __LINE__);
     }

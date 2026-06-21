@@ -25,7 +25,7 @@
 #include <suzerain/bl.h>
 
 #define BOOST_TEST_MAIN
-#include <boost/test/floating_point_comparison.hpp>
+#include <boost/test/tools/floating_point_comparison.hpp>
 #include <boost/test/unit_test.hpp>
 
 #include <suzerain/common.hpp>
@@ -117,7 +117,7 @@ BOOST_AUTO_TEST_CASE( blasius_find_edge99 )
         u.get(),
         gsl_bspline_breakpoint(0,              b.bw),
         gsl_bspline_breakpoint(b.bw->nbreak-1, b.bw),
-        &location, dB.get(), b.bw, b.dbw));
+        &location, dB.get(), b.bw));
 
     // For the classical Blasius layer truncated in the usual fashion,
     // we should see something around 4.91 when x = Re_x = 1 per
@@ -224,7 +224,7 @@ BOOST_FIXTURE_TEST_CASE( blasius_find_edge, fixture_four_thousand )
         ke.get() /* \approx H_0 */,
         gsl_bspline_breakpoint(0,              b.bw),
         gsl_bspline_breakpoint(b.bw->nbreak-1, b.bw),
-        &location, dB.get(), b.bw, b.dbw));
+        &location, dB.get(), b.bw));
 
     // Thickness from eyeballing results computed in Octave
     //   source notebooks/blasius.m
@@ -314,7 +314,7 @@ BOOST_FIXTURE_TEST_CASE( find_edge, ChallengingFixture )
         coeffs_H0,
         gsl_bspline_breakpoint(0,              b.bw),
         gsl_bspline_breakpoint(b.bw->nbreak-1, b.bw),
-        &location, dB.get(), b.bw, b.dbw));
+        &location, dB.get(), b.bw));
 
     // Ensure we found an actual edge in this profile
     BOOST_CHECK(!(boost::math::isnan)(location));
@@ -345,7 +345,7 @@ BOOST_FIXTURE_TEST_CASE( blasius_thicknesses_reynolds,
     suzerain_bl_thicknesses thick;
     BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS, suzerain_bl_compute_thicknesses(
         H0.get(), ke.get(), rhou.get(), u.get(),
-        &thick, b.bw, b.dbw));
+        &thick, b.bw));
     BOOST_CHECK_GT   (thick.delta,   0.12);                        ++cnt;
     BOOST_CHECK_CLOSE(thick.delta1,  0.0172085683613221,  0.01  ); ++cnt;
     BOOST_CHECK_CLOSE(thick.delta2,  0.00664045493818580, 0.0105); ++cnt;
@@ -363,7 +363,7 @@ BOOST_FIXTURE_TEST_CASE( blasius_thicknesses_reynolds,
                         suzerain_bl_compute_thicknesses_baseflow(
                  H0.get(),    ke.get(), rhou.get(), u.get(),
         0,       &H0[b.n()-1], &rhou[b.n()-1], &u[b.n()-1], &v[b.n()-1],
-        &baseflow, b.bw, b.dbw));
+        &baseflow, b.bw));
     cnt = 0;
     BOOST_CHECK_EQUAL(thick.delta,   baseflow.delta);        ++cnt;
     BOOST_CHECK_CLOSE(thick.delta1,  baseflow.delta1,  tol); ++cnt;

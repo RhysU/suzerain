@@ -90,31 +90,31 @@ BOOST_AUTO_TEST_CASE( parse_inf )
 {
     double result1;
     exprparse("inf", result1);
-    BOOST_CHECK((boost::math::isinf)(result1));
+    BOOST_CHECK(std::isinf(result1));
 
     double result2;
     exprparse(std::string("inf"), result2);
-    BOOST_CHECK((boost::math::isinf)(result2));
+    BOOST_CHECK(std::isinf(result2));
 }
 
 BOOST_AUTO_TEST_CASE( parse_infinity )
 {
     double result1;
     exprparse("infinity", result1);
-    BOOST_CHECK((boost::math::isinf)(result1));
+    BOOST_CHECK(std::isinf(result1));
 
     double result2;
     exprparse(std::string("infinity"), result2);
-    BOOST_CHECK((boost::math::isinf)(result2));
+    BOOST_CHECK(std::isinf(result2));
 }
 
 BOOST_AUTO_TEST_CASE( parse_nan )
 {
     double result1;
     exprparse("nan", result1);
-    BOOST_CHECK((boost::math::isnan)(result1));
+    BOOST_CHECK(std::isnan(result1));
 
     double result2;
     exprparse(std::string("nan"), result2);
-    BOOST_CHECK((boost::math::isnan)(result2));
+    BOOST_CHECK(std::isnan(result2));
 }

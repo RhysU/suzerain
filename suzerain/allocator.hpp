@@ -105,8 +105,7 @@ public:
 
     /** Free-store based memory allocation */
     //@{
-    pointer allocate(size_type cnt,
-                     typename std::allocator<void>::const_pointer = 0)
+    pointer allocate(size_type cnt, const void* = 0)
     {
         return reinterpret_cast<pointer>(::operator new(cnt * sizeof (T)));
     }
@@ -180,9 +179,12 @@ public:
 
     /** Allocation and deallocation uses the policy template parameter */
     //@{
-    pointer allocate(
-        size_type cnt,
-        typename std::allocator<void>::const_pointer hint = 0)
+    pointer allocate(size_type cnt)
+    {
+        return Policy::allocate(cnt, 0);
+    }
+
+    pointer allocate(size_type cnt, const void* hint)
     {
         return Policy::allocate(cnt, hint);
     }

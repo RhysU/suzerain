@@ -758,14 +758,14 @@ bool init_unit_test_suite() {
 
             { // Register test_gbdddmv_s case
                 std::ostringstream name;
-                name << BOOST_TEST_STRINGIZE(test_gbdddmv_s) << ' ' << gbdddmv_tc[i];
+                name << BOOST_TEST_STRINGIZE(test_gbdddmv_s) << ' ' << r;
                 master_test_suite().add(make_test_case(
                         &test_gbdddmv_s, name.str(), &r, &r + 1));
             }
 
             { // Register test_gbdddmv_d case
                 std::ostringstream name;
-                name << BOOST_TEST_STRINGIZE(test_gbdddmv_d) << ' ' << gbdddmv_tc[i];
+                name << BOOST_TEST_STRINGIZE(test_gbdddmv_d) << ' ' << r;
                 master_test_suite().add(make_test_case(
                         &test_gbdddmv_d, name.str(), &r, &r + 1));
             }

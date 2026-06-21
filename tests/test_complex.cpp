@@ -82,8 +82,8 @@ BOOST_AUTO_TEST_CASE( real_and_imag_return_lvalues )
     typedef std::complex<double> complex;
 
     complex x(1,2);
-    x.real() += 1;
-    x.imag() += 2;
+    x.real(x.real() + 1);
+    x.imag(x.imag() + 2);
     BOOST_CHECK_EQUAL(x.real(), 2);
     BOOST_CHECK_EQUAL(x.imag(), 4);
     BOOST_CHECK_EQUAL(x, complex(2,4));
@@ -251,8 +251,8 @@ BOOST_AUTO_TEST_CASE( assign_complex_with_complex_source )
     std::complex<fftw_real> c;
 
     // fftw_complex from std::complex
-    c.real() = 1.0;
-    c.imag() = 2.0;
+    c.real(1.0);
+    c.imag(2.0);
     assign_complex(b, c);
     BOOST_CHECK_EQUAL(b[0], 1.0);
     BOOST_CHECK_EQUAL(b[1], 2.0);
@@ -395,8 +395,8 @@ BOOST_AUTO_TEST_CASE( assign_complex_with_arithmetic_source )
     BOOST_CHECK_EQUAL(a[1], 0.0);
 
     std::complex<double> b;
-    b.real() = 123.0;
-    b.imag() = 456.0;
+    b.real(123.0);
+    b.imag(456.0);
     assign_complex(b, 789.0);
     BOOST_CHECK_EQUAL(b.real(), 789.0);
     BOOST_CHECK_EQUAL(b.imag(), 0.0);
@@ -411,8 +411,8 @@ BOOST_AUTO_TEST_CASE( assign_complex_scaled )
     std::complex<fftw_real> c, d;
 
     // fftw_complex from std::complex
-    c.real() = 1.0;
-    c.imag() = 2.0;
+    c.real(1.0);
+    c.imag(2.0);
     assign_complex_scaled(b, c, 2.0);
     BOOST_CHECK_EQUAL(b[0], 2.0);
     BOOST_CHECK_EQUAL(b[1], 4.0);
@@ -444,8 +444,8 @@ BOOST_AUTO_TEST_CASE( assign_complex_scaled_ipower )
     std::complex<fftw_real> c;
 
     // fftw_complex from std::complex
-    c.real() = 1.0;
-    c.imag() = 2.0;
+    c.real(1.0);
+    c.imag(2.0);
     assign_complex_scaled_ipower(b, c, 2.0, -4);
     BOOST_CHECK_EQUAL(b[0],  2.0);
     BOOST_CHECK_EQUAL(b[1],  4.0);
@@ -547,8 +547,8 @@ BOOST_AUTO_TEST_CASE( assign_components )
     fftw_real s1, s2;
 
     // from std::complex
-    c.real() = 1.0;
-    c.imag() = 2.0;
+    c.real(1.0);
+    c.imag(2.0);
     assign_components(s1, s2, c);
     BOOST_CHECK_EQUAL(s1, 1.0);
     BOOST_CHECK_EQUAL(s2, 2.0);

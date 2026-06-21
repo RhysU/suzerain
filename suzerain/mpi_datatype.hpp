@@ -71,9 +71,10 @@ struct datatype<const T, typename boost::enable_if<boost::mpl::and_<
     boost::mpl::not_<boost::mpl::or_<
         boost::is_pointer<T>,
         boost::is_reference<T>,
-        boost::is_array<T>
+        boost::is_array<T>,
+        boost::is_volatile<T>
     > >,
-    boost::is_complex<T>  // Intel 12.1+ requires is_complex last
+    boost::is_complex<T>
 > >::type>
     : public datatype<T> {};
 
@@ -83,9 +84,22 @@ struct datatype<volatile T, typename boost::enable_if<boost::mpl::and_<
     boost::mpl::not_<boost::mpl::or_<
         boost::is_pointer<T>,
         boost::is_reference<T>,
+        boost::is_array<T>,
+        boost::is_const<T>
+    > >,
+    boost::is_complex<T>
+> >::type>
+    : public datatype<T> {};
+
+/** Removes const volatile modifiers on a complex MPI_Datatype */
+template<typename T>
+struct datatype<const volatile T, typename boost::enable_if<boost::mpl::and_<
+    boost::mpl::not_<boost::mpl::or_<
+        boost::is_pointer<T>,
+        boost::is_reference<T>,
         boost::is_array<T>
     > >,
-    boost::is_complex<T>  // Intel 12.1+ requires is_complex last
+    boost::is_complex<T>
 > >::type>
     : public datatype<T> {};
 

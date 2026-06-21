@@ -719,7 +719,7 @@ bool init_unit_test_suite() {
             master_test_suite().add(make_test_case(
                     &test_gbdddddmv_scc, name.str(), &c, &c + 1));
             master_test_suite().add(make_test_case(&test_gbdddddmv_ssc,
-                    replace_first_copy(name.str(), "dzz", "ddz"), &c, &c + 1));
+                    replace_first_copy(name.str(), "scc", "ssc"), &c, &c + 1));
         }
 
         { // Imaginary-valued alpha, beta
@@ -854,14 +854,14 @@ bool init_unit_test_suite() {
 
             { // Register test_gbdddddmv_s case
                 std::ostringstream name;
-                name << BOOST_TEST_STRINGIZE(test_gbdddddmv_s) << ' ' << gbdddddmv_tc[i];
+                name << BOOST_TEST_STRINGIZE(test_gbdddddmv_s) << ' ' << r;
                 master_test_suite().add(make_test_case(
                         &test_gbdddddmv_s, name.str(), &r, &r + 1));
             }
 
             { // Register test_gbdddddmv_d case
                 std::ostringstream name;
-                name << BOOST_TEST_STRINGIZE(test_gbdddddmv_d) << ' ' << gbdddddmv_tc[i];
+                name << BOOST_TEST_STRINGIZE(test_gbdddddmv_d) << ' ' << r;
                 master_test_suite().add(make_test_case(
                         &test_gbdddddmv_d, name.str(), &r, &r + 1));
             }
