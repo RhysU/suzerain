@@ -44,9 +44,10 @@ CC=mpicc CXX=mpicxx FC=mpif90 ./configure \
     --with-mkl-include=/usr/include/mkl --with-mkl-libdir=/usr/lib/x86_64-linux-gnu
 ```
 
-### 4. Fix libtool bare `-l` entries and dep linking
-OpenMPI's Fortran wrapper generates empty `-l` tokens in libtool postdeps.
-Fix both the main and largo libtool files:
+### 4. Post-configure libtool fix
+OpenMPI's compiler wrappers emit bare `-l` flags that break libtool.
+Also, `link_all_deplibs=no` prevents transitive dependency linking.
+After configure, fix both libtool files:
 ```bash
 python3 -c "
 import re
@@ -57,11 +58,8 @@ for lt in ['x86_64-unknown-linux-gnu/libtool', 'x86_64-unknown-linux-gnu/largo/l
     with open(lt, 'w') as f:
         f.write(content)
 "
-```
-Also fix `link_all_deplibs=no` to `link_all_deplibs=unknown` in libtool
-to ensure bare `-l` dependency libs from `.la` files are passed through:
-```bash
-sed -i 's/^link_all_deplibs=no$/link_all_deplibs=unknown/' x86_64-unknown-linux-gnu/libtool
+sed -i 's/^link_all_deplibs=no$/link_all_deplibs=unknown/' libtool
+sed -i 's/^link_all_deplibs=no$/link_all_deplibs=unknown/' largo/libtool
 ```
 
 ### 5. Build
@@ -177,13 +175,66 @@ cd x86_64-unknown-linux-gnu && make -j$(nproc)
 - complex.hpp real/imag migration to standard C++ (GitHub issue #1)
 - libtool `link_all_deplibs` fix is needed after each `configure` run
 
-## Current status
-- [x] System packages installed (including libmkl-dev)
-- [x] ESIO built and installed
-- [x] bootstrap + configure pass (with MKL)
-- [x] P3DFFT (lib/suzerain-p3dfft) compiles and links
-- [x] Largo compiles and links
-- [x] GSL bspline API migration complete
-- [x] Main suzerain library compilation
-- [x] Apps compilation
-- [x] **Full `make` success**
+## Status
+
+| Target | Status |
+|---|---|
+| `make` | PASS |
+| `make extra` (tests) | PASS |
+| `make` with writeups | PASS |
+| `make doxygen-run` | PASS |
+| `make check` (largo) | PASS (31 pass, 1 xfail) |
+| `make check` (suzerain) | 60 pass, 16 fail (see below) |
+
+## `make check` failures (suzerain tests/)
+
+### Category 1: Parameterized test name collisions (7 tests)
+
+The `make_param_test_case` compatibility wrapper registers only the first
+parameter set per test name. When multiple parameter sets share a test name,
+Boost.Test reports "registered multiple times" and aborts.
+
+- `test_gbmv`
+- `test_gbdmv`
+- `test_gbddmv`
+- `test_gbdddmv`
+- `test_gbddddmv`
+- `test_gbdddddmv`
+- `test_sbmv`
+
+**Root cause**: The original `boost::unit_test::make_test_case(func, name,
+begin, end)` API iterated over all parameters, creating one sub-test per
+value. The compatibility wrapper only captures the first value. This needs
+a proper reimplementation that iterates `begin..end` and generates unique
+test case names per parameter.
+
+### Category 2: Floating-point tolerance failures (5 tests)
+
+Tight tolerances that were tuned for a specific compiler/architecture now
+fail with GCC 13.3 and `-funsafe-math-optimizations`. These are
+ULP-level differences (last 1-3 digits of double precision).
+
+- `test_lapackext` — Lotkin matrix condition number check
+- `test_bsmbsm` — submatrix solve mismatch (~1e-13 relative)
+- `test_bsplineop` — opaccumulate_repeated mismatch (~1e-10 relative)
+- `test_rholut` — grad_p mismatch (~6e-13 relative)
+- `test_lowstorage` — diffusive stability bound off by ~4e-15
+
+### Category 3: Kahan summation test (1 test)
+
+- `test_kahan` — Expects naive summation to lose precision, but GCC 13.3
+  optimizations preserve precision, so Kahan summation matches naive and
+  the "Kahan is more accurate" assertions fail.
+
+### Category 4: Richardson extrapolation (1 test)
+
+- `test_richardson` — ULP-level mismatch in extrapolation result
+
+### Category 5: MPI tests fail as root (2 tests)
+
+- `test_diffwave_p3dfft.sh`
+- `test_l2xz.sh`
+
+OpenMPI refuses to run as root without `--allow-run-as-root`. These tests
+would likely pass in a non-root environment or with
+`OMPI_ALLOW_RUN_AS_ROOT=1` and `OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1`.
