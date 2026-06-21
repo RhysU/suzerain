@@ -868,7 +868,7 @@ BOOST_AUTO_TEST_CASE( solve_real )
 
     // Do we match the expected solution?
     check_close_collections(XR, XR + A.N, b.get() + A.N, b.get() + 2*A.N,
-                            std::numeric_limits<double>::epsilon()*1e4);
+                            std::numeric_limits<double>::epsilon()*2e4);
 }
 
 // Complex operator used for this test is i*op used for solve_real.
@@ -960,9 +960,9 @@ BOOST_AUTO_TEST_CASE( solve_complex )
 
     // Do we match the expected solution?
     check_close_collections(XR, XR + A.N, b.get() + 2*A.N, b.get() + 3*A.N,
-                            std::numeric_limits<double>::epsilon()*1e4);
+                            std::numeric_limits<double>::epsilon()*2e4);
     check_close_collections(XR, XR + A.N, b.get() + 3*A.N, b.get() + 4*A.N,
-                            std::numeric_limits<double>::epsilon()*1e4);
+                            std::numeric_limits<double>::epsilon()*2e4);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

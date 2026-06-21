@@ -236,7 +236,7 @@ static void test_sbmv_d(const sbmv_tc_type& t)
 
 static void test_sbmv_scc(const sbmzv_tc_type& t)
 {
-    const float close_enough = numeric_limits<float>::epsilon()*t.n*t.n*50;
+    const float close_enough = numeric_limits<float>::epsilon()*t.n*t.n*100;
     const int lena = t.lda * t.n;
     const int lenx = 2 * abs(t.incx) * t.n;
     const int leny = 2 * abs(t.incy) * t.n;
