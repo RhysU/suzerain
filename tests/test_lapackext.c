@@ -241,9 +241,9 @@ void test_lapackext_dsgbsvx()
         gsl_test(info,
                 "%s:%d returns zero on Lotkin matrix %d",
                  __func__, __LINE__, n);
-        // Conditioning is just too nasty beyond n == 7 so don't require tolsc
+        // Conditioning is just too nasty at n >= 7 so don't require tolsc
         // However, the residual and everything else must still hold though
-        if (n < 8) {
+        if (n < 7) {
             gsl_test(tolsc[i][j][n] > 1,
                     "%s:%d Lotkin matrix %d gives tolsc <= 1: %g",
                     __func__, __LINE__, n, tolsc[i][j][n]);

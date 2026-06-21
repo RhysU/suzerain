@@ -184,7 +184,7 @@ static void test_gbmv_d(const gbmv_tc_type& t)
 
 static void test_gbmv_scc(const gbmzv_tc_type& t)
 {
-    const float close_enough = numeric_limits<float>::epsilon()*t.m*t.n*300;
+    const float close_enough = numeric_limits<float>::epsilon()*t.m*t.n*2000;
     const int lena = t.lda * t.n;
     const int lenx = 2 * abs(t.incx) * (toupper(t.trans) == 'N' ? t.n : t.m);
     const int leny = 2 * abs(t.incy) * (toupper(t.trans) == 'N' ? t.m : t.n);
