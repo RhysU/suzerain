@@ -208,13 +208,9 @@ libsuzerain_la_LIBADD    += $(BOOST_IOSTREAMS_LDFLAGS)
 libsuzerain_la_LIBADD    += $(BOOST_IOSTREAMS_LIBS)
 libsuzerain_la_LIBADD    += $(BOOST_PROGRAM_OPTIONS_LDFLAGS)
 libsuzerain_la_LIBADD    += $(BOOST_PROGRAM_OPTIONS_LIBS)
-# Includes MKL via GSL BLAS hooks making it sensitive to --as-needed
-libsuzerain_la_LIBADD    += $(LD_NO_AS_NEEDED)
 libsuzerain_la_LIBADD    += $(GSL_LIBS)
-libsuzerain_la_LIBADD    += $(LD_AS_NEEDED)
-#
 libsuzerain_la_LIBADD    += $(LOG4CXX_LIBS)
-libsuzerain_la_LIBADD    += -lmpi_cxx
+libsuzerain_la_LIBADD    += $(MPICXX_EXTRA_LIBS)
 
 # BLAS and LAPACK wrappers, including custom BLAS- and LAPACK-like kernels.
 # These routines ("BLAS et. al.") should be directly usable elsewhere
