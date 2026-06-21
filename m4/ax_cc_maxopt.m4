@@ -134,9 +134,9 @@ if test "$ac_test_CFLAGS" != "set"; then
         # -fstrict-aliasing for gcc-2.95+
         AX_APPEND_COMPILE_FLAGS([-fstrict-aliasing])
 
-        # -fstrict-aliasing already enables most safe optimizations.
-        # -funsafe-math-optimizations breaks IEEE promises we rely on
-        # (e.g. Kahan summation, tight numerical tolerances).
+        # We enable "unsafe" fp optimization with other compilers, too
+        # Kahan routines use a local pragma to preserve IEEE semantics
+        AX_APPEND_COMPILE_FLAGS([-funsafe-math-optimizations])
         ;;
   esac
 

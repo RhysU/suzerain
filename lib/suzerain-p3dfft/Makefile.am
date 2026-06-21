@@ -31,7 +31,7 @@ libsuzerain_p3dfft_la_SOURCES += fft_init.F90
 libsuzerain_p3dfft_la_SOURCES += fft_spec.F90
 libsuzerain_p3dfft_la_SOURCES += module.F90
 libsuzerain_p3dfft_la_SOURCES += wrap.F90
-libsuzerain_p3dfft_la_LIBADD   = $(FFTW3_LIBS)
+libsuzerain_p3dfft_la_LIBADD   = $(FFTW3_LIBS) -lmpi_mpifh -lmpi
 
 # Get rid of module files on 'make clean'
 CLEANFILES  = fft_spec.$(FC_MODEXT) p3dfft.$(FC_MODEXT)

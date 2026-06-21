@@ -214,6 +214,7 @@ libsuzerain_la_LIBADD    += $(GSL_LIBS)
 libsuzerain_la_LIBADD    += $(LD_AS_NEEDED)
 #
 libsuzerain_la_LIBADD    += $(LOG4CXX_LIBS)
+libsuzerain_la_LIBADD    += -lmpi_cxx
 
 # BLAS and LAPACK wrappers, including custom BLAS- and LAPACK-like kernels.
 # These routines ("BLAS et. al.") should be directly usable elsewhere

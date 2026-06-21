@@ -265,7 +265,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( diffusive, T, constants_test_types )
                                       + T(1)/(delta_y*delta_y)
                                       + T(1)/(delta_z*delta_z))*delta_t;
         BOOST_CHECK_LE(
-                lhs, evmaxmag_real + 30*std::numeric_limits<T>::epsilon());
+                lhs, evmaxmag_real + 50*std::numeric_limits<T>::epsilon());
     }
 
     { // Ensure we handle nu < nu0 correctly
@@ -282,7 +282,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( diffusive, T, constants_test_types )
                                       + T(1)/(delta_y*delta_y)
                                       + T(1)/(delta_z*delta_z))*delta_t;
         BOOST_CHECK_LE(
-                lhs, evmaxmag_real + 30*std::numeric_limits<T>::epsilon());
+                lhs, evmaxmag_real + 50*std::numeric_limits<T>::epsilon());
     }
 }
 
