@@ -917,7 +917,7 @@ BOOST_AUTO_TEST_CASE( rholut_grad_p )
                 -1052.4623117340587311081836624513934718452258172103981784331L);
         BOOST_CHECK_CLOSE(ans(0), grad_p_ans(0),     close_enough);
         BOOST_CHECK_CLOSE(ans(1), grad_p_ans(1),     close_enough);
-        BOOST_CHECK_CLOSE(ans(2), grad_p_ans(2), 4.0*close_enough);
+        BOOST_CHECK_CLOSE(ans(2), grad_p_ans(2), 3.5*close_enough);
     }
 
     /* Ensure the coefficient calculations are correct */

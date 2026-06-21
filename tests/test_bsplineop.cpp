@@ -1679,7 +1679,7 @@ BOOST_AUTO_TEST_CASE( opaccumulate_repeated )
     CHECK_GBMATRIX_CLOSE(
         lu.n(), lu.n(), lu.kl(), lu.ku()+lu.kl(), lu.A_T(), lu.ld(),
          t.n(),  t.n(),  t.kl(),  t.ku()+ t.kl(),  t.A_T(),  t.ld(),
-        std::numeric_limits<double>::epsilon()*3000000);
+        std::numeric_limits<double>::epsilon()*2500000);
 
     // Accumulate our way to a mass matrix one more time
     { double c[3] = { 0,  4, -8 }; t.opaccumulate(3, c, op, zero); } // 0!
@@ -1690,7 +1690,7 @@ BOOST_AUTO_TEST_CASE( opaccumulate_repeated )
     CHECK_GBMATRIX_CLOSE(
         lu.n(), lu.n(), lu.kl(), lu.ku()+lu.kl(), lu.A_T(), lu.ld(),
          t.n(),  t.n(),  t.kl(),  t.ku()+ t.kl(),  t.A_T(),  t.ld(),
-        std::numeric_limits<double>::epsilon()*3000000);
+        std::numeric_limits<double>::epsilon()*2500000);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
