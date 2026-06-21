@@ -145,7 +145,7 @@ std::basic_ostream<charT,traits>& operator<<(
 
 static void test_gbddddmv_s(const gbddddmv_tc_type& t)
 {
-    const float close_enough = numeric_limits<float>::epsilon()*t.n*t.n*8000;
+    const float close_enough = numeric_limits<float>::epsilon()*t.n*t.n*7500;
     const int lend0 = t.ldd0 * t.n;
     const int lend1 = t.ldd1 * t.n;
     const int lend2 = t.ldd2 * t.n;
