@@ -113,6 +113,9 @@ dnl ------------------------------------------------
 LT_INIT()
 LT_PREREQ([2.2.6])
 AC_SUBST(LIBTOOL_DEPS)
+link_all_deplibs=unknown
+link_all_deplibs_CXX=unknown
+link_all_deplibs_FC=unknown
 AC_CACHE_SAVE
 
 dnl ------------------------------------------------

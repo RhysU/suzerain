@@ -224,9 +224,9 @@ if test "${enable_interlib_deps}" == "yes"; then
     link_all_deplibs_CXX=yes
     link_all_deplibs_FC=yes
 else
-    link_all_deplibs=no
-    link_all_deplibs_CXX=no
-    link_all_deplibs_FC=no
+    link_all_deplibs=unknown
+    link_all_deplibs_CXX=unknown
+    link_all_deplibs_FC=unknown
 fi
 
 dnl ------------------------------------------------
@@ -242,6 +242,30 @@ AC_LANG_POP([C++])
 AC_LANG_PUSH([Fortran])
 ACX_MPI(,AC_MSG_ERROR(Could not find MPI compilation tools for Fortran, e.g. mpf90.))
 AC_LANG_POP([Fortran])
+dnl Detect extra MPI link libraries for cross-language transitive linking.
+dnl When C binaries link C++/Fortran MPI libraries through libtool, the
+dnl extra MPI dependencies not provided by mpicc must be in the .la file.
+_mpicc_showme=`$MPICC --showme:libs 2>/dev/null || true`
+AC_MSG_CHECKING([extra MPI C++ libraries])
+MPICXX_EXTRA_LIBS=""
+for _lib in `$MPICXX --showme:libs 2>/dev/null`; do
+    case " $_mpicc_showme " in
+        *" $_lib "*) ;;
+        *) MPICXX_EXTRA_LIBS="$MPICXX_EXTRA_LIBS -l$_lib" ;;
+    esac
+done
+AC_MSG_RESULT([${MPICXX_EXTRA_LIBS:-none}])
+AC_SUBST([MPICXX_EXTRA_LIBS])
+AC_MSG_CHECKING([extra MPI Fortran libraries])
+MPIFC_EXTRA_LIBS=""
+for _lib in `$MPIFC --showme:libs 2>/dev/null`; do
+    case " $_mpicc_showme " in
+        *" $_lib "*) ;;
+        *) MPIFC_EXTRA_LIBS="$MPIFC_EXTRA_LIBS -l$_lib" ;;
+    esac
+done
+AC_MSG_RESULT([${MPIFC_EXTRA_LIBS:-none}])
+AC_SUBST([MPIFC_EXTRA_LIBS])
 AC_CACHE_SAVE
 
 dnl ------------------------------------------------
@@ -278,7 +302,7 @@ dnl C library requirements
 dnl ------------------------------------------------
 AC_LANG_PUSH([C])
 ACX_MKL()
-export GSL_CBLAS_LIB="${MKL_LDFLAGS} ${MKL_LIBS}"
+export GSL_CBLAS_LIB="${LD_NO_AS_NEEDED} ${MKL_LDFLAGS} ${MKL_LIBS} ${LD_AS_NEEDED}"
 AX_PATH_GSL(1.15,,AC_MSG_ERROR([Could not find required GSL version.]))
 AX_FFTW3()
 PKG_CHECK_MODULES([GRVY], [grvy >= 0.27.1],[
