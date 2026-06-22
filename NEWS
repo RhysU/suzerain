@@ -25,6 +25,8 @@ Port to Ubuntu 24.04 with GCC 13, GSL 2.x, Boost 1.83, and C++17.
    literal concatenation instead of token pasting
  * Document the ESIO parallel-HDF5 configure step in README, warning
    against --with-hdf5=/usr on Ubuntu's split HDF5 layout
+ * Fix Python 3 compatibility in postproc/propagation.py (basestring,
+   SymPy >= 1.7 Derivative wrt tuples, OrderedDict internals, iteritems)
 
 
 What's new in suzerain 0.1.7
