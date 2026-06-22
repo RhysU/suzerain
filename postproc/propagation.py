@@ -41,7 +41,12 @@ derived quantities" within Suzerain's perfect gas model document.
 '''
 from __future__ import division, print_function
 import collections
-import distutils.version
+try:
+    from packaging.version import Version as _Version
+    def _ver(s): return _Version(s)
+except ImportError:
+    import distutils.version
+    def _ver(s): return distutils.version.LooseVersion(s)
 import fileinput
 import itertools
 import sympy
@@ -99,7 +104,12 @@ def daff(expr, *symbols, **kwargs):
     def helper(f, *wrt):
         head, sep, tail = type(f).__name__.partition(daffsep)
         deriv = list(tail)
-        deriv.extend(sym.name for sym in wrt)
+        for sym in wrt:
+            # SymPy >= 1.7 passes (symbol, order) tuples; older versions pass symbols directly
+            if isinstance(sym, sympy.core.containers.Tuple):
+                deriv.extend([sym[0].name] * int(sym[1]))
+            else:
+                deriv.append(sym.name)
         name = [head, daffsep]
         name.extend(sorted(deriv))
         return sympy.Function(''.join(name))(*list(f.args))
@@ -116,7 +126,7 @@ def parse(expr, symbol_table=None):
     SymPy expression.  This method provides a common extension point for
     injecting module-specific handling into the parsing process.
     '''
-    if isinstance(expr, basestring):
+    if isinstance(expr, str):
         expr = sympy.parsing.sympy_parser.parse_expr(expr, symbol_table)
 
     return expr
@@ -130,7 +140,7 @@ def statements_by_newline(files=None):
     Comments are introduced by a '#' and extend until the end of line.
 
     >>> from tempfile import NamedTemporaryFile
-    >>> with NamedTemporaryFile() as f:
+    >>> with NamedTemporaryFile(mode='w', suffix='.txt') as f:
     ...     print("""a=1       # Trailing comments
     ...                        # Not every line must have a statement
     ...              f         # Nor every line involve assignment
@@ -162,7 +172,7 @@ def statements_by_semicolon(files=None):
     Comments are introduced by a '//' and extend until the end of line.
 
     >>> from tempfile import NamedTemporaryFile
-    >>> with NamedTemporaryFile() as f:
+    >>> with NamedTemporaryFile(mode='w', suffix='.txt') as f:
     ...     print("""a=1;      // Trailing comments may include ';'
     ...              b =       // Statements may span lines
     ...                  c;
@@ -210,15 +220,8 @@ class symboltranscript(collections.OrderedDict):
             if head in self:
                 # Generate derivative from known information
                 val = daff(self[head], *list(tail))
-                # Insert entry and record the insertion in the transcript.
-                # Requires emulating OrderedDict.__setitem__ as __contains__,
-                # below, falsely reports "key in self" prior to insertion.
-                # And, yes, this hack is wildly gross.
-                root = self._OrderedDict__root
-                last = root[0]
-                last[1] = root[0] \
-                        = self._OrderedDict__map[key] = [last, root, key]
-                dict.__setitem__(self, key, val)
+                # Insert entry using parent __setitem__ to preserve order
+                collections.OrderedDict.__setitem__(self, key, val)
                 return val
             else:
                 raise KeyError('%s depends on missing key %s' % (key, head))
@@ -239,8 +242,8 @@ class symboltranscript(collections.OrderedDict):
 
 # Older SymPy permitted tuple(sorted([f(x),g(x)])) but that breaks on 0.7.4
 # (refer to http://stackoverflow.com/questions/24093363/ for more details).
-if (   distutils.version.LooseVersion(sympy.__version__)
-     < distutils.version.LooseVersion('0.7.4')           ):
+if (   _ver(sympy.__version__)
+     < _ver('0.7.4')           ):
     canonical = lambda *exprs: tuple(sorted(exprs))
 else:
     canonical = lambda *exprs: tuple(sympy.ordered(exprs))
@@ -285,8 +288,8 @@ canonical.__doc__ = r'''
 
 # Older SymPy permitted tuple(sorted([f(x),g(x)])) but that breaks on 0.7.4
 # (refer to http://stackoverflow.com/questions/24093363/ for more details).
-if (   distutils.version.LooseVersion(sympy.__version__)
-     < distutils.version.LooseVersion('0.7.4')           ):
+if (   _ver(sympy.__version__)
+     < _ver('0.7.4')           ):
     # Robustly reproducing sympy.ordered semantics requires some effort
     def natural_impl(exprs):
         # First partition by length so (b,) comes before (a,a)
@@ -384,7 +387,7 @@ def partials(f):
     Non-functions are not considered for the list of partial derivatives:
 
     >>> df = partials("x + y + z + 1 + 2 + 3")
-    >>> df.keys()
+    >>> list(df.keys())
     []
     '''
     f = parse(f)
@@ -413,7 +416,7 @@ def mixed_partials(f, df=None):
         lambda: collections.defaultdict(lambda: sympy.Integer(0)))
     if df is None:
         df = partials(f)
-    for (x, dfdx) in df.iteritems():
+    for (x, dfdx) in df.items():
         ddf[x] = partials(dfdx)
 
     return ddf
@@ -426,7 +429,7 @@ def prerequisites(f, df=None, ddf=None, order=2):
     estimate E[f(x)] to first- or second order and Var[f(x)] to first order.
 
     >>> prerequisites('1 + x*y + log(x/y)')
-    set([])
+    set()
 
     >>> natural(prerequisites('f(x)*g(y) + a'))
     [(f(x),), (g(y),), (f(x), f(x)), (f(x), g(y)), (g(y), g(y))]
@@ -716,8 +719,8 @@ def main(argv):
     retval = args.command(args)
 
     # Warn if the results are likely bogus due to an older SymPy version
-    if (   distutils.version.LooseVersion(sympy.__version__)
-         < distutils.version.LooseVersion('0.7.2')           ):
+    if (   _ver(sympy.__version__)
+         < _ver('0.7.2')           ):
         print('WARN: %s notes SymPy %s older than minimum 0.7.2'
               % (argv[0], sympy.__version__),
               file=sys.stderr)
