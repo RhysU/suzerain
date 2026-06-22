@@ -31,7 +31,8 @@ The following optional dependencies are recommended for full functionality:
 On Ubuntu 24.04, most required and optional dependencies are available as
 system packages.  Install the build toolchain:
 
-    sudo apt install autoconf automake libtool pkg-config g++ gfortran
+    sudo apt install autoconf automake libtool pkg-config g++ gfortran \
+        bsdextrautils
 
 Install MPI and the required libraries:
 
