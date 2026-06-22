@@ -1,6 +1,6 @@
-# Generated /workspace/rhys/Build/sz-gcc-debug/../sz/postproc/perfect_decl.py from /workspace/rhys/Build/sz-gcc-debug/../sz/postproc/perfect_decl.raw ../../sz/postproc/Makefile.am
-# Based upon MD5 6b8c96485fb75443f29d230919569236  /workspace/rhys/Build/sz-gcc-debug/../sz/postproc/perfect_decl.raw
-# Based upon MD5 840fd69e96e9ab60e478f76e9a012fc8  ../../sz/postproc/Makefile.am
+# Generated /home/user/suzerain/x86_64-pc-linux-gnu/../postproc/perfect_decl.py from /home/user/suzerain/x86_64-pc-linux-gnu/../postproc/perfect_decl.raw ../../postproc/Makefile.am
+# Based upon MD5 6b8c96485fb75443f29d230919569236  /home/user/suzerain/x86_64-pc-linux-gnu/../postproc/perfect_decl.raw
+# Based upon MD5 840fd69e96e9ab60e478f76e9a012fc8  ../../postproc/Makefile.am
 def pointwise(gam, Ma, Re, Pr, y, bar, rms, tilde, local, tke):
     """
     Populate Bunch-like bar, rms, tilde, etc. from pointwise
