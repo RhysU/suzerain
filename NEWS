@@ -16,6 +16,9 @@ Port to Ubuntu 24.04 with GCC 13, GSL 2.x, Boost 1.83, and C++17.
    with a localized #pragma GCC optimize
  * Fix parameterized test name collisions in 7 test files
  * Relax floating-point tolerances for GCC 13 numerical differences
+ * Deterministic tie-breaking in extrema argmin/argmax (lowest global
+   index wins), fixing non-reproducible min/max locations across runs
+ * Fix and enable apps/perfect test suite (h5diff tolerances, prereqs)
  * Add FFTW3 Fortran include path detection to ax_fftw3.m4
  * Add Ubuntu 24.04 apt install instructions to README
 
