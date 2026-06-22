@@ -23,10 +23,10 @@ The code depends upon the following libraries:
 
 The following optional dependencies are recommended for full functionality:
 
-    1) GRVY from https://red.ices.utexas.edu/projects/software/wiki/GRVY
+    1) GRVY from https://github.com/hpcsci/grvy
     2) SymPy from http://sympy.org
     3) Antioch from https://github.com/libantioch/antioch
-    4) underling from https://red.ices.utexas.edu/projects/underling
+    4) underling from https://github.com/RhysU/underling
 
 On Ubuntu 24.04, most required and optional dependencies are available as
 system packages.  Install the build toolchain:
