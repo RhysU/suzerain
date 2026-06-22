@@ -116,19 +116,21 @@ compute_field_extrema_xz(
 
                     // ...and tracking minimum value at this wall-normal spot
                     // being careful to preserve NaNs during local reduction.
+                    // On ties, prefer the smallest global index for
+                    // deterministic results across MPI decompositions.
 
                     // minimum value
-                    if (val >= buf2[j+f*ny].val) {
-                        // do nothing
-                    } else {
+                    if (val < buf2[j+f*ny].val
+                        || (val == buf2[j+f*ny].val
+                            && xz_global_offset < buf2[j+f*ny].index)) {
                         buf2[j+f*ny].val   = val;
                         buf2[j+f*ny].index = xz_global_offset;
                     }
 
                     // maximum value
-                    if (val <= buf2[j+(f+nf)*ny].val) {
-                        // do nothing
-                    } else {
+                    if (val > buf2[j+(f+nf)*ny].val
+                        || (val == buf2[j+(f+nf)*ny].val
+                            && xz_global_offset < buf2[j+(f+nf)*ny].index)) {
                         buf2[j+(f+nf)*ny].val   = val;
                         buf2[j+(f+nf)*ny].index = xz_global_offset;
                     }
@@ -223,20 +225,16 @@ compute_field_extrema_xyz(
 
         for (int j = 0; j < ny; ++j) {
 
-            // minimum value
-            if (wallnormal[f].min(j) >= retval[f].min) {
-                // do nothing
-            } else {
+            // minimum value (on ties, prefer smallest j)
+            if (wallnormal[f].min(j) < retval[f].min) {
                 retval[f].min  = wallnormal[f].min(j);
                 retval[f].imin = wallnormal[f].imin(j);
                 retval[f].jmin = j;
                 retval[f].kmin = wallnormal[f].kmin(j);
             }
 
-            // maximum value
-            if (wallnormal[f].max(j) <= retval[f].max) {
-                // do nothing
-            } else {
+            // maximum value (on ties, prefer smallest j)
+            if (wallnormal[f].max(j) > retval[f].max) {
                 retval[f].max  = wallnormal[f].max(j);
                 retval[f].imax = wallnormal[f].imax(j);
                 retval[f].jmax = j;
