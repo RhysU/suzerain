@@ -16,7 +16,7 @@ alert() {
 
 # Check prerequisites and die loudly if the tools we need aren't available
 prereq_status=
-for tool in column cut mktemp mpiexec tail
+for tool in column cut h5dump mktemp mpiexec tail
 do
     if ! which $tool >/dev/null 2>/dev/null; then
         alert "Unable to find utility $tool"
