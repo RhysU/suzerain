@@ -40,7 +40,7 @@ banner "Idempotence of restarting from physical space without time advance${OPER
     $perfect pich0.h5 --restart_destination "a#.h5" --advance_nt=0 \
                       --restart_retain=1                           \
                       ${DECOMP:-} $WIZ $P --restart_physical
-    differ --delta=1e-15 --exclude-path /twopoint_kx --exclude-path /twopoint_kz pich0.h5 a0.h5
+    differ --delta=1e-15 --exclude-path /twopoint_kx --exclude-path /twopoint_kz $exclude_datasets_maxminloc pich0.h5 a0.h5
 )
 
 banner "Conversion from physical- to wave-based restart without time advance${OPER:+ ($OPER)}"
@@ -49,7 +49,7 @@ banner "Conversion from physical- to wave-based restart without time advance${OP
     $perfect pich0.h5 --restart_destination "a#.h5"   \
                       --restart_retain=1              \
                       --advance_nt=0 $WIZ ${DECOMP:-}
-    differ --delta=5e-15 ich0.h5 a0.h5
+    differ --delta=5e-15 $exclude_datasets_maxminloc ich0.h5 a0.h5
 )
 
 banner "Equivalence of a field advanced both with and without a physical space restart${OPER:+ ($OPER)}"
@@ -66,7 +66,7 @@ banner "Equivalence of a field advanced both with and without a physical space r
     $perfect pich0.h5 --restart_destination "c#.h5" --advance_nt=4 $WIZ $P \
                       --restart_retain=1                                   \
                       ${DECOMP:-} --restart_physical --max_dt=1e-5
-    differ $exclude_datasets_bar --delta=6e-13 b0.h5 c0.h5
+    differ $exclude_datasets_bar $exclude_datasets_maxminloc --delta=6e-13 b0.h5 c0.h5
     # Paths like /bar_foo not checked as part of this test
 )
 

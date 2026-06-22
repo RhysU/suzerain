@@ -86,6 +86,10 @@ exclude_datasets_bar=$(echo $exclude_datasets_bar | tr -d '\n' | tr -s ' ')
 # increasing the tolerance during the test).
 # Redmine #3063
 exclude_datasets_maxminloc=""
+exclude_datasets_maxminloc+=" --exclude-path=/minx_rho_u "
+exclude_datasets_maxminloc+=" --exclude-path=/minz_rho_u "
+exclude_datasets_maxminloc+=" --exclude-path=/maxx_rho_u "
+exclude_datasets_maxminloc+=" --exclude-path=/maxz_rho_u "
 exclude_datasets_maxminloc+=" --exclude-path=/minx_rho_v "
 exclude_datasets_maxminloc+=" --exclude-path=/minz_rho_v "
 exclude_datasets_maxminloc+=" --exclude-path=/maxx_rho_v "
