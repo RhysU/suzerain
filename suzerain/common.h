@@ -50,7 +50,7 @@
 
 #if __GNUC__ >= 3
 /** Create an inline assembly comment, if supported */
-#define SUZERAIN_ASM_INLINE_COMMENT(comment) __asm__("# "__FILE__##":"##SUZERAIN_ASM_INLINE_COMMENT_HELPER_TOSTRING(__LINE__)##" "## #comment)
+#define SUZERAIN_ASM_INLINE_COMMENT(comment) __asm__("# " __FILE__ ":" SUZERAIN_ASM_INLINE_COMMENT_HELPER_TOSTRING(__LINE__) " " #comment)
 /** Helps ASM_INLINE_COMMENT convert __LINE__ to a (char *) */
 #define SUZERAIN_ASM_INLINE_COMMENT_HELPER_STRINGIFY(x) #x
 /** Helps ASM_INLINE_COMMENT convert __LINE__ to a (char *) */
