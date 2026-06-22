@@ -47,7 +47,17 @@ Optionally, install documentation tools:
     sudo apt install doxygen graphviz texlive-full
 
 ESIO (https://github.com/RhysU/ESIO) must be built and installed from
-source.  When MKL is installed from packages, configure suzerain with:
+source.  ESIO's own `configure' locates parallel HDF5 through the `h5pcc'
+compiler wrapper, which the libhdf5-openmpi-dev package places on PATH.
+Let it autodetect; do *not* pass `--with-hdf5=/usr'.  On Ubuntu the headers
+live under /usr/include/hdf5/openmpi rather than /usr/include, so pointing
+`--with-hdf5' at /usr makes the macro miss hdf5.h and the ESIO build fails
+with "hdf5.h: No such file or directory".  A plain invocation works:
+
+    CC=mpicc CXX=mpicxx ./configure --prefix=/usr/local
+    make && sudo make install && sudo ldconfig
+
+When MKL is installed from packages, configure suzerain with:
 
     CPPFLAGS="-I/usr/include/mkl" ./configure
 
