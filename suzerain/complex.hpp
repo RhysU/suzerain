@@ -191,54 +191,93 @@ NaN()
     return std::complex<real_type>(quiet_NaN,quiet_NaN);
 }
 
+/** Obtain the real part of a complex number as a mutable lvalue. */
 template<typename FPT>
 SUZERAIN_FORCEINLINE
 FPT& real(std::complex<FPT>& z) {
     return reinterpret_cast<FPT(&)[2]>(z)[0];
 }
 
+/** Obtain the real part of a complex number. */
 template<typename FPT>
 SUZERAIN_FORCEINLINE
 const FPT& real(const std::complex<FPT>& z) {
     return reinterpret_cast<const FPT(&)[2]>(z)[0];
 }
 
+/** Obtain the imaginary part of a complex number as a mutable lvalue. */
 template<typename FPT>
 SUZERAIN_FORCEINLINE
 FPT& imag(std::complex<FPT>& z) {
     return reinterpret_cast<FPT(&)[2]>(z)[1];
 }
 
+/** Obtain the imaginary part of a complex number. */
 template<typename FPT>
 SUZERAIN_FORCEINLINE
 const FPT& imag(const std::complex<FPT>& z) {
     return reinterpret_cast<const FPT(&)[2]>(z)[1];
 }
 
+/**
+ * Obtain the real part of a complex number.
+ *
+ * @param z complex number stored as a two-element array.
+ *
+ * @return <tt>Re(z)</tt>
+ */
 template<typename FPT>
 SUZERAIN_FORCEINLINE
 FPT& real(FPT (&z)[2]) {
     return z[0];
 }
 
+/**
+ * Obtain the real part of a complex number.
+ *
+ * @param z complex number stored as a two-element array.
+ *
+ * @return <tt>Re(z)</tt>
+ */
 template<typename FPT>
 SUZERAIN_FORCEINLINE
 const FPT& real(const FPT (&z)[2]) {
     return z[0];
 }
 
+/**
+ * Obtain the imaginary part of a complex number.
+ *
+ * @param z complex number stored as a two-element array.
+ *
+ * @return <tt>Im(z)</tt>
+ */
 template<typename FPT>
 SUZERAIN_FORCEINLINE
 FPT& imag(FPT (&z)[2]) {
     return z[1];
 }
 
+/**
+ * Obtain the imaginary part of a complex number.
+ *
+ * @param z complex number stored as a two-element array.
+ *
+ * @return <tt>Im(z)</tt>
+ */
 template<typename FPT>
 SUZERAIN_FORCEINLINE
 const FPT& imag(const FPT (&z)[2]) {
     return z[1];
 }
 
+/**
+ * Obtain the real part of a real number.
+ *
+ * @param x real number.
+ *
+ * @return <tt>x</tt>
+ */
 template<typename FPT>
 SUZERAIN_FORCEINLINE
 typename boost::enable_if<
@@ -247,6 +286,13 @@ typename boost::enable_if<
     return x;
 }
 
+/**
+ * Obtain the real part of a real number.
+ *
+ * @param x real number.
+ *
+ * @return <tt>x</tt>
+ */
 template<typename FPT>
 SUZERAIN_FORCEINLINE
 typename boost::enable_if<
@@ -255,6 +301,15 @@ typename boost::enable_if<
     return x;
 }
 
+/**
+ * Obtain the trivial imaginary part of a real number.
+ *
+ * @param x real number.
+ *
+ * @return <tt>0</tt>
+ * @note The result is not an lvalue because one cannot mutate
+ *       the imaginary part of a real number.
+ */
 template<typename FPT>
 SUZERAIN_FORCEINLINE
 typename boost::enable_if<
