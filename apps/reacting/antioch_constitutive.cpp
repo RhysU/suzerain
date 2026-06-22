@@ -286,7 +286,7 @@ void antioch_constitutive::init_antioch()
 {
     WARN0("antioch_constitutive is not fully functional yet!");
 
-    mixture    = make_shared<Antioch::ChemicalMixture<real_t> >(species_names);
+    mixture    = boost::make_shared<Antioch::ChemicalMixture<real_t> >(species_names);
     reactions  = make_shared<Antioch::ReactionSet<real_t> >(*mixture);
     cea_thermo = make_shared<Antioch::CEAThermodynamics<real_t> >(*mixture);
     sm_thermo  = make_shared<Antioch::StatMechThermodynamics<real_t> >(*mixture);
