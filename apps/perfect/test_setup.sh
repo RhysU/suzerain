@@ -79,12 +79,11 @@ do
 done
 exclude_datasets_bar=$(echo $exclude_datasets_bar | tr -d '\n' | tr -s ' ')
 
-# Exclude tests for location of max, min, and negative fraction of rho_v.
-# When these values are machine zeros, small noise from different 
-# parallel setups during regression test can produce largely different
-# min and max locations (hence, differences here cannot be overcome by
-# increasing the tolerance during the test).
-# Redmine #3063
+# Exclude extrema locations for rho_u and rho_v, plus negative fraction
+# of rho_v (Redmine #3063).  When these values are near-zero, round-trip
+# noise from wave-to-physical-to-wave transforms or different parallel FFT
+# kernels picks different argmin/argmax locations that cannot be reconciled
+# by tightening tolerances.
 exclude_datasets_maxminloc=""
 exclude_datasets_maxminloc+=" --exclude-path=/minx_rho_u "
 exclude_datasets_maxminloc+=" --exclude-path=/minz_rho_u "
