@@ -28,6 +28,24 @@ The following optional dependencies are recommended for full functionality:
     3) Antioch from https://github.com/libantioch/antioch
     4) underling from https://red.ices.utexas.edu/projects/underling
 
+On Ubuntu 24.04, most required and optional dependencies are available as
+system packages.  The following installs the build toolchain plus all
+library dependencies that are packaged:
+
+    sudo apt-get install \
+        autoconf automake libtool pkg-config g++ gfortran \
+        libgsl-dev libfftw3-dev libfftw3-mpi-dev \
+        libboost-all-dev libeigen3-dev liblog4cxx-dev \
+        libopenmpi-dev openmpi-bin \
+        libhdf5-openmpi-dev \
+        libmkl-dev \
+        doxygen graphviz texlive-full
+
+ESIO (https://github.com/RhysU/ESIO) must be built and installed from
+source.  When MKL is installed from packages, configure with:
+
+    CPPFLAGS="-I/usr/include/mkl" ./configure
+
 
 2. Configuration
 ----------------
