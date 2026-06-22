@@ -42,7 +42,7 @@ library dependencies that are packaged:
         doxygen graphviz texlive-full
 
 ESIO (https://github.com/RhysU/ESIO) must be built and installed from
-source.  When MKL is installed from packages, configure with:
+source.  When MKL is installed from packages, configure suzerain with:
 
     CPPFLAGS="-I/usr/include/mkl" ./configure
 
