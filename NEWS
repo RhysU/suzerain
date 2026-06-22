@@ -1,3 +1,25 @@
+What's new in suzerain's master branch
+--------------------------------------
+
+Port to Ubuntu 24.04 with GCC 13, GSL 2.x, Boost 1.83, and C++17.
+
+ * Build with modern toolchains: GCC 13, GSL 2.x, Boost 1.83, C++17,
+   log4cxx 1.1, and Doxygen 1.9.8
+ * Fix deprecated GSL, log4cxx, Boost, and C++ API usage throughout
+ * Fix MKL detection for current MKL package layout and API
+ * Detect MPI link libraries portably via compiler wrapper queries,
+   replacing hardcoded OpenMPI library names
+ * Eliminate manual post-configure libtool sed hack by setting
+   link_all_deplibs=unknown in configure.ac
+ * Fold --no-as-needed/--as-needed MKL workaround into GSL_CBLAS_LIB
+ * Restore -funsafe-math-optimizations globally; protect Kahan summation
+   with a localized #pragma GCC optimize
+ * Fix parameterized test name collisions in 7 test files
+ * Relax floating-point tolerances for GCC 13 numerical differences
+ * Add FFTW3 Fortran include path detection to ax_fftw3.m4
+ * Add Ubuntu 24.04 apt install instructions to README
+
+
 What's new in suzerain 0.1.7
 ----------------------------
 
