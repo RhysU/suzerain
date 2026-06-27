@@ -1,3 +1,8 @@
 *.[ch]   ident
 *.[ch]pp ident
 *.tex    ident
+
+# Mathematica notebooks are mostly cached output, typesetting, and graphics;
+# treat them as documentation so GitHub Linguist excludes them from the
+# language statistics.
+*.nb     linguist-documentation
