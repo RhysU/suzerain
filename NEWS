@@ -20,7 +20,7 @@ Port to Ubuntu 24.04 with GCC 13, GSL 2.x, Boost 1.83, and C++17.
    index wins), fixing non-reproducible min/max locations across runs
  * Fix and enable apps/perfect test suite (h5diff tolerances, prereqs)
  * Add FFTW3 Fortran include path detection to ax_fftw3.m4
- * Add Ubuntu 24.04 apt install instructions to README
+ * Add Ubuntu 24.10 apt install instructions to README
  * Fix -Wliteral-suffix in SUZERAIN_ASM_INLINE_COMMENT by using string
    literal concatenation instead of token pasting
  * Document the ESIO parallel-HDF5 configure step in README, warning

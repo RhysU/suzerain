@@ -14,56 +14,56 @@ under writeups/ that are built when a LaTeX installation is available.
 
 The code depends upon the following libraries:
 
-    1) GNU Scientific Library (GSL) 2.8 or later from
+    1) Apache Log4cxx from http://logging.apache.org/log4cxx/
+    2) Boost from http://www.boost.org/
+    3) Eigen from http://eigen.tuxfamily.org/
+    4) ESIO from https://github.com/RhysU/ESIO
+    5) FFTW from http://www.fftw.org/ compiled with MPI support
+    6) GNU Scientific Library (GSL) 2.8 or later from
        http://www.gnu.org/software/gsl/
-    2) FFTW from http://www.fftw.org/ compiled with MPI support
-    3) Boost from http://www.boost.org/
-    4) Eigen from http://eigen.tuxfamily.org/
-    5) Apache Log4cxx from http://logging.apache.org/log4cxx/
-    6) ESIO from https://github.com/RhysU/ESIO
 
 The following optional dependencies are recommended for full functionality:
 
-    1) GRVY from https://github.com/hpcsci/grvy
-    2) SymPy from http://sympy.org
-    3) Antioch from https://github.com/libantioch/antioch
+    1) Antioch from https://github.com/libantioch/antioch
+    2) GRVY from https://github.com/hpcsci/grvy
+    3) SymPy from http://sympy.org
     4) underling from https://github.com/RhysU/underling
 
 The post-processing and pre-processing utilities under postproc/ and preproc/
 additionally use the following tools:
 
-    1) Python 3 from https://www.python.org/
-    2) NumPy from https://numpy.org/
-    3) SciPy from https://scipy.org/
+    1) GNU Octave from https://octave.org/
+    2) gnuplot from http://www.gnuplot.info/
+    3) h5py from https://www.h5py.org/
     4) matplotlib from https://matplotlib.org/
-    5) h5py from https://www.h5py.org/
+    5) NumPy from https://numpy.org/
     6) pandas from https://pandas.pydata.org/
-    7) GNU Octave from https://octave.org/
-    8) gnuplot from http://www.gnuplot.info/
+    7) Python 3 from https://www.python.org/
+    8) SciPy from https://scipy.org/
 
 The following additional tools are used during development:
 
-    1) Perl from https://www.perl.org/ for Fortran dependency tracking in largo/
+    1) LCOV from https://github.com/linux-test-project/lcov for code coverage
+       reports (enabled with --enable-coverage)
     2) mpiP from http://mpip.sourceforge.net/ for lightweight, scalable MPI
        profiling (enabled with --with-mpiP)
-    3) LCOV from https://github.com/linux-test-project/lcov for code coverage
-       reports (enabled with --enable-coverage)
+    3) Perl from https://www.perl.org/ for Fortran dependency tracking in largo/
     4) SageMath from https://www.sagemath.org/ to regenerate the symbolic
        test sources (tests/*.sage)
 
-On Ubuntu 24.04, most required and optional dependencies are available as
+On Ubuntu 24.10, most required and optional dependencies are available as
 system packages.  Install the build toolchain:
 
-    sudo apt install autoconf automake libtool make pkg-config g++ gfortran \
-        bsdextrautils hdf5-tools
+    sudo apt install autoconf automake bsdextrautils g++ gfortran hdf5-tools \
+        libtool make pkg-config
 
 Install MPI and the required libraries:
 
     sudo apt install \
-        libopenmpi-dev openmpi-bin \
-        libgsl-dev libfftw3-dev libfftw3-mpi-dev \
-        libboost-all-dev libeigen3-dev liblog4cxx-dev \
-        libhdf5-openmpi-dev hdf5-tools libmkl-dev
+        hdf5-tools libboost-all-dev libeigen3-dev \
+        libfftw3-dev libfftw3-mpi-dev libgsl-dev \
+        libhdf5-openmpi-dev liblog4cxx-dev libmkl-dev \
+        libopenmpi-dev openmpi-bin
 
 Optionally, install documentation tools:
 
@@ -71,14 +71,14 @@ Optionally, install documentation tools:
 
 Optionally, install the post-processing and analysis tools:
 
-    sudo apt install python3 python3-numpy python3-scipy python3-matplotlib \
-        python3-h5py python3-pandas python3-sympy python3-packaging \
-        octave gnuplot
+    sudo apt install gnuplot octave python3 python3-h5py python3-matplotlib \
+        python3-numpy python3-packaging python3-pandas python3-scipy \
+        python3-sympy
 
 Optionally, install additional development tools (binutils-dev supplies the
 libbfd/libiberty needed to build mpiP, which is not itself packaged):
 
-    sudo apt install perl binutils-dev lcov sagemath
+    sudo apt install binutils-dev lcov perl sagemath
 
 ESIO (https://github.com/RhysU/ESIO) must be built and installed from
 source.  Let its `configure' autodetect parallel HDF5 via the `h5pcc'
