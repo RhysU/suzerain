@@ -26,10 +26,8 @@ AC_DEFUN([AX_CXX_EXTERN_TEMPLATE],[
 AC_CACHE_CHECK(whether the compiler supports extern template,
 ax_cv_cxx_extern_template,
 [AC_LANG_SAVE
- AC_LANG_CPLUSPLUS
- AC_TRY_COMPILE([template <typename T> void foo(T); extern template void foo<int>(int);],
- [],
- ax_cv_cxx_extern_template=yes, ax_cv_cxx_extern_template=no)
+ AC_LANG([C++])
+ AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[template <typename T> void foo(T); extern template void foo<int>(int);]], [[]])],[ax_cv_cxx_extern_template=yes],[ax_cv_cxx_extern_template=no])
  AC_LANG_RESTORE
 ])
 if test "$ax_cv_cxx_extern_template" = yes; then

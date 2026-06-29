@@ -12,11 +12,11 @@ dnl ------------------------------------------------
 dnl Initialization macros
 dnl ------------------------------------------------
 AC_CONFIG_SRCDIR([largo/largo.h])
-AM_CONFIG_HEADER(largo/config.h)
+AC_CONFIG_HEADERS([largo/config.h])
 AC_CONFIG_AUX_DIR([build-aux])
 AC_CONFIG_MACRO_DIR([m4])
 AC_CANONICAL_TARGET
-AM_INIT_AUTOMAKE(1.11 no-define tar-ustar -Wall foreign color-tests silent-rules parallel-tests check-news)
+AM_INIT_AUTOMAKE(1.11 no-define tar-ustar -Wall -Wno-portability foreign color-tests silent-rules parallel-tests check-news)
 AC_PREREQ([2.68])
 AX_AM_MACROS
 AX_SPLIT_VERSION

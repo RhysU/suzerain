@@ -8,7 +8,7 @@ dnl ------------------------------------------------
 dnl Initialization macros
 dnl ------------------------------------------------
 AC_CONFIG_SRCDIR([suzerain/pencil_grid.hpp])
-AM_CONFIG_HEADER([suzerain/config.h])
+AC_CONFIG_HEADERS([suzerain/config.h])
 AX_PREFIX_CONFIG_H([suzerain/suzerain-config.h])
 AC_CONFIG_AUX_DIR([build-aux])
 AC_CONFIG_MACRO_DIR([m4])
@@ -214,7 +214,7 @@ case $ax_cv_c_compiler_vendor in
        ;;
 esac
 AC_ARG_ENABLE(interlib-deps,
-    [AC_HELP_STRING([--enable-interlib-deps],
+    [AS_HELP_STRING([--enable-interlib-deps],
                     [enable libtool inter-library dependencies])],
     [enable_interlib_deps="$enableval"],
     [enable_interlib_deps="no"])
@@ -421,9 +421,9 @@ fi
 AC_LANG_POP([C])
 AC_LANG_PUSH([C++])
 AX_CXXFLAGS_WARN_ALL
-AC_CXX_CPPFLAGS_STD_LANG(AM_CPPFLAGS)
-AC_CXX_CXXFLAGS_STD_LANG(AM_CXXFLAGS)
-AC_CXX_LDFLAGS_STD_LANG(AM_LDFLAGS)
+AX_CXX_CPPFLAGS_STD_LANG(AM_CPPFLAGS)
+AX_CXX_CXXFLAGS_STD_LANG(AM_CXXFLAGS)
+AX_CXX_LDFLAGS_STD_LANG(AM_LDFLAGS)
 AX_CXX_EXTERN_TEMPLATE
 case $ax_cv_cxx_compiler_vendor in #(
     gnu) AX_APPEND_COMPILE_FLAGS([-Wsuggest-attribute=pure    ],[CXXFLAGS])

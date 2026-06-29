@@ -4,22 +4,24 @@
 #
 # SYNOPSIS
 #
-#   Use AC_PROG_CC_C99 to determine how to enable C99 mode, appending
-#   any required flags to CFLAGS.
-#
 #   AX_PROG_CC_C99_CFLAGS([ACTION-IF-AVAILABLE], [ACTION-IF-UNAVAILABLE])
 #
 # DESCRIPTION
 #
-#   Use AC_PROG_CC_C99 to determine how to enable C99 mode, but append
-#   any required compiler flags to CFLAGS instead of modifying CC.
-#   This allows other tools that use CFLAGS, e.g mpicc via ACX_MPI, to
-#   use the flag.  CC is not modified.  The default actions are to
-#   do nothing.
+#   Ensure the C compiler operates in C99 (or later) mode.
+#
+#   Historically this macro wrapped the now-obsolete AC_PROG_CC_C99 in order
+#   to append any required standard-selection flag to CFLAGS rather than to
+#   CC.  As of Autoconf 2.70, AC_PROG_CC itself selects the newest supported
+#   C standard and folds any required option directly into CC, so no extra
+#   handling is needed here.  This macro now simply requires AC_PROG_CC and
+#   runs ACTION-IF-AVAILABLE.  ACTION-IF-UNAVAILABLE is retained for
+#   backwards compatibility but is unreachable: AC_PROG_CC aborts configure
+#   earlier if no working, sufficiently modern C compiler is found.
 #
 # LAST MODIFICATION
 #
-#   2009-06-08
+#   2026-06-28
 #
 # COPYLEFT
 #
@@ -30,13 +32,6 @@
 #   and this notice are preserved.
 
 AC_DEFUN([AX_PROG_CC_C99_CFLAGS],[
-    AC_LANG_PUSH([C])
-
-    ax_prog_cc_c99_cflags_CCSAVED=${CC}
-    AC_PROG_CC_C99([$1],[$2])
-    ax_prog_cc_c99_cflags_CFLAGSAPPEND=${CC#$ax_prog_cc_c99_cflags_CCSAVED}
-    CFLAGS="${CFLAGS} ${ax_prog_cc_c99_cflags_CFLAGSAPPEND}"
-    CC=${ax_prog_cc_c99_cflags_CCSAVED}
-
-    AC_LANG_POP([C])
+    AC_REQUIRE([AC_PROG_CC])
+    m4_default([$1],[:])
 ])
