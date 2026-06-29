@@ -27,6 +27,24 @@ Port to Ubuntu 24.04 with GCC 13, GSL 2.x, Boost 1.83, and C++17.
    against --with-hdf5=/usr on Ubuntu's split HDF5 layout
  * Fix Python 3 compatibility in postproc/propagation.py (basestring,
    SymPy >= 1.7 Derivative wrt tuples, OrderedDict internals, iteritems)
+ * Complete the GSL 2.8 bspline API migration across the library and tests,
+   using gsl_bspline_order(), gsl_bspline_ncontrol(), gsl_bspline_basis(),
+   and gsl_bspline_basis_deriv() in place of the removed workspace struct
+   members and *_eval_nonzero routines
+ * Add a --without-underling configure switch; underling's FFTW guru
+   split-DFT planner returns NULL plans for the degenerate grids exercised
+   by test_diffwave_p3dfft, while P3DFFT (the default pencil grid) handles
+   them cleanly
+ * Relax the single-precision test_gbdddmv_ssc tolerance to match its
+   complex-storage sibling, fixing high-bandwidth rounding failures
+ * Qualify boost::make_shared in the reacting flow code to resolve an
+   argument-dependent-lookup ambiguity
+ * Use python3 in postproc script shebangs
+ * Modernize obsolete autoconf macros to silence bootstrap warnings and
+   regenerate the vendored libtool files (libtool 2.4.7 -> 2.5.4)
+ * Update the maintainer email, replace stale red.ices.utexas.edu URLs with
+   their GitHub equivalents, and mark Mathematica notebooks as documentation
+   for GitHub language statistics
 
 
 What's new in suzerain 0.1.7
