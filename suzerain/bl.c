@@ -86,7 +86,7 @@ suzerain_bl_find_edge(
     enum { nderiv = 2, threshold = 0 };
 
     /* Ensure the basis has at least non-constant derivatives of interest */
-    if (SUZERAIN_UNLIKELY(w->k < nderiv + 2)) {
+    if (SUZERAIN_UNLIKELY(gsl_bspline_order(w) < nderiv + 2)) {
         SUZERAIN_ERROR("Basis must have non-constant second derivatives",
                        SUZERAIN_EINVAL);
     }
@@ -98,7 +98,7 @@ suzerain_bl_find_edge(
     /* Searching for bounding intervals within breakpoints.                  */
     /* gsl_interp_bsearch has exactly the semantics that we want, so use it. */
     assert(w->knots->stride == 1);
-    const double * const breakpts = w->knots->data+w->k-1; // gsl_bspline_nbreak
+    const double * const breakpts = w->knots->data+gsl_bspline_order(w)-1; // gsl_bspline_nbreak
     const size_t ilo = gsl_interp_bsearch(breakpts, lowerbnd, 0,   w->nbreak);
     const size_t ihi = gsl_interp_bsearch(breakpts, upperbnd, ilo, w->nbreak);
 
@@ -146,7 +146,7 @@ suzerain_bl_find_edge99(
     /* If never found, location remains NAN and status reflects failure. */
     *location  = GSL_NAN;
     return suzerain_bspline_crossing(
-            0, coeffs_u, 0.99*coeffs_u[w->n - 1], &lowerbnd, &upperbnd, 255,
+            0, coeffs_u, 0.99*coeffs_u[gsl_bspline_ncontrol(w) - 1], &lowerbnd, &upperbnd, 255,
             10*GSL_DBL_EPSILON, /*not relative*/ 0, location, dB, w);
 }
 
@@ -159,7 +159,7 @@ suzerain_bl_displacement_thickness(
     const gsl_integration_glfixed_table * tbl)
 {
     /* Integrand has same piecewise polynomial order as basis. */
-    if (SUZERAIN_UNLIKELY(tbl->n < (w->k + 1)/2)) {
+    if (SUZERAIN_UNLIKELY(tbl->n < (gsl_bspline_order(w) + 1)/2)) {
         *delta1 = GSL_NAN;
         SUZERAIN_ERROR("Gaussian quadrature table order too low",
                        SUZERAIN_ESANITY);
@@ -167,7 +167,7 @@ suzerain_bl_displacement_thickness(
 
     /* Momentum at infinity taken from final B_spline collocation point */
     /* which happens to be the value of the final coefficient */
-    const double edge_rhou = coeffs_rhou[w->n - 1];
+    const double edge_rhou = coeffs_rhou[gsl_bspline_ncontrol(w) - 1];
 
     /* Accumulate the breakpoint-by-breakpoint contributions into *delta1 */
     *delta1 = 0;
@@ -184,8 +184,9 @@ suzerain_bl_displacement_thickness(
             gsl_integration_glfixed_point(a, b, j, &xj, &wj, tbl);
 
             /* Evaluate basis functions at point xj */
-            size_t kstart, kend;
-            gsl_bspline_eval_nonzero(xj, Bk, &kstart, &kend, w);
+            size_t kstart;
+            gsl_bspline_basis(xj, Bk, &kstart, w);
+            const size_t kend = kstart + gsl_bspline_order(w) - 1;
 
             /* Accumulate basis linear combinations to evaluate rhou */
             double rhou = 0;
@@ -212,7 +213,7 @@ suzerain_bl_momentum_thickness(
 {
     /* Integrand has twice the piecewise polynomial order of the basis. */
     /* That is, solve 2*(k - 1) = 2*n - 1 for number of Gauss points n. */
-    if (SUZERAIN_UNLIKELY(tbl->n < w->k)) {
+    if (SUZERAIN_UNLIKELY(tbl->n < gsl_bspline_order(w))) {
         *delta2 = GSL_NAN;
         SUZERAIN_ERROR("Gaussian quadrature table order too low",
                        SUZERAIN_ESANITY);
@@ -220,8 +221,8 @@ suzerain_bl_momentum_thickness(
 
     /* State at infinity taken from final B_spline collocation point */
     /* which happens to be the value of the final coefficient */
-    const double edge_rhou = coeffs_rhou[w->n - 1];
-    const double edge_u    = coeffs_u   [w->n - 1];
+    const double edge_rhou = coeffs_rhou[gsl_bspline_ncontrol(w) - 1];
+    const double edge_u    = coeffs_u   [gsl_bspline_ncontrol(w) - 1];
 
     /* Accumulate the breakpoint-by-breakpoint contributions into *delta2 */
     *delta2 = 0;
@@ -238,8 +239,9 @@ suzerain_bl_momentum_thickness(
             gsl_integration_glfixed_point(a, b, j, &xj, &wj, tbl);
 
             /* Evaluate basis functions at point xj */
-            size_t kstart, kend;
-            gsl_bspline_eval_nonzero(xj, Bk, &kstart, &kend, w);
+            size_t kstart;
+            gsl_bspline_basis(xj, Bk, &kstart, w);
+            const size_t kend = kstart + gsl_bspline_order(w) - 1;
 
             /* Accumulate basis linear combinations to evaluate rhou, u */
             double rhou = 0;
@@ -284,7 +286,7 @@ suzerain_bl_enthalpy_thickness(
 {
     /* Integrand has twice the piecewise polynomial order of the basis. */
     /* That is, solve 2*(k - 1) = 2*n - 1 for number of Gauss points n. */
-    if (SUZERAIN_UNLIKELY(tbl->n < w->k)) {
+    if (SUZERAIN_UNLIKELY(tbl->n < gsl_bspline_order(w))) {
         *deltaH0 = GSL_NAN;
         SUZERAIN_ERROR("Gaussian quadrature table order too low",
                        SUZERAIN_ESANITY);
@@ -296,8 +298,8 @@ suzerain_bl_enthalpy_thickness(
 
     /* State at infinity taken from final B_spline collocation point */
     /* which happens to be the value of the final coefficient */
-    const double edge_H0   = coeffs_H0  [w->n - 1];
-    const double edge_rhou = coeffs_rhou[w->n - 1];
+    const double edge_H0   = coeffs_H0  [gsl_bspline_ncontrol(w) - 1];
+    const double edge_rhou = coeffs_rhou[gsl_bspline_ncontrol(w) - 1];
 
     /* Accumulate the breakpoint-by-breakpoint contributions into *deltaH0 */
     *deltaH0 = 0;
@@ -314,8 +316,9 @@ suzerain_bl_enthalpy_thickness(
             gsl_integration_glfixed_point(a, b, j, &xj, &wj, tbl);
 
             /* Evaluate basis functions at point xj */
-            size_t kstart, kend;
-            gsl_bspline_eval_nonzero(xj, Bk, &kstart, &kend, w);
+            size_t kstart;
+            gsl_bspline_basis(xj, Bk, &kstart, w);
+            const size_t kend = kstart + gsl_bspline_order(w) - 1;
 
             /* Accumulate basis linear combinations to evaluate rhou, u */
             double H0   = 0;
@@ -353,12 +356,12 @@ suzerain_bl_compute_thicknesses(
     int status                         = SUZERAIN_SUCCESS;
     gsl_matrix *dB                     = NULL;
     gsl_integration_glfixed_table *tbl = NULL;
-    if (NULL == (dB = gsl_matrix_alloc(w->k, 3))) {
+    if (NULL == (dB = gsl_matrix_alloc(gsl_bspline_order(w), 3))) {
         SUZERAIN_ERROR_REPORT("failed to allocate dB",
                               (status = SUZERAIN_ENOMEM));
     }
     gsl_vector_view Bk = gsl_matrix_column(dB, 0);
-    if (NULL == (tbl = gsl_integration_glfixed_table_alloc(w->k))) {
+    if (NULL == (tbl = gsl_integration_glfixed_table_alloc(gsl_bspline_order(w)))) {
         SUZERAIN_ERROR_REPORT("failed to allocate tbl",
                               (status = SUZERAIN_ENOMEM));
     }
@@ -568,9 +571,10 @@ double integrand_thickness_displacement(
 {
     const params_thickness_displacement * const p
             = (params_thickness_displacement *) params;
-    size_t istart, iend;
+    size_t istart;
     double integrand = GSL_NAN;
-    if (!gsl_bspline_eval_nonzero(y, p->Bk, &istart, &iend, p->w)) {
+    if (!gsl_bspline_basis(y, p->Bk, &istart, p->w)) {
+        const size_t iend = istart + gsl_bspline_order(p->w) - 1;
         integrand = 0.0;
         const int inv_stride = p->inv_stride;
         if (y >= p->inner_cutoff) {
@@ -605,9 +609,10 @@ double integrand_reynolds_displacement(
 {
     const params_reynolds_displacement * const p
             = (params_reynolds_displacement *) params;
-    size_t istart, iend;
+    size_t istart;
     double integrand = GSL_NAN;
-    if (!gsl_bspline_eval_nonzero(y, p->Bk, &istart, &iend, p->w)) {
+    if (!gsl_bspline_basis(y, p->Bk, &istart, p->w)) {
+        const size_t iend = istart + gsl_bspline_order(p->w) - 1;
         integrand = 0.0;
         const int inv_stride = p->inv_stride;
         for (size_t i = istart; i <= iend; ++i) {
@@ -638,9 +643,10 @@ double integrand_thickness_momentum(
 {
     const params_thickness_momentum * const p
             = (params_thickness_momentum *) params;
-    size_t istart, iend;
+    size_t istart;
     double integrand = GSL_NAN;
-    if (!gsl_bspline_eval_nonzero(y, p->Bk, &istart, &iend, p->w)) {
+    if (!gsl_bspline_basis(y, p->Bk, &istart, p->w)) {
+        const size_t iend = istart + gsl_bspline_order(p->w) - 1;
 
         double vis_rhou = 0;
         for (size_t i = istart; i <= iend; ++i) {
@@ -695,9 +701,10 @@ double integrand_reynolds_momentum(
 {
     const params_reynolds_momentum * const p
             = (params_reynolds_momentum *) params;
-    size_t istart, iend;
+    size_t istart;
     double integrand = GSL_NAN;
-    if (!gsl_bspline_eval_nonzero(y, p->Bk, &istart, &iend, p->w)) {
+    if (!gsl_bspline_basis(y, p->Bk, &istart, p->w)) {
+        const size_t iend = istart + gsl_bspline_order(p->w) - 1;
 
         double vis_u = 0;
         for (size_t i = istart; i <= iend; ++i) {
@@ -744,9 +751,10 @@ double integrand_thickness_energy(
 {
     const params_thickness_energy * const p
             = (params_thickness_energy *) params;
-    size_t istart, iend;
+    size_t istart;
     double integrand = GSL_NAN;
-    if (!gsl_bspline_eval_nonzero(y, p->Bk, &istart, &iend, p->w)) {
+    if (!gsl_bspline_basis(y, p->Bk, &istart, p->w)) {
+        const size_t iend = istart + gsl_bspline_order(p->w) - 1;
 
         double vis_rhou = 0;
         for (size_t i = istart; i <= iend; ++i) {
@@ -808,9 +816,10 @@ double integrand_reynolds_energy(
 {
     const params_reynolds_energy * const p
             = (params_reynolds_energy *) params;
-    size_t istart, iend;
+    size_t istart;
     double integrand = GSL_NAN;
-    if (!gsl_bspline_eval_nonzero(y, p->Bk, &istart, &iend, p->w)) {
+    if (!gsl_bspline_basis(y, p->Bk, &istart, p->w)) {
+        const size_t iend = istart + gsl_bspline_order(p->w) - 1;
 
         double vis_ke = 0;
         for (size_t i = istart; i <= iend; ++i) {
@@ -862,9 +871,10 @@ double integrand_thickness_enthalpy(
 {
     const params_thickness_enthalpy * const p
             = (params_thickness_enthalpy *) params;
-    size_t istart, iend;
+    size_t istart;
     double integrand = GSL_NAN;
-    if (!gsl_bspline_eval_nonzero(y, p->Bk, &istart, &iend, p->w)) {
+    if (!gsl_bspline_basis(y, p->Bk, &istart, p->w)) {
+        const size_t iend = istart + gsl_bspline_order(p->w) - 1;
 
         const double viswall_H0 = p->vis_H0[0];
 
@@ -917,9 +927,10 @@ double integrand_reynolds_enthalpy(
 {
     const params_reynolds_enthalpy * const p
             = (params_reynolds_enthalpy *) params;
-    size_t istart, iend;
+    size_t istart;
     double integrand = GSL_NAN;
-    if (!gsl_bspline_eval_nonzero(y, p->Bk, &istart, &iend, p->w)) {
+    if (!gsl_bspline_basis(y, p->Bk, &istart, p->w)) {
+        const size_t iend = istart + gsl_bspline_order(p->w) - 1;
 
         const double viswall_H0 = p->vis_H0[0];
 
@@ -978,9 +989,9 @@ suzerain_bl_compute_reynolds_baseflow(
 
     // Prepare repeatedly used inputs to gsl_integration_qagp(...)
     assert(w->knots->stride == 1);                // Breakpoints are contiguous
-    double * const pts  = w->knots->data+w->k-1;  // Per gsl_bspline_nbreak
+    double * const pts  = w->knots->data+gsl_bspline_order(w)-1;  // Per gsl_bspline_nbreak
     const size_t npts   = w->nbreak;              // "Singular" at breakpoints
-    const size_t limit  = npts * (1+w->k/2);      // Hopefully sufficient for..
+    const size_t limit  = npts * (1+gsl_bspline_order(w)/2);      // Hopefully sufficient for..
     const double epsabs = 0;  // DISABLED         // ..either this...
     const double epsrel = GSL_SQRT_DBL_EPSILON;   // ..or this tolerance
     double abserr       = GSL_NAN;                // Repeatedly used in calls
@@ -991,7 +1002,7 @@ suzerain_bl_compute_reynolds_baseflow(
         SUZERAIN_ERROR_REPORT("failed to allocate iw",
                               (status = SUZERAIN_ENOMEM));
     }
-    if (NULL == (Bk = gsl_vector_alloc(w->k))) {
+    if (NULL == (Bk = gsl_vector_alloc(gsl_bspline_order(w)))) {
         SUZERAIN_ERROR_REPORT("failed to allocate Bk",
                               (status = SUZERAIN_ENOMEM));
     }
@@ -1235,9 +1246,9 @@ suzerain_bl_compute_thicknesses_baseflow(
     params_integral_thickness_residual params = { .pts = NULL, .iw = NULL };
     assert(w->knots->stride == 1);              // Breakpoints are contiguous
     params.ndis   = w->nbreak;                  // Smoothness drops @ breakpoint
-    params.dis    = w->knots->data + w->k - 1;  // Per gsl_bspline_nbreak
+    params.dis    = w->knots->data + gsl_bspline_order(w) - 1;  // Per gsl_bspline_nbreak
     params.npts   = params.ndis + 1;            // Algorithmic requirement
-    params.limit  = params.npts * (1+w->k/2);   // Hopefully sufficient for..
+    params.limit  = params.npts * (1+gsl_bspline_order(w)/2);   // Hopefully sufficient for..
     params.epsabs = 0; // DISABLED              // ..either this...
     params.epsrel = GSL_SQRT_DBL_EPSILON;       // ..or this tolerance
     if (NULL == (params.iw = gsl_integration_workspace_alloc(params.limit))) {
@@ -1248,12 +1259,12 @@ suzerain_bl_compute_thicknesses_baseflow(
         SUZERAIN_ERROR_REPORT("failed to allocate params.pts",
                               (status = SUZERAIN_ENOMEM));
     }
-    gsl_matrix * const dB = gsl_matrix_alloc(w->k, 3);
+    gsl_matrix * const dB = gsl_matrix_alloc(gsl_bspline_order(w), 3);
     if (NULL == dB) {
         SUZERAIN_ERROR_REPORT("failed to allocate dB",
                               (status = SUZERAIN_ENOMEM));
     }
-    gsl_vector * const Bk = gsl_vector_alloc(w->k);
+    gsl_vector * const Bk = gsl_vector_alloc(gsl_bspline_order(w));
     if (NULL == Bk) {
         SUZERAIN_ERROR_REPORT("failed to allocate Bk",
                               (status = SUZERAIN_ENOMEM));

@@ -134,7 +134,7 @@ public:
      * @copybrief  suzerain_bsplineop_workspace#k
      * @see        suzerain_bsplineop_workspace#k
      */
-    int k() const { return bw->k; }
+    int k() const { return gsl_bspline_order(bw); }
 
     /** The number of breakpoints for the basis */
     int nbreak() const { return bw->nbreak; }
@@ -146,7 +146,7 @@ public:
      * @copybrief suzerain_bsplineop_workspace#n
      * @see       suzerain_bsplineop_workspace#n
      */
-    int n() const { return bw->n; }
+    int n() const { return gsl_bspline_ncontrol(bw); }
 
     /** Retrieve the <tt>i</tt>th breakpoint. */
     real_t breakpoint(std::size_t i) const
@@ -316,7 +316,7 @@ public:
             const real_t hi =  std::numeric_limits<real_t>::max())
     {
         // Zero real and imaginary components
-        for (std::size_t i = 0; i < bw->n; ++i) {
+        for (std::size_t i = 0; i < gsl_bspline_ncontrol(bw); ++i) {
             suzerain::complex::assign_components(coeffs[i], 0, 0);
         }
 

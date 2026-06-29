@@ -118,7 +118,7 @@ suzerain_bsplineop_alloc(
     }
 
     /* Allocate a temporary for use with gsl_bspline_eval_deriv_nonzero */
-    gsl_matrix *db = gsl_matrix_alloc(bw->k, nderiv + 1);
+    gsl_matrix *db = gsl_matrix_alloc(gsl_bspline_order(bw), nderiv + 1);
     if (SUZERAIN_UNLIKELY(db == NULL)) {
         SUZERAIN_ERROR_NULL("failed to allocate scratch space db",
                             SUZERAIN_ENOMEM);
@@ -142,7 +142,7 @@ suzerain_bsplineop_alloc(
 
     /* Save bspline operator parameters in workspace */
     w->method = method;
-    w->k      = bw->k;
+    w->k      = gsl_bspline_order(bw);
     w->n      = gsl_bspline_ncoeffs(bw);
     w->nderiv = nderiv;
 
@@ -561,7 +561,7 @@ suzerain_bsplineop_create_collocation_operator_transposes(
         SUZERAIN_ERROR("Unable to allocate space for Greville abscissae",
                        SUZERAIN_ENOMEM);
     }
-    for (size_t i = 0; i < bw->n; ++i) {
+    for (size_t i = 0; i < gsl_bspline_ncontrol(bw); ++i) {
         points[i] = gsl_bspline_greville_abscissa(i, bw);
     }
 
@@ -602,9 +602,9 @@ compute_banded_collocation_derivative_submatrix_transpose(
      */
 
     for (int i = 0; i < npoints; ++i) {
-        size_t dbjstart, dbjend;
-        gsl_bspline_deriv_eval_nonzero(points[i], nderiv, db,
-                                       &dbjstart, &dbjend, bw);
+        size_t dbjstart;
+        gsl_bspline_basis_deriv(points[i], nderiv, db, &dbjstart, bw);
+        const size_t dbjend = dbjstart + gsl_bspline_order(bw) - 1;
 
         /* Coerce dbjstart/dbjend to stay within the submatrix of interest */
         const size_t jstart = GSL_MAX(dbjstart, (size_t) joffset);
@@ -626,7 +626,7 @@ compute_banded_collocation_derivative_submatrix_transpose(
                     /* OK: value outside band is identically zero */
                 } else {
                     /* NOT COOL: nonzero value outside bandwidth */
-                    const int order = bw->k;
+                    const int order = gsl_bspline_order(bw);
                     char buffer[384];
                     snprintf(buffer, sizeof(buffer),
                              "non-zero outside band"
@@ -700,10 +700,9 @@ suzerain_bsplineop_create_galerkin_operators(
                 gsl_integration_glfixed_point(a, b, k, &xk, &wk, tbl);
 
                 /* ...evaluate all derivatives at the Gauss point... */
-                size_t istart, iend;
-                gsl_bspline_deriv_eval_nonzero(xk, w->nderiv,
-                                               db, &istart, &iend,
-                                               bw);
+                size_t istart;
+                gsl_bspline_basis_deriv(xk, w->nderiv, db, &istart, bw);
+                const size_t iend = istart + gsl_bspline_order(bw) - 1;
 
                 /* ...scale by the corresponding Gauss weight...         */
                 /* ...times the i-th DOF evaluated at the Gauss point... */
@@ -779,9 +778,10 @@ static double multiply_function_against_basis_function(double x, void *params)
         = (struct multiply_function_against_basis_function_params *) params;
 
     // Evaluate nonzero basis functions at x
-    size_t istart, iend;
-    const int error = gsl_bspline_eval_nonzero(x, p->Bk, &istart, &iend, p->bw);
+    size_t istart;
+    const int error = gsl_bspline_basis(x, p->Bk, &istart, p->bw);
     assert(!error); SUZERAIN_UNUSED(error);
+    const size_t iend = istart + gsl_bspline_order(p->bw) - 1;
 
     // If x is in the support of basis function i...
     if (istart <= p->i && p->i <= iend) {
@@ -803,7 +803,7 @@ static int integrate_function_against_basis_functions(
 {
     // Prepare suzerain_function instance for use with integration scheme
     struct multiply_function_against_basis_function_params params = {
-        function, bw, -1, gsl_vector_alloc(bw->k)
+        function, bw, -1, gsl_vector_alloc(gsl_bspline_order(bw))
     };
     if (SUZERAIN_UNLIKELY(!params.Bk)) {
         SUZERAIN_ERROR("failed to allocate scratch space Bk", SUZERAIN_ENOMEM);
@@ -825,7 +825,7 @@ static int integrate_function_against_basis_functions(
     }
 
     // Defensively fill the results with NaNs until values are computed
-    for (size_t i = 0; i < bw->n; ++i) results[i] = GSL_NAN;
+    for (size_t i = 0; i < gsl_bspline_ncontrol(bw); ++i) results[i] = GSL_NAN;
 
     // Integrate the function against each basis function separately.
     // Precision is aggressive but GSL quits when it discovers roundoff error.
@@ -833,10 +833,10 @@ static int integrate_function_against_basis_functions(
     // Bail as soon as we run into any trouble whatsoever...
     int stat = GSL_SUCCESS;
     gsl_error_handler_t * old_handler = gsl_set_error_handler_off();
-    for (params.i = 0; params.i < bw->n && stat == GSL_SUCCESS; ++(params.i)) {
+    for (params.i = 0; params.i < gsl_bspline_ncontrol(bw) && stat == GSL_SUCCESS; ++(params.i)) {
         double abserr;
         const double a = gsl_vector_get(bw->knots, params.i);
-        const double b = gsl_vector_get(bw->knots, params.i + bw->k);
+        const double b = gsl_vector_get(bw->knots, params.i + gsl_bspline_order(bw));
         stat = gsl_integration_qag(&product_f, a, b,
                                    GSL_DBL_EPSILON, 0.0,
                                    limit, GSL_INTEG_GAUSS21, iw,
@@ -873,7 +873,7 @@ suzerain_bsplineop_interpolation_rhs(
     case SUZERAIN_BSPLINEOP_COLLOCATION_GREVILLE:
         {
             /* Evaluate the function at the collocation points */
-            for (size_t i = 0; i < bw->n; ++i) {
+            for (size_t i = 0; i < gsl_bspline_ncontrol(bw); ++i) {
                 const double x = gsl_bspline_greville_abscissa(i, bw);
                 rhs[i] = SUZERAIN_FN_EVAL(function, x);
             }
@@ -900,7 +900,7 @@ suzerain_bsplineop_interpolation_rhs_complex(
     case SUZERAIN_BSPLINEOP_COLLOCATION_GREVILLE:
         {
             /* Evaluate the function at the collocation points */
-            for (size_t i = 0; i < bw->n; ++i) {
+            for (size_t i = 0; i < gsl_bspline_ncontrol(bw); ++i) {
                 const double x = gsl_bspline_greville_abscissa(i, bw);
                 SUZERAIN_ZFN_EVAL(zfunction, x, rhs[i]);
             }

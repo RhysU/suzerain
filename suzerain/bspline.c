@@ -61,18 +61,18 @@ suzerain_bspline_linear_combination(
 
     /* ldvalues == 0 signals that we only want derivative nderiv */
     const size_t jstart = (ldvalues == 0) ? nderiv : 0;
+    const size_t korder = gsl_bspline_order(w);
 
-    size_t istart, iend;
+    size_t istart;
     for (size_t i = 0; i < npoints; ++i) {
 
-        gsl_bspline_deriv_eval_nonzero(points[i], nderiv,
-                dB, &istart, &iend, w);
+        gsl_bspline_basis_deriv(points[i], nderiv, dB, &istart, w);
 
         const double * coeff_start = coeffs + istart;
 
         for (size_t j = jstart; j <= nderiv; ++j) {
             double dot = 0.0;
-            for (size_t k = 0; k < w->k; ++k) {
+            for (size_t k = 0; k < korder; ++k) {
                 dot += coeff_start[k] * (dB->data + j)[k * dB->tda];
             }
             values[i + j * ldvalues] = dot;
@@ -100,18 +100,18 @@ suzerain_bspline_linear_combination_complex(
 
     /* ldvalues == 0 signals that we only want derivative nderiv */
     const size_t jstart = (ldvalues == 0) ? nderiv : 0;
+    const size_t korder = gsl_bspline_order(w);
 
-    size_t istart, iend;
+    size_t istart;
     for (size_t i = 0; i < npoints; ++i) {
 
-        gsl_bspline_deriv_eval_nonzero(points[i], nderiv,
-                dB, &istart, &iend, w);
+        gsl_bspline_basis_deriv(points[i], nderiv, dB, &istart, w);
 
         const complex_double * coeff_start = coeffs + istart;
 
         for (size_t j = jstart; j <= nderiv; ++j) {
             double dotr = 0.0, doti = 0.0;
-            for (size_t k = 0; k < w->k; ++k) {
+            for (size_t k = 0; k < korder; ++k) {
                 const double basis_value = (dB->data + j)[k * dB->tda];
                 dotr += creal(coeff_start[k]) * basis_value;
                 doti += cimag(coeff_start[k]) * basis_value;
@@ -231,14 +231,14 @@ suzerain_bspline_integration_coefficients(
 {
     /* Obtain an appropriate order Gauss-Legendre integration rule */
     gsl_integration_glfixed_table * const tbl
-        = gsl_integration_glfixed_table_alloc((w->k - nderiv + 1)/2);
+        = gsl_integration_glfixed_table_alloc((gsl_bspline_order(w) - nderiv + 1)/2);
     if (SUZERAIN_UNLIKELY(tbl == NULL)) {
         SUZERAIN_ERROR("failed to obtain Gauss-Legendre rule from GSL",
                        SUZERAIN_ESANITY);
     }
 
     /* Zero integration coefficient values */
-    for (size_t i = 0; i < w->n; ++i) {
+    for (size_t i = 0; i < gsl_bspline_ncontrol(w); ++i) {
         coeffs[i * inc] = 0.0;
     }
 
@@ -261,9 +261,9 @@ suzerain_bspline_integration_coefficients(
                 gsl_integration_glfixed_point(a, b, j, &xj, &wj, tbl);
 
                 /* Evaluate basis functions at point xj */
-                size_t kstart, kend;
-                gsl_bspline_deriv_eval_nonzero(xj, nderiv,
-                        dB, &kstart, &kend, w);
+                size_t kstart;
+                gsl_bspline_basis_deriv(xj, nderiv, dB, &kstart, w);
+                const size_t kend = kstart + gsl_bspline_order(w) - 1;
 
                 /* Accumulate weighted basis evaluations into coeffs */
                 for (size_t k = kstart; k <= kend; ++k) {
@@ -289,7 +289,9 @@ suzerain_bspline_distance(
     double retval = GSL_DBL_MAX;
     const size_t a_nknot = a->knots->size;
     const size_t b_nknot = b->knots->size;
-    if (a->k == b->k && a->n == b->n && a_nknot == b_nknot) {
+    if (   gsl_bspline_order(a)    == gsl_bspline_order(b)
+        && gsl_bspline_ncontrol(a) == gsl_bspline_ncontrol(b)
+        && a_nknot == b_nknot) {
         retval = 0;
         for (size_t i = 0; i < a_nknot; ++i) {
             const double dist_i = fabs(  gsl_vector_get(a->knots, i)
@@ -308,8 +310,9 @@ suzerain_bspline_spacing_greville_abscissae(
     gsl_bspline_workspace *w)
 {
     /* Find nearest abscissae indices silently folding back into range */
-    size_t im = (i == 0       ) ? 1        : i - 1;
-    size_t ip = (i == w->n - 1) ? w->n - 2 : i + 1;
+    const size_t n = gsl_bspline_ncontrol(w);
+    size_t im = (i == 0    ) ? 1     : i - 1;
+    size_t ip = (i == n - 1) ? n - 2 : i + 1;
 
     /* Compute and return the minimum distance */
     double x  = gsl_bspline_greville_abscissa(i,  w);
@@ -328,7 +331,7 @@ suzerain_bspline_spacing_breakpoints(
 {
     // Make indices {first,...,last} span the required portion of the knots
     size_t stride  = w->knots->stride;
-    size_t k       = w->k;
+    size_t k       = gsl_bspline_order(w);
     double * first = w->knots->data + (i  )*stride;
     double * last  = w->knots->data + (i+k)*stride;
 
