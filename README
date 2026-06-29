@@ -40,7 +40,7 @@ Install MPI and the required libraries:
         libopenmpi-dev openmpi-bin \
         libgsl-dev libfftw3-dev libfftw3-mpi-dev \
         libboost-all-dev libeigen3-dev liblog4cxx-dev \
-        libhdf5-openmpi-dev libmkl-dev
+        libhdf5-openmpi-dev hdf5-tools libmkl-dev
 
 Optionally, install documentation tools:
 
