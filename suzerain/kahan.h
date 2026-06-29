@@ -103,7 +103,7 @@ double suzerain_kahan5(const double a0,
                        const double a3,
                        const double a4);
 
-/** @copydoc suzerain_kahan5(const double, const double, const double
+/** @copydoc suzerain_kahan5(const double, const double, const double,
  *                           const double, const double) */
 float suzerain_kahanf5(const float a0,
                        const float a1,
@@ -111,7 +111,7 @@ float suzerain_kahanf5(const float a0,
                        const float a3,
                        const float a4);
 
-/** @copydoc suzerain_kahan5(const double, const double, const double
+/** @copydoc suzerain_kahan5(const double, const double, const double,
  *                           const double, const double) */
 complex_float suzerain_kahanc5(const complex_float a0,
                                const complex_float a1,
@@ -119,7 +119,7 @@ complex_float suzerain_kahanc5(const complex_float a0,
                                const complex_float a3,
                                const complex_float a4);
 
-/** @copydoc suzerain_kahan5(const double, const double, const double
+/** @copydoc suzerain_kahan5(const double, const double, const double,
  *                           const double, const double) */
 complex_double suzerain_kahanz5(const complex_double a0,
                                 const complex_double a1,

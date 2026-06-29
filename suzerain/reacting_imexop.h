@@ -389,16 +389,6 @@ suzerain_reacting_flow_imexop_packf(
  * @param[in]  r     Reference quantities used to form the operator.
  * @param[in]  ld    Strides between reference quantity values.
  * @param[in]  w     B-spline workspace providing discrete operators.
- * @param[in]  rho_E Order of contiguous total energy data within a
- *                   globally contiguous state vector.
- * @param[in]  rho_u Order of contiguous streamwise momentum data within a
- *                   globally contiguous state vector.
- * @param[in]  rho_v Order of contiguous wall-normal momentum data within a
- *                   globally contiguous state vector.
- * @param[in]  rho_w Order of contiguous spanwise momentum data within a
- *                   globally contiguous state vector.
- * @param[in]  rho   Order of contiguous density data within a
- *                   globally contiguous state vector.
  * @param[in]  buf   Working storage of size at least
  *                   <tt>w->n*(w->max_kl + 1 + w->max_ku)</tt>.
  * @param[out] A_T   Storage details for the BSMBSM matrix \c patpt.

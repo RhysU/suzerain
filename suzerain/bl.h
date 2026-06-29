@@ -112,14 +112,13 @@ suzerain_bl_compute_viscous(
  * in this computation.
  *
  * \param[in ] coeffs_H0 Coefficient representation of \f$H_0\f$
- *                       using the basis provided in \c w and \c dw.
+ *                       using the basis provided in \c w.
  * \param[in]  lowerbnd  Lower bound (inclusive) for the search.
  * \param[in]  upperbnd  Upper bound (inclusive) for the search.
  * \param[out] location  Location at which edge is detected.
  * \param[in]  dB        Temporary storage to use of size <tt>w->k</tt> by
  *                       no less than <tt>3</tt>.
  * \param[in]  w         Workspace possessing non-constant second derivatives.
- * \param[in]  dw        Workspace to use.
  *
  * \return ::SUZERAIN_SUCCESS on success and returns the answer in
  * <code>*location</code>.  On recoverable error (e.g., no edge detected) sets
@@ -364,10 +363,9 @@ typedef struct suzerain_bl_thicknesses {
  * \param[in ] coeffs_ke   Coefficient representation of \f$\vec{u}^2/2\f$.
  * \param[in ] coeffs_rhou Coefficient representation of \f$\rho u\f$.
  * \param[in ] coeffs_u    Coefficient representation of \f$u\f$.
- * \param[out] thicknesses Populated on success.
+ * \param[out] thick       Populated on success.
  *                         See type documentation for contents.
  * \param[in ] w           Workspace to use.
- * \param[in ] dw          Workspace to use.
  *
  * \return ::SUZERAIN_SUCCESS on success.  On error calls suzerain_error() and
  *      returns one of #suzerain_error_status.  A best effort attempt is
@@ -447,7 +445,7 @@ typedef struct suzerain_bl_qoi {
     double ratio_rho;    /**< The ratio of edge to wall density. */
     double ratio_nu;     /**< The ratio of edge to wall kinematic viscosity. */
     double ratio_T;      /**< The ratio of edge to wall temperature. */
-    double shapefactor;  /**< The shape factor \f$\delta_1 / \delta_2. */
+    double shapefactor;  /**< The shape factor \f$\delta_1 / \delta_2\f$. */
     double v_wallplus;   /**< The wall transpiration rate in plus units.*/
 } suzerain_bl_qoi;
 
@@ -742,7 +740,6 @@ suzerain_bl_compute_reynolds_baseflow(
  * \param[out] thick           Populated on success.
  *                             See type documentation for contents.
  * \param[in ] w               Workspace to use.
- * \param[in ] dw              Workspace to use.
  *
  * \return ::SUZERAIN_SUCCESS on success.  On error calls suzerain_error()
  *      and returns one of #suzerain_error_status.  A best effort attempt

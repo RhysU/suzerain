@@ -31,13 +31,13 @@
  * re-use, and to facilitate debugging.
  *
  * An all-encompassing sequence like
- * <pre>
+ * @verbatim
  * #define SUZERAIN_SUMMARY         \
  *     SUZERAIN_SUMMARY_GRID        \
  *     SUZERAIN_SUMMARY_SAMPLED     \
  *     SUZERAIN_SUMMARY_SAMPLED__Y  \
  *     SUZERAIN_SUMMARY_SAMPLED__YY
- * </pre>
+ * @endverbatim
  * is deliberately not defined.  It would contain more than BOOST_PP_LIMIT_SEQ
  * elements and be utterly useless for work with Boost.Preprocessor.  However,
  * building blocks called \ref SUZERAIN_SUMMARY_COUNT, \ref
@@ -107,7 +107,7 @@
 /**
  * An Boost.Preprocessor-like iteration construct invoking <code>
  *     macro(data, name, description, offset)
- * </code> for each component present in \ref SUZERAIN_SUMMARY.
+ * </code> for each component present in \c SUZERAIN_SUMMARY.
  *
  * On account of BOOST_PP_ADD capping out at BOOST_PP_LIMIT_MAG, beware \c
  * offset will be a constant, integer-only arithmetic expression wrapped in

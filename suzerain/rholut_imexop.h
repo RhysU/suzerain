@@ -180,7 +180,7 @@ typedef struct suzerain_rholut_imexop_refld {
  *              \f${R^Y}^{-1} \left[V^L S\right]^{-1} \left[P^G    \right]
  *              \left[V^L S\right] {R^Y}\f$ for upper NRBC.
  *
- * @see Boundary condition discussion at \ref reholut_imexop.h.
+ * @see Boundary condition discussion at \ref rholut_imexop.h.
  * @see Operator documentation in <tt>writeups/perfectgas.tex</tt> for details.
  */
 void
@@ -299,7 +299,7 @@ suzerain_rholut_imexop_accumulate00(
  *              \left[V^L S\right] {R^Y}\f$ for upper NRBC.
  *
  * @see Operator documentation in <tt>writeups/perfectgas.tex</tt> for details.
- * @see Boundary condition discussion at \ref reholut_imexop.h.
+ * @see Boundary condition discussion at \ref rholut_imexop.h.
  * @see suzerain_bsmbsm_zaPxpby() for how to permute state to match \c patpt.
  */
 void
@@ -405,11 +405,17 @@ suzerain_rholut_imexop_packc00(
  * imposed on the final coefficient corresponding to the upper boundary when \c
  * a, \c b, and \c c are all non-NULL.
  *
+ * @param[in] a If \c NULL, ignored.  Set to the 5x5 column major matrix
+ *              \f${R^Y}^{-1} \left[V^L S\right]^{-1} \left[P^G C^G\right]
+ *              \left[V^L S\right] {R^Y} M \f$ for upper NRBC.
+ * @param[in] b If \c NULL, ignored.  Set to the 5x5 column major matrix
+ *              \f${R^Y}^{-1} \left[V^L S\right]^{-1} \left[P^G B^G\right]
+ *              \left[V^L S\right] {R^Y}M \f$ for upper NRBC.
  * @param[in] c If \c NULL, ignored.  Set to the 5x5 column major matrix
  *              \f${R^Y}^{-1} \left[V^L S\right]^{-1} \left[P^G    \right]
  *              \left[V^L S\right] {R^Y}\f$ for upper NRBC.
  *
- * @see Boundary condition discussion at \ref reholut_imexop.h.
+ * @see Boundary condition discussion at \ref rholut_imexop.h.
  * @see Model documentation in <tt>writeups/perfectgas.tex</tt> for details.
  * @see suzerain_bsmbsm_zaPxpby() for how to permute state to match \c patpt.
  */

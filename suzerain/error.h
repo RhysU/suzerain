@@ -140,10 +140,10 @@ typedef void suzerain_error_handler_t(const char * reason,
  * Defines the function prototype necessary for a stream handler.
  * Stream handlers should be reentrant safe if possible.
  *
- * @param reason Reason for the error.
- * @param file File in which the error was reported.
- * @param line Line at which the error was reported.
- * @param suzerain_errno Error code to report.
+ * @param label Label associated with the stream being handled.
+ * @param file File in which the message was reported.
+ * @param line Line at which the message was reported.
+ * @param reason Reason for the message.
  *
  * @see suzerain_set_stream_handler
  */

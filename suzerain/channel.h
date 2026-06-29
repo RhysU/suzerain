@@ -82,7 +82,7 @@ typedef struct suzerain_channel_viscous {
  *
  * \param[in ] code_Re Reynolds number \f$\rho_0 u_0 l_0/\mu_0\f$ used to scale
  *                     nondimensional quantities.  For dimensional
- *                     calculations, use <code>1</code.
+ *                     calculations, use <code>1</code>.
  * \param[in ] wall    Local state information from the wall.
  * \param[out] viscous Populated on success.
  *                     See type documentation for contents.
@@ -127,10 +127,10 @@ typedef struct suzerain_channel_qoi {
  *
  * \param[in ] code_Ma Mach number \f$u_0/a_0\f$ used to scale
  *                     nondimensional quantities.  For dimensional
- *                     calculations, use <code>1</code.
+ *                     calculations, use <code>1</code>.
  * \param[in ] code_Re Reynolds number \f$\rho_0 u_0 l_0/\mu_0\f$ used to scale
  *                     nondimensional quantities.  For dimensional
- *                     calculations, use <code>1</code.
+ *                     calculations, use <code>1</code>.
  * \param[in ] wall    Local state information from the wall.
  * \param[in ] viscous Viscous-related wall scaling information
  * \param[in ] center  Local state information from the channel centerline.

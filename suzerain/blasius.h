@@ -160,7 +160,7 @@ gsl_spline * suzerain_blasius_u(const double Re_x);
  * Obtain a Blasius profile fit producing nondimensional \f$v /
  * u_\infty\f$ given \f$y = \eta / \sqrt{\mbox{Re}_x}\f$.
  *
- * @copydetails suzerain_blasius_v
+ * @copydetails suzerain_blasius_u
  */
 gsl_spline * suzerain_blasius_v(const double Re_x);
 

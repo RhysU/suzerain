@@ -30,7 +30,7 @@ extern "C" {
  * \param[in ] y Another on the second interval
  * \param[out] l if method returns \c true, set to be the lower
  *               endpoint of the order-matching intersection.
- * \param[out] h if method returns \c true, set to be the lower
+ * \param[out] u if method returns \c true, set to be the upper
  *               endpoint of the order-matching intersection.
  *
  * \return True if the segments intersect.  False otherwise.
