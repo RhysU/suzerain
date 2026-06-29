@@ -322,6 +322,17 @@ AS_IF([test "x$with_underling" != xno],
             AC_DEFINE([HAVE_UNDERLING],[1],
                       [Defined if underling library found])
             AM_CONDITIONAL([HAVE_UNDERLING], [true])
+            dnl underling drives every complex FFT through FFTW's split-complex
+            dnl guru interface (fftw_plan_guru_split_dft), which MKL's FFTW3
+            dnl wrapper does not implement.  When MKL is linked it exports the
+            dnl FFTW3 ABI and, being earlier in the global symbol scope,
+            dnl interposes that entry point and returns NULL plans -- aborting
+            dnl underling (see https://github.com/RhysU/suzerain/issues/11).
+            dnl Forcing --no-as-needed keeps the real libfftw3 (already ahead of
+            dnl MKL on the link line) a direct DT_NEEDED so it, not MKL, wins
+            dnl FFTW symbol resolution.  Note this makes all FFTW calls use real
+            dnl FFTW rather than MKL's DFTI-backed wrapper.
+            LDFLAGS="${LD_NO_AS_NEEDED} ${LDFLAGS}"
         ], [
             AM_CONDITIONAL([HAVE_UNDERLING], [false])
             AC_MSG_NOTICE([Did not find the underling library])

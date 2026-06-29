@@ -31,10 +31,15 @@ Port to Ubuntu 24.04 with GCC 13, GSL 2.x, Boost 1.83, and C++17.
    using gsl_bspline_order(), gsl_bspline_ncontrol(), gsl_bspline_basis(),
    and gsl_bspline_basis_deriv() in place of the removed workspace struct
    members and *_eval_nonzero routines
- * Add a --without-underling configure switch; underling's FFTW guru
-   split-DFT planner returns NULL plans for the degenerate grids exercised
-   by test_diffwave_p3dfft, while P3DFFT (the default pencil grid) handles
-   them cleanly
+ * Fix underling aborting with "FFTW returned NULL FFT plan" when MKL is also
+   linked (test_diffwave_p3dfft).  MKL exports the FFTW3 ABI and, being earlier
+   in the global symbol scope, interposed fftw_plan_guru_split_dft -- the
+   split-complex guru entry point underling uses for every transform and which
+   MKL does not implement.  Link with -Wl,--no-as-needed when underling is
+   enabled so the real libfftw3 stays a direct DT_NEEDED and wins FFTW symbol
+   resolution; this also moves all FFTW calls onto real FFTW rather than MKL's
+   wrapper.  Also add a --without-underling escape hatch (P3DFFT, the default
+   pencil grid, is unaffected).  See issue #11.
  * Relax the single-precision test_gbdddmv_ssc tolerance to match its
    complex-storage sibling, fixing high-bandwidth rounding failures
  * Qualify boost::make_shared in the reacting flow code to resolve an
