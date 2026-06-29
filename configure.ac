@@ -303,7 +303,7 @@ dnl ------------------------------------------------
 AC_LANG_PUSH([C])
 ACX_MKL()
 export GSL_CBLAS_LIB="${LD_NO_AS_NEEDED} ${MKL_LDFLAGS} ${MKL_LIBS} ${LD_AS_NEEDED}"
-AX_PATH_GSL(1.15,,AC_MSG_ERROR([Could not find required GSL version.]))
+AX_PATH_GSL(2.8,,AC_MSG_ERROR([Could not find required GSL version.]))
 AX_FFTW3()
 PKG_CHECK_MODULES([GRVY], [grvy >= 0.27.1],[
         AC_DEFINE([HAVE_GRVY],[1],[Defined if GRVY Toolkit found])

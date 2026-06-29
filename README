@@ -14,7 +14,8 @@ under writeups/ that are built when a LaTeX installation is available.
 
 The code depends upon the following libraries:
 
-    1) GNU Scientific Library (GSL) from http://www.gnu.org/software/gsl/
+    1) GNU Scientific Library (GSL) 2.8 or later from
+       http://www.gnu.org/software/gsl/
     2) FFTW from http://www.fftw.org/ compiled with MPI support
     3) Boost from http://www.boost.org/
     4) Eigen from http://eigen.tuxfamily.org/
