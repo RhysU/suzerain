@@ -50,6 +50,9 @@ Port to Ubuntu 24.04 with GCC 13, GSL 2.x, Boost 1.83, and C++17.
  * Update the maintainer email, replace stale red.ices.utexas.edu URLs with
    their GitHub equivalents, and mark Mathematica notebooks as documentation
    for GitHub language statistics
+ * Remove the dead pre_gsl backports of gsl_integration_glfixed_point and
+   gsl_bspline_knots_greville, now provided natively by GSL >= 1.16, while
+   retaining the MPI-friendly mpi_gsl_ieee_env_setup wrapper
 
 
 What's new in suzerain 0.1.7

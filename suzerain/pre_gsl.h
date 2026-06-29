@@ -24,8 +24,7 @@
 #define SUZERAIN_PRE_GSL_H
 
 /** @file
- * Functionality not present in recent, public GSL releases.
- * Routines have been extracted or extended from the GNU Scientific Library.
+ * An MPI-friendly wrapper around GSL's IEEE environment setup.
  */
 
 #ifdef __cplusplus
@@ -44,35 +43,6 @@ extern "C" {
  */
 void
 mpi_gsl_ieee_env_setup(const int rank);
-
-// gsl_integration_glfixed in GSL 1.14 but
-// gsl_integration_glfixed_point is 1.14+ so build it atop 1.14's public API
-// FIXME: Remove this logic once GSL 1.15 becomes widespread
-#if    (!defined GSL_MAJOR_VERSION                     ) \
-    || (GSL_MAJOR_VERSION < 2 && GSL_MINOR_VERSION < 15)
-#include <gsl/gsl_integration.h>
-
-int
-gsl_integration_glfixed_point (
-        double a,
-        double b,
-        size_t i,
-        double *xi,
-        double *wi,
-        const gsl_integration_glfixed_table * t);
-#endif
-
-// gsl_bspline_knots_greville is 1.15+ so build it atop 1.15's public API
-// FIXME: Remove this logic once GSL 1.16 becomes widespread
-#if    (!defined GSL_MAJOR_VERSION                     ) \
-    || (GSL_MAJOR_VERSION < 2 && GSL_MINOR_VERSION < 16)
-#include <gsl/gsl_bspline.h>
-
-int
-gsl_bspline_knots_greville(const gsl_vector *abscissae,
-                           gsl_bspline_workspace *w,
-                           double *abserr);
-#endif
 
 #ifdef __cplusplus
 } /* extern "C" */
