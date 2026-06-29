@@ -1,7 +1,18 @@
                         suzerain Build Procedure
                     ===============================
 
-0. Introduction
+0. Purpose
+----------
+
+Suzerain is a framework for performing direct numerical simulation (DNS) of
+the Navier-Stokes equations using spectral numerics.  It is well-suited to
+memory-intensive, structured spectral turbulence simulations and the
+postprocessing of their results across MPI-parallel, distributed-memory
+machines.  This framework and its included applications are written in C++
+(C++17), C (C99), and Fortran.
+
+
+1. Introduction
 ---------------
 
 This document describes how to build Suzerain from source code on Unix-like
@@ -9,7 +20,7 @@ systems.  For information on the numerics, please see the model documents
 under writeups/ that are built when a LaTeX installation is available.
 
 
-1. Dependencies
+2. Dependencies
 ---------------
 
 The code depends upon the following libraries:
@@ -93,7 +104,7 @@ When MKL is installed from packages, configure suzerain with:
     CPPFLAGS="-I/usr/include/mkl" ./configure
 
 
-2. Configuration
+3. Configuration
 ----------------
 
 If you have no `configure' script in the top level directory, run `bootstrap'
@@ -105,7 +116,7 @@ Generally, just `./configure' will work, but you may wish to provide more
 parameters.  Run `./configure --help' for details.
 
 
-3. Compilation
+4. Compilation
 --------------
 
 To compile suzerain after it has been configured, simply type 'make'.
@@ -114,13 +125,13 @@ After the compilation one or more ready-to-use executables should reside in the
 src directory.  Related documentation will be built in the doc subdirectory.
 
 
-4. Testing
+5. Testing
 --------------
 
 Automated tests can be compiled and run using 'make check'.
 
 
-5. Attribution
+6. Attribution
 --------------
 
 If you find Suzerain useful towards publishing research, please consider citing:
