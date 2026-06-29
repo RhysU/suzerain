@@ -310,14 +310,24 @@ PKG_CHECK_MODULES([GRVY], [grvy >= 0.27.1],[
     ], [
         AC_MSG_WARN([Could not find GRVY pkg-config file; Continuing...])
     ])
-PKG_CHECK_MODULES([UNDERLING],[underling-fftw >= 0.3.0],[
-        AC_DEFINE([HAVE_UNDERLING],[1],
-                  [Defined if underling library found])
-        AM_CONDITIONAL([HAVE_UNDERLING], [true])
-    ], [
-        AM_CONDITIONAL([HAVE_UNDERLING], [false])
-        AC_MSG_NOTICE([Did not find the underling library])
-    ])
+dnl underling is optional: P3DFFT always provides a pencil grid (see below), so
+dnl the underling-based implementation can be disabled with --without-underling.
+AC_ARG_WITH([underling],
+    [AS_HELP_STRING([--without-underling],
+        [do not use the underling library even if it is installed; P3DFFT
+         provides the pencil grid implementation instead])],
+    [], [with_underling=yes])
+AS_IF([test "x$with_underling" != xno],
+    [PKG_CHECK_MODULES([UNDERLING],[underling-fftw >= 0.3.0],[
+            AC_DEFINE([HAVE_UNDERLING],[1],
+                      [Defined if underling library found])
+            AM_CONDITIONAL([HAVE_UNDERLING], [true])
+        ], [
+            AM_CONDITIONAL([HAVE_UNDERLING], [false])
+            AC_MSG_NOTICE([Did not find the underling library])
+        ])],
+    [AM_CONDITIONAL([HAVE_UNDERLING], [false])
+     AC_MSG_NOTICE([Disabling underling at user request (--without-underling)])])
 AC_LANG_POP([C])
 AC_CACHE_SAVE
 
