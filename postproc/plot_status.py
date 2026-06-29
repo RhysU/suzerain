@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """Usage: plot_status.py *.dat
 Generate plots from suzerain status files.
 Options:

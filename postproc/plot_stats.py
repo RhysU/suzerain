@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """Usage: plot_stats.py HDF5FILE
 Plot wall-normal profiles averaged over (X,Z) directions from HDF5FILE.
 Options:

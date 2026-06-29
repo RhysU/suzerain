@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """Usage: plan_suzerain.py HDF5FILE
 Get DNS planing information from a slow growth RANS solution.
 Options:

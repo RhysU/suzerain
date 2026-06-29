@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 r'''
 Symbolic routines for obtaining uncertainty propagation expressions
 based upon Taylor Series Methods (TSM).

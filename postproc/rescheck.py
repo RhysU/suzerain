@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # Given a job directory compute quick resolution information
 # from the last qoi.dat and restart00000.h5 within directory
 from __future__ import print_function, division

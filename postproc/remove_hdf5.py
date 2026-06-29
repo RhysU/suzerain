@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """Usage: remove_hdf5.py [-n] PATTERN HDF5FILE...
 Remove datasets matching per Python's re.search(PATTERN, ...) within HDF5FILE.
 

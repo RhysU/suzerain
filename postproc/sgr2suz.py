@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """Usage: sgr2suz.py --sgr_file=<sgr_file.dat> --suzerain_file=<suzerain_file.h5>
 Interpolate solution from a slow growth RANS simulation to a suzerain 'reacting' file.
 Input data must be in text format with the following column layout:

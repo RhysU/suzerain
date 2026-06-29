@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """Usage: blparam_stats.py HDF5FILE
 Get boundary layer parameters from HDF5FILE, and generate output
 file (blparam_vs_time) and plots (BL_*).

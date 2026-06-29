@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """Usage: reacting_summary.py HDF5FILES
 Obtain summary file from apps/reacting HDF5FILES,
 or load an existing summary file.

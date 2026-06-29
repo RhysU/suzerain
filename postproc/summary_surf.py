@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """Usage: summary_surf.py       [OPTIONS...] H5FILE DATASET...
           summary_surf.py -[fF] [OPTIONS...] H5FILE DATASET1 DATASET2 DATASET3
 The first form produces surfaces for each named DATASET in the summary H5FILE.

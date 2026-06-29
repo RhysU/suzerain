@@ -1,4 +1,4 @@
-#!/bin/py
+#!/usr/bin/env python3
 """Usage: python get_files.py OPTIONS HDF5FILE
 Given the input files (in general not sorted),
 this script selects the input files such that the sorted time

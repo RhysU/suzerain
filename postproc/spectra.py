@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """Usage: spectra.py [OPTIONS...] H5RESTART...
 Display spectra averaged across /twopoint_{kx,kz} in all named H5RESTART files.
 

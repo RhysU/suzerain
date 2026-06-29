@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """Usage: perfect.py [OPTIONS...] H5FILE...
 Produces TBD
 
