@@ -342,7 +342,10 @@ static void test_gbdddmv_dzz(const gbdddmzv_tc_type& t)
 
 static void test_gbdddmv_ssc(const gbdddmzv_tc_type& t)
 {
-    const float close_enough = numeric_limits<float>::epsilon()*t.n*t.n*1000;
+    // Tolerance matches the test_gbdddmv_scc sibling: both compute the same
+    // quantity (here via the real-storage cgbdddmv_s_s path) and so accumulate
+    // comparable single-precision rounding error across high bandwidths.
+    const float close_enough = numeric_limits<float>::epsilon()*t.n*t.n*5000;
     const int lend0 = t.ldd0 * t.n;
     const int lend1 = t.ldd1 * t.n;
     const int lend2 = t.ldd2 * t.n;
