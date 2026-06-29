@@ -28,10 +28,32 @@ The following optional dependencies are recommended for full functionality:
     3) Antioch from https://github.com/libantioch/antioch
     4) underling from https://github.com/RhysU/underling
 
+The post-processing and pre-processing utilities under postproc/ and preproc/
+additionally use the following tools:
+
+    1) Python 3 from https://www.python.org/
+    2) NumPy from https://numpy.org/
+    3) SciPy from https://scipy.org/
+    4) matplotlib from https://matplotlib.org/
+    5) h5py from https://www.h5py.org/
+    6) pandas from https://pandas.pydata.org/
+    7) GNU Octave from https://octave.org/
+    8) gnuplot from http://www.gnuplot.info/
+
+The following additional tools are used during development:
+
+    1) Perl from https://www.perl.org/ for Fortran dependency tracking in largo/
+    2) mpiP from http://mpip.sourceforge.net/ for lightweight, scalable MPI
+       profiling (enabled with --with-mpiP)
+    3) LCOV from https://github.com/linux-test-project/lcov for code coverage
+       reports (enabled with --enable-coverage)
+    4) SageMath from https://www.sagemath.org/ to regenerate the symbolic
+       test sources (tests/*.sage)
+
 On Ubuntu 24.04, most required and optional dependencies are available as
 system packages.  Install the build toolchain:
 
-    sudo apt install autoconf automake libtool pkg-config g++ gfortran \
+    sudo apt install autoconf automake libtool make pkg-config g++ gfortran \
         bsdextrautils hdf5-tools
 
 Install MPI and the required libraries:
@@ -45,6 +67,17 @@ Install MPI and the required libraries:
 Optionally, install documentation tools:
 
     sudo apt install doxygen graphviz texlive-full
+
+Optionally, install the post-processing and analysis tools:
+
+    sudo apt install python3 python3-numpy python3-scipy python3-matplotlib \
+        python3-h5py python3-pandas python3-sympy python3-packaging \
+        octave gnuplot
+
+Optionally, install additional development tools (binutils-dev supplies the
+libbfd/libiberty needed to build mpiP, which is not itself packaged):
+
+    sudo apt install perl binutils-dev lcov sagemath
 
 ESIO (https://github.com/RhysU/ESIO) must be built and installed from
 source.  Let its `configure' autodetect parallel HDF5 via the `h5pcc'
