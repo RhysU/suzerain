@@ -93,7 +93,7 @@
 #define SUZERAIN_FORCEINLINE __forceinline
 #elif __GNUC__ >= 3
 /** Strongly recommend that a function be inlined */
-#define SUZERAIN_FORCEINLINE __attribute__((always_inline))
+#define SUZERAIN_FORCEINLINE inline __attribute__((always_inline))
 #else
 /** Strongly recommend that a function be inlined */
 #define SUZERAIN_FORCEINLINE inline
