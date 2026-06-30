@@ -275,8 +275,8 @@ bsmbsm_solver_zgbsvx::solve_hook(
 
     // Track statistics for each right hand side per stats_type/stats_names
     double samples[stats_type::static_size] = {
-        (equed_ == 'R' || equed_ == 'B'),
-        (equed_ == 'C' || equed_ == 'B'),
+        (equed_ == 'R' || equed_ == 'B') ? 1.0 : 0.0,
+        (equed_ == 'C' || equed_ == 'B') ? 1.0 : 0.0,
         (1 / rcond_),
         /* ferr below */ std::numeric_limits<double>::quiet_NaN(),
         /* berr below */ std::numeric_limits<double>::quiet_NaN()
@@ -402,8 +402,10 @@ bsmbsm_solver_zcgbsvx::solve_hook(
 
         // Track statistics for each right hand side per stats_type/stats_names
         double samples[stats_type::static_size] = {
-            (fact_ == 'S'), (fact_ == 'D'), apprx_, afrob_,
-            siter_()[j], diter_()[j], tolsc_()[j], res_()[j]
+            (fact_ == 'S') ? 1.0 : 0.0, (fact_ == 'D') ? 1.0 : 0.0,
+            static_cast<double>(apprx_), afrob_,
+            static_cast<double>(siter_()[j]), static_cast<double>(diter_()[j]),
+            tolsc_()[j], res_()[j]
         };
         stats(samples);
     }
