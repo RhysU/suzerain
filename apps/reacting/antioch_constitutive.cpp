@@ -286,10 +286,10 @@ void antioch_constitutive::init_antioch()
 {
     WARN0("antioch_constitutive is not fully functional yet!");
 
-    mixture    = make_shared<Antioch::ChemicalMixture<real_t> >(species_names);
-    reactions  = make_shared<Antioch::ReactionSet<real_t> >(*mixture);
-    cea_thermo = make_shared<Antioch::CEAThermodynamics<real_t> >(*mixture);
-    sm_thermo  = make_shared<Antioch::StatMechThermodynamics<real_t> >(*mixture);
+    mixture    = std::make_shared<Antioch::ChemicalMixture<real_t> >(species_names);
+    reactions  = std::make_shared<Antioch::ReactionSet<real_t> >(*mixture);
+    cea_thermo = std::make_shared<Antioch::CEAThermodynamics<real_t> >(*mixture);
+    sm_thermo  = std::make_shared<Antioch::StatMechThermodynamics<real_t> >(*mixture);
 
 
     if (this->Ns() > 1) {
@@ -299,23 +299,23 @@ void antioch_constitutive::init_antioch()
         Antioch::read_reaction_set_data_xml<real_t>(chem_input_file,
                                                     false /* verbose */,
                                                     *reactions);
-        kinetics = make_shared<Antioch::KineticsEvaluator<real_t> >(*reactions,0);
+        kinetics = std::make_shared<Antioch::KineticsEvaluator<real_t> >(*reactions,0);
     }
 
 
-    mixture_mu = make_shared<Antioch::MixtureViscosity<
+    mixture_mu = std::make_shared<Antioch::MixtureViscosity<
                              Antioch::BlottnerViscosity<real_t>, real_t> >
         (*mixture);
 
     Antioch::read_blottner_data_ascii_default(*mixture_mu);
 
-    mixture_kappa = make_shared<Antioch::EuckenThermalConductivity<
+    mixture_kappa = std::make_shared<Antioch::EuckenThermalConductivity<
                                 Antioch::StatMechThermodynamics<real_t> > >
         (*sm_thermo);
 
-    wilke_mixture = make_shared<Antioch::WilkeMixture<real_t> >(*mixture);
+    wilke_mixture = std::make_shared<Antioch::WilkeMixture<real_t> >(*mixture);
 
-    wilke_evaluator = make_shared<
+    wilke_evaluator = std::make_shared<
         Antioch::WilkeEvaluator<Antioch::MixtureViscosity<Antioch::BlottnerViscosity<real_t>, real_t>,
         Antioch::EuckenThermalConductivity<Antioch::StatMechThermodynamics<real_t> >, real_t> >
         (*wilke_mixture, *mixture_mu, *mixture_kappa );

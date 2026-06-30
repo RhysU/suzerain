@@ -98,7 +98,7 @@ int main(int argc, char **argv)
 
         // ...generate the desired bases
         support::create_bsplines(N, k, 0.0, L, htdelta, b, cop);
-        boplu = make_shared<bsplineop_lu>(*cop);
+        boplu = std::make_shared<bsplineop_lu>(*cop);
         boplu->factor_mass(*cop);
 
         // ...obtain coefficient representation of sin(y+1)

@@ -617,7 +617,7 @@ definition_largo::load(
         SUZERAIN_ENSURE(x.cols() == dy.cols());
 
         // See save(...) method for the origin of the magic numbers below
-        shared_ptr<baseflow_map> const p = make_shared<baseflow_map>();
+        shared_ptr<baseflow_map> const p = std::make_shared<baseflow_map>();
         for (int i = 0; i < x.rows(); ++i) {
             baseflow_map::row& row = p->table[x(i, 0)];
             row.  base.e   =  x(i, 1);
@@ -653,7 +653,7 @@ definition_largo::load(
         }
 
         DEBUG0("Preparing polynomial-based baseflow description");
-        shared_ptr<baseflow_polynomial> p = make_shared<baseflow_polynomial>();
+        shared_ptr<baseflow_polynomial> p = std::make_shared<baseflow_polynomial>();
         p->x       = x;
         p->dx      = dx;
         t.baseflow = p;
@@ -661,7 +661,7 @@ definition_largo::load(
     } else if (base_x && type_uniform == base_x.get()) {
 
         DEBUG0("Preparing uniform baseflow description");
-        shared_ptr<baseflow_uniform> p = make_shared<baseflow_uniform>();
+        shared_ptr<baseflow_uniform> p = std::make_shared<baseflow_uniform>();
         p->x       = x;
         t.baseflow = p;
 

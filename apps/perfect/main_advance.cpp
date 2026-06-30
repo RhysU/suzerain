@@ -97,7 +97,7 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
     using boost::math::isfinite;
 
     // Storage for binary-specific options
-    helm = make_shared<support::definition_helm>();
+    helm = std::make_shared<support::definition_helm>();
     const support::definition_noise noisedef;
     string solver_spec(static_cast<string>(suzerain::specification_zgbsv()));
     string implicit("rhome_xyz");
@@ -215,7 +215,7 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
     {
         // Preserve exact restart file details via Push/Pop/Merge below
         shared_ptr<definition_scenario> restart_scenario
-                = make_shared<definition_scenario>();
+                = std::make_shared<definition_scenario>();
 
         // Load the restart details with state going into state_linear
         support::shared_esio_handle h(MPI_COMM_WORLD);

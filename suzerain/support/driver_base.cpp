@@ -122,13 +122,13 @@ driver_base::driver_base(
                        argument_synopsis,
                        description,
                        revstr)
-    , restartdef(make_shared<definition_restart>(
+    , restartdef(std::make_shared<definition_restart>(
                 /* metadata    */ "metadata.h5.XXXXXX",
                 /* uncommitted */ "uncommitted.h5.XXXXXX",
                 /* destination */ "restart#####.h5"))
-    , statsdef(make_shared<definition_statistics>(
+    , statsdef(std::make_shared<definition_statistics>(
                 /* destination */ "sample#####.h5"))
-    , timedef(make_shared<definition_time>(
+    , timedef(std::make_shared<definition_time>(
                 /* advance_dt   */ 0,
                 /* advance_nt   */ 0,
                 /* advance_wt   */ 0,
@@ -336,7 +336,7 @@ driver_base::obtain_operator_tools()
     shared_ptr<operator_tools> otool
             = std::dynamic_pointer_cast<operator_tools>(N);
     if (!otool) {
-        otool = make_shared<operator_tools>(*grid, *dgrid, *cop);
+        otool = std::make_shared<operator_tools>(*grid, *dgrid, *cop);
     }
     return otool;
 }
@@ -1516,7 +1516,7 @@ driver_base::load_metadata(
     load_grid_and_operators(esioh);
 
     if (!timedef) {
-        timedef = make_shared<definition_time>(
+        timedef = std::make_shared<definition_time>(
                 std::numeric_limits<real_t>::quiet_NaN());
     }
     timedef->load(esioh);
