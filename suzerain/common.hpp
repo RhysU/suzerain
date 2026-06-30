@@ -96,7 +96,6 @@ SUZERAIN_GCC_DIAG_OFF(unused-variable);
 #include <boost/io/ios_state.hpp>
 #include <boost/iterator/counting_iterator.hpp>
 #include <boost/lexical_cast.hpp>
-#include <boost/make_shared.hpp>
 #include <boost/math/constants/constants.hpp>
 #include <boost/math/special_functions.hpp>
 #include <boost/mpl/and.hpp>
@@ -113,13 +112,11 @@ SUZERAIN_GCC_DIAG_OFF(unused-variable);
 #include <boost/noncopyable.hpp>
 #include <boost/numeric/conversion/cast.hpp>
 #include <boost/numeric/conversion/converter.hpp>
-#include <boost/pointer_cast.hpp>
 #include <boost/ptr_container/ptr_list.hpp>
 #include <boost/ptr_container/ptr_map.hpp>
 #include <boost/ptr_container/ptr_vector.hpp>
 #include <boost/ref.hpp>
 #include <boost/shared_array.hpp>
-#include <boost/shared_ptr.hpp>
 #include <boost/static_assert.hpp>
 #include <boost/swap.hpp>
 #include <boost/typeof/typeof.hpp>
@@ -253,13 +250,13 @@ typedef std::complex<real_t> complex_t;
 
 // Bring ubiquitous smart pointer definitions into this namespace
 // Done because these may be part of public APIs, as well as for convenience.
-using boost::const_pointer_cast;        /**< \namespace suzerain */
-using boost::dynamic_pointer_cast;      /**< \namespace suzerain */
-using boost::make_shared;               /**< \namespace suzerain */
-using boost::reinterpret_pointer_cast;  /**< \namespace suzerain */
 using boost::shared_array;              /**< \namespace suzerain */
-using boost::shared_ptr;                /**< \namespace suzerain */
-using std::unique_ptr;                   /**< \namespace suzerain */
+using std::const_pointer_cast;          /**< \namespace suzerain */
+using std::dynamic_pointer_cast;        /**< \namespace suzerain */
+using std::make_shared;                 /**< \namespace suzerain */
+using std::reinterpret_pointer_cast;    /**< \namespace suzerain */
+using std::shared_ptr;                  /**< \namespace suzerain */
+using std::unique_ptr;                  /**< \namespace suzerain */
 
 // Likewise, bring boost::array into this namespace
 using boost::array;         /**< \namespace suzerain */
