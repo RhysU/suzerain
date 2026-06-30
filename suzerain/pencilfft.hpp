@@ -250,8 +250,8 @@ bool crement(Mutable_RandomAccessIterator indices,
         assert(boost::numeric_cast<max_index_type>(index) < max_index);
 
         index += is_increasing*carry_bit - !is_increasing*carry_bit;
-        const bool overflow  = is_increasing*(index/max_index);
-        const bool underflow = !is_increasing*(index == index_type(-1));
+        const bool overflow  = is_increasing && (index/max_index);
+        const bool underflow = !is_increasing && (index == index_type(-1));
         index    *= !overflow;             // Set to zero if new overflow
         index    += underflow * max_index; // Set max_index-1 if new underflow
         carry_bit = overflow + underflow;

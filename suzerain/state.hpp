@@ -60,7 +60,7 @@ contiguous_state<Dim,Element>::contiguous_state(
 {
     const std::ptrdiff_t minimum_size
             = storage_order_type::compute_storage(sizes.begin());
-    if (shared_range_type::size() < minimum_size) {
+    if (static_cast<std::ptrdiff_t>(shared_range_type::size()) < minimum_size) {
         std::ostringstream oss;
         oss << __PRETTY_FUNCTION__ << " requires storage.size() >= "
             << minimum_size << " but only " << shared_range_type::size()
@@ -95,7 +95,7 @@ contiguous_state<Dim,Element>::contiguous_state(
 {
     const std::ptrdiff_t minimum_size = storage_order_type::compute_storage(
             sizes.begin(), minstrides.begin());
-    if (shared_range_type::size() < minimum_size) {
+    if (static_cast<std::ptrdiff_t>(shared_range_type::size()) < minimum_size) {
         std::ostringstream oss;
         oss << __PRETTY_FUNCTION__ << " requires storage.size() >= "
             << minimum_size << " but only " << shared_range_type::size()
