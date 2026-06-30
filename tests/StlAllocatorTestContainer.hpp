@@ -25,6 +25,7 @@
 #if !defined( STL_ALLOCATOR_TEST_CONTAINER_HPP )
 #define STL_ALLOCATOR_TEST_CONTAINER_HPP
 
+#include <cstddef>
 #include <vector>
 #include <deque>
 #include <list>
@@ -90,7 +91,7 @@ void TestSet( const Allocator& a, Container& c )
     c.insert( typename Allocator::value_type() );
     c.clear();
     for( int i = 0; i < 100; ++i )
-        c.insert( typename Allocator::value_type( i ) );
+        c.insert( typename Allocator::value_type( static_cast< std::size_t >( i ) ) );
     c.insert( typename Allocator::value_type( 0 ) );
     VERIFY( c.find( typename Allocator::value_type( 0 ) ) == c.begin() );
     c.clear();
@@ -106,7 +107,7 @@ void TestMap( const Allocator& a, Container& c )
     c.insert( std::make_pair( typename Allocator::value_type(), 1 ) );
     c.clear();
     for( int i = 0; i < 100; ++i )
-        c.insert( std::make_pair( typename Allocator::value_type( i ), i ) );
+        c.insert( std::make_pair( typename Allocator::value_type( static_cast< std::size_t >( i ) ), i ) );
     c.insert( std::make_pair( typename Allocator::value_type( 0 ), 0 ) );
     VERIFY( c.find( typename Allocator::value_type( 0 ) ) == c.begin() );
     c.clear();
@@ -136,7 +137,7 @@ void TestStack( const Value& v, const Allocator&, Container& c )
     c.push( v );
     c.pop();
     for( int i = 0; i < 100; ++i )
-        c.push( typename Allocator::value_type( i ) );
+        c.push( typename Allocator::value_type( static_cast< std::size_t >( i ) ) );
 #if( !defined(_MSC_VER) || _MSC_VER < 1310 )
     VERIFY( c.top() == typename Allocator::value_type( 99 ) );
 #endif
@@ -171,7 +172,7 @@ void TestQueue( const Allocator&, Container& c )
     c.push( typename Allocator::value_type() );
     c.pop();
     for( int i = 0; i < 100; ++i )
-        c.push( typename Allocator::value_type( i ) );
+        c.push( typename Allocator::value_type( static_cast< std::size_t >( i ) ) );
     VERIFY( c.front() == typename Allocator::value_type( 0 ) );
     for( int i = 0; i < 100; ++i )
         c.pop();
@@ -186,7 +187,7 @@ void TestPriorityQueue( const Allocator&, Container& c )
     c.push( typename Allocator::value_type() );
     c.pop();
     for( int i = 0; i < 100; ++i )
-        c.push( typename Allocator::value_type( i ) );
+        c.push( typename Allocator::value_type( static_cast< std::size_t >( i ) ) );
     for( int i = 0; i < 100; ++i )
         c.pop();
     USED( c );
