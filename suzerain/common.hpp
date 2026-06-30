@@ -118,7 +118,6 @@ SUZERAIN_GCC_DIAG_OFF(unused-variable);
 #include <boost/ptr_container/ptr_map.hpp>
 #include <boost/ptr_container/ptr_vector.hpp>
 #include <boost/ref.hpp>
-#include <boost/scoped_array.hpp>
 #include <boost/shared_array.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/static_assert.hpp>
@@ -258,7 +257,6 @@ using boost::const_pointer_cast;        /**< \namespace suzerain */
 using boost::dynamic_pointer_cast;      /**< \namespace suzerain */
 using boost::make_shared;               /**< \namespace suzerain */
 using boost::reinterpret_pointer_cast;  /**< \namespace suzerain */
-using boost::scoped_array;              /**< \namespace suzerain */
 using boost::shared_array;              /**< \namespace suzerain */
 using boost::shared_ptr;                /**< \namespace suzerain */
 using std::unique_ptr;                   /**< \namespace suzerain */

@@ -1481,7 +1481,7 @@ void real_polynomial_interpolation(const int k,
     // Compute expected coefficients for derivatives [0...nderiv] inclusive
     // by directly differentiating the polynomial test function.
     const std::size_t nstorage = (nderiv + 1) * ndof;
-    suzerain::scoped_array<double> expected(new double[nstorage]);
+    suzerain::unique_ptr<double[]> expected(new double[nstorage]);
     for (int i = 0; i <= nderiv; ++i) {
         op.interpolation_rhs(&f, &expected[i*ndof], b);
         poly_params_differentiate(p.get());
@@ -1490,7 +1490,7 @@ void real_polynomial_interpolation(const int k,
 
     // Test in-place application and solution
     {
-        suzerain::scoped_array<double> result(new double[nstorage]);
+        suzerain::unique_ptr<double[]> result(new double[nstorage]);
 
         // Make multiple copies of the zeroth derivative coefficients
         for (int i = 0; i <= nderiv; ++i) {
@@ -1516,7 +1516,7 @@ void real_polynomial_interpolation(const int k,
 
     // Test out-of-place application and solution
     {
-        suzerain::scoped_array<double> result(new double[nstorage]);
+        suzerain::unique_ptr<double[]> result(new double[nstorage]);
 
         // Solve M*x' = D*x ...
         // ...starting by accumulating the derivative operators

@@ -363,7 +363,7 @@ void test_r2c_2d_complex_forward_in_place(
         = std::max(complexM*complexN, realM*realN/size_ratio);
 
     // Create appropriately typed views of the same raw storage
-    suzerain::scoped_array<complex> raw(new complex[storage_amount]);
+    suzerain::unique_ptr<complex[]> raw(new complex[storage_amount]);
     typedef boost::multi_array_ref<complex::value_type,2> real_array;
     typedef boost::multi_array_ref<complex,2>             complex_array;
     typedef boost::general_storage_order<real_array::dimensionality> storage;
@@ -549,7 +549,7 @@ void test_c2r_2d_complex_backward_in_place(
         = std::max(complexM*complexN, realM*realN/size_ratio);
 
     // Create appropriately typed views of the same raw storage
-    suzerain::scoped_array<complex> raw(new complex[storage_amount]);
+    suzerain::unique_ptr<complex[]> raw(new complex[storage_amount]);
     typedef boost::multi_array_ref<complex,2>             complex_array;
     typedef boost::multi_array_ref<complex::value_type,2> real_array;
     typedef boost::general_storage_order<real_array::dimensionality> storage;
