@@ -33,7 +33,6 @@
 // Not so much a test as a way to check our periodic test function definition.
 // Getting it correct is key to all other FFT-related tests
 
-using suzerain::unique_ptr;
 
 static void test_c2c_forward(const int N, const int max_mode_exclusive)
 {
@@ -44,7 +43,7 @@ static void test_c2c_forward(const int N, const int max_mode_exclusive)
     typedef std::complex<double> complex_type;
     const complex_type I(0, 1);
 
-    unique_ptr<complex_type[]> buf(new complex_type[N]);
+    std::unique_ptr<complex_type[]> buf(new complex_type[N]);
 
     std::shared_ptr<boost::remove_pointer<fftw_plan>::type> forward(
         fftw_plan_dft_1d(N,
@@ -121,7 +120,7 @@ static void test_c2c_backward(const int N, const int max_mode_exclusive)
     typedef std::complex<double> complex_type;
     const complex_type I(0, 1);
 
-    unique_ptr<complex_type[]> buf(new complex_type[N]);
+    std::unique_ptr<complex_type[]> buf(new complex_type[N]);
 
     std::shared_ptr<boost::remove_pointer<fftw_plan>::type> backward(
         fftw_plan_dft_1d(N,
@@ -197,7 +196,7 @@ static void test_r2c_forward(const int N, const int max_mode_exclusive)
     const double close = std::numeric_limits<double>::epsilon()*50*N*N*N;
     typedef std::complex<double> complex_type;
 
-    unique_ptr<double[]> buf(new double[2*(N/2+1)]);
+    std::unique_ptr<double[]> buf(new double[2*(N/2+1)]);
     double       * const rbuf = buf.get();
     complex_type * const cbuf = (complex_type *) buf.get();
 
@@ -245,7 +244,7 @@ static void test_c2r_backward(const int N, const int max_mode_exclusive)
     const double close = std::numeric_limits<double>::epsilon()*200*N*N*N;
     typedef std::complex<double> complex_type;
 
-    unique_ptr<double[]> buf(new double[2*(N/2+1)]);
+    std::unique_ptr<double[]> buf(new double[2*(N/2+1)]);
     double       * const rbuf = buf.get();
     complex_type * const cbuf = (complex_type *) buf.get();
 

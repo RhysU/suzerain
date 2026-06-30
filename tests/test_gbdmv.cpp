@@ -125,10 +125,10 @@ static void test_gbdmv_s(const gbdmv_tc_type& t)
     const int leny = abs(t.incy) * t.n;
 
     // Allocate random data for testing purposes
-    suzerain::unique_ptr<float[]> d(new float[lend]);
-    suzerain::unique_ptr<float[]> a(new float[lena]);
-    suzerain::unique_ptr<float[]> x(new float[lenx]);
-    suzerain::unique_ptr<float[]> y(new float[leny]), e(new float[leny]);
+    std::unique_ptr<float[]> d(new float[lend]);
+    std::unique_ptr<float[]> a(new float[lena]);
+    std::unique_ptr<float[]> x(new float[lenx]);
+    std::unique_ptr<float[]> y(new float[leny]), e(new float[leny]);
     for (int i = 0; i < lend; ++i) d[i] = gsl_rng_uniform_pos(rng);
     for (int i = 0; i < lena; ++i) a[i] = gsl_rng_uniform_pos(rng);
     for (int i = 0; i < lenx; ++i) x[i] = gsl_rng_uniform_pos(rng);
@@ -165,10 +165,10 @@ static void test_gbdmv_d(const gbdmv_tc_type& t)
     const int leny = abs(t.incy) * t.n;
 
     // Allocate random data for testing purposes
-    suzerain::unique_ptr<double[]> d(new double[lend]);
-    suzerain::unique_ptr<double[]> a(new double[lena]);
-    suzerain::unique_ptr<double[]> x(new double[lenx]);
-    suzerain::unique_ptr<double[]> y(new double[leny]), e(new double[leny]);
+    std::unique_ptr<double[]> d(new double[lend]);
+    std::unique_ptr<double[]> a(new double[lena]);
+    std::unique_ptr<double[]> x(new double[lenx]);
+    std::unique_ptr<double[]> y(new double[leny]), e(new double[leny]);
     for (int i = 0; i < lend; ++i) d[i] = gsl_rng_uniform_pos(rng);
     for (int i = 0; i < lena; ++i) a[i] = gsl_rng_uniform_pos(rng);
     for (int i = 0; i < lenx; ++i) x[i] = gsl_rng_uniform_pos(rng);
@@ -201,10 +201,10 @@ static void test_gbdmv_scc(const gbdmzv_tc_type& t)
     const int leny = 2 * abs(t.incy) * t.n;
 
     // Allocate random data for testing purposes
-    suzerain::unique_ptr<float[]> d(new float[lend]);
-    suzerain::unique_ptr<float[]> a(new float[lena]);
-    suzerain::unique_ptr<float[]> x(new float[lenx]);
-    suzerain::unique_ptr<float[]> y(new float[leny]), e(new float[leny]);
+    std::unique_ptr<float[]> d(new float[lend]);
+    std::unique_ptr<float[]> a(new float[lena]);
+    std::unique_ptr<float[]> x(new float[lenx]);
+    std::unique_ptr<float[]> y(new float[leny]), e(new float[leny]);
     for (int i = 0; i < lend; ++i) d[i] = gsl_rng_uniform_pos(rng);
     for (int i = 0; i < lena; ++i) a[i] = gsl_rng_uniform_pos(rng);
     for (int i = 0; i < lenx; ++i) x[i] = gsl_rng_uniform_pos(rng);
@@ -242,10 +242,10 @@ static void test_gbdmv_dzz(const gbdmzv_tc_type& t)
     const int leny = 2 * abs(t.incy) * t.n;
 
     // Allocate random data for testing purposes
-    suzerain::unique_ptr<double[]> d(new double[lend]);
-    suzerain::unique_ptr<double[]> a(new double[lena]);
-    suzerain::unique_ptr<double[]> x(new double[lenx]);
-    suzerain::unique_ptr<double[]> y(new double[leny]), e(new double[leny]);
+    std::unique_ptr<double[]> d(new double[lend]);
+    std::unique_ptr<double[]> a(new double[lena]);
+    std::unique_ptr<double[]> x(new double[lenx]);
+    std::unique_ptr<double[]> y(new double[leny]), e(new double[leny]);
     for (int i = 0; i < lend; ++i) d[i] = gsl_rng_uniform_pos(rng);
     for (int i = 0; i < lena; ++i) a[i] = gsl_rng_uniform_pos(rng);
     for (int i = 0; i < lenx; ++i) x[i] = gsl_rng_uniform_pos(rng);
@@ -283,10 +283,10 @@ static void test_gbdmv_ssc(const gbdmzv_tc_type& t)
     const int leny = 2 * abs(t.incy) * t.n;
 
     // Allocate random data for testing purposes
-    suzerain::unique_ptr<float[]> d(new float[lend]);
-    suzerain::unique_ptr<float[]> a(new float[lena]);
-    suzerain::unique_ptr<float[]> x(new float[lenx]);
-    suzerain::unique_ptr<float[]> y(new float[leny]), e(new float[leny]);
+    std::unique_ptr<float[]> d(new float[lend]);
+    std::unique_ptr<float[]> a(new float[lena]);
+    std::unique_ptr<float[]> x(new float[lenx]);
+    std::unique_ptr<float[]> y(new float[leny]), e(new float[leny]);
     for (int i = 0; i < lend; ++i) d[i] = gsl_rng_uniform_pos(rng);
     for (int i = 0; i < lena; ++i) a[i] = gsl_rng_uniform_pos(rng);
     for (int i = 0; i < lenx; ++i) x[i] = gsl_rng_uniform_pos(rng);
@@ -330,10 +330,10 @@ static void test_gbdmv_ddz(const gbdmzv_tc_type& t)
     const int leny = 2 * abs(t.incy) * t.n;
 
     // Allocate random data for testing purposes
-    suzerain::unique_ptr<double[]> d(new double[lend]);
-    suzerain::unique_ptr<double[]> a(new double[lena]);
-    suzerain::unique_ptr<double[]> x(new double[lenx]);
-    suzerain::unique_ptr<double[]> y(new double[leny]), e(new double[leny]);
+    std::unique_ptr<double[]> d(new double[lend]);
+    std::unique_ptr<double[]> a(new double[lena]);
+    std::unique_ptr<double[]> x(new double[lenx]);
+    std::unique_ptr<double[]> y(new double[leny]), e(new double[leny]);
     for (int i = 0; i < lend; ++i) d[i] = gsl_rng_uniform_pos(rng);
     for (int i = 0; i < lena; ++i) a[i] = gsl_rng_uniform_pos(rng);
     for (int i = 0; i < lenx; ++i) x[i] = gsl_rng_uniform_pos(rng);

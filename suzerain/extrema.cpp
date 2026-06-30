@@ -61,10 +61,10 @@ compute_field_extrema_xz(
     const int ny = boost::numeric_cast<int>(swave.shape()[1]);
     const int nf = boost::numeric_cast<int>(swave.shape()[0]);
     const int buf2size = ny * 2*nf;
-    suzerain::unique_ptr<val_index[]> buf2(new val_index[buf2size]);
+    std::unique_ptr<val_index[]> buf2(new val_index[buf2size]);
     // Storage for negatives fraction
     const int bufnsize = ny * nf;
-    suzerain::unique_ptr<real_t[]>    bufn(new real_t   [bufnsize]);
+    std::unique_ptr<real_t[]>    bufn(new real_t   [bufnsize]);
 
     // Initialize storage with "uninteresting" min and max values
     // so that the final Allreduce ignores contributions from

@@ -211,8 +211,8 @@ void load_coefficients(const esio_handle h,
     typedef boost::multi_array<
         complex_t, 3, blas::allocator<complex_t>::type
     > tmp_type;
-    unique_ptr<tmp_type> tmp;
-    unique_ptr<bsplineop_luz> mass;
+    std::unique_ptr<tmp_type> tmp;
+    std::unique_ptr<bsplineop_luz> mass;
     if (!bsp_same) {
         INFO0("Differences in B-spline basis require restart projection ("
               << bsp_dist << " >= "

@@ -868,7 +868,7 @@ private:
      * Handles \c MPI_Allreduce calls necessary to obtain stable time steps on
      * all ranks as well as aggregating POSIX signals received on any rank.
      */
-    const unique_ptr<delta_t_allreducer> allreducer;
+    const std::unique_ptr<delta_t_allreducer> allreducer;
 
     /** Helps to identify from whom logging messages are being emitted. */
     std::string who;

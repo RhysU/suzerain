@@ -357,13 +357,13 @@ private:
 
 /** @{ */
 
-    unique_ptr<underling::grid>       grid;
-    unique_ptr<underling::problem>    problem;
-    unique_ptr<underling::plan>       transpose;
-    unique_ptr<underling::fftw::plan> n1_c2c_backward;
-    unique_ptr<underling::fftw::plan> n2_c2r_backward;
-    unique_ptr<underling::fftw::plan> n2_r2c_forward;
-    unique_ptr<underling::fftw::plan> n1_c2c_forward;
+    std::unique_ptr<underling::grid>       grid;
+    std::unique_ptr<underling::problem>    problem;
+    std::unique_ptr<underling::plan>       transpose;
+    std::unique_ptr<underling::fftw::plan> n1_c2c_backward;
+    std::unique_ptr<underling::fftw::plan> n2_c2r_backward;
+    std::unique_ptr<underling::fftw::plan> n2_r2c_forward;
+    std::unique_ptr<underling::fftw::plan> n1_c2c_forward;
     std::shared_ptr<underling::real[]>     buf;
 
 /** @} */

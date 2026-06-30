@@ -658,8 +658,8 @@ void test_1d_out_of_place(const int N)
 
     // C2C: Test multi_array_ref using fftw_complex
     {
-        suzerain::unique_ptr<fftw_complex[]> in_data(new fftw_complex[N]);
-        suzerain::unique_ptr<fftw_complex[]> out_data(new fftw_complex[N]);
+        std::unique_ptr<fftw_complex[]> in_data(new fftw_complex[N]);
+        std::unique_ptr<fftw_complex[]> out_data(new fftw_complex[N]);
         typedef boost::multi_array_ref<fftw_complex, 1> array_ref_type;
         array_ref_type in(in_data.get(), boost::extents[N]);
         array_ref_type out(out_data.get(), boost::extents[N]);
@@ -685,7 +685,7 @@ void test_1d_out_of_place(const int N)
     // R2C: Test multi_array using fftw_complex
     {
         boost::multi_array<double,1>      in(boost::extents[N]);
-        suzerain::unique_ptr<fftw_complex[]> out_data(new fftw_complex[N/2+1]);
+        std::unique_ptr<fftw_complex[]> out_data(new fftw_complex[N/2+1]);
         boost::multi_array_ref<fftw_complex, 1> out(
                 out_data.get(), boost::extents[N/2+1]);
 
@@ -704,7 +704,7 @@ void test_1d_out_of_place(const int N)
 
     // C2R: Test multi_array using fftw_complex
     {
-        suzerain::unique_ptr<fftw_complex[]> in_data(new fftw_complex[N/2+1]);
+        std::unique_ptr<fftw_complex[]> in_data(new fftw_complex[N/2+1]);
         boost::multi_array_ref<fftw_complex, 1> in(
                 in_data.get(), boost::extents[N/2+1]);
         boost::multi_array<double,1>      out(boost::extents[N]);
@@ -904,7 +904,7 @@ void test_1d_in_place(const int N)
     // Test performed in place; API requires both real and complex views
     {
         typedef std::complex<double> complex;
-        suzerain::unique_ptr<complex[]> raw(new complex[N/2+1]);
+        std::unique_ptr<complex[]> raw(new complex[N/2+1]);
 
         typedef boost::multi_array_ref<complex::value_type,1> real_array_type;
         real_array_type in(reinterpret_cast<complex::value_type *>(raw.get()),
@@ -921,7 +921,7 @@ void test_1d_in_place(const int N)
     // Test performed in place; API requires both real and complex views
     {
         typedef std::complex<double> complex;
-        suzerain::unique_ptr<complex[]> raw(new complex[N/2+1]);
+        std::unique_ptr<complex[]> raw(new complex[N/2+1]);
 
         typedef boost::multi_array_ref<complex,1> complex_array_type;
         complex_array_type in(raw.get(), boost::extents[N/2+1]);
