@@ -184,12 +184,12 @@ BOOST_AUTO_TEST_CASE( constructor4_and_abbreviated_methods )
 
 // constructor5 is trivially different from constructor4
 
-BOOST_AUTO_TEST_CASE( construct_from_shared_array ) // constructor6
+BOOST_AUTO_TEST_CASE( construct_from_shared_ptr ) // constructor6
 {
     static int data[] = { 1, 2, 3, 4, 5 };
     static const boost::iterator_range<int*> testrange(data, data + 5);
 
-    boost::shared_array<int> a(new int[5]);
+    std::shared_ptr<int[]> a(new int[5]);
     tut r(a, 5);
     std::fill(r.begin(), r.end(), 1);
     std::partial_sum(r.begin(), r.end(), r.begin());
