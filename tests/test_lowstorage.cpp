@@ -1106,7 +1106,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE ( invoke_make_controller, StatePair, state_type_pa
     state_b_type b(size3(2,1,1));
 
     // Compilation and instantiation is half the battle.  Go Joe!
-    suzerain::unique_ptr<suzerain::timecontroller<double> > p(
+    std::unique_ptr<suzerain::timecontroller<double> > p(
         make_controller(m, trivial_linop, 1., riccati_op, a, b));
 
     BOOST_REQUIRE(p);

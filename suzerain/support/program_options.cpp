@@ -305,7 +305,7 @@ std::vector<std::string> program_options::process_internal(
         };
 
         long len;
-        unique_ptr<char[]> buf;
+        std::unique_ptr<char[]> buf;
 
         // Rank zero slurps the file into appropriately-sized buf
         if (rank == 0) {

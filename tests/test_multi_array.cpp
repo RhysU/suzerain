@@ -103,7 +103,6 @@ using boost::multi_array;
 using boost::multi_array_ref;
 using boost::multi_array_types::index;
 using boost::multi_array_types::index_range;
-using suzerain::unique_ptr;
 using suzerain::multi_array::fill;
 
 const std::size_t NX = 3, NY = 4, NZ = 5, NZZ = 6, NZZZ = 7;
@@ -135,7 +134,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(fill_multi_array_1D, T, element_test_types)
 BOOST_AUTO_TEST_CASE_TEMPLATE(fill_multi_array_ref_1D, T, element_test_types)
 {
     // Fill boost::multi_array_ref
-    unique_ptr<T[]> raw(new T[NX]);
+    std::unique_ptr<T[]> raw(new T[NX]);
     multi_array_ref<T,1> foo(raw.get(),extents[NX]);
     fill(foo,123);
     for (index i = 0; i < (index) foo.shape()[0]; ++i) {
@@ -192,7 +191,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(fill_multi_array_2D, T, element_test_types)
 BOOST_AUTO_TEST_CASE_TEMPLATE(fill_multi_array_ref_2D, T, element_test_types)
 {
     // Fill boost::multi_array_ref
-    unique_ptr<T[]> raw(new T[NX*NY]);
+    std::unique_ptr<T[]> raw(new T[NX*NY]);
     multi_array_ref<T,2> foo(raw.get(),extents[NX][NY]);
     fill(foo,123);
     for (index i = 0; i < (index) foo.shape()[0]; ++i) {
@@ -264,7 +263,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(fill_multi_array_3D, T, element_test_types)
 BOOST_AUTO_TEST_CASE_TEMPLATE(fill_multi_array_ref_3D, T, element_test_types)
 {
     // Fill boost::multi_array_ref
-    unique_ptr<T[]> raw(new T[NX*NY*NZ]);
+    std::unique_ptr<T[]> raw(new T[NX*NY*NZ]);
     multi_array_ref<T,3> foo(raw.get(),extents[NX][NY][NZ]);
     fill(foo,123);
     for (index i = 0; i < (index) foo.shape()[0]; ++i) {
@@ -347,7 +346,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(fill_multi_array_4D, T, element_test_types)
 BOOST_AUTO_TEST_CASE_TEMPLATE(fill_multi_array_ref_4D, T, element_test_types)
 {
     // Fill boost::multi_array_ref
-    unique_ptr<T[]> raw(new T[NX*NY*NZ*NZZ]);
+    std::unique_ptr<T[]> raw(new T[NX*NY*NZ*NZZ]);
     multi_array_ref<T,4> foo(raw.get(),extents[NX][NY][NZ][NZZ]);
     fill(foo,123);
     for (index i = 0; i < (index) foo.shape()[0]; ++i) {
@@ -392,7 +391,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(fill_multi_array_ref_4D, T, element_test_types)
 BOOST_AUTO_TEST_CASE_TEMPLATE(fill_multi_array_ref_5D, T, element_test_types)
 {
     // Fill boost::multi_array_ref
-    unique_ptr<T[]> raw(new T[NX*NY*NZ*NZZ*NZZZ]);
+    std::unique_ptr<T[]> raw(new T[NX*NY*NZ*NZZ*NZZZ]);
     multi_array_ref<T,5> foo(raw.get(),extents[NX][NY][NZ][NZZ][NZZZ]);
     fill(foo,123);
     for (index i = 0; i < (index) foo.shape()[0]; ++i) {

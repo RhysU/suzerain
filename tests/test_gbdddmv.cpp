@@ -145,12 +145,12 @@ static void test_gbdddmv_s(const gbdddmv_tc_type& t)
     const int leny  = abs(t.incy) * t.n;
 
     // Allocate random data for testing purposes
-    suzerain::unique_ptr<float[]> d0(new float[lend0]);
-    suzerain::unique_ptr<float[]> d1(new float[lend1]);
-    suzerain::unique_ptr<float[]> d2(new float[lend2]);
-    suzerain::unique_ptr<float[]> a(new float[lena]);
-    suzerain::unique_ptr<float[]> x(new float[lenx]);
-    suzerain::unique_ptr<float[]> y(new float[leny]), e(new float[leny]);
+    std::unique_ptr<float[]> d0(new float[lend0]);
+    std::unique_ptr<float[]> d1(new float[lend1]);
+    std::unique_ptr<float[]> d2(new float[lend2]);
+    std::unique_ptr<float[]> a(new float[lena]);
+    std::unique_ptr<float[]> x(new float[lenx]);
+    std::unique_ptr<float[]> y(new float[leny]), e(new float[leny]);
     for (int i = 0; i < lend0; ++i) d0[i] = gsl_rng_uniform_pos(rng);
     for (int i = 0; i < lend1; ++i) d1[i] = gsl_rng_uniform_pos(rng);
     for (int i = 0; i < lend2; ++i) d2[i] = gsl_rng_uniform_pos(rng);
@@ -198,12 +198,12 @@ static void test_gbdddmv_d(const gbdddmv_tc_type& t)
     const int leny  = abs(t.incy) * t.n;
 
     // Allocate random data for testing purposes
-    suzerain::unique_ptr<double[]> d0(new double[lend0]);
-    suzerain::unique_ptr<double[]> d1(new double[lend1]);
-    suzerain::unique_ptr<double[]> d2(new double[lend2]);
-    suzerain::unique_ptr<double[]> a(new double[lena]);
-    suzerain::unique_ptr<double[]> x(new double[lenx]);
-    suzerain::unique_ptr<double[]> y(new double[leny]), e(new double[leny]);
+    std::unique_ptr<double[]> d0(new double[lend0]);
+    std::unique_ptr<double[]> d1(new double[lend1]);
+    std::unique_ptr<double[]> d2(new double[lend2]);
+    std::unique_ptr<double[]> a(new double[lena]);
+    std::unique_ptr<double[]> x(new double[lenx]);
+    std::unique_ptr<double[]> y(new double[leny]), e(new double[leny]);
     for (int i = 0; i < lend0; ++i) d0[i] = gsl_rng_uniform_pos(rng);
     for (int i = 0; i < lend1; ++i) d1[i] = gsl_rng_uniform_pos(rng);
     for (int i = 0; i < lend2; ++i) d2[i] = gsl_rng_uniform_pos(rng);
@@ -245,12 +245,12 @@ static void test_gbdddmv_scc(const gbdddmzv_tc_type& t)
     const int leny  = 2 * abs(t.incy) * t.n;
 
     // Allocate random data for testing purposes
-    suzerain::unique_ptr<float[]> d0(new float[lend0]);
-    suzerain::unique_ptr<float[]> d1(new float[lend1]);
-    suzerain::unique_ptr<float[]> d2(new float[lend2]);
-    suzerain::unique_ptr<float[]> a(new float[lena]);
-    suzerain::unique_ptr<float[]> x(new float[lenx]);
-    suzerain::unique_ptr<float[]> y(new float[leny]), e(new float[leny]);
+    std::unique_ptr<float[]> d0(new float[lend0]);
+    std::unique_ptr<float[]> d1(new float[lend1]);
+    std::unique_ptr<float[]> d2(new float[lend2]);
+    std::unique_ptr<float[]> a(new float[lena]);
+    std::unique_ptr<float[]> x(new float[lenx]);
+    std::unique_ptr<float[]> y(new float[leny]), e(new float[leny]);
     for (int i = 0; i < lend0; ++i) d0[i] = gsl_rng_uniform_pos(rng);
     for (int i = 0; i < lend1; ++i) d1[i] = gsl_rng_uniform_pos(rng);
     for (int i = 0; i < lend2; ++i) d2[i] = gsl_rng_uniform_pos(rng);
@@ -298,12 +298,12 @@ static void test_gbdddmv_dzz(const gbdddmzv_tc_type& t)
     const int leny  = 2 * abs(t.incy) * t.n;
 
     // Allocate random data for testing purposes
-    suzerain::unique_ptr<double[]> d0(new double[lend0]);
-    suzerain::unique_ptr<double[]> d1(new double[lend1]);
-    suzerain::unique_ptr<double[]> d2(new double[lend2]);
-    suzerain::unique_ptr<double[]> a(new double[lena]);
-    suzerain::unique_ptr<double[]> x(new double[lenx]);
-    suzerain::unique_ptr<double[]> y(new double[leny]), e(new double[leny]);
+    std::unique_ptr<double[]> d0(new double[lend0]);
+    std::unique_ptr<double[]> d1(new double[lend1]);
+    std::unique_ptr<double[]> d2(new double[lend2]);
+    std::unique_ptr<double[]> a(new double[lena]);
+    std::unique_ptr<double[]> x(new double[lenx]);
+    std::unique_ptr<double[]> y(new double[leny]), e(new double[leny]);
     for (int i = 0; i < lend0; ++i) d0[i] = gsl_rng_uniform_pos(rng);
     for (int i = 0; i < lend1; ++i) d1[i] = gsl_rng_uniform_pos(rng);
     for (int i = 0; i < lend2; ++i) d2[i] = gsl_rng_uniform_pos(rng);
@@ -354,12 +354,12 @@ static void test_gbdddmv_ssc(const gbdddmzv_tc_type& t)
     const int leny  = 2 * abs(t.incy) * t.n;
 
     // Allocate random data for testing purposes
-    suzerain::unique_ptr<float[]> d0(new float[lend0]);
-    suzerain::unique_ptr<float[]> d1(new float[lend1]);
-    suzerain::unique_ptr<float[]> d2(new float[lend2]);
-    suzerain::unique_ptr<float[]> a(new float[lena]);
-    suzerain::unique_ptr<float[]> x(new float[lenx]);
-    suzerain::unique_ptr<float[]> y(new float[leny]), e(new float[leny]);
+    std::unique_ptr<float[]> d0(new float[lend0]);
+    std::unique_ptr<float[]> d1(new float[lend1]);
+    std::unique_ptr<float[]> d2(new float[lend2]);
+    std::unique_ptr<float[]> a(new float[lena]);
+    std::unique_ptr<float[]> x(new float[lenx]);
+    std::unique_ptr<float[]> y(new float[leny]), e(new float[leny]);
     for (int i = 0; i < lend0; ++i) d0[i] = gsl_rng_uniform_pos(rng);
     for (int i = 0; i < lend1; ++i) d1[i] = gsl_rng_uniform_pos(rng);
     for (int i = 0; i < lend2; ++i) d2[i] = gsl_rng_uniform_pos(rng);
@@ -413,12 +413,12 @@ static void test_gbdddmv_ddz(const gbdddmzv_tc_type& t)
     const int leny  = 2 * abs(t.incy) * t.n;
 
     // Allocate random data for testing purposes
-    suzerain::unique_ptr<double[]> d0(new double[lend0]);
-    suzerain::unique_ptr<double[]> d1(new double[lend1]);
-    suzerain::unique_ptr<double[]> d2(new double[lend2]);
-    suzerain::unique_ptr<double[]> a(new double[lena]);
-    suzerain::unique_ptr<double[]> x(new double[lenx]);
-    suzerain::unique_ptr<double[]> y(new double[leny]), e(new double[leny]);
+    std::unique_ptr<double[]> d0(new double[lend0]);
+    std::unique_ptr<double[]> d1(new double[lend1]);
+    std::unique_ptr<double[]> d2(new double[lend2]);
+    std::unique_ptr<double[]> a(new double[lena]);
+    std::unique_ptr<double[]> x(new double[lenx]);
+    std::unique_ptr<double[]> y(new double[leny]), e(new double[leny]);
     for (int i = 0; i < lend0; ++i) d0[i] = gsl_rng_uniform_pos(rng);
     for (int i = 0; i < lend1; ++i) d1[i] = gsl_rng_uniform_pos(rng);
     for (int i = 0; i < lend2; ++i) d2[i] = gsl_rng_uniform_pos(rng);
