@@ -26,7 +26,6 @@
 #define BOOST_TEST_MAIN
 #include <boost/assign.hpp>
 #include <boost/mpl/list_c.hpp>
-#include <boost/test/test_case_template.hpp>
 #include <boost/test/unit_test.hpp>
 #include <fftw3.h>
 

@@ -24,7 +24,6 @@
 #include <suzerain/math.hpp>
 
 #define BOOST_TEST_MAIN
-#include <boost/test/test_case_template.hpp>
 #include <boost/test/unit_test.hpp>
 
 #include <suzerain/common.hpp>

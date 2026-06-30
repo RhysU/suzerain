@@ -24,7 +24,7 @@
 #include <suzerain/rholut.hpp>
 
 #define BOOST_TEST_MAIN
-#include <boost/test/floating_point_comparison.hpp>
+#include <boost/test/tools/floating_point_comparison.hpp>
 #include <boost/test/unit_test.hpp>
 
 #include <suzerain/common.hpp>

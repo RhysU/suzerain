@@ -38,7 +38,7 @@
 #if !defined(SPIRIT_VERSION) || SPIRIT_VERSION < 0x2010
 #error "At least Spirit version 2.1 required"
 #endif
-#include <boost/spirit/include/phoenix.hpp>
+#include <boost/phoenix.hpp>
 #include <boost/spirit/include/qi.hpp>
 
 namespace suzerain {

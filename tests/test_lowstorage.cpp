@@ -25,7 +25,6 @@
 #include <suzerain/lowstorage.hpp>
 
 #define BOOST_TEST_MAIN
-#include <boost/test/test_case_template.hpp>
 #include <boost/test/unit_test.hpp>
 #include <gsl/gsl_ieee_utils.h>
 #include <gsl/gsl_machine.h>
