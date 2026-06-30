@@ -225,7 +225,7 @@ driver::log_linearization_error(
     // When this->L and this->N match perfectly, state_nonlinear should be
     // identically zero at each collocation point.  Seeing more than acceptable
     // (e.g. 1e-10) floating point error indicates something is amiss.
-    shared_ptr<operator_tools> otool = obtain_operator_tools();
+    std::shared_ptr<operator_tools> otool = obtain_operator_tools();
     for (size_t f = 0; f < state_nonlinear->shape()[0]; ++f) {
         otool->bop_solve(*otool->massluz(), *state_nonlinear, f);
     }
@@ -252,7 +252,7 @@ void driver::log_quantities_of_interest(
 
     // If possible, use existing information from mean quantities
     // Otherwise compute from instantaneous fields stored in state_linear
-    shared_ptr<operator_tools> otool = obtain_operator_tools();
+    std::shared_ptr<operator_tools> otool = obtain_operator_tools();
     profile prof;
     instantaneous inst;
     if (controller && mean && mean->t == t) {
@@ -317,11 +317,11 @@ driver::log_quantities_of_interest(
 {
     // A horrible way to cheaply grab a shared pointer to a masslu
     // Uses internal knowledge of obtain_operator_tools requiring a dgrid
-    shared_ptr<const bsplineop_lu> masslu;
+    std::shared_ptr<const bsplineop_lu> masslu;
     if (dgrid) {
         masslu = obtain_operator_tools()->masslu();
     } else {
-        shared_ptr<bsplineop_lu> t(new bsplineop_lu(*cop));
+        std::shared_ptr<bsplineop_lu> t(new bsplineop_lu(*cop));
         t->factor_mass(*cop);
         masslu = t;
     }
@@ -570,7 +570,7 @@ driver::compute_statistics(
 
     // Obtain mean samples from instantaneous fields stored in state_linear
     state_nonlinear->assign_from(*state_linear);
-    shared_ptr<operator_tools> otool = obtain_operator_tools();
+    std::shared_ptr<operator_tools> otool = obtain_operator_tools();
     mean = take_samples(*scenario, *sg, *otool, *b, *state_nonlinear, t);
 
     // Obtain mean quantities computed via implicit forcing (when possible)
@@ -625,7 +625,7 @@ driver::save_spectra_primitive(
 
     // Convert to pointwise conserved state in physical space
     physical_view<swave_count> sphys(*dgrid, *state_nonlinear);
-    shared_ptr<operator_tools> otool = obtain_operator_tools();
+    std::shared_ptr<operator_tools> otool = obtain_operator_tools();
     for (size_t f = 0; f < swave_count; ++f) {
         otool->zero_dealiasing_modes(  *state_nonlinear, f);
         otool->bop_apply     (0,    1, *state_nonlinear, f);
@@ -675,7 +675,7 @@ driver::save_spectra_primitive(
     // Compute and save the two-point correlation as (y_j, k_x, ndxpair)
     // Ordering arises from packing of primitive state in physical space
     {
-        shared_ptr<complex_t[]> twopoint_x = compute_twopoint_x(
+        std::shared_ptr<complex_t[]> twopoint_x = compute_twopoint_x(
                 *state_nonlinear, swave_count, *grid, *dgrid);
         esio_field_establish(esioh,
                 npairs,          0, procid == 0 ? npairs          : 0,
@@ -692,7 +692,7 @@ driver::save_spectra_primitive(
     // Compute and save the two-point correlation as (y_j, k_z, ndxpair)
     // Ordering arises from packing of primitive state in physical space
     {
-        shared_ptr<complex_t[]> twopoint_z = compute_twopoint_z(
+        std::shared_ptr<complex_t[]> twopoint_z = compute_twopoint_z(
                 *state_nonlinear, swave_count, *grid, *dgrid);
         esio_field_establish(esioh,
                 npairs,          0, procid == 0 ? npairs          : 0,

@@ -330,10 +330,10 @@ driver_base::reset()
     return super::reset();
 }
 
-shared_ptr<operator_tools>
+std::shared_ptr<operator_tools>
 driver_base::obtain_operator_tools()
 {
-    shared_ptr<operator_tools> otool
+    std::shared_ptr<operator_tools> otool
             = std::dynamic_pointer_cast<operator_tools>(N);
     if (!otool) {
         otool = std::make_shared<operator_tools>(*grid, *dgrid, *cop);
@@ -1946,7 +1946,7 @@ driver_base::default_status_interval(
 delta_t_allreducer::delta_t_allreducer(
         const double& wtime_mpi_init,
         const double& wtime_fftw_planning,
-        const shared_ptr<definition_time>& timedef,
+        const std::shared_ptr<definition_time>& timedef,
         const double& wtime_load_restart,
         const double& wtime_advance_start,
         const driver_base::step_type& last_status_nt,

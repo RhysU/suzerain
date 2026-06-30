@@ -34,7 +34,6 @@
 // Getting it correct is key to all other FFT-related tests
 
 using suzerain::unique_ptr;
-using suzerain::shared_ptr;
 
 static void test_c2c_forward(const int N, const int max_mode_exclusive)
 {
@@ -47,7 +46,7 @@ static void test_c2c_forward(const int N, const int max_mode_exclusive)
 
     unique_ptr<complex_type[]> buf(new complex_type[N]);
 
-    shared_ptr<boost::remove_pointer<fftw_plan>::type> forward(
+    std::shared_ptr<boost::remove_pointer<fftw_plan>::type> forward(
         fftw_plan_dft_1d(N,
                          (fftw_complex *) buf.get(),
                          (fftw_complex *) buf.get(),
@@ -78,7 +77,7 @@ static void test_c2c_forward(const int N, const int max_mode_exclusive)
         }
     }
 
-    shared_ptr<boost::remove_pointer<fftw_plan>::type> backward(
+    std::shared_ptr<boost::remove_pointer<fftw_plan>::type> backward(
         fftw_plan_dft_1d(N,
                          (fftw_complex *) buf.get(),
                          (fftw_complex *) buf.get(),
@@ -124,7 +123,7 @@ static void test_c2c_backward(const int N, const int max_mode_exclusive)
 
     unique_ptr<complex_type[]> buf(new complex_type[N]);
 
-    shared_ptr<boost::remove_pointer<fftw_plan>::type> backward(
+    std::shared_ptr<boost::remove_pointer<fftw_plan>::type> backward(
         fftw_plan_dft_1d(N,
                          (fftw_complex *) buf.get(),
                          (fftw_complex *) buf.get(),
@@ -155,7 +154,7 @@ static void test_c2c_backward(const int N, const int max_mode_exclusive)
         }
     }
 
-    shared_ptr<boost::remove_pointer<fftw_plan>::type> forward(
+    std::shared_ptr<boost::remove_pointer<fftw_plan>::type> forward(
         fftw_plan_dft_1d(N,
                          (fftw_complex *) buf.get(),
                          (fftw_complex *) buf.get(),
@@ -202,7 +201,7 @@ static void test_r2c_forward(const int N, const int max_mode_exclusive)
     double       * const rbuf = buf.get();
     complex_type * const cbuf = (complex_type *) buf.get();
 
-    shared_ptr<boost::remove_pointer<fftw_plan>::type> forward(
+    std::shared_ptr<boost::remove_pointer<fftw_plan>::type> forward(
         fftw_plan_dft_r2c_1d(N, rbuf, (fftw_complex *)cbuf, FFTW_ESTIMATE),
         &fftw_destroy_plan);
     BOOST_REQUIRE(forward);
@@ -250,7 +249,7 @@ static void test_c2r_backward(const int N, const int max_mode_exclusive)
     double       * const rbuf = buf.get();
     complex_type * const cbuf = (complex_type *) buf.get();
 
-    shared_ptr<boost::remove_pointer<fftw_plan>::type> forward(
+    std::shared_ptr<boost::remove_pointer<fftw_plan>::type> forward(
         fftw_plan_dft_c2r_1d(N, (fftw_complex *)cbuf, rbuf, FFTW_ESTIMATE),
         &fftw_destroy_plan);
     BOOST_REQUIRE(forward);

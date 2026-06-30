@@ -214,7 +214,7 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
     real_t initial_t = numeric_limits<real_t>::quiet_NaN();
     {
         // Preserve exact restart file details via Push/Pop/Merge below
-        shared_ptr<definition_scenario> restart_scenario
+        std::shared_ptr<definition_scenario> restart_scenario
                 = std::make_shared<definition_scenario>();
 
         // Load the restart details with state going into state_linear
@@ -258,7 +258,7 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
 
     // Prepare any necessary, problem-specific constraints
     common_block.imp.set_zero(dgrid->global_physical_extent.y());
-    shared_ptr<constraint::treatment> constrainer(new constraint::treatment(
+    std::shared_ptr<constraint::treatment> constrainer(new constraint::treatment(
             scenario->Ma, *dgrid, *b, common_block.sub, common_block.imp));
     if        (grid->two_sided()) { // Channel per treatment_channel.tex
 
@@ -348,7 +348,7 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
             POSSIBLYWARN0(who, "Matching radial flow has R0:   ", R[1]);
 
             // ...solve for wall state given edge state...
-            shared_ptr<suzerain_radialflow_solution> r(
+            std::shared_ptr<suzerain_radialflow_solution> r(
                     suzerain_radialflow_solver(
                         Ma0, gamma, uR, rhoR, pR, R, sizeof(R)/sizeof(R[0])),
                     free);
@@ -369,13 +369,13 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
                 y[i] = b->collocation_point(i);
             }
             ArrayXr S = (y.abs2() + pow(r->state[1].R, 2)).sqrt();
-            shared_ptr<suzerain_radialflow_solution> s(
+            std::shared_ptr<suzerain_radialflow_solution> s(
                     suzerain_radialflow_solver(
                         Ma0, gamma, u1, rho1, p1, S.data(), S.size()),
                     free);
 
             // ...and tuck solution into a baseflow_map as a function of y
-            shared_ptr<baseflow_map> bm(new baseflow_map());
+            std::shared_ptr<baseflow_map> bm(new baseflow_map());
             for (int i = 0; i < y.size(); ++i) {
                 baseflow_map::row& row = bm->table[y[i]];
                 suzerain_radialflow_cartesian_conserved(
@@ -408,7 +408,7 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
              && (   !sg->baseflow
                  || dynamic_cast<baseflow_uniform*>(sg->baseflow.get()))) {
             INFO0(who, "Adding uniform baseflow at freestream conditions");
-            shared_ptr<baseflow_uniform> bu(new baseflow_uniform());
+            std::shared_ptr<baseflow_uniform> bu(new baseflow_uniform());
             bu->x.resize(state_linear->shape()[0] + /* pressure */ 1);
             memcpy(bu->x.data(), freestream.as_is(), sizeof(freestream));
             sg->baseflow = bu;
@@ -629,7 +629,7 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
         INFO0(who, "Initializing fully explicit spatial operators");
         if (grid->one_sided()) {
             INFO0(who, "Preparing nonreflecting upper boundary treatment");
-            shared_ptr<treatment_nonreflecting> nonreflecting(
+            std::shared_ptr<treatment_nonreflecting> nonreflecting(
                     new treatment_nonreflecting(common_block.linearization,
                         *scenario, *isothermal, *grid, *dgrid, *cop, *b));
             nonreflecting->N = N;
@@ -644,7 +644,7 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
         // Hybrid operators automatically incorporate NRBC whenever necessary
         INFO0(who, "Initializing hybrid implicit/explicit spatial operators");
         INFO0(who, "Implicit linearization employed: " << implicit);
-        shared_ptr<operator_hybrid_isothermal> hybrid(
+        std::shared_ptr<operator_hybrid_isothermal> hybrid(
                     new operator_hybrid_isothermal(
                         solver_spec, *scenario, *isothermal,
                         *grid, *dgrid, *cop, *b, common_block));

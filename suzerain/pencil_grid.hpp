@@ -364,7 +364,7 @@ private:
     unique_ptr<underling::fftw::plan> n2_c2r_backward;
     unique_ptr<underling::fftw::plan> n2_r2c_forward;
     unique_ptr<underling::fftw::plan> n1_c2c_forward;
-    shared_ptr<underling::real[]>     buf;
+    std::shared_ptr<underling::real[]>     buf;
 
 /** @} */
 

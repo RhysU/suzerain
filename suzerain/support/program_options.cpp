@@ -162,7 +162,7 @@ std::vector<std::string> program_options::process_internal(
     // Obtain the program name using basename(argv[0])
     std::string program_name;
     {
-        shared_ptr<char> name_copy(strdup(argv[0]), &free);
+        std::shared_ptr<char> name_copy(strdup(argv[0]), &free);
         program_name = basename(name_copy.get());
     }
 

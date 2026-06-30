@@ -529,7 +529,7 @@ definition_largo::load(
     int neqns, ncoeffs;
 
     DEBUG0("Probing for baseflow state");
-    shared_ptr<char> base_x;
+    std::shared_ptr<char> base_x;
     MatrixXXr x;
     if (ESIO_SUCCESS == esio_plane_size(h, location_baseflow,
                                         &neqns, &ncoeffs)) {
@@ -548,7 +548,7 @@ definition_largo::load(
     }
 
     DEBUG0("Probing for baseflow streamwise derivatives");
-    shared_ptr<char> base_dx;
+    std::shared_ptr<char> base_dx;
     MatrixXXr dx;
     if (ESIO_SUCCESS == esio_plane_size(h, location_baseflow_dx,
                                         &neqns, &ncoeffs)) {
@@ -583,7 +583,7 @@ definition_largo::load(
     }
 
     DEBUG0("Probing for baseflow wall-normal derivatives");
-    shared_ptr<char> base_dy;
+    std::shared_ptr<char> base_dy;
     MatrixXXr dy;
     if (ESIO_SUCCESS == esio_plane_size(h, location_baseflow_dy,
                                         &neqns, &ncoeffs)) {
@@ -617,7 +617,7 @@ definition_largo::load(
         SUZERAIN_ENSURE(x.cols() == dy.cols());
 
         // See save(...) method for the origin of the magic numbers below
-        shared_ptr<baseflow_map> const p = std::make_shared<baseflow_map>();
+        std::shared_ptr<baseflow_map> const p = std::make_shared<baseflow_map>();
         for (int i = 0; i < x.rows(); ++i) {
             baseflow_map::row& row = p->table[x(i, 0)];
             row.  base.e   =  x(i, 1);
@@ -653,7 +653,7 @@ definition_largo::load(
         }
 
         DEBUG0("Preparing polynomial-based baseflow description");
-        shared_ptr<baseflow_polynomial> p = std::make_shared<baseflow_polynomial>();
+        std::shared_ptr<baseflow_polynomial> p = std::make_shared<baseflow_polynomial>();
         p->x       = x;
         p->dx      = dx;
         t.baseflow = p;
@@ -661,7 +661,7 @@ definition_largo::load(
     } else if (base_x && type_uniform == base_x.get()) {
 
         DEBUG0("Preparing uniform baseflow description");
-        shared_ptr<baseflow_uniform> p = std::make_shared<baseflow_uniform>();
+        std::shared_ptr<baseflow_uniform> p = std::make_shared<baseflow_uniform>();
         p->x       = x;
         t.baseflow = p;
 

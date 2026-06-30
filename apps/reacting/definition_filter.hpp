@@ -226,10 +226,10 @@ protected:
     int prepare_complex(const int n) const;
 
     /** A filtering workspace for real-valued state. */
-    mutable shared_ptr<suzerain_filterop_workspace> r;
+    mutable std::shared_ptr<suzerain_filterop_workspace> r;
 
     /** A filtering workspace for complex-valued state. */
-    mutable shared_ptr<suzerain_filteropz_workspace> z;
+    mutable std::shared_ptr<suzerain_filteropz_workspace> z;
 
 };
 

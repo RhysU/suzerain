@@ -354,25 +354,25 @@ public:
      * Antioch::ChemicalMixture object, required for anything with
      * antioch
      */
-    shared_ptr<Antioch::ChemicalMixture<real_t> > mixture;
+    std::shared_ptr<Antioch::ChemicalMixture<real_t> > mixture;
 
     /**
      * Antioch::ReactionSet object, used by Kinetics in evaluating
      * reaction srcs
      */
-    shared_ptr<Antioch::ReactionSet<real_t> > reactions;
+    std::shared_ptr<Antioch::ReactionSet<real_t> > reactions;
 
     /**
      * Antioch::CEAThermodynamics object, used to compute inputs for
      * reaction src evaluation
      */
-    shared_ptr<Antioch::CEAThermodynamics<real_t> > cea_thermo;
+    std::shared_ptr<Antioch::CEAThermodynamics<real_t> > cea_thermo;
 
     /**
      * Antioch::StatMechThermodynamics object, used to compute
      * temperature from internal energy
      */
-    shared_ptr<Antioch::StatMechThermodynamics<real_t> > sm_thermo;
+    std::shared_ptr<Antioch::StatMechThermodynamics<real_t> > sm_thermo;
 
     /**
      * Antioch::KineticsEvaluator object, used to actually compute
@@ -382,32 +382,32 @@ public:
      * thread unsafe.  See comments in antioch/kinetics_evaluator.h
      * and issue #2798.
      */
-    shared_ptr<Antioch::KineticsEvaluator<real_t> > kinetics;
+    std::shared_ptr<Antioch::KineticsEvaluator<real_t> > kinetics;
 
     /**
      * Antioch::MixtureViscosity object, used to compute species
      * viscosities using Blottner curve fits.
      */
-    shared_ptr<Antioch::MixtureViscosity<Antioch::BlottnerViscosity<real_t>,
+    std::shared_ptr<Antioch::MixtureViscosity<Antioch::BlottnerViscosity<real_t>,
                                 real_t> > mixture_mu;
 
     /**
      * Antioch::EuckenThermalConductivity object, used to compute
      * species thermal conductivity according to Eucken model.
      */
-    shared_ptr<Antioch::EuckenThermalConductivity<
+    std::shared_ptr<Antioch::EuckenThermalConductivity<
                    Antioch::StatMechThermodynamics<real_t> > > mixture_kappa;
 
     /**
      * Antioch::WilkeMixture object, used by Antioch::WilkeEvaluator
      */
-    shared_ptr<Antioch::WilkeMixture<real_t> > wilke_mixture;
+    std::shared_ptr<Antioch::WilkeMixture<real_t> > wilke_mixture;
 
     /**
      * Antioch::WilkeMixture object, computes mixture transport
      * properties
      */
-    shared_ptr<Antioch::WilkeEvaluator<Antioch::MixtureViscosity<Antioch::BlottnerViscosity<real_t>, real_t>,
+    std::shared_ptr<Antioch::WilkeEvaluator<Antioch::MixtureViscosity<Antioch::BlottnerViscosity<real_t>, real_t>,
                                        Antioch::EuckenThermalConductivity<Antioch::StatMechThermodynamics<real_t> >,
                                        real_t> > wilke_evaluator;
 

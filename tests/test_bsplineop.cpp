@@ -1469,7 +1469,7 @@ void real_polynomial_interpolation(const int k,
 
     // Initialize polynomial test function which we should recapture exactly
     // Polynomial concocted to be reasonably behaved on domains of interest.
-    suzerain::shared_ptr<poly_params> p(
+    std::shared_ptr<poly_params> p(
         (poly_params *) malloc(sizeof(poly_params) + b.k()*sizeof(double)),
         free);
     p->n = b.k();

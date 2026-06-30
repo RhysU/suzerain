@@ -173,13 +173,13 @@ public:
     std::vector<support::field> fields;
 
     /** Operational details on saving restart files. */
-    shared_ptr<definition_restart> restartdef;
+    std::shared_ptr<definition_restart> restartdef;
 
     /** Operational details on saving statistics files. */
-    shared_ptr<definition_statistics> statsdef;
+    std::shared_ptr<definition_statistics> statsdef;
 
     /** Operational details on advancing simulation time. */
-    shared_ptr<definition_time> timedef;
+    std::shared_ptr<definition_time> timedef;
 
     /**
      * Controls the OS signals triggering various types of processing.
@@ -188,7 +188,7 @@ public:
     static definition_signal signaldef;
 
     /** Controls low storage method to be used for time advance. */
-    shared_ptr<lowstorage::method_interface<
+    std::shared_ptr<lowstorage::method_interface<
             complex_t
         > > method;
 
@@ -197,7 +197,7 @@ public:
      * #state_linear and #state_nonlinear.  This is the interface to which
      * linear operators should be coded.
      */
-    shared_ptr<lowstorage::linear_operator<
+    std::shared_ptr<lowstorage::linear_operator<
                 state_common_type, state_nonlinear_type
             > > L;
 
@@ -206,12 +206,12 @@ public:
      * #state_nonlinear.  This is the interface to which nonlinear operators
      * should be coded.
      */
-    shared_ptr<lowstorage::operator_nonlinear<
+    std::shared_ptr<lowstorage::operator_nonlinear<
                 state_nonlinear_type
             > > N;
 
     /** Controls time advance, including callback processing. */
-    shared_ptr<timecontroller<real_t> > controller;
+    std::shared_ptr<timecontroller<real_t> > controller;
 
     /** @copydoc application_base::reset */
     virtual void reset();
@@ -220,7 +220,7 @@ public:
      * When possible, any operator_tools superclass of N is reused so that
      * callers may benefit from any cached factorizations.
      */
-    virtual shared_ptr<operator_tools> obtain_operator_tools();
+    virtual std::shared_ptr<operator_tools> obtain_operator_tools();
 
     /**
      * Ensure #method is valid for use by #controller.  That is, if
@@ -894,7 +894,7 @@ public:
     delta_t_allreducer(
             const double& wtime_mpi_init,
             const double& wtime_fftw_planning,
-            const shared_ptr<definition_time>& timedef,
+            const std::shared_ptr<definition_time>& timedef,
             const double& wtime_load_restart,
             const double& wtime_advance_start,
             const driver_base::step_type& last_status_nt,
@@ -918,7 +918,7 @@ private:
     const double& wtime_fftw_planning;
 
     /** Reference to content maintained by a \ref driver_base instance. */
-    const shared_ptr<definition_time>& timedef;
+    const std::shared_ptr<definition_time>& timedef;
 
     /** Reference to content maintained by a \ref driver_base instance. */
     const double& wtime_load_restart;

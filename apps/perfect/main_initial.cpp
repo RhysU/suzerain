@@ -321,13 +321,13 @@ suzerain::perfect::driver_initial::run(int argc, char **argv)
                  << Re_x << ", Pr = " << scenario->Pr);
             INFO(who, "Linear ramp uses for w from "
                  << isothermal->lower_w << " to " << isothermal->upper_w);
-            shared_ptr<gsl_spline> fit_u(suzerain_blasius_u(Re_x),
+            std::shared_ptr<gsl_spline> fit_u(suzerain_blasius_u(Re_x),
                                          gsl_spline_free);
-            shared_ptr<gsl_spline> fit_v(suzerain_blasius_v(Re_x),
+            std::shared_ptr<gsl_spline> fit_v(suzerain_blasius_v(Re_x),
                                          gsl_spline_free);
-            shared_ptr<gsl_spline> fit_T(suzerain_blasius_T(Re_x, scenario->Pr),
+            std::shared_ptr<gsl_spline> fit_T(suzerain_blasius_T(Re_x, scenario->Pr),
                                          gsl_spline_free);
-            shared_ptr<gsl_interp_accel> accel(gsl_interp_accel_alloc(),
+            std::shared_ptr<gsl_interp_accel> accel(gsl_interp_accel_alloc(),
                                                gsl_interp_accel_free);
 
             INFO0(who, "Computing mean freestream behavior per plate scenario");
@@ -368,11 +368,11 @@ suzerain::perfect::driver_initial::run(int argc, char **argv)
                  << isothermal->lower_v << " to " << isothermal->upper_v);
             INFO(who, "Linear ramp uses for w from "
                  << isothermal->lower_w << " to " << isothermal->upper_w);
-            shared_ptr<gsl_spline> fit_u(suzerain_blasius_u(Re_x),
+            std::shared_ptr<gsl_spline> fit_u(suzerain_blasius_u(Re_x),
                                          gsl_spline_free);
-            shared_ptr<gsl_spline> fit_T(suzerain_blasius_T(Re_x, scenario->Pr),
+            std::shared_ptr<gsl_spline> fit_T(suzerain_blasius_T(Re_x, scenario->Pr),
                                          gsl_spline_free);
-            shared_ptr<gsl_interp_accel> accel(gsl_interp_accel_alloc(),
+            std::shared_ptr<gsl_interp_accel> accel(gsl_interp_accel_alloc(),
                                                gsl_interp_accel_free);
 
             INFO(who, "Computing mean freestream behavior per plate scenario");

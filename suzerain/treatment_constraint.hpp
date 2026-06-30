@@ -153,7 +153,7 @@ public:
             multi_array::ref<complex_t,4> *ic0 = NULL) const;
 
     /** The operator whose behavior is modified by this instance. */
-    shared_ptr<lowstorage::linear_operator<
+    std::shared_ptr<lowstorage::linear_operator<
                 multi_array::ref<complex_t,4>,
                 contiguous_state<4,complex_t>
             > > L;
@@ -178,7 +178,7 @@ public:
      * implicit numerical[ndx::rho] forcing is combined with
      * physical[ndx::rho]'s effect and stored within \c /bar_Crho.
      */
-    array<shared_ptr<constraint::base>, 5> physical;
+    array<std::shared_ptr<constraint::base>, 5> physical;
 
     /**
      * Catalog of numerically-oriented constraints to be indexed by equation
@@ -194,10 +194,10 @@ public:
      * The mean implicit numerical[ndx::rho] forcing is combined with
      * physical[ndx::rho]'s effect and stored within \c /bar_Crho.
      */
-    array<shared_ptr<constraint::base>, 5> numerical;
+    array<std::shared_ptr<constraint::base>, 5> numerical;
 
     /** An appropriately-size, do-nothing constraint usable by callers. */
-    const shared_ptr<constraint::disabled> none;
+    const std::shared_ptr<constraint::disabled> none;
 
 protected:
 

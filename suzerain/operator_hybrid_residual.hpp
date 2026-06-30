@@ -101,7 +101,7 @@ public:
      * The hybrid implicit/explicit linear operator which is able to
      * interoperate between #state_linear and #state_nonlinear.
      */
-    shared_ptr<lowstorage::linear_operator<
+    std::shared_ptr<lowstorage::linear_operator<
                 state_common_type, state_nonlinear_type
             > > L;
 
@@ -109,7 +109,7 @@ public:
      * The fully-explicit nonlinear operator which operates on
      * #state_nonlinear.
      */
-    shared_ptr<lowstorage::operator_nonlinear<
+    std::shared_ptr<lowstorage::operator_nonlinear<
                 state_nonlinear_type
             > > R;
 

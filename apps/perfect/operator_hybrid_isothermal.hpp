@@ -139,7 +139,7 @@ public:
 protected:
 
     /** Controls the solves performed during invert_mass_plus_scaled_operator */
-    shared_ptr<bsmbsm_solver> solver;
+    std::shared_ptr<bsmbsm_solver> solver;
 
     /** Houses data required for operator application and inversion */
     operator_common_block& common;

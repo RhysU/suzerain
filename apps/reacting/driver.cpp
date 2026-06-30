@@ -233,7 +233,7 @@ driver::save_spectra_primitive(
 
     // Convert to pointwise conserved state in physical space
     physical_view<> sphys(*dgrid, *state_nonlinear);
-    shared_ptr<operator_tools> otool = obtain_operator_tools();
+    std::shared_ptr<operator_tools> otool = obtain_operator_tools();
     for (size_t f = 0; f < swave_count; ++f) {
         otool->zero_dealiasing_modes(  *state_nonlinear, f);
         otool->bop_apply     (0,    1, *state_nonlinear, f);
@@ -308,7 +308,7 @@ driver::save_spectra_primitive(
     // Compute and save the two-point correlation as (y_j, k_x, ndxpair)
     // Ordering arises from packing of primitive state in physical space
     {
-        shared_ptr<complex_t[]> twopoint_x = compute_twopoint_x(
+        std::shared_ptr<complex_t[]> twopoint_x = compute_twopoint_x(
                 auxw, aux_count, *grid, *dgrid);
         esio_field_establish(esioh,
                 npairs,          0, procid == 0 ? npairs          : 0,
@@ -326,7 +326,7 @@ driver::save_spectra_primitive(
     // Compute and save the two-point correlation as (y_j, k_z, ndxpair)
     // Ordering arises from packing of primitive state in physical space
     {
-        shared_ptr<complex_t[]> twopoint_z = compute_twopoint_z(
+        std::shared_ptr<complex_t[]> twopoint_z = compute_twopoint_z(
                 auxw, aux_count, *grid, *dgrid);
         esio_field_establish(esioh,
                 npairs,          0, procid == 0 ? npairs          : 0,

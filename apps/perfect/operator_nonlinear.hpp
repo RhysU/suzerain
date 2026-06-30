@@ -67,7 +67,7 @@ public:
             bspline &b,
             operator_common_block &common,
             specification_largo& sg,
-            const shared_ptr<const manufactured_solution>& msoln);
+            const std::shared_ptr<const manufactured_solution>& msoln);
 
     virtual std::vector<real_t> apply_operator(
             const real_t time,
@@ -87,7 +87,7 @@ protected:
     specification_largo& sg;
 
     /** Holds optional manufactured solution forcing details */
-    const shared_ptr<const manufactured_solution> msoln;
+    const std::shared_ptr<const manufactured_solution> msoln;
 
 private:
 

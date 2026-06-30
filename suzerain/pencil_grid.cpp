@@ -268,7 +268,7 @@ pencil_grid_underling::construct_(int Nx, int Ny, int Nz, int Pa, int Pb,
     buf.reset(blas::calloc_as<underling::real>(problem->local_memory()),
               blas::free);
     if (!buf) throw bad_alloc();
-    shared_ptr<underling::real[]> tmp(
+    std::shared_ptr<underling::real[]> tmp(
             blas::calloc_as<underling::real>(problem->local_memory()),
             blas::free);
     if (!tmp) throw bad_alloc();

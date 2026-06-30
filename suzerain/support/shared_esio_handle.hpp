@@ -38,11 +38,11 @@ namespace support {
 
 /**
  * Smart pointer semantics for managing an \ref esio_handle.  Provided because
- * ESIO's declaration structure makes creating \c shared_ptr instances and to
+ * ESIO's declaration structure makes creating \c std::shared_ptr instances and to
  * ease setting up automatic allocation/deallocation through the C API.
  */
 class shared_esio_handle
-    : public shared_ptr<boost::remove_pointer<esio_handle>::type>
+    : public std::shared_ptr<boost::remove_pointer<esio_handle>::type>
 {
 public:
 

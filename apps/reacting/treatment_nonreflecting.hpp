@@ -99,7 +99,7 @@ public:
             const std::size_t substep_index) const;
 
     /** The operator whose behavior is modified by this instance. */
-    shared_ptr<lowstorage::operator_nonlinear<
+    std::shared_ptr<lowstorage::operator_nonlinear<
                 contiguous_state<4,complex_t>
             > > N;
 

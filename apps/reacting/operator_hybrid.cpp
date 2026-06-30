@@ -92,7 +92,7 @@ isothermal_hybrid_linear_operator::isothermal_hybrid_linear_operator(
     species_solver.reserve(cmods.Ns()-1);
 
     for (unsigned int i=0; i<cmods.Ns()-1; ++i) {
-        shared_ptr<bsmbsm_solver> tmp(
+        std::shared_ptr<bsmbsm_solver> tmp(
             bsmbsm_solver::build(suzerain_bsmbsm_construct(
                                      1, dgrid.global_wave_extent.y(),
                                      cop.max_kl(), cop.max_ku()), spec, 1));
@@ -751,7 +751,7 @@ void isothermal_hybrid_linear_operator::invert_mass_plus_scaled_operator(
         isospec.lower_u, isospec.lower_v, isospec.lower_w,
         cmods.e_from_T(isospec.lower_T, isospec.lower_cs), nwalls);
 
-    shared_ptr<MassFractionPATPTEnforcer> species_bc_enforcer;
+    std::shared_ptr<MassFractionPATPTEnforcer> species_bc_enforcer;
     if (species_solver.size()>0) {
         // FIXME: permit upper_T and upper_cs
         species_bc_enforcer =

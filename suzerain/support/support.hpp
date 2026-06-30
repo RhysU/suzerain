@@ -129,8 +129,8 @@ create_bsplines(const int ndof,
                 const double left,
                 const double right,
                 const double htdelta,
-                shared_ptr<bspline>& b,
-                shared_ptr<bsplineop>& cop,
+                std::shared_ptr<bspline>& b,
+                std::shared_ptr<bsplineop>& cop,
                 const bool verbose = false);
 
 /** Save a \ref bspline workspace and associated operators in a file. */
@@ -152,7 +152,7 @@ save_bsplines(const esio_handle h,
  */
 real_t
 load_bsplines(const esio_handle      h,
-              shared_ptr<bspline>&   b);
+              std::shared_ptr<bspline>&   b);
 
 /**
  * Load a \ref bspline and \ref bsplineop workspace from a file.
@@ -160,8 +160,8 @@ load_bsplines(const esio_handle      h,
  */
 real_t
 load_bsplines(const esio_handle      h,
-              shared_ptr<bspline>&   b,
-              shared_ptr<bsplineop>& cop);
+              std::shared_ptr<bspline>&   b,
+              std::shared_ptr<bsplineop>& cop);
 
 /**
  * Compute the integration weights to compute a bulk quantity from the
@@ -215,7 +215,7 @@ save_samples(const esio_handle h,
  */
 bool
 load_samples(const esio_handle h,
-             const shared_ptr<bspline> target,
+             const std::shared_ptr<bspline> target,
              samples& s,
              const char* const prefix  = "bar_",
              const char* const sizeper = "bar_rho");
@@ -277,7 +277,7 @@ load_extrema(const esio_handle h,
  */
 std::auto_ptr<boost::ptr_map<real_t, summary> >
 load_summary(const esio_handle h,
-             shared_ptr<bspline>& target);
+             std::shared_ptr<bspline>& target);
 
 /**
  * Forward declaration to allocate state padded for transformation to/from
