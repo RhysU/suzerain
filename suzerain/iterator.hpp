@@ -40,9 +40,14 @@ namespace iterator {
 /** An input_iterator that always returns a fixed constant. */
 template<typename T>
 class infinite_constant
-    : public std::iterator<std::input_iterator_tag, const T>
 {
 public:
+    typedef std::input_iterator_tag iterator_category;
+    typedef const T                 value_type;
+    typedef std::ptrdiff_t          difference_type;
+    typedef const T*                pointer;
+    typedef const T&                reference;
+
     infinite_constant(const T& t) : t_(t) {}
 
     infinite_constant(const infinite_constant& other) : t_(other.t_) {}

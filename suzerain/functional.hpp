@@ -94,7 +94,10 @@ typename Collection::value_type product(const Collection& c) {
 
 /** A binary operator that computes the minimum of two values. */
 template<class T>
-struct minimum : std::binary_function <T,T,T> {
+struct minimum {
+    typedef T first_argument_type;
+    typedef T second_argument_type;
+    typedef T result_type;
     T operator() (const T& x, const T& y) const {
         return std::min(x,y);
     }
@@ -102,7 +105,10 @@ struct minimum : std::binary_function <T,T,T> {
 
 /** A binary operator that computes the maximum of two values. */
 template<class T>
-struct maximum : std::binary_function <T,T,T> {
+struct maximum {
+    typedef T first_argument_type;
+    typedef T second_argument_type;
+    typedef T result_type;
     T operator() (const T& x, const T& y) const {
         return std::max(x,y);
     }

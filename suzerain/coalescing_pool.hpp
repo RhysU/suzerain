@@ -445,8 +445,11 @@ private:
     size_type blocksize_;
 
     struct compare_locations
-        : public ::std::binary_function<const blocks&, const blocks&, bool>
     {
+        typedef const blocks& first_argument_type;
+        typedef const blocks& second_argument_type;
+        typedef bool          result_type;
+
         bool operator() (const blocks& l, const blocks& r) const {
             return l.b_ != r.b_ ? l.b_ < r.b_ : l.e_ < r.e_;
         }
@@ -461,8 +464,11 @@ private:
     };
 
     struct compare_extents
-        : public ::std::binary_function<const blocks&, const blocks&, bool>
     {
+        typedef const blocks& first_argument_type;
+        typedef const blocks& second_argument_type;
+        typedef bool          result_type;
+
         bool operator() (const blocks& l, const blocks& r) const {
             const size_type ln = l.nelems(), rn = r.nelems();
             return ln != rn ? ln < rn : l.b_ < r.b_;
