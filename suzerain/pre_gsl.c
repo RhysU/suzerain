@@ -18,6 +18,19 @@
 #include <suzerain/common.h>
 
 /*
+ * Best-effort write(2) used only on error-reporting paths where a saved
+ * descriptor is the last resort and there is no recourse should the write
+ * itself fail.  Consuming the return value here silences warn_unused_result
+ * without discarding a result we could otherwise act upon.
+ */
+static void
+best_effort_write(int fd, const void *buf, size_t count)
+{
+    const ssize_t written = write(fd, buf, count);
+    (void) written;
+}
+
+/*
  * License identical to gsl_ieee_env_setup() from GSL.
  * Copyright (c) 2012-2014 Rhys Ulerich
  */
@@ -57,18 +70,18 @@ mpi_gsl_ieee_env_setup(const int rank)
         static const char pre[] = "mpi_gsl_ieee_env_setup fflush(stdout) after redirect: ";
         const char *msg = strerror(errno);
         fsync(stderr_copy);
-        write(stderr_copy, pre,     sizeof(pre));
-        write(stderr_copy, msg,     strlen(msg));
-        write(stderr_copy, newline, strlen(newline));
+        best_effort_write(stderr_copy, pre,     sizeof(pre));
+        best_effort_write(stderr_copy, msg,     strlen(msg));
+        best_effort_write(stderr_copy, newline, strlen(newline));
         fsync(stderr_copy);
     }
     if (fflush(stderr)) {
         static const char pre[] = "mpi_gsl_ieee_env_setup fflush(stderr) after redirect: ";
         const char *msg = strerror(errno);
         fsync(stderr_copy);
-        write(stderr_copy, pre,     sizeof(pre));
-        write(stderr_copy, msg,     strlen(msg));
-        write(stderr_copy, newline, strlen(newline));
+        best_effort_write(stderr_copy, pre,     sizeof(pre));
+        best_effort_write(stderr_copy, msg,     strlen(msg));
+        best_effort_write(stderr_copy, newline, strlen(newline));
         fsync(stderr_copy);
     }
 
@@ -78,18 +91,18 @@ mpi_gsl_ieee_env_setup(const int rank)
         static const char pre[] = "mpi_gsl_ieee_env_setup reopening stdout: ";
         const char *msg = strerror(errno);
         fsync(stderr_copy);
-        write(stderr_copy, pre,     sizeof(pre));
-        write(stderr_copy, msg,     strlen(msg));
-        write(stderr_copy, newline, strlen(newline));
+        best_effort_write(stderr_copy, pre,     sizeof(pre));
+        best_effort_write(stderr_copy, msg,     strlen(msg));
+        best_effort_write(stderr_copy, newline, strlen(newline));
         fsync(stderr_copy);
     }
     if (dup2(stderr_copy, fileno(stderr)) < 0) {
         static const char pre[] = "mpi_gsl_ieee_env_setup reopening stderr: ";
         const char *msg = strerror(errno);
         fsync(stderr_copy);
-        write(stderr_copy, pre,     sizeof(pre));
-        write(stderr_copy, msg,     strlen(msg));
-        write(stderr_copy, newline, strlen(newline));
+        best_effort_write(stderr_copy, pre,     sizeof(pre));
+        best_effort_write(stderr_copy, msg,     strlen(msg));
+        best_effort_write(stderr_copy, newline, strlen(newline));
         fsync(stderr_copy);
     }
 

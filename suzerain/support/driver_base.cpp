@@ -627,7 +627,8 @@ driver_base::advance_controller(
                 WARN("Could not allocate buffer to read "
                      << header << " " << strerror(errno));
             } else {
-                fread(buf, sizeof(buf[0]), len, tmp);
+                const size_t nread = fread(buf, sizeof(buf[0]), len, tmp);
+                buf[nread] = '\0';  // NUL-terminate at the actual read length
             }
             dup2(saved_stdout, STDOUT_FILENO);
             close(saved_stdout);
