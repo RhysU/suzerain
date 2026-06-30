@@ -354,7 +354,7 @@ void accumulate_manufactured_solution(
     operator_base obase(grid, dgrid, cop, b);
 
     // Allocate one field of temporary storage for scratch purposes
-    scoped_ptr<contiguous_state<4,complex_t> > _scratch_ptr(        // RAII
+    unique_ptr<contiguous_state<4,complex_t> > _scratch_ptr(        // RAII
         support::allocate_padded_state<contiguous_state<4,complex_t> >(1,dgrid));
     contiguous_state<4,complex_t> &scratch = *_scratch_ptr;         // Shorthand
     multi_array::fill(scratch, 0);                                  // Defensive

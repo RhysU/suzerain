@@ -311,7 +311,7 @@ add_noise(contiguous_state<4,complex_t> &state,
     //  9) Overwrite state storage with the new perturbed state.
 
     //  0) Allocate storage for state and three additional scalar fields.
-    scoped_ptr<contiguous_state<4,complex_t> > _s_ptr( // RAII
+    unique_ptr<contiguous_state<4,complex_t> > _s_ptr( // RAII
             support::allocate_padded_state<contiguous_state<4,complex_t> >(
                 state_count + 3, dgrid));
     contiguous_state<4,complex_t> &s = *_s_ptr;               // Shorthand

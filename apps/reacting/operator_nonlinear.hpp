@@ -318,7 +318,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
 
     // Obtain the auxiliary storage (likely from a pool to avoid fragmenting).
     // We assume no garbage values in the memory will impact us (for speed).
-    scoped_ptr<state_type> _auxw_ptr(
+    unique_ptr<state_type> _auxw_ptr(
             support::allocate_padded_state<state_type>(
                 aux_count, o.dgrid));                               // RAII
     state_type &auxw = *_auxw_ptr;                                  // Brevity
@@ -327,7 +327,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
     // Obtain the auxiliary storage (likely from a pool to avoid fragmenting).
     // We assume no garbage values in the memory will impact us (for speed).
     // Number of fields for filter source is equal to number of variables
-    scoped_ptr<state_type> _fsrcw_ptr(
+    unique_ptr<state_type> _fsrcw_ptr(
             support::allocate_padded_state<state_type>(
                 state_count, o.dgrid));                               // RAII
     state_type &fsrcw = *_fsrcw_ptr;                                  // Brevity
