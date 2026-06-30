@@ -205,7 +205,7 @@ driver::save_spectra_primitive(
     // we are allocating new memory for all the variables to include the diluter.
     // There might be a more memory-efficient way to do this...
     typedef contiguous_state<4,complex_t> state_type;
-    scoped_ptr<state_type> _auxw_ptr(
+    unique_ptr<state_type> _auxw_ptr(
             support::allocate_padded_state<state_type>(
                 aux_count, *dgrid));                               // RAII
     state_type &auxw = *_auxw_ptr;                                 // Shorthand

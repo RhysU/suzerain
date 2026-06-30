@@ -317,7 +317,7 @@ save_bsplines(const esio_handle h,
               const bsplineop&  cop)
 {
     DEBUG0(who, "Generating B-spline Galerkin L2 mass matrix so it may be saved");
-    scoped_ptr<bsplineop> gop(
+    unique_ptr<bsplineop> gop(
         new bsplineop(b, 0, SUZERAIN_BSPLINEOP_GALERKIN_L2));
 
     return save_bsplines(h, b, cop, *gop);

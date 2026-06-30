@@ -340,7 +340,7 @@ quantities sample_quantities(
 
     // Obtain the auxiliary storage (likely from a pool to avoid fragmenting).
     // We assume no garbage values in the memory will impact us (for speed).
-    scoped_ptr<state_type> _auxw_ptr(
+    unique_ptr<state_type> _auxw_ptr(
             support::allocate_padded_state<state_type>(
                 aux_count, dgrid));                                // RAII
     state_type &auxw = *_auxw_ptr;                                 // Shorthand
