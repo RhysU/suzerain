@@ -199,7 +199,7 @@ void compare_1D_complex_forward(ComplexMultiArray1 &in,
     const periodic_function<real_type,int> pf2(NR, (NR+1)/2, 5.0/M_PI);
 
     // Plan before loading in the data since planning overwrites in
-    suzerain::shared_array<fftw_complex> buffer(
+    suzerain::shared_ptr<fftw_complex[]> buffer(
         static_cast<fftw_complex *>(fftw_malloc(sizeof(fftw_complex)*NR)),
         std::ptr_fun(fftw_free));
     BOOST_REQUIRE(buffer.get() != NULL);
@@ -379,7 +379,7 @@ void compare_1D_complex_backward(ComplexMultiArray1 &in,
         = std::numeric_limits<double>::epsilon()*1e2*NC*NC;
 
     // Plan before loading in the data since planning overwrites in
-    suzerain::shared_array<fftw_complex> buffer(
+    suzerain::shared_ptr<fftw_complex[]> buffer(
         static_cast<fftw_complex *>(fftw_malloc(sizeof(fftw_complex)*NC)),
         std::ptr_fun(fftw_free));
     BOOST_REQUIRE(buffer.get() != NULL);

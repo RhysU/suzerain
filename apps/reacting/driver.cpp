@@ -308,7 +308,7 @@ driver::save_spectra_primitive(
     // Compute and save the two-point correlation as (y_j, k_x, ndxpair)
     // Ordering arises from packing of primitive state in physical space
     {
-        shared_array<complex_t> twopoint_x = compute_twopoint_x(
+        shared_ptr<complex_t[]> twopoint_x = compute_twopoint_x(
                 auxw, aux_count, *grid, *dgrid);
         esio_field_establish(esioh,
                 npairs,          0, procid == 0 ? npairs          : 0,
@@ -326,7 +326,7 @@ driver::save_spectra_primitive(
     // Compute and save the two-point correlation as (y_j, k_z, ndxpair)
     // Ordering arises from packing of primitive state in physical space
     {
-        shared_array<complex_t> twopoint_z = compute_twopoint_z(
+        shared_ptr<complex_t[]> twopoint_z = compute_twopoint_z(
                 auxw, aux_count, *grid, *dgrid);
         esio_field_establish(esioh,
                 npairs,          0, procid == 0 ? npairs          : 0,

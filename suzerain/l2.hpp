@@ -194,7 +194,7 @@ compute_twopoint_zlocal(
  *
  * @see compute_twopoint_xlocal for details on pairwise computations.
  */
-shared_array<complex_t>
+shared_ptr<complex_t[]>
 compute_twopoint_x(
         const contiguous_state<4,complex_t> &state,
         const contiguous_state<4,complex_t>::index nf,
@@ -221,7 +221,7 @@ compute_twopoint_x(
  *
  * @see compute_twopoint_xlocal for details on pairwise computations.
  */
-shared_array<complex_t>
+shared_ptr<complex_t[]>
 compute_twopoint_z(
         const contiguous_state<4,complex_t> &state,
         const contiguous_state<4,complex_t>::index nf,

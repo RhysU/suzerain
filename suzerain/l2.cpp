@@ -494,7 +494,7 @@ compute_twopoint_zlocal(
     }
 }
 
-shared_array<complex_t>
+shared_ptr<complex_t[]>
 compute_twopoint_x(
         const contiguous_state<4,complex_t> &state,
         const contiguous_state<4,complex_t>::index nf,
@@ -507,7 +507,7 @@ compute_twopoint_x(
     // As two-point is real-valued, only positive wavenumbers computed
     const int npairs  = (nf*(nf+1))/2;
     const int bufpair = grid.N.y() * (grid.N.x()/2+1);
-    shared_array<complex_t> retval(
+    shared_ptr<complex_t[]> retval(
             (complex_t*)suzerain_blas_malloc(sizeof(complex_t)*bufpair*npairs),
             suzerain_blas_free);
 
@@ -531,7 +531,7 @@ compute_twopoint_x(
     return retval;
 }
 
-shared_array<complex_t>
+shared_ptr<complex_t[]>
 compute_twopoint_z(
         const contiguous_state<4,complex_t> &state,
         const contiguous_state<4,complex_t>::index nf,
@@ -544,7 +544,7 @@ compute_twopoint_z(
     // As two-point is real-valued, only positive wavenumbers computed
     const int npairs  = (nf*(nf+1))/2;
     const int bufpair = grid.N.y() * grid.N.z();
-    shared_array<complex_t> retval(
+    shared_ptr<complex_t[]> retval(
             (complex_t*)suzerain_blas_malloc(sizeof(complex_t)*bufpair*npairs),
             suzerain_blas_free);
 

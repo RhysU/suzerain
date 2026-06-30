@@ -982,7 +982,7 @@ void transform_c2c(
 
     // Prepare the in-place transform buffer and construct the FFTW plan
     typedef typename TransformTraits::fftw_complex_type fftw_complex_type;
-    shared_array<fftw_complex_type> buffer(
+    shared_ptr<fftw_complex_type[]> buffer(
         static_cast<fftw_complex_type *>(
             fftw_malloc(sizeof(fftw_complex_type)*transform_n)),
         std::ptr_fun(fftw_free));
@@ -1300,7 +1300,7 @@ void forward_r2c(
 
     // Prepare the in-place transform buffer and construct the FFTW plan
     typedef typename transform_traits::fftw_complex_type fftw_complex_type;
-    shared_array<fftw_complex_type> buffer(
+    shared_ptr<fftw_complex_type[]> buffer(
         static_cast<fftw_complex_type *>(
             fftw_malloc(sizeof(fftw_complex_type)*(transform_n/2+1))),
         std::ptr_fun(fftw_free));
@@ -1497,7 +1497,7 @@ void backward_c2r(
 
     // Prepare the in-place transform buffer and construct the FFTW plan
     typedef typename transform_traits::fftw_complex_type fftw_complex_type;
-    shared_array<fftw_complex_type> buffer(
+    shared_ptr<fftw_complex_type[]> buffer(
         static_cast<fftw_complex_type *>(
             fftw_malloc(sizeof(fftw_complex_type)*(transform_n/2+1))),
         std::ptr_fun(fftw_free));

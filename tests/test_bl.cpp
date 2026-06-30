@@ -38,7 +38,7 @@
 using suzerain::bspline;
 using suzerain::bsplineop;
 using suzerain::bsplineop_lu;
-using suzerain::shared_array;
+using suzerain::shared_ptr;
 using suzerain::shared_ptr;
 
 BOOST_GLOBAL_FIXTURE(BlasCleanupFixture);
@@ -57,10 +57,10 @@ struct BlasiusFixture {
     bspline      b;
     bsplineop    op;
     bsplineop_lu lu;
-    shared_array<double> u;
-    shared_array<double> v;
-    shared_array<double> ke;
-    shared_array<double> H0;
+    shared_ptr<double[]> u;
+    shared_ptr<double[]> v;
+    shared_ptr<double[]> ke;
+    shared_ptr<double[]> H0;
 
     BlasiusFixture()
         : code_Ma(1.5)
@@ -328,7 +328,7 @@ BOOST_FIXTURE_TEST_CASE( blasius_thicknesses_reynolds,
                          fixture_four_ten_thousand )
 {
     // Prepare, beyond the fixture, uniform density of 0.5 by scaling u coeffs
-    shared_array<double> rhou(new double[b.n()]);
+    shared_ptr<double[]> rhou(new double[b.n()]);
     for (int i = 0; i < b.n(); ++i) {
         rhou[i] = u[i] / 2;
     }

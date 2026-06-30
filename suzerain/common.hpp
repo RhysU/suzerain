@@ -116,7 +116,6 @@ SUZERAIN_GCC_DIAG_OFF(unused-variable);
 #include <boost/ptr_container/ptr_map.hpp>
 #include <boost/ptr_container/ptr_vector.hpp>
 #include <boost/ref.hpp>
-#include <boost/shared_array.hpp>
 #include <boost/static_assert.hpp>
 #include <boost/swap.hpp>
 #include <boost/typeof/typeof.hpp>
@@ -250,7 +249,6 @@ typedef std::complex<real_t> complex_t;
 
 // Bring ubiquitous smart pointer definitions into this namespace
 // Done because these may be part of public APIs, as well as for convenience.
-using boost::shared_array;              /**< \namespace suzerain */
 using std::const_pointer_cast;          /**< \namespace suzerain */
 using std::dynamic_pointer_cast;        /**< \namespace suzerain */
 using std::make_shared;                 /**< \namespace suzerain */

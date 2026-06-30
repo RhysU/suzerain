@@ -105,7 +105,7 @@ static double test_accumulateAndApply_helper(const pencil_grid &pg,
 
     // Retrieve storage size, strides, and allocate working arrays
     const int nelem = pg.local_physical_storage();
-    boost::shared_array<double>
+    std::shared_ptr<double[]>
         A(suzerain::blas::calloc_as<double>(nelem), suzerain::blas::free),
         B(suzerain::blas::calloc_as<double>(nelem), suzerain::blas::free);
 
