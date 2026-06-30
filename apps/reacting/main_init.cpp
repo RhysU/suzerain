@@ -110,7 +110,7 @@ suzerain::reacting::driver_init::run(int argc, char **argv)
     timedef = make_shared<support::definition_time>(/* per Venugopal */ 0.72);
 
     // Establish default MMS parameters and plug into program options
-    msoln = boost::make_shared<manufactured_solution>(
+    msoln = make_shared<manufactured_solution>(
             manufactured_solution::default_caption
             + " (active only when --mms supplied)");
     options.add_definition(msoln->isothermal_channel());

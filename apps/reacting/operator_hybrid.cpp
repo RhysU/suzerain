@@ -755,7 +755,7 @@ void isothermal_hybrid_linear_operator::invert_mass_plus_scaled_operator(
     if (species_solver.size()>0) {
         // FIXME: permit upper_T and upper_cs
         species_bc_enforcer =
-            boost::make_shared<MassFractionPATPTEnforcer>(
+            make_shared<MassFractionPATPTEnforcer>(
                 *(species_solver[0]), isospec.lower_cs, nwalls);
     }
 
