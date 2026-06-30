@@ -1557,7 +1557,7 @@ compute_fluctuations(const bsplineop& cop,
 void summarize_boundary_layer_nature(
         const profile &prof,
         const definition_scenario &scenario,
-        const shared_ptr<specification_largo> &sg,
+        const std::shared_ptr<specification_largo> &sg,
         const bsplineop_lu &masslu,
         bspline &b,
         suzerain_bl_local       &wall,

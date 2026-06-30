@@ -199,14 +199,14 @@ void compare_1D_complex_forward(ComplexMultiArray1 &in,
     const periodic_function<real_type,int> pf2(NR, (NR+1)/2, 5.0/M_PI);
 
     // Plan before loading in the data since planning overwrites in
-    suzerain::shared_ptr<fftw_complex[]> buffer(
+    std::shared_ptr<fftw_complex[]> buffer(
         static_cast<fftw_complex *>(fftw_malloc(sizeof(fftw_complex)*NR)),
         std::ptr_fun(fftw_free));
     BOOST_REQUIRE(buffer.get() != NULL);
     typename ComplexMultiArray1::element * const in_data
         = in.origin() + std::inner_product(
             in.index_bases(), in.index_bases()+1, in.strides(), 0);
-    suzerain::shared_ptr<boost::remove_pointer<fftw_plan>::type> plan(
+    std::shared_ptr<boost::remove_pointer<fftw_plan>::type> plan(
             fftw_plan_many_dft(1,
                                &NR,
                                1,
@@ -379,14 +379,14 @@ void compare_1D_complex_backward(ComplexMultiArray1 &in,
         = std::numeric_limits<double>::epsilon()*1e2*NC*NC;
 
     // Plan before loading in the data since planning overwrites in
-    suzerain::shared_ptr<fftw_complex[]> buffer(
+    std::shared_ptr<fftw_complex[]> buffer(
         static_cast<fftw_complex *>(fftw_malloc(sizeof(fftw_complex)*NC)),
         std::ptr_fun(fftw_free));
     BOOST_REQUIRE(buffer.get() != NULL);
     typename ComplexMultiArray1::element * const in_data
         = in.origin() + std::inner_product(
             in.index_bases(), in.index_bases()+1, in.strides(), 0);
-    suzerain::shared_ptr<boost::remove_pointer<fftw_plan>::type> plan(
+    std::shared_ptr<boost::remove_pointer<fftw_plan>::type> plan(
             fftw_plan_many_dft(1,
                                &NC,
                                1,

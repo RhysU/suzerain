@@ -106,22 +106,22 @@ public:
     program_options options;
 
     /** A global grid extent definition. */
-    shared_ptr<definition_grid> grid;
+    std::shared_ptr<definition_grid> grid;
 
     /** Details of how FFTs are performed within the application. */
-    shared_ptr<definition_fftw> fftwdef;
+    std::shared_ptr<definition_fftw> fftwdef;
 
     /** A thread-unsafe, mutable B-spline workspace for building operators. */
-    shared_ptr<bspline> b;
+    std::shared_ptr<bspline> b;
 
     /** Collocation-based B-spline operators used by the application. */
-    shared_ptr<bsplineop> cop;
+    std::shared_ptr<bsplineop> cop;
 
     /** Galerkin-based B-spline operators used by the application. */
-    shared_ptr<bsplineop> gop;
+    std::shared_ptr<bsplineop> gop;
 
     /** Decomposition details used for MPI-readiness and parallel FFTs. */
-    shared_ptr<pencil_grid> dgrid;
+    std::shared_ptr<pencil_grid> dgrid;
 
     /**
      * Storage type always kept in Fourier wave space.  Name arises because
@@ -145,13 +145,13 @@ public:
     typedef multi_array::ref<complex_t, 4> state_common_type;
 
     /** Linear state storage.  See \ref #state_linear_type. */
-    shared_ptr<state_linear_type> state_linear;
+    std::shared_ptr<state_linear_type> state_linear;
 
     /** Nonlinear state storage.  See \ref #state_nonlinear_type. */
-    shared_ptr<state_nonlinear_type> state_nonlinear;
+    std::shared_ptr<state_nonlinear_type> state_nonlinear;
 
     /**
-     * Reset all \c shared_ptr members to be empty.
+     * Reset all \c std::shared_ptr members to be empty.
      *
      * Subclasses should extend this functionality with any added members.
      */

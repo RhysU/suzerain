@@ -53,7 +53,7 @@ operator_nonlinear::operator_nonlinear(
         bspline &b,
         operator_common_block &common,
         specification_largo& sg,
-        const shared_ptr<const manufactured_solution>& msoln)
+        const std::shared_ptr<const manufactured_solution>& msoln)
     : operator_base(grid, dgrid, cop, b)
     , scenario(scenario)
     , common(common)

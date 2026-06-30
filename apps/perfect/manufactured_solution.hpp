@@ -133,7 +133,7 @@ private:
  * true.
  */
 void save(const esio_handle h,
-          const shared_ptr<manufactured_solution> & msoln,
+          const std::shared_ptr<manufactured_solution> & msoln,
           const definition_scenario& scenario,
           const specification_grid& grid,
           const char *location = "manufactured_solution");
@@ -147,7 +147,7 @@ void save(const esio_handle h,
  * reset and evaluate to \c false in a boolean context.
  */
 void load(const esio_handle h,
-          shared_ptr<manufactured_solution>& msoln,
+          std::shared_ptr<manufactured_solution>& msoln,
           const definition_scenario& scenario,
           const specification_grid& grid,
           const char *location = "manufactured_solution");

@@ -113,7 +113,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             const operator_base &o,
             operator_common_block &common,
             const specification_largo &sg,
-            const shared_ptr<const ManufacturedSolution> &msoln,
+            const std::shared_ptr<const ManufacturedSolution> &msoln,
             const real_t time,
             contiguous_state<4,complex_t> &swave,
             const lowstorage::method_interface<complex_t> &method,

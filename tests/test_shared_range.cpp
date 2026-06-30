@@ -253,7 +253,7 @@ BOOST_AUTO_TEST_CASE( copy_construction )
     std::partial_sum(r.begin(), r.end(), r.begin());
     BOOST_CHECK_EQUAL(r.unique(), true);
 
-    // Copy construct (with shared_ptr-like semantics)
+    // Copy construct (with std::shared_ptr-like semantics)
     tut s(r);
     BOOST_CHECK_EQUAL(s.begin(), r.begin());
     BOOST_CHECK_EQUAL(s.end(),   r.end());

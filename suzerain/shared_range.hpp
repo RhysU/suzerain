@@ -28,18 +28,18 @@ namespace suzerain {
 // and provided an initial implementation at http://pastebin.com/wkdLVqM1.
 //
 // Per discussion with Peter Dimov in that thread,
-// (shared_ptr<T[]>/iterator_range) state was used for more generality instead
-// of the more space efficient (shared_ptr<T[]>/size_t) state choice.  The
+// (std::shared_ptr<T[]>/iterator_range) state was used for more generality instead
+// of the more space efficient (std::shared_ptr<T[]>/size_t) state choice.  The
 // assumption is that someone doing lots of lightweight "range work" is
 // explicitly handling resource management while someone doing someone doing
 // lots of lightweight "array work" is similarly explicitly handling lengths.
 //
-// More of the shared_ptr<T[]> stored as shared_range.p_ (e.g. use_count, get)
+// More of the std::shared_ptr<T[]> stored as shared_range.p_ (e.g. use_count, get)
 // was deliberately NOT exposed as I could not reconcile those semantics with a
 // desired to have shared_range truly be an iterator_range (and therefore
 // support construction and assignment from a generic ForwardRange).
 //
-// Full shared_ptr-like Allocator support (in particular, simultaneous header
+// Full std::shared_ptr-like Allocator support (in particular, simultaneous header
 // and storage allocation) seems to require
 // https://svn.boost.org/trac/boost/ticket/5924 which (small world) Olaf also
 // requested.
@@ -60,7 +60,7 @@ namespace suzerain {
  * \brief A \c shared_range extends the functionality of \c iterator_range by
  * adding smart pointer-like resource ownership semantics.
  *
- * Semantically, \c shared_range resembles a <tt>shared_ptr<T[]></tt> which
+ * Semantically, \c shared_range resembles a <tt>std::shared_ptr<T[]></tt> which
  * "knows" its own length.  Instances assume ownership of pointers provided to
  * constructors and guarantee resources will be deleted when the last \c
  * shared_range pointing to them is destroyed or reset.
@@ -74,7 +74,7 @@ public: // typedefs
     //! Base class type
     typedef typename ::boost::iterator_range<T*>::iterator_range iterator_range;
 
-    //! Encapsulated value type (to mimic shared_ptr).
+    //! Encapsulated value type (to mimic std::shared_ptr).
     typedef T element_type;
 
 public: // construction
@@ -86,14 +86,14 @@ public: // construction
     {}
 
     //! Constructor from a <tt>new[]</tt>-allocated pointer and size.
-    //  See shared_ptr(T*) for resource management details.
+    //  See std::shared_ptr(T*) for resource management details.
     shared_range(T *b, ::std::size_t sz)
         : iterator_range(b, b + sz),
           p_(b)
     {}
 
     //! Constructor from a pointer and size using a custom deleter.
-    //  See shared_ptr(T*,D) for resource management details.
+    //  See std::shared_ptr(T*,D) for resource management details.
     template< class D >
     shared_range(T *b, ::std::size_t sz, D d)
         : iterator_range(b, b + sz),
@@ -101,22 +101,22 @@ public: // construction
     {}
 
     //! Constructor from the half closed, contiguous range <tt>[b,e)</tt>.
-    //  See shared_ptr(T*) for resource management details of \c b.
+    //  See std::shared_ptr(T*) for resource management details of \c b.
     shared_range(T *b, T *e)
         : iterator_range(b, e),
           p_(b)
     {}
 
     //! Constructor from the half closed, contiguous range <tt>[b,e)</tt>.
-    //  See shared_ptr(T*, D) for resource management details of \c b.
+    //  See std::shared_ptr(T*, D) for resource management details of \c b.
     template< class D >
     shared_range(T *b, T *e, D d)
         : iterator_range(b, e),
           p_(b, d)
     {}
 
-    //! Constructor from an existing \c shared_ptr with specified size.
-    //  See shared_ptr(shared_ptr const &) for resource management details.
+    //! Constructor from an existing \c std::shared_ptr with specified size.
+    //  See std::shared_ptr(std::shared_ptr const &) for resource management details.
     shared_range(const ::std::shared_ptr<T[]>& p, ::std::size_t sz)
         : iterator_range(p.get(), p.get() + sz),
           p_(p)
@@ -257,7 +257,7 @@ public: // swap, reset
         shared_range(b, e, d).swap(*this);
     }
 
-public: // shared_ptr-like functionality
+public: // std::shared_ptr-like functionality
 
     //! Does this instance uniquely maintain ownership of any resources?
     bool unique() const { return p_.use_count() == 1; }
@@ -345,7 +345,7 @@ shared_range<T> make_shared_range(::std::size_t sz)
 namespace {
 
 // Preserves allocation size information for use in Allocator::deallocate.
-// Necessary to use a custom allocator in conjunction with shared_ptr.
+// Necessary to use a custom allocator in conjunction with std::shared_ptr.
 template<class Allocator>
 struct allocator_deleter : public Allocator
 {

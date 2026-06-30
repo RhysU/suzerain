@@ -66,7 +66,7 @@ explicit_operator_nonlinear::explicit_operator_nonlinear(
         operator_common_block &common,
         const definition_filter &fsdef,
         const specification_largo &sgdef,
-        const shared_ptr<const manufactured_solution>& msoln)
+        const std::shared_ptr<const manufactured_solution>& msoln)
     : operator_base(grid, dgrid, cop, b)
     , cmods(cmods)
     , common(common)

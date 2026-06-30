@@ -78,22 +78,22 @@ public:
             char **argv);
 
     /** Nondimensional scenario parameters used by physics routines. */
-    shared_ptr<definition_scenario> scenario;
+    std::shared_ptr<definition_scenario> scenario;
 
     /** Nondimensional isothermal boundary condition parameters. */
-    shared_ptr<support::definition_isothermal> isothermal;
+    std::shared_ptr<support::definition_isothermal> isothermal;
 
     /** Slow growth parameters for use with the Largo library. */
-    shared_ptr<support::definition_largo> sg;
+    std::shared_ptr<support::definition_largo> sg;
 
     /** Radial flow baseflow specification for possible use with Largo. */
-    shared_ptr<support::definition_radialflow> rad;
+    std::shared_ptr<support::definition_radialflow> rad;
 
     /** Provides PID-based controls of Largo slow growth parameters.  */
-    shared_ptr<support::definition_helm> helm;
+    std::shared_ptr<support::definition_helm> helm;
 
     /** Nondimensional manufactured solution optionally used by applications. */
-    shared_ptr<manufactured_solution> msoln;
+    std::shared_ptr<manufactured_solution> msoln;
 
     /**
      * Data sharable between #L and #N to permit computing implicit forcing.
@@ -108,7 +108,7 @@ public:
      * mechanism to avoid expensive recomputations.  Implicitly computed mean
      * quantities are tracked via \ref common_block.
      */
-    shared_ptr<samples> mean;
+    std::shared_ptr<samples> mean;
 
     /** @copydoc driver_base::reset */
     virtual void reset();

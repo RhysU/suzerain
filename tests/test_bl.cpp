@@ -38,8 +38,6 @@
 using suzerain::bspline;
 using suzerain::bsplineop;
 using suzerain::bsplineop_lu;
-using suzerain::shared_ptr;
-using suzerain::shared_ptr;
 
 BOOST_GLOBAL_FIXTURE(BlasCleanupFixture);
 
@@ -57,10 +55,10 @@ struct BlasiusFixture {
     bspline      b;
     bsplineop    op;
     bsplineop_lu lu;
-    shared_ptr<double[]> u;
-    shared_ptr<double[]> v;
-    shared_ptr<double[]> ke;
-    shared_ptr<double[]> H0;
+    std::shared_ptr<double[]> u;
+    std::shared_ptr<double[]> v;
+    std::shared_ptr<double[]> ke;
+    std::shared_ptr<double[]> H0;
 
     BlasiusFixture()
         : code_Ma(1.5)
@@ -109,7 +107,7 @@ BOOST_FIXTURE_TEST_SUITE(bl_compute_thick_linear, linear_fixture)
 BOOST_AUTO_TEST_CASE( blasius_find_edge99 )
 {
     // Prepare working storage
-    shared_ptr<gsl_matrix> dB(gsl_matrix_alloc(b.k(), 1), gsl_matrix_free);
+    std::shared_ptr<gsl_matrix> dB(gsl_matrix_alloc(b.k(), 1), gsl_matrix_free);
 
     // Find edge using kinetic energy profile
     double location = GSL_NAN;
@@ -129,8 +127,8 @@ BOOST_AUTO_TEST_CASE( blasius_find_edge99 )
 BOOST_AUTO_TEST_CASE( blasius_delta1 )
 {
     // Prepare integration working storage
-    shared_ptr<gsl_vector> Bk(gsl_vector_alloc(b.k()), gsl_vector_free);
-    shared_ptr<gsl_integration_glfixed_table> tbl(
+    std::shared_ptr<gsl_vector> Bk(gsl_vector_alloc(b.k()), gsl_vector_free);
+    std::shared_ptr<gsl_integration_glfixed_table> tbl(
             gsl_integration_glfixed_table_alloc((b.k() + 1)/2),
             gsl_integration_glfixed_table_free);
 
@@ -147,8 +145,8 @@ BOOST_AUTO_TEST_CASE( blasius_delta1 )
 BOOST_AUTO_TEST_CASE( blasius_delta2 )
 {
     // Prepare integration working storage
-    shared_ptr<gsl_vector> Bk(gsl_vector_alloc(b.k()), gsl_vector_free);
-    shared_ptr<gsl_integration_glfixed_table> tbl(
+    std::shared_ptr<gsl_vector> Bk(gsl_vector_alloc(b.k()), gsl_vector_free);
+    std::shared_ptr<gsl_integration_glfixed_table> tbl(
             gsl_integration_glfixed_table_alloc(b.k()),
             gsl_integration_glfixed_table_free);
 
@@ -169,8 +167,8 @@ BOOST_AUTO_TEST_CASE( blasius_delta2 )
 BOOST_AUTO_TEST_CASE( blasius_delta3 )
 {
     // Prepare integration working storage
-    shared_ptr<gsl_vector> Bk(gsl_vector_alloc(b.k()), gsl_vector_free);
-    shared_ptr<gsl_integration_glfixed_table> tbl(
+    std::shared_ptr<gsl_vector> Bk(gsl_vector_alloc(b.k()), gsl_vector_free);
+    std::shared_ptr<gsl_integration_glfixed_table> tbl(
             gsl_integration_glfixed_table_alloc(b.k()),
             gsl_integration_glfixed_table_free);
 
@@ -216,7 +214,7 @@ typedef BlasiusFixture<4,1000> fixture_four_thousand;
 BOOST_FIXTURE_TEST_CASE( blasius_find_edge, fixture_four_thousand )
 {
     // Prepare working storage
-    shared_ptr<gsl_matrix> dB(gsl_matrix_alloc(b.k(), 3), gsl_matrix_free);
+    std::shared_ptr<gsl_matrix> dB(gsl_matrix_alloc(b.k(), 3), gsl_matrix_free);
 
     // Find edge using kinetic energy profile
     double location = GSL_NAN;
@@ -306,7 +304,7 @@ BOOST_FIXTURE_TEST_CASE( find_edge, ChallengingFixture )
     BOOST_REQUIRE_EQUAL(b.n(), static_cast<int>(ndof));
 
     // Prepare working storage
-    shared_ptr<gsl_matrix> dB(gsl_matrix_alloc(b.k(), 3), gsl_matrix_free);
+    std::shared_ptr<gsl_matrix> dB(gsl_matrix_alloc(b.k(), 3), gsl_matrix_free);
 
     // Find edge using H0 already expressed as coefficients
     double location = GSL_NAN;
@@ -328,7 +326,7 @@ BOOST_FIXTURE_TEST_CASE( blasius_thicknesses_reynolds,
                          fixture_four_ten_thousand )
 {
     // Prepare, beyond the fixture, uniform density of 0.5 by scaling u coeffs
-    shared_ptr<double[]> rhou(new double[b.n()]);
+    std::shared_ptr<double[]> rhou(new double[b.n()]);
     for (int i = 0; i < b.n(); ++i) {
         rhou[i] = u[i] / 2;
     }

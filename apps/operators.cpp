@@ -39,10 +39,10 @@
 using namespace suzerain;
 
 // Global B-spline related-details initialized in main()
-static shared_ptr<bspline>      b;
-static shared_ptr<bsplineop>    cop;    // Collocation
-static shared_ptr<bsplineop>    gop;    // Galerkin L2
-static shared_ptr<bsplineop_lu> boplu;
+static std::shared_ptr<bspline>      b;
+static std::shared_ptr<bsplineop>    cop;    // Collocation
+static std::shared_ptr<bsplineop>    gop;    // Galerkin L2
+static std::shared_ptr<bsplineop_lu> boplu;
 
 int main(int argc, char **argv)
 {

@@ -104,9 +104,9 @@ public:
 protected:
 
     /** Controls the solves performed during invert_mass_plus_scaled_operator */
-    shared_ptr<bsmbsm_solver> flow_solver;
+    std::shared_ptr<bsmbsm_solver> flow_solver;
 
-    std::vector<shared_ptr<bsmbsm_solver> > species_solver;
+    std::vector<std::shared_ptr<bsmbsm_solver> > species_solver;
 
     /** Provides info about isothermal specifications */
     const specification_isothermal &isospec;

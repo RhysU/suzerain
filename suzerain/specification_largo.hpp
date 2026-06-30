@@ -59,7 +59,7 @@ public:
     largo_workspace * workspace;
 
     /** Baseflow information. */
-    shared_ptr<baseflow_interface> baseflow;
+    std::shared_ptr<baseflow_interface> baseflow;
 
     /** Growth rate of amplitudes for the mean. */
     std::vector<real_t> gramp_mean;

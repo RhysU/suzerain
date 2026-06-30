@@ -72,22 +72,22 @@ public:
             char **argv);
 
     /** Nondimensional isothermal boundary condition parameters. */
-    shared_ptr<support::definition_isothermal> isothermal;
+    std::shared_ptr<support::definition_isothermal> isothermal;
 
     /** Channel definition parameters. */
-    shared_ptr<definition_channel> chdef;
+    std::shared_ptr<definition_channel> chdef;
 
     /** Manufactured solution optionally used by applications. */
-    shared_ptr<manufactured_solution> msoln;
+    std::shared_ptr<manufactured_solution> msoln;
 
     /** Constitutive law for a single species ideal gas */
-    shared_ptr<antioch_constitutive> cmods;
+    std::shared_ptr<antioch_constitutive> cmods;
 
     /** Filter source parameters. */
-    shared_ptr<definition_filter> fsdef;
+    std::shared_ptr<definition_filter> fsdef;
 
     /** Slow growth parameters. */
-    shared_ptr<support::definition_largo> sgdef;
+    std::shared_ptr<support::definition_largo> sgdef;
 
     /**
      * Data sharable between #L and #N to permit computing implicit forcing.

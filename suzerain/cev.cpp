@@ -270,9 +270,9 @@ int iss_laminar(
         throw std::domain_error(oss.str());
     }
 
-    shared_ptr<gsl_interp_accel> a(gsl_interp_accel_alloc(),
+    std::shared_ptr<gsl_interp_accel> a(gsl_interp_accel_alloc(),
                                    gsl_interp_accel_free);
-    shared_ptr<gsl_interp>       f(gsl_interp_alloc(gsl_interp_cspline, N),
+    std::shared_ptr<gsl_interp>       f(gsl_interp_alloc(gsl_interp_cspline, N),
                                    gsl_interp_free);
 
     gsl_interp_init(f.get(), data_dstag, data_gammae, N);

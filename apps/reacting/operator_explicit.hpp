@@ -72,7 +72,7 @@ public:
             operator_common_block &common,
             const definition_filter &fsdef,
             const specification_largo &sgdef,
-            const shared_ptr<const manufactured_solution>& msoln);
+            const std::shared_ptr<const manufactured_solution>& msoln);
 
     virtual std::vector<real_t> apply_operator(
             const real_t time,
@@ -89,7 +89,7 @@ protected:
     operator_common_block &common;
 
     /** Holds optional manufactured solution forcing details */
-    const shared_ptr<const manufactured_solution> msoln;
+    const std::shared_ptr<const manufactured_solution> msoln;
 
     /** The filter source definition */
     const definition_filter &fsdef;

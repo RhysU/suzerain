@@ -221,7 +221,7 @@ manufactured_solution::populate(
     this->foreach_parameter(helper);
 }
 
-/** Helper for save(...,shared_ptr<manufactured_solution>&,...). */
+/** Helper for save(...,std::shared_ptr<manufactured_solution>&,...). */
 static void
 attribute_storer(const esio_handle &h,
                  const char *location,
@@ -232,7 +232,7 @@ attribute_storer(const esio_handle &h,
 }
 
 void save(const esio_handle h,
-          const shared_ptr<manufactured_solution>& msoln,
+          const std::shared_ptr<manufactured_solution>& msoln,
           const definition_scenario& scenario,
           const specification_grid& grid,
           const char *location)
@@ -284,7 +284,7 @@ void save(const esio_handle h,
 #pragma warning(pop)
 }
 
-/** Helper for load(...,shared_ptr<manufactured_solution>&,...). */
+/** Helper for load(...,std::shared_ptr<manufactured_solution>&,...). */
 static void
 attribute_loader(const esio_handle &h,
                  const char *location,
@@ -295,7 +295,7 @@ attribute_loader(const esio_handle &h,
 }
 
 void load(const esio_handle h,
-          shared_ptr<manufactured_solution>& msoln,
+          std::shared_ptr<manufactured_solution>& msoln,
           const definition_scenario& scenario,
           const specification_grid& grid,
           const char *location)

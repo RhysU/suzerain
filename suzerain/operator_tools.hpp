@@ -235,7 +235,7 @@ public:
     const bsplineop &cop;
 
     /** Retrieve a, possibly cached, factorized, real-valued mass matrix. */
-    shared_ptr<const bsplineop_lu> masslu() const
+    std::shared_ptr<const bsplineop_lu> masslu() const
     {
         if (SUZERAIN_UNLIKELY(!masslu_)) {
             bsplineop_lu *p = new bsplineop_lu(cop);
@@ -246,7 +246,7 @@ public:
     }
 
     /** Retrieve a, possibly cached, factorized, complex-valued mass matrix. */
-    shared_ptr<const bsplineop_luz> massluz() const
+    std::shared_ptr<const bsplineop_luz> massluz() const
     {
         if (SUZERAIN_UNLIKELY(!massluz_)) {
             bsplineop_luz *p = new bsplineop_luz(cop);
@@ -258,9 +258,9 @@ public:
 
 private:
 
-    mutable shared_ptr<bsplineop_lu>  masslu_;
+    mutable std::shared_ptr<bsplineop_lu>  masslu_;
 
-    mutable shared_ptr<bsplineop_luz> massluz_;
+    mutable std::shared_ptr<bsplineop_luz> massluz_;
 
 };
 

@@ -156,7 +156,7 @@ BOOST_AUTO_TEST_CASE( gsl_permutation_equivalence )
     const int S = 5, n = 9, N = S*n;
     int data[N];
 
-    suzerain::shared_ptr<gsl_permutation> p(suzerain_bsmbsm_permutation(S,n),
+    std::shared_ptr<gsl_permutation> p(suzerain_bsmbsm_permutation(S,n),
                                             &gsl_permutation_free);
     BOOST_REQUIRE(p);
 
@@ -171,7 +171,7 @@ BOOST_AUTO_TEST_CASE( gsl_permutation_equivalence )
         BOOST_CHECK_EQUAL(data[i], i);
     }
 
-    suzerain::shared_ptr<gsl_permutation> pinv(gsl_permutation_alloc(N),
+    std::shared_ptr<gsl_permutation> pinv(gsl_permutation_alloc(N),
                                                &gsl_permutation_free);
     BOOST_REQUIRE(pinv);
     gsl_permutation_inverse(pinv.get(), p.get());
@@ -385,7 +385,7 @@ bool test(const Problem<Scalar> &p)
     aPxpby(p, x.get(), r.get());
 
     // Compute same result by permuting followed by axpby
-    suzerain::shared_ptr<gsl_permutation> g(suzerain_bsmbsm_permutation(p.S,p.n),
+    std::shared_ptr<gsl_permutation> g(suzerain_bsmbsm_permutation(p.S,p.n),
                                             &gsl_permutation_free);
     permute(p, g.get(), x.get());
     suzerain::blas::axpby(N, p.alpha, x.get(), p.incx,

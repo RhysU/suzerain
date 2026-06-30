@@ -173,7 +173,7 @@ suzerain::reacting::driver_advance::run(int argc, char **argv)
     real_t initial_t = numeric_limits<real_t>::quiet_NaN();
     {
         // Preserve exact restart file details via Push/Pop/Merge below
-        shared_ptr<definition_channel> restart_chdef
+        std::shared_ptr<definition_channel> restart_chdef
                 = std::make_shared<definition_channel>();
 
         // Load the restart details with state going into state_linear
@@ -228,7 +228,7 @@ suzerain::reacting::driver_advance::run(int argc, char **argv)
 
 
     // Prepare any necessary, problem-specific constraints
-    shared_ptr<constraint::treatment> constrainer(new constraint::treatment(
+    std::shared_ptr<constraint::treatment> constrainer(new constraint::treatment(
                     1.0, *dgrid, *b, common_block, common_block));
     if        (grid->two_sided()) { // Channel per treatment_channel.tex
 
@@ -567,7 +567,7 @@ suzerain::reacting::driver_advance::run(int argc, char **argv)
 
         if (grid->one_sided()) {
             INFO0(who, "Preparing nonreflecting upper boundary treatment");
-            shared_ptr<treatment_nonreflecting> nonreflecting(
+            std::shared_ptr<treatment_nonreflecting> nonreflecting(
                     new treatment_nonreflecting(
                         *grid, *dgrid, *cop, *b, common_block));
             nonreflecting->N = N;
@@ -585,7 +585,7 @@ suzerain::reacting::driver_advance::run(int argc, char **argv)
                     solver_spec, *cmods, *isothermal, *chdef, *grid, *dgrid,
                     *cop, *b, common_block));
 
-        shared_ptr<suzerain::operator_hybrid_residual>
+        std::shared_ptr<suzerain::operator_hybrid_residual>
             tmp_hybrid( new operator_hybrid_residual(dgrid->chi()) );
 
         tmp_hybrid->R.reset(new explicit_operator_nonlinear(
@@ -600,7 +600,7 @@ suzerain::reacting::driver_advance::run(int argc, char **argv)
             WARN0(who, "Non-reflecting boundary treatment with hybrid"
                        " implicit/explicit time marching is experimental.");
 
-            shared_ptr<treatment_nonreflecting> nonreflecting(
+            std::shared_ptr<treatment_nonreflecting> nonreflecting(
                 new treatment_nonreflecting(
                     *grid, *dgrid, *cop, *b, common_block));
             nonreflecting->N = this->N;

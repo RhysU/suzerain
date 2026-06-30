@@ -248,8 +248,8 @@ create_bsplines(const int ndof,
                 const double left,
                 const double right,
                 const double htdelta,
-                shared_ptr<bspline>& b,
-                shared_ptr<bsplineop>& cop,
+                std::shared_ptr<bspline>& b,
+                std::shared_ptr<bsplineop>& cop,
                 const bool verbose)
 {
     if (verbose) {
@@ -459,7 +459,7 @@ load_line(
 
 real_t
 load_bsplines(const esio_handle      h,
-              shared_ptr<bspline>&   b)
+              std::shared_ptr<bspline>&   b)
 {
     using std::abs;
     using std::max;
@@ -542,8 +542,8 @@ load_bsplines(const esio_handle      h,
 
 real_t
 load_bsplines(const esio_handle      h,
-              shared_ptr<bspline>&   b,
-              shared_ptr<bsplineop>& cop)
+              std::shared_ptr<bspline>&   b,
+              std::shared_ptr<bsplineop>& cop)
 {
     const real_t abserr = load_bsplines(h, b);
 
@@ -738,7 +738,7 @@ save_samples(const esio_handle h,
 
 bool
 load_samples(const esio_handle h,
-             const shared_ptr<bspline> target,
+             const std::shared_ptr<bspline> target,
              samples& s,
              const char* const prefix,
              const char* const sizeper)
@@ -753,7 +753,7 @@ load_samples(const esio_handle h,
     // TODO Conceptually not difficult, but not well-encapsulated
     bool bsp_same = true;
     if (target) {
-        shared_ptr<bspline> source;
+        std::shared_ptr<bspline> source;
         load_bsplines(h, source);
         const double bsp_dist = target->distance_to(*source);
         bsp_same = bsp_dist < suzerain_bspline_distance_distinct;
@@ -984,7 +984,7 @@ load_extrema(const esio_handle h,
 
 std::auto_ptr<boost::ptr_map<real_t, summary> >
 load_summary(const esio_handle h,
-             shared_ptr<bspline>& target)
+             std::shared_ptr<bspline>& target)
 {
     boost::ptr_map<real_t, summary> retval;
     const char * const path = esio_file_path(h);
@@ -993,7 +993,7 @@ load_summary(const esio_handle h,
     // Load time and B-spline details
     real_t time;
     support::load_time(h, time);
-    shared_ptr<bspline> source;
+    std::shared_ptr<bspline> source;
     support::load_bsplines(h, source);
 
     // If we have no target, the source becomes the target
