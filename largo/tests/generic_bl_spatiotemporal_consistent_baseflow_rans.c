@@ -149,7 +149,7 @@ FCT_BGN()
            20000.0         , \
                1.0/  1000.0, \
                5.0/ 10000.0, \
-            2000.0           \   
+            2000.0           \
            };
 
 
@@ -161,7 +161,7 @@ FCT_BGN()
           200000.0         , \
                1.0/   100.0, \
                5.0/  1000.0, \
-           20000.0           \    
+           20000.0           \
           };
 
 
@@ -200,16 +200,16 @@ FCT_BGN()
           double wall_base [] = \
           { 1.0, uIw, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
                                                    
-          double wall_ddy_base [] = \              
+          double wall_ddy_base [] = \
           { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
                                                    
-          double wall_ddt_base [] = \              
+          double wall_ddt_base [] = \
           { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
                                                    
-          double wall_ddx_base [] = \              
+          double wall_ddx_base [] = \
           { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
                                                    
-          double wall_src_base [] = \              
+          double wall_src_base [] = \
           { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
 
           double srcmean [] = \
@@ -236,7 +236,7 @@ FCT_BGN()
           largo_allocate (&work, model, neq, ns, ntvar, ransmodel);
 
           // Init wall baseflow
-          largo_init_wall_baseflow(work \ 
+          largo_init_wall_baseflow(work \
             ,wall_base ,wall_ddy_base ,wall_ddt_base \
                        ,wall_ddx_base ,wall_src_base \
             );
