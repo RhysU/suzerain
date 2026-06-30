@@ -251,7 +251,6 @@ typedef std::complex<real_t> complex_t;
 // Done because these may be part of public APIs, as well as for convenience.
 using std::dynamic_pointer_cast;        /**< \namespace suzerain */
 using std::make_shared;                 /**< \namespace suzerain */
-using std::reinterpret_pointer_cast;    /**< \namespace suzerain */
 using std::shared_ptr;                  /**< \namespace suzerain */
 using std::unique_ptr;                  /**< \namespace suzerain */
 
