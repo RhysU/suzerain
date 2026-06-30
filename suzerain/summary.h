@@ -77,7 +77,7 @@
 
 #define SUZERAIN_SUMMARY_SAMPLED_TRANSFORM_Y(r, data, tuple)           \
     (BOOST_PP_CAT(BOOST_PP_TUPLE_ELEM(2,0,tuple),__y),                 \
-     "Wall-normal first derivative of "BOOST_PP_TUPLE_ELEM(2,1,tuple))
+     "Wall-normal first derivative of " BOOST_PP_TUPLE_ELEM(2,1,tuple))
 
 #endif /* SUZERAIN_PARSED_BY_DOXYGEN */
 
@@ -93,7 +93,7 @@
 
 #define SUZERAIN_SUMMARY_SAMPLED_TRANSFORM_YY(r, data, tuple)           \
     (BOOST_PP_CAT(BOOST_PP_TUPLE_ELEM(2,0,tuple),__yy),                 \
-     "Wall-normal second derivative of "BOOST_PP_TUPLE_ELEM(2,1,tuple))
+     "Wall-normal second derivative of " BOOST_PP_TUPLE_ELEM(2,1,tuple))
 
 #endif /* SUZERAIN_PARSED_BY_DOXYGEN */
 

@@ -98,13 +98,6 @@ suzerain_reacting_flow_imexop_accumulate(
                                                     const double *, const int,
                                              /* NB */ const void *, const int,
                             const complex_double, complex_double *, const int);
-    typedef int gbdddmv_t  (const char, const int, const int, const int,
-                            const complex_double,   const double *, const int,
-                            const complex_double,   const double *, const int,
-                            const complex_double,   const double *, const int,
-                                                    const double *, const int,
-                                             /* NB */ const void *, const int,
-                            const complex_double, complex_double *, const int);
 
     // In the first case, treat x arguments as complex with stride one...
     int inc_in = 1;
@@ -378,19 +371,6 @@ suzerain_reacting_species_imexop_accumulate(
                                              /* NB */ const void *, const int,
                             const complex_double, complex_double *, const int);
     typedef int gbdmv_t    (const char, const int, const int, const int,
-                            const complex_double,   const double *, const int,
-                                                    const double *, const int,
-                                             /* NB */ const void *, const int,
-                            const complex_double, complex_double *, const int);
-    typedef int gbddmv_t   (const char, const int, const int, const int,
-                            const complex_double,   const double *, const int,
-                            const complex_double,   const double *, const int,
-                                                    const double *, const int,
-                                             /* NB */ const void *, const int,
-                            const complex_double, complex_double *, const int);
-    typedef int gbdddmv_t  (const char, const int, const int, const int,
-                            const complex_double,   const double *, const int,
-                            const complex_double,   const double *, const int,
                             const complex_double,   const double *, const int,
                                                     const double *, const int,
                                              /* NB */ const void *, const int,
