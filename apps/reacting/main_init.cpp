@@ -107,10 +107,10 @@ suzerain::reacting::driver_init::run(int argc, char **argv)
     isothermal.reset(new support::definition_isothermal(/* wall_T */ 273));
 
     // Establish default time step aggressiveness
-    timedef = make_shared<support::definition_time>(/* per Venugopal */ 0.72);
+    timedef = std::make_shared<support::definition_time>(/* per Venugopal */ 0.72);
 
     // Establish default MMS parameters and plug into program options
-    msoln = make_shared<manufactured_solution>(
+    msoln = std::make_shared<manufactured_solution>(
             manufactured_solution::default_caption
             + " (active only when --mms supplied)");
     options.add_definition(msoln->isothermal_channel());

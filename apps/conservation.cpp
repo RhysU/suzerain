@@ -103,7 +103,7 @@ int main(int argc, char **argv)
     for (real_t htdelta = 0; htdelta < 7; htdelta += 0.1) {
         support::create_bsplines(N, k, 0.0, L, htdelta, b, cop);
         b->integration_coefficients(0, vec.data());
-        boplu = make_shared<bsplineop_lu>(*cop);
+        boplu = std::make_shared<bsplineop_lu>(*cop);
         boplu->factor_mass(*cop);
 
         mat = MatrixXXr::Identity(N,N);

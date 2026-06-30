@@ -58,11 +58,11 @@ driver::driver(
                   argument_synopsis,
                   description,
                   revstr)
-    , isothermal(make_shared<support::definition_isothermal>())
-    , chdef(make_shared<definition_channel>())
-    , cmods(make_shared<antioch_constitutive>())
-    , fsdef(make_shared<definition_filter>())
-    , sgdef(make_shared<support::definition_largo>())
+    , isothermal(std::make_shared<support::definition_isothermal>())
+    , chdef(std::make_shared<definition_channel>())
+    , cmods(std::make_shared<antioch_constitutive>())
+    , fsdef(std::make_shared<definition_filter>())
+    , sgdef(std::make_shared<support::definition_largo>())
     , who("reacting")
 {
     // Sets up usual 5 fields.  If necessary, species are added later.

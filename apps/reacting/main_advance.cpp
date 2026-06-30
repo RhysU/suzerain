@@ -174,7 +174,7 @@ suzerain::reacting::driver_advance::run(int argc, char **argv)
     {
         // Preserve exact restart file details via Push/Pop/Merge below
         shared_ptr<definition_channel> restart_chdef
-                = make_shared<definition_channel>();
+                = std::make_shared<definition_channel>();
 
         // Load the restart details with state going into state_linear
         support::shared_esio_handle h(MPI_COMM_WORLD);

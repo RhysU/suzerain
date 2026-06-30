@@ -67,8 +67,8 @@ application_base::application_base(
               argument_synopsis,
               description,
               revstr)
-    , grid(make_shared<definition_grid>())
-    , fftwdef(make_shared<definition_fftw>(/* rigor_fft */ fftw::measure,
+    , grid(std::make_shared<definition_grid>())
+    , fftwdef(std::make_shared<definition_fftw>(/* rigor_fft */ fftw::measure,
                                            /* rigor_mpi */ fftw::estimate))
     , b()
     , cop()
@@ -196,7 +196,7 @@ application_base::load_grid_and_operators(
     // If no restart file requested, we'd best have a sane grid instance
     if (esioh) {
         if (!grid) {
-            grid = make_shared<definition_grid>();
+            grid = std::make_shared<definition_grid>();
         }
         grid->load(esioh);
     } else {
@@ -261,14 +261,14 @@ application_base::establish_decomposition(
     fftw_set_timelimit(fftwdef->plan_timelimit);
 #if defined(SUZERAIN_HAVE_P3DFFT) && defined(SUZERAIN_HAVE_UNDERLING)
     if (use_p3dfft) {
-        dgrid = make_shared<pencil_grid_p3dfft>(
+        dgrid = std::make_shared<pencil_grid_p3dfft>(
                 grid->dN, grid->P, fftwdef->rigor_fft, fftwdef->rigor_mpi);
     } else if (use_underling) {
-        dgrid = make_shared<pencil_grid_underling>(
+        dgrid = std::make_shared<pencil_grid_underling>(
                 grid->dN, grid->P, fftwdef->rigor_fft, fftwdef->rigor_mpi);
     } else {
 #endif
-        dgrid = make_shared<pencil_grid_default>(
+        dgrid = std::make_shared<pencil_grid_default>(
                 grid->dN, grid->P, fftwdef->rigor_fft, fftwdef->rigor_mpi);
 #if defined(SUZERAIN_HAVE_P3DFFT) && defined(SUZERAIN_HAVE_UNDERLING)
     }
@@ -360,7 +360,7 @@ application_base::establish_state_storage(
 
     // Allocate the unpadded linear state to match decomposition
     if (linear_nfields) {
-        state_linear = make_shared<
+        state_linear = std::make_shared<
                     state_linear_type
                 >(to_yxz(static_cast<int>(linear_nfields), dgrid->local_wave_extent));
         DEBUG("Linear state shape      (FYXZ): "

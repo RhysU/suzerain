@@ -62,10 +62,10 @@ driver::driver(
                   argument_synopsis,
                   description,
                   revstr)
-    , scenario(make_shared<definition_scenario>())
-    , isothermal(make_shared<support::definition_isothermal>())
-    , sg(make_shared<support::definition_largo>())
-    , rad(make_shared<support::definition_radialflow>(/*deltae*/ 1.0))
+    , scenario(std::make_shared<definition_scenario>())
+    , isothermal(std::make_shared<support::definition_isothermal>())
+    , sg(std::make_shared<support::definition_largo>())
+    , rad(std::make_shared<support::definition_radialflow>(/*deltae*/ 1.0))
     , who("perfect")
 {
     this->fields = default_fields();
@@ -740,27 +740,27 @@ driver::load_metadata_hook(
     super::load_metadata_hook(esioh);
 
     if (!scenario) {
-        scenario = make_shared<definition_scenario>();
+        scenario = std::make_shared<definition_scenario>();
     }
     scenario->load(esioh);
 
     if (!isothermal) {
-        isothermal = make_shared<support::definition_isothermal>();
+        isothermal = std::make_shared<support::definition_isothermal>();
     }
     isothermal->load(esioh);
 
     if (!sg) {
-        sg = make_shared<support::definition_largo>();
+        sg = std::make_shared<support::definition_largo>();
     }
     sg->load(esioh);
 
     if (!rad) {
-        rad = make_shared<support::definition_radialflow>();
+        rad = std::make_shared<support::definition_radialflow>();
     }
     rad->load(esioh);
 
     if (!helm) {
-        helm = make_shared<support::definition_helm>();
+        helm = std::make_shared<support::definition_helm>();
     }
     helm->load(esioh);
 

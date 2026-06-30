@@ -137,15 +137,15 @@ suzerain::perfect::driver_initial::run(int argc, char **argv)
     isothermal.reset(new support::definition_isothermal(/* wall_T */ 1));
 
     // Establish default time step aggressiveness
-    timedef = make_shared<support::definition_time>(/* per Venugopal */ 0.72);
+    timedef = std::make_shared<support::definition_time>(/* per Venugopal */ 0.72);
 
     // Establish default MMS parameters and plug into program options
-    msoln = make_shared<manufactured_solution>(
+    msoln = std::make_shared<manufactured_solution>(
             manufactured_solution::default_caption
             + " (active only when --mms supplied)");
 
     // Establish default tuning for boundary layer thickness
-    helm = make_shared<support::definition_helm>(1.0);
+    helm = std::make_shared<support::definition_helm>(1.0);
 
     // Establish binary-specific options
     bool clobber;
