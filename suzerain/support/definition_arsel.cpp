@@ -115,16 +115,12 @@ definition_arsel::options_description()
 
     retval.add_options()
         (name_minorder, value<string>(NULL)
-#if BOOST_VERSION >= 105000
          ->value_name("MIN")
-#endif
          ->notifier(bind(&parse_size_t, _1, &minorder, name_minorder))
          ->default_value(lexical_cast<string>(minorder)),
          desc_minorder)
         (name_maxorder, value<string>(NULL)
-#if BOOST_VERSION >= 105000
          ->value_name("MAX")
-#endif
          ->notifier(bind(&parse_size_t, _1, &maxorder, name_maxorder))
          ->default_value(lexical_cast<string>(maxorder)),
          desc_maxorder)
@@ -137,9 +133,7 @@ definition_arsel::options_description()
          bool_switch(&absrho)->default_value(absrho),
          desc_absrho)
         (name_wlenT0, value<string>(NULL)
-#if BOOST_VERSION >= 105000
          ->value_name("WLEN")
-#endif
          ->notifier(bind(&parse_option<real_t>, _1, &wlenT0,
                          &ensure_positive<real_t>, name_wlenT0))
          ->default_value(lexical_cast<string>(wlenT0)),
