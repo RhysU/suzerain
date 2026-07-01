@@ -18,7 +18,7 @@ AC_ARG_PROGRAM
 AX_ENABLE_BUILDDIR
 AM_INIT_AUTOMAKE(1.17 nostdinc no-define color-tests silent-rules parallel-tests -Wall foreign check-news subdir-objects -Wno-portability)
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES])
-AC_PREREQ([2.68])
+AC_PREREQ([2.71])
 AX_CHECK_ENABLE_DEBUG([info])
 m4_ifdef([AM_PROG_AR], [AM_PROG_AR])
 AX_AM_MACROS
