@@ -631,9 +631,9 @@ void operator_hybrid_isothermal::invert_mass_plus_scaled_operator(
                 // Continue didn't yet occur for Nyquist/dealiasing modes...
                 if (   std::abs(wn) > wavenumber_absmin(Nz)
                     || std::abs(wm) > wavenumber_absmin(Nx)) {
-                    memset(p, 0, solver->N*sizeof(p[0]));  // ...so we can zero,
-                    solver->apprx(false);                  // mark reuse moot,
-                    continue;                              // and short circuit.
+                    std::fill_n(p, solver->N, complex_t());  // ...so we can zero,
+                    solver->apprx(false);                    // mark reuse moot,
+                    continue;                                // and short circuit.
                 }
 
                 // Form complex-valued, wavenumber-dependent PA^TP^T
@@ -732,8 +732,8 @@ void operator_hybrid_isothermal::invert_mass_plus_scaled_operator(
                 // Continue didn't yet occur for Nyquist/dealiasing modes...
                 if (   std::abs(wn) > wavenumber_absmin(Nz)
                     || std::abs(wm) > wavenumber_absmin(Nx)) {
-                    memset(p, 0, solver->N*sizeof(p[0]));  // ...so we can zero,
-                    continue;                              // and short circuit.
+                    std::fill_n(p, solver->N, complex_t());  // ...so we can zero,
+                    continue;                                // and short circuit.
                 }
 
                 // Form right hand side, apply BCs, factorize, and solve.
