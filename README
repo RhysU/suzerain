@@ -71,7 +71,7 @@ system packages.  Install the build toolchain:
 Install MPI and the required libraries:
 
     sudo apt install \
-        hdf5-tools libboost-all-dev libeigen3-dev \
+        hdf5-helpers hdf5-tools libboost-all-dev libeigen3-dev \
         libfftw3-dev libfftw3-mpi-dev libgsl-dev \
         libhdf5-openmpi-dev liblog4cxx-dev libmkl-dev \
         libopenmpi-dev openmpi-bin
