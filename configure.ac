@@ -370,7 +370,7 @@ if [ test x$my_cv_apr_linkable = xno ]; then
     AC_MSG_ERROR([Unable to link APR using LOG4CXX_LIBS=$LOG4CXX_LIBS])
 fi
 PKG_CHECK_MODULES([EIGEN],
-    [eigen3 >= 3.0.0],
+    [eigen3 >= 3.4.0],
     AC_DEFINE([HAVE_EIGEN],1,[Define if Eigen is available]))
 BOOST_REQUIRE([1.83])
 BOOST_ARRAY
