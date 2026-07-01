@@ -34,7 +34,7 @@ samples::samples()
 {
 }
 
-samples::samples(real_t)
+samples::samples(real_t t)
     : t(t)
 {
 }
