@@ -25,6 +25,8 @@
  * @copydoc mpi.hpp
  */
 
+#include <cinttypes>
+
 #include <suzerain/mpi.hpp>
 
 namespace suzerain {
@@ -94,7 +96,10 @@ std::string comm_rank_identifier(MPI_Comm comm)
     if (error) throw std::runtime_error(error_string(error));
     if (resultlen == 0) {
         // Providing a default value if MPI had none.
-        resultlen = snprintf(buffer, sizeof(buffer), "c0x%X", comm);
+        // comm is an opaque handle (a pointer under some MPI implementations),
+        // so format it through uintptr_t rather than %X on a bare argument.
+        resultlen = snprintf(buffer, sizeof(buffer),
+                             "c0x%" PRIxPTR, (uintptr_t) comm);
         assert(resultlen >= 0);
     } else {
         // Brevity, trim any leading MPI_COMM_ business by modifying p_buffer
