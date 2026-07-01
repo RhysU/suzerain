@@ -48,7 +48,7 @@
 /** Enable boost::numeric::ublas::shallow_array_adaptor<T> */
 #define BOOST_UBLAS_SHALLOW_ARRAY_ADAPTOR 1
 
-#if __GNUC__ >= 3
+#ifdef __GNUC__
 /** Create an inline assembly comment, if supported */
 #define SUZERAIN_ASM_INLINE_COMMENT(comment) __asm__("# " __FILE__ ":" SUZERAIN_ASM_INLINE_COMMENT_HELPER_TOSTRING(__LINE__) " " #comment)
 /** Helps ASM_INLINE_COMMENT convert __LINE__ to a (char *) */
@@ -60,7 +60,7 @@
 #define SUZERAIN_ASM_INLINE_COMMENT(comment)
 #endif
 
-#if __GNUC__ >= 3
+#ifdef __GNUC__
 /**
  * Provides hint to the compiler to optimize for the expression being true.
  * @param cond expression to be evaluted in boolean context.
@@ -91,7 +91,7 @@
 #ifdef __INTEL_COMPILER
 /** Strongly recommend that a function be inlined */
 #define SUZERAIN_FORCEINLINE __forceinline
-#elif __GNUC__ >= 3
+#elif defined(__GNUC__)
 /** Strongly recommend that a function be inlined */
 #define SUZERAIN_FORCEINLINE inline __attribute__((always_inline))
 #else
@@ -102,7 +102,7 @@
 #ifdef __INTEL_COMPILER
 /** Prevent inlining a given function */
 #define SUZERAIN_DONTINLINE __attribute__((noinline))
-#elif __GNUC__ >= 3
+#elif defined(__GNUC__)
 /** Prevent inlining a given function */
 #define SUZERAIN_DONTINLINE __attribute__((noinline))
 #else
@@ -139,21 +139,14 @@
 
 /* Push/pop-like macros for suppressing GCC warnings lifted from   */
 /* http://dbp-consulting.com/tutorials/SuppressingGCCWarnings.html */
-#if ((__GNUC__ * 100) + __GNUC_MINOR__) >= 402
+#ifdef __GNUC__
 # define SUZERAIN_GCC_DIAG_STR(s) #s
 # define SUZERAIN_GCC_DIAG_JOINSTR(x,y) SUZERAIN_GCC_DIAG_STR(x ## y)
 # define SUZERAIN_GCC_DIAG_DO_PRAGMA(x) _Pragma (#x)
 # define SUZERAIN_GCC_DIAG_PRAGMA(x) SUZERAIN_GCC_DIAG_DO_PRAGMA(GCC diagnostic x)
-# if ((__GNUC__ * 100) + __GNUC_MINOR__) >= 406
-#  define SUZERAIN_GCC_DIAG_OFF(x) SUZERAIN_GCC_DIAG_PRAGMA(push) \
+# define SUZERAIN_GCC_DIAG_OFF(x) SUZERAIN_GCC_DIAG_PRAGMA(push) \
         SUZERAIN_GCC_DIAG_PRAGMA(ignored SUZERAIN_GCC_DIAG_JOINSTR(-W,x))
-#  define SUZERAIN_GCC_DIAG_ON(x) SUZERAIN_GCC_DIAG_PRAGMA(pop)
-# else
-#  define SUZERAIN_GCC_DIAG_OFF(x) \
-    SUZERAIN_GCC_DIAG_PRAGMA(ignored SUZERAIN_GCC_DIAG_JOINSTR(-W,x))
-#  define SUZERAIN_GCC_DIAG_ON(x)  \
-    SUZERAIN_GCC_DIAG_PRAGMA(warning SUZERAIN_GCC_DIAG_JOINSTR(-W,x))
-# endif
+# define SUZERAIN_GCC_DIAG_ON(x) SUZERAIN_GCC_DIAG_PRAGMA(pop)
 #else
 # define SUZERAIN_GCC_DIAG_OFF(x)
 # define SUZERAIN_GCC_DIAG_ON(x)
