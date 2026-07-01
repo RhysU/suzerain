@@ -46,11 +46,8 @@ namespace suzerain {
 //
 // See http://www.boost.org/doc/libs/release/libs/range/doc/html/range/upgrade.html
 // for version-to-version changes in Boost.Range that impact the
-// implementation.  In particular, pre-1.43 there are many BOOST_ASSERT(
-// !is_singular() ) calls that interfere with the empty range cases below.
-// Workarounds use preprocessor keyed on BOOST_VERSION to mitigate problems.
-// Several places in the implementation rely on <algorithm> rather than Range
-// algorithms to improve version-independence.
+// implementation.  Several places in the implementation rely on <algorithm>
+// rather than Range algorithms to improve version-independence.
 //
 // No enclosing namespace is assumed in the implementation.  Hence ::std:: and
 // ::boost:: appears where one might expect std:: and boost::.  The
@@ -188,43 +185,16 @@ public: // swap, reset
     //! Exchange the contents of this instance with \c o.
     void swap(shared_range& o)
     {
-#if BOOST_VERSION >= 104300
         // It would be nice if iterator_range provided a member swap...
         ::boost::core::invoke_swap(static_cast<iterator_range&>(*this),
                                    static_cast<iterator_range&>(o));
-#else
-        // Perform a "logical" swap without triggering is_singular() asserts.
-        switch (this->is_singular() + (o.is_singular() << 1)) {
-        case 0:  // neither singular
-            ::boost::core::invoke_swap(static_cast<iterator_range&>(*this),
-                                       static_cast<iterator_range&>(o));
-            break;
-        case 1:  // only this singular so copy o and make o singular
-            this->iterator_range::operator=(o);
-            o.iterator_range::advance_begin(::boost::distance(o));
-            break;
-        case 2:  // only o singular so copy this and make this singular
-            o.iterator_range::operator=(*this);
-            iterator_range::advance_begin(::boost::distance(*this));
-            break;
-        case 3:  // both singular so do nothing
-            break;
-        }
-#endif
         p_.swap(o.p_);
     }
 
     //! Release ownership of any currently owned range.
     void reset()
     {
-#if BOOST_VERSION >= 104300
         shared_range().swap(*this);
-#else
-        if (!iterator_range::is_singular()) {
-            iterator_range::advance_begin(::boost::distance(*this));
-        }
-        p_.reset();
-#endif
     }
 
     //! Construct a new instance per the constructor with the same signature
@@ -262,20 +232,7 @@ public: // std::shared_ptr-like functionality
     //! Does this instance uniquely maintain ownership of any resources?
     bool unique() const { return p_.use_count() == 1; }
 
-public: // iterator_range methods (updated for workarounds or covariant return)
-
-// These methods circumnavigate earlier iterator_range is_singular() asserts
-#if BOOST_VERSION < 104300
-    bool empty() const
-    {
-        return iterator_range::is_singular() || iterator_range::empty();
-    }
-
-    operator typename iterator_range::unspecified_bool_type() const
-    {
-        return empty() ? 0 : &iterator_range::end;
-    }
-#endif
+public: // iterator_range methods (updated for covariant return)
 
     //! Mutate instance by advancing \c begin() by \c n.
     shared_range& advance_begin(typename iterator_range::difference_type n)

@@ -126,49 +126,37 @@ definition_helm::options_description()
          bool_switch(&enabled)->default_value(false),
          "Enable control of the boundary layer thickness")
         (name_kp, value<string>(NULL)
-#if BOOST_VERSION >= 105000
          ->value_name("GAIN")
-#endif
          ->notifier(bind(&parse_option<double>, _1, &h.kp,
                          &ensure_nonnegative<double>, name_kp))
          ->default_value(lexical_cast<string>(h.kp)),
          desc_kp)
         (name_r, value<string>(NULL)
-#if BOOST_VERSION >= 105000
          ->value_name("SETPOINT")
-#endif
          ->notifier(bind(&parse_option<double>, _1, &this->r,
                          &ensure_nonnegative<double>, name_r))
          ->default_value(lexical_cast<string>(this->r)),
          desc_r)
         (name_Td, value<string>(NULL)
-#if BOOST_VERSION >= 105000
          ->value_name("TIMESCALE")
-#endif
          ->notifier(bind(&parse_option<double>, _1, &h.Td,
                          &ensure_nonnegative<double>, name_Td))
          ->default_value(lexical_cast<string>(h.Td)),
          desc_Td)
         (name_Tf, value<string>(NULL)
-#if BOOST_VERSION >= 105000
          ->value_name("TIMESCALE")
-#endif
          ->notifier(bind(&parse_option<double>, _1, &h.Tf,
                          &ensure_nonnegative<double>, name_Tf))
          ->default_value(lexical_cast<string>(h.Tf)),
          desc_Tf)
         (name_Ti, value<string>(NULL)
-#if BOOST_VERSION >= 105000
          ->value_name("TIMESCALE")
-#endif
          ->notifier(bind(&parse_option<double>, _1, &h.Ti,
                          &ensure_nonnegative<double>, name_Ti))
          ->default_value(lexical_cast<string>(h.Ti)),
          desc_Ti)
         (name_Tt, value<string>(NULL)
-#if BOOST_VERSION >= 105000
          ->value_name("TIMESCALE")
-#endif
          ->notifier(bind(&parse_option<double>, _1, &h.Tt,
                          &ensure_nonnegative<double>, name_Tt))
          ->default_value(lexical_cast<string>(h.Tt)),
