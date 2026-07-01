@@ -6,76 +6,25 @@ Port to Ubuntu 24.04 with GCC 13, GSL 2.x, Boost 1.83, and C++17.
  * Build with modern toolchains: GCC 13, GSL 2.x, Boost 1.83, C++17,
    log4cxx 1.1, and Doxygen 1.9.8
  * Fix deprecated GSL, log4cxx, Boost, and C++ API usage throughout
- * Fix MKL detection for current MKL package layout and API
- * Detect MPI link libraries portably via compiler wrapper queries,
-   replacing hardcoded OpenMPI library names
- * Eliminate manual post-configure libtool sed hack by setting
-   link_all_deplibs=unknown in configure.ac
- * Fold --no-as-needed/--as-needed MKL workaround into GSL_CBLAS_LIB
- * Restore -funsafe-math-optimizations globally; protect Kahan summation
-   with a localized #pragma GCC optimize
- * Fix parameterized test name collisions in 7 test files
- * Relax floating-point tolerances for GCC 13 numerical differences
- * Deterministic tie-breaking in extrema argmin/argmax (lowest global
-   index wins), fixing non-reproducible min/max locations across runs
- * Fix and enable apps/perfect test suite (h5diff tolerances, prereqs)
- * Add FFTW3 Fortran include path detection to ax_fftw3.m4
- * Add Ubuntu 24.10 apt install instructions to README
- * Fix -Wliteral-suffix in SUZERAIN_ASM_INLINE_COMMENT by using string
-   literal concatenation instead of token pasting
- * Document the ESIO parallel-HDF5 configure step in README, warning
-   against --with-hdf5=/usr on Ubuntu's split HDF5 layout
- * Fix Python 3 compatibility in postproc/propagation.py (basestring,
-   SymPy >= 1.7 Derivative wrt tuples, OrderedDict internals, iteritems)
  * Complete the GSL 2.8 bspline API migration across the library and tests,
    using gsl_bspline_order(), gsl_bspline_ncontrol(), gsl_bspline_basis(),
-   and gsl_bspline_basis_deriv() in place of the removed workspace struct
-   members and *_eval_nonzero routines
- * Fix underling aborting with "FFTW returned NULL FFT plan" when MKL is also
-   linked (test_diffwave_p3dfft).  MKL exports the FFTW3 ABI and, being earlier
-   in the global symbol scope, interposed fftw_plan_guru_split_dft -- the
-   split-complex guru entry point underling uses for every transform and which
-   MKL does not implement.  Link with -Wl,--no-as-needed when underling is
-   enabled so the real libfftw3 stays a direct DT_NEEDED and wins FFTW symbol
-   resolution; this also moves all FFTW calls onto real FFTW rather than MKL's
-   wrapper.  Also add a --without-underling escape hatch (P3DFFT, the default
-   pencil grid, is unaffected).  See issue #11.
- * Relax the single-precision test_gbdddmv_ssc tolerance to match its
-   complex-storage sibling, fixing high-bandwidth rounding failures
- * Qualify boost::make_shared in the reacting flow code to resolve an
-   argument-dependent-lookup ambiguity
- * Migrate every Boost smart pointer to its std equivalent: scoped_ptr
-   and scoped_array to std::unique_ptr, the shared_ptr/make_shared/
-   pointer-cast family to std, and shared_array to std::shared_ptr<T[]>.
-   See issue #2
- * Fully qualify the std smart pointers at each call site rather than
-   pulling their names into the suzerain namespace, so the standard origin
-   is plain
- * Drop the now-unused Boost.SmartPtr configure check
- * Use python3 in postproc script shebangs
- * Modernize obsolete autoconf macros to silence bootstrap warnings and
-   regenerate the vendored libtool files (libtool 2.4.7 -> 2.5.4)
- * Update the maintainer email, replace stale red.ices.utexas.edu URLs with
-   their GitHub equivalents, and mark Mathematica notebooks as documentation
-   for GitHub language statistics
- * Remove the dead pre_gsl backports of gsl_integration_glfixed_point and
-   gsl_bspline_knots_greville, now provided natively by GSL >= 1.16, while
-   retaining the MPI-friendly mpi_gsl_ieee_env_setup wrapper
- * Raise the minimum required GSL version from 1.15 to 2.8 to match the
-   bspline API used throughout the library
- * Replace the remaining deprecated Boost and C++ facilities flagged by the
-   compiler with their current equivalents: boost::swap and boost/swap.hpp
-   become boost::core::invoke_swap; boost/test/output_test_stream.hpp becomes
-   the boost/test/tools path; std::auto_ptr becomes std::unique_ptr, allocating
-   through std::make_unique at the owning sites; the std::ptr_fun shared_ptr
-   deleters pass their function pointer directly; std::bind1st, std::bind2nd,
-   and std::mem_fun give way to boost::bind or lambdas; and boost::array::assign
-   becomes fill.  Also include boost/bind/bind.hpp with a namespace-scope
-   using namespace boost::placeholders in place of boost/bind.hpp's deprecated
-   global _1, _2, ... placeholders.  See issue #16
- * Raise the Boost prerequisite to 1.83, matching Ubuntu 24.10, and delete the
-   now-unreachable BOOST_VERSION guards in shared_range, definition_arsel, and
-   definition_helm.  See issue #15
+   and gsl_bspline_basis_deriv() in place of the removed workspace members
+ * Migrate every Boost smart pointer to its std equivalent: scoped_ptr and
+   scoped_array to std::unique_ptr, the shared_ptr/make_shared family to std,
+   and shared_array to std::shared_ptr<T[]>.  See issue #2
+ * Fix underling aborting with a NULL FFT plan when linked alongside MKL, which
+   interposes the split-complex FFTW guru entry point underling relies on; link
+   the real libfftw3 first and add a --without-underling escape hatch.  See
+   issue #11
+ * Fix MKL detection for its current packaging, and detect MPI link libraries
+   portably via compiler wrapper queries rather than hardcoded OpenMPI names
+ * Deterministic tie-breaking in extrema argmin/argmax, fixing non-reproducible
+   min/max locations across runs
+ * Restore -funsafe-math-optimizations globally, protecting Kahan summation
+   with a localized #pragma GCC optimize
+ * Fix and enable the test suites under GCC 13, relaxing floating-point
+   tolerances for its numerical differences
+ * Restore Python 3 compatibility in the postprocessing scripts
 
 
 What's new in suzerain 0.1.7
