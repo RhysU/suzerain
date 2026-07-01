@@ -1088,9 +1088,9 @@ public:
 
 };
 
-// *************************************************************
-// BEGIN hideousness for static constant structs within Contants
-// *************************************************************
+// **************************************************************
+// BEGIN hideousness for static constant structs within Constants
+// **************************************************************
 
 template <template <typename,typename> class Scheme,
           typename Component, typename Integer>
@@ -1132,9 +1132,9 @@ template <template <typename,typename> class Scheme,
 const typename constants<Scheme,Component,Integer>::iota_beta_type
 constants<Scheme,Component,Integer>::iota_beta = {};
 
-// ***********************************************************
-// END hideousness for static constant structs within Contants
-// ***********************************************************
+// ************************************************************
+// END hideousness for static constant structs within Constants
+// ************************************************************
 
 /**
  * Given a \c Scheme and \c Element type, encapsulates a low storage
