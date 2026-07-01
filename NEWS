@@ -44,6 +44,14 @@ Port to Ubuntu 24.04 with GCC 13, GSL 2.x, Boost 1.83, and C++17.
    complex-storage sibling, fixing high-bandwidth rounding failures
  * Qualify boost::make_shared in the reacting flow code to resolve an
    argument-dependent-lookup ambiguity
+ * Migrate every Boost smart pointer to its std equivalent: scoped_ptr
+   and scoped_array to std::unique_ptr, the shared_ptr/make_shared/
+   pointer-cast family to std, and shared_array to std::shared_ptr<T[]>.
+   See issue #2
+ * Fully qualify the std smart pointers at each call site rather than
+   pulling their names into the suzerain namespace, so the standard origin
+   is plain
+ * Drop the now-unused Boost.SmartPtr configure check
  * Use python3 in postproc script shebangs
  * Modernize obsolete autoconf macros to silence bootstrap warnings and
    regenerate the vendored libtool files (libtool 2.4.7 -> 2.5.4)
