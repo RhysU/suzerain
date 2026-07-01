@@ -275,7 +275,7 @@ load_extrema(const esio_handle h,
  * href="http://www.boost.org/doc/libs/release/libs/ptr_container/"> Boost
  * Pointer Container</a> for the ownership semantics.
  */
-std::auto_ptr<boost::ptr_map<real_t, summary> >
+std::unique_ptr<boost::ptr_map<real_t, summary> >
 load_summary(const esio_handle h,
              std::shared_ptr<bspline>& target);
 

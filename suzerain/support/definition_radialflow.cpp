@@ -101,7 +101,7 @@ definition_radialflow::options_description()
     using boost::program_options::options_description;
     using boost::program_options::typed_value;
     using boost::program_options::value;
-    using std::auto_ptr;
+    using std::unique_ptr;
     using std::string;
     using validation::ensure_nonnegative;
     using validation::ensure_positive;
@@ -110,7 +110,7 @@ definition_radialflow::options_description()
             "Radial flow problem reference parameters"
             " for homogenized boundary layers with baseflow");
 
-    auto_ptr<typed_value<string> > p;
+    unique_ptr<typed_value<string> > p;
 
     // deltae
     p.reset(value<string>());

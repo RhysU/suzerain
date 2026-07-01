@@ -982,11 +982,12 @@ load_extrema(const esio_handle h,
 }
 
 
-std::auto_ptr<boost::ptr_map<real_t, summary> >
+std::unique_ptr<boost::ptr_map<real_t, summary> >
 load_summary(const esio_handle h,
              std::shared_ptr<bspline>& target)
 {
-    boost::ptr_map<real_t, summary> retval;
+    std::unique_ptr<boost::ptr_map<real_t, summary> > retval
+            = std::make_unique<boost::ptr_map<real_t, summary> >();
     const char * const path = esio_file_path(h);
     DEBUG0(who, "Attempting to load summary from " << path);
 
@@ -1025,12 +1026,12 @@ load_summary(const esio_handle h,
         TRACE0(who, "Successfully loaded samples from " << path);
     } else {
         WARN0(who, "No valid samples found in " << path);
-        return retval.release();
+        return retval;
     }
 
     // Summary, component-by-component collocation values, will be "sum"
     // Then store constant time and wall-normal collocation points
-    std::auto_ptr<summary> sum(new summary(target->n()));
+    std::unique_ptr<summary> sum = std::make_unique<summary>(target->n());
     sum->t().fill(time);
     for (int i = 0; i < target->n(); ++i) {
         sum->y()[i] = target->collocation_point(i);
@@ -1063,8 +1064,8 @@ load_summary(const esio_handle h,
 
     }
 
-    retval.insert(time, sum);
-    return retval.release();
+    retval->insert(time, std::move(sum));
+    return retval;
 }
 
 
@@ -1089,8 +1090,8 @@ allocate_padded_state(const size_t howmany_fields,
     padded_state_pools.find(blocksize);
     padded_state_pools_type::iterator it = padded_state_pools.find(blocksize);
     if (it == padded_state_pools.end()) {
-        std::auto_ptr<pool_type> tmp(new pool_type(blocksize));
-        it = padded_state_pools.insert(blocksize, tmp).first;
+        std::unique_ptr<pool_type> tmp = std::make_unique<pool_type>(blocksize);
+        it = padded_state_pools.insert(blocksize, std::move(tmp)).first;
     }
 
     // Construct a shared_range for howmany_fields from the pool instance

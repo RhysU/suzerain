@@ -537,7 +537,7 @@ add_noise(contiguous_state<4,complex_t> &state,
 // Reading through that file, especially the apply_operator implementation, is
 // recommended before reviewing this logic.  This routine is definitely
 // suboptimal but is expected to be invoked relatively infrequently.
-std::auto_ptr<samples>
+std::unique_ptr<samples>
 take_samples(const definition_scenario &scenario,
              const specification_largo &sg,
              const operator_tools &otool,
@@ -593,7 +593,7 @@ take_samples(const definition_scenario &scenario,
                                auxw.strides() + 1));
 
     // Rank-specific details accumulated in ret to be MPI_Allreduce later
-    std::auto_ptr<samples> ret(new samples(t, Ny));
+    std::unique_ptr<samples> ret = std::make_unique<samples>(t, Ny);
 
     // Obtain samples available in wave-space from mean conserved state.
     // These coefficients are inherently averaged across the X-Z plane.
@@ -1104,7 +1104,7 @@ take_samples(const definition_scenario &scenario,
 
 // This logic is a trimmed down version of take_samples.
 // See comments there.
-std::auto_ptr<profile>
+std::unique_ptr<profile>
 take_profile(const definition_scenario &scenario,
              const operator_tools &otool,
              contiguous_state<4,complex_t> &swave)
@@ -1134,7 +1134,7 @@ take_profile(const definition_scenario &scenario,
     SUZERAIN_ENSURE((unsigned) swave.strides()[3] == swave.shape()[1]*swave.shape()[2]);
 
     // Rank-specific details accumulated in ret to be MPI_Allreduce-d later
-    std::auto_ptr<profile> ret(new profile(Ny));
+    std::unique_ptr<profile> ret = std::make_unique<profile>(Ny);
 
     // Obtain samples available in wave-space from mean conserved state.
     // These coefficients are inherently averaged across the X-Z plane.
@@ -1242,7 +1242,7 @@ take_profile(const definition_scenario &scenario,
     return ret;
 }
 
-std::auto_ptr<profile>
+std::unique_ptr<profile>
 take_profile(const definition_scenario &scenario,
              const operator_tools &otool,
              contiguous_state<4,complex_t> &swave,
@@ -1257,7 +1257,7 @@ take_profile(const definition_scenario &scenario,
     assert(static_cast<int>(ndx::rho) < state_count);
 
     // Uses that above take_profile(...) destroys swave by conversion into sphys
-    std::auto_ptr<profile> ret = take_profile(scenario, otool, swave);
+    std::unique_ptr<profile> ret = take_profile(scenario, otool, swave);
     physical_view<state_count> sphys(otool.dgrid, swave);
     collect_instantaneous(scenario, otool.grid, otool.dgrid, sphys, inst);
     return ret;

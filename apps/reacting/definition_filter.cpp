@@ -82,7 +82,7 @@ definition_filter::options_description()
     using boost::program_options::options_description;
     using boost::program_options::typed_value;
     using boost::program_options::value;
-    using std::auto_ptr;
+    using std::unique_ptr;
     using std::string;
 
     options_description retval("filter source parameters");
@@ -91,7 +91,7 @@ definition_filter::options_description()
     // displayed when the default is NaN.  NaN is used as a NOP value by client
     // code.  Validation routines used below all silently allow NaNs.
 
-    auto_ptr<typed_value<string> > p;
+    unique_ptr<typed_value<string> > p;
 
     // filter_phi
     p.reset(value<string>());
