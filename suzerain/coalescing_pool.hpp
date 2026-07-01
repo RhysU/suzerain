@@ -286,7 +286,7 @@ public:
         size_type nelems() const { return ::std::distance(b_, e_); }
 
         /** Set the memory contained by this instance to zero. */
-        void zero() { ::std::memset(b_, 0, nelems()*sizeof(T)); }
+        void zero() { ::std::fill_n(b_, nelems(), T()); }
 
         /** Is this instance equivalent to another? */
         bool operator==(const blocks& o) const {

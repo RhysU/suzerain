@@ -70,6 +70,39 @@ BOOST_AUTO_TEST_CASE( instantiate )
     BOOST_CHECK(!q.any_blocks_used());
 }
 
+// Characterize blocks::zero() prior to reworking its memset-based body.
+BOOST_AUTO_TEST_CASE( blocks_zero_clears_only_its_own_range )
+{
+    coalescing_pool<double> p(4);
+
+    // Three separate live blocks drawn from the pool.
+    coalescing_pool<double>::blocks a = p.acquire(1);
+    coalescing_pool<double>::blocks b = p.acquire(1);
+    coalescing_pool<double>::blocks c = p.acquire(1);
+
+    // Fill all three with recognizable non-zero values.
+    std::fill(a.begin(), a.end(), 11.0);
+    std::fill(b.begin(), b.end(), 22.0);
+    std::fill(c.begin(), c.end(), 33.0);
+
+    // Zeroing the middle block clears exactly its own elements...
+    b.zero();
+    for (coalescing_pool<double>::iterator it = b.begin();
+         it != b.end(); ++it) {
+        BOOST_CHECK_EQUAL(*it, 0.0);
+    }
+
+    // ...and leaves the live blocks on either side untouched.
+    for (coalescing_pool<double>::iterator it = a.begin();
+         it != a.end(); ++it) {
+        BOOST_CHECK_EQUAL(*it, 11.0);
+    }
+    for (coalescing_pool<double>::iterator it = c.begin();
+         it != c.end(); ++it) {
+        BOOST_CHECK_EQUAL(*it, 33.0);
+    }
+}
+
 BOOST_AUTO_TEST_CASE( simple_single_arena_reuse )
 {
     coalescing_pool<double> p(10);
