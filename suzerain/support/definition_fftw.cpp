@@ -53,9 +53,7 @@ boost::program_options::options_description
 definition_fftw::options_description()
 {
     namespace po = boost::program_options;
-    using std::bind1st;
-    using std::bind2nd;
-    using std::mem_fun;
+    using boost::bind;
     using std::string;
     using std::ostringstream;
 
@@ -79,12 +77,12 @@ definition_fftw::options_description()
     retval.add_options()
     ("rigor_fft",
      po::value<std::string>(NULL)
-     ->notifier(bind1st(mem_fun(&definition_fftw::normalize_rigor_fft), this))
+     ->notifier(bind(&definition_fftw::normalize_rigor_fft, this, _1))
      ->default_value(fftw::c_str(rigor_fft)),
      rigor_fft_description.c_str())
     ("rigor_mpi",
      po::value<std::string>(NULL)
-     ->notifier(bind1st(mem_fun(&definition_fftw::normalize_rigor_mpi), this))
+     ->notifier(bind(&definition_fftw::normalize_rigor_mpi, this, _1))
      ->default_value(fftw::c_str(rigor_mpi)),
      rigor_mpi_description.c_str())
     ("plan_wisdom",
