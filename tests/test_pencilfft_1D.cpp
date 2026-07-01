@@ -201,7 +201,7 @@ void compare_1D_complex_forward(ComplexMultiArray1 &in,
     // Plan before loading in the data since planning overwrites in
     std::shared_ptr<fftw_complex[]> buffer(
         static_cast<fftw_complex *>(fftw_malloc(sizeof(fftw_complex)*NR)),
-        std::ptr_fun(fftw_free));
+        fftw_free);
     BOOST_REQUIRE(buffer.get() != NULL);
     typename ComplexMultiArray1::element * const in_data
         = in.origin() + std::inner_product(
@@ -220,7 +220,7 @@ void compare_1D_complex_forward(ComplexMultiArray1 &in,
                                NR,
                                FFTW_FORWARD,
                                FFTW_PRESERVE_INPUT),
-            std::ptr_fun(fftw_destroy_plan));
+            fftw_destroy_plan);
     BOOST_REQUIRE(plan.get() != NULL);
 
     // Load a complex-valued function into the input array
@@ -381,7 +381,7 @@ void compare_1D_complex_backward(ComplexMultiArray1 &in,
     // Plan before loading in the data since planning overwrites in
     std::shared_ptr<fftw_complex[]> buffer(
         static_cast<fftw_complex *>(fftw_malloc(sizeof(fftw_complex)*NC)),
-        std::ptr_fun(fftw_free));
+        fftw_free);
     BOOST_REQUIRE(buffer.get() != NULL);
     typename ComplexMultiArray1::element * const in_data
         = in.origin() + std::inner_product(
@@ -400,7 +400,7 @@ void compare_1D_complex_backward(ComplexMultiArray1 &in,
                                NC,
                                FFTW_BACKWARD,
                                FFTW_PRESERVE_INPUT),
-            std::ptr_fun(fftw_destroy_plan));
+            fftw_destroy_plan);
     BOOST_REQUIRE(plan.get() != NULL);
 
     // Load a complex-valued function into the input array

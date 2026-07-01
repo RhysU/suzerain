@@ -985,7 +985,7 @@ void transform_c2c(
     std::shared_ptr<fftw_complex_type[]> buffer(
         static_cast<fftw_complex_type *>(
             fftw_malloc(sizeof(fftw_complex_type)*transform_n)),
-        std::ptr_fun(fftw_free));
+        fftw_free);
     assert(buffer);
     typedef typename TransformTraits::fftw_plan_type fftw_plan_type;
     std::shared_ptr<
@@ -995,7 +995,7 @@ void transform_c2c(
                                             buffer.get(),
                                             fftw_sign,
                                             fftw_flags | FFTW_DESTROY_INPUT),
-               std::ptr_fun(TransformTraits::destroy_plan));
+               TransformTraits::destroy_plan);
     assert(plan);
 
     // Dereference all constant parameters outside main processing loop
@@ -1303,7 +1303,7 @@ void forward_r2c(
     std::shared_ptr<fftw_complex_type[]> buffer(
         static_cast<fftw_complex_type *>(
             fftw_malloc(sizeof(fftw_complex_type)*(transform_n/2+1))),
-        std::ptr_fun(fftw_free));
+        fftw_free);
     assert(buffer);
     typedef typename transform_traits::fftw_plan_type fftw_plan_type;
     std::shared_ptr<
@@ -1314,7 +1314,7 @@ void forward_r2c(
                             buffer.get()),
                     buffer.get(),
                     fftw_flags | FFTW_DESTROY_INPUT),
-               std::ptr_fun(transform_traits::destroy_plan));
+               transform_traits::destroy_plan);
     assert(plan);
 
     // Dereference all constant parameters outside main processing loop
@@ -1500,7 +1500,7 @@ void backward_c2r(
     std::shared_ptr<fftw_complex_type[]> buffer(
         static_cast<fftw_complex_type *>(
             fftw_malloc(sizeof(fftw_complex_type)*(transform_n/2+1))),
-        std::ptr_fun(fftw_free));
+        fftw_free);
     assert(buffer);
     typedef typename transform_traits::fftw_plan_type fftw_plan_type;
     std::shared_ptr<
@@ -1511,7 +1511,7 @@ void backward_c2r(
                     reinterpret_cast<typename transform_traits::real_type *>(
                             buffer.get()),
                     fftw_flags | FFTW_DESTROY_INPUT),
-               std::ptr_fun(transform_traits::destroy_plan));
+               transform_traits::destroy_plan);
     assert(plan);
 
     // Dereference all constant parameters outside main processing loop

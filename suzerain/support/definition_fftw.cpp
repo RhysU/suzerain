@@ -56,7 +56,6 @@ definition_fftw::options_description()
     using std::bind1st;
     using std::bind2nd;
     using std::mem_fun;
-    using std::ptr_fun;
     using std::string;
     using std::ostringstream;
 
