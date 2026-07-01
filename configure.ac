@@ -187,7 +187,7 @@ dnl Current version checks also in Makefile.am
 dnl ------------------------------------------------
 LT_INIT
 LT_OUTPUT
-LT_PREREQ([2.2.6])
+LT_PREREQ([2.4.7])
 AC_SUBST(LIBTOOL_DEPS)
 m4_append([AC_LANG(C)],[
     ac_compile="./libtool --mode=compile --tag=CC $ac_compile"
