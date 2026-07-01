@@ -347,7 +347,7 @@ dnl C++ library requirements
 dnl ------------------------------------------------
 AC_LANG_PUSH([C++])
 PKG_CHECK_MODULES([LOG4CXX],
-    [liblog4cxx >= 0.10 apr-1 >= 1.3.3 apr-util-1 >= 1.3.4],
+    [liblog4cxx >= 1.4.0 apr-1 >= 1.7.5 apr-util-1 >= 1.6.3],
     AC_DEFINE([HAVE_LOG4CXX],1,[Define if log4cxx is available]))
 AC_CACHE_CHECK([if we can link APR using LOG4CXX_LIBS], [my_cv_apr_linkable],[
     LIBS=$LOG4CXX_LIBS
