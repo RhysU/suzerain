@@ -272,7 +272,7 @@ dnl ------------------------------------------------
 dnl ESIO requirements and associated HDF5 utilities
 dnl ------------------------------------------------
 AC_LANG_PUSH([C])
-esio_version="esio-hdf5 >= 0.1.6"
+esio_version="esio-hdf5 >= 0.2.0"
 PKG_CHECK_MODULES([ESIO], [$esio_version])
 AC_MSG_CHECKING([h5pcc path used to build ESIO])
 PKG_CHECK_EXISTS(
