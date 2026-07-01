@@ -93,8 +93,7 @@ public:
     /** Fill state with zeros causing <code>trivial() == true</code>. */
     largo_state& zero()
     {
-        using std::memset;
-        memset(this, 0, sizeof(largo_state));
+        rho = mx = my = mz = e = p = 0.0;
         return *this;
     }
 

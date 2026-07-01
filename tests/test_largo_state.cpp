@@ -45,6 +45,32 @@ BOOST_AUTO_TEST_CASE( default_construct_produces_trivial_state )
     BOOST_CHECK(s.trivial());
 }
 
+// Characterize zero() prior to reworking its memset-based implementation.
+BOOST_AUTO_TEST_CASE( zero_clears_members_and_backing_array )
+{
+    // Start from a state whose every slot is non-trivial.
+    largo_state s(4, 1, 2, 3, 9, 5);
+    BOOST_REQUIRE(!s.trivial());
+
+    // zero() returns a reference to the same object for chaining.
+    largo_state& r = s.zero();
+    BOOST_CHECK(&r == &s);
+
+    // Every named member reads back as zero...
+    BOOST_CHECK_EQUAL(s.rho, 0);
+    BOOST_CHECK_EQUAL(s.mx,  0);
+    BOOST_CHECK_EQUAL(s.my,  0);
+    BOOST_CHECK_EQUAL(s.mz,  0);
+    BOOST_CHECK_EQUAL(s.e,   0);
+    BOOST_CHECK_EQUAL(s.p,   0);
+
+    // ...and so does the entire packed array Largo consumes through as_is().
+    const double *d = s.as_is();
+    for (int i = 0; i < 6; ++i) BOOST_CHECK_EQUAL(d[i], 0);
+
+    BOOST_CHECK(s.trivial());
+}
+
 // Used for as_is and rescale_one test cases, just below
 static void some_library_call_for_as_is(double *d)
 {
