@@ -227,10 +227,10 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
     o.zero_dealiasing_modes(  swave, ndx::e);
     o.bop_accumulate(1,    1, swave, ndx::e, 0, auxw, aux::e_y);
     o.bop_accumulate(2,    1, swave, ndx::e, 0, auxw, aux::e_yy);
-    std::memcpy(auxw[aux::div_grad_e].origin(), auxw[aux::e_yy].origin(),
+    std::copy_n(auxw[aux::e_yy].origin(),
                 static_cast<size_t>(   auxw[aux::div_grad_e + 1].origin()
-                                     - auxw[aux::div_grad_e    ].origin())
-                                   * sizeof(complex_t));
+                                     - auxw[aux::div_grad_e    ].origin()),
+                auxw[aux::div_grad_e].origin());
     o.bop_apply     (0,    1, swave, ndx::e);
 
     // Compute X- and Z- derivatives of total energy at collocation points
@@ -960,8 +960,8 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             // When the above conditions are all met, save some communications
             // by using that the density right hand side is identically zero.
             assert(multi_array::is_contiguous(swave[i]));
-            std::memset(swave[i].origin(), 0,
-                    sizeof(complex_t)*o.dgrid.local_wave_extent.prod());
+            std::fill_n(swave[i].origin(),
+                    o.dgrid.local_wave_extent.prod(), complex_t());
 
         } else {
 
