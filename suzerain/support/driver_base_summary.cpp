@@ -332,8 +332,8 @@ driver_base::summary_run(
 
             // Repeatedly-used temporary storage
             MatrixXXr D;
-            char name[8]      = {};
-            char comment[127] = {};
+            char name[16]     = {};
+            char comment[256] = {};
 
             // Form dense product D^(k) M^-1 and store result
             //
