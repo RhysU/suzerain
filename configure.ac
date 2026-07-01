@@ -374,12 +374,13 @@ dnl ------------------------------------------------
 dnl Strictness must come after libraries to avoid breaking AC_CHECK_LIB
 AC_LANG_PUSH([C])
 AX_CFLAGS_WARN_ALL
-case $ax_cv_c_compiler_vendor in #(
-    gnu) AX_APPEND_COMPILE_FLAGS([-Wsuggest-attribute=pure    ],[CFLAGS])
-         AX_APPEND_COMPILE_FLAGS([-Wsuggest-attribute=const   ],[CFLAGS])
-         AX_APPEND_COMPILE_FLAGS([-Wsuggest-attribute=noreturn],[CFLAGS])
-         ;;
-esac
+dnl DISABLED:  Good for isolated work but too many warnings for constant use
+dnl case $ax_cv_c_compiler_vendor in #(
+dnl     gnu) AX_APPEND_COMPILE_FLAGS([-Wsuggest-attribute=pure    ],[CFLAGS])
+dnl          AX_APPEND_COMPILE_FLAGS([-Wsuggest-attribute=const   ],[CFLAGS])
+dnl          AX_APPEND_COMPILE_FLAGS([-Wsuggest-attribute=noreturn],[CFLAGS])
+dnl          ;;
+dnl esac
 AC_ARG_VAR([CFLAGS_PRECISE],[C compiler flags specifying no unsafe math optimizations])
 case $ax_cv_c_compiler_vendor in #(
     intel)    AX_CHECK_COMPILE_FLAG([-fp-model precise],
@@ -399,12 +400,13 @@ AX_CXX_CPPFLAGS_STD_LANG(AM_CPPFLAGS)
 AX_CXX_CXXFLAGS_STD_LANG(AM_CXXFLAGS)
 AX_CXX_LDFLAGS_STD_LANG(AM_LDFLAGS)
 AX_CXX_EXTERN_TEMPLATE
-case $ax_cv_cxx_compiler_vendor in #(
-    gnu) AX_APPEND_COMPILE_FLAGS([-Wsuggest-attribute=pure    ],[CXXFLAGS])
-         AX_APPEND_COMPILE_FLAGS([-Wsuggest-attribute=const   ],[CXXFLAGS])
-         AX_APPEND_COMPILE_FLAGS([-Wsuggest-attribute=noreturn],[CXXFLAGS])
-         ;;
-esac
+dnl DISABLED:  Good for isolated work but too many warnings for constant use
+dnl case $ax_cv_cxx_compiler_vendor in #(
+dnl     gnu) AX_APPEND_COMPILE_FLAGS([-Wsuggest-attribute=pure    ],[CXXFLAGS])
+dnl          AX_APPEND_COMPILE_FLAGS([-Wsuggest-attribute=const   ],[CXXFLAGS])
+dnl          AX_APPEND_COMPILE_FLAGS([-Wsuggest-attribute=noreturn],[CXXFLAGS])
+dnl          ;;
+dnl esac
 AC_ARG_VAR([CXXFLAGS_PRECISE],[C++ compiler flags specifying no unsafe math optimizations])
 case $ax_cv_cxx_compiler_vendor in #(
     intel)    AX_CHECK_COMPILE_FLAG([-fp-model precise],
