@@ -307,7 +307,7 @@ AC_ARG_WITH([underling],
          provides the pencil grid implementation instead])],
     [], [with_underling=yes])
 AS_IF([test "x$with_underling" != xno],
-    [PKG_CHECK_MODULES([UNDERLING],[underling-fftw >= 0.3.0],[
+    [PKG_CHECK_MODULES([UNDERLING],[underling-fftw >= 0.3.1],[
             AC_DEFINE([HAVE_UNDERLING],[1],
                       [Defined if underling library found])
             AM_CONDITIONAL([HAVE_UNDERLING], [true])
