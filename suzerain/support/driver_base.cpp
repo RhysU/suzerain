@@ -1896,7 +1896,7 @@ driver_base::process_any_signals_received(
     // Clear signal_received to defensively avoid stale data bugs.
     // These would only be problematic if process_any_signals_received
     // was run multiple times in between delta_t_allreducer invocations.
-    signal_received.assign(0);
+    signal_received.fill(0);
 
     return keep_advancing;
 }
@@ -1992,7 +1992,7 @@ real_t delta_t_allreducer::operator()(
     // Take atomic snapshot of and then clear signal::global_received
     signal_received = signal::global_received;
     static const signal::volatile_received_type::value_type zero = 0;
-    signal::global_received.assign(zero);
+    signal::global_received.fill(zero);
     if (DEBUG_ENABLED(who)) {
         for (std::size_t i = 0; i < signal::received_type::static_size; ++i) {
             if (SUZERAIN_UNLIKELY(signal_received[i])) {
