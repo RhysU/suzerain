@@ -56,25 +56,17 @@ definition_noise::options_description()
     using boost::bind;
     using boost::program_options::options_description;
     using boost::program_options::value;
-    using std::bind2nd;
-    using std::pointer_to_binary_function;
     using std::string;
     using validation::ensure_nonnegative;
     using validation::ensure_positive;
-
-    // For brevity below
-    pointer_to_binary_function<unsigned long,const char*,void>
-            ptr_fun_ensure_positive_ulint(ensure_positive<unsigned long>);
-    pointer_to_binary_function<real_t,const char*,void>
-            ptr_fun_ensure_nonnegative_real(ensure_nonnegative<real_t>);
 
     options_description retval(
             "Additive random velocity perturbations on startup");
 
     retval.add_options()
     ("fluct_percent", value(&percent)->default_value(percent)
-        ->notifier(bind2nd(ptr_fun_ensure_nonnegative_real,
-                            "fluct_percent")),
+        ->notifier(bind(&ensure_nonnegative<real_t>, _1,
+                        "fluct_percent")),
         "Maximum fluctuation magnitude to add as a percentage of"
         " centerline mean streamwise velocity")
     ("fluct_kxfrac", value<string>()->default_value("0:1")
@@ -88,8 +80,8 @@ definition_noise::options_description()
                         0, 1, 0, 1, "fluct_kzfrac")),
         "Range of Z wavenumbers in which to generate fluctuations")
     ("fluct_seed", value(&seed)->default_value(seed)
-        ->notifier(bind2nd(ptr_fun_ensure_positive_ulint,
-                            "fluct_seed")),
+        ->notifier(bind(&ensure_positive<unsigned long>, _1,
+                        "fluct_seed")),
         "rngstream generator seed (L'Ecuyer et al. 2002)")
     ;
 

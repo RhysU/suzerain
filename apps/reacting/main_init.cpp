@@ -121,8 +121,6 @@ suzerain::reacting::driver_init::run(int argc, char **argv)
     // FIXME: Establish default parameters for slow growth
 
     // Establish binary-specific options
-    std::pointer_to_binary_function<real_t,const char*,void>
-        ensure_real_tnonnegative(validation::ensure_nonnegative<real_t>);
     real_t mms    = -1;
     real_t npower =  1;
     options.add_options()
@@ -133,7 +131,8 @@ suzerain::reacting::driver_init::run(int argc, char **argv)
             " \"parabolic\" streamwise velocity profile (y*(L-y))^n.")
         ("mms",
             boost::program_options::value(&mms)
-            ->notifier(std::bind2nd(ensure_real_tnonnegative, "mms")),
+            ->notifier([](const real_t& v){
+                    validation::ensure_nonnegative(v, "mms"); }),
             "If given, prepare a manufactured solution at the specified time.")
     ;
 

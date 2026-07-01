@@ -45,7 +45,7 @@ namespace validation {
 template< typename T >
 void ensure_positive(T t, const char * name = NULL)
 {
-    // NOTE: t has non-const, non-reference type to avoid std::bind2nd issues
+    // NOTE: t is taken by value to bind safely as a deferred validation functor
 
     BOOST_STATIC_ASSERT(boost::is_arithmetic<T>::value);
     if (!(t > T(0) || (boost::math::isnan)(t))) {
@@ -70,7 +70,7 @@ template< typename T >
 typename boost::disable_if<boost::is_unsigned<T> >::type
     ensure_nonnegative(T t, const char * name = NULL)
 {
-    // NOTE: t has non-const, non-reference type to avoid std::bind2nd issues
+    // NOTE: t is taken by value to bind safely as a deferred validation functor
 
     BOOST_STATIC_ASSERT(boost::is_arithmetic<T>::value);
     if (!(t >= T(0) || (boost::math::isnan)(t))) {
@@ -94,7 +94,7 @@ template< typename T >
 typename boost::enable_if<boost::is_unsigned<T> >::type
 ensure_nonnegative(T t, const char * name = NULL)
 {
-    // NOTE: t has non-const, non-reference type to avoid std::bind2nd issues
+    // NOTE: t is taken by value to bind safely as a deferred validation functor
 
     BOOST_STATIC_ASSERT(boost::is_arithmetic<T>::value);
 
@@ -114,7 +114,7 @@ template< typename T >
 void ensure_bounded(T t, T lower, T upper, bool lower_inclusive = true,
     bool upper_inclusive = true, const char * name = NULL)
 {
-    // NOTE: t has non-const, non-reference type to avoid std::bind2nd issues
+    // NOTE: t is taken by value to bind safely as a deferred validation functor
 
     BOOST_STATIC_ASSERT(boost::is_arithmetic<T>::value);
     if (   (   (lower_inclusive ? t >= lower : t > lower)
