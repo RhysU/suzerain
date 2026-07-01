@@ -131,7 +131,7 @@ add_noise(contiguous_state<4,complex_t> &state,
  *
  * @return Mean quantities as B-spline coefficients.
  */
-std::auto_ptr<samples>
+std::unique_ptr<samples>
 take_samples(const definition_scenario &scenario,
              const specification_largo &sg,
              const operator_tools &otool,
@@ -149,7 +149,7 @@ take_samples(const definition_scenario &scenario,
  *
  * @return Mean quantity profiles as B-spline coefficients.
  */
-std::auto_ptr<profile>
+std::unique_ptr<profile>
 take_profile(const definition_scenario &scenario,
              const operator_tools &otool,
              contiguous_state<4,complex_t> &swave);
@@ -166,7 +166,7 @@ take_profile(const definition_scenario &scenario,
  *
  * @return Mean quantity profiles as B-spline coefficients.
  */
-std::auto_ptr<profile>
+std::unique_ptr<profile>
 take_profile(const definition_scenario &scenario,
              const operator_tools &otool,
              contiguous_state<4,complex_t> &swave,

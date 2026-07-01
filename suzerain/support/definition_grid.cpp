@@ -163,7 +163,7 @@ definition_grid::options_description()
     using boost::program_options::options_description;
     using boost::program_options::typed_value;
     using boost::program_options::value;
-    using std::auto_ptr;
+    using std::unique_ptr;
     using std::string;
     using validation::ensure_nonnegative;
     using validation::ensure_positive;
@@ -174,7 +174,7 @@ definition_grid::options_description()
     // Used to help resolve pointers-to-members taking strings
     specification_grid& (specification_grid::*f)(const string&) = NULL;
 
-    auto_ptr<typed_value<string> > p;
+    unique_ptr<typed_value<string> > p;
 
     // Lx
     p.reset(value<string>());

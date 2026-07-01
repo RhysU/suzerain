@@ -187,7 +187,7 @@ definition_time::options_description()
     using boost::program_options::options_description;
     using boost::program_options::typed_value;
     using boost::program_options::value;
-    using std::auto_ptr;
+    using std::unique_ptr;
     using std::numeric_limits;
     using std::string;
     using validation::ensure_nonnegative;
@@ -240,7 +240,7 @@ definition_time::options_description()
     // Complicated add_options() calls allow changing the default value of
     // evmagfactor displayed depending on the constructor.  NaN used as a NOP
     // value by clients.  Validation routines used below silently allow NaNs.
-    auto_ptr<typed_value<string> > p(value<string>());
+    unique_ptr<typed_value<string> > p(value<string>());
     p->notifier(bind(&parse_option<real_t>, _1, &evmagfactor,
                      &ensure_positive<real_t>, "evmagfactor"));
     if (constructor == constructor2)
