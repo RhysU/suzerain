@@ -86,7 +86,7 @@ SUZERAIN_GCC_DIAG_OFF(unused-variable);
 #include <boost/accumulators/statistics.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/array.hpp>
-#include <boost/bind.hpp>
+#include <boost/bind/bind.hpp>
 #include <boost/concept/assert.hpp>
 #include <boost/core/invoke_swap.hpp>
 #include <boost/current_function.hpp>
@@ -131,6 +131,11 @@ SUZERAIN_GCC_DIAG_ON(suggest-attribute=pure);
 SUZERAIN_GCC_DIAG_ON(suggest-attribute=noreturn);
 SUZERAIN_GCC_DIAG_ON(suggest-attribute=const);
 SUZERAIN_GCC_DIAG_ON(ignored-qualifiers);
+
+// Make the Boost.Bind placeholders (_1, _2, ...) available in the global
+// namespace, as <boost/bind/bind.hpp> no longer declares them there.  See
+// issue #16.
+using namespace boost::placeholders;
 
 /**
  * Ensure that \c expr evaluates to boolean \c true at runtime.  If \c expr
