@@ -63,6 +63,15 @@ Port to Ubuntu 24.04 with GCC 13, GSL 2.x, Boost 1.83, and C++17.
    retaining the MPI-friendly mpi_gsl_ieee_env_setup wrapper
  * Raise the minimum required GSL version from 1.15 to 2.8 to match the
    bspline API used throughout the library
+ * Replace the remaining deprecated Boost and C++ facilities flagged by the
+   compiler with their current equivalents: boost::swap and boost/swap.hpp
+   become boost::core::invoke_swap; boost/test/output_test_stream.hpp becomes
+   the boost/test/tools path; std::auto_ptr becomes std::unique_ptr, allocating
+   through std::make_unique at the owning sites; the std::ptr_fun shared_ptr
+   deleters pass their function pointer directly; std::bind1st, std::bind2nd,
+   and std::mem_fun give way to boost::bind or lambdas; and boost::array::assign
+   becomes fill.  The Boost.Bind global-placeholder notice is left untouched as
+   a separate, project-wide decision
 
 
 What's new in suzerain 0.1.7
