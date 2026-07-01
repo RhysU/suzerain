@@ -46,8 +46,14 @@ uniform::uniform(const bspline &b)
 
 uniform::uniform(const bsplineop &bop)
 {
-    // Relies on any B-spline basis being a partition of unity
+    // Relies on any B-spline basis being a partition of unity.
+    // GCC -O3 misanalyzes Eigen's inlined DenseStorage::resize and emits a
+    // bogus -Wmaybe-uninitialized naming phantom this[1]/this[2] elements
+    // that resize never reads.  Silence just this dynamic-vector init.
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
     shape.setOnes(bop.n());
+#pragma GCC diagnostic pop
 }
 
 linear::linear(const bspline &b, const real_t lower, const real_t upper)
@@ -69,7 +75,10 @@ linear::linear(const bspline &b, const real_t lower, const real_t upper)
 coefficient::coefficient(const bsplineop &bop, const int i)
 {
     // Apply the mass matrix to express coefficient i via collocation points
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized" // bogus Eigen -O3 FP; see uniform
     shape.setZero(bop.n());
+#pragma GCC diagnostic pop
     shape[i] = 1;
     bop.apply(0, 1.0, shape.data(), shape.innerStride());
 }
@@ -78,7 +87,10 @@ lower::lower(const bsplineop &bop, const int nderiv)
 {
     // Reconstructing the first row of D^{(nderiv)} in coeff
     // requires working with the first column of D_T
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized" // bogus Eigen -O3 FP; see uniform
     coeff.setZero(bop.n());
+#pragma GCC diagnostic pop
     int il, iu;
     real_t * const col = (real_t *) suzerain_gbmatrix_col(
             bop.n(), bop.n(), bop.kl(nderiv), bop.ku(nderiv),
@@ -93,7 +105,10 @@ upper::upper(const bsplineop &bop, const int nderiv)
 {
     // Reconstructing the last row of D^{(nderiv)} in coeff
     // requires working with the last column of D_T
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized" // bogus Eigen -O3 FP; see uniform
     coeff.setZero(bop.n());
+#pragma GCC diagnostic pop
     int il, iu;
     real_t * const col = (real_t *) suzerain_gbmatrix_col(
             bop.n(), bop.n(), bop.kl(nderiv), bop.ku(nderiv),
