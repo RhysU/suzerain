@@ -635,11 +635,11 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                     + term_e_y    * grad_e.y()
                     + term_e_yy   * e_yy
                     ;
+            }
 
                 // ...
                 // Fall through!
                 // ...
-            }
 
             case linearize::none:
                 sphys(ndx::e, offset) +=
