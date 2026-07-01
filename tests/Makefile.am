@@ -211,17 +211,19 @@ test_mpl_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
 ## test_allocator_LDADD    += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
 ## test_allocator_LDADD    += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
 
-### The upstream Isensee allocator test intentionally clears and copies
-### non-trivial types via memset/memcpy, tripping -Wclass-memaccess.
-### Silence only that warning per target; the sources stay verbatim.
-ALLOCATOR_WNO_CMA = $(AM_CXXFLAGS) -Wno-class-memaccess
+### The upstream Isensee allocator test trips two GCC warnings that are
+### not defects: it clears and copies non-trivial types via memset/memcpy
+### (-Wclass-memaccess) and constructs containers from a deliberately
+### uninitialized value_type (-Wmaybe-uninitialized).  Silence just those
+### two per target; the sources stay verbatim and other warnings persist.
+ALLOCATOR_WNO = $(AM_CXXFLAGS) -Wno-class-memaccess -Wno-maybe-uninitialized
 
 TESTS                     += test_allocator0
 EXTRA_PROGRAMS            += test_allocator0
 test_allocator0_SOURCES    = test_allocator.cpp
 test_allocator0_CPPFLAGS   = $(AM_CPPFLAGS) -DSTL_ALLOCATOR_TEST_PART=0
 test_allocator0_CPPFLAGS  += -DBOOST_TEST_DYN_LINK -DBOOST_TEST_NO_LIB
-test_allocator0_CXXFLAGS   = $(ALLOCATOR_WNO_CMA)
+test_allocator0_CXXFLAGS   = $(ALLOCATOR_WNO)
 test_allocator0_LDADD      = ../suzerain/libsuzerain.la
 test_allocator0_LDADD     += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
 test_allocator0_LDADD     += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
@@ -231,7 +233,7 @@ EXTRA_PROGRAMS            += test_allocator1
 test_allocator1_SOURCES    = test_allocator.cpp
 test_allocator1_CPPFLAGS   = $(AM_CPPFLAGS) -DBOOST_TEST_DYN_LINK -DBOOST_TEST_NO_LIB
 test_allocator1_CPPFLAGS  += -DSTL_ALLOCATOR_TEST_PART=1
-test_allocator1_CXXFLAGS   = $(ALLOCATOR_WNO_CMA)
+test_allocator1_CXXFLAGS   = $(ALLOCATOR_WNO)
 test_allocator1_LDADD      = ../suzerain/libsuzerain.la
 test_allocator1_LDADD     += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
 test_allocator1_LDADD     += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
@@ -241,7 +243,7 @@ EXTRA_PROGRAMS            += test_allocator2
 test_allocator2_SOURCES    = test_allocator.cpp
 test_allocator2_CPPFLAGS   = $(AM_CPPFLAGS) -DBOOST_TEST_DYN_LINK -DBOOST_TEST_NO_LIB
 test_allocator2_CPPFLAGS  += -DSTL_ALLOCATOR_TEST_PART=2
-test_allocator2_CXXFLAGS   = $(ALLOCATOR_WNO_CMA)
+test_allocator2_CXXFLAGS   = $(ALLOCATOR_WNO)
 test_allocator2_LDADD      = ../suzerain/libsuzerain.la
 test_allocator2_LDADD     += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
 test_allocator2_LDADD     += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
@@ -251,7 +253,7 @@ EXTRA_PROGRAMS            += test_allocator3
 test_allocator3_SOURCES    = test_allocator.cpp
 test_allocator3_CPPFLAGS   = $(AM_CPPFLAGS) -DBOOST_TEST_DYN_LINK -DBOOST_TEST_NO_LIB
 test_allocator3_CPPFLAGS  += -DSTL_ALLOCATOR_TEST_PART=3
-test_allocator3_CXXFLAGS   = $(ALLOCATOR_WNO_CMA)
+test_allocator3_CXXFLAGS   = $(ALLOCATOR_WNO)
 test_allocator3_LDADD      = ../suzerain/libsuzerain.la
 test_allocator3_LDADD     += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
 test_allocator3_LDADD     += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
@@ -261,7 +263,7 @@ EXTRA_PROGRAMS            += test_allocator4
 test_allocator4_SOURCES    = test_allocator.cpp
 test_allocator4_CPPFLAGS   = $(AM_CPPFLAGS) -DBOOST_TEST_DYN_LINK -DBOOST_TEST_NO_LIB
 test_allocator4_CPPFLAGS  += -DSTL_ALLOCATOR_TEST_PART=4
-test_allocator4_CXXFLAGS   = $(ALLOCATOR_WNO_CMA)
+test_allocator4_CXXFLAGS   = $(ALLOCATOR_WNO)
 test_allocator4_LDADD      = ../suzerain/libsuzerain.la
 test_allocator4_LDADD     += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
 test_allocator4_LDADD     += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
@@ -271,7 +273,7 @@ EXTRA_PROGRAMS            += test_allocator5
 test_allocator5_SOURCES    = test_allocator.cpp
 test_allocator5_CPPFLAGS   = $(AM_CPPFLAGS) -DBOOST_TEST_DYN_LINK -DBOOST_TEST_NO_LIB
 test_allocator5_CPPFLAGS  += -DSTL_ALLOCATOR_TEST_PART=5
-test_allocator5_CXXFLAGS   = $(ALLOCATOR_WNO_CMA)
+test_allocator5_CXXFLAGS   = $(ALLOCATOR_WNO)
 test_allocator5_LDADD      = ../suzerain/libsuzerain.la
 test_allocator5_LDADD     += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
 test_allocator5_LDADD     += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
@@ -281,7 +283,7 @@ EXTRA_PROGRAMS            += test_allocator6
 test_allocator6_SOURCES    = test_allocator.cpp
 test_allocator6_CPPFLAGS   = $(AM_CPPFLAGS) -DBOOST_TEST_DYN_LINK -DBOOST_TEST_NO_LIB
 test_allocator6_CPPFLAGS  += -DSTL_ALLOCATOR_TEST_PART=6
-test_allocator6_CXXFLAGS   = $(ALLOCATOR_WNO_CMA)
+test_allocator6_CXXFLAGS   = $(ALLOCATOR_WNO)
 test_allocator6_LDADD      = ../suzerain/libsuzerain.la
 test_allocator6_LDADD     += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
 test_allocator6_LDADD     += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
@@ -291,7 +293,7 @@ EXTRA_PROGRAMS            += test_allocator7
 test_allocator7_SOURCES    = test_allocator.cpp
 test_allocator7_CPPFLAGS   = $(AM_CPPFLAGS) -DBOOST_TEST_DYN_LINK -DBOOST_TEST_NO_LIB
 test_allocator7_CPPFLAGS  += -DSTL_ALLOCATOR_TEST_PART=7
-test_allocator7_CXXFLAGS   = $(ALLOCATOR_WNO_CMA)
+test_allocator7_CXXFLAGS   = $(ALLOCATOR_WNO)
 test_allocator7_LDADD      = ../suzerain/libsuzerain.la
 test_allocator7_LDADD     += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
 test_allocator7_LDADD     += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
