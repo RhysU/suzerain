@@ -91,17 +91,12 @@ libbfd/libiberty needed to build mpiP, which is not itself packaged):
 
     sudo apt install binutils-dev lcov perl sagemath
 
-ESIO (https://github.com/RhysU/ESIO) must be built and installed from
-source.  Let its `configure' autodetect parallel HDF5 via the `h5pcc'
-wrapper; do *not* pass `--with-hdf5=/usr', which misses hdf5.h under
-Ubuntu's /usr/include/hdf5/openmpi layout:
-
-    CC=mpicc CXX=mpicxx ./configure --prefix=/usr/local
-    make && sudo make install && sudo ldconfig
-
-When MKL is installed from packages, configure suzerain with:
+When MKL is installed from Ubuntu packages, configure suzerain like...
 
     CPPFLAGS="-I/usr/include/mkl" ./configure
+
+...possibly supplying PKG_CONFIG_PATH for any prerequisites installed in
+user-space, e.g. ESIO, GRVY, and Underling.
 
 
 3. Configuration
