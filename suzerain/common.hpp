@@ -88,6 +88,7 @@ SUZERAIN_GCC_DIAG_OFF(unused-variable);
 #include <boost/array.hpp>
 #include <boost/bind.hpp>
 #include <boost/concept/assert.hpp>
+#include <boost/core/invoke_swap.hpp>
 #include <boost/current_function.hpp>
 #include <boost/foreach.hpp>
 #include <boost/format.hpp>
@@ -117,7 +118,6 @@ SUZERAIN_GCC_DIAG_OFF(unused-variable);
 #include <boost/ptr_container/ptr_vector.hpp>
 #include <boost/ref.hpp>
 #include <boost/static_assert.hpp>
-#include <boost/swap.hpp>
 #include <boost/typeof/typeof.hpp>
 #include <boost/type_traits.hpp>
 #include <boost/unordered_map.hpp>

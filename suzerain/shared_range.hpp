@@ -12,11 +12,11 @@
 
 #include <algorithm>
 #include <memory>
+#include <boost/core/invoke_swap.hpp>
 #include <boost/range/distance.hpp>
 #include <boost/range/difference_type.hpp>
 #include <boost/range/iterator_range.hpp>
 #include <boost/range/value_type.hpp>
-#include <boost/swap.hpp>
 #include <boost/version.hpp>
 
 namespace suzerain {
@@ -190,14 +190,14 @@ public: // swap, reset
     {
 #if BOOST_VERSION >= 104300
         // It would be nice if iterator_range provided a member swap...
-        ::boost::swap(static_cast<iterator_range&>(*this),
-                      static_cast<iterator_range&>(o));
+        ::boost::core::invoke_swap(static_cast<iterator_range&>(*this),
+                                   static_cast<iterator_range&>(o));
 #else
         // Perform a "logical" swap without triggering is_singular() asserts.
         switch (this->is_singular() + (o.is_singular() << 1)) {
         case 0:  // neither singular
-            ::boost::swap(static_cast<iterator_range&>(*this),
-                          static_cast<iterator_range&>(o));
+            ::boost::core::invoke_swap(static_cast<iterator_range&>(*this),
+                                       static_cast<iterator_range&>(o));
             break;
         case 1:  // only this singular so copy o and make o singular
             this->iterator_range::operator=(o);
