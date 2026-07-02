@@ -71,7 +71,6 @@
       integer,save,dimension(:),allocatable:: JrRcvCnts,JrRcvStrt
       integer,save,dimension(:),allocatable:: KrSndCnts,KrSndStrt
       integer,save,dimension(:),allocatable:: KrRcvCnts,KrRcvStrt
-      integer,save,dimension(:,:),allocatable:: status
       complex(mytype), save, allocatable :: buf(:),buf1(:),buf2(:)
       logical :: OW = .false.
 #ifdef USE_EVEN
