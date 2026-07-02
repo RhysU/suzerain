@@ -74,8 +74,6 @@ FCT_BGN()
           double y       = 1.0/ 10.0;
           double grDelta = 5.0/100.0;
 
-          const char ransmodel[] = "k_epsilon";
-          const int ntvar  = 2;
 
           double field  [] = \
           {    11.0/ 1000.0,  \
@@ -237,7 +235,6 @@ FCT_BGN()
             srcall_good[i] = srcmean_good[i] + srcrms_good[i];
           }
 
-          const double tolerance = 1.0E-12;
 
           const char model[] = "bl_temporal";
 

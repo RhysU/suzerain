@@ -71,8 +71,6 @@ FCT_BGN()
           const int ntvar        = 2;
           const int ns           = 2;
           const int neq          = 5 + ns + ntvar;
-          const int nvar         = neq;
-          const int nvar_base    = 5 + ns;
 
           largo_workspace * work;
           double y        =   1.0/ 10.0;
@@ -228,7 +226,6 @@ FCT_BGN()
             -  2517.0/  184000.0      \
           };
 
-          const double tolerance = 1.0E-12;
 
           const char model[] = "bl_spatiotemporal_consistent";
 

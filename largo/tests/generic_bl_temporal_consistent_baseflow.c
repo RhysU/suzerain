@@ -219,7 +219,6 @@ FCT_BGN()
                 -207.0/ 2000000.0  \
           };
 
-          const double tolerance = 1.0E-7;
 
           const char model[] = "bl_temporal_consistent";
 

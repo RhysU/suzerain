@@ -264,7 +264,6 @@ FCT_BGN()
             -  4018061.0/  5750000000.0  \
           };
 
-          const double tolerance = 1.0E-12;
 
           const char model[] = "bl_spatiotemporal_consistent";
 

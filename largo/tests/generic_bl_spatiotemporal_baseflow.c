@@ -276,7 +276,6 @@ FCT_BGN()
             srcall_good[i] = srcmean_good[i] + srcrms_good[i];
           }
 
-          const double tolerance = 1.0E-12;
 
           const char model[] = "bl_spatiotemporal";
 

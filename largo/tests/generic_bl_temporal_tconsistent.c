@@ -176,7 +176,6 @@ FCT_BGN()
           double grDArms [] = \
           { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
 
-          const double tolerance = 1.0E-7;
 
           const char model[] = "bl_temporal_tensor-consistent";
 
