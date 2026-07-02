@@ -3272,6 +3272,7 @@ they are needed, but at runtime, only the cheap, first call is made. */
         );                                                          \
         exit(EXIT_FAILURE);                                         \
    }                                                                \
+   fct_unused(num_failed__);                                        \
 
 
 #define FCT_FINAL()                                                \
