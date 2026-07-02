@@ -917,7 +917,7 @@ driver::default_restart_interval(
             // Eight restarts per flow through in a channel giving 80 restarts
             // in 10 flow throughs, a reasonable channel simulation duration.
             // Across O(25) flow throughs in a boundary layer campaign it
-            // produces O(200) restart files which is slighly excessive but
+            // produces O(200) restart files which is slightly excessive but
             // increases data redundancy for these more expensive simulations.
             t /= 8;
 
