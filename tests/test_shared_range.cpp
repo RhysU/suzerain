@@ -214,6 +214,10 @@ BOOST_AUTO_TEST_CASE( construct_from_shared_ptr ) // constructor6
 
 BOOST_AUTO_TEST_CASE( zero_size_construction ) // constructors 2 and 4
 {
+    // This case deliberately builds ranges over zero-length arrays, so
+    // GCC's -Walloc-size flags each "new int[0]" as insufficiently sized.
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Walloc-size"
     tut r(new int[0], static_cast<std::size_t>(0));
     BOOST_CHECK_EQUAL(r.size(),   0);
     BOOST_CHECK_EQUAL(r.empty(),  true);
@@ -231,6 +235,7 @@ BOOST_AUTO_TEST_CASE( zero_size_construction ) // constructors 2 and 4
     r.swap(s);
     BOOST_CHECK(r.begin() == x);
     BOOST_CHECK(r.end()   == x);
+#pragma GCC diagnostic pop
 }
 
 BOOST_AUTO_TEST_CASE( copy_like_construction )
