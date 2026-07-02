@@ -1001,11 +1001,9 @@ void transform_c2c(
     // Dereference all constant parameters outside main processing loop
     // Pulls array information into our stack frame
     index_array1 index_bases_in;
-    std::copy(in.index_bases(), in.index_bases() + dimensionality,
-              index_bases_in.begin());
+    std::copy_n(in.index_bases(), dimensionality, index_bases_in.begin());
     index_array2 index_bases_out;
-    std::copy(out.index_bases(), out.index_bases() + dimensionality,
-              index_bases_out.begin());
+    std::copy_n(out.index_bases(), dimensionality, index_bases_out.begin());
     const index1     stride_in_transform_dim  = in.strides()[transform_dim];
     const index2     stride_out_transform_dim = out.strides()[transform_dim];
     const shape_type shape_in_transform_dim   = shape_in[transform_dim];
@@ -1320,11 +1318,9 @@ void forward_r2c(
     // Dereference all constant parameters outside main processing loop
     // Pulls array information into our stack frame
     index_array1 index_bases_in;
-    std::copy(in.index_bases(), in.index_bases() + dimensionality,
-              index_bases_in.begin());
+    std::copy_n(in.index_bases(), dimensionality, index_bases_in.begin());
     index_array2 index_bases_out;
-    std::copy(out.index_bases(), out.index_bases() + dimensionality,
-              index_bases_out.begin());
+    std::copy_n(out.index_bases(), dimensionality, index_bases_out.begin());
     const index1     stride_in_transform_dim  = in.strides()[transform_dim];
     const index2     stride_out_transform_dim = out.strides()[transform_dim];
     const shape_type shape_out_transform_dim  = shape_out[transform_dim];
@@ -1517,11 +1513,9 @@ void backward_c2r(
     // Dereference all constant parameters outside main processing loop
     // Pulls array information into our stack frame
     index_array1 index_bases_in;
-    std::copy(in.index_bases(), in.index_bases() + dimensionality,
-              index_bases_in.begin());
+    std::copy_n(in.index_bases(), dimensionality, index_bases_in.begin());
     index_array2 index_bases_out;
-    std::copy(out.index_bases(), out.index_bases() + dimensionality,
-              index_bases_out.begin());
+    std::copy_n(out.index_bases(), dimensionality, index_bases_out.begin());
     const index1     stride_in_transform_dim  = in.strides()[transform_dim];
     const index2     stride_out_transform_dim = out.strides()[transform_dim];
     const shape_type shape_in_transform_dim   = shape_in[transform_dim];
