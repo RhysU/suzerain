@@ -25,7 +25,10 @@ DIST_SUBDIRS = lib largo build-aux suzerain tests fields apps \
 EXTRA_DIST  += AUTHORS astylerc bootstrap COPYING $(DX_CONFIG)
 EXTRA_DIST  += notebooks # Entire directory contents
 
-dist-hook: dist-hook-scm
+# Keep a single dist-hook rule listing every sub-hook.  Two separate
+# "dist-hook:" rules make AX_ENABLE_BUILDDIR emit duplicate toplevel
+# recipes, so GNU make warns and silently drops one at "make dist".
+dist-hook: dist-hook-scm dist-hook-version-dist
 dist-hook-scm:
 	: # Eliminate .svn and/or .git directories in dist tarball
 	find $(distdir)/ -name '.svn' -type d -exec rm {} \;
@@ -79,7 +82,7 @@ EXTRA_DIST    += .version
 BUILT_SOURCES += $(srcdir)/.version
 $(srcdir)/.version: configure.ac
 	echo $(VERSION) >$@-t && mv $@-t $@
-dist-hook: dist-hook-version-dist
+# dist-hook-version-dist is attached to dist-hook up top; see that comment.
 dist-hook-version-dist:
 	echo $(VERSION) >$(distdir)/.version-dist
 
