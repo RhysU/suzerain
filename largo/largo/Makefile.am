@@ -3,6 +3,12 @@
 AM_CFLAGS          = # Append below
 AM_CPPFLAGS        = -I$(top_builddir)        -I$(top_srcdir)
 AM_FCFLAGS         = -I$(top_builddir)        -I$(top_srcdir)
+# largo's Fortran models implement shared abstract-interface signatures
+# (procedure pointers in largo_workspace), so unused dummy arguments and
+# indirectly dispatched procedures are inherent to the design, not defects.
+# A few FIXME-scaffold locals are likewise intentional.  Silence these.
+AM_FCFLAGS        += -Wno-unused-dummy-argument -Wno-unused-function
+AM_FCFLAGS        += -Wno-unused-variable
 AM_LDFLAGS         = # Append below
 BUILT_SOURCES      = # Append below
 CLEANFILES         = # Append below

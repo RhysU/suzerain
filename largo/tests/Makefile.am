@@ -5,6 +5,12 @@ AM_CPPFLAGS         = -I$(top_builddir)        -I$(top_srcdir)
 AM_CPPFLAGS        += -I$(top_builddir)/largo
 AM_FCFLAGS          = -I$(top_builddir)        -I$(top_srcdir)
 AM_FCFLAGS         += -I$(top_builddir)/largo
+# The Fortran test drivers share largo's abstract-interface signatures and
+# compile in plain and -DBASEFLOW_UNIFORM variants, so unused dummy
+# arguments and variables live only in one variant are inherent.  Silence
+# these non-defect warnings.
+AM_FCFLAGS         += -Wno-unused-dummy-argument -Wno-unused-function
+AM_FCFLAGS         += -Wno-unused-variable
 AM_LDFLAGS          = # Append below
 BUILT_SOURCES       = # Append below
 check_PROGRAMS      = # Append below
