@@ -3,7 +3,7 @@
 /bl_temporal
 /bl_temporal_f
 /.deps
-/.license.stamp
+/license.stamp
 /Makefile
 /Makefile.dep
 /Makefile.in
