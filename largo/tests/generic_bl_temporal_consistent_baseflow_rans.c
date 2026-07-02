@@ -210,11 +210,11 @@ FCT_BGN()
           fct_chk_eq_dbl(srcmean[3-1]        , srcmean_good[3-1]        );
           fct_chk_eq_dbl(srcmean[4-1]        , srcmean_good[4-1]        );
           fct_chk_eq_dbl(srcmean[5-1]/100000., srcmean_good[5-1]/100000.);
-          for (unsigned int is=0; is < ns; ++is)
+          for (int is=0; is < ns; ++is)
           {
             fct_chk_eq_dbl(srcmean[5+is]      , srcmean_good[5+is]);
           }
-          for (unsigned int it=0; it < ntvar; ++it)
+          for (int it=0; it < ntvar; ++it)
           {
             fct_chk_eq_dbl(srcmean[5+ns+it] , srcmean_good[5+ns+it]);
           }

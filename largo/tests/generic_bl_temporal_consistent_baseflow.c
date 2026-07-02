@@ -264,7 +264,7 @@ FCT_BGN()
           fct_chk_eq_dbl(srcmean[3-1]        , srcmean_good[3-1]        );
           fct_chk_eq_dbl(srcmean[4-1]        , srcmean_good[4-1]        );
           fct_chk_eq_dbl(srcmean[5-1]/100000., srcmean_good[5-1]/100000.);
-          for (unsigned int is=0; is < ns; ++is)
+          for (int is=0; is < ns; ++is)
           {
             fct_chk_eq_dbl(srcmean[5+is]      , srcmean_good[5+is]);
           }
@@ -276,7 +276,7 @@ FCT_BGN()
           fct_chk_eq_dbl(srcfull[3-1]        , srcfull_good[3-1]        );
           fct_chk_eq_dbl(srcfull[4-1]        , srcfull_good[4-1]        );
           fct_chk_eq_dbl(srcfull[5-1]/100000., srcfull_good[5-1]/100000.);
-          for (unsigned int is=0; is < ns; ++is)
+          for (int is=0; is < ns; ++is)
           {
             fct_chk_eq_dbl(srcfull[5+is]      , srcfull_good[5+is]);
           }
@@ -306,7 +306,7 @@ FCT_BGN()
           fct_chk_eq_dbl(srcfull[3-1]        , srcfull_good[3-1]        );
           fct_chk_eq_dbl(srcfull[4-1]        , srcfull_good[4-1]        );
           fct_chk_eq_dbl(srcfull[5-1]/100000., srcfull_good[5-1]/100000.);
-          for (unsigned int is=0; is < ns; ++is)
+          for (int is=0; is < ns; ++is)
           {
             fct_chk_eq_dbl(srcfull[5+is]      , srcfull_good[5+is]);
           }
