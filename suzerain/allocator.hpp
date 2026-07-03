@@ -4,7 +4,7 @@
 // Allocator, An Introduction and Implementation" from The Code Project
 // (http://www.codeproject.com/KB/cpp/allocator.aspx).
 //
-// Copyright (C) 2010-2014 Rhys Ulerich
+// Copyright (C) 2010-2014, 2026 Rhys Ulerich
 // Copyright (C) 2012-2014 The PECOS Development Team
 // except where that copyright conflicts with the rights of
 // Lai Shiaw San Kent and Sean Kent.
