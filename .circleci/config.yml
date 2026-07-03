@@ -4,7 +4,7 @@ version: 2.1
 jobs:
   deploy-docs:
     docker:
-      - image: cimg/base:stable
+      - image: cimg/base:current-24.04
     resource_class: medium
     steps:
       - checkout
