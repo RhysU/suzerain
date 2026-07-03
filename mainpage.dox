@@ -1,0 +1,23 @@
+/**
+ * \mainpage Suzerain
+ *
+ * Suzerain is a framework for performing direct numerical simulation (DNS) of
+ * the Navier-Stokes equations using spectral numerics.  It is well-suited to
+ * memory-intensive, structured spectral turbulence simulations and the
+ * postprocessing of their results across MPI-parallel, distributed-memory
+ * machines.  This framework and its included applications are written in C++
+ * (C++17), C (C99), and Fortran.
+ *
+ * Suzerain was created for the dissertation
+ * <a href="https://repositories.lib.utexas.edu/items/00524fca-a2d9-42c1-b2d2-a892fe11d4da">Reducing
+ * turbulence- and transition-driven uncertainty in aerothermodynamic heating
+ * predictions for blunt-bodied reentry vehicles</a>.
+ * This simulation code produced the data published as
+ * <a href="https://turbulence.oden.utexas.edu/coleman/">Sub- through Supersonic
+ * Coleman-like Channels</a> and
+ * <a href="https://turbulence.oden.utexas.edu/mpcvissturb/">Spatiotemporally
+ * Homogenized Boundary Layers at Atmospheric Reentry-like Conditions</a>.
+ *
+ * The source repository is hosted at
+ * <a href="https://github.com/RhysU/suzerain">https://github.com/RhysU/suzerain</a>.
+ */
