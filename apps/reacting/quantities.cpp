@@ -69,7 +69,7 @@ quantities_base::quantities_base(real_t t)
 
 quantities_base::quantities_base(
         real_t t,
-        quantities_base::storage_type::Index Ny)
+        storage_type::Index Ny)
     : t(t),
       storage(storage_type::Zero(Ny, storage_type::ColsAtCompileTime))
     , who(default_who)
@@ -214,8 +214,8 @@ quantities::quantities(real_t t)
 
 quantities::quantities(
         real_t t,
-        quantities::storage_type::Index Ny,
-        quantities::storage_type::Index Ns)
+        species_storage_type::Index Ny,
+        species_storage_type::Index Ns)
     : quantities_base(t, Ny)
     , Ns(Ns)
 {

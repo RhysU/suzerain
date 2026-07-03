@@ -40,7 +40,7 @@ samples::samples(real_t t)
 }
 
 samples::samples(real_t t,
-                 samples::storage_type::Index Ny)
+                 storage_type::Index Ny)
     : t(t)
     , storage(storage_type::Zero(Ny, storage_type::ColsAtCompileTime))
 {

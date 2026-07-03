@@ -36,7 +36,7 @@ profile::profile()
 {
 }
 
-profile::profile(profile::storage_type::Index Ny)
+profile::profile(storage_type::Index Ny)
     : storage(storage_type::Zero(Ny, storage_type::ColsAtCompileTime))
 {
 }

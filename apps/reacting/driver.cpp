@@ -102,8 +102,8 @@ driver::reset()
 void
 driver::log_manufactured_solution_absolute_error(
         const std::string& timeprefix,
-        const time_type t,
-        const step_type nt)
+        const real_t t,
+        const std::size_t nt)
 {
     SUZERAIN_UNUSED(nt);
 
@@ -345,8 +345,8 @@ driver::save_spectra_primitive(
 bool
 driver::log_status_hook(
         const std::string& timeprefix,
-        const real_t t,
-        const std::size_t nt)
+        const time_type t,
+        const step_type nt)
 {
     const bool retval = super::log_status_hook(timeprefix, t, nt);
     log_manufactured_solution_absolute_error(timeprefix, t, nt);

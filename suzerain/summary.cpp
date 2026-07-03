@@ -34,7 +34,7 @@ summary::summary()
 {
 }
 
-summary::summary(summary::storage_type::Index Ny)
+summary::summary(storage_type::Index Ny)
     : storage(storage_type::Zero(Ny, storage_type::ColsAtCompileTime))
 {
 }
