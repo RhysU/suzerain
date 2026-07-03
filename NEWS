@@ -25,6 +25,11 @@ Port to Ubuntu 24.04 with GCC 13, GSL 2.x, Boost 1.83, and C++17.
  * Fix and enable the test suites under GCC 13, relaxing floating-point
    tolerances for its numerical differences
  * Restore Python 3 compatibility in the postprocessing scripts
+ * Clear the GCC 13 warning stack across the library, tests, and the bundled
+   largo and p3dfft, zeroing state with std::fill_n/copy_n instead of memset
+   and quieting inherited Eigen and allocator-test noise
+ * Build and deploy Doxygen and Graphviz API documentation from CI, adding a
+   documentation main page
 
 
 What's new in suzerain 0.1.7
