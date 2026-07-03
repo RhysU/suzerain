@@ -25,7 +25,7 @@
 #define SUZERAIN_SPECIFICATION_ISOTHERMAL_HPP
 
 /** @file
- * Provides \ref specification_isothermal.
+ * Provides \ref suzerain::specification_isothermal.
  */
 
 #include <suzerain/common.hpp>
@@ -158,8 +158,10 @@ public:
     /**
      * Specify two different temperatures, wall blowing velocities,
      * associated streamwise velocities, and reference densities.
-     * @copydetails specification_isothermal(real_t,real_t,real_t,real_t,real_t,real_t,real_t,real_t)
+     * @copydetails specification_isothermal(real_t,real_t,real_t,real_t,real_t,real_t)
+     * @param lower_rho \f$\rho\f$ at \f$y=0\f$
      * @param lower_cs Mass fractions, one per species, at \f$y=0\f$ boundary.
+     * @param upper_rho \f$\rho\f$ at \f$y=L_y\f$
      * @param upper_cs Mass fractions, one per species, at \f$y=L_y\f$ boundary.
      * @throw invalid_argument if <tt>lower_cs.size() != upper_cs.size()</tt>
      */

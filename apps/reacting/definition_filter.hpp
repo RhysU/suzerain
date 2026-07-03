@@ -98,8 +98,14 @@ public:
     real_t filter_phi;
 
     /**
-     * @copydoc suzerain_filterop_filter
-     * @param n Vector length for \c x and \c y
+     * Apply the filtering operator \f$F = \alpha{}A^{-1}B\f$ to the vector
+     * \c x overwriting vector \c y with the result.
+     *
+     * @param n     Vector length for \c x and \c y.
+     * @param alpha Scaling factor \f$\alpha\f$ to apply.
+     * @param x     Coefficients to be multiplied.
+     * @param incx  Stride between elements stored in \c x.
+     * @param y     Contiguous storage for the result.  Will be overwritten.
      */
     int filter(const int     n,
                const double  alpha,
@@ -119,8 +125,14 @@ public:
     }
 
     /**
-     * @copydoc suzerain_filterop_filter
-     * @param n Vector length for \c x and \c y
+     * Apply the filtering operator \f$F = \alpha{}A^{-1}B\f$ to the vector
+     * \c x overwriting vector \c y with the result.
+     *
+     * @param n     Vector length for \c x and \c y.
+     * @param alpha Scaling factor \f$\alpha\f$ to apply.
+     * @param x     Coefficients to be multiplied.
+     * @param incx  Stride between elements stored in \c x.
+     * @param y     Contiguous storage for the result.  Will be overwritten.
      */
     int filter(const int     n,
                const complex_double  alpha,

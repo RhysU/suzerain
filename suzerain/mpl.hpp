@@ -46,7 +46,7 @@ namespace mpl {
  * Forward Sequence</a>.
  *
  * @tparam Sequence The sequence to use, which determines the
- *                  type and size of the \ref array ancestor as well as
+ *                  type and size of the @c array ancestor as well as
  *                  an instance's default constructed content.
  */
 template< typename Sequence >

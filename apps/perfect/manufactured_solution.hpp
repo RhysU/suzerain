@@ -111,7 +111,7 @@ public:
     /** @copydoc support::definition_base::options_description() */
     virtual boost::program_options::options_description options_description();
 
-    /** @copydoc support::populatable::override */
+    /** @copydoc support::overridable::override */
     virtual void override(
             const manufactured_solution& that,
             const bool verbose = false);

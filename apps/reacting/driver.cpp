@@ -22,7 +22,7 @@
 //--------------------------------------------------------------------------
 
 /** @file
- * @copydoc driver.hpp
+ * A driver for reacting flow simulations.
  */
 
 #include "driver.hpp"

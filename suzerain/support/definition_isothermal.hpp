@@ -25,7 +25,7 @@
 #define SUZERAIN_SUPPORT_DEFINITION_ISOTHERMAL_HPP
 
 /** @file
- * Provides \ref definition_isothermal.
+ * Provides \ref suzerain::support::definition_isothermal.
  */
 
 #include <suzerain/common.hpp>
@@ -105,7 +105,17 @@ public:
                           const std::vector<real_t>& upper_cs);
 
     /**
-     * @copydoc specification_isothermal(real_t,real_t,real_t,const std::vector<real_t>&,real_t,real_t,real_t,const std::vector<real_t>&)
+     * Specify two different temperatures, wall blowing velocities, reference
+     * densities, and species mass fractions.
+     *
+     * @param lower_T   \f$T\f$ at \f$y=0\f$
+     * @param lower_v   \f$v\f$ at \f$y=0\f$
+     * @param lower_rho \f$\rho\f$ at \f$y=0\f$
+     * @param lower_cs  Mass fractions, one per species, at \f$y=0\f$ boundary.
+     * @param upper_T   \f$T\f$ at \f$y=L_y\f$
+     * @param upper_v   \f$v\f$ at \f$y=L_y\f$
+     * @param upper_rho \f$\rho\f$ at \f$y=L_y\f$
+     * @param upper_cs  Mass fractions, one per species, at \f$y=L_y\f$ boundary.
      */
     definition_isothermal(real_t lower_T,
                           real_t lower_v,

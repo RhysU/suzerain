@@ -41,7 +41,7 @@ namespace suzerain {
 enum { physical_view_map_options = Unaligned };
 
 /**
- * An \ref ArrayXXr-like class providing a physical space view of wave space
+ * An \ref ArrayXXr "ArrayXXr-like" class providing a physical space view of wave space
  * \ref contiguous_state given pencil decomposition information.  In physical
  * space, the view reshapes the 4D row-major (NFields, Y, Z, X) with contiguous
  * (Y, Z, X) into a 2D (NFields, Y*Z*X) layout.  Reducing the dimensionality

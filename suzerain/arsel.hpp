@@ -43,7 +43,7 @@ class specification_arsel;
  * and ar::best_model to fit an autoregressive process for signals contained in
  * the rows of matrix data.
  *
- * \param[in   Ny       Number of independent signals to process.
+ * \param[in]  Ny       Number of independent signals to process.
  * \param[in]  t        Times of input data samples also informing number of
  *                      samples.  Though \e only equispaced data is
  *                      currently supported, this information will be
@@ -51,7 +51,7 @@ class specification_arsel;
  *                      inform output \c T.
  * \param[in]  data     Column-major <code>Ny</code> by <code>t.size()</code>
  *                      data to process.
- * \param[in   ld       Leading dimension between columns of \c data.
+ * \param[in]  ld       Leading dimension between columns of \c data.
  * \param[in]  spec     Specification governing algorithmic choices.
  * \param[out] eff_N    Number of effectively independent samples in each row.
  * \param[out] eff_var  Estimated effective signal variance for each row.

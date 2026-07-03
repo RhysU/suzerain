@@ -25,7 +25,7 @@
 #define SUZERAIN_LARGO_FORMULATION_HPP
 
 /** @file
- * Provides \ref largo_formulation.
+ * Provides \ref suzerain::largo_formulation.
  */
 
 #include <suzerain/common.hpp>

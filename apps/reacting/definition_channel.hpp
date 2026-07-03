@@ -64,6 +64,7 @@ public:
      *
      * @param bulk_rho   Bulk density target.
      * @param bulk_rho_u Bulk streamwise momentum target.
+     * @param bulk_rho_E Bulk total energy target.
      */
     definition_channel(const real_t bulk_rho,
                        const real_t bulk_rho_u,

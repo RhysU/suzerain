@@ -25,7 +25,7 @@
 #define SUZERAIN_SUPPORT_SAVABLE_HPP
 
 /** @file
- * Provides \ref savable.
+ * Provides \ref suzerain::support::savable.
  */
 
 #include <suzerain/support/esio_fwd.hpp>

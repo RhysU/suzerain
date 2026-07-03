@@ -246,7 +246,7 @@ bool all(InputIterator first, InputIterator last)
 
 
 /**
- * Check if all accumulators with an \ref array of boost::accumulators
+ * Check if all accumulators with an @c array of boost::accumulators
  * saw an identical number of samples.  Often useful when it is known
  * <em>a priori</em> that this should be true permitting asserting
  * that was <em>a posteriori</em> the case as a way of looking for

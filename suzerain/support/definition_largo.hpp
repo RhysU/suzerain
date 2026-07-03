@@ -25,7 +25,7 @@
 #define SUZERAIN_SUPPORT_DEFINITION_LARGO_HPP
 
 /** @file
- * Provides \ref definition_largo.
+ * Provides \ref suzerain::support::definition_largo.
  */
 
 #include <suzerain/common.hpp>

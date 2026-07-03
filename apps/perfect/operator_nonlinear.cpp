@@ -22,7 +22,7 @@
 //--------------------------------------------------------------------------
 
 /** @file
- * @copydoc operator_nonlinear.hpp
+ * A nonlinear Navier--Stokes spatial operator.
  */
 
 #include "operator_nonlinear.hpp"

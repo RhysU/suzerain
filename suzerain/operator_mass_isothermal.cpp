@@ -22,7 +22,7 @@
 //--------------------------------------------------------------------------
 
 /** @file
- * @copydoc operator_mass_isothermal.hpp
+ * Provides \ref suzerain::operator_mass_isothermal.
  */
 
 #include <suzerain/operator_mass_isothermal.hpp>

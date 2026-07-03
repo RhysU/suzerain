@@ -22,7 +22,7 @@
 //--------------------------------------------------------------------------
 
 /** @file
- * Application executing \ref suzerain::reacting::driver_init::run.
+ * Application executing @c suzerain::reacting::driver_init::run.
  */
 
 #include <suzerain/common.hpp>

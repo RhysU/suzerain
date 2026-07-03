@@ -25,7 +25,7 @@
 #define SUZERAIN_PERFECT_CONSTRAINT_HPP
 
 /** @file
- * Provides \ref constraint.
+ * Provides \ref suzerain::constraint.
  */
 
 #include <suzerain/common.hpp>

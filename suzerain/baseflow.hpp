@@ -25,7 +25,7 @@
 #define SUZERAIN_BASEFLOW_HPP
 
 /** @file
- * Provides \ref baseflow_interface and implementations.
+ * Provides \ref suzerain::baseflow_interface and implementations.
  */
 
 #include <suzerain/common.hpp>
@@ -181,7 +181,7 @@ public:
     MatrixXXr x;
 
     /**
-     * Polynomial coefficients for the field \f$x\$ derivatives.  These are
+     * Polynomial coefficients for the field \f$x\f$ derivatives.  These are
      * stored analogously to #x.  In particular, this member must have the same
      * number of columns as #x but the number of rows may differ.
      */

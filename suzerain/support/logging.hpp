@@ -75,7 +75,7 @@
  * With two arguments, the arguments are the name and message.
  */
 
-/* @} */
+/** @} */
 
 
 /** @name Logging macros emitting messages from all ranks.
@@ -118,7 +118,7 @@
  * With two arguments, the arguments are the name suffix and message.
  */
 
-/* @} */
+/** @} */
 
 
 /** @name Macros checking if particular log levels are enabled on rank zero.
@@ -161,7 +161,7 @@
  * With one argument, check enabled status using provided name.
  */
 
-/* @} */
+/** @} */
 
 
 /** @name Macros checking if particular log levels are enabled on all ranks.
@@ -204,7 +204,7 @@
  * With one argument, check enabled status using provided name suffix.
  */
 
-/* @} */
+/** @} */
 
 
 /** @name Macros enabling logging at particular log levels on rank zero.
@@ -247,7 +247,7 @@
  * With one argument, enable for provided name.
  */
 
-/* @} */
+/** @} */
 
 
 /** @name Macros enabling logging at particular log levels on all ranks.
@@ -290,7 +290,7 @@
  * With one argument, enable for provided name.
  */
 
-/* @} */
+/** @} */
 
 namespace suzerain {
 

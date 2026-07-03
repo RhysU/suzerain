@@ -153,7 +153,7 @@ void exprparse_range(const char *s,
                      const float absmax,
                      const char *name = NULL);
 
-/** @copydoc exprparse(const char *, float*, float*, const float, const float, const float, const float, const char *) */
+/** @copydoc exprparse_range(const char *, float*, float*, const float, const float, const float, const float, const char *) */
 void exprparse_range(const char *s,
                      double *valmin,
                      double *valmax,
@@ -163,7 +163,7 @@ void exprparse_range(const char *s,
                      const double absmax,
                      const char *name = NULL);
 
-/** @copydoc exprparse(const char *, float*, float*, const float, const float, const float, const float, const char *) */
+/** @copydoc exprparse_range(const char *, float*, float*, const float, const float, const float, const float, const char *) */
 void exprparse_range(const std::string& s,
                      float *valmin,
                      float *valmax,
@@ -173,7 +173,7 @@ void exprparse_range(const std::string& s,
                      const float absmax,
                      const char *name = NULL);
 
-/** @copydoc exprparse(const char *, float*, float*, const float, const float, const float, const float, const char *) */
+/** @copydoc exprparse_range(const char *, float*, float*, const float, const float, const float, const float, const char *) */
 void exprparse_range(const std::string& s,
                      double *valmin,
                      double *valmax,
@@ -184,7 +184,7 @@ void exprparse_range(const std::string& s,
                      const char *name = NULL);
 
 /**
- * @copydoc exprparse(const char *, float*, float*, const float, const float, const float, const float, const char *)
+ * @copydoc exprparse_range(const char *, float*, float*, const float, const float, const float, const float, const char *)
  *
  * A templated overload easing selecting one of the concrete implementations.
  */

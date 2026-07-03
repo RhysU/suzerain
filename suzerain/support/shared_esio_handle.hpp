@@ -25,7 +25,7 @@
 #define SUZERAIN_SUPPORT_SHARED_ESIO_HANDLE_HPP
 
 /** @file
- * Provides \ref shared_esio_handle.
+ * Provides \ref suzerain::support::shared_esio_handle.
  */
 
 #include <suzerain/common.hpp>
@@ -37,7 +37,7 @@ namespace suzerain {
 namespace support {
 
 /**
- * Smart pointer semantics for managing an \ref esio_handle.  Provided because
+ * Smart pointer semantics for managing an @c esio_handle.  Provided because
  * ESIO's declaration structure makes creating \c std::shared_ptr instances and to
  * ease setting up automatic allocation/deallocation through the C API.
  */

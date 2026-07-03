@@ -22,7 +22,7 @@
 //--------------------------------------------------------------------------
 
 /** @file
- * @copydoc treatment_nonreflecting.hpp
+ * @copydoc perfect/treatment_nonreflecting.hpp
  */
 
 #include "treatment_nonreflecting.hpp"

@@ -43,7 +43,7 @@ namespace suzerain {
 template<typename T>
 class allocator_object_traits {
 public:
-    /** Convert an allocator_object_traits<T> to allocator_object_traits<U> */
+    /** Convert an allocator_object_traits&lt;T&gt; to allocator_object_traits&lt;U&gt; */
     template<typename U>
     struct rebind {
         typedef allocator_object_traits<U> other;
@@ -90,7 +90,7 @@ public:
     typedef std::size_t size_type;
     typedef std::ptrdiff_t difference_type;
 
-    /** Rebind to obtain allocator_freestore_policy<U> */
+    /** Rebind to obtain allocator_freestore_policy&lt;U&gt; */
     template<typename U>
     struct rebind {
         typedef allocator_freestore_policy<U> other;

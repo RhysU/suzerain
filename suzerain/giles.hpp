@@ -50,7 +50,7 @@ namespace suzerain {
  * @param[in]  ref_v   Reference velocity \f$v\f$.
  * @param[in]  ref_w   Reference spanwise velocity \f$w\f$.
  * @param[in]  ref_a   Reference sound speed \f$a\f$.
- * @param[out] VL_S_RY       \f$\left[V^L S\right] R^Y\f
+ * @param[out] VL_S_RY       \f$\left[V^L S\right] R^Y\f$
  * @param[out] PG_BG_VL_S_RY \f$\left[P^G B^G\right] \left[V^L S\right] R^Y\f$
  * @param[out] PG_CG_VL_S_RY \f$\left[P^G C^G\right] \left[V^L S\right] R^Y\f$
  * @param[out] PG_VL_S_RY    \f$\left[P^G    \right] \left[V^L S\right] R^Y\f$

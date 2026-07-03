@@ -58,7 +58,7 @@ class driver : public support::driver_base
 
 public:
 
-    /** @copydoc driver_base::driver_base */
+    /** @copydoc support::driver_base::driver_base */
     driver(const std::string &application_synopsis,
            const std::string &argument_synopsis = "",
            const std::string &description = "",
@@ -68,7 +68,7 @@ public:
     ~driver();
 
     /**
-     * @copydoc driver_base::initialize
+     * @copydoc support::driver_base::initialize
      *
      * While #scenario is registered in #options during this method, #msoln is
      * not as not all perfect gas binaries will expose related options.
@@ -110,7 +110,7 @@ public:
      */
     std::shared_ptr<samples> mean;
 
-    /** @copydoc driver_base::reset */
+    /** @copydoc support::driver_base::reset */
     virtual void reset();
 
     /**
@@ -208,14 +208,14 @@ protected:
 
     /**
      * Beyond the inherited behavior, this method saves #scenario and #msoln.
-     * @copydetails driver_base::save_metadata_hook
+     * @copydetails support::driver_base::save_metadata_hook
      */
     virtual void save_metadata_hook(
             const esio_handle esioh);
 
     /**
      * Beyond the inherited behavior, this method loads #scenario and #msoln.
-     * @copydetails driver_base::save_metadata_hook
+     * @copydetails support::driver_base::save_metadata_hook
      */
     virtual void load_metadata_hook(
             const esio_handle esioh);
@@ -236,7 +236,7 @@ protected:
      * compute_statistics and saves #mean.  Any currently cached results in
      * #mean will be reused <em>without recomputation</em> whenever
      * <tt>this->controller && mean.t == t</tt>.
-     * @copydetails driver_base::save_statistics_hook
+     * @copydetails support::driver_base::save_statistics_hook
      */
     virtual bool save_statistics_hook(
             const esio_handle esioh,
@@ -244,7 +244,7 @@ protected:
 
     /**
      * Beyond the inherited behavior, this method loads #mean.
-     * @copydetails application_base::load_restart
+     * @copydetails support::driver_base::load_statistics_hook
      */
     virtual void load_statistics_hook(
             const esio_handle esioh);

@@ -141,13 +141,13 @@ public:
 
     /**
      * Copy information from a \ref samples instance.
-     * May permit avoiding \ref sample_profile calls in some circumstances.
+     * May permit avoiding @c sample_profile calls in some circumstances.
      */
     profile& operator=(const samples &q);
 
     /**
      * Copy information from a \ref summary instance.
-     * May permit avoiding \ref sample_profile calls in some circumstances.
+     * May permit avoiding @c sample_profile calls in some circumstances.
      */
     profile& operator=(const summary &q);
 

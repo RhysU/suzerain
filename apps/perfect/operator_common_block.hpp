@@ -25,7 +25,7 @@
 #define SUZERAIN_PERFECT_OPERATOR_COMMON_BLOCK_HPP
 
 /** @file
- * Implements \ref operator_common_block.
+ * Implements \ref suzerain::perfect::operator_common_block.
  */
 
 #include <suzerain/common.hpp>

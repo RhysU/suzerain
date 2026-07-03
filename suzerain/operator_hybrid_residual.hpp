@@ -25,7 +25,7 @@
 #define SUZERAIN_OPERATOR_HYBRID_RESIDUAL_HPP
 
 /** @file
- * Provides \ref operator_hybrid_residual.
+ * Provides \ref suzerain::operator_hybrid_residual.
  */
 
 #include <suzerain/common.hpp>
@@ -35,9 +35,9 @@
 namespace suzerain {
 
 /**
- * Builds a hybrid implicit/explicit-ready \ref operator_nonlinear from an
- * implicit-agnostic \ref operator_nonlinear and a compatible \ref
- * linear_operator.
+ * Builds a hybrid implicit/explicit-ready \ref lowstorage::operator_nonlinear
+ * from an implicit-agnostic \ref lowstorage::operator_nonlinear and a
+ * compatible \ref lowstorage::linear_operator.
  *
  * More concretely, suppose one wants to use the hybrid implicit/explicit
  * timestepping schemes defined in \ref lowstorage which the state
@@ -79,8 +79,8 @@ public:
      * After construction, #L and #R must be specified
      * prior to #apply_operator invocation.
      *
-     * @param chi   Scaling factor \f$\chi\f used to form
-     *              \f$ N(u) = R(u) - \frac{1}{\chi} L(u) f$.
+     * @param chi   Scaling factor \f$\chi\f$ used to form
+     *              \f$ N(u) = R(u) - \frac{1}{\chi} L(u) \f$.
      */
     explicit operator_hybrid_residual(const real_t chi);
 
@@ -93,13 +93,13 @@ public:
     /**
      * An ancestor common to \ref state_linear_type and \ref
      * state_nonlinear_type.  A common ancestor is necessary for
-     * interoperability of #L and #N.
+     * interoperability of #L and @c N.
      */
     typedef multi_array::ref<complex_t, 4> state_common_type;
 
     /**
      * The hybrid implicit/explicit linear operator which is able to
-     * interoperate between #state_linear and #state_nonlinear.
+     * interoperate between #state_linear_type and #state_nonlinear_type.
      */
     std::shared_ptr<lowstorage::linear_operator<
                 state_common_type, state_nonlinear_type
@@ -107,7 +107,7 @@ public:
 
     /**
      * The fully-explicit nonlinear operator which operates on
-     * #state_nonlinear.
+     * #state_nonlinear_type.
      */
     std::shared_ptr<lowstorage::operator_nonlinear<
                 state_nonlinear_type

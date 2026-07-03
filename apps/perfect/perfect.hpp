@@ -244,7 +244,7 @@ compute_fluctuations(const bsplineop& cop,
  * information in \c sg to compute many quantities of interest.  This is
  * a purely local computation requiring no communication.
  *
- * @param[in]  prof     Profile information from \ref sample_profile().
+ * @param[in]  prof     Profile information from \ref take_profile().
  * @param[in]  scenario Scenario of interest.
  * @param[in]  sg       Slow growth definition optionally in use
  *                      which provides base flow details for
@@ -279,7 +279,7 @@ void summarize_boundary_layer_nature(
  * Use the boundary layer information in \c prof to compute many quantities of
  * interest.  This is a purely local computation requiring no communication.
  *
- * @param[in]  prof     Profile information from \ref sample_profile().
+ * @param[in]  prof     Profile information from \ref take_profile().
  * @param[in]  scenario Scenario of interest.
  * @param[in]  b        The B-spline basis in use.
  * @param[out] wall     Populated on return.

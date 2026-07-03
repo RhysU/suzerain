@@ -25,7 +25,7 @@
 #define SUZERAIN_PERFECT_INSTANTANEOUS_HPP
 
 /** @file
- * Implementation of \ref instantaneous.
+ * Implementation of \ref suzerain::perfect::instantaneous.
  */
 
 #include <suzerain/common.hpp>
@@ -163,8 +163,6 @@ public:
     ConstColXpr rhovw()      const { return col(q::rhovw); } ///< @copydoc q::rhovw
     ConstColXpr rhoww()      const { return col(q::rhoww); } ///< @copydoc q::rhoww
     ConstColXpr rhoEE()      const { return col(q::rhoEE); } ///< @copydoc q::rhoEE
-
-    /** @} */
 
     /** Assign all quantities from \c that instance. */
     instantaneous& operator=(const references& that);

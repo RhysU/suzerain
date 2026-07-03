@@ -22,7 +22,7 @@
 //--------------------------------------------------------------------------
 
 /** @file
- * Application executing \ref suzerain::driver_base::summary_run
+ * Application executing \ref suzerain::support::driver_base::summary_run
  */
 
 #include "driver.hpp"

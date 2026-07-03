@@ -35,7 +35,7 @@
 namespace suzerain {
 
 /**
- * Summarizes quantity components from \ref suzerain::sample and their
+ * Summarizes quantity components from \ref suzerain::samples and their
  * derivatives on collocation points.  Instances are meant as a human-readable,
  * B-spline-agnostic data interchange and post-processing contiguous storage
  * format.  Accordingly, easy access to names and descriptions are provided.

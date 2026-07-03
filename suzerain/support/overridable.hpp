@@ -25,7 +25,8 @@
 #define SUZERAIN_SUPPORT_OVERRIDABLE_HPP
 
 /** @file
- * Provides \ref overridable and \ref maybe_override.
+ * Provides \ref suzerain::support::overridable and
+ * \ref suzerain::support::maybe_override.
  */
 
 #include <suzerain/common.hpp>

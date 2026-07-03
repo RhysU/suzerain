@@ -25,7 +25,7 @@
 #define SUZERAIN_PERFECT_REFERENCES_HPP
 
 /** @file
- * Implementation of \ref references.
+ * Implementation of \ref suzerain::perfect::references.
  */
 
 #include <suzerain/common.hpp>

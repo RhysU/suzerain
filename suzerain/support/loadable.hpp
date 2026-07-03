@@ -25,7 +25,7 @@
 #define SUZERAIN_SUPPORT_LOADABLE_HPP
 
 /** @file
- * Provides \ref loadable.
+ * Provides \ref suzerain::support::loadable.
  */
 
 #include <suzerain/support/esio_fwd.hpp>

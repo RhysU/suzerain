@@ -107,8 +107,12 @@ ensure_nonnegative(T t, const char * name = NULL)
  * Throws an \c invalid_argument exception if a value is outside bounds
  * specified and non NaN.
  *
- * @param t    Value to check.
- * @param name Optional name to use in the exception message
+ * @param t               Value to check.
+ * @param lower           Lower bound on @c t.
+ * @param upper           Upper bound on @c t.
+ * @param lower_inclusive Treat @c lower as an inclusive bound.
+ * @param upper_inclusive Treat @c upper as an inclusive bound.
+ * @param name            Optional name to use in the exception message
  */
 template< typename T >
 void ensure_bounded(T t, T lower, T upper, bool lower_inclusive = true,

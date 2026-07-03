@@ -136,7 +136,7 @@ public:
 
     /**
      * Use this method when state needs to be passed to/from Largo.
-     * @see Discussion at #rescaler.
+     * @see Discussion at \ref suzerain::largo_state::rescaler.
      */
     rescaler rescale(double inv_Ma2) { return rescaler(this, inv_Ma2); }
 

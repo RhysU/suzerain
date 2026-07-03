@@ -22,7 +22,7 @@
 //--------------------------------------------------------------------------
 
 /** @file
- * @copydoc driver.hpp
+ * A driver for nondimensional perfect gas simulations.
  */
 
 #include "driver.hpp"

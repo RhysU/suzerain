@@ -25,7 +25,7 @@
 #define SUZERAIN_OPERATOR_MASS_ISOTHERMAL_HPP
 
 /** @file
- * Provides \ref operator_mass_isothermal.
+ * Provides \ref suzerain::operator_mass_isothermal.
  */
 
 #include <suzerain/common.hpp>

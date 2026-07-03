@@ -25,7 +25,7 @@
 #define SUZERAIN_SPECIFICATION_ARSEL_HPP
 
 /** @file
- * Provides \ref specification_arsel.
+ * Provides \ref suzerain::specification_arsel.
  */
 
 #include <cstddef>

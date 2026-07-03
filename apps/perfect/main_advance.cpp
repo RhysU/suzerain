@@ -22,7 +22,7 @@
 //--------------------------------------------------------------------------
 
 /** @file
- * Application executing \ref suzerain::perfect::driver_advance::run.
+ * Application executing @c suzerain::perfect::driver_advance::run.
  */
 
 #include <esio/esio.h>

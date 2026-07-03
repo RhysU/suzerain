@@ -144,7 +144,7 @@ public:
     /** Type used to express discrete simulation step quantities. */
     typedef timecontroller<real_t>::step_type step_type;
 
-    /** @copydoc application_base::application_base */
+    /** @copydoc suzerain::support::application_base::application_base */
     driver_base(const std::string &application_synopsis,
                 const std::string &argument_synopsis = "",
                 const std::string &description = "",
@@ -153,7 +153,7 @@ public:
     /** Virtual destructor as appropriate for abstract base class */
     virtual ~driver_base();
 
-    /** @copydoc application_base::initialize */
+    /** @copydoc suzerain::support::application_base::initialize */
     virtual std::vector<std::string> initialize(
             int argc,
             char **argv);
@@ -213,7 +213,7 @@ public:
     /** Controls time advance, including callback processing. */
     std::shared_ptr<timecontroller<real_t> > controller;
 
-    /** @copydoc application_base::reset */
+    /** @copydoc suzerain::support::application_base::reset */
     virtual void reset();
 
     /**
@@ -368,9 +368,10 @@ public:
      * This method produces well-formatted results given relevant computed
      * quantities.  Subclasses will likely provide an overload that gathers
      * these details in a simulation-dependent manner and then invoke this
-     * method within a \ref log_status_hook() or \ref log_statistics_hook()
+     * method within a \ref log_status_hook() or @c log_statistics_hook()
      * overload.
      *
+     * @param timeprefix  Prefix labeling logged messages.
      * @param wall        Local information from the wall.
      * @param viscous     Possibly computed by suzerain_bl_compute_viscous().
      * @param thick       Possibly computed by suzerain_bl_compute_thicknesses().
@@ -427,9 +428,10 @@ public:
      * This method produces well-formatted results given relevant computed
      * quantities.  Subclasses will likely provide an overload that gathers
      * these details in a simulation-dependent manner and then invoke this
-     * method within a \ref log_status_hook() or \ref log_statistics_hook()
+     * method within a \ref log_status_hook() or @c log_statistics_hook()
      * overload.
      *
+     * @param timeprefix  Prefix labeling logged messages.
      * @param wall        Local information from the wall.
      * @param viscous     Possibly from suzerain_channel_compute_viscous().
      * @param center      Local information from the channel centerline.
@@ -648,7 +650,7 @@ protected:
      * The default implementation saves the contents of #state_nonlinear into
      * the provided ESIO handle file destroying #state_nonlinear in the
      * process.  When \c restartdef->physical is \c false, expansion
-     * coefficients are written in all three directions using \ref
+     * coefficients are written in all three directions using @c
      * store_coefficients.  When it is \c true, values at collocation
      * points are written using store_collocation_Values.
      *
@@ -671,9 +673,6 @@ protected:
      * save_state_hook implementation.
      *
      * @param esioh An ESIO handle pointing to an open, readable file.
-     *
-     * @returns True if any active time advance should continue.
-     *          False otherwise.
      */
     virtual void load_state_hook(
             const esio_handle esioh);
@@ -709,9 +708,6 @@ protected:
      * either before or after invoking the superclass implementation.
      *
      * @param esioh An ESIO handle pointing to an open, writable file.
-     *
-     * @returns True if any active time advance should continue.
-     *          False otherwise.
      */
     virtual void load_statistics_hook(
             const esio_handle esioh);

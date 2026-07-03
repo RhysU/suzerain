@@ -22,7 +22,7 @@
 //--------------------------------------------------------------------------
 
 /** @file
- * @copydoc mpi_datatype.cpp
+ * @copydoc mpi_datatype.hpp
  */
 
 #include <suzerain/mpi_datatype.hpp>

@@ -25,7 +25,7 @@
 #define SUZERAIN_BSMBSM_SOLVER_HPP
 
 /** @file
- * Encapsulates solving BSMBSM problems per a \ref specification_zgbsv.
+ * Encapsulates solving BSMBSM problems per a \ref suzerain::specification_zgbsv.
  * @see The definition of a BSMBSM problem in \ref bsmbsm.h.
  */
 

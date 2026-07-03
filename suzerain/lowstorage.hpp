@@ -805,6 +805,7 @@ public:
      *
      * @param phi           Additional scaling \f$\phi\f$ to apply.
      * @param state         State to modify in place.
+     * @param method        Ignored.
      * @param delta_t       Ignored.
      * @param substep_index Ignored.
      * @param ic0           When non-null, modified as \c state.
@@ -874,11 +875,11 @@ make_multiplicative_operator(
  * <dd>The maximum purely imaginary stable eigenvalue magnitude</dd>
  * <dt>alpha_numerator</dt>
  * <dd>The numerators for the \f$\alpha_i\f$ written using \c denominator</dd>
- * <dt>beta_numerator</dt><dd></dd>
+ * <dt>beta_numerator</dt>
  * <dd>The numerators for the \f$\beta_i\f$ written using \c denominator</dd>
- * <dt>gamma_numerator</dt><dd></dd>
+ * <dt>gamma_numerator</dt>
  * <dd>The numerators for the \f$\gamma_i\f$ written using \c denominator</dd>
- * <dt>denominator</dt><dd></dd>
+ * <dt>denominator</dt>
  * <dd>The least common multiple of all denominators appearing within
  *     \f$\alpha\f$, \f$\beta\f$, or \f$\gamma\f$.
  * </dl>

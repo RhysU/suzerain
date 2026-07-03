@@ -22,7 +22,7 @@
 //--------------------------------------------------------------------------
 
 /** @file
- * @copydoc manufactured_solution.hpp
+ * @copydoc reacting/manufactured_solution.hpp
  */
 
 #include "manufactured_solution.hpp"

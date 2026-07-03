@@ -208,7 +208,7 @@ save_samples(const esio_handle h,
 
 /**
  * Load sampled quantities from a file using name \c prefix. Statistics not
- * present in the file are considered to be all NaNs.  Member #t, which is not
+ * present in the file are considered to be all NaNs.  Member #samples::t, which is not
  * modified by this routine, is presumably set in some other fashion.
  *
  * @return True if all sampled quantities could be loaded.  False otherwise.

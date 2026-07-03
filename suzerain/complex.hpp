@@ -304,8 +304,6 @@ typename boost::enable_if<
 /**
  * Obtain the trivial imaginary part of a real number.
  *
- * @param x real number.
- *
  * @return <tt>0</tt>
  * @note The result is not an lvalue because one cannot mutate
  *       the imaginary part of a real number.

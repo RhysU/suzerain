@@ -487,18 +487,6 @@ public:
  * instantaneous wall-normal velocity is averaged across the streamwise and
  * spanwise directions and stored into <tt>common.u()</tt>.
  *
- * \param alpha Parameter controlling bulk viscosity
- *        per \f$\alpha\f$ in namespace \ref rholut.
- * \param beta Temperature power law exponent
- *        per \f$\beta\f$ in namespace \ref rholut.
- * \param gamma Constant ratio of specific heats
- *        per \f$\gamma\f$ in namespace \ref rholut.
- * \param Ma Mach number
- *        per \f$\textrm{Ma}\f$ in namespace \ref rholut.
- * \param Pr Prandtl number
- *        per \f$\textrm{Pr}\f$ in namespace \ref rholut.
- * \param Re Reynolds number
- *        per \f$\textrm{Re}\f$ in namespace \ref rholut.
  * \param o Provides access to discretization and parallel decomposition
  *        operational details.
  * \param common Shared storage for interaction with an linear_operator
@@ -507,6 +495,8 @@ public:
  * \param sgdef Definitions for slow growth (largo) source.
  * \param msoln If \c msoln evaluates to \c true in a boolean context,
  *        then it will be used to provide manufactured forcing terms.
+ * \param cmods Constitutive models providing thermodynamic and
+ *        transport property evaluations.
  * \param time Simulation time at which the operator should be applied.
  *        This allows time-dependent forcing (e.g. from \c msoln).
  * \param swave State to which the operator should be applied.  On

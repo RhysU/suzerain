@@ -25,7 +25,8 @@
 #define SUZERAIN_SUPPORT_POPULATABLE_HPP
 
 /** @file
- * Provides \ref populatable and \ref maybe_populate.
+ * Provides \ref suzerain::support::populatable and
+ * \ref suzerain::support::maybe_populate.
  */
 
 #include <suzerain/common.hpp>

@@ -25,7 +25,7 @@
 #define SUZERAIN_PERFECT_SLOWGROWTH_HPP
 
 /** @file
- * Provides \ref slowgrowth to facilitate slow growth forcing usage.
+ * Provides \ref suzerain::perfect::slowgrowth to facilitate slow growth forcing usage.
  */
 
 #include <suzerain/l2.hpp>

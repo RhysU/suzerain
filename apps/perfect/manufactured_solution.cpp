@@ -22,7 +22,7 @@
 //--------------------------------------------------------------------------
 
 /** @file
- * @copydoc manufactured_solution.hpp
+ * Method of manufactured solution details for the perfect gas application.
  */
 
 #include "manufactured_solution.hpp"

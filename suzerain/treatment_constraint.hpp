@@ -25,7 +25,7 @@
 #define SUZERAIN_TREATMENT_CONSTRAINT_HPP
 
 /** @file
- * Provides \ref constraint::treatment.
+ * Provides \ref suzerain::constraint::treatment.
  */
 
 #include <suzerain/common.hpp>
@@ -114,9 +114,11 @@ public:
      * @param Ma     Nondimensional Mach number for kinetic energy computations.
      *               In a dimensional setting, this should be one.  Notice that
      *               it is a \e reference permitting the value to track another
-     *               setting.  For example, one in a \ref definition_scenario.
+     *               setting.  For example, one in a
+     *               \ref suzerain::perfect::definition_scenario.
      * @param dgrid  Parallel decomposition details used to determine which
      *               rank houses the "zero-zero" Fourier modes.
+     * @param b      B-spline workspace used to construct #none.
      * @param inp    Profiles to be used during constraint application.
      * @param out    Profiles to be tracked due to constraint application.
      */
@@ -174,7 +176,7 @@ public:
      *
      * Means of the implicit ndx::mx, ndx::my, ndx::mz, and ndx::e forcing are
      * maintained across each individual time step for sampling the statistics
-     * \c /bar_f, \c /bar_f_dot_u, and \c /bar_qb using #com.  The mean
+     * \c /bar_f, \c /bar_f_dot_u, and \c /bar_qb using @c com.  The mean
      * implicit numerical[ndx::rho] forcing is combined with
      * physical[ndx::rho]'s effect and stored within \c /bar_Crho.
      */
@@ -190,7 +192,7 @@ public:
      *
      * Means of the implicit ndx::mx, ndx::my, ndx::mz, and ndx::e forcing are
      * maintained across each individual time step for sampling the statistics
-     * \c /bar_Crhou, \c /bar_Crhou_dot_u, and \c /bar_CrhoE using #com.
+     * \c /bar_Crhou, \c /bar_Crhou_dot_u, and \c /bar_CrhoE using @c com.
      * The mean implicit numerical[ndx::rho] forcing is combined with
      * physical[ndx::rho]'s effect and stored within \c /bar_Crho.
      */

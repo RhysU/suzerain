@@ -25,7 +25,7 @@
 #define SUZERAIN_SPECIFICATION_HELM_HPP
 
 /** @file
- * Provides \ref specification_helm.
+ * Provides \ref suzerain::specification_helm.
  */
 
 #include <suzerain/helm.h>
@@ -66,7 +66,7 @@ public:
      * \param Td \copydoc helm_state#Td
      * \param Tf \copydoc helm_state#Tf
      * \param Ti \copydoc helm_state#Ti
-     * \param Tt \copydoc helm_state#Tp
+     * \param Tt \copydoc helm_state#Tt
      */
     explicit
     specification_helm(const double kp = 1.00,

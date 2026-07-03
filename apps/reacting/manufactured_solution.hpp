@@ -55,7 +55,7 @@ namespace reacting {
  * program_options::add_definition method to permit modifying parameters via
  * the command line.
  *
- * None of #alpha, #beta, #gamma, #Ma, #Pr, #Re or #Lx, #Ly, #Lz are modified
+ * None of @c alpha, #beta, #gamma, @c Ma, @c Pr, @c Re or #Lx, #Ly, #Lz are modified
  * when used in this fashion.  The former group will need to be synced using
  * \ref match() and the later group using \ref
  * match(const specification_grid&).

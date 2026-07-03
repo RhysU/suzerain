@@ -22,7 +22,7 @@
 //--------------------------------------------------------------------------
 
 /** @file
- * @copydoc profile.hpp
+ * Sampling logistics for boundary layer and channel solution profiles.
  */
 
 #include <suzerain/profile.hpp>

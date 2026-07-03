@@ -417,9 +417,7 @@ FPT shifted(const FPT x, const FPT l, const FPT r)
 }
 
 /**
- *
- * Evaluate a bump function on \f$ x \in \left(l, r\right) \f$ rescaled
- * to give \f$p\f$ when \f$ x = \frac{l+r}{2} \f$.
+ * @copydoc shifted(const FPT,const FPT,const FPT)
  *
  * @param p Value to return when \f$ x = \frac{l+r}{2} \f$.
  */

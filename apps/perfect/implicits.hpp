@@ -25,7 +25,7 @@
 #define SUZERAIN_PERFECT_IMPLICITS_HPP
 
 /** @file
- * Implementation of \ref implicits.
+ * Implementation of \ref suzerain::perfect::implicits.
  */
 
 #include <suzerain/common.hpp>

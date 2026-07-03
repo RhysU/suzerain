@@ -124,15 +124,15 @@ compute_field_L2xz(
  * ranks.  \e Neither the mean \e nor dealiasing modes are automatically
  * subtracted.
  *
- * @param state[in  ] Scalar fields represented as Fourier coefficients in
- *                    \f$x\f$ and \f$z\f$ \e but point values in \f$y\f$.
- * @param si   [in  ] Scalar index of interest within \c state.
- * @param sj   [in  ] Scalar index of interest within \c state.
- * @param grid [in  ] Domain specification.
- * @param dgrid[in  ] Fourier-based domain specification.
- * @param out  [out ] Output stored as a row-major, contiguous
- *                    matrix of size <code>grid.N.y()</code> by
- *                    <code>grid.N.x()/2+1</code> indexed by \f$(y_j, k_x)\f$.
+ * @param[in]  state Scalar fields represented as Fourier coefficients in
+ *                   \f$x\f$ and \f$z\f$ \e but point values in \f$y\f$.
+ * @param[in]  si    Scalar index of interest within \c state.
+ * @param[in]  sj    Scalar index of interest within \c state.
+ * @param[in]  grid  Domain specification.
+ * @param[in]  dgrid Fourier-based domain specification.
+ * @param[out] out   Output stored as a row-major, contiguous
+ *                   matrix of size <code>grid.N.y()</code> by
+ *                   <code>grid.N.x()/2+1</code> indexed by \f$(y_j, k_x)\f$.
  *
  * @see writeup/twopoint.tex for full details.
  */
@@ -152,15 +152,15 @@ compute_twopoint_xlocal(
  * <code>MPI_SUM</code> to sum the resulting buffer across all ranks.  \e
  * Neither the mean \e nor dealiasing modes are automatically subtracted.
  *
- * @param state[in  ] Scalar fields represented as Fourier coefficients in
- *                    \f$x\f$ and \f$z\f$ \e but point values in \f$y\f$.
- * @param si   [in  ] Scalar index of interest within \c state.
- * @param sj   [in  ] Scalar index of interest within \c state.
- * @param grid [in  ] Domain specification.
- * @param dgrid[in  ] Fourier-based domain specification.
- * @param out  [out ] Output as a row-major, contiguous
- *                    matrix of size <code>grid.N.y()</code> by
- *                    <code>grid.N.z()</code> indexed by \f$(y_j, k_z)\f$.
+ * @param[in]  state Scalar fields represented as Fourier coefficients in
+ *                   \f$x\f$ and \f$z\f$ \e but point values in \f$y\f$.
+ * @param[in]  si    Scalar index of interest within \c state.
+ * @param[in]  sj    Scalar index of interest within \c state.
+ * @param[in]  grid  Domain specification.
+ * @param[in]  dgrid Fourier-based domain specification.
+ * @param[out] out   Output as a row-major, contiguous
+ *                   matrix of size <code>grid.N.y()</code> by
+ *                   <code>grid.N.z()</code> indexed by \f$(y_j, k_z)\f$.
  *
  * @see writeup/twopoint.tex for full details.
  */
@@ -177,20 +177,20 @@ compute_twopoint_zlocal(
  * Compute Fourier transform of the real-valued two-point correlation versus
  * separation in the Hermitian-symmetric \f$x\f$ direction for all state field
  * pairs with indices less than \c nf.  Output is stored row-major \f$y_j\f$ by
- * \f$ k_x \f$ by \c ndx where state indices \c si and \sj are combined to
+ * \f$ k_x \f$ by \c ndx where state indices \c si and \c sj are combined to
  * produce <code>ndx == nf*si + sj - (si*(si+1))/2</code> using integer
  * division.  \e Neither the mean \e nor dealiasing modes are automatically
  * subtracted.
  *
- * @param state[in  ] Scalar fields represented as Fourier coefficients in
- *                    \f$x\f$ and \f$z\f$ \e but point values in \f$y\f$.
- * @param nf   [in  ] Maximum scalar field index to be considered in
- *                    pairwise fashion.
- * @param grid [in  ] Domain specification.
- * @param dgrid[in  ] Fourier-based domain specification.
- * @param out  [out ] Output stored as a row-major, contiguous
- *                    matrix of size <code>grid.N.y()</code> by
- *                    <code>grid.N.x()/2+1</code> by <code>ndx</code>.
+ * @param[in]  state Scalar fields represented as Fourier coefficients in
+ *                   \f$x\f$ and \f$z\f$ \e but point values in \f$y\f$.
+ * @param[in]  nf    Maximum scalar field index to be considered in
+ *                   pairwise fashion.
+ * @param[in]  grid  Domain specification.
+ * @param[in]  dgrid Fourier-based domain specification.
+ * @return Output stored as a row-major, contiguous
+ *         matrix of size <code>grid.N.y()</code> by
+ *         <code>grid.N.x()/2+1</code> by <code>ndx</code>.
  *
  * @see compute_twopoint_xlocal for details on pairwise computations.
  */
@@ -205,19 +205,19 @@ compute_twopoint_x(
  * Compute Fourier transform of the real-valued two-point correlation versus
  * separation in the \f$z\f$ direction for all state field pairs with indices
  * less than \c nf.  Output is stored row-major \f$y_j\f$ by \f$ k_z \f$ by \c
- * ndx where state indices \c si and \sj are combined to produce <code>ndx ==
+ * ndx where state indices \c si and \c sj are combined to produce <code>ndx ==
  * nf*si + sj - (si*(si+1))/2</code> using integer division.  \e Neither the
  * mean \e nor dealiasing modes are automatically subtracted.
  *
- * @param state[in  ] Scalar fields represented as Fourier coefficients in
- *                    \f$x\f$ and \f$z\f$ \e but point values in \f$y\f$.
- * @param nf   [in  ] Maximum scalar field index to be considered in
- *                    pairwise fashion.
- * @param grid [in  ] Domain specification.
- * @param dgrid[in  ] Fourier-based domain specification.
- * @param out  [out ] Output stored as a row-major, contiguous
- *                    matrix of size <code>grid.N.y()</code> by
- *                    <code>grid.N.z()</code> by <code>ndx</code>.
+ * @param[in]  state Scalar fields represented as Fourier coefficients in
+ *                   \f$x\f$ and \f$z\f$ \e but point values in \f$y\f$.
+ * @param[in]  nf    Maximum scalar field index to be considered in
+ *                   pairwise fashion.
+ * @param[in]  grid  Domain specification.
+ * @param[in]  dgrid Fourier-based domain specification.
+ * @return Output stored as a row-major, contiguous
+ *         matrix of size <code>grid.N.y()</code> by
+ *         <code>grid.N.z()</code> by <code>ndx</code>.
  *
  * @see compute_twopoint_xlocal for details on pairwise computations.
  */

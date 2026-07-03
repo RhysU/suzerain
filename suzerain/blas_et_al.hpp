@@ -1223,7 +1223,7 @@ public:
     typedef std::size_t size_type;
     typedef std::ptrdiff_t difference_type;
 
-    /** Rebind to obtain allocator_blas_policy<U> */
+    /** Rebind to obtain <tt>allocator_blas_policy&lt;U&gt;</tt> */
     template<typename U>
     struct rebind {
         typedef allocator_blas_policy<U> other;

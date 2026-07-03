@@ -25,7 +25,7 @@
 #define SUZERAIN_SUPPORT_DEFINITION_ARSEL_HPP
 
 /** @file
- * Provides \ref definition_arsel.
+ * Provides \ref suzerain::support::definition_arsel.
  */
 
 #include <suzerain/specification_arsel.hpp>

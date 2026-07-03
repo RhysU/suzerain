@@ -25,7 +25,7 @@
 #define SUZERAIN_SPECIFICATION_LARGO_HPP
 
 /** @file
- * Provides \ref specification_largo.
+ * Provides \ref suzerain::specification_largo.
  */
 
 #include <suzerain/common.hpp>

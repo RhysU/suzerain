@@ -125,14 +125,14 @@ public:
 
     /**
      * Storage type always kept in Fourier wave space.  Name arises because
-     * the state is most closely associated with linear operator #L used by
+     * the state is most closely associated with linear operator @c L used by
      * subclasses.
      */
     typedef interleaved_state<4, complex_t> state_linear_type;
 
     /**
      * Storage type transformable to/from Fourier physical space.  Name arises
-     * because the state is most closely associated with nonlinear operator #N
+     * because the state is most closely associated with nonlinear operator @c N
      * within driver subclasses.
      */
     typedef contiguous_state<4, complex_t> state_nonlinear_type;
@@ -140,7 +140,7 @@ public:
     /**
      * An ancestor common to \ref state_linear_type and \ref
      * state_nonlinear_type.  A common ancestor is necessary for
-     * interoperability of #L and #N.
+     * interoperability of @c L and @c N.
      */
     typedef multi_array::ref<complex_t, 4> state_common_type;
 

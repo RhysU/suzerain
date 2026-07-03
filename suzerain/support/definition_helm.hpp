@@ -25,7 +25,7 @@
 #define SUZERAIN_SUPPORT_DEFINITION_HELM_HPP
 
 /** @file
- * Provides \ref definition_helm.
+ * Provides \ref suzerain::support::definition_helm.
  */
 
 #include <suzerain/specification_helm.hpp>
@@ -57,7 +57,7 @@ public:
     definition_helm();
 
     /**
-     * \copydoc specification_helm()
+     * \copydoc suzerain::specification_helm::specification_helm
      * \param r Reference value, often called the setpoint.
      */
     explicit

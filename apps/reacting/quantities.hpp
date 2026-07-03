@@ -508,6 +508,7 @@ public:
  * SUZERAIN_REACTING_FLOW_QUANTITIES_IMPLICIT.  This is an expensive,
  * collective method.
  *
+ * @param[in]     cmods    Constitutive and chemistry models.
  * @param[in]     grid     Grid parameters.
  * @param[in]     dgrid    Pencil decomposition parameters.
  * @param[in]     cop      B-spline operator workspace.
