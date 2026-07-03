@@ -1,5 +1,5 @@
-What's new in suzerain's master branch
---------------------------------------
+What's new in suzerain 0.2.0
+----------------------------
 
 Port to Ubuntu 24.04 with GCC 13, GSL 2.x, Boost 1.83, and C++17.
 
