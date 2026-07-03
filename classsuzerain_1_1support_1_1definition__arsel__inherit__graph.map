@@ -1,0 +1,9 @@
+<map id="suzerain::support::definition_arsel" name="suzerain::support::definition_arsel">
+<area shape="rect" id="Node000001" title="Upgrades a specification_arsel with definition_base behavior." alt="" coords="189,273,355,393"/>
+<area shape="rect" id="Node000002" href="$classsuzerain_1_1specification__arsel.html" title="Encapsulates settings for invoking arsel." alt="" coords="5,5,165,225"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="176,220,179,224,221,271,217,275,175,227,172,224"/>
+<area shape="rect" id="Node000003" href="$classsuzerain_1_1support_1_1definition__base.html" title="An abstract base class for defining a collection of related options." alt="" coords="189,65,355,165"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="275,179,275,273,269,273,269,179"/>
+<area shape="rect" id="Node000004" href="$classsuzerain_1_1support_1_1savable.html" title="Abstract interface indicating details may be saved into an ESIO handle." alt="" coords="379,65,514,165"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="406,178,369,227,328,275,324,271,365,224,402,175"/>
+</map>

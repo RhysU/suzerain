@@ -1,0 +1,62 @@
+<map id="suzerain::reacting::treatment_nonreflecting" name="suzerain::reacting::treatment_nonreflecting">
+<area shape="rect" id="Node000001" title="Provides Giles&#45;like nonreflecting boundary conditions at the upper boundary." alt="" coords="789,2421,985,2521"/>
+<area shape="rect" id="Node000002" href="$classsuzerain_1_1operator__base.html" title="Provides potentially heavyweight B&#45;spline and parallel FFT infrastructure." alt="" coords="581,2053,751,2359"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="762,2325,821,2396,843,2419,839,2423,817,2399,758,2328"/>
+<area shape="rect" id="Node000003" href="$classsuzerain_1_1operator__tools.html" title="Provides combined, timed B&#45;spline and parallel FFT infrastructure routines." alt="" coords="511,1596,703,1876"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="629,1889,650,2053,644,2054,624,1890"/>
+<area shape="rect" id="Node000004" href="$classsuzerain_1_1specification__grid.html" title="Holds basic three dimensional computational grid details for a distributed, mixed Fourier/B&#45;spline me..." alt="" coords="203,863,393,1249"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="329,1248,344,1315,364,1384,389,1452,419,1517,457,1577,502,1632,498,1635,453,1580,414,1520,384,1454,359,1386,339,1316,324,1249"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="5,248,143,328"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="88,328,240,847,235,848,83,329"/>
+<area shape="rect" id="Node000006" title=" " alt="" coords="355,5,404,71"/>
+<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="341,44,278,49,205,59,140,75,115,85,99,97,86,113,78,131,68,171,66,211,69,247,64,248,61,211,62,170,73,129,82,110,95,93,112,80,138,70,204,54,277,44,340,39"/>
+<area shape="rect" id="Node000007" title=" " alt="" coords="167,255,362,321"/>
+<area shape="poly" id="edge7_Node000007_Node000006" title=" " alt="" coords="343,54,312,71,287,96,269,136,261,178,260,220,262,255,257,255,255,220,256,178,264,134,282,93,309,67,341,49"/>
+<area shape="rect" id="Node000012" title=" " alt="" coords="386,255,581,321"/>
+<area shape="poly" id="edge14_Node000012_Node000006" title=" " alt="" coords="417,64,442,93,461,135,473,178,484,255,479,255,468,180,456,137,437,96,413,67"/>
+<area shape="rect" id="Node000024" title=" " alt="" coords="919,248,1090,328"/>
+<area shape="poly" id="edge30_Node000024_Node000006" title=" " alt="" coords="418,41,528,55,673,78,812,108,868,126,909,146,935,167,957,193,990,246,985,249,953,196,931,171,906,150,866,131,811,113,672,83,528,60,417,46"/>
+<area shape="poly" id="edge6_Node000004_Node000007" title=" " alt="" coords="267,321,270,569,285,846,280,847,265,569,262,321"/>
+<area shape="rect" id="Node000010" href="$classsuzerain_1_1pencil__grid.html" title="An abstract base class for pencil grid implementations atop various communications libraries." alt="" coords="429,919,655,1193"/>
+<area shape="poly" id="edge12_Node000010_Node000007" title=" " alt="" coords="273,320,303,468,318,536,328,568,346,578,365,579,386,580,406,591,435,624,459,660,480,699,496,740,521,822,536,901,530,902,516,823,491,741,475,701,455,663,431,627,403,595,384,585,365,584,344,583,324,571,313,537,298,469,268,321"/>
+<area shape="rect" id="Node000008" title=" " alt="" coords="605,248,729,328"/>
+<area shape="poly" id="edge8_Node000004_Node000008" title=" " alt="" coords="677,328,681,383,677,449,671,482,660,515,644,545,622,571,597,588,571,594,545,591,519,585,494,579,468,576,443,580,418,595,394,620,372,648,339,711,317,778,304,847,298,846,312,777,334,708,368,645,390,617,415,591,442,575,468,570,494,573,520,580,546,586,570,589,595,584,619,567,640,542,655,513,666,481,672,448,675,383,671,329"/>
+<area shape="rect" id="Node000009" title=" " alt="" coords="1589,5,1645,71"/>
+<area shape="poly" id="edge9_Node000008_Node000009" title=" " alt="" coords="1575,48,1331,84,998,127,941,129,867,129,794,134,765,141,743,150,721,171,703,196,680,249,675,247,698,193,717,167,741,146,764,136,794,129,866,124,941,123,998,121,1330,78,1574,43"/>
+<area shape="rect" id="Node000025" title=" " alt="" coords="1527,248,1706,328"/>
+<area shape="poly" id="edge32_Node000025_Node000009" title=" " alt="" coords="1619,85,1619,248,1614,248,1614,85"/>
+<area shape="rect" id="Node000026" title=" " alt="" coords="1731,248,1953,328"/>
+<area shape="poly" id="edge34_Node000026_Node000009" title=" " alt="" coords="1659,46,1706,63,1729,76,1751,93,1781,129,1805,170,1822,211,1835,247,1830,249,1817,213,1800,172,1777,132,1747,97,1726,81,1704,68,1657,51"/>
+<area shape="poly" id="edge10_Node000003_Node000010" title=" " alt="" coords="558,1193,595,1579,590,1580,552,1194"/>
+<area shape="rect" id="Node000011" title=" " alt="" coords="754,255,895,321"/>
+<area shape="poly" id="edge11_Node000010_Node000011" title=" " alt="" coords="811,334,595,919,590,918,806,333"/>
+<area shape="rect" id="Node000013" href="$classsuzerain_1_1bsplineop.html" title="Provides a thin RAII wrapper for suzerain_bsplineop_workspace." alt="" coords="726,593,875,1519"/>
+<area shape="poly" id="edge16_Node000013_Node000011" title=" " alt="" coords="826,335,822,452,818,593,812,593,817,452,820,335"/>
+<area shape="rect" id="Node000020" href="$classsuzerain_1_1reacting_1_1operator__common__block.html" title="Storage for holding quantities computed during nonlinear operator application which either are requir..." alt="" coords="1249,666,1449,1446"/>
+<area shape="poly" id="edge27_Node000020_Node000011" title=" " alt="" coords="849,331,876,379,909,426,977,509,1012,538,1063,567,1085,575,1105,577,1143,573,1180,572,1199,578,1218,591,1251,626,1278,664,1274,667,1247,629,1215,595,1196,583,1179,577,1143,578,1105,582,1084,580,1061,572,1009,543,973,513,905,430,871,381,844,334"/>
+<area shape="poly" id="edge13_Node000010_Node000012" title=" " alt="" coords="488,321,533,902,528,902,483,321"/>
+<area shape="poly" id="edge15_Node000003_Node000013" title=" " alt="" coords="728,1320,654,1581,649,1579,723,1318"/>
+<area shape="rect" id="Node000014" href="$classsuzerain_1_1lowstorage_1_1operator__nonlinear.html" title=" " alt="" coords="747,1900,921,2029"/>
+<area shape="poly" id="edge17_Node000001_Node000014" title=" " alt="" coords="840,2043,849,2190,867,2358,879,2420,873,2421,862,2359,844,2190,835,2043"/>
+<area shape="rect" id="Node000015" href="$classsuzerain_1_1lowstorage_1_1operator__nonlinear.html" title="Defines the nonlinear operator interface required for timestepping." alt="" coords="903,999,1077,1113"/>
+<area shape="poly" id="edge18_Node000014_Node000015" title=" " alt="" coords="992,1127,985,1211,968,1313,955,1367,938,1420,916,1472,889,1520,881,1529,873,1533,865,1537,859,1544,840,1588,827,1635,819,1684,815,1732,816,1824,825,1900,819,1900,811,1824,809,1732,813,1683,822,1634,835,1586,854,1541,862,1532,870,1528,878,1524,885,1517,911,1469,933,1418,950,1365,963,1312,979,1211,986,1127"/>
+<area shape="rect" id="Node000017" href="$classsuzerain_1_1lowstorage_1_1operator__nonlinear.html" title=" " alt="" coords="901,1671,1084,1801"/>
+<area shape="poly" id="edge21_Node000017_Node000015" title=" " alt="" coords="993,1127,995,1671,990,1671,988,1127"/>
+<area shape="rect" id="Node000016" title=" " alt="" coords="877,2151,1108,2261"/>
+<area shape="poly" id="edge19_Node000001_Node000016" title=" " alt="" coords="974,2262,915,2407,910,2405,969,2260"/>
+<area shape="poly" id="edge20_Node000016_Node000017" title=" " alt="" coords="995,1801,995,2135,990,2135,990,1801"/>
+<area shape="rect" id="Node000018" title=" " alt="" coords="1113,1703,1262,1769"/>
+<area shape="poly" id="edge22_Node000016_Node000018" title=" " alt="" coords="1170,1782,1118,1901,1016,2152,1011,2150,1113,1899,1165,1780"/>
+<area shape="rect" id="Node000019" title=" " alt="" coords="1181,1023,1204,1089"/>
+<area shape="poly" id="edge23_Node000018_Node000019" title=" " alt="" coords="1195,1089,1190,1687,1185,1687,1190,1089"/>
+<area shape="poly" id="edge24_Node000001_Node000020" title=" " alt="" coords="1367,1446,1362,1587,1351,1735,1329,1885,1297,2030,1268,2133,1238,2212,1219,2248,1194,2283,1123,2361,1095,2384,1065,2404,1002,2436,999,2431,1062,2399,1092,2379,1119,2357,1190,2280,1214,2245,1233,2210,1263,2131,1291,2029,1324,1884,1345,1735,1357,1587,1362,1446"/>
+<area shape="rect" id="Node000021" href="$classsuzerain_1_1constraint_1_1treatment_1_1inputs.html" title="Abstract interface for tracking instantaneous collocation point profiles taken to be inputs to constr..." alt="" coords="1115,158,1257,418"/>
+<area shape="poly" id="edge25_Node000020_Node000021" title=" " alt="" coords="1219,431,1269,665,1263,666,1214,432"/>
+<area shape="rect" id="Node000022" href="$classsuzerain_1_1constraint_1_1treatment_1_1outputs.html" title="Abstract interface for tracking forcing collocation point profile outputs maintained by constraint tr..." alt="" coords="1282,148,1426,428"/>
+<area shape="poly" id="edge26_Node000020_Node000022" title=" " alt="" coords="1356,442,1354,666,1349,666,1350,442"/>
+<area shape="rect" id="Node000023" title=" " alt="" coords="1451,255,1503,321"/>
+<area shape="poly" id="edge28_Node000020_Node000023" title=" " alt="" coords="1474,321,1419,650,1414,649,1469,320"/>
+<area shape="poly" id="edge29_Node000020_Node000024" title=" " alt="" coords="1018,327,1038,381,1067,445,1107,510,1130,540,1157,567,1172,576,1187,578,1203,581,1219,591,1262,650,1257,653,1215,595,1201,586,1186,583,1171,581,1154,571,1126,544,1102,513,1062,447,1033,383,1013,329"/>
+<area shape="poly" id="edge31_Node000020_Node000025" title=" " alt="" coords="1606,329,1457,755,1452,753,1600,327"/>
+<area shape="poly" id="edge33_Node000020_Node000026" title=" " alt="" coords="1819,330,1460,887,1456,884,1815,327"/>
+</map>

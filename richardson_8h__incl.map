@@ -1,0 +1,7 @@
+<map id="suzerain/richardson.h" name="suzerain/richardson.h">
+<area shape="rect" id="Node000001" title="Generalized Richardson extrapolation built atop the GNU Scientific Library (GSL)." alt="" coords="113,5,275,31"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="5,79,183,104"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="179,33,123,73,120,68,176,29"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="207,79,381,104"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="212,29,268,68,265,73,209,33"/>
+</map>

@@ -1,0 +1,31 @@
+<map id="suzerain/specification_arsel.cpp" name="suzerain/specification_arsel.cpp">
+<area shape="rect" id="Node000001" title="Provides suzerain::specification_arsel." alt="" coords="231,5,394,45"/>
+<area shape="rect" id="Node000002" href="$specification__arsel_8hpp.html" title="Provides suzerain::specification_arsel." alt="" coords="93,93,255,133"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="284,48,217,89,214,84,281,43"/>
+<area shape="rect" id="Node000006" href="$ar_8hpp.html" title="Autoregressive process modeling tools in header&#45;only C++." alt="" coords="433,101,555,126"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="354,43,459,92,457,97,351,48"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="5,181,76,207"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="143,136,73,177,71,172,141,131"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="187,181,246,207"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="187,132,206,168,202,171,182,135"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="100,181,163,207"/>
+<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="166,135,146,171,142,168,161,132"/>
+<area shape="poly" id="edge14_Node000006_Node000004" title=" " alt="" coords="454,129,260,183,259,178,453,123"/>
+<area shape="poly" id="edge15_Node000006_Node000005" title=" " alt="" coords="436,129,177,184,176,179,435,123"/>
+<area shape="rect" id="Node000007" title=" " alt="" coords="950,181,1035,207"/>
+<area shape="poly" id="edge6_Node000006_Node000007" title=" " alt="" coords="555,120,723,144,937,178,936,184,722,149,554,125"/>
+<area shape="rect" id="Node000008" title=" " alt="" coords="270,181,339,207"/>
+<area shape="poly" id="edge7_Node000006_Node000008" title=" " alt="" coords="467,128,346,179,344,174,465,124"/>
+<area shape="rect" id="Node000009" title=" " alt="" coords="364,181,427,207"/>
+<area shape="poly" id="edge8_Node000006_Node000009" title=" " alt="" coords="481,128,422,175,419,171,478,124"/>
+<area shape="rect" id="Node000010" title=" " alt="" coords="451,181,537,207"/>
+<area shape="poly" id="edge9_Node000006_Node000010" title=" " alt="" coords="497,126,497,167,491,167,491,126"/>
+<area shape="rect" id="Node000011" title=" " alt="" coords="561,181,632,207"/>
+<area shape="poly" id="edge10_Node000006_Node000011" title=" " alt="" coords="511,124,572,171,569,175,508,128"/>
+<area shape="rect" id="Node000012" title=" " alt="" coords="657,181,715,207"/>
+<area shape="poly" id="edge11_Node000006_Node000012" title=" " alt="" coords="523,124,647,174,645,179,521,128"/>
+<area shape="rect" id="Node000013" title=" " alt="" coords="739,181,814,207"/>
+<area shape="poly" id="edge12_Node000006_Node000013" title=" " alt="" coords="536,123,727,176,725,181,534,129"/>
+<area shape="rect" id="Node000014" title=" " alt="" coords="839,181,925,207"/>
+<area shape="poly" id="edge13_Node000006_Node000014" title=" " alt="" coords="552,123,826,179,825,184,550,129"/>
+</map>

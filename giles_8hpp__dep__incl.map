@@ -1,0 +1,16 @@
+<map id="suzerain/giles.hpp" name="suzerain/giles.hpp">
+<area shape="rect" id="Node000001" title="Forms Medida&#39;s Giles&#45;like nonreflecting boundary condition matrices." alt="" coords="265,5,405,31"/>
+<area shape="rect" id="Node000002" href="$perfect_2treatment__nonreflecting_8hpp.html" title="A physics&#45;agnostic, low&#45;storage B&#45;spline mass operator." alt="" coords="159,79,331,119"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="313,42,269,81,265,77,310,38"/>
+<area shape="rect" id="Node000007" href="$giles_8cpp.html" title="Forms Medida&#39;s Giles&#45;like nonreflecting boundary condition matrices." alt="" coords="356,86,495,111"/>
+<area shape="poly" id="edge7_Node000001_Node000007" title=" " alt="" coords="360,38,414,84,410,88,357,42"/>
+<area shape="rect" id="Node000003" href="$perfect_2main__advance_8cpp.html" title="Application executing suzerain::perfect::driver_advance::run." alt="" coords="5,262,235,287"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="194,128,170,146,149,168,136,192,129,218,123,262,118,262,123,217,131,190,144,165,166,142,191,123"/>
+<area shape="rect" id="Node000004" href="$operator__hybrid__isothermal_8hpp.html" title="A hybrid implicit/explicit Navier–Stokes operator for isothermal wall(s)." alt="" coords="158,167,333,207"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="248,133,248,166,243,166,243,133"/>
+<area shape="rect" id="Node000006" href="$perfect_2treatment__nonreflecting_8cpp.html" title="A physics&#45;agnostic, low&#45;storage B&#45;spline mass operator." alt="" coords="357,167,529,207"/>
+<area shape="poly" id="edge6_Node000002_Node000006" title=" " alt="" coords="302,122,401,164,398,169,300,127"/>
+<area shape="poly" id="edge4_Node000004_Node000003" title=" " alt="" coords="207,217,138,264,135,260,204,213"/>
+<area shape="rect" id="Node000005" href="$operator__hybrid__isothermal_8cpp.html" title="A hybrid implicit/explicit Navier–Stokes operator for isothermal wall(s)." alt="" coords="259,255,434,295"/>
+<area shape="poly" id="edge5_Node000004_Node000005" title=" " alt="" coords="280,214,326,252,323,256,277,218"/>
+</map>

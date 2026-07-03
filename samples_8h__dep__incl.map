@@ -1,0 +1,32 @@
+<map id="suzerain/samples.h" name="suzerain/samples.h">
+<area shape="rect" id="Node000001" title="Boost.Preprocessor definitions driving suzerain::samples." alt="" coords="901,5,1049,31"/>
+<area shape="rect" id="Node000002" href="$samples_8hpp.html" title="Named storage for sampled quantities of interest for 3D Navier–Stokes." alt="" coords="1210,152,1374,177"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="1013,34,1268,150,1266,154,1011,39"/>
+<area shape="rect" id="Node000010" href="$summary_8h.html" title="Boost.Preprocessor definitions driving suzerain::summary." alt="" coords="841,79,994,104"/>
+<area shape="poly" id="edge9_Node000001_Node000010" title=" " alt="" coords="959,43,929,80,925,77,955,40"/>
+<area shape="rect" id="Node000003" href="$perfect_2driver_8cpp.html" title="A driver for nondimensional perfect gas simulations." alt="" coords="1701,233,1872,258"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="1388,177,1690,223,1730,230,1729,235,1689,228,1388,182"/>
+<area shape="rect" id="Node000004" href="$instantaneous_8cpp.html" title="Implementation of suzerain::perfect::instantaneous." alt="" coords="653,233,880,258"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="1202,182,892,228,843,235,842,230,892,223,1201,177"/>
+<area shape="rect" id="Node000005" href="$perfect_8cpp.html" title="Support logic for the perfect gas application." alt="" coords="1897,233,2077,258"/>
+<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="1388,171,1615,191,1884,223,1929,230,1928,235,1884,228,1614,196,1387,176"/>
+<area shape="rect" id="Node000006" href="$reacting_2driver_8cpp.html" title="A driver for reacting flow simulations." alt="" coords="1312,233,1491,258"/>
+<area shape="poly" id="edge5_Node000002_Node000006" title=" " alt="" coords="1321,183,1387,230,1384,235,1318,188"/>
+<area shape="rect" id="Node000007" href="$profile_8cpp.html" title="Sampling logistics for boundary layer and channel solution profiles." alt="" coords="904,233,1053,258"/>
+<area shape="poly" id="edge6_Node000002_Node000007" title=" " alt="" coords="1234,183,1025,235,1024,230,1233,178"/>
+<area shape="rect" id="Node000008" href="$samples_8cpp.html" title="Named storage for sampled quantities of interest for 3D Navier–Stokes." alt="" coords="1515,233,1677,258"/>
+<area shape="poly" id="edge7_Node000002_Node000008" title=" " alt="" coords="1350,178,1552,230,1551,235,1349,183"/>
+<area shape="rect" id="Node000009" href="$support_8cpp.html" title="Support logic with complex prerequisites spanning multiple applications." alt="" coords="1077,233,1288,258"/>
+<area shape="poly" id="edge8_Node000002_Node000009" title=" " alt="" coords="1266,188,1200,235,1197,230,1263,183"/>
+<area shape="rect" id="Node000011" href="$summary_8hpp.html" title="Named storage for summarizing sampled quantity components and their derivatives of interest for 3D Na..." alt="" coords="682,152,851,177"/>
+<area shape="poly" id="edge10_Node000010_Node000011" title=" " alt="" coords="882,112,792,154,790,149,880,107"/>
+<area shape="poly" id="edge11_Node000011_Node000004" title=" " alt="" coords="769,191,769,232,764,232,764,191"/>
+<area shape="poly" id="edge13_Node000011_Node000007" title=" " alt="" coords="811,179,949,230,947,235,809,184"/>
+<area shape="poly" id="edge16_Node000011_Node000009" title=" " alt="" coords="841,177,1123,230,1122,235,840,182"/>
+<area shape="rect" id="Node000012" href="$main__summary_8cpp.html" title="Application executing suzerain::support::driver_base::summary_run." alt="" coords="5,233,240,258"/>
+<area shape="poly" id="edge12_Node000011_Node000012" title=" " alt="" coords="669,179,252,228,199,235,199,230,252,223,668,174"/>
+<area shape="rect" id="Node000013" href="$summary_8cpp.html" title="Named storage for summarizing sampled quantity components and their derivatives of interest for 3D Na..." alt="" coords="264,233,432,258"/>
+<area shape="poly" id="edge14_Node000011_Node000013" title=" " alt="" coords="691,182,444,228,406,235,405,230,444,223,690,177"/>
+<area shape="rect" id="Node000014" href="$driver__base__summary_8cpp.html" title="Implementation of suzerain::support::driver_base::summary_run." alt="" coords="457,225,629,265"/>
+<area shape="poly" id="edge15_Node000011_Node000014" title=" " alt="" coords="722,184,597,228,596,223,720,179"/>
+</map>

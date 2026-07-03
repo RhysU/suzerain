@@ -1,0 +1,5 @@
+<map id="suzerain::support::delta_t_allreducer" name="suzerain::support::delta_t_allreducer">
+<area shape="rect" id="Node000001" title="A stateful functor that performs a MPI_Allreduce to determine the minimum stable time step size acros..." alt="" coords="5,133,161,233"/>
+<area shape="rect" id="Node000002" href="$structsuzerain_1_1lowstorage_1_1delta__t__reducer.html" title="A functor that finds the minimum stable time step given a vector of candidates." alt="" coords="9,5,158,85"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="86,99,86,133,81,133,81,99"/>
+</map>

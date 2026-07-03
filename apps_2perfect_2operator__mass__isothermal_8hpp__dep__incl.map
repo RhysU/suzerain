@@ -1,0 +1,7 @@
+<map id="apps/perfect/operator_mass_isothermal.hpp" name="apps/perfect/operator_mass_isothermal.hpp">
+<area shape="rect" id="Node000001" title="Provides suzerain::perfect::operator_mass_isothermal." alt="" coords="146,5,315,45"/>
+<area shape="rect" id="Node000002" href="$perfect_2main__advance_8cpp.html" title="Application executing suzerain::perfect::driver_advance::run." alt="" coords="5,101,235,126"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="197,56,137,102,134,98,194,52"/>
+<area shape="rect" id="Node000003" href="$apps_2perfect_2operator__mass__isothermal_8cpp.html" title="Provides suzerain::perfect::operator_mass_isothermal." alt="" coords="259,93,427,133"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="268,52,319,91,316,95,265,56"/>
+</map>

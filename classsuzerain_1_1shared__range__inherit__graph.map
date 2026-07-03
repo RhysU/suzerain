@@ -1,0 +1,11 @@
+<map id="suzerain::shared_range&lt; T &gt;" name="suzerain::shared_range&lt; T &gt;">
+<area shape="rect" id="Node000001" title="A shared_range extends the functionality of iterator_range by adding smart pointer&#45;like resource owne..." alt="" coords="89,135,292,400"/>
+<area shape="rect" id="Node000003" href="$classsuzerain_1_1shared__range.html" title=" " alt="" coords="108,463,273,743"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="193,414,193,463,188,463,188,414"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="115,5,266,85"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="193,99,193,135,188,135,188,99"/>
+<area shape="rect" id="Node000004" href="$classsuzerain_1_1contiguous__state.html" title="A state class storing elements with the first index slowest followed by the other indices in Fortran ..." alt="" coords="5,792,179,1352"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="161,757,154,792,148,791,156,756"/>
+<area shape="rect" id="Node000005" href="$classsuzerain_1_1interleaved__state.html" title="A state class storing elements in Fortran order except that the first two indices are exchanged." alt="" coords="203,812,376,1332"/>
+<area shape="poly" id="edge4_Node000003_Node000005" title=" " alt="" coords="225,755,237,811,232,812,220,756"/>
+</map>

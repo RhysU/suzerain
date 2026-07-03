@@ -1,0 +1,25 @@
+var searchData=
+[
+  ['radialflow_2ec_0',['radialflow.c',['../radialflow_8c.html',1,'']]],
+  ['radialflow_2eh_1',['radialflow.h',['../radialflow_8h.html',1,'']]],
+  ['reacting_2ecpp_2',['reacting.cpp',['../reacting_8cpp.html',1,'']]],
+  ['reacting_2ehpp_3',['reacting.hpp',['../reacting_8hpp.html',1,'']]],
+  ['reacting_5fimexop_2ec_4',['reacting_imexop.c',['../reacting__imexop_8c.html',1,'']]],
+  ['reacting_5fimexop_2edef_5',['reacting_imexop.def',['../reacting__imexop_8def.html',1,'']]],
+  ['reacting_5fimexop_2eh_6',['reacting_imexop.h',['../reacting__imexop_8h.html',1,'']]],
+  ['reacting_5fndx_2ehpp_7',['reacting_ndx.hpp',['../reacting__ndx_8hpp.html',1,'']]],
+  ['references_2ecpp_8',['references.cpp',['../references_8cpp.html',1,'']]],
+  ['references_2ehpp_9',['references.hpp',['../references_8hpp.html',1,'']]],
+  ['rholt_2ehpp_10',['rholt.hpp',['../rholt_8hpp.html',1,'']]],
+  ['rholut_2ehpp_11',['rholut.hpp',['../rholut_8hpp.html',1,'']]],
+  ['rholut_5fimexop_2ec_12',['rholut_imexop.c',['../rholut__imexop_8c.html',1,'']]],
+  ['rholut_5fimexop_2edef_13',['rholut_imexop.def',['../rholut__imexop_8def.html',1,'']]],
+  ['rholut_5fimexop_2eh_14',['rholut_imexop.h',['../rholut__imexop_8h.html',1,'']]],
+  ['rholut_5fimexop00_2ec_15',['rholut_imexop00.c',['../rholut__imexop00_8c.html',1,'']]],
+  ['rholut_5fimexop00_2edef_16',['rholut_imexop00.def',['../rholut__imexop00_8def.html',1,'']]],
+  ['richardson_2ec_17',['richardson.c',['../richardson_8c.html',1,'']]],
+  ['richardson_2eh_18',['richardson.h',['../richardson_8h.html',1,'']]],
+  ['rngstream_2ecpp_19',['rngstream.cpp',['../rngstream_8cpp.html',1,'']]],
+  ['rngstream_2ehpp_20',['rngstream.hpp',['../rngstream_8hpp.html',1,'']]],
+  ['running_5fstatistics_2ehpp_21',['running_statistics.hpp',['../running__statistics_8hpp.html',1,'']]]
+];

@@ -1,0 +1,5 @@
+<map id="ar::BIC" name="ar::BIC">
+<area shape="rect" id="Node000001" title="Represents the consistent criterion BIC." alt="" coords="9,119,147,184"/>
+<area shape="rect" id="Node000002" href="$structar_1_1criterion.html" title="Criteria for autoregressive model order selection following Broersen." alt="" coords="5,5,151,71"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="81,84,81,119,75,119,75,84"/>
+</map>

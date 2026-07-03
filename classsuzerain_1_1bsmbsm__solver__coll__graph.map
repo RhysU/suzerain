@@ -1,0 +1,21 @@
+<map id="suzerain::bsmbsm_solver" name="suzerain::bsmbsm_solver">
+<area shape="rect" id="Node000001" title="An abstract base class for solving BSMBSM problems per a specification_zgbsv." alt="" coords="487,545,667,971"/>
+<area shape="rect" id="Node000002" href="$structsuzerain__bsmbsm.html" title="Storage details for a banded square matrix with banded submatrices (BSMBSM)." alt="" coords="5,195,137,421"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="126,431,152,466,190,506,232,544,321,611,409,668,488,711,485,716,407,672,318,616,228,548,186,510,148,470,122,434"/>
+<area shape="rect" id="Node000003" href="$classsuzerain_1_1specification__zgbsv.html" title="Encapsulates parsing and storing complex&#45;valued banded solve options." alt="" coords="162,148,327,468"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="330,449,342,466,409,557,478,641,474,644,405,560,337,470,325,452"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="352,268,575,348"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="476,348,522,529,516,530,471,349"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="550,5,606,71"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="538,49,495,66,477,79,462,96,451,116,445,138,441,184,445,228,453,267,448,268,439,229,435,184,440,137,446,114,457,93,473,75,493,61,536,44"/>
+<area shape="rect" id="Node000009" title=" " alt="" coords="599,275,784,341"/>
+<area shape="poly" id="edge10_Node000009_Node000005" title=" " alt="" coords="620,54,644,71,664,93,685,139,695,189,698,236,697,275,692,275,693,236,690,190,680,141,660,96,640,75,617,59"/>
+<area shape="rect" id="Node000006" title=" " alt="" coords="809,268,1003,348"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="882,350,797,470,679,628,675,625,793,466,877,347"/>
+<area shape="rect" id="Node000007" title=" " alt="" coords="990,5,1033,71"/>
+<area shape="poly" id="edge6_Node000006_Node000007" title=" " alt="" coords="978,50,940,67,923,80,910,96,893,138,888,184,891,229,898,267,892,268,886,230,883,184,888,137,905,93,919,76,937,63,976,45"/>
+<area shape="rect" id="Node000008" title=" " alt="" coords="1028,275,1211,341"/>
+<area shape="poly" id="edge8_Node000008_Node000007" title=" " alt="" coords="1046,53,1071,70,1091,93,1111,140,1122,189,1125,236,1125,275,1119,275,1120,236,1116,190,1106,141,1086,96,1067,74,1043,57"/>
+<area shape="poly" id="edge7_Node000001_Node000008" title=" " alt="" coords="1106,343,1069,405,1045,439,1017,470,936,542,848,607,760,662,682,706,680,702,758,657,845,602,933,538,1013,466,1041,435,1065,402,1101,340"/>
+<area shape="poly" id="edge9_Node000001_Node000009" title=" " alt="" coords="686,341,638,530,632,529,681,340"/>
+</map>

@@ -1,0 +1,17 @@
+<map id="suzerain::perfect::manufactured_solution" name="suzerain::perfect::manufactured_solution">
+<area shape="rect" id="Node000001" title="Manufactured solution employed throughout the perfect gas code." alt="" coords="307,1812,496,2052"/>
+<area shape="rect" id="Node000002" href="$classsuzerain_1_1support_1_1definition__base.html" title="An abstract base class for defining a collection of related options." alt="" coords="5,1293,171,1393"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="92,1407,98,1483,113,1575,141,1671,161,1718,185,1761,211,1795,241,1826,308,1877,305,1881,238,1830,207,1799,180,1764,156,1720,136,1673,108,1576,93,1484,87,1407"/>
+<area shape="rect" id="Node000003" href="$classsuzerain_1_1support_1_1overridable.html" title=" " alt="" coords="195,1285,389,1400"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="308,1413,382,1811,377,1812,302,1414"/>
+<area shape="rect" id="Node000004" href="$classsuzerain_1_1support_1_1overridable.html" title="Abstract interface indicating data may be overridden from another instance." alt="" coords="207,383,377,483"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="295,496,295,1285,289,1285,289,496"/>
+<area shape="rect" id="Node000005" href="$classsuzerain_1_1support_1_1populatable.html" title=" " alt="" coords="413,1285,611,1400"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="502,1414,426,1812,421,1811,496,1413"/>
+<area shape="rect" id="Node000006" href="$classsuzerain_1_1support_1_1populatable.html" title="Abstract interface indicating data may be populated from another instance." alt="" coords="426,383,598,483"/>
+<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="515,496,515,1285,509,1285,509,496"/>
+<area shape="rect" id="Node000007" href="$classnsctpl__rholut_1_1manufactured__solution.html" title=" " alt="" coords="635,923,832,1763"/>
+<area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="629,1757,625,1764,598,1799,566,1830,498,1881,495,1877,562,1826,594,1795,621,1761,625,1754"/>
+<area shape="rect" id="Node000008" href="$classnsctpl__rholut_1_1manufactured__solution.html" title="Template that, given a primitive function for rho, u, v, w, and T along with a floating point type,..." alt="" coords="629,5,837,860"/>
+<area shape="poly" id="edge7_Node000007_Node000008" title=" " alt="" coords="736,874,736,923,731,923,731,874"/>
+</map>

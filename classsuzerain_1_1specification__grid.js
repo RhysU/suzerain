@@ -1,0 +1,26 @@
+var classsuzerain_1_1specification__grid =
+[
+    [ "specification_grid", "classsuzerain_1_1specification__grid.html#aad6500c013f5cca2a2c7d55115d6ce01", null ],
+    [ "specification_grid", "classsuzerain_1_1specification__grid.html#a195ad8c53e12dfd7488284b8db403c30", null ],
+    [ "Nx", "classsuzerain_1_1specification__grid.html#aa9a3391a67e1bcb5f256a537c1306398", null ],
+    [ "Ny", "classsuzerain_1_1specification__grid.html#a745e3be154216eeeacf897c3bee1444f", null ],
+    [ "Nz", "classsuzerain_1_1specification__grid.html#a2b71ca51fd0c0fa88ac2c2a7d6822c08", null ],
+    [ "DAFx", "classsuzerain_1_1specification__grid.html#a45e5ff750760aaf689f89a125f49a1b5", null ],
+    [ "DAFz", "classsuzerain_1_1specification__grid.html#a9a2dd5fe3f48dd8defefb4a06ab895e5", null ],
+    [ "two_sided", "classsuzerain_1_1specification__grid.html#a6ade5395312ae4e471d3cb5b6592f134", null ],
+    [ "one_sided", "classsuzerain_1_1specification__grid.html#a82d40e8060dde910186e8b4a05bba989", null ],
+    [ "Nx", "classsuzerain_1_1specification__grid.html#a7767b1b9d0e2aa18a5335bb6b7e72c5d", null ],
+    [ "Ny", "classsuzerain_1_1specification__grid.html#a3cf2dcea7b2e09b5241f065288484809", null ],
+    [ "Nz", "classsuzerain_1_1specification__grid.html#acc1e3e726b3d214bc7b703a60b1cb3c3", null ],
+    [ "DAFx", "classsuzerain_1_1specification__grid.html#a6b68722234609c86f56826b835826062", null ],
+    [ "DAFz", "classsuzerain_1_1specification__grid.html#a1df48ef2aa8cbbef0056bda0edb54ae4", null ],
+    [ "x", "classsuzerain_1_1specification__grid.html#a068ad286c2b79d5e46524e854372b240", null ],
+    [ "z", "classsuzerain_1_1specification__grid.html#a182baee4f2b3dd23c01e8b11b1725c7b", null ],
+    [ "L", "classsuzerain_1_1specification__grid.html#a56b7f9be236167f3f7a83a15c41ae207", null ],
+    [ "N", "classsuzerain_1_1specification__grid.html#a9377fd6f2bb9f34873592a0bc524ea96", null ],
+    [ "DAF", "classsuzerain_1_1specification__grid.html#a63c099bf0924c9c4fba7ada91dba3caf", null ],
+    [ "dN", "classsuzerain_1_1specification__grid.html#a28931487ed834a0544748a1b2183cac9", null ],
+    [ "P", "classsuzerain_1_1specification__grid.html#aa31058e1ee46d1f31fb2d9b096a370a7", null ],
+    [ "k", "classsuzerain_1_1specification__grid.html#ab1eb5540a40d4801043db44e08e6c792", null ],
+    [ "htdelta", "classsuzerain_1_1specification__grid.html#a210012252371630b4d004b8e313f8569", null ]
+];

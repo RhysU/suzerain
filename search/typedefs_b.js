@@ -1,0 +1,11 @@
+var searchData=
+[
+  ['padded_5fstate_5fpools_5ftype_0',['padded_state_pools_type',['../namespacesuzerain_1_1support.html#a58a3d95d7b658eb3611cf7e0e9cbdea6',1,'suzerain::support']]],
+  ['papt_5ftype_1',['PAPT_type',['../classsuzerain_1_1bsmbsm__solver.html#a25c03d36c783f4f6195520679d355dff',1,'suzerain::bsmbsm_solver']]],
+  ['pb_5ftype_2',['PB_type',['../classsuzerain_1_1bsmbsm__solver.html#a30aff6494625d660be097b237c6a9096',1,'suzerain::bsmbsm_solver']]],
+  ['physical_5fstorage_5forder_5ftype_3',['physical_storage_order_type',['../classsuzerain_1_1pencil.html#a456f4a224faa8653005af36b040d6e0b',1,'suzerain::pencil']]],
+  ['physical_5ftype_4',['physical_type',['../classsuzerain_1_1pencil.html#a5e683a12109a2db39c9cba41e8013548',1,'suzerain::pencil']]],
+  ['pointer_5',['pointer',['../classsuzerain_1_1allocator__freestore__policy.html#a0a6f49825b19ae5d4257db6d71790a6f',1,'suzerain::allocator_freestore_policy::pointer'],['../classsuzerain_1_1allocator.html#a8a594df589153625066cd70cc92d5789',1,'suzerain::allocator::pointer'],['../classar_1_1predictor.html#a3e9c2486690676da2320d03f0308a972',1,'ar::predictor::pointer'],['../classar_1_1empirical__variance__iterator.html#acaafa5fdf98ef9d83ad4aa03faf524d1',1,'ar::empirical_variance_iterator::pointer'],['../classar_1_1strided__adaptor.html#ab72536ccd14f3bda496a7f107ce60684',1,'ar::strided_adaptor::pointer'],['../classsuzerain_1_1blas_1_1allocator__blas__policy.html#a5647074a453d5dd11542a10da4dc961b',1,'suzerain::blas::allocator_blas_policy::pointer'],['../classsuzerain_1_1coalescing__pool.html#ae6033738b80d082d3bedeaa260dc61bb',1,'suzerain::coalescing_pool::pointer'],['../classsuzerain_1_1iterator_1_1infinite__constant.html#a2e0121c2ea742c99f1670ac15f0acea4',1,'suzerain::iterator::infinite_constant::pointer']]],
+  ['primitive_5ftype_6',['primitive_type',['../classnsctpl__rholut_1_1manufactured__solution.html#a56753dad7b0363a1d87c4f2848f01828',1,'nsctpl_rholut::manufactured_solution::primitive_type'],['../classnsctpl_1_1manufactured__solution.html#a8738b219cd66deb3a314199020626502',1,'nsctpl::manufactured_solution::primitive_type']]],
+  ['px_5ftype_7',['PX_type',['../classsuzerain_1_1bsmbsm__solver.html#af920d4404820470d2602ce893ad1eaff',1,'suzerain::bsmbsm_solver']]]
+];

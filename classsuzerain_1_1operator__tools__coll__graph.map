@@ -1,0 +1,27 @@
+<map id="suzerain::operator_tools" name="suzerain::operator_tools">
+<area shape="rect" id="Node000001" title="Provides combined, timed B&#45;spline and parallel FFT infrastructure routines." alt="" coords="523,1367,715,1647"/>
+<area shape="rect" id="Node000002" href="$classsuzerain_1_1specification__grid.html" title="Holds basic three dimensional computational grid details for a distributed, mixed Fourier/B&#45;spline me..." alt="" coords="205,649,396,1034"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="376,1033,433,1167,498,1303,524,1351,520,1354,493,1305,428,1169,371,1035"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="160,133,297,213"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="236,214,281,632,276,632,230,214"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="411,5,460,71"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="397,43,363,48,325,57,287,73,255,97,243,114,236,134,231,132,238,111,251,93,284,68,323,52,362,43,397,38"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="322,141,517,206"/>
+<area shape="poly" id="edge5_Node000005_Node000004" title=" " alt="" coords="433,85,426,141,421,140,427,84"/>
+<area shape="rect" id="Node000010" title=" " alt="" coords="541,141,735,206"/>
+<area shape="poly" id="edge12_Node000010_Node000004" title=" " alt="" coords="474,44,529,62,558,75,585,93,607,114,624,139,619,142,603,118,582,97,556,80,527,67,472,49"/>
+<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="390,207,370,238,337,335,315,437,303,538,297,632,292,632,297,537,310,436,332,334,365,236,385,205"/>
+<area shape="rect" id="Node000008" href="$classsuzerain_1_1pencil__grid.html" title="An abstract base class for pencil grid implementations atop various communications libraries." alt="" coords="507,704,732,979"/>
+<area shape="poly" id="edge10_Node000008_Node000005" title=" " alt="" coords="429,205,465,354,517,527,569,687,564,689,512,529,459,355,423,207"/>
+<area shape="rect" id="Node000006" title=" " alt="" coords="5,133,129,213"/>
+<area shape="poly" id="edge6_Node000002_Node000006" title=" " alt="" coords="84,213,231,632,226,634,79,215"/>
+<area shape="rect" id="Node000007" title=" " alt="" coords="27,5,83,71"/>
+<area shape="poly" id="edge7_Node000006_Node000007" title=" " alt="" coords="58,84,59,109,62,133,57,133,54,110,53,84"/>
+<area shape="poly" id="edge8_Node000001_Node000008" title=" " alt="" coords="622,979,622,1350,617,1350,617,979"/>
+<area shape="rect" id="Node000009" title=" " alt="" coords="759,141,901,206"/>
+<area shape="poly" id="edge9_Node000008_Node000009" title=" " alt="" coords="812,220,779,294,746,380,694,548,653,704,648,703,689,546,741,378,774,292,807,218"/>
+<area shape="rect" id="Node000011" href="$classsuzerain_1_1bsplineop.html" title="Provides a thin RAII wrapper for suzerain_bsplineop_workspace." alt="" coords="755,379,905,1304"/>
+<area shape="poly" id="edge14_Node000011_Node000009" title=" " alt="" coords="833,220,833,379,827,379,827,220"/>
+<area shape="poly" id="edge11_Node000008_Node000010" title=" " alt="" coords="640,206,626,688,621,688,634,206"/>
+<area shape="poly" id="edge13_Node000001_Node000011" title=" " alt="" coords="758,1272,746,1305,724,1353,719,1351,741,1303,753,1270"/>
+</map>

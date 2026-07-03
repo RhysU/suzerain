@@ -1,0 +1,72 @@
+<map id="suzerain/gbmatrix.h" name="suzerain/gbmatrix.h">
+<area shape="rect" id="Node000001" title="General band storage matrix helpers." alt="" coords="1749,5,1901,31"/>
+<area shape="rect" id="Node000002" href="$operator__hybrid__isothermal_8cpp.html" title="A hybrid implicit/explicit Navier–Stokes operator for isothermal wall(s)." alt="" coords="5,313,180,353"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="1735,23,1410,32,964,53,734,70,521,92,338,120,264,137,203,155,166,167,138,179,115,197,94,227,86,248,84,271,90,313,85,313,79,271,81,247,89,224,111,193,135,174,164,162,201,149,262,131,337,115,520,87,734,65,964,48,1410,27,1734,18"/>
+<area shape="rect" id="Node000003" href="$operator__hybrid_8cpp.html" title="Hybrid implicit/explicit Navier–Stokes operators." alt="" coords="1464,313,1633,353"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="1787,39,1760,57,1737,80,1723,105,1717,128,1714,173,1711,219,1703,242,1687,267,1653,296,1615,316,1612,311,1650,292,1683,264,1698,240,1706,217,1709,173,1711,127,1719,103,1733,77,1757,53,1784,35"/>
+<area shape="rect" id="Node000004" href="$bsmbsm_8h.html" title="Routines for blocked square matrices with banded submatrices." alt="" coords="998,79,1147,104"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="1735,30,1148,86,1147,80,1735,25"/>
+<area shape="rect" id="Node000026" href="$bsplineop_8c.html" title="Logic for working with B&#45;spline operators." alt="" coords="1747,79,1902,104"/>
+<area shape="poly" id="edge38_Node000001_Node000026" title=" " alt="" coords="1827,44,1827,79,1822,79,1822,44"/>
+<area shape="rect" id="Node000027" href="$constraint_8cpp.html" title="Provides suzerain::constraint." alt="" coords="1926,79,2099,104"/>
+<area shape="poly" id="edge39_Node000001_Node000027" title=" " alt="" coords="1868,33,1983,76,1981,81,1867,38"/>
+<area shape="rect" id="Node000028" href="$filterop_8c.html" title="Discrete filtering operators." alt="" coords="2123,79,2262,104"/>
+<area shape="poly" id="edge40_Node000001_Node000028" title=" " alt="" coords="1898,31,2134,76,2133,81,1897,36"/>
+<area shape="rect" id="Node000029" href="$gbmatrix_8c.html" title="General band storage matrix helpers." alt="" coords="2287,79,2437,104"/>
+<area shape="poly" id="edge41_Node000001_Node000029" title=" " alt="" coords="1915,29,2287,77,2286,83,1914,34"/>
+<area shape="poly" id="edge4_Node000004_Node000002" title=" " alt="" coords="985,95,777,100,650,107,519,118,391,135,277,158,227,172,183,189,147,207,120,227,106,246,98,269,94,313,89,313,93,268,101,244,116,223,144,202,181,184,225,167,275,153,390,130,518,113,650,102,777,95,984,90"/>
+<area shape="poly" id="edge5_Node000004_Node000003" title=" " alt="" coords="1097,112,1192,200,1267,263,1316,284,1367,301,1464,321,1463,326,1366,306,1314,289,1265,268,1189,204,1093,116"/>
+<area shape="rect" id="Node000005" href="$bsmbsm_8c.html" title="Routines for blocked square matrices with banded submatrices." alt="" coords="861,152,1009,177"/>
+<area shape="poly" id="edge6_Node000004_Node000005" title=" " alt="" coords="1040,113,959,154,957,149,1037,108"/>
+<area shape="rect" id="Node000006" href="$bsmbsm__solver_8hpp.html" title="Encapsulates solving BSMBSM problems per a suzerain::specification_zgbsv." alt="" coords="993,233,1203,258"/>
+<area shape="poly" id="edge7_Node000004_Node000006" title=" " alt="" coords="1079,117,1099,232,1093,233,1074,118"/>
+<area shape="rect" id="Node000008" href="$reacting__imexop_8c.html" title="Provides implicit operator apply and solve routines for a single wall&#45;normal pencil of state informat..." alt="" coords="1278,233,1478,258"/>
+<area shape="poly" id="edge11_Node000004_Node000008" title=" " alt="" coords="1139,105,1199,123,1261,150,1323,191,1368,230,1364,234,1319,195,1258,154,1197,128,1137,110"/>
+<area shape="rect" id="Node000009" href="$reacting__imexop_8h.html" title="Provides implicit operator apply and solve routines for a single wall&#45;normal pencil of state informat..." alt="" coords="1423,152,1624,177"/>
+<area shape="poly" id="edge12_Node000004_Node000009" title=" " alt="" coords="1159,103,1451,149,1450,155,1158,109"/>
+<area shape="rect" id="Node000020" href="$rholut__imexop_8c.html" title="Provides implicit operator apply and solve routines for a single wall&#45;normal pencil of state informat..." alt="" coords="557,233,743,258"/>
+<area shape="poly" id="edge29_Node000004_Node000020" title=" " alt="" coords="1007,110,931,129,851,155,750,197,673,235,671,230,748,192,849,149,930,124,1006,105"/>
+<area shape="rect" id="Node000021" href="$rholut__imexop_8h.html" title="Provides implicit operator apply and solve routines for a single wall&#45;normal pencil of state informat..." alt="" coords="557,152,743,177"/>
+<area shape="poly" id="edge30_Node000004_Node000021" title=" " alt="" coords="992,109,719,155,718,149,991,104"/>
+<area shape="rect" id="Node000025" href="$rholut__imexop00_8c.html" title="Optimized zero&#45;zero mode implementations from rholut_imexop.h." alt="" coords="767,233,968,258"/>
+<area shape="poly" id="edge37_Node000004_Node000025" title=" " alt="" coords="1066,118,1049,149,1024,179,998,198,969,214,914,235,912,230,967,209,995,194,1020,175,1044,146,1061,116"/>
+<area shape="poly" id="edge8_Node000006_Node000002" title=" " alt="" coords="1020,263,981,268,760,286,587,290,414,296,312,303,193,316,181,318,180,312,192,311,312,298,414,290,586,285,759,280,980,263,1020,257"/>
+<area shape="poly" id="edge9_Node000006_Node000003" title=" " alt="" coords="1172,258,1464,313,1463,319,1171,263"/>
+<area shape="rect" id="Node000007" href="$bsmbsm__solver_8cpp.html" title="Encapsulates solving BSMBSM problems per a suzerain::specification_zgbsv." alt="" coords="993,321,1203,346"/>
+<area shape="poly" id="edge10_Node000006_Node000007" title=" " alt="" coords="1101,272,1101,320,1095,320,1095,272"/>
+<area shape="poly" id="edge28_Node000009_Node000008" title=" " alt="" coords="1491,186,1401,235,1398,230,1489,182"/>
+<area shape="rect" id="Node000010" href="$operator__hybrid_8hpp.html" title="Hybrid implicit/explicit Navier–Stokes operators." alt="" coords="1503,225,1672,265"/>
+<area shape="poly" id="edge13_Node000009_Node000010" title=" " alt="" coords="1544,186,1574,223,1570,227,1539,190"/>
+<area shape="rect" id="Node000012" href="$operator__nonlinear__fwd_8hpp.html" title="Declarations of Nonlinear Navier–Stokes spatial operators implemented within operator_nonlinear...." alt="" coords="1824,225,1993,265"/>
+<area shape="poly" id="edge16_Node000009_Node000012" title=" " alt="" coords="1593,177,1824,224,1823,229,1592,183"/>
+<area shape="poly" id="edge15_Node000010_Node000003" title=" " alt="" coords="1576,279,1560,314,1555,312,1571,277"/>
+<area shape="rect" id="Node000011" href="$reacting_2main__advance_8cpp.html" title="Application executing suzerain::reacting::driver_advance::run." alt="" coords="1873,401,2019,441"/>
+<area shape="poly" id="edge14_Node000010_Node000011" title=" " alt="" coords="1520,273,1486,289,1459,309,1451,319,1447,330,1448,340,1455,351,1474,362,1512,372,1624,390,1756,404,1873,413,1872,418,1755,409,1623,395,1511,377,1472,367,1451,355,1443,342,1442,329,1446,317,1456,305,1483,285,1517,268"/>
+<area shape="poly" id="edge24_Node000012_Node000003" title=" " alt="" coords="1817,271,1628,316,1627,311,1816,266"/>
+<area shape="rect" id="Node000013" href="$reacting_2driver_8hpp.html" title="A driver for reacting flow simulations." alt="" coords="2249,321,2427,346"/>
+<area shape="poly" id="edge17_Node000012_Node000013" title=" " alt="" coords="2007,264,2281,318,2280,323,2006,269"/>
+<area shape="rect" id="Node000016" href="$operator__explicit_8hpp.html" title="Fully explicit, linearization&#45;ready Navier–Stokes operators." alt="" coords="1861,313,2031,353"/>
+<area shape="poly" id="edge21_Node000012_Node000016" title=" " alt="" coords="1925,277,1940,312,1935,314,1920,279"/>
+<area shape="rect" id="Node000018" href="$reacting_2operator__nonlinear_8hpp.html" title="Implementation of Nonlinear Navier–Stokes spatial operators declared within operator_nonlinear_fwd...." alt="" coords="2055,313,2224,353"/>
+<area shape="poly" id="edge25_Node000012_Node000018" title=" " alt="" coords="1973,268,2090,311,2088,316,1971,273"/>
+<area shape="rect" id="Node000019" href="$reacting_2treatment__nonreflecting_8cpp.html" title="A physics&#45;agnostic, low&#45;storage B&#45;spline mass operator." alt="" coords="1658,313,1837,353"/>
+<area shape="poly" id="edge27_Node000012_Node000019" title=" " alt="" coords="1863,274,1784,316,1781,311,1860,269"/>
+<area shape="poly" id="edge19_Node000013_Node000011" title=" " alt="" coords="2273,352,2020,407,2019,401,2272,346"/>
+<area shape="rect" id="Node000014" href="$reacting_2driver_8cpp.html" title="A driver for reacting flow simulations." alt="" coords="2246,409,2425,434"/>
+<area shape="poly" id="edge18_Node000013_Node000014" title=" " alt="" coords="2340,360,2338,408,2333,408,2335,360"/>
+<area shape="rect" id="Node000015" href="$main__init_8cpp.html" title="Application executing suzerain::reacting::driver_init::run." alt="" coords="2449,401,2595,441"/>
+<area shape="poly" id="edge20_Node000013_Node000015" title=" " alt="" coords="2376,349,2483,399,2480,404,2374,354"/>
+<area shape="poly" id="edge22_Node000016_Node000011" title=" " alt="" coords="1949,367,1949,401,1943,401,1943,367"/>
+<area shape="rect" id="Node000017" href="$operator__explicit_8cpp.html" title="Fully explicit, linearization&#45;ready Navier–Stokes operators." alt="" coords="2049,401,2219,441"/>
+<area shape="poly" id="edge23_Node000016_Node000017" title=" " alt="" coords="2001,357,2094,399,2092,404,1998,361"/>
+<area shape="poly" id="edge26_Node000018_Node000017" title=" " alt="" coords="2140,367,2138,401,2133,401,2135,367"/>
+<area shape="poly" id="edge35_Node000021_Node000020" title=" " alt="" coords="653,191,653,232,647,232,647,191"/>
+<area shape="rect" id="Node000022" href="$operator__hybrid__isothermal_8hpp.html" title="A hybrid implicit/explicit Navier–Stokes operator for isothermal wall(s)." alt="" coords="131,225,305,265"/>
+<area shape="poly" id="edge31_Node000021_Node000022" title=" " alt="" coords="573,182,318,228,306,230,305,225,318,223,572,177"/>
+<area shape="rect" id="Node000024" href="$references_8cpp.html" title="Implementation of suzerain::perfect::references." alt="" coords="330,233,533,258"/>
+<area shape="poly" id="edge34_Node000021_Node000024" title=" " alt="" coords="606,184,464,235,462,230,604,179"/>
+<area shape="poly" id="edge36_Node000021_Node000025" title=" " alt="" coords="695,179,837,230,835,235,694,184"/>
+<area shape="poly" id="edge33_Node000022_Node000002" title=" " alt="" coords="180,276,122,315,119,311,177,271"/>
+<area shape="rect" id="Node000023" href="$perfect_2main__advance_8cpp.html" title="Application executing suzerain::perfect::driver_advance::run." alt="" coords="205,321,434,346"/>
+<area shape="poly" id="edge32_Node000022_Node000023" title=" " alt="" coords="253,272,307,318,304,322,249,276"/>
+</map>

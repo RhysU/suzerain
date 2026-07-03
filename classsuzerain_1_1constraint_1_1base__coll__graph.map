@@ -1,0 +1,11 @@
+<map id="suzerain::constraint::base" name="suzerain::constraint::base">
+<area shape="rect" id="Node000001" title="Abstract base class for constraints expressible as a functional." alt="" coords="122,291,265,411"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="5,148,184,228"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="121,227,151,275,146,278,116,229"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="67,5,123,71"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="97,84,97,148,92,148,92,84"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="208,148,379,228"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="271,229,241,278,237,275,267,227"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="269,5,318,71"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="296,84,296,148,291,148,291,84"/>
+</map>

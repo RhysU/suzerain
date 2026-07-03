@@ -1,0 +1,19 @@
+<map id="suzerain::support::definition_radialflow" name="suzerain::support::definition_radialflow">
+<area shape="rect" id="Node000001" title="Upgrades a specification_radialflow with definition_base behavior." alt="" coords="453,377,624,557"/>
+<area shape="rect" id="Node000002" href="$classsuzerain_1_1support_1_1definition__base.html" title="An abstract base class for defining a collection of related options." alt="" coords="5,198,171,298"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="153,305,184,326,252,362,324,393,454,439,452,444,322,398,250,366,181,330,150,309"/>
+<area shape="rect" id="Node000003" href="$classsuzerain_1_1support_1_1loadable.html" title="Abstract interface indicating details may be loaded from an ESIO handle." alt="" coords="195,198,330,298"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="321,306,343,326,399,369,455,409,452,413,395,374,340,330,317,310"/>
+<area shape="rect" id="Node000004" href="$classsuzerain_1_1support_1_1overridable.html" title=" " alt="" coords="354,191,539,305"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="478,317,503,376,498,378,474,319"/>
+<area shape="rect" id="Node000005" href="$classsuzerain_1_1support_1_1overridable.html" title="Abstract interface indicating data may be overridden from another instance." alt="" coords="358,5,527,105"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="446,119,447,144,448,190,442,190,441,144,441,119"/>
+<area shape="rect" id="Node000006" href="$classsuzerain_1_1support_1_1populatable.html" title=" " alt="" coords="563,191,751,305"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="622,319,590,378,585,376,618,317"/>
+<area shape="rect" id="Node000007" href="$classsuzerain_1_1support_1_1populatable.html" title="Abstract interface indicating data may be populated from another instance." alt="" coords="575,5,747,105"/>
+<area shape="poly" id="edge6_Node000006_Node000007" title=" " alt="" coords="663,120,661,191,656,190,657,119"/>
+<area shape="rect" id="Node000008" href="$classsuzerain_1_1support_1_1savable.html" title="Abstract interface indicating details may be saved into an ESIO handle." alt="" coords="775,198,910,298"/>
+<area shape="poly" id="edge7_Node000001_Node000008" title=" " alt="" coords="788,309,764,330,695,379,625,422,623,417,692,375,761,326,785,305"/>
+<area shape="rect" id="Node000009" href="$classsuzerain_1_1specification__radialflow.html" title="Encapsulates the non&#45;scenario parameters necessary when invoking suzerain_radialflow_qoi_match()." alt="" coords="935,168,1127,328"/>
+<area shape="poly" id="edge8_Node000001_Node000009" title=" " alt="" coords="924,330,924,330,847,367,768,399,625,445,624,440,766,394,845,362,921,326,922,325"/>
+</map>

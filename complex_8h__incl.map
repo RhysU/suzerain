@@ -1,0 +1,7 @@
+<map id="suzerain/complex.h" name="suzerain/complex.h">
+<area shape="rect" id="Node000001" title="Compatibility file for C99 _Complex and C++ std::complex types." alt="" coords="9,5,158,31"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="5,79,68,104"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="78,32,54,69,50,66,73,30"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="92,79,171,104"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="93,30,118,66,114,69,89,33"/>
+</map>

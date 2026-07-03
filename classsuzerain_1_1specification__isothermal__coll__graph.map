@@ -1,0 +1,9 @@
+<map id="suzerain::specification_isothermal" name="suzerain::specification_isothermal">
+<area shape="rect" id="Node000001" title="Holds parameters for specifying simple isothermal boundary conditions on the &#160;and &#160;planes." alt="" coords="5,404,203,1844"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="29,261,179,327"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="107,327,107,388,101,388,101,327"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="43,133,165,199"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="107,213,107,261,101,261,101,213"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="93,5,115,71"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="107,71,107,117,101,117,101,71"/>
+</map>

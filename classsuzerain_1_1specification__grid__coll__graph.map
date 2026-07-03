@@ -1,0 +1,14 @@
+<map id="suzerain::specification_grid" name="suzerain::specification_grid">
+<area shape="rect" id="Node000001" title="Holds basic three dimensional computational grid details for a distributed, mixed Fourier/B&#45;spline me..." alt="" coords="172,291,363,676"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="5,133,143,213"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="101,212,166,315,161,318,96,215"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="145,5,195,71"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="133,52,100,69,85,81,74,96,68,114,67,133,62,133,62,113,69,93,81,78,97,65,131,48"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="170,141,365,206"/>
+<area shape="poly" id="edge4_Node000004_Node000003" title=" " alt="" coords="208,59,226,75,243,93,255,116,263,139,258,141,250,118,238,96,223,78,204,63"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="270,206,270,274,265,274,265,206"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="389,133,513,213"/>
+<area shape="poly" id="edge5_Node000001_Node000005" title=" " alt="" coords="430,215,373,310,369,307,426,212"/>
+<area shape="rect" id="Node000006" title=" " alt="" coords="423,5,479,71"/>
+<area shape="poly" id="edge6_Node000005_Node000006" title=" " alt="" coords="454,84,454,133,449,133,449,84"/>
+</map>

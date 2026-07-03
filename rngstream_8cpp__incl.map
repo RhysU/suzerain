@@ -1,0 +1,18 @@
+<map id="suzerain/rngstream.cpp" name="suzerain/rngstream.cpp">
+<area shape="rect" id="Node000001" title="RngStream by L&#39;Ecuyer et al, 2002." alt="" coords="255,5,430,31"/>
+<area shape="rect" id="Node000002" href="$rngstream_8hpp.html" title="RngStream by L&#39;Ecuyer et al, 2002." alt="" coords="67,79,243,104"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="313,33,199,76,197,71,312,28"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="5,152,85,177"/>
+<area shape="poly" id="edge8_Node000001_Node000003" title=" " alt="" coords="256,29,197,36,138,47,88,62,69,71,57,80,49,93,44,108,44,138,38,138,39,107,44,91,53,77,66,66,86,57,136,42,196,31,255,24"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="267,79,330,104"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="338,32,315,68,311,66,333,30"/>
+<area shape="rect" id="Node000006" title=" " alt="" coords="355,79,421,104"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="352,30,376,66,371,69,348,32"/>
+<area shape="rect" id="Node000007" title=" " alt="" coords="446,79,509,104"/>
+<area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="366,28,444,70,442,74,363,33"/>
+<area shape="rect" id="Node000008" title=" " alt="" coords="533,79,598,104"/>
+<area shape="poly" id="edge7_Node000001_Node000008" title=" " alt="" coords="379,28,521,73,519,78,378,33"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="139,106,76,147,73,142,136,102"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="125,152,184,177"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="157,104,157,138,152,138,152,104"/>
+</map>

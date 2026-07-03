@@ -1,0 +1,25 @@
+var namespacesuzerain_1_1pencilfft_1_1internal =
+[
+    [ "complex_copy", "structsuzerain_1_1pencilfft_1_1internal_1_1complex__copy.html", "structsuzerain_1_1pencilfft_1_1internal_1_1complex__copy" ],
+    [ "complex_copy_differentiate", "structsuzerain_1_1pencilfft_1_1internal_1_1complex__copy__differentiate.html", "structsuzerain_1_1pencilfft_1_1internal_1_1complex__copy__differentiate" ],
+    [ "complex_copy_scale", "structsuzerain_1_1pencilfft_1_1internal_1_1complex__copy__scale.html", "structsuzerain_1_1pencilfft_1_1internal_1_1complex__copy__scale" ],
+    [ "complex_copy_scale_differentiate", "structsuzerain_1_1pencilfft_1_1internal_1_1complex__copy__scale__differentiate.html", "structsuzerain_1_1pencilfft_1_1internal_1_1complex__copy__scale__differentiate" ],
+    [ "indexed_element_magnitude_comparator", "structsuzerain_1_1pencilfft_1_1internal_1_1indexed__element__magnitude__comparator.html", "structsuzerain_1_1pencilfft_1_1internal_1_1indexed__element__magnitude__comparator" ],
+    [ "transform_traits", "structsuzerain_1_1pencilfft_1_1internal_1_1transform__traits.html", null ],
+    [ "transform_traits< fftw_complex >", "structsuzerain_1_1pencilfft_1_1internal_1_1transform__traits_3_01fftw__complex_01_4.html", "structsuzerain_1_1pencilfft_1_1internal_1_1transform__traits_3_01fftw__complex_01_4" ],
+    [ "transform_traits< fftwf_complex >", "structsuzerain_1_1pencilfft_1_1internal_1_1transform__traits_3_01fftwf__complex_01_4.html", "structsuzerain_1_1pencilfft_1_1internal_1_1transform__traits_3_01fftwf__complex_01_4" ],
+    [ "transform_traits< fftwl_complex >", "structsuzerain_1_1pencilfft_1_1internal_1_1transform__traits_3_01fftwl__complex_01_4.html", "structsuzerain_1_1pencilfft_1_1internal_1_1transform__traits_3_01fftwl__complex_01_4" ],
+    [ "transform_traits< std::complex< double > >", "structsuzerain_1_1pencilfft_1_1internal_1_1transform__traits_3_01std_1_1complex_3_01double_01_4_01_4.html", "structsuzerain_1_1pencilfft_1_1internal_1_1transform__traits_3_01std_1_1complex_3_01double_01_4_01_4" ],
+    [ "transform_traits< std::complex< float > >", "structsuzerain_1_1pencilfft_1_1internal_1_1transform__traits_3_01std_1_1complex_3_01float_01_4_01_4.html", "structsuzerain_1_1pencilfft_1_1internal_1_1transform__traits_3_01std_1_1complex_3_01float_01_4_01_4" ],
+    [ "transform_traits< std::complex< long double > >", "structsuzerain_1_1pencilfft_1_1internal_1_1transform__traits_3_01std_1_1complex_3_01long_01double_01_4_01_4.html", "structsuzerain_1_1pencilfft_1_1internal_1_1transform__traits_3_01std_1_1complex_3_01long_01double_01_4_01_4" ],
+    [ "increment", "namespacesuzerain_1_1pencilfft_1_1internal.html#a41fdd77267b8c1da6ebd8dca59f5d856", null ],
+    [ "decrement", "namespacesuzerain_1_1pencilfft_1_1internal.html#acd6ab55d511ff5c4c60ab82581478f57", null ],
+    [ "crement", "namespacesuzerain_1_1pencilfft_1_1internal.html#a7e7c931c01266f531f2c0f4e3dec5242", null ],
+    [ "increment", "namespacesuzerain_1_1pencilfft_1_1internal.html#ace7decd4dd390733c0b1bad944e9519f", null ],
+    [ "decrement", "namespacesuzerain_1_1pencilfft_1_1internal.html#afa42f3403b682f34233ef9e9bb3960a7", null ],
+    [ "crement", "namespacesuzerain_1_1pencilfft_1_1internal.html#a45501acdf2d1f7c67717a588b4907da1", null ],
+    [ "make_indexed_element_magnitude_comparator", "namespacesuzerain_1_1pencilfft_1_1internal.html#a88d741e3ed4abf0222e7fb1ec21ca81c", null ],
+    [ "c2c_fullbuffer_process", "namespacesuzerain_1_1pencilfft_1_1internal.html#aa9360d65aedd90b7a5466d6bd5b86ee7", null ],
+    [ "c2c_halfbuffer_process", "namespacesuzerain_1_1pencilfft_1_1internal.html#a4cffa6968c700ebee4a177dd986ecb2c", null ],
+    [ "transform_c2c", "namespacesuzerain_1_1pencilfft_1_1internal.html#a7e243dbeaaa703bedf746fc4f69e6bd6", null ]
+];

@@ -1,0 +1,13 @@
+<map id="apps/reacting/reacting_ndx.hpp" name="apps/reacting/reacting_ndx.hpp">
+<area shape="rect" id="Node000001" title="Symbolic indices for 3D, reacting Navier–Stokes." alt="" coords="306,5,473,45"/>
+<area shape="rect" id="Node000002" href="$reacting_2driver_8cpp.html" title="A driver for reacting flow simulations." alt="" coords="5,101,184,126"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="312,52,135,103,133,98,311,47"/>
+<area shape="rect" id="Node000003" href="$operator__hybrid_8cpp.html" title="Hybrid implicit/explicit Navier–Stokes operators." alt="" coords="209,93,378,133"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="359,57,316,95,313,91,356,53"/>
+<area shape="rect" id="Node000004" href="$reacting_2operator__nonlinear_8hpp.html" title="Implementation of Nonlinear Navier–Stokes spatial operators declared within operator_nonlinear_fwd...." alt="" coords="402,93,571,133"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="423,52,467,91,463,95,419,56"/>
+<area shape="rect" id="Node000006" href="$quantities_8cpp.html" title="Sampling logistics for mean quantity profiles." alt="" coords="595,101,802,126"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="471,46,658,98,657,103,469,52"/>
+<area shape="rect" id="Node000005" href="$operator__explicit_8cpp.html" title="Fully explicit, linearization&#45;ready Navier–Stokes operators." alt="" coords="402,181,571,221"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="489,147,489,181,484,181,484,147"/>
+</map>

@@ -1,0 +1,36 @@
+<map id="suzerain/support/definition_fftw.hpp" name="suzerain/support/definition_fftw.hpp">
+<area shape="rect" id="Node000001" title="Declarations to configure FFTW operation from the CLI." alt="" coords="837,5,1032,45"/>
+<area shape="rect" id="Node000002" href="$application__base_8hpp.html" title="Building blocks for basic Suzerain&#45;based applications." alt="" coords="719,93,926,133"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="900,56,849,95,846,91,897,52"/>
+<area shape="rect" id="Node000017" href="$definition__fftw_8cpp.html" title="Declarations to configure FFTW operation from the CLI." alt="" coords="951,93,1145,133"/>
+<area shape="poly" id="edge17_Node000001_Node000017" title=" " alt="" coords="972,52,1025,91,1021,95,969,56"/>
+<area shape="rect" id="Node000003" href="$pencil__grid__bench_8cpp.html" title="A suzerain::pencil_grid test based on Dmitry Pekurovsky&#39;s P3DFFT work." alt="" coords="494,189,695,214"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="761,141,626,191,624,186,759,136"/>
+<area shape="rect" id="Node000004" href="$application__base_8cpp.html" title="Building blocks for basic Suzerain&#45;based applications." alt="" coords="719,181,926,221"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="825,147,825,181,820,181,820,147"/>
+<area shape="rect" id="Node000005" href="$driver__base_8hpp.html" title="Suzerain&#45;based driver logic reusable across multiple applications." alt="" coords="950,181,1122,221"/>
+<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="883,136,990,179,988,184,881,141"/>
+<area shape="rect" id="Node000006" href="$perfect_2driver_8hpp.html" title="A driver for nondimensional perfect gas simulations." alt="" coords="473,277,645,302"/>
+<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="937,224,625,279,624,274,936,219"/>
+<area shape="rect" id="Node000010" href="$main__summary_8cpp.html" title="Application executing suzerain::support::driver_base::summary_run." alt="" coords="688,365,923,390"/>
+<area shape="poly" id="edge10_Node000005_Node000010" title=" " alt="" coords="996,231,936,271,870,324,820,367,816,363,867,320,933,267,993,227"/>
+<area shape="rect" id="Node000011" href="$reacting_2driver_8hpp.html" title="A driver for reacting flow simulations." alt="" coords="947,277,1125,302"/>
+<area shape="poly" id="edge11_Node000005_Node000011" title=" " alt="" coords="1039,235,1039,276,1033,276,1033,235"/>
+<area shape="rect" id="Node000015" href="$driver__base_8cpp.html" title="Suzerain&#45;based driver logic reusable across multiple applications." alt="" coords="1150,269,1322,309"/>
+<area shape="poly" id="edge15_Node000005_Node000015" title=" " alt="" coords="1094,224,1193,267,1191,272,1091,229"/>
+<area shape="rect" id="Node000016" href="$driver__base__summary_8cpp.html" title="Implementation of suzerain::support::driver_base::summary_run." alt="" coords="1346,269,1518,309"/>
+<area shape="poly" id="edge16_Node000005_Node000016" title=" " alt="" coords="1136,222,1346,267,1345,272,1135,227"/>
+<area shape="rect" id="Node000007" href="$perfect_2driver_8cpp.html" title="A driver for nondimensional perfect gas simulations." alt="" coords="5,365,176,390"/>
+<area shape="poly" id="edge6_Node000006_Node000007" title=" " alt="" coords="481,307,188,360,150,367,149,362,188,355,480,302"/>
+<area shape="rect" id="Node000008" href="$perfect_2main__advance_8cpp.html" title="Application executing suzerain::perfect::driver_advance::run." alt="" coords="200,365,429,390"/>
+<area shape="poly" id="edge7_Node000006_Node000008" title=" " alt="" coords="514,309,348,367,347,362,512,304"/>
+<area shape="rect" id="Node000009" href="$main__initial_8cpp.html" title="Application executing suzerain::perfect::driver_initial::run." alt="" coords="453,365,664,390"/>
+<area shape="poly" id="edge8_Node000006_Node000009" title=" " alt="" coords="561,316,561,364,556,364,556,316"/>
+<area shape="poly" id="edge9_Node000006_Node000010" title=" " alt="" coords="606,304,773,362,771,367,604,309"/>
+<area shape="rect" id="Node000012" href="$reacting_2driver_8cpp.html" title="A driver for reacting flow simulations." alt="" coords="947,365,1125,390"/>
+<area shape="poly" id="edge12_Node000011_Node000012" title=" " alt="" coords="1039,316,1039,364,1033,364,1033,316"/>
+<area shape="rect" id="Node000013" href="$reacting_2main__advance_8cpp.html" title="Application executing suzerain::reacting::driver_advance::run." alt="" coords="1149,357,1296,397"/>
+<area shape="poly" id="edge13_Node000011_Node000013" title=" " alt="" coords="1075,305,1183,355,1180,360,1073,310"/>
+<area shape="rect" id="Node000014" href="$main__init_8cpp.html" title="Application executing suzerain::reacting::driver_init::run." alt="" coords="1320,357,1467,397"/>
+<area shape="poly" id="edge14_Node000011_Node000014" title=" " alt="" coords="1097,303,1320,356,1319,361,1096,308"/>
+</map>

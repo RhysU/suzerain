@@ -1,0 +1,9 @@
+<map id="suzerain::constraint::treatment" name="suzerain::constraint::treatment">
+<area shape="rect" id="Node000001" title="A wrapper applying integral constraint treatment atop any linear operator." alt="" coords="148,613,340,952"/>
+<area shape="rect" id="Node000002" href="$classsuzerain_1_1lowstorage_1_1linear__operator.html" title=" " alt="" coords="5,316,197,564"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="161,576,176,612,171,614,156,578"/>
+<area shape="rect" id="Node000003" href="$classsuzerain_1_1lowstorage_1_1linear__operator.html" title="Defines the linear operator interface required for low storage timestepping." alt="" coords="5,5,197,224"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="104,238,104,316,99,316,99,238"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="221,407,363,473"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="288,486,270,613,265,613,283,486"/>
+</map>

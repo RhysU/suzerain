@@ -1,0 +1,13 @@
+<map id="suzerain/kahan.c" name="suzerain/kahan.c">
+<area shape="rect" id="Node000001" title="Provides routines performing Kahan summation." alt="" coords="85,5,215,31"/>
+<area shape="rect" id="Node000002" href="$kahan_8h.html" title="Provides routines performing Kahan summation." alt="" coords="17,79,149,104"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="141,33,105,70,102,67,137,29"/>
+<area shape="rect" id="Node000006" href="$kahan_8def.html" title=" " alt="" coords="173,79,260,104"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="163,29,198,67,195,70,159,33"/>
+<area shape="rect" id="Node000003" href="$complex_8h.html" title="Compatibility file for C99 _Complex and C++ std::complex types." alt="" coords="9,152,158,177"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="86,104,86,138,81,138,81,104"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="5,225,68,251"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="78,179,54,215,50,212,73,176"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="92,225,171,251"/>
+<area shape="poly" id="edge4_Node000003_Node000005" title=" " alt="" coords="93,176,118,213,114,216,89,179"/>
+</map>

@@ -1,0 +1,21 @@
+<map id="suzerain::lowstorage::constants&lt; Scheme, Component, Integer &gt;" name="suzerain::lowstorage::constants&lt; Scheme, Component, Integer &gt;">
+<area shape="rect" id="Node000001" title="Compute redundant information for an method_interface given essential, scheme&#45;specific constants." alt="" coords="749,197,912,292"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="5,30,165,110"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="146,115,178,132,254,159,332,181,489,213,634,230,749,238,749,244,634,236,488,218,331,186,252,164,176,137,143,120"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="189,15,352,125"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="345,122,365,132,460,168,558,195,652,215,733,229,732,234,651,220,557,200,458,173,363,137,343,127"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="376,15,539,125"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="535,123,552,132,645,175,735,209,733,214,643,180,549,137,532,127"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="563,15,725,125"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="704,123,770,184,766,188,700,127"/>
+<area shape="rect" id="Node000006" title=" " alt="" coords="749,5,912,135"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="833,135,833,181,828,181,828,135"/>
+<area shape="rect" id="Node000007" title=" " alt="" coords="936,5,1099,135"/>
+<area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="950,137,895,188,891,184,947,133"/>
+<area shape="rect" id="Node000008" title=" " alt="" coords="1123,15,1285,125"/>
+<area shape="poly" id="edge7_Node000001_Node000008" title=" " alt="" coords="1129,127,1112,137,1019,180,929,214,927,209,1017,175,1109,132,1127,123"/>
+<area shape="rect" id="Node000009" title=" " alt="" coords="1309,15,1472,125"/>
+<area shape="poly" id="edge8_Node000001_Node000009" title=" " alt="" coords="1318,127,1298,137,1203,173,1104,200,1011,220,929,234,928,229,1010,215,1103,195,1201,168,1296,132,1316,122"/>
+<area shape="rect" id="Node000010" title=" " alt="" coords="1496,15,1659,125"/>
+<area shape="poly" id="edge9_Node000001_Node000010" title=" " alt="" coords="1505,127,1485,137,1413,165,1338,187,1262,205,1186,219,1045,237,929,244,928,239,1044,231,1186,214,1261,200,1337,182,1411,160,1483,132,1503,122"/>
+</map>

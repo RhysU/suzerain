@@ -1,0 +1,5 @@
+var structsuzerain_1_1functional_1_1assign_3_01Target_00_01Source_00_01typename_01boost_1_1enable__id8c41915b0f5183f4255c17706d694c9 =
+[
+    [ "assign", "structsuzerain_1_1functional_1_1assign_3_01Target_00_01Source_00_01typename_01boost_1_1enable__id8c41915b0f5183f4255c17706d694c9.html#a4f214a824d035f7233dbfdb108807e76", null ],
+    [ "operator()", "structsuzerain_1_1functional_1_1assign_3_01Target_00_01Source_00_01typename_01boost_1_1enable__id8c41915b0f5183f4255c17706d694c9.html#ace02cef52ee2af83a9c9781775bca6ab", null ]
+];

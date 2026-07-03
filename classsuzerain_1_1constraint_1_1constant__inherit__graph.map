@@ -1,0 +1,15 @@
+<map id="suzerain::constraint::constant" name="suzerain::constraint::constant">
+<area shape="rect" id="Node000001" title="A building block to target some constant value." alt="" coords="373,193,516,313"/>
+<area shape="rect" id="Node000003" href="$structsuzerain_1_1constraint_1_1constant__bulk.html" title="Constrain the bulk value across &#160;to be some constant using a uniform forcing profile." alt="" coords="5,361,148,441"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="361,287,160,364,149,369,147,364,158,359,360,282"/>
+<area shape="rect" id="Node000004" href="$structsuzerain_1_1constraint_1_1constant__lower.html" title="Constrain the nderiv&#45;th derivative at &#160;to be some given constant using a uniform forcing profile." alt="" coords="172,361,315,441"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="363,317,298,363,295,359,360,312"/>
+<area shape="rect" id="Node000005" href="$structsuzerain_1_1constraint_1_1constant__lower__derivative.html" title="Constrain the nderiv&#45;th derivative at &#160;to be some target value by manipulating the (nderiv+1)&#45;th B&#45;sp..." alt="" coords="339,361,550,441"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="447,327,447,361,442,361,442,327"/>
+<area shape="rect" id="Node000006" href="$structsuzerain_1_1constraint_1_1constant__upper.html" title="Constrain the nderiv&#45;th derivative at &#160;to be some given constant using a uniform forcing profile." alt="" coords="573,361,716,441"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="529,313,593,359,590,363,526,317"/>
+<area shape="rect" id="Node000007" href="$structsuzerain_1_1constraint_1_1constant__upper__derivative.html" title="Constrain the nderiv&#45;th derivative at &#160;to be some target value by manipulating the (nderiv+1)&#45;th B&#45;sp..." alt="" coords="740,361,952,441"/>
+<area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="530,283,741,359,739,364,528,288"/>
+<area shape="rect" id="Node000002" href="$classsuzerain_1_1constraint_1_1base.html" title="Abstract base class for constraints expressible as a functional." alt="" coords="373,5,516,145"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="447,159,447,193,442,193,442,159"/>
+</map>

@@ -1,0 +1,5 @@
+<map id="suzerain::specification_arsel" name="suzerain::specification_arsel">
+<area shape="rect" id="Node000001" title="Encapsulates settings for invoking arsel." alt="" coords="8,5,168,225"/>
+<area shape="rect" id="Node000002" href="$classsuzerain_1_1support_1_1definition__arsel.html" title="Upgrades a specification_arsel with definition_base behavior." alt="" coords="5,273,171,393"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="91,239,91,273,85,273,85,239"/>
+</map>

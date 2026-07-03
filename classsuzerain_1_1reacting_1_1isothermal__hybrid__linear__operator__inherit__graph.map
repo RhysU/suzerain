@@ -1,0 +1,11 @@
+<map id="suzerain::reacting::isothermal_hybrid_linear_operator" name="suzerain::reacting::isothermal_hybrid_linear_operator">
+<area shape="rect" id="Node000001" title="A hybrid implicit operator that provides no slip, isothermal walls." alt="" coords="109,772,301,1120"/>
+<area shape="rect" id="Node000002" href="$classsuzerain_1_1operator__base.html" title="Provides potentially heavyweight B&#45;spline and parallel FFT infrastructure." alt="" coords="19,417,189,723"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="151,736,161,771,156,772,146,737"/>
+<area shape="rect" id="Node000003" href="$classsuzerain_1_1operator__tools.html" title="Provides combined, timed B&#45;spline and parallel FFT infrastructure routines." alt="" coords="5,5,197,325"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="105,339,106,417,100,417,100,339"/>
+<area shape="rect" id="Node000004" href="$classsuzerain_1_1lowstorage_1_1linear__operator.html" title=" " alt="" coords="219,446,411,694"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="277,708,259,773,253,771,272,706"/>
+<area shape="rect" id="Node000005" href="$classsuzerain_1_1lowstorage_1_1linear__operator.html" title="Defines the linear operator interface required for low storage timestepping." alt="" coords="221,56,413,275"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="319,289,318,446,313,446,314,289"/>
+</map>

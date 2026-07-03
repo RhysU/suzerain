@@ -1,0 +1,5 @@
+<map id="suzerain::complex::traits::is_complex_double&lt; T, Enable &gt;" name="suzerain::complex::traits::is_complex_double&lt; T, Enable &gt;">
+<area shape="rect" id="Node000001" title="An type trait similar to is_complex which additionally checks that the underlying real type is double..." alt="" coords="5,119,187,213"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="33,5,159,71"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="99,84,99,118,93,118,93,84"/>
+</map>

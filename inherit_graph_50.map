@@ -1,0 +1,53 @@
+<map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
+<area shape="rect" id="Node000000" href="$classsuzerain_1_1constraint_1_1base.html" title="Abstract base class for constraints expressible as a functional." alt="" coords="5,229,156,269"/>
+<area shape="rect" id="Node000001" href="$structsuzerain_1_1constraint_1_1bulk.html" title="A building block to constrain the bulk value across ." alt="" coords="204,325,355,365"/>
+<area shape="poly" id="edge158_Node000000_Node000001" title=" " alt="" coords="132,273,205,311,231,323,229,328,203,316,129,278"/>
+<area shape="rect" id="Node000007" href="$structsuzerain_1_1constraint_1_1coefficient.html" title="A building block preparing a forcing profile in shape targeting the i&#45;th B&#45;spline coefficient." alt="" coords="204,5,355,45"/>
+<area shape="poly" id="edge161_Node000000_Node000007" title=" " alt="" coords="93,215,135,137,166,93,202,55,220,43,223,48,206,59,170,97,139,139,98,218"/>
+<area shape="rect" id="Node000003" href="$classsuzerain_1_1constraint_1_1constant.html" title="A building block to target some constant value." alt="" coords="204,69,355,109"/>
+<area shape="poly" id="edge164_Node000000_Node000003" title=" " alt="" coords="103,217,146,168,202,119,223,107,226,112,206,124,150,172,107,220"/>
+<area shape="rect" id="Node000017" href="$structsuzerain_1_1constraint_1_1linear.html" title="A building block preparing a linear forcing profile in shape." alt="" coords="204,453,355,493"/>
+<area shape="poly" id="edge170_Node000000_Node000017" title=" " alt="" coords="98,281,139,359,170,402,206,439,223,451,220,455,202,443,166,405,135,362,93,283"/>
+<area shape="rect" id="Node000005" href="$structsuzerain_1_1constraint_1_1lower.html" title="A building block to constrain the nderiv&#45;th function derivative at location ." alt="" coords="204,197,355,237"/>
+<area shape="poly" id="edge171_Node000000_Node000005" title=" " alt="" coords="169,232,203,227,204,232,170,238"/>
+<area shape="rect" id="Node000014" href="$classsuzerain_1_1constraint_1_1reference.html" title="A building block to target some externally maintained reference." alt="" coords="204,389,355,429"/>
+<area shape="poly" id="edge175_Node000000_Node000014" title=" " alt="" coords="107,278,150,327,206,375,226,387,223,392,202,380,146,331,103,282"/>
+<area shape="rect" id="Node000011" href="$structsuzerain_1_1constraint_1_1uniform.html" title="A building block preparing a uniform forcing profile in shape." alt="" coords="204,261,355,301"/>
+<area shape="poly" id="edge179_Node000000_Node000011" title=" " alt="" coords="170,261,204,267,203,272,169,266"/>
+<area shape="rect" id="Node000009" href="$structsuzerain_1_1constraint_1_1upper.html" title="A building block to constrain the nderiv&#45;th function derivative at location ." alt="" coords="204,133,355,173"/>
+<area shape="poly" id="edge187_Node000000_Node000009" title=" " alt="" coords="129,221,203,183,229,171,231,176,205,188,132,225"/>
+<area shape="rect" id="Node000002" href="$structsuzerain_1_1constraint_1_1constant__bulk.html" title="Constrain the bulk value across &#160;to be some constant using a uniform forcing profile." alt="" coords="429,261,579,301"/>
+<area shape="poly" id="edge159_Node000001_Node000002" title=" " alt="" coords="363,319,433,299,434,304,364,324"/>
+<area shape="rect" id="Node000013" href="$structsuzerain_1_1constraint_1_1reference__bulk.html" title="Constrain the bulk value across &#160;to track some referenced value using a uniform forcing profile." alt="" coords="429,517,579,557"/>
+<area shape="poly" id="edge160_Node000001_Node000013" title=" " alt="" coords="353,372,357,376,369,392,376,409,381,442,385,473,392,488,404,503,430,520,427,524,401,507,387,491,380,475,375,442,371,411,365,395,353,379,349,376"/>
+<area shape="rect" id="Node000006" href="$structsuzerain_1_1constraint_1_1constant__lower__derivative.html" title="Constrain the nderiv&#45;th derivative at &#160;to be some target value by manipulating the (nderiv+1)&#45;th B&#45;sp..." alt="" coords="403,69,605,109"/>
+<area shape="poly" id="edge162_Node000007_Node000006" title=" " alt="" coords="364,47,434,67,433,72,363,52"/>
+<area shape="rect" id="Node000008" href="$structsuzerain_1_1constraint_1_1constant__upper__derivative.html" title="Constrain the nderiv&#45;th derivative at &#160;to be some target value by manipulating the (nderiv+1)&#45;th B&#45;sp..." alt="" coords="403,5,605,45"/>
+<area shape="poly" id="edge163_Node000007_Node000008" title=" " alt="" coords="369,23,402,23,402,28,369,28"/>
+<area shape="poly" id="edge165_Node000003_Node000002" title=" " alt="" coords="353,116,357,120,369,136,376,153,381,186,385,217,392,232,404,247,430,264,427,268,401,251,387,235,380,219,375,186,371,155,365,139,353,123,349,120"/>
+<area shape="poly" id="edge167_Node000003_Node000006" title=" " alt="" coords="369,87,402,87,402,92,369,92"/>
+<area shape="poly" id="edge169_Node000003_Node000008" title=" " alt="" coords="363,63,433,43,434,48,364,68"/>
+<area shape="rect" id="Node000004" href="$structsuzerain_1_1constraint_1_1constant__lower.html" title="Constrain the nderiv&#45;th derivative at &#160;to be some given constant using a uniform forcing profile." alt="" coords="429,197,579,237"/>
+<area shape="poly" id="edge166_Node000003_Node000004" title=" " alt="" coords="350,114,356,119,372,136,381,153,389,168,404,183,430,197,427,202,401,187,385,171,376,155,368,139,353,123,347,119"/>
+<area shape="rect" id="Node000010" href="$structsuzerain_1_1constraint_1_1constant__upper.html" title="Constrain the nderiv&#45;th derivative at &#160;to be some given constant using a uniform forcing profile." alt="" coords="429,133,579,173"/>
+<area shape="poly" id="edge168_Node000003_Node000010" title=" " alt="" coords="364,111,434,131,433,136,363,116"/>
+<area shape="poly" id="edge173_Node000005_Node000006" title=" " alt="" coords="347,188,353,183,368,167,376,152,385,135,401,119,422,107,425,112,404,123,389,139,381,154,372,170,356,187,350,192"/>
+<area shape="poly" id="edge172_Node000005_Node000004" title=" " alt="" coords="369,215,428,215,428,220,369,220"/>
+<area shape="rect" id="Node000015" href="$structsuzerain_1_1constraint_1_1reference__lower.html" title="Constrain the nderiv&#45;th derivative at &#160;to be some given reference using a uniform forcing profile." alt="" coords="429,389,579,429"/>
+<area shape="poly" id="edge174_Node000005_Node000015" title=" " alt="" coords="353,244,357,248,369,264,376,281,381,314,385,345,392,360,404,375,430,392,427,396,401,379,387,363,380,347,375,314,371,283,365,267,353,251,349,248"/>
+<area shape="poly" id="edge176_Node000014_Node000013" title=" " alt="" coords="350,434,356,439,372,456,381,473,389,488,404,503,430,517,427,522,401,507,385,491,376,475,368,459,353,443,347,439"/>
+<area shape="poly" id="edge177_Node000014_Node000015" title=" " alt="" coords="369,407,428,407,428,412,369,412"/>
+<area shape="rect" id="Node000016" href="$structsuzerain_1_1constraint_1_1reference__upper.html" title="Constrain the nderiv&#45;th derivative at &#160;to track some referenced value using a uniform forcing profile..." alt="" coords="429,325,579,365"/>
+<area shape="poly" id="edge178_Node000014_Node000016" title=" " alt="" coords="363,383,433,363,434,368,364,388"/>
+<area shape="poly" id="edge180_Node000011_Node000002" title=" " alt="" coords="369,279,428,279,428,284,369,284"/>
+<area shape="poly" id="edge184_Node000011_Node000013" title=" " alt="" coords="354,308,357,312,373,337,380,362,380,411,379,434,380,457,388,480,405,503,430,521,427,525,401,507,383,483,375,458,373,434,375,410,375,363,368,339,353,315,350,312"/>
+<area shape="poly" id="edge181_Node000011_Node000004" title=" " alt="" coords="363,255,433,235,434,240,364,260"/>
+<area shape="poly" id="edge182_Node000011_Node000010" title=" " alt="" coords="347,252,353,247,368,231,376,216,385,199,401,183,427,169,430,174,404,187,389,203,381,218,372,234,356,251,350,256"/>
+<area shape="poly" id="edge185_Node000011_Node000015" title=" " alt="" coords="350,306,356,311,372,328,381,345,389,360,404,375,430,389,427,394,401,379,385,363,376,347,368,331,353,315,347,311"/>
+<area shape="poly" id="edge186_Node000011_Node000016" title=" " alt="" coords="364,303,434,323,433,328,363,308"/>
+<area shape="rect" id="Node000012" href="$structsuzerain_1_1constraint_1_1disabled.html" title="A constraint reporting that it is always disabled." alt="" coords="429,453,579,493"/>
+<area shape="poly" id="edge183_Node000011_Node000012" title=" " alt="" coords="353,308,357,312,369,328,376,345,381,378,385,409,392,424,404,439,430,456,427,460,401,443,387,427,380,411,375,378,371,347,365,331,353,315,349,312"/>
+<area shape="poly" id="edge189_Node000009_Node000008" title=" " alt="" coords="347,124,353,119,368,103,376,88,385,71,401,55,422,43,425,48,404,59,389,75,381,90,372,106,356,123,350,128"/>
+<area shape="poly" id="edge188_Node000009_Node000010" title=" " alt="" coords="369,151,428,151,428,156,369,156"/>
+<area shape="poly" id="edge190_Node000009_Node000016" title=" " alt="" coords="353,180,357,184,369,200,376,217,381,250,385,281,392,296,404,311,430,328,427,332,401,315,387,299,380,283,375,250,371,219,365,203,353,187,349,184"/>
+</map>

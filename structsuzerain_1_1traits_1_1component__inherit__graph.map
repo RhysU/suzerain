@@ -1,0 +1,7 @@
+<map id="suzerain::traits::component&lt; T, Enable &gt;" name="suzerain::traits::component&lt; T, Enable &gt;">
+<area shape="rect" id="Node000001" title="A type trait that, given a real&#45; or complex&#45;valued type, returns the underlying scalar component type..." alt="" coords="113,5,305,85"/>
+<area shape="rect" id="Node000002" href="$structsuzerain_1_1traits_1_1component.html" title=" " alt="" coords="5,148,197,228"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="162,97,150,111,125,149,120,146,146,108,158,94"/>
+<area shape="rect" id="Node000003" href="$structsuzerain_1_1traits_1_1component.html" title=" " alt="" coords="221,148,413,228"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="278,93,290,108,309,146,305,149,286,111,273,96"/>
+</map>

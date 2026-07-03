@@ -1,0 +1,19 @@
+<map id="apps/perfect/nsctpl_rholut.hpp" name="apps/perfect/nsctpl_rholut.hpp">
+<area shape="rect" id="Node000001" title=" " alt="" coords="572,5,719,45"/>
+<area shape="rect" id="Node000002" href="$perfect_2manufactured__solution_8hpp.html" title="Method of manufactured solution details for the perfect gas application." alt="" coords="546,93,745,133"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="648,59,648,93,643,93,643,59"/>
+<area shape="rect" id="Node000003" href="$perfect_2driver_8hpp.html" title="A driver for nondimensional perfect gas simulations." alt="" coords="350,189,522,214"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="588,141,465,191,463,186,586,136"/>
+<area shape="rect" id="Node000008" href="$perfect_2manufactured__solution_8cpp.html" title="Method of manufactured solution details for the perfect gas application." alt="" coords="546,181,745,221"/>
+<area shape="poly" id="edge7_Node000002_Node000008" title=" " alt="" coords="648,147,648,181,643,181,643,147"/>
+<area shape="rect" id="Node000009" href="$operator__nonlinear_8cpp.html" title="A nonlinear Navier–Stokes spatial operator." alt="" coords="769,181,932,221"/>
+<area shape="poly" id="edge8_Node000002_Node000009" title=" " alt="" coords="704,136,807,179,805,184,702,141"/>
+<area shape="rect" id="Node000004" href="$perfect_2driver_8cpp.html" title="A driver for nondimensional perfect gas simulations." alt="" coords="5,269,176,295"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="373,220,142,272,140,267,372,214"/>
+<area shape="rect" id="Node000005" href="$perfect_2main__advance_8cpp.html" title="Application executing suzerain::perfect::driver_advance::run." alt="" coords="200,269,429,295"/>
+<area shape="poly" id="edge4_Node000003_Node000005" title=" " alt="" coords="408,224,334,271,331,267,405,220"/>
+<area shape="rect" id="Node000006" href="$main__initial_8cpp.html" title="Application executing suzerain::perfect::driver_initial::run." alt="" coords="453,269,664,295"/>
+<area shape="poly" id="edge5_Node000003_Node000006" title=" " alt="" coords="467,219,542,267,539,271,464,224"/>
+<area shape="rect" id="Node000007" href="$main__summary_8cpp.html" title="Application executing suzerain::support::driver_base::summary_run." alt="" coords="688,269,923,295"/>
+<area shape="poly" id="edge6_Node000003_Node000007" title=" " alt="" coords="504,214,752,267,751,272,502,219"/>
+</map>

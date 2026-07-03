@@ -1,0 +1,19 @@
+<map id="suzerain::support::definition_helm" name="suzerain::support::definition_helm">
+<area shape="rect" id="Node000001" title="Upgrades a specification_helm with definition_base behavior." alt="" coords="437,423,603,663"/>
+<area shape="rect" id="Node000002" href="$classsuzerain_1_1support_1_1definition__base.html" title="An abstract base class for defining a collection of related options." alt="" coords="5,221,171,321"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="138,329,184,371,247,413,314,450,438,507,436,512,312,455,245,418,181,375,135,333"/>
+<area shape="rect" id="Node000003" href="$classsuzerain_1_1support_1_1loadable.html" title="Abstract interface indicating details may be loaded from an ESIO handle." alt="" coords="195,221,330,321"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="308,330,343,372,439,466,435,470,339,375,304,333"/>
+<area shape="rect" id="Node000004" href="$classsuzerain_1_1support_1_1overridable.html" title=" " alt="" coords="354,213,518,328"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="460,341,485,421,480,423,455,342"/>
+<area shape="rect" id="Node000005" href="$classsuzerain_1_1support_1_1overridable.html" title="Abstract interface indicating data may be overridden from another instance." alt="" coords="349,5,518,105"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="437,119,438,213,433,213,431,119"/>
+<area shape="rect" id="Node000006" href="$classsuzerain_1_1support_1_1populatable.html" title=" " alt="" coords="542,213,709,328"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="601,342,569,423,564,421,596,340"/>
+<area shape="rect" id="Node000007" href="$classsuzerain_1_1support_1_1populatable.html" title="Abstract interface indicating data may be populated from another instance." alt="" coords="542,5,714,105"/>
+<area shape="poly" id="edge6_Node000006_Node000007" title=" " alt="" coords="630,119,629,213,623,213,625,119"/>
+<area shape="rect" id="Node000008" href="$classsuzerain_1_1support_1_1savable.html" title="Abstract interface indicating details may be saved into an ESIO handle." alt="" coords="733,221,867,321"/>
+<area shape="poly" id="edge7_Node000001_Node000008" title=" " alt="" coords="758,333,722,375,664,430,605,480,601,476,660,426,718,371,754,330"/>
+<area shape="rect" id="Node000009" href="$classsuzerain_1_1specification__helm.html" title="Encapsulates PID controller settings and operation using helm.h." alt="" coords="891,168,1090,373"/>
+<area shape="poly" id="edge8_Node000001_Node000009" title=" " alt="" coords="882,375,881,376,811,418,738,456,604,514,602,509,735,451,809,413,879,371,879,371"/>
+</map>

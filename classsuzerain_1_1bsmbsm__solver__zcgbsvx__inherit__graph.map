@@ -1,0 +1,7 @@
+<map id="suzerain::bsmbsm_solver_zcgbsvx" name="suzerain::bsmbsm_solver_zcgbsvx">
+<area shape="rect" id="Node000001" title="Solve BSMBSM problems using suzerain_lapackext_zcgbsvx()." alt="" coords="5,872,207,1292"/>
+<area shape="rect" id="Node000002" href="$classsuzerain_1_1bsmbsm__solver.html" title="An abstract base class for solving BSMBSM problems per a specification_zgbsv." alt="" coords="16,279,196,824"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="109,838,109,872,103,872,103,838"/>
+<area shape="rect" id="Node000003" href="$structsuzerain__bsmbsm.html" title="Storage details for a banded square matrix with banded submatrices (BSMBSM)." alt="" coords="40,5,172,231"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="109,244,109,278,103,278,103,244"/>
+</map>

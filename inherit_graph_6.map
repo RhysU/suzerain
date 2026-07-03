@@ -1,0 +1,11 @@
+<map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
+<area shape="rect" id="Node000000" href="$structar_1_1estimation__method.html" title="A parent type for autoregressive process parameter estimation techniques." alt="" coords="5,80,176,105"/>
+<area shape="rect" id="Node000001" href="$classar_1_1Burg.html" title="Represents estimation using Burg&#39;s recursive method." alt="" coords="245,5,442,31"/>
+<area shape="poly" id="edge11_Node000000_Node000001" title=" " alt="" coords="133,72,223,39,269,28,270,33,225,45,134,77"/>
+<area shape="rect" id="Node000002" href="$classar_1_1LSF.html" title="Represents forward prediction least squares minimization." alt="" coords="248,55,439,80"/>
+<area shape="poly" id="edge12_Node000000_Node000002" title=" " alt="" coords="190,80,247,74,248,80,190,85"/>
+<area shape="rect" id="Node000003" href="$classar_1_1LSFB.html" title="Represents forward and backward prediction least squares minimization." alt="" coords="244,104,443,129"/>
+<area shape="poly" id="edge13_Node000000_Node000003" title=" " alt="" coords="190,99,244,105,244,110,189,105"/>
+<area shape="rect" id="Node000004" href="$classar_1_1YuleWalker.html" title="Represents estimation by solving the Yule–Walker equations." alt="" coords="224,153,463,179"/>
+<area shape="poly" id="edge14_Node000000_Node000004" title=" " alt="" coords="137,108,225,138,275,151,274,156,223,143,135,113"/>
+</map>

@@ -1,0 +1,5 @@
+<map id="suzerain::mpi::datatype&lt; const T, typename boost::enable_if&lt; boost::mpl::and_&lt; boost::mpl::not_&lt; boost::mpl::or_&lt; boost::is_pointer&lt; T &gt;, boost::is_reference&lt; T &gt;, boost::is_array&lt; T &gt;, boost::is_volatile&lt; T &gt; &gt; &gt;, boost::is_complex&lt; T &gt; &gt; &gt;::type &gt;" name="suzerain::mpi::datatype&lt; const T, typename boost::enable_if&lt; boost::mpl::and_&lt; boost::mpl::not_&lt; boost::mpl::or_&lt; boost::is_pointer&lt; T &gt;, boost::is_reference&lt; T &gt;, boost::is_array&lt; T &gt;, boost::is_volatile&lt; T &gt; &gt; &gt;, boost::is_complex&lt; T &gt; &gt; &gt;::type &gt;">
+<area shape="rect" id="Node000001" title="Removes any const modifier on a complex MPI_Datatype." alt="" coords="5,133,225,316"/>
+<area shape="rect" id="Node000002" href="$structsuzerain_1_1mpi_1_1datatype.html" title="Provides template&#45;friendly lookup of MPI_Datatype constants." alt="" coords="10,5,221,85"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="118,99,118,133,113,133,113,99"/>
+</map>

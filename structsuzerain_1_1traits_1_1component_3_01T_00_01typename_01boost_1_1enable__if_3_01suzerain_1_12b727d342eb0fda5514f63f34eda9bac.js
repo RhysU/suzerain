@@ -1,0 +1,4 @@
+var structsuzerain_1_1traits_1_1component_3_01T_00_01typename_01boost_1_1enable__if_3_01suzerain_1_12b727d342eb0fda5514f63f34eda9bac =
+[
+    [ "type", "structsuzerain_1_1traits_1_1component_3_01T_00_01typename_01boost_1_1enable__if_3_01suzerain_1_12b727d342eb0fda5514f63f34eda9bac.html#a0f8930073cc60af8733335b40ea75724", null ]
+];

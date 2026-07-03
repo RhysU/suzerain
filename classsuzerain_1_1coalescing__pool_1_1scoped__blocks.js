@@ -1,0 +1,25 @@
+var classsuzerain_1_1coalescing__pool_1_1scoped__blocks =
+[
+    [ "scoped_blocks", "classsuzerain_1_1coalescing__pool_1_1scoped__blocks.html#a55c7d45f9d40f3bfd21a0a4a8b428a96", null ],
+    [ "scoped_blocks", "classsuzerain_1_1coalescing__pool_1_1scoped__blocks.html#af77a1bbe989c8de783ac4cc9ac68ae96", null ],
+    [ "~scoped_blocks", "classsuzerain_1_1coalescing__pool_1_1scoped__blocks.html#a2373a80fcdfe71f5fec4b14db20095ad", null ],
+    [ "release", "classsuzerain_1_1coalescing__pool_1_1scoped__blocks.html#a3fcc1e710e96f097ad291e8ae4f325cb", null ],
+    [ "reset", "classsuzerain_1_1coalescing__pool_1_1scoped__blocks.html#a040500222556d212a0dfbd661cb68aa5", null ],
+    [ "swap", "classsuzerain_1_1coalescing__pool_1_1scoped__blocks.html#a0cd8dd6416637a3895591ab16e8e0914", null ],
+    [ "blocksize", "classsuzerain_1_1coalescing__pool_1_1scoped__blocks.html#ae8d2da8627e8774e8c6d68278dd5d659", null ],
+    [ "operator==", "classsuzerain_1_1coalescing__pool_1_1scoped__blocks.html#aba213808836a39b2a4e708153618a141", null ],
+    [ "operator!=", "classsuzerain_1_1coalescing__pool_1_1scoped__blocks.html#a44432ff0bb02d1fa184e58dcec4e7504", null ],
+    [ "contains", "classsuzerain_1_1coalescing__pool_1_1scoped__blocks.html#aed32518107b4c53fa62bc05f16fb482e", null ],
+    [ "nelems", "classsuzerain_1_1coalescing__pool_1_1scoped__blocks.html#ada778dd41ecb6eed043d56972f4f9c1b", null ],
+    [ "zero", "classsuzerain_1_1coalescing__pool_1_1scoped__blocks.html#a0f502e95cfb80f675b8594e0a5bf70b4", null ],
+    [ "begin", "classsuzerain_1_1coalescing__pool_1_1scoped__blocks.html#a0531bd20a61a530026fabd885809498d", null ],
+    [ "begin", "classsuzerain_1_1coalescing__pool_1_1scoped__blocks.html#aa4e3d7bea387ade0ec48758beb5e3df7", null ],
+    [ "end", "classsuzerain_1_1coalescing__pool_1_1scoped__blocks.html#a69c6f04ba6d1f5dab0fd7b118b19df5c", null ],
+    [ "end", "classsuzerain_1_1coalescing__pool_1_1scoped__blocks.html#a39789d2617492aab194e6f0cb2704aa6", null ],
+    [ "rbegin", "classsuzerain_1_1coalescing__pool_1_1scoped__blocks.html#aeb53c541b11d8a5c3e94352d881c12c0", null ],
+    [ "rbegin", "classsuzerain_1_1coalescing__pool_1_1scoped__blocks.html#a361e40d9bc72d576016b0e64eb436b48", null ],
+    [ "rend", "classsuzerain_1_1coalescing__pool_1_1scoped__blocks.html#aae86bad59f8ef06ad4548bff76614bd7", null ],
+    [ "rend", "classsuzerain_1_1coalescing__pool_1_1scoped__blocks.html#addf92a7d85949619d42c9adfb2d4fe2d", null ],
+    [ "operator<<", "classsuzerain_1_1coalescing__pool_1_1scoped__blocks.html#a70090e425d94a6bea70f973a4128f895", null ],
+    [ "p_", "classsuzerain_1_1coalescing__pool_1_1scoped__blocks.html#a7dabfe9adf2fdb235d58fc6e7e120078", null ]
+];

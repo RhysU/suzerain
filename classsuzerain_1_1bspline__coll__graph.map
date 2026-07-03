@@ -1,0 +1,5 @@
+<map id="suzerain::bspline" name="suzerain::bspline">
+<area shape="rect" id="Node000001" title="Provides a thin RAII wrapper for a gsl_bspline_workspace." alt="" coords="5,119,197,759"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="31,5,172,71"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="104,84,104,118,99,118,99,84"/>
+</map>

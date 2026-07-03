@@ -1,0 +1,13 @@
+<map id="apps/reacting/quantities.hpp" name="apps/reacting/quantities.hpp">
+<area shape="rect" id="Node000001" title="Sampling logistics for mean quantity profiles." alt="" coords="286,5,493,31"/>
+<area shape="rect" id="Node000002" href="$reacting_2driver_8hpp.html" title="A driver for reacting flow simulations." alt="" coords="192,79,371,104"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="362,40,300,81,298,76,359,36"/>
+<area shape="rect" id="Node000006" href="$quantities_8cpp.html" title="Sampling logistics for mean quantity profiles." alt="" coords="395,79,602,104"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="420,36,482,76,479,81,417,40"/>
+<area shape="rect" id="Node000003" href="$reacting_2driver_8cpp.html" title="A driver for reacting flow simulations." alt="" coords="5,159,184,185"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="243,112,123,162,121,157,241,107"/>
+<area shape="rect" id="Node000004" href="$reacting_2main__advance_8cpp.html" title="Application executing suzerain::reacting::driver_advance::run." alt="" coords="208,152,355,192"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="284,118,284,152,279,152,279,118"/>
+<area shape="rect" id="Node000005" href="$main__init_8cpp.html" title="Application executing suzerain::reacting::driver_init::run." alt="" coords="379,152,525,192"/>
+<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="320,107,412,149,410,154,318,112"/>
+</map>

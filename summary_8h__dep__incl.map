@@ -1,0 +1,17 @@
+<map id="suzerain/summary.h" name="suzerain/summary.h">
+<area shape="rect" id="Node000001" title="Boost.Preprocessor definitions driving suzerain::summary." alt="" coords="603,5,757,31"/>
+<area shape="rect" id="Node000002" href="$summary_8hpp.html" title="Named storage for summarizing sampled quantity components and their derivatives of interest for 3D Na..." alt="" coords="595,79,765,104"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="683,44,683,79,677,79,677,44"/>
+<area shape="rect" id="Node000003" href="$instantaneous_8cpp.html" title="Implementation of suzerain::perfect::instantaneous." alt="" coords="5,159,232,185"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="582,108,244,155,195,162,194,157,244,149,582,103"/>
+<area shape="rect" id="Node000004" href="$main__summary_8cpp.html" title="Application executing suzerain::support::driver_base::summary_run." alt="" coords="256,159,491,185"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="623,110,419,162,417,157,622,105"/>
+<area shape="rect" id="Node000005" href="$profile_8cpp.html" title="Sampling logistics for boundary layer and channel solution profiles." alt="" coords="515,159,664,185"/>
+<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="658,115,605,161,601,157,655,111"/>
+<area shape="rect" id="Node000006" href="$summary_8cpp.html" title="Named storage for summarizing sampled quantity components and their derivatives of interest for 3D Na..." alt="" coords="688,159,856,185"/>
+<area shape="poly" id="edge5_Node000002_Node000006" title=" " alt="" coords="706,111,760,157,757,161,702,115"/>
+<area shape="rect" id="Node000007" href="$driver__base__summary_8cpp.html" title="Implementation of suzerain::support::driver_base::summary_run." alt="" coords="881,152,1053,192"/>
+<area shape="poly" id="edge6_Node000002_Node000007" title=" " alt="" coords="735,105,898,149,897,154,734,110"/>
+<area shape="rect" id="Node000008" href="$support_8cpp.html" title="Support logic with complex prerequisites spanning multiple applications." alt="" coords="1077,159,1288,185"/>
+<area shape="poly" id="edge7_Node000002_Node000008" title=" " alt="" coords="769,103,1066,149,1112,157,1111,162,1065,155,768,109"/>
+</map>

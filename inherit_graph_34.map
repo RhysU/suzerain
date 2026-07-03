@@ -1,0 +1,9 @@
+<map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
+<area shape="rect" id="Node000000" href="$classsuzerain_1_1baseflow__interface.html" title="Abstract interface for providing slow&#45;growth&#45;ready baseflow information." alt="" coords="5,55,148,95"/>
+<area shape="rect" id="Node000001" href="$classsuzerain_1_1baseflow__map.html" title="Provides map&#45;based lookup of arbitrary baseflow profiles established at runtime." alt="" coords="196,5,375,31"/>
+<area shape="poly" id="edge155_Node000000_Node000001" title=" " alt="" coords="161,50,237,28,239,33,162,55"/>
+<area shape="rect" id="Node000002" href="$classsuzerain_1_1baseflow__polynomial.html" title="Provides slow&#45;growth&#45;ready baseflow information from polynomial fits." alt="" coords="214,55,357,95"/>
+<area shape="poly" id="edge156_Node000000_Node000002" title=" " alt="" coords="162,73,214,73,214,78,162,78"/>
+<area shape="rect" id="Node000003" href="$classsuzerain_1_1baseflow__uniform.html" title="Provides slow&#45;growth&#45;ready baseflow information for uniform flows." alt="" coords="214,119,357,159"/>
+<area shape="poly" id="edge157_Node000000_Node000003" title=" " alt="" coords="156,97,220,117,219,122,155,102"/>
+</map>

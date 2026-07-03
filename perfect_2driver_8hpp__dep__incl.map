@@ -1,0 +1,11 @@
+<map id="apps/perfect/driver.hpp" name="apps/perfect/driver.hpp">
+<area shape="rect" id="Node000001" title="A driver for nondimensional perfect gas simulations." alt="" coords="350,5,522,31"/>
+<area shape="rect" id="Node000002" href="$perfect_2driver_8cpp.html" title="A driver for nondimensional perfect gas simulations." alt="" coords="5,79,176,104"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="368,36,147,81,146,76,367,31"/>
+<area shape="rect" id="Node000003" href="$perfect_2main__advance_8cpp.html" title="Application executing suzerain::perfect::driver_advance::run." alt="" coords="200,79,429,104"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="406,40,336,81,333,76,403,35"/>
+<area shape="rect" id="Node000004" href="$main__initial_8cpp.html" title="Application executing suzerain::perfect::driver_initial::run." alt="" coords="453,79,664,104"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="469,35,540,76,537,81,466,40"/>
+<area shape="rect" id="Node000005" href="$main__summary_8cpp.html" title="Application executing suzerain::support::driver_base::summary_run." alt="" coords="688,79,923,104"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="509,31,746,76,745,81,508,36"/>
+</map>

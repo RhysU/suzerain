@@ -1,0 +1,9 @@
+<map id="apps/perfect/navier_stokes.hpp" name="apps/perfect/navier_stokes.hpp">
+<area shape="rect" id="Node000001" title="Implementation of nonlinear Navier–Stokes spatial operators." alt="" coords="191,5,339,45"/>
+<area shape="rect" id="Node000002" href="$navier__stokes_8cpp.html" title="Implementation of nonlinear Navier–Stokes spatial operators." alt="" coords="5,93,153,133"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="213,54,121,96,119,91,210,49"/>
+<area shape="rect" id="Node000003" href="$operator__hybrid__isothermal_8cpp.html" title="A hybrid implicit/explicit Navier–Stokes operator for isothermal wall(s)." alt="" coords="177,93,352,133"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="267,59,267,93,262,93,262,59"/>
+<area shape="rect" id="Node000004" href="$operator__nonlinear_8cpp.html" title="A nonlinear Navier–Stokes spatial operator." alt="" coords="377,93,539,133"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="321,49,417,91,415,96,319,53"/>
+</map>

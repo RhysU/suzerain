@@ -1,0 +1,7 @@
+<map id="suzerain::storage::interleaved&lt; 5 &gt;" name="suzerain::storage::interleaved&lt; 5 &gt;">
+<area shape="rect" id="Node000001" title="Interleaved storage specification for five dimensions." alt="" coords="59,496,194,576"/>
+<area shape="rect" id="Node000002" href="$classsuzerain_1_1storage_1_1general.html" title=" " alt="" coords="51,257,203,447"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="129,461,129,496,124,496,124,461"/>
+<area shape="rect" id="Node000003" href="$classsuzerain_1_1storage_1_1general.html" title="Provides storage and stride computations given a storage ordering." alt="" coords="5,5,248,165"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="129,179,129,257,124,257,124,179"/>
+</map>

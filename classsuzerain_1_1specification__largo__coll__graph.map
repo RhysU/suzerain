@@ -1,0 +1,19 @@
+<map id="suzerain::specification_largo" name="suzerain::specification_largo">
+<area shape="rect" id="Node000001" title="Holds parameters defining Largo&#45;based slow growth problems." alt="" coords="413,743,576,903"/>
+<area shape="rect" id="Node000002" href="$classsuzerain_1_1largo__formulation.html" title=" " alt="" coords="5,391,211,665"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="213,605,402,748,399,752,210,609"/>
+<area shape="poly" id="edge2_Node000002_Node000002" title=" " alt="" coords="212,496,230,508,237,528,235,541,227,551,223,548,230,539,232,528,226,511,209,501"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="404,488,585,568"/>
+<area shape="poly" id="edge3_Node000001_Node000003" title=" " alt="" coords="497,568,497,726,492,726,492,568"/>
+<area shape="rect" id="Node000004" href="$classsuzerain_1_1baseflow__interface.html" title="Abstract interface for providing slow&#45;growth&#45;ready baseflow information." alt="" coords="253,133,427,313"/>
+<area shape="poly" id="edge4_Node000003_Node000004" title=" " alt="" coords="388,312,469,472,465,474,383,315"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="451,191,600,256"/>
+<area shape="poly" id="edge5_Node000003_Node000005" title=" " alt="" coords="523,270,501,488,496,488,518,269"/>
+<area shape="rect" id="Node000006" title=" " alt="" coords="594,5,617,71"/>
+<area shape="poly" id="edge6_Node000005_Node000006" title=" " alt="" coords="596,67,548,176,543,174,591,64"/>
+<area shape="rect" id="Node000008" title=" " alt="" coords="625,191,746,256"/>
+<area shape="poly" id="edge9_Node000008_Node000006" title=" " alt="" coords="619,64,667,174,662,176,614,67"/>
+<area shape="rect" id="Node000007" title=" " alt="" coords="610,495,761,561"/>
+<area shape="poly" id="edge7_Node000001_Node000007" title=" " alt="" coords="671,562,629,635,576,720,568,731,564,728,571,717,624,633,666,560"/>
+<area shape="poly" id="edge8_Node000007_Node000008" title=" " alt="" coords="688,270,688,495,683,495,683,270"/>
+</map>

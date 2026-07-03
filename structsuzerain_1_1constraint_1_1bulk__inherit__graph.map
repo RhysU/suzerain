@@ -1,0 +1,9 @@
+<map id="suzerain::constraint::bulk" name="suzerain::constraint::bulk">
+<area shape="rect" id="Node000001" title="A building block to constrain the bulk value across ." alt="" coords="88,193,231,273"/>
+<area shape="rect" id="Node000003" href="$structsuzerain_1_1constraint_1_1constant__bulk.html" title="Constrain the bulk value across &#160;to be some constant using a uniform forcing profile." alt="" coords="5,321,148,401"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="128,286,105,323,100,320,124,283"/>
+<area shape="rect" id="Node000004" href="$structsuzerain_1_1constraint_1_1reference__bulk.html" title="Constrain the bulk value across &#160;to track some referenced value using a uniform forcing profile." alt="" coords="172,321,315,401"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="195,283,219,320,215,323,191,286"/>
+<area shape="rect" id="Node000002" href="$classsuzerain_1_1constraint_1_1base.html" title="Abstract base class for constraints expressible as a functional." alt="" coords="88,5,231,145"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="162,159,162,193,157,193,157,159"/>
+</map>

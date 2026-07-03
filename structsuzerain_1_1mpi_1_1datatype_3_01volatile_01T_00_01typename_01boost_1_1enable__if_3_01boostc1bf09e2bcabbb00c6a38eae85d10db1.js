@@ -1,0 +1,4 @@
+var structsuzerain_1_1mpi_1_1datatype_3_01volatile_01T_00_01typename_01boost_1_1enable__if_3_01boostc1bf09e2bcabbb00c6a38eae85d10db1 =
+[
+    [ "BOOST_MPL_ASSERT_MSG", "structsuzerain_1_1mpi_1_1datatype_3_01volatile_01T_00_01typename_01boost_1_1enable__if_3_01boostc1bf09e2bcabbb00c6a38eae85d10db1.html#a3e7b8824998a2ada747be3b4351ad1d4", null ]
+];

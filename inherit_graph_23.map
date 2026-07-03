@@ -1,0 +1,112 @@
+<map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
+<area shape="rect" id="Node000000" href="$classnsctpl__rholut_1_1manufactured__solution.html" title=" " alt="" coords="11,5,216,45"/>
+<area shape="rect" id="Node000001" href="$classsuzerain_1_1perfect_1_1manufactured__solution.html" title="Manufactured solution employed throughout the perfect gas code." alt="" coords="273,117,445,157"/>
+<area shape="poly" id="edge87_Node000000_Node000001" title=" " alt="" coords="204,48,222,55,280,85,330,115,327,119,278,89,220,60,202,53"/>
+<area shape="rect" id="Node000040" href="$classnsctpl_1_1manufactured__solution.html" title="Template that, given a primitive function for rho, u, v, w, and T along with a floating point type,..." alt="" coords="5,227,221,282"/>
+<area shape="rect" id="Node000039" href="$classsuzerain_1_1reacting_1_1manufactured__solution.html" title="Manufactured solution employed throughout the reacting flow code." alt="" coords="269,305,449,345"/>
+<area shape="poly" id="edge88_Node000040_Node000039" title=" " alt="" coords="223,283,290,303,288,308,222,288"/>
+<area shape="rect" id="Node000010" href="$classsuzerain_1_1support_1_1overridable.html" title=" " alt="" coords="27,642,199,697"/>
+<area shape="rect" id="Node000009" href="$classsuzerain_1_1reacting_1_1definition__channel.html" title="Holds parameters defining channel flow case." alt="" coords="285,824,434,864"/>
+<area shape="poly" id="edge89_Node000010_Node000009" title=" " alt="" coords="213,698,223,706,235,719,242,733,248,759,254,785,260,798,271,810,287,822,284,826,268,814,256,801,249,787,243,761,237,735,230,722,219,710,210,702"/>
+<area shape="rect" id="Node000014" href="$classsuzerain_1_1support_1_1overridable.html" title=" " alt="" coords="27,799,199,854"/>
+<area shape="rect" id="Node000013" href="$classsuzerain_1_1reacting_1_1definition__filter.html" title="Holds parameters defining filter source." alt="" coords="290,888,429,928"/>
+<area shape="poly" id="edge90_Node000014_Node000013" title=" " alt="" coords="211,856,299,885,297,890,209,861"/>
+<area shape="rect" id="Node000023" href="$classsuzerain_1_1support_1_1overridable.html" title=" " alt="" coords="27,434,199,489"/>
+<area shape="rect" id="Node000022" href="$classsuzerain_1_1support_1_1definition__helm.html" title="Upgrades a specification_helm with definition_base behavior." alt="" coords="288,440,431,480"/>
+<area shape="poly" id="edge91_Node000023_Node000022" title=" " alt="" coords="213,458,288,458,288,463,213,463"/>
+<area shape="rect" id="Node000031" href="$classsuzerain_1_1support_1_1overridable.html" title=" " alt="" coords="27,1101,199,1155"/>
+<area shape="rect" id="Node000030" href="$classsuzerain_1_1support_1_1definition__largo.html" title="Holds parameters defining largo boundary cases." alt="" coords="288,1072,431,1112"/>
+<area shape="poly" id="edge92_Node000031_Node000030" title=" " alt="" coords="212,1111,287,1100,288,1105,213,1116"/>
+<area shape="rect" id="Node000006" href="$classsuzerain_1_1support_1_1overridable.html" title=" " alt="" coords="27,1373,199,1427"/>
+<area shape="rect" id="Node000005" href="$classsuzerain_1_1perfect_1_1definition__scenario.html" title="Holds nondimensional parameters like the Reynolds and Prandtl numbers as well as nondimensional probl..." alt="" coords="287,1308,432,1348"/>
+<area shape="poly" id="edge93_Node000006_Node000005" title=" " alt="" coords="212,1368,290,1345,291,1351,213,1374"/>
+<area shape="rect" id="Node000002" href="$classsuzerain_1_1support_1_1overridable.html" title=" " alt="" coords="12,70,215,125"/>
+<area shape="poly" id="edge94_Node000002_Node000001" title=" " alt="" coords="228,113,274,121,273,126,228,119"/>
+<area shape="rect" id="Node000019" href="$classsuzerain_1_1support_1_1overridable.html" title=" " alt="" coords="17,1530,210,1585"/>
+<area shape="rect" id="Node000018" href="$classsuzerain_1_1support_1_1definition__grid.html" title="Upgrades a specification_grid with definition_base behavior." alt="" coords="288,1455,431,1495"/>
+<area shape="poly" id="edge95_Node000019_Node000018" title=" " alt="" coords="207,1523,298,1492,300,1497,209,1528"/>
+<area shape="rect" id="Node000027" href="$classsuzerain_1_1support_1_1overridable.html" title=" " alt="" coords="17,1737,210,1791"/>
+<area shape="rect" id="Node000026" href="$classsuzerain_1_1support_1_1definition__isothermal.html" title="Holds parameters defining isothermal boundary cases." alt="" coords="279,1632,439,1672"/>
+<area shape="poly" id="edge96_Node000027_Node000026" title=" " alt="" coords="206,1729,220,1723,323,1670,325,1674,222,1728,208,1734"/>
+<area shape="rect" id="Node000035" href="$classsuzerain_1_1support_1_1overridable.html" title=" " alt="" coords="17,1959,210,2014"/>
+<area shape="rect" id="Node000034" href="$classsuzerain_1_1support_1_1definition__radialflow.html" title="Upgrades a specification_radialflow with definition_base behavior." alt="" coords="282,1775,437,1815"/>
+<area shape="poly" id="edge97_Node000035_Node000034" title=" " alt="" coords="210,1950,220,1944,259,1913,293,1877,343,1813,347,1816,297,1881,262,1917,223,1949,213,1955"/>
+<area shape="rect" id="Node000011" href="$classsuzerain_1_1support_1_1populatable.html" title=" " alt="" coords="26,721,201,775"/>
+<area shape="poly" id="edge98_Node000011_Node000009" title=" " alt="" coords="208,778,222,784,270,810,300,821,298,826,268,814,220,789,206,783"/>
+<area shape="rect" id="Node000015" href="$classsuzerain_1_1support_1_1populatable.html" title=" " alt="" coords="26,878,201,933"/>
+<area shape="poly" id="edge99_Node000015_Node000013" title=" " alt="" coords="214,904,290,905,290,910,214,909"/>
+<area shape="rect" id="Node000024" href="$classsuzerain_1_1support_1_1populatable.html" title=" " alt="" coords="26,306,201,361"/>
+<area shape="poly" id="edge100_Node000024_Node000022" title=" " alt="" coords="210,364,223,370,282,404,332,438,329,442,280,408,220,374,208,368"/>
+<area shape="rect" id="Node000032" href="$classsuzerain_1_1support_1_1populatable.html" title=" " alt="" coords="26,957,201,1011"/>
+<area shape="poly" id="edge101_Node000032_Node000030" title=" " alt="" coords="204,1014,222,1022,321,1069,319,1074,220,1026,202,1019"/>
+<area shape="rect" id="Node000007" href="$classsuzerain_1_1support_1_1populatable.html" title=" " alt="" coords="26,1451,201,1506"/>
+<area shape="poly" id="edge102_Node000007_Node000005" title=" " alt="" coords="210,1443,220,1438,286,1392,336,1346,340,1350,289,1396,223,1442,213,1448"/>
+<area shape="rect" id="Node000003" href="$classsuzerain_1_1support_1_1populatable.html" title=" " alt="" coords="11,149,216,203"/>
+<area shape="poly" id="edge103_Node000003_Node000001" title=" " alt="" coords="229,155,273,148,274,153,230,160"/>
+<area shape="rect" id="Node000020" href="$classsuzerain_1_1support_1_1populatable.html" title=" " alt="" coords="15,1609,211,1663"/>
+<area shape="poly" id="edge104_Node000020_Node000018" title=" " alt="" coords="211,1600,220,1595,255,1571,288,1543,339,1493,342,1497,292,1547,258,1575,223,1600,213,1605"/>
+<area shape="rect" id="Node000028" href="$classsuzerain_1_1support_1_1populatable.html" title=" " alt="" coords="15,1815,211,1870"/>
+<area shape="poly" id="edge105_Node000028_Node000026" title=" " alt="" coords="213,1806,220,1802,246,1779,279,1743,340,1670,344,1674,283,1747,250,1782,223,1806,216,1811"/>
+<area shape="rect" id="Node000036" href="$classsuzerain_1_1support_1_1populatable.html" title=" " alt="" coords="15,2038,211,2093"/>
+<area shape="poly" id="edge106_Node000036_Node000034" title=" " alt="" coords="215,2028,220,2025,245,2000,268,1973,305,1914,332,1857,349,1814,354,1816,337,1859,310,1916,272,1976,249,2004,223,2029,218,2033"/>
+<area shape="rect" id="Node000017" href="$classsuzerain_1_1specification__arsel.html" title="Encapsulates settings for invoking arsel." alt="" coords="30,1308,197,1348"/>
+<area shape="rect" id="Node000016" href="$classsuzerain_1_1support_1_1definition__arsel.html" title="Upgrades a specification_arsel with definition_base behavior." alt="" coords="288,1244,431,1284"/>
+<area shape="poly" id="edge107_Node000017_Node000016" title=" " alt="" coords="203,1302,287,1280,288,1285,205,1307"/>
+<area shape="rect" id="Node000021" href="$classsuzerain_1_1specification__grid.html" title="Holds basic three dimensional computational grid details for a distributed, mixed Fourier/B&#45;spline me..." alt="" coords="14,1687,213,1713"/>
+<area shape="poly" id="edge108_Node000021_Node000018" title=" " alt="" coords="211,1679,220,1674,242,1648,277,1598,343,1493,348,1496,281,1600,246,1651,223,1678,214,1684"/>
+<area shape="rect" id="Node000025" href="$classsuzerain_1_1specification__helm.html" title="Encapsulates PID controller settings and operation using helm.h." alt="" coords="10,385,217,410"/>
+<area shape="poly" id="edge109_Node000025_Node000022" title=" " alt="" coords="188,411,222,419,291,437,289,443,221,424,187,416"/>
+<area shape="rect" id="Node000029" href="$classsuzerain_1_1specification__isothermal.html" title="Holds parameters for specifying simple isothermal boundary conditions on the &#160;and &#160;planes." alt="" coords="30,1895,197,1935"/>
+<area shape="poly" id="edge110_Node000029_Node000026" title=" " alt="" coords="207,1890,219,1881,240,1853,248,1826,253,1796,267,1761,302,1711,337,1671,341,1674,306,1714,272,1764,258,1798,253,1827,245,1856,223,1885,211,1894"/>
+<area shape="rect" id="Node000033" href="$classsuzerain_1_1specification__largo.html" title="Holds parameters defining Largo&#45;based slow growth problems." alt="" coords="30,1036,197,1076"/>
+<area shape="poly" id="edge111_Node000033_Node000030" title=" " alt="" coords="210,1067,288,1079,287,1084,210,1073"/>
+<area shape="rect" id="Node000043" href="$classsuzerain_1_1specification__noise.html" title="Options for adding random noise to momentum fields." alt="" coords="30,513,197,553"/>
+<area shape="rect" id="Node000042" href="$classsuzerain_1_1support_1_1definition__noise.html" title="Upgrades a specification_noise with definition_base behavior." alt="" coords="288,504,431,544"/>
+<area shape="poly" id="edge112_Node000043_Node000042" title=" " alt="" coords="210,527,288,524,288,529,210,532"/>
+<area shape="rect" id="Node000037" href="$classsuzerain_1_1specification__radialflow.html" title="Encapsulates the non&#45;scenario parameters necessary when invoking suzerain_radialflow_qoi_match()." alt="" coords="30,2117,197,2157"/>
+<area shape="poly" id="edge113_Node000037_Node000034" title=" " alt="" coords="208,2112,220,2103,251,2070,277,2032,299,1991,317,1949,341,1871,352,1814,358,1815,346,1873,322,1951,304,1993,282,2035,255,2073,223,2107,211,2116"/>
+<area shape="rect" id="Node000004" href="$classsuzerain_1_1support_1_1definition__base.html" title="An abstract base class for defining a collection of related options." alt="" coords="42,577,185,617"/>
+<area shape="poly" id="edge115_Node000004_Node000001" title=" " alt="" coords="196,581,219,563,243,531,255,500,259,469,258,438,253,372,256,334,267,292,284,253,304,215,341,156,346,159,308,218,288,255,272,294,261,335,258,372,263,438,264,470,260,501,247,533,223,567,199,585"/>
+<area shape="poly" id="edge118_Node000004_Node000039" title=" " alt="" coords="197,579,220,563,233,547,241,532,248,500,252,466,267,427,300,380,334,344,338,347,304,384,272,429,257,467,253,501,247,534,238,550,223,567,199,583"/>
+<area shape="poly" id="edge116_Node000004_Node000009" title=" " alt="" coords="199,610,223,627,240,651,248,674,249,720,249,765,256,788,271,810,286,822,283,826,267,814,251,790,244,766,243,720,243,675,235,653,219,631,196,615"/>
+<area shape="poly" id="edge117_Node000004_Node000013" title=" " alt="" coords="199,610,223,627,244,659,253,691,253,722,249,752,245,783,244,813,252,843,271,874,291,890,288,894,267,878,247,845,239,814,239,782,244,752,248,721,248,691,240,661,219,631,196,614"/>
+<area shape="poly" id="edge122_Node000004_Node000022" title=" " alt="" coords="196,577,220,563,235,546,243,528,251,509,268,490,287,478,290,482,271,494,256,512,248,530,240,549,223,567,199,581"/>
+<area shape="poly" id="edge124_Node000004_Node000030" title=" " alt="" coords="199,609,223,627,250,666,264,703,267,739,265,775,258,851,260,893,272,939,288,977,307,1013,345,1070,340,1073,303,1016,283,979,267,941,255,894,252,851,260,775,262,739,258,704,245,669,219,631,196,614"/>
+<area shape="poly" id="edge114_Node000004_Node000005" title=" " alt="" coords="199,609,223,628,239,654,249,686,255,723,258,766,256,860,249,962,242,1064,240,1158,248,1238,257,1269,271,1294,288,1309,285,1313,267,1298,253,1271,243,1239,234,1158,237,1063,244,962,251,860,253,766,250,724,244,687,234,656,219,631,196,613"/>
+<area shape="poly" id="edge121_Node000004_Node000018" title=" " alt="" coords="200,609,223,628,240,656,253,690,261,731,266,776,269,876,264,985,254,1200,258,1290,263,1328,272,1359,285,1386,302,1412,338,1453,334,1456,298,1415,280,1389,267,1361,258,1329,252,1290,249,1200,259,985,263,876,261,776,256,731,248,692,236,658,219,631,196,613"/>
+<area shape="poly" id="edge123_Node000004_Node000026" title=" " alt="" coords="199,609,223,628,234,650,242,685,253,785,258,916,260,1062,261,1341,264,1445,272,1506,286,1542,305,1576,343,1630,339,1633,301,1579,282,1544,267,1507,259,1446,255,1341,254,1062,253,916,248,786,237,686,229,652,219,631,196,613"/>
+<area shape="poly" id="edge126_Node000004_Node000034" title=" " alt="" coords="199,608,223,628,236,654,245,696,256,818,260,975,260,1150,257,1486,261,1611,265,1655,272,1683,285,1709,301,1734,337,1773,333,1776,297,1737,280,1712,267,1685,260,1656,256,1611,252,1486,254,1150,255,975,251,818,240,697,231,656,219,631,196,613"/>
+<area shape="poly" id="edge119_Node000004_Node000016" title=" " alt="" coords="199,609,223,628,237,651,247,680,256,752,255,838,249,930,243,1022,242,1107,250,1179,259,1208,271,1230,290,1246,286,1250,267,1234,254,1210,245,1180,237,1108,238,1022,244,930,249,838,250,753,242,681,232,653,219,631,196,613"/>
+<area shape="poly" id="edge125_Node000004_Node000042" title=" " alt="" coords="194,571,221,563,291,541,293,547,222,568,196,576"/>
+<area shape="rect" id="Node000041" href="$classsuzerain_1_1support_1_1definition__fftw.html" title="Holds FFTW&#45;usage parameters, e.g." alt="" coords="288,760,431,800"/>
+<area shape="poly" id="edge120_Node000004_Node000041" title=" " alt="" coords="199,612,223,627,236,642,243,658,248,688,253,717,259,732,271,746,289,759,286,763,268,750,255,735,248,719,243,689,238,659,232,645,220,631,196,616"/>
+<area shape="rect" id="Node000044" href="$classsuzerain_1_1support_1_1definition__restart.html" title="Encapsulates flags related to restart file behavior for the simulation." alt="" coords="288,568,431,608"/>
+<area shape="poly" id="edge127_Node000004_Node000044" title=" " alt="" coords="198,591,288,588,288,593,199,597"/>
+<area shape="rect" id="Node000045" href="$classsuzerain_1_1support_1_1definition__signal.html" title="Parses and contains signal processing details to allow a program to take runtime&#45;configurable respons..." alt="" coords="288,632,431,672"/>
+<area shape="poly" id="edge128_Node000004_Node000045" title=" " alt="" coords="199,613,288,634,287,639,198,619"/>
+<area shape="rect" id="Node000046" href="$classsuzerain_1_1support_1_1definition__statistics.html" title="Encapsulates flags related to statistics output behavior for the simulation." alt="" coords="285,696,434,736"/>
+<area shape="poly" id="edge129_Node000004_Node000046" title=" " alt="" coords="199,615,223,627,239,641,248,655,256,669,271,682,292,694,290,698,268,686,252,672,243,658,235,644,220,632,197,620"/>
+<area shape="rect" id="Node000038" href="$classsuzerain_1_1support_1_1definition__time.html" title="Encapsulates flags related to time advancement." alt="" coords="288,1180,431,1220"/>
+<area shape="poly" id="edge130_Node000004_Node000038" title=" " alt="" coords="199,609,223,628,235,647,244,670,254,729,257,797,255,872,253,1017,258,1078,272,1123,296,1154,325,1178,322,1182,292,1158,267,1125,253,1079,248,1017,250,872,251,798,249,729,239,672,230,649,219,631,196,613"/>
+<area shape="rect" id="Node000008" href="$classsuzerain_1_1support_1_1loadable.html" title="Abstract interface indicating details may be loaded from an ESIO handle." alt="" coords="42,1180,185,1220"/>
+<area shape="poly" id="edge132_Node000008_Node000009" title=" " alt="" coords="196,1184,219,1166,242,1130,251,1095,250,1059,244,1023,237,987,236,950,244,913,267,874,283,861,286,865,271,878,249,915,241,951,243,987,249,1022,255,1059,256,1095,247,1132,223,1170,199,1188"/>
+<area shape="poly" id="edge133_Node000008_Node000013" title=" " alt="" coords="196,1181,220,1166,240,1142,249,1118,255,1091,267,1059,308,985,343,927,348,930,312,988,272,1061,260,1092,254,1119,244,1144,223,1170,199,1185"/>
+<area shape="poly" id="edge135_Node000008_Node000022" title=" " alt="" coords="196,1184,219,1166,234,1141,244,1110,250,1072,253,1030,251,934,244,831,236,728,234,632,237,589,242,550,252,517,267,490,286,474,289,478,271,494,257,519,248,551,242,589,239,632,242,728,249,831,257,934,258,1030,256,1073,249,1111,239,1143,223,1170,199,1189"/>
+<area shape="poly" id="edge137_Node000008_Node000030" title=" " alt="" coords="197,1175,220,1166,277,1138,325,1110,328,1114,279,1143,222,1170,199,1180"/>
+<area shape="poly" id="edge131_Node000008_Node000005" title=" " alt="" coords="199,1217,223,1230,239,1246,248,1262,256,1278,271,1294,291,1306,288,1310,268,1298,252,1281,243,1265,235,1249,220,1234,196,1221"/>
+<area shape="poly" id="edge134_Node000008_Node000018" title=" " alt="" coords="199,1214,223,1230,237,1246,246,1261,253,1291,258,1323,272,1359,307,1411,341,1453,337,1456,302,1414,267,1361,253,1324,248,1292,241,1263,233,1249,220,1234,196,1219"/>
+<area shape="poly" id="edge136_Node000008_Node000026" title=" " alt="" coords="199,1212,223,1230,248,1264,260,1297,264,1329,262,1361,258,1428,261,1465,272,1506,288,1541,307,1576,344,1630,340,1633,303,1578,283,1544,267,1508,255,1466,252,1428,257,1360,258,1329,255,1298,243,1267,219,1234,196,1217"/>
+<area shape="poly" id="edge138_Node000008_Node000034" title=" " alt="" coords="199,1212,223,1230,234,1248,243,1269,253,1322,257,1384,258,1452,257,1585,262,1641,272,1683,285,1709,302,1734,338,1773,334,1776,298,1737,281,1712,267,1685,256,1641,252,1585,252,1452,252,1385,248,1323,238,1271,230,1250,219,1234,196,1216"/>
+<area shape="poly" id="edge139_Node000008_Node000038" title=" " alt="" coords="199,1197,288,1197,288,1203,199,1203"/>
+<area shape="rect" id="Node000012" href="$classsuzerain_1_1support_1_1savable.html" title="Abstract interface indicating details may be saved into an ESIO handle." alt="" coords="42,1244,185,1284"/>
+<area shape="poly" id="edge141_Node000012_Node000009" title=" " alt="" coords="196,1248,219,1230,236,1208,247,1186,256,1142,253,1099,244,1056,235,1012,231,967,240,921,251,898,267,874,283,861,286,865,271,878,256,900,245,923,237,967,240,1011,249,1055,258,1098,261,1143,252,1188,240,1211,223,1234,199,1252"/>
+<area shape="poly" id="edge142_Node000012_Node000013" title=" " alt="" coords="196,1246,220,1230,236,1210,245,1191,252,1152,254,1109,258,1085,267,1059,305,985,342,927,346,930,310,987,272,1061,263,1087,259,1110,257,1152,250,1192,240,1213,223,1234,199,1251"/>
+<area shape="poly" id="edge145_Node000012_Node000022" title=" " alt="" coords="196,1248,219,1230,235,1203,246,1168,253,1127,256,1080,253,976,244,863,235,750,232,645,234,598,240,556,251,520,267,490,286,474,289,478,271,494,256,522,246,557,240,598,237,645,240,750,249,863,258,976,261,1081,258,1127,251,1169,240,1205,223,1234,200,1253"/>
+<area shape="poly" id="edge147_Node000012_Node000030" title=" " alt="" coords="196,1243,220,1230,236,1215,245,1201,253,1185,267,1166,330,1110,333,1114,271,1170,258,1188,249,1203,240,1219,223,1234,199,1247"/>
+<area shape="poly" id="edge140_Node000012_Node000005" title=" " alt="" coords="199,1283,287,1307,286,1312,197,1289"/>
+<area shape="poly" id="edge144_Node000012_Node000018" title=" " alt="" coords="199,1281,223,1294,240,1309,250,1324,272,1358,344,1453,340,1456,267,1362,246,1326,236,1312,220,1298,196,1285"/>
+<area shape="poly" id="edge146_Node000012_Node000026" title=" " alt="" coords="199,1277,223,1294,243,1320,254,1345,258,1370,259,1394,258,1446,262,1474,272,1506,308,1576,345,1630,341,1633,304,1578,267,1508,257,1476,253,1446,254,1394,253,1370,249,1347,238,1323,219,1298,196,1281"/>
+<area shape="poly" id="edge148_Node000012_Node000034" title=" " alt="" coords="199,1276,223,1294,255,1343,269,1390,271,1435,265,1480,257,1526,252,1575,255,1626,272,1683,286,1709,303,1733,338,1773,334,1776,298,1737,281,1712,267,1685,250,1627,246,1574,251,1526,259,1479,265,1435,264,1391,250,1345,219,1298,196,1280"/>
+<area shape="poly" id="edge143_Node000012_Node000016" title=" " alt="" coords="199,1261,288,1261,288,1267,199,1267"/>
+<area shape="poly" id="edge149_Node000012_Node000038" title=" " alt="" coords="198,1239,287,1216,288,1221,199,1245"/>
+</map>

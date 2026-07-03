@@ -1,0 +1,14 @@
+<map id="suzerain::lowstorage::controller&lt; StateA, StateB, void, LinearA, LinearB, NonlinearB &gt;" name="suzerain::lowstorage::controller&lt; StateA, StateB, void, LinearA, LinearB, NonlinearB &gt;">
+<area shape="rect" id="Node000001" title="A partial specialization of the controller template for the case when default delta_t_reducer behavio..." alt="" coords="15,1361,177,1471"/>
+<area shape="rect" id="Node000002" href="$structsuzerain_1_1lowstorage_1_1delta__t__reducer.html" title="A functor that finds the minimum stable time step given a vector of candidates." alt="" coords="5,1167,155,1247"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="87,1261,95,1361,89,1362,81,1261"/>
+<area shape="rect" id="Node000003" href="$classsuzerain_1_1lowstorage_1_1controller.html" title=" " alt="" coords="179,1103,397,1312"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="184,1324,148,1363,144,1359,180,1320"/>
+<area shape="rect" id="Node000004" href="$classsuzerain_1_1timecontroller.html" title=" " alt="" coords="159,417,361,752"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="264,766,272,1011,279,1102,274,1102,267,1011,258,766"/>
+<area shape="rect" id="Node000006" href="$classsuzerain_1_1lowstorage_1_1controller.html" title="Provides higher&#45;level control mechanisms built atop low storage time integration schemes." alt="" coords="282,801,473,1011"/>
+<area shape="poly" id="edge6_Node000006_Node000004" title=" " alt="" coords="328,764,342,800,337,802,323,766"/>
+<area shape="rect" id="Node000005" href="$classsuzerain_1_1timecontroller.html" title="Provides high&#45;level time advancement control, including periodic callbacks, built atop a simple time ..." alt="" coords="139,5,381,325"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="263,339,263,417,257,417,257,339"/>
+<area shape="poly" id="edge5_Node000003_Node000006" title=" " alt="" coords="345,1025,321,1103,316,1102,340,1023"/>
+</map>

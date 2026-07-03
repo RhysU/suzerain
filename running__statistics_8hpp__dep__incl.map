@@ -1,0 +1,18 @@
+<map id="suzerain/running_statistics.hpp" name="suzerain/running_statistics.hpp">
+<area shape="rect" id="Node000001" title="Provides statistical accumulators for special cases of interest." alt="" coords="170,5,394,31"/>
+<area shape="rect" id="Node000002" href="$arsel_8hpp.html" title="Automatically fit autoregressive models to input signals." alt="" coords="103,79,245,104"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="255,40,193,81,190,76,252,36"/>
+<area shape="rect" id="Node000004" href="$driver__base__summary_8cpp.html" title="Implementation of suzerain::support::driver_base::summary_run." alt="" coords="169,152,341,192"/>
+<area shape="poly" id="edge8_Node000001_Node000004" title=" " alt="" coords="280,45,261,152,256,151,275,44"/>
+<area shape="rect" id="Node000005" href="$bsmbsm__solver_8hpp.html" title="Encapsulates solving BSMBSM problems per a suzerain::specification_zgbsv." alt="" coords="445,79,655,104"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="339,32,507,76,506,81,338,37"/>
+<area shape="rect" id="Node000003" href="$arsel_8cpp.html" title="Automatically fit autoregressive models to input signals." alt="" coords="5,159,145,185"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="150,115,92,161,88,157,147,111"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="198,112,238,150,234,154,194,116"/>
+<area shape="rect" id="Node000006" href="$operator__hybrid__isothermal_8cpp.html" title="A hybrid implicit/explicit Navier–Stokes operator for isothermal wall(s)." alt="" coords="365,152,540,192"/>
+<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="527,115,478,154,474,150,523,111"/>
+<area shape="rect" id="Node000007" href="$operator__hybrid_8cpp.html" title="Hybrid implicit/explicit Navier–Stokes operators." alt="" coords="564,152,733,192"/>
+<area shape="poly" id="edge6_Node000005_Node000007" title=" " alt="" coords="577,111,627,150,623,154,574,115"/>
+<area shape="rect" id="Node000008" href="$bsmbsm__solver_8cpp.html" title="Encapsulates solving BSMBSM problems per a suzerain::specification_zgbsv." alt="" coords="758,159,969,185"/>
+<area shape="poly" id="edge7_Node000005_Node000008" title=" " alt="" coords="609,105,818,157,817,162,608,110"/>
+</map>

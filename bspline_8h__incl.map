@@ -1,0 +1,13 @@
+<map id="suzerain/bspline.h" name="suzerain/bspline.h">
+<area shape="rect" id="Node000001" title="Higher&#45;level logic build atop the GSL B&#45;spline routines." alt="" coords="165,5,305,31"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="5,79,136,104"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="209,33,111,76,109,71,207,28"/>
+<area shape="rect" id="Node000003" href="$complex_8h.html" title="Compatibility file for C99 _Complex and C++ std::complex types." alt="" coords="160,79,309,104"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="237,31,237,65,232,65,232,31"/>
+<area shape="rect" id="Node000006" href="$pre__gsl_8h.html" title="An MPI&#45;friendly wrapper around GSL&#39;s IEEE environment setup." alt="" coords="334,79,474,104"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="263,28,365,71,363,76,261,33"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="155,152,218,177"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="229,106,204,142,200,139,225,103"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="242,152,321,177"/>
+<area shape="poly" id="edge4_Node000003_Node000005" title=" " alt="" coords="245,103,268,139,264,142,240,106"/>
+</map>

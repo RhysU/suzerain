@@ -1,0 +1,17 @@
+<map id="suzerain/samples.hpp" name="suzerain/samples.hpp">
+<area shape="rect" id="Node000001" title="Named storage for sampled quantities of interest for 3D Navier–Stokes." alt="" coords="663,5,827,31"/>
+<area shape="rect" id="Node000002" href="$perfect_2driver_8cpp.html" title="A driver for nondimensional perfect gas simulations." alt="" coords="5,79,176,104"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="650,32,188,81,176,83,176,77,188,76,649,27"/>
+<area shape="rect" id="Node000003" href="$instantaneous_8cpp.html" title="Implementation of suzerain::perfect::instantaneous." alt="" coords="200,79,427,104"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="663,36,383,81,382,76,662,30"/>
+<area shape="rect" id="Node000004" href="$perfect_8cpp.html" title="Support logic for the perfect gas application." alt="" coords="451,79,631,104"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="701,38,575,81,573,76,699,33"/>
+<area shape="rect" id="Node000005" href="$reacting_2driver_8cpp.html" title="A driver for reacting flow simulations." alt="" coords="656,79,835,104"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="748,44,748,79,743,79,743,44"/>
+<area shape="rect" id="Node000006" href="$profile_8cpp.html" title="Sampling logistics for boundary layer and channel solution profiles." alt="" coords="859,79,1008,104"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="789,33,904,76,902,81,787,38"/>
+<area shape="rect" id="Node000007" href="$samples_8cpp.html" title="Named storage for sampled quantities of interest for 3D Navier–Stokes." alt="" coords="1032,79,1195,104"/>
+<area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="818,31,1054,76,1053,81,817,36"/>
+<area shape="rect" id="Node000008" href="$support_8cpp.html" title="Support logic with complex prerequisites spanning multiple applications." alt="" coords="1219,79,1429,104"/>
+<area shape="poly" id="edge7_Node000001_Node000008" title=" " alt="" coords="841,28,1231,76,1231,81,841,34"/>
+</map>

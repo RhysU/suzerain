@@ -1,0 +1,5 @@
+<map id="suzerain::specification_radialflow" name="suzerain::specification_radialflow">
+<area shape="rect" id="Node000001" title="Encapsulates the non&#45;scenario parameters necessary when invoking suzerain_radialflow_qoi_match()." alt="" coords="5,5,197,165"/>
+<area shape="rect" id="Node000002" href="$classsuzerain_1_1support_1_1definition__radialflow.html" title="Upgrades a specification_radialflow with definition_base behavior." alt="" coords="16,213,187,393"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="104,179,104,213,99,213,99,179"/>
+</map>

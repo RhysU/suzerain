@@ -1,0 +1,23 @@
+<map id="suzerain::support::savable" name="suzerain::support::savable">
+<area shape="rect" id="Node000001" title="Abstract interface indicating details may be saved into an ESIO handle." alt="" coords="881,5,1015,105"/>
+<area shape="rect" id="Node000002" href="$classsuzerain_1_1perfect_1_1definition__scenario.html" title="Holds nondimensional parameters like the Reynolds and Prandtl numbers as well as nondimensional probl..." alt="" coords="5,163,179,543"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="867,60,704,66,505,81,407,93,318,109,244,130,192,156,180,165,177,161,189,151,243,125,317,104,406,88,504,75,704,61,867,55"/>
+<area shape="rect" id="Node000003" href="$classsuzerain_1_1reacting_1_1definition__channel.html" title="Holds parameters defining channel flow case." alt="" coords="203,233,368,473"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="867,64,744,74,600,92,531,104,469,119,418,136,382,155,347,191,322,235,317,232,343,188,378,151,416,131,468,114,530,99,600,87,743,69,867,59"/>
+<area shape="rect" id="Node000004" href="$classsuzerain_1_1reacting_1_1definition__filter.html" title="Holds parameters defining filter source." alt="" coords="392,153,557,553"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="867,61,798,68,720,84,641,112,605,132,571,155,559,166,556,162,568,151,602,127,639,107,718,79,797,63,867,55"/>
+<area shape="rect" id="Node000005" href="$classsuzerain_1_1support_1_1definition__arsel.html" title="Upgrades a specification_arsel with definition_base behavior." alt="" coords="581,293,747,413"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="869,86,812,115,785,134,761,155,735,187,713,223,683,294,678,292,709,220,730,184,757,151,782,130,809,111,866,82"/>
+<area shape="rect" id="Node000006" href="$classsuzerain_1_1support_1_1definition__grid.html" title="Upgrades a specification_grid with definition_base behavior." alt="" coords="771,253,936,453"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="931,119,888,254,883,252,926,117"/>
+<area shape="rect" id="Node000007" href="$classsuzerain_1_1support_1_1definition__helm.html" title="Upgrades a specification_helm with definition_base behavior." alt="" coords="960,233,1125,473"/>
+<area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="970,117,1007,232,1002,234,965,119"/>
+<area shape="rect" id="Node000008" href="$classsuzerain_1_1support_1_1definition__isothermal.html" title="Holds parameters defining isothermal boundary cases." alt="" coords="1150,193,1327,513"/>
+<area shape="poly" id="edge7_Node000001_Node000008" title=" " alt="" coords="1029,82,1086,111,1114,130,1139,151,1172,192,1168,195,1135,155,1111,134,1084,116,1027,87"/>
+<area shape="rect" id="Node000009" href="$classsuzerain_1_1support_1_1definition__largo.html" title="Holds parameters defining largo boundary cases." alt="" coords="1352,263,1517,443"/>
+<area shape="poly" id="edge8_Node000001_Node000009" title=" " alt="" coords="1029,54,1102,61,1184,77,1226,90,1267,106,1306,126,1342,151,1365,175,1385,203,1414,262,1409,264,1381,205,1361,178,1338,155,1303,131,1265,111,1224,95,1183,82,1101,66,1029,60"/>
+<area shape="rect" id="Node000010" href="$classsuzerain_1_1support_1_1definition__radialflow.html" title="Upgrades a specification_radialflow with definition_base behavior." alt="" coords="1541,263,1712,443"/>
+<area shape="poly" id="edge9_Node000001_Node000010" title=" " alt="" coords="1029,58,1156,69,1303,86,1374,98,1439,113,1492,131,1531,151,1556,174,1577,202,1606,262,1601,264,1572,205,1552,178,1528,156,1490,136,1437,118,1373,104,1302,92,1155,74,1029,64"/>
+<area shape="rect" id="Node000011" href="$classsuzerain_1_1support_1_1definition__time.html" title="Encapsulates flags related to time advancement." alt="" coords="1736,193,1901,513"/>
+<area shape="poly" id="edge10_Node000001_Node000011" title=" " alt="" coords="1030,54,1197,59,1402,74,1503,86,1595,103,1671,124,1701,137,1726,151,1747,170,1764,191,1760,195,1743,173,1722,155,1699,142,1669,129,1593,108,1502,91,1402,79,1197,65,1030,60"/>
+</map>

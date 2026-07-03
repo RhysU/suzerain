@@ -1,0 +1,5 @@
+<map id="suzerain::pencilfft::internal::transform_traits&lt; fftwl_complex &gt;" name="suzerain::pencilfft::internal::transform_traits&lt; fftwl_complex &gt;">
+<area shape="rect" id="Node000001" title="FFT traits specialized for fftwl_complex." alt="" coords="5,5,183,180"/>
+<area shape="rect" id="Node000002" href="$structsuzerain_1_1pencilfft_1_1internal_1_1transform__traits_3_01std_1_1complex_3_01long_01double_01_4_01_4.html" title="FFT traits specialized for std::complex&lt;long double&gt;" alt="" coords="17,228,171,337"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="97,194,97,228,91,228,91,194"/>
+</map>

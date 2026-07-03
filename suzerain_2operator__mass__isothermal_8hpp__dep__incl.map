@@ -1,0 +1,17 @@
+<map id="suzerain/operator_mass_isothermal.hpp" name="suzerain/operator_mass_isothermal.hpp">
+<area shape="rect" id="Node000001" title="Provides suzerain::operator_mass_isothermal." alt="" coords="443,5,621,45"/>
+<area shape="rect" id="Node000002" href="$apps_2perfect_2operator__mass__isothermal_8hpp.html" title="Provides suzerain::perfect::operator_mass_isothermal." alt="" coords="254,93,423,133"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="478,53,382,96,380,91,476,49"/>
+<area shape="rect" id="Node000005" href="$operator__explicit_8hpp.html" title="Fully explicit, linearization&#45;ready Navier–Stokes operators." alt="" coords="447,93,617,133"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="535,59,535,93,529,93,529,59"/>
+<area shape="rect" id="Node000008" href="$suzerain_2operator__mass__isothermal_8cpp.html" title="Provides suzerain::operator_mass_isothermal." alt="" coords="641,93,820,133"/>
+<area shape="poly" id="edge7_Node000001_Node000008" title=" " alt="" coords="589,48,688,91,686,96,587,53"/>
+<area shape="rect" id="Node000003" href="$perfect_2main__advance_8cpp.html" title="Application executing suzerain::perfect::driver_advance::run." alt="" coords="5,189,235,214"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="279,141,150,191,148,186,277,136"/>
+<area shape="rect" id="Node000004" href="$apps_2perfect_2operator__mass__isothermal_8cpp.html" title="Provides suzerain::perfect::operator_mass_isothermal." alt="" coords="259,181,427,221"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="343,147,344,181,339,181,338,147"/>
+<area shape="rect" id="Node000006" href="$reacting_2main__advance_8cpp.html" title="Application executing suzerain::reacting::driver_advance::run." alt="" coords="456,181,603,221"/>
+<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="534,147,533,181,527,181,528,147"/>
+<area shape="rect" id="Node000007" href="$operator__explicit_8cpp.html" title="Fully explicit, linearization&#45;ready Navier–Stokes operators." alt="" coords="627,181,797,221"/>
+<area shape="poly" id="edge6_Node000005_Node000007" title=" " alt="" coords="585,137,674,179,671,184,582,142"/>
+</map>

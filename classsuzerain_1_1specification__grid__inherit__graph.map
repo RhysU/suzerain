@@ -1,0 +1,5 @@
+<map id="suzerain::specification_grid" name="suzerain::specification_grid">
+<area shape="rect" id="Node000001" title="Holds basic three dimensional computational grid details for a distributed, mixed Fourier/B&#45;spline me..." alt="" coords="5,5,196,491"/>
+<area shape="rect" id="Node000002" href="$classsuzerain_1_1support_1_1definition__grid.html" title="Upgrades a specification_grid with definition_base behavior." alt="" coords="18,539,183,739"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="103,505,103,539,98,539,98,505"/>
+</map>

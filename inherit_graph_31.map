@@ -1,0 +1,7 @@
+<map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
+<area shape="rect" id="Node000000" href="$classsuzerain_1_1allocator__freestore__policy.html" title="A free&#45;store based allocation policy." alt="" coords="5,5,177,45"/>
+<area shape="rect" id="Node000001" href="$classsuzerain_1_1allocator.html" title="A policy&#45;driven allocator implementation." alt="" coords="225,37,376,77"/>
+<area shape="poly" id="edge153_Node000000_Node000001" title=" " alt="" coords="192,38,225,43,224,48,191,43"/>
+<area shape="rect" id="Node000002" href="$classsuzerain_1_1allocator__object__traits.html" title="A generic set of object traits for the policy driven allocator." alt="" coords="17,69,165,109"/>
+<area shape="poly" id="edge154_Node000002_Node000001" title=" " alt="" coords="178,73,225,66,225,71,179,79"/>
+</map>

@@ -1,0 +1,21 @@
+<map id="suzerain::support::loadable" name="suzerain::support::loadable">
+<area shape="rect" id="Node000001" title="Abstract interface indicating details may be loaded from an ESIO handle." alt="" coords="786,5,921,105"/>
+<area shape="rect" id="Node000002" href="$classsuzerain_1_1perfect_1_1definition__scenario.html" title="Holds nondimensional parameters like the Reynolds and Prandtl numbers as well as nondimensional probl..." alt="" coords="5,163,179,543"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="772,62,628,70,457,87,374,99,299,114,236,133,192,156,180,165,177,161,189,151,234,128,297,109,373,94,457,81,628,65,772,57"/>
+<area shape="rect" id="Node000003" href="$classsuzerain_1_1reacting_1_1definition__channel.html" title="Holds parameters defining channel flow case." alt="" coords="203,233,368,473"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="773,67,670,80,555,99,451,124,410,139,382,155,348,191,323,234,318,231,344,188,378,151,408,134,449,119,554,93,669,75,772,62"/>
+<area shape="rect" id="Node000004" href="$classsuzerain_1_1reacting_1_1definition__filter.html" title="Holds parameters defining filter source." alt="" coords="392,153,557,553"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="773,70,723,81,670,98,618,122,571,155,559,167,556,163,568,151,615,118,668,93,722,76,772,64"/>
+<area shape="rect" id="Node000005" href="$classsuzerain_1_1support_1_1definition__grid.html" title="Upgrades a specification_grid with definition_base behavior." alt="" coords="581,253,747,453"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="792,117,761,155,731,204,706,254,701,252,726,201,756,152,788,114"/>
+<area shape="rect" id="Node000006" href="$classsuzerain_1_1support_1_1definition__helm.html" title="Upgrades a specification_helm with definition_base behavior." alt="" coords="771,233,936,473"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="856,119,856,233,851,233,851,119"/>
+<area shape="rect" id="Node000007" href="$classsuzerain_1_1support_1_1definition__isothermal.html" title="Holds parameters defining isothermal boundary cases." alt="" coords="961,193,1138,513"/>
+<area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="918,114,950,152,976,192,972,195,946,155,914,117"/>
+<area shape="rect" id="Node000008" href="$classsuzerain_1_1support_1_1definition__largo.html" title="Holds parameters defining largo boundary cases." alt="" coords="1163,263,1328,443"/>
+<area shape="poly" id="edge7_Node000001_Node000008" title=" " alt="" coords="935,63,988,74,1045,91,1102,116,1152,151,1175,176,1195,203,1223,262,1218,264,1190,206,1171,179,1149,155,1099,121,1043,96,987,79,934,68"/>
+<area shape="rect" id="Node000009" href="$classsuzerain_1_1support_1_1definition__radialflow.html" title="Upgrades a specification_radialflow with definition_base behavior." alt="" coords="1352,263,1523,443"/>
+<area shape="poly" id="edge8_Node000001_Node000009" title=" " alt="" coords="935,61,1041,74,1160,93,1268,118,1311,134,1342,151,1366,175,1387,202,1416,262,1411,264,1382,205,1362,178,1338,155,1309,139,1267,123,1159,98,1040,79,934,67"/>
+<area shape="rect" id="Node000010" href="$classsuzerain_1_1support_1_1definition__time.html" title="Encapsulates flags related to time advancement." alt="" coords="1547,193,1712,513"/>
+<area shape="poly" id="edge9_Node000001_Node000010" title=" " alt="" coords="934,56,1082,64,1259,80,1346,92,1424,108,1489,127,1536,151,1557,170,1575,191,1571,195,1553,173,1533,156,1487,132,1423,113,1345,97,1259,85,1082,69,934,61"/>
+</map>

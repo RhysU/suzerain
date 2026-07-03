@@ -1,0 +1,9 @@
+<map id="suzerain::baseflow_interface" name="suzerain::baseflow_interface">
+<area shape="rect" id="Node000001" title="Abstract interface for providing slow&#45;growth&#45;ready baseflow information." alt="" coords="203,5,376,185"/>
+<area shape="rect" id="Node000002" href="$classsuzerain_1_1baseflow__map.html" title="Provides map&#45;based lookup of arbitrary baseflow profiles established at runtime." alt="" coords="5,251,176,396"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="204,198,156,252,152,249,200,194"/>
+<area shape="rect" id="Node000003" href="$classsuzerain_1_1baseflow__polynomial.html" title="Provides slow&#45;growth&#45;ready baseflow information from polynomial fits." alt="" coords="201,233,378,413"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="292,199,292,233,287,233,287,199"/>
+<area shape="rect" id="Node000004" href="$classsuzerain_1_1baseflow__uniform.html" title="Provides slow&#45;growth&#45;ready baseflow information for uniform flows." alt="" coords="403,243,557,403"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="375,194,415,241,411,245,371,198"/>
+</map>

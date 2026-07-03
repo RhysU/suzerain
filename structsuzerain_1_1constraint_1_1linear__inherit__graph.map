@@ -1,0 +1,5 @@
+<map id="suzerain::constraint::linear" name="suzerain::constraint::linear">
+<area shape="rect" id="Node000001" title="A building block preparing a linear forcing profile in shape." alt="" coords="5,193,148,273"/>
+<area shape="rect" id="Node000002" href="$classsuzerain_1_1constraint_1_1base.html" title="Abstract base class for constraints expressible as a functional." alt="" coords="5,5,148,145"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="79,159,79,193,74,193,74,159"/>
+</map>

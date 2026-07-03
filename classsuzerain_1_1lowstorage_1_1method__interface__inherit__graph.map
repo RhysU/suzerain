@@ -1,0 +1,9 @@
+<map id="suzerain::lowstorage::method_interface&lt; Element &gt;" name="suzerain::lowstorage::method_interface&lt; Element &gt;">
+<area shape="rect" id="Node000001" title="Encapsulates a hybrid implicit/explicit low storage Runge&#45;Kutta method to advance &#160;to ." alt="" coords="245,5,467,325"/>
+<area shape="rect" id="Node000002" href="$classsuzerain_1_1lowstorage_1_1method.html" title="Given a Scheme and Element type, encapsulates a low storage method behind the method_interface interf..." alt="" coords="5,388,221,708"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="249,339,217,389,213,386,245,336"/>
+<area shape="rect" id="Node000003" href="$classsuzerain_1_1lowstorage_1_1method__interface.html" title=" " alt="" coords="245,388,467,708"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="359,339,359,388,353,388,353,339"/>
+<area shape="rect" id="Node000004" href="$classsuzerain_1_1lowstorage_1_1method__interface.html" title=" " alt="" coords="491,388,725,708"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="471,335,505,386,500,389,467,338"/>
+</map>

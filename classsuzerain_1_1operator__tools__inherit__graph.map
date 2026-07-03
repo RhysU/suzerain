@@ -1,0 +1,25 @@
+<map id="suzerain::operator_tools" name="suzerain::operator_tools">
+<area shape="rect" id="Node000001" title="Provides combined, timed B&#45;spline and parallel FFT infrastructure routines." alt="" coords="653,5,845,325"/>
+<area shape="rect" id="Node000002" href="$classsuzerain_1_1operator__base.html" title="Provides potentially heavyweight B&#45;spline and parallel FFT infrastructure." alt="" coords="664,373,835,679"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="752,339,752,373,747,373,747,339"/>
+<area shape="rect" id="Node000003" href="$classsuzerain_1_1operator__mass.html" title="A linear operator which applies or inverts a B&#45;spline mass matrix." alt="" coords="135,806,327,995"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="652,560,579,588,498,626,416,672,342,729,308,766,279,807,275,804,304,762,338,725,413,668,495,621,577,584,650,555"/>
+<area shape="rect" id="Node000007" href="$classsuzerain_1_1perfect_1_1operator__nonlinear.html" title="A boundary&#45;condition agnostic Navier–Stokes operator." alt="" coords="351,821,513,981"/>
+<area shape="poly" id="edge6_Node000002_Node000007" title=" " alt="" coords="655,602,589,661,527,728,496,774,470,822,465,819,491,771,523,725,585,657,651,598"/>
+<area shape="rect" id="Node000008" href="$classsuzerain_1_1perfect_1_1treatment__nonreflecting.html" title="When necessary, provides explicitly&#45;implemented, Giles&#45;like nonreflecting boundary conditions at the ..." alt="" coords="537,763,733,1038"/>
+<area shape="poly" id="edge7_Node000002_Node000008" title=" " alt="" coords="701,693,679,764,674,762,696,691"/>
+<area shape="rect" id="Node000010" href="$classsuzerain_1_1reacting_1_1explicit__operator__nonlinear.html" title="A boundary&#45;condition agnostic, fully explicit Navier–Stokes operator." alt="" coords="757,803,974,998"/>
+<area shape="poly" id="edge9_Node000002_Node000010" title=" " alt="" coords="803,691,838,802,833,804,798,693"/>
+<area shape="rect" id="Node000011" href="$classsuzerain_1_1reacting_1_1isothermal__hybrid__linear__operator.html" title="A hybrid implicit operator that provides no slip, isothermal walls." alt="" coords="999,727,1191,1075"/>
+<area shape="poly" id="edge10_Node000002_Node000011" title=" " alt="" coords="847,595,919,655,989,725,1000,739,996,742,985,728,916,659,844,599"/>
+<area shape="rect" id="Node000012" href="$classsuzerain_1_1reacting_1_1treatment__nonreflecting.html" title="Provides Giles&#45;like nonreflecting boundary conditions at the upper boundary." alt="" coords="1215,841,1411,961"/>
+<area shape="poly" id="edge11_Node000002_Node000012" title=" " alt="" coords="848,550,931,577,1024,614,1118,663,1163,692,1204,725,1230,751,1253,780,1289,839,1285,842,1249,783,1226,754,1201,729,1160,697,1115,668,1022,619,929,582,847,555"/>
+<area shape="rect" id="Node000004" href="$classsuzerain_1_1operator__mass__isothermal.html" title="An abstract mass operator that provides isothermal boundary conditions for equations ordered per suze..." alt="" coords="124,1205,337,1359"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="233,1009,233,1205,228,1205,228,1009"/>
+<area shape="rect" id="Node000005" href="$classsuzerain_1_1perfect_1_1operator__mass__isothermal.html" title="A mass operator that provides various isothermal boundaries." alt="" coords="5,1489,219,1684"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="198,1373,152,1490,147,1488,193,1371"/>
+<area shape="rect" id="Node000006" href="$classsuzerain_1_1reacting_1_1operator__mass__isothermal.html" title="A mass operator that provides no slip, isothermal walls." alt="" coords="243,1497,456,1677"/>
+<area shape="poly" id="edge5_Node000004_Node000006" title=" " alt="" coords="268,1371,317,1495,312,1497,263,1373"/>
+<area shape="rect" id="Node000009" href="$classsuzerain_1_1perfect_1_1operator__hybrid__isothermal.html" title="A hybrid implicit/explicit operator that providing isothermal wall conditions and possibly a nonrefle..." alt="" coords="520,1123,749,1441"/>
+<area shape="poly" id="edge8_Node000008_Node000009" title=" " alt="" coords="637,1052,637,1123,632,1123,632,1052"/>
+</map>

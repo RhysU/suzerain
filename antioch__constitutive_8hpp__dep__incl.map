@@ -1,0 +1,33 @@
+<map id="apps/reacting/antioch_constitutive.hpp" name="apps/reacting/antioch_constitutive.hpp">
+<area shape="rect" id="Node000001" title="Class wrapping libantioch functionality for chemically reacting flow." alt="" coords="496,5,659,45"/>
+<area shape="rect" id="Node000002" href="$antioch__constitutive_8cpp.html" title="Class wrapping libantioch functionality for chemically reacting flow." alt="" coords="5,93,168,133"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="483,44,180,96,169,98,168,93,180,91,482,39"/>
+<area shape="rect" id="Node000003" href="$reacting_2driver_8hpp.html" title="A driver for reacting flow simulations." alt="" coords="348,189,527,214"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="515,54,488,72,465,95,452,119,445,145,440,189,435,188,439,143,447,117,461,92,484,68,512,49"/>
+<area shape="rect" id="Node000007" href="$reacting_2manufactured__solution_8hpp.html" title="Method of manufactured solution details for the reacting flow application." alt="" coords="475,93,680,133"/>
+<area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="580,59,580,93,575,93,575,59"/>
+<area shape="rect" id="Node000009" href="$operator__explicit_8hpp.html" title="Fully explicit, linearization&#45;ready Navier–Stokes operators." alt="" coords="781,181,950,221"/>
+<area shape="poly" id="edge12_Node000001_Node000009" title=" " alt="" coords="673,32,737,40,801,52,854,69,875,79,889,92,898,114,897,139,890,162,880,182,875,180,885,160,892,138,893,115,885,95,872,84,852,74,799,57,736,45,672,37"/>
+<area shape="rect" id="Node000011" href="$operator__hybrid_8cpp.html" title="Hybrid implicit/explicit Navier–Stokes operators." alt="" coords="705,93,874,133"/>
+<area shape="poly" id="edge13_Node000001_Node000011" title=" " alt="" coords="637,48,744,91,742,96,635,53"/>
+<area shape="rect" id="Node000012" href="$quantities_8hpp.html" title="Sampling logistics for mean quantity profiles." alt="" coords="193,101,399,126"/>
+<area shape="poly" id="edge14_Node000001_Node000012" title=" " alt="" coords="504,52,334,103,333,98,502,47"/>
+<area shape="rect" id="Node000014" href="$test__antioch__constitutive_8cpp.html" title=" " alt="" coords="950,93,1138,133"/>
+<area shape="poly" id="edge17_Node000001_Node000014" title=" " alt="" coords="673,41,950,92,949,97,672,47"/>
+<area shape="rect" id="Node000004" href="$reacting_2driver_8cpp.html" title="A driver for reacting flow simulations." alt="" coords="180,277,359,302"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="404,223,293,279,291,274,401,218"/>
+<area shape="rect" id="Node000005" href="$reacting_2main__advance_8cpp.html" title="Application executing suzerain::reacting::driver_advance::run." alt="" coords="572,269,719,309"/>
+<area shape="poly" id="edge4_Node000003_Node000005" title=" " alt="" coords="479,217,600,267,598,272,477,222"/>
+<area shape="rect" id="Node000006" href="$main__init_8cpp.html" title="Application executing suzerain::reacting::driver_init::run." alt="" coords="383,269,529,309"/>
+<area shape="poly" id="edge5_Node000003_Node000006" title=" " alt="" coords="445,227,454,268,449,269,440,228"/>
+<area shape="poly" id="edge7_Node000007_Node000003" title=" " alt="" coords="536,143,457,191,455,186,534,138"/>
+<area shape="rect" id="Node000008" href="$reacting_2manufactured__solution_8cpp.html" title="Method of manufactured solution details for the reacting flow application." alt="" coords="551,181,756,221"/>
+<area shape="poly" id="edge8_Node000007_Node000008" title=" " alt="" coords="605,142,639,179,635,183,601,146"/>
+<area shape="poly" id="edge9_Node000007_Node000009" title=" " alt="" coords="655,135,803,179,802,184,653,140"/>
+<area shape="poly" id="edge10_Node000009_Node000005" title=" " alt="" coords="806,229,694,272,693,267,804,224"/>
+<area shape="rect" id="Node000010" href="$operator__explicit_8cpp.html" title="Fully explicit, linearization&#45;ready Navier–Stokes operators." alt="" coords="781,269,950,309"/>
+<area shape="poly" id="edge11_Node000009_Node000010" title=" " alt="" coords="868,235,868,269,863,269,863,235"/>
+<area shape="poly" id="edge15_Node000012_Node000003" title=" " alt="" coords="328,131,420,186,417,191,325,135"/>
+<area shape="rect" id="Node000013" href="$quantities_8cpp.html" title="Sampling logistics for mean quantity profiles." alt="" coords="117,189,323,214"/>
+<area shape="poly" id="edge16_Node000012_Node000013" title=" " alt="" coords="279,138,233,190,229,186,275,135"/>
+</map>

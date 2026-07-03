@@ -1,0 +1,5 @@
+<map id="suzerain::complex::traits::is_complex_long_double&lt; T, typename boost::enable_if&lt; is_complex&lt; T &gt; &gt;::type &gt;" name="suzerain::complex::traits::is_complex_long_double&lt; T, typename boost::enable_if&lt; is_complex&lt; T &gt; &gt;::type &gt;">
+<area shape="rect" id="Node000001" title="A specialization to handle recognized complex types." alt="" coords="5,133,208,257"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="14,5,199,85"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="109,99,109,133,104,133,104,99"/>
+</map>

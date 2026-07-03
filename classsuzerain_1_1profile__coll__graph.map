@@ -1,0 +1,7 @@
+<map id="suzerain::profile" name="suzerain::profile">
+<area shape="rect" id="Node000001" title="Encapsulates solution profiles necessary for using bl.h or channel.h." alt="" coords="41,291,160,576"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="5,148,196,228"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="103,228,103,274,98,274,98,228"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="76,5,125,71"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="103,84,103,148,98,148,98,84"/>
+</map>

@@ -1,0 +1,3 @@
+<map id="suzerain::traits::component&lt; T, typename boost::enable_if&lt; boost::is_arithmetic&lt; T &gt; &gt;::type &gt;" name="suzerain::traits::component&lt; T, typename boost::enable_if&lt; boost::is_arithmetic&lt; T &gt; &gt;::type &gt;">
+<area shape="rect" id="Node000001" title="A specialization to handle recognized real&#45;valued arithmetic types." alt="" coords="5,5,208,115"/>
+</map>

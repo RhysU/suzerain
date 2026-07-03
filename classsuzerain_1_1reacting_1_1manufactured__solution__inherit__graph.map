@@ -1,0 +1,7 @@
+<map id="suzerain::reacting::manufactured_solution" name="suzerain::reacting::manufactured_solution">
+<area shape="rect" id="Node000001" title="Manufactured solution employed throughout the reacting flow code." alt="" coords="99,948,288,1148"/>
+<area shape="rect" id="Node000002" href="$classsuzerain_1_1support_1_1definition__base.html" title="An abstract base class for defining a collection of related options." alt="" coords="5,403,171,503"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="102,516,178,947,173,948,96,517"/>
+<area shape="rect" id="Node000003" href="$classnsctpl_1_1manufactured__solution.html" title="Template that, given a primitive function for rho, u, v, w, and T along with a floating point type,..." alt="" coords="195,5,403,900"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="220,914,213,948,208,948,214,913"/>
+</map>

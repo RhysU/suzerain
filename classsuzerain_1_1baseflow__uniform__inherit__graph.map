@@ -1,0 +1,5 @@
+<map id="suzerain::baseflow_uniform" name="suzerain::baseflow_uniform">
+<area shape="rect" id="Node000001" title="Provides slow&#45;growth&#45;ready baseflow information for uniform flows." alt="" coords="15,233,169,393"/>
+<area shape="rect" id="Node000002" href="$classsuzerain_1_1baseflow__interface.html" title="Abstract interface for providing slow&#45;growth&#45;ready baseflow information." alt="" coords="5,5,179,185"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="95,199,95,233,89,233,89,199"/>
+</map>

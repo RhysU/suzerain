@@ -1,0 +1,7 @@
+<map id="suzerain::perfect::implicits" name="suzerain::perfect::implicits">
+<area shape="rect" id="Node000001" title="Storage for holding implicit quantities at collocation points updated by constraint::treatment usage." alt="" coords="77,333,208,613"/>
+<area shape="rect" id="Node000002" href="$classsuzerain_1_1constraint_1_1treatment_1_1outputs.html" title="Abstract interface for tracking forcing collocation point profile outputs maintained by constraint tr..." alt="" coords="5,5,149,285"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="111,298,117,333,112,334,105,299"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="173,113,245,178"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="203,192,174,334,169,332,198,191"/>
+</map>

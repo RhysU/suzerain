@@ -1,0 +1,31 @@
+<map id="suzerain/reacting_imexop.h" name="suzerain/reacting_imexop.h">
+<area shape="rect" id="Node000001" title="Provides implicit operator apply and solve routines for a single wall&#45;normal pencil of state informat..." alt="" coords="580,5,781,31"/>
+<area shape="rect" id="Node000002" href="$operator__hybrid_8hpp.html" title="Hybrid implicit/explicit Navier–Stokes operators." alt="" coords="596,79,765,119"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="683,44,683,79,678,79,678,44"/>
+<area shape="rect" id="Node000005" href="$operator__nonlinear__fwd_8hpp.html" title="Declarations of Nonlinear Navier–Stokes spatial operators implemented within operator_nonlinear...." alt="" coords="400,79,569,119"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="640,38,533,81,531,76,638,33"/>
+<area shape="rect" id="Node000013" href="$reacting__imexop_8c.html" title="Provides implicit operator apply and solve routines for a single wall&#45;normal pencil of state informat..." alt="" coords="790,86,990,111"/>
+<area shape="poly" id="edge16_Node000001_Node000013" title=" " alt="" coords="725,33,860,83,859,88,723,38"/>
+<area shape="rect" id="Node000003" href="$reacting_2main__advance_8cpp.html" title="Application executing suzerain::reacting::driver_advance::run." alt="" coords="686,255,833,295"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="739,124,762,142,780,165,787,189,786,213,772,255,767,254,781,212,782,189,776,168,758,146,736,128"/>
+<area shape="rect" id="Node000004" href="$operator__hybrid_8cpp.html" title="Hybrid implicit/explicit Navier–Stokes operators." alt="" coords="596,167,765,207"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="683,133,683,166,678,166,678,133"/>
+<area shape="poly" id="edge12_Node000005_Node000004" title=" " alt="" coords="541,122,639,164,637,169,539,127"/>
+<area shape="rect" id="Node000006" href="$reacting_2driver_8hpp.html" title="A driver for reacting flow simulations." alt="" coords="841,174,1019,199"/>
+<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="583,116,871,171,870,177,582,121"/>
+<area shape="rect" id="Node000009" href="$operator__explicit_8hpp.html" title="Fully explicit, linearization&#45;ready Navier–Stokes operators." alt="" coords="199,167,368,207"/>
+<area shape="poly" id="edge9_Node000005_Node000009" title=" " alt="" coords="429,127,328,169,326,164,427,122"/>
+<area shape="rect" id="Node000011" href="$reacting_2operator__nonlinear_8hpp.html" title="Implementation of Nonlinear Navier–Stokes spatial operators declared within operator_nonlinear_fwd...." alt="" coords="5,167,175,207"/>
+<area shape="poly" id="edge13_Node000005_Node000011" title=" " alt="" coords="387,124,176,170,174,164,386,119"/>
+<area shape="rect" id="Node000012" href="$reacting_2treatment__nonreflecting_8cpp.html" title="A physics&#45;agnostic, low&#45;storage B&#45;spline mass operator." alt="" coords="393,167,571,207"/>
+<area shape="poly" id="edge15_Node000005_Node000012" title=" " alt="" coords="486,133,485,167,480,166,481,133"/>
+<area shape="poly" id="edge7_Node000006_Node000003" title=" " alt="" coords="896,208,798,257,796,252,894,203"/>
+<area shape="rect" id="Node000007" href="$reacting_2driver_8cpp.html" title="A driver for reacting flow simulations." alt="" coords="1027,262,1206,287"/>
+<area shape="poly" id="edge6_Node000006_Node000007" title=" " alt="" coords="968,203,1092,259,1090,264,966,208"/>
+<area shape="rect" id="Node000008" href="$main__init_8cpp.html" title="Application executing suzerain::reacting::driver_init::run." alt="" coords="857,255,1003,295"/>
+<area shape="poly" id="edge8_Node000006_Node000008" title=" " alt="" coords="933,213,933,254,927,254,927,213"/>
+<area shape="poly" id="edge10_Node000009_Node000003" title=" " alt="" coords="382,204,686,258,686,263,381,209"/>
+<area shape="rect" id="Node000010" href="$operator__explicit_8cpp.html" title="Fully explicit, linearization&#45;ready Navier–Stokes operators." alt="" coords="103,255,272,295"/>
+<area shape="poly" id="edge11_Node000009_Node000010" title=" " alt="" coords="253,218,210,256,207,252,250,214"/>
+<area shape="poly" id="edge14_Node000011_Node000010" title=" " alt="" coords="123,214,168,252,164,256,120,218"/>
+</map>

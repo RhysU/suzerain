@@ -1,0 +1,15 @@
+<map id="suzerain::perfect::operator_mass_isothermal" name="suzerain::perfect::operator_mass_isothermal">
+<area shape="rect" id="Node000001" title="A mass operator that provides various isothermal boundaries." alt="" coords="99,1215,312,1409"/>
+<area shape="rect" id="Node000002" href="$classsuzerain_1_1operator__mass__isothermal.html" title="An abstract mass operator that provides isothermal boundary conditions for equations ordered per suze..." alt="" coords="99,1011,312,1165"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="208,1179,208,1214,203,1214,203,1179"/>
+<area shape="rect" id="Node000003" href="$classsuzerain_1_1operator__mass.html" title="A linear operator which applies or inverts a B&#45;spline mass matrix." alt="" coords="109,772,301,961"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="208,975,208,1010,203,1010,203,975"/>
+<area shape="rect" id="Node000004" href="$classsuzerain_1_1operator__base.html" title="Provides potentially heavyweight B&#45;spline and parallel FFT infrastructure." alt="" coords="19,417,189,723"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="163,735,176,771,171,773,158,737"/>
+<area shape="rect" id="Node000005" href="$classsuzerain_1_1operator__tools.html" title="Provides combined, timed B&#45;spline and parallel FFT infrastructure routines." alt="" coords="5,5,197,325"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="105,339,106,417,100,417,100,339"/>
+<area shape="rect" id="Node000006" href="$classsuzerain_1_1lowstorage_1_1linear__operator.html" title=" " alt="" coords="219,446,411,694"/>
+<area shape="poly" id="edge5_Node000003_Node000006" title=" " alt="" coords="267,708,243,773,238,771,262,706"/>
+<area shape="rect" id="Node000007" href="$classsuzerain_1_1lowstorage_1_1linear__operator.html" title="Defines the linear operator interface required for low storage timestepping." alt="" coords="221,56,413,275"/>
+<area shape="poly" id="edge6_Node000006_Node000007" title=" " alt="" coords="319,289,318,446,313,446,314,289"/>
+</map>

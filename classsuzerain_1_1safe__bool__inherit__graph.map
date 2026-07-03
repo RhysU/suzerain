@@ -1,0 +1,5 @@
+<map id="suzerain::safe_bool&lt; T &gt;" name="suzerain::safe_bool&lt; T &gt;">
+<area shape="rect" id="Node000001" title="A Safe Bool Idiom implementation for non&#45;virtual use via the Curiously Recurring Template Pattern." alt="" coords="9,213,187,299"/>
+<area shape="rect" id="Node000002" href="$classsuzerain_1_1safe__bool__base.html" title="The Safe Bool Idiom interface." alt="" coords="5,5,191,165"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="101,179,101,213,95,213,95,179"/>
+</map>

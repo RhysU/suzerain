@@ -1,0 +1,7 @@
+<map id="suzerain::lowstorage::delta_t_reducer" name="suzerain::lowstorage::delta_t_reducer">
+<area shape="rect" id="Node000001" title="A functor that finds the minimum stable time step given a vector of candidates." alt="" coords="104,5,253,85"/>
+<area shape="rect" id="Node000002" href="$classsuzerain_1_1lowstorage_1_1controller_3_01StateA_00_01StateB_00_01void_00_01LinearA_00_01LinearB_00_01NonlinearB_01_4.html" title="A partial specialization of the controller template for the case when default delta_t_reducer behavio..." alt="" coords="5,133,168,243"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="148,99,124,135,120,132,143,96"/>
+<area shape="rect" id="Node000003" href="$classsuzerain_1_1support_1_1delta__t__allreducer.html" title="A stateful functor that performs a MPI_Allreduce to determine the minimum stable time step size acros..." alt="" coords="193,138,349,238"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="214,96,241,136,236,139,210,99"/>
+</map>

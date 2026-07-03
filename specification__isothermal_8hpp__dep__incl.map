@@ -1,0 +1,57 @@
+<map id="suzerain/specification_isothermal.hpp" name="suzerain/specification_isothermal.hpp">
+<area shape="rect" id="Node000001" title="Provides suzerain::specification_isothermal." alt="" coords="767,5,930,45"/>
+<area shape="rect" id="Node000002" href="$perfect_2main__advance_8cpp.html" title="Application executing suzerain::perfect::driver_advance::run." alt="" coords="323,277,553,302"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="793,53,679,108,615,144,554,183,494,234,450,279,446,275,490,231,551,179,613,139,677,104,790,49"/>
+<area shape="rect" id="Node000003" href="$operator__hybrid__isothermal_8cpp.html" title="A hybrid implicit/explicit Navier–Stokes operator for isothermal wall(s)." alt="" coords="5,269,180,309"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="754,33,654,40,535,51,407,70,280,96,209,108,152,117,126,124,103,136,80,155,58,183,51,204,55,226,66,249,79,268,74,271,61,251,50,228,46,203,53,180,76,151,100,132,124,119,150,111,209,103,279,91,406,64,535,46,654,34,753,28"/>
+<area shape="rect" id="Node000004" href="$perfect_2treatment__nonreflecting_8hpp.html" title="A physics&#45;agnostic, low&#45;storage B&#45;spline mass operator." alt="" coords="292,93,464,133"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="754,46,464,99,464,94,753,41"/>
+<area shape="rect" id="Node000007" href="$operator__hybrid_8cpp.html" title="Hybrid implicit/explicit Navier–Stokes operators." alt="" coords="1201,93,1371,133"/>
+<area shape="poly" id="edge9_Node000001_Node000007" title=" " alt="" coords="944,43,1202,93,1201,98,943,48"/>
+<area shape="rect" id="Node000008" href="$suzerain_2operator__mass__isothermal_8hpp.html" title="Provides suzerain::operator_mass_isothermal." alt="" coords="759,93,938,133"/>
+<area shape="poly" id="edge10_Node000001_Node000008" title=" " alt="" coords="851,59,851,93,846,93,846,59"/>
+<area shape="rect" id="Node000015" href="$specification__isothermal_8cpp.html" title="Provides suzerain::specification_isothermal." alt="" coords="1395,93,1558,133"/>
+<area shape="poly" id="edge18_Node000001_Node000015" title=" " alt="" coords="944,34,1146,57,1384,91,1396,93,1395,98,1383,96,1146,62,943,39"/>
+<area shape="rect" id="Node000016" href="$definition__isothermal_8hpp.html" title="Provides suzerain::support::definition_isothermal." alt="" coords="982,93,1177,133"/>
+<area shape="poly" id="edge19_Node000001_Node000016" title=" " alt="" coords="913,48,1030,91,1028,96,911,53"/>
+<area shape="poly" id="edge4_Node000004_Node000002" title=" " alt="" coords="421,140,439,158,452,180,459,207,457,234,446,277,440,276,452,233,453,207,448,182,434,162,417,144"/>
+<area shape="rect" id="Node000005" href="$operator__hybrid__isothermal_8hpp.html" title="A hybrid implicit/explicit Navier–Stokes operator for isothermal wall(s)." alt="" coords="68,181,243,221"/>
+<area shape="poly" id="edge5_Node000004_Node000005" title=" " alt="" coords="317,141,205,184,203,179,316,136"/>
+<area shape="rect" id="Node000006" href="$perfect_2treatment__nonreflecting_8cpp.html" title="A physics&#45;agnostic, low&#45;storage B&#45;spline mass operator." alt="" coords="267,181,439,221"/>
+<area shape="poly" id="edge8_Node000004_Node000006" title=" " alt="" coords="371,147,361,182,356,180,366,146"/>
+<area shape="poly" id="edge6_Node000005_Node000002" title=" " alt="" coords="231,223,401,274,400,279,229,228"/>
+<area shape="poly" id="edge7_Node000005_Node000003" title=" " alt="" coords="135,234,109,271,104,268,131,231"/>
+<area shape="rect" id="Node000009" href="$apps_2perfect_2operator__mass__isothermal_8hpp.html" title="Provides suzerain::perfect::operator_mass_isothermal." alt="" coords="565,181,735,221"/>
+<area shape="poly" id="edge11_Node000008_Node000009" title=" " alt="" coords="794,141,695,184,692,179,791,136"/>
+<area shape="rect" id="Node000011" href="$operator__explicit_8hpp.html" title="Fully explicit, linearization&#45;ready Navier–Stokes operators." alt="" coords="1268,181,1437,221"/>
+<area shape="poly" id="edge14_Node000008_Node000011" title=" " alt="" coords="952,129,1268,183,1267,188,951,135"/>
+<area shape="rect" id="Node000014" href="$suzerain_2operator__mass__isothermal_8cpp.html" title="Provides suzerain::operator_mass_isothermal." alt="" coords="759,181,938,221"/>
+<area shape="poly" id="edge17_Node000008_Node000014" title=" " alt="" coords="851,147,851,181,846,181,846,147"/>
+<area shape="poly" id="edge12_Node000009_Node000002" title=" " alt="" coords="592,229,467,279,465,274,590,224"/>
+<area shape="rect" id="Node000010" href="$apps_2perfect_2operator__mass__isothermal_8cpp.html" title="Provides suzerain::perfect::operator_mass_isothermal." alt="" coords="577,269,745,309"/>
+<area shape="poly" id="edge13_Node000009_Node000010" title=" " alt="" coords="657,235,661,269,656,269,651,235"/>
+<area shape="rect" id="Node000012" href="$reacting_2main__advance_8cpp.html" title="Application executing suzerain::reacting::driver_advance::run." alt="" coords="1651,269,1798,309"/>
+<area shape="poly" id="edge15_Node000011_Node000012" title=" " alt="" coords="1448,222,1651,268,1650,274,1447,227"/>
+<area shape="rect" id="Node000013" href="$operator__explicit_8cpp.html" title="Fully explicit, linearization&#45;ready Navier–Stokes operators." alt="" coords="1457,269,1627,309"/>
+<area shape="poly" id="edge16_Node000011_Node000013" title=" " alt="" coords="1408,225,1502,267,1499,272,1405,229"/>
+<area shape="rect" id="Node000017" href="$perfect_2driver_8hpp.html" title="A driver for nondimensional perfect gas simulations." alt="" coords="1013,189,1185,214"/>
+<area shape="poly" id="edge20_Node000016_Node000017" title=" " alt="" coords="1089,146,1099,188,1094,189,1084,147"/>
+<area shape="rect" id="Node000019" href="$main__initial_8cpp.html" title="Application executing suzerain::perfect::driver_initial::run." alt="" coords="769,277,979,302"/>
+<area shape="poly" id="edge25_Node000016_Node000019" title=" " alt="" coords="1048,144,890,278,886,274,1045,140"/>
+<area shape="rect" id="Node000021" href="$reacting_2driver_8hpp.html" title="A driver for reacting flow simulations." alt="" coords="1729,189,1907,214"/>
+<area shape="poly" id="edge26_Node000016_Node000021" title=" " alt="" coords="1191,131,1326,147,1431,157,1669,179,1730,186,1730,191,1668,184,1431,162,1325,152,1190,136"/>
+<area shape="rect" id="Node000023" href="$main__init_8cpp.html" title="Application executing suzerain::reacting::driver_init::run." alt="" coords="2025,269,2171,309"/>
+<area shape="poly" id="edge30_Node000016_Node000023" title=" " alt="" coords="1191,131,1302,139,1398,140,1561,132,1640,131,1722,136,1814,151,1920,179,1966,197,2009,221,2076,267,2073,271,2006,225,1964,202,1918,184,1813,156,1721,141,1639,136,1562,138,1398,145,1302,144,1190,136"/>
+<area shape="rect" id="Node000024" href="$definition__isothermal_8cpp.html" title="Provides suzerain::support::definition_isothermal." alt="" coords="1462,181,1657,221"/>
+<area shape="poly" id="edge31_Node000016_Node000024" title=" " alt="" coords="1191,132,1462,180,1461,185,1190,137"/>
+<area shape="poly" id="edge22_Node000017_Node000002" title=" " alt="" coords="1000,218,950,224,565,272,514,279,513,274,564,267,950,219,1000,212"/>
+<area shape="rect" id="Node000018" href="$perfect_2driver_8cpp.html" title="A driver for nondimensional perfect gas simulations." alt="" coords="1003,277,1174,302"/>
+<area shape="poly" id="edge21_Node000017_Node000018" title=" " alt="" coords="1099,228,1093,276,1088,276,1094,228"/>
+<area shape="poly" id="edge23_Node000017_Node000019" title=" " alt="" coords="1057,222,905,279,903,274,1055,217"/>
+<area shape="rect" id="Node000020" href="$main__summary_8cpp.html" title="Application executing suzerain::support::driver_base::summary_run." alt="" coords="1198,277,1433,302"/>
+<area shape="poly" id="edge24_Node000017_Node000020" title=" " alt="" coords="1142,217,1287,274,1285,279,1140,222"/>
+<area shape="poly" id="edge28_Node000021_Node000012" title=" " alt="" coords="1797,225,1747,271,1743,267,1793,221"/>
+<area shape="rect" id="Node000022" href="$reacting_2driver_8cpp.html" title="A driver for reacting flow simulations." alt="" coords="1822,277,2001,302"/>
+<area shape="poly" id="edge27_Node000021_Node000022" title=" " alt="" coords="1843,222,1900,274,1897,278,1839,226"/>
+<area shape="poly" id="edge29_Node000021_Node000023" title=" " alt="" coords="1870,216,2037,267,2035,272,1868,221"/>
+</map>

@@ -1,0 +1,20 @@
+<map id="apps/reacting/definition_channel.hpp" name="apps/reacting/definition_channel.hpp">
+<area shape="rect" id="Node000001" title="Provides classes handling problem definition for channel flow, e.g., bulk density and momentum." alt="" coords="305,5,480,45"/>
+<area shape="rect" id="Node000002" href="$definition__channel_8cpp.html" title="Provides classes handling problem definition for channel flow, e.g., bulk density and momentum." alt="" coords="5,93,180,133"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="314,52,159,96,158,91,313,47"/>
+<area shape="rect" id="Node000003" href="$reacting_2driver_8hpp.html" title="A driver for reacting flow simulations." alt="" coords="205,101,383,126"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="362,57,309,102,306,98,358,53"/>
+<area shape="rect" id="Node000007" href="$operator__explicit_8hpp.html" title="Fully explicit, linearization&#45;ready Navier–Stokes operators." alt="" coords="408,93,577,133"/>
+<area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="427,52,472,91,469,95,423,56"/>
+<area shape="rect" id="Node000009" href="$operator__hybrid_8cpp.html" title="Hybrid implicit/explicit Navier–Stokes operators." alt="" coords="601,93,771,133"/>
+<area shape="poly" id="edge9_Node000001_Node000009" title=" " alt="" coords="471,47,623,91,621,96,469,52"/>
+<area shape="rect" id="Node000004" href="$reacting_2driver_8cpp.html" title="A driver for reacting flow simulations." alt="" coords="18,189,197,214"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="258,134,134,191,132,186,256,129"/>
+<area shape="rect" id="Node000005" href="$reacting_2main__advance_8cpp.html" title="Application executing suzerain::reacting::driver_advance::run." alt="" coords="391,181,538,221"/>
+<area shape="poly" id="edge4_Node000003_Node000005" title=" " alt="" coords="330,130,428,179,426,184,328,135"/>
+<area shape="rect" id="Node000006" href="$main__init_8cpp.html" title="Application executing suzerain::reacting::driver_init::run." alt="" coords="221,181,367,221"/>
+<area shape="poly" id="edge5_Node000003_Node000006" title=" " alt="" coords="297,140,297,181,291,181,291,140"/>
+<area shape="poly" id="edge7_Node000007_Node000005" title=" " alt="" coords="485,147,473,182,468,180,480,146"/>
+<area shape="rect" id="Node000008" href="$operator__explicit_8cpp.html" title="Fully explicit, linearization&#45;ready Navier–Stokes operators." alt="" coords="563,181,732,221"/>
+<area shape="poly" id="edge8_Node000007_Node000008" title=" " alt="" coords="540,138,615,179,612,184,537,142"/>
+</map>

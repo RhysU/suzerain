@@ -1,0 +1,5 @@
+<map id="suzerain::bsplineop_luz" name="suzerain::bsplineop_luz">
+<area shape="rect" id="Node000001" title="Provides a thin RAII wrapper for suzerain_bsplineop_luz_workspace." alt="" coords="5,119,172,884"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="18,5,159,71"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="91,85,91,118,86,118,86,85"/>
+</map>

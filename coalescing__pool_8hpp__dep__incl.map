@@ -1,0 +1,11 @@
+<map id="suzerain/coalescing_pool.hpp" name="suzerain/coalescing_pool.hpp">
+<area shape="rect" id="Node000001" title="Memory pools for contiguous state storage." alt="" coords="349,5,500,45"/>
+<area shape="rect" id="Node000002" href="$perfect_8cpp.html" title="Support logic for the perfect gas application." alt="" coords="5,93,185,119"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="336,50,144,96,143,91,335,45"/>
+<area shape="rect" id="Node000003" href="$quantities_8cpp.html" title="Sampling logistics for mean quantity profiles." alt="" coords="209,93,416,119"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="388,55,331,95,328,91,385,51"/>
+<area shape="rect" id="Node000004" href="$reacting_8cpp.html" title="Support logic for the reacting flow application." alt="" coords="441,93,635,119"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="465,51,523,91,520,95,462,55"/>
+<area shape="rect" id="Node000005" href="$support_8cpp.html" title="Support logic with complex prerequisites spanning multiple applications." alt="" coords="659,93,870,119"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="514,44,716,91,715,96,513,50"/>
+</map>

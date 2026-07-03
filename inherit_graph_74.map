@@ -1,0 +1,7 @@
+<map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
+<area shape="rect" id="Node000000" href="$classsuzerain_1_1lowstorage_1_1linear__operator.html" title="Defines the linear operator interface required for low storage timestepping." alt="" coords="5,5,196,60"/>
+<area shape="rect" id="Node000001" href="$classsuzerain_1_1lowstorage_1_1multiplicative__operator.html" title="Implements simple multiplicative operator which scales all state variables by a uniform factor." alt="" coords="244,45,427,100"/>
+<area shape="poly" id="edge196_Node000000_Node000001" title=" " alt="" coords="210,49,244,55,244,60,209,54"/>
+<area shape="rect" id="Node000002" href="$classsuzerain_1_1lowstorage_1_1operator__nonlinear.html" title="Defines the nonlinear operator interface required for timestepping." alt="" coords="22,84,179,139"/>
+<area shape="poly" id="edge197_Node000002_Node000001" title=" " alt="" coords="193,94,243,85,244,90,194,99"/>
+</map>

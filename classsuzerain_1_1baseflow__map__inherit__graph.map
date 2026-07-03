@@ -1,0 +1,5 @@
+<map id="suzerain::baseflow_map" name="suzerain::baseflow_map">
+<area shape="rect" id="Node000001" title="Provides map&#45;based lookup of arbitrary baseflow profiles established at runtime." alt="" coords="7,233,177,379"/>
+<area shape="rect" id="Node000002" href="$classsuzerain_1_1baseflow__interface.html" title="Abstract interface for providing slow&#45;growth&#45;ready baseflow information." alt="" coords="5,5,179,185"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="95,199,95,233,89,233,89,199"/>
+</map>

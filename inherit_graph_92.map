@@ -1,0 +1,9 @@
+<map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
+<area shape="rect" id="Node000000" href="$structsuzerain_1_1mpi_1_1datatype.html" title="Provides template&#45;friendly lookup of MPI_Datatype constants." alt="" coords="5,217,181,257"/>
+<area shape="rect" id="Node000001" href="$structsuzerain_1_1mpi_1_1datatype_3_01const_01T_00_01typename_01boost_1_1enable__if_3_01boost_1_e40b33743a498de4168170337d2a7e05.html" title="Removes any const modifier on a complex MPI_Datatype." alt="" coords="247,5,475,148"/>
+<area shape="poly" id="edge203_Node000000_Node000001" title=" " alt="" coords="138,207,245,143,248,147,141,212"/>
+<area shape="rect" id="Node000002" href="$structsuzerain_1_1mpi_1_1datatype_3_01const_01volatile_01T_00_01typename_01boost_1_1enable__if_3ab08914995c7678f442c7200090687c3.html" title="Removes const volatile modifiers on a complex MPI_Datatype." alt="" coords="229,173,493,301"/>
+<area shape="poly" id="edge204_Node000000_Node000002" title=" " alt="" coords="195,234,229,234,229,239,195,239"/>
+<area shape="rect" id="Node000003" href="$structsuzerain_1_1mpi_1_1datatype_3_01volatile_01T_00_01typename_01boost_1_1enable__if_3_01boostc1bf09e2bcabbb00c6a38eae85d10db1.html" title="Removes any volatile modifier on a complex MPI_Datatype." alt="" coords="229,325,493,468"/>
+<area shape="poly" id="edge205_Node000000_Node000003" title=" " alt="" coords="141,262,243,323,240,327,139,266"/>
+</map>

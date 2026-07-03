@@ -1,0 +1,7 @@
+<map id="apps/reacting/treatment_nonreflecting.hpp" name="apps/reacting/treatment_nonreflecting.hpp">
+<area shape="rect" id="Node000001" title="A physics&#45;agnostic, low&#45;storage B&#45;spline mass operator." alt="" coords="83,5,261,45"/>
+<area shape="rect" id="Node000002" href="$reacting_2main__advance_8cpp.html" title="Application executing suzerain::reacting::driver_advance::run." alt="" coords="5,93,152,133"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="143,57,101,95,98,91,139,53"/>
+<area shape="rect" id="Node000003" href="$reacting_2treatment__nonreflecting_8cpp.html" title="A physics&#45;agnostic, low&#45;storage B&#45;spline mass operator." alt="" coords="176,93,355,133"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="205,53,246,91,243,95,201,57"/>
+</map>

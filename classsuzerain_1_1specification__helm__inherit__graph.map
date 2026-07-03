@@ -1,0 +1,5 @@
+<map id="suzerain::specification_helm" name="suzerain::specification_helm">
+<area shape="rect" id="Node000001" title="Encapsulates PID controller settings and operation using helm.h." alt="" coords="5,5,204,211"/>
+<area shape="rect" id="Node000002" href="$classsuzerain_1_1support_1_1definition__helm.html" title="Upgrades a specification_helm with definition_base behavior." alt="" coords="22,259,187,499"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="107,225,107,259,102,259,102,225"/>
+</map>

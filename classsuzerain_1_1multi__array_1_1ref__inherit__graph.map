@@ -1,0 +1,15 @@
+<map id="suzerain::multi_array::ref&lt; ValueType, NumDims &gt;" name="suzerain::multi_array::ref&lt; ValueType, NumDims &gt;">
+<area shape="rect" id="Node000001" title="A boost::multi_array_ref&#45;like class for strided indexing into a contiguous region of memory provided ..." alt="" coords="281,135,490,635"/>
+<area shape="rect" id="Node000003" href="$classsuzerain_1_1multi__array_1_1ref.html" title=" " alt="" coords="105,697,276,1197"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="278,608,259,660,246,698,241,696,253,658,273,607"/>
+<area shape="rect" id="Node000006" href="$classsuzerain_1_1multi__array_1_1ref.html" title=" " alt="" coords="300,697,471,1197"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="388,648,388,697,383,697,383,648"/>
+<area shape="rect" id="Node000007" href="$classsuzerain_1_1multi__array_1_1ref.html" title=" " alt="" coords="495,697,673,1197"/>
+<area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="497,637,505,658,518,696,513,698,500,660,492,638"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="281,5,489,85"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="388,100,388,134,383,134,383,100"/>
+<area shape="rect" id="Node000004" href="$classsuzerain_1_1contiguous__state.html" title="A state class storing elements with the first index slowest followed by the other indices in Fortran ..." alt="" coords="5,1247,179,1807"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="148,1211,142,1247,137,1246,143,1210"/>
+<area shape="rect" id="Node000005" href="$classsuzerain_1_1interleaved__state.html" title="A state class storing elements in Fortran order except that the first two indices are exchanged." alt="" coords="203,1267,376,1787"/>
+<area shape="poly" id="edge4_Node000003_Node000005" title=" " alt="" coords="238,1210,248,1266,242,1267,233,1211"/>
+</map>

@@ -1,0 +1,83 @@
+<map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
+<area shape="rect" id="Node000000" title=" " alt="" coords="241,297,391,323"/>
+<area shape="rect" id="Node000001" href="$classsuzerain_1_1bspline.html" title="Provides a thin RAII wrapper for a gsl_bspline_workspace." alt="" coords="511,199,643,224"/>
+<area shape="poly" id="edge37_Node000000_Node000001" title=" " alt="" coords="353,289,412,261,480,233,518,222,519,227,482,238,414,265,355,294"/>
+<area shape="rect" id="Node000002" href="$classsuzerain_1_1bsplineop.html" title="Provides a thin RAII wrapper for suzerain_bsplineop_workspace." alt="" coords="503,248,651,273"/>
+<area shape="poly" id="edge38_Node000000_Node000002" title=" " alt="" coords="397,292,508,271,509,276,398,297"/>
+<area shape="rect" id="Node000003" href="$classsuzerain_1_1bsplineop__lu.html" title="Provides a thin RAII wrapper for suzerain_bsplineop_lu_workspace." alt="" coords="493,297,660,323"/>
+<area shape="poly" id="edge39_Node000000_Node000003" title=" " alt="" coords="404,307,493,307,493,313,404,313"/>
+<area shape="rect" id="Node000004" href="$classsuzerain_1_1bsplineop__luz.html" title="Provides a thin RAII wrapper for suzerain_bsplineop_luz_workspace." alt="" coords="489,347,664,372"/>
+<area shape="poly" id="edge40_Node000000_Node000004" title=" " alt="" coords="398,323,509,344,508,349,397,328"/>
+<area shape="rect" id="Node000005" href="$classsuzerain_1_1coalescing__pool.html" title="A free list&#45;based memory pool designed for memory&#45;constrained situations where large,..." alt="" coords="483,5,671,60"/>
+<area shape="poly" id="edge41_Node000000_Node000005" title=" " alt="" coords="326,284,349,239,383,182,427,122,480,69,496,58,499,62,483,73,431,125,387,184,354,241,331,286"/>
+<area shape="rect" id="Node000006" href="$classsuzerain_1_1coalescing__pool_1_1scoped__blocks.html" title="A &quot;scoped&quot; blocks instance to facilitate the resource acquisition is initialization pattern." alt="" coords="483,396,671,451"/>
+<area shape="poly" id="edge42_Node000000_Node000006" title=" " alt="" coords="359,326,482,381,512,393,509,398,480,386,357,331"/>
+<area shape="rect" id="Node000008" href="$classsuzerain_1_1constraint_1_1treatment.html" title="A wrapper applying integral constraint treatment atop any linear operator." alt="" coords="501,539,652,579"/>
+<area shape="poly" id="edge43_Node000000_Node000008" title=" " alt="" coords="363,326,401,350,435,382,448,402,454,421,458,457,462,491,470,508,483,525,503,540,500,544,479,529,465,511,457,493,452,458,449,422,443,404,431,385,398,354,360,331"/>
+<area shape="rect" id="Node000024" href="$classsuzerain_1_1pencil.html" title="Encapsulates a pencil&#45;storage&#45;based scalar field to be in&#45;place transformed between physical and from..." alt="" coords="493,475,660,515"/>
+<area shape="poly" id="edge44_Node000000_Node000024" title=" " alt="" coords="358,327,397,350,435,382,451,403,459,423,467,441,483,460,504,473,501,477,480,464,462,444,454,425,446,406,431,385,394,355,355,331"/>
+<area shape="rect" id="Node000027" href="$classsuzerain_1_1pencil__grid.html" title="An abstract base class for pencil grid implementations atop various communications libraries." alt="" coords="499,84,655,109"/>
+<area shape="poly" id="edge45_Node000000_Node000027" title=" " alt="" coords="330,284,354,247,388,203,431,158,480,120,507,107,510,112,483,124,434,162,392,206,358,251,334,287"/>
+<area shape="rect" id="Node000028" href="$classsuzerain_1_1perfect_1_1operator__common__block.html" title="Storage for holding quantities computed during nonlinear operator application and implicit constraint..." alt="" coords="485,134,668,174"/>
+<area shape="poly" id="edge46_Node000000_Node000028" title=" " alt="" coords="340,286,401,235,439,208,480,184,506,172,509,177,483,188,442,212,404,240,343,290"/>
+<area shape="rect" id="Node000029" href="$classsuzerain_1_1reacting_1_1operator__common__block.html" title="Storage for holding quantities computed during nonlinear operator application which either are requir..." alt="" coords="481,1119,672,1159"/>
+<area shape="poly" id="edge47_Node000000_Node000029" title=" " alt="" coords="368,326,405,349,422,364,436,382,449,412,458,449,464,537,462,640,454,749,447,859,447,960,450,1005,457,1045,468,1079,483,1106,495,1117,492,1121,479,1109,463,1081,452,1046,445,1005,441,960,442,858,449,749,456,639,459,537,452,449,444,414,431,385,418,368,402,353,365,331"/>
+<area shape="rect" id="Node000009" href="$classsuzerain_1_1lowstorage_1_1linear__operator.html" title=" " alt="" coords="219,608,413,692"/>
+<area shape="poly" id="edge48_Node000009_Node000008" title=" " alt="" coords="425,609,517,577,519,582,427,614"/>
+<area shape="rect" id="Node000010" href="$classsuzerain_1_1operator__mass.html" title="A linear operator which applies or inverts a B&#45;spline mass matrix." alt="" coords="485,733,668,759"/>
+<area shape="poly" id="edge49_Node000009_Node000010" title=" " alt="" coords="423,695,482,718,523,731,522,736,480,723,421,700"/>
+<area shape="rect" id="Node000019" href="$classsuzerain_1_1perfect_1_1operator__hybrid__isothermal.html" title="A hybrid implicit/explicit operator that providing isothermal wall conditions and possibly a nonrefle..." alt="" coords="720,630,923,670"/>
+<area shape="poly" id="edge53_Node000009_Node000019" title=" " alt="" coords="427,641,481,639,672,639,720,641,720,647,672,645,481,645,427,647"/>
+<area shape="rect" id="Node000022" href="$classsuzerain_1_1reacting_1_1isothermal__hybrid__linear__operator.html" title="A hybrid implicit operator that provides no slip, isothermal walls." alt="" coords="503,655,651,709"/>
+<area shape="poly" id="edge54_Node000009_Node000022" title=" " alt="" coords="427,661,503,670,502,676,426,666"/>
+<area shape="rect" id="Node000011" href="$classsuzerain_1_1operator__mass__isothermal.html" title="An abstract mass operator that provides isothermal boundary conditions for equations ordered per suze..." alt="" coords="751,726,892,766"/>
+<area shape="poly" id="edge50_Node000010_Node000011" title=" " alt="" coords="682,743,751,743,751,749,682,749"/>
+<area shape="rect" id="Node000012" href="$classsuzerain_1_1perfect_1_1operator__mass__isothermal.html" title="A mass operator that provides various isothermal boundaries." alt="" coords="975,694,1171,734"/>
+<area shape="poly" id="edge51_Node000011_Node000012" title=" " alt="" coords="906,733,974,724,975,729,906,738"/>
+<area shape="rect" id="Node000013" href="$classsuzerain_1_1reacting_1_1operator__mass__isothermal.html" title="A mass operator that provides no slip, isothermal walls." alt="" coords="971,758,1175,798"/>
+<area shape="poly" id="edge52_Node000011_Node000013" title=" " alt="" coords="906,754,971,762,970,768,906,759"/>
+<area shape="rect" id="Node000016" href="$classsuzerain_1_1lowstorage_1_1operator__nonlinear.html" title=" " alt="" coords="229,905,403,974"/>
+<area shape="rect" id="Node000017" href="$classsuzerain_1_1operator__hybrid__residual.html" title="Builds a hybrid implicit/explicit&#45;ready lowstorage::operator_nonlinear from an implicit&#45;agnostic lows..." alt="" coords="507,1055,647,1095"/>
+<area shape="poly" id="edge55_Node000016_Node000017" title=" " alt="" coords="378,980,428,1011,482,1041,511,1053,509,1058,480,1046,425,1016,375,984"/>
+<area shape="rect" id="Node000015" href="$classsuzerain_1_1perfect_1_1operator__nonlinear.html" title="A boundary&#45;condition agnostic Navier–Stokes operator." alt="" coords="504,991,649,1031"/>
+<area shape="poly" id="edge56_Node000016_Node000015" title=" " alt="" coords="417,965,504,989,503,994,416,970"/>
+<area shape="rect" id="Node000018" href="$classsuzerain_1_1perfect_1_1treatment__nonreflecting.html" title="When necessary, provides explicitly&#45;implemented, Giles&#45;like nonreflecting boundary conditions at the ..." alt="" coords="487,847,666,887"/>
+<area shape="poly" id="edge57_Node000016_Node000018" title=" " alt="" coords="416,909,503,885,504,890,417,914"/>
+<area shape="rect" id="Node000020" href="$classsuzerain_1_1reacting_1_1explicit__operator__nonlinear.html" title="A boundary&#45;condition agnostic, fully explicit Navier–Stokes operator." alt="" coords="507,912,647,967"/>
+<area shape="poly" id="edge59_Node000016_Node000020" title=" " alt="" coords="417,937,506,937,506,942,417,942"/>
+<area shape="rect" id="Node000021" href="$classsuzerain_1_1reacting_1_1treatment__nonreflecting.html" title="Provides Giles&#45;like nonreflecting boundary conditions at the upper boundary." alt="" coords="483,783,670,823"/>
+<area shape="poly" id="edge60_Node000016_Node000021" title=" " alt="" coords="375,895,425,863,480,833,509,821,511,826,482,838,428,867,378,899"/>
+<area shape="poly" id="edge58_Node000018_Node000019" title=" " alt="" coords="665,838,670,833,682,819,690,805,695,776,700,746,707,729,718,712,745,687,775,668,778,672,748,691,722,716,711,732,705,747,701,777,695,807,687,822,674,837,668,842"/>
+<area shape="rect" id="Node000026" title=" " alt="" coords="5,483,151,508"/>
+<area shape="rect" id="Node000025" href="$classsuzerain_1_1contiguous__memory.html" title="At construction, allocates a contiguous block of memory containing Elements allocated using Allocator..." alt="" coords="199,475,433,515"/>
+<area shape="poly" id="edge61_Node000026_Node000025" title=" " alt="" coords="165,493,199,493,199,498,165,498"/>
+<area shape="poly" id="edge62_Node000025_Node000024" title=" " alt="" coords="447,493,493,493,493,498,447,498"/>
+<area shape="rect" id="Node000007" href="$classsuzerain_1_1coalescing__pool_1_1blocks.html" title="A contiguous sequence of blocks acquired from a coalescing_pool." alt="" coords="222,396,410,451"/>
+<area shape="poly" id="edge63_Node000007_Node000006" title=" " alt="" coords="424,421,483,421,483,426,424,426"/>
+<area shape="rect" id="Node000030" href="$classsuzerain_1_1constraint_1_1treatment_1_1inputs.html" title="Abstract interface for tracking instantaneous collocation point profiles taken to be inputs to constr..." alt="" coords="241,1187,391,1227"/>
+<area shape="poly" id="edge65_Node000030_Node000029" title=" " alt="" coords="404,1182,499,1157,500,1162,405,1187"/>
+<area shape="rect" id="Node000031" href="$classsuzerain_1_1perfect_1_1instantaneous.html" title="Storage for holding quantities at collocation points computed during nonlinear operator application w..." alt="" coords="507,1311,646,1351"/>
+<area shape="poly" id="edge64_Node000030_Node000031" title=" " alt="" coords="406,1226,435,1241,451,1255,460,1270,468,1284,483,1297,508,1311,506,1315,480,1302,464,1287,455,1273,447,1259,432,1246,403,1231"/>
+<area shape="rect" id="Node000036" href="$classsuzerain_1_1constraint_1_1treatment_1_1outputs.html" title="Abstract interface for tracking forcing collocation point profile outputs maintained by constraint tr..." alt="" coords="240,1121,392,1161"/>
+<area shape="poly" id="edge67_Node000036_Node000029" title=" " alt="" coords="406,1138,481,1137,481,1142,406,1143"/>
+<area shape="rect" id="Node000035" href="$classsuzerain_1_1perfect_1_1implicits.html" title="Storage for holding implicit quantities at collocation points updated by constraint::treatment usage." alt="" coords="507,1183,646,1223"/>
+<area shape="poly" id="edge66_Node000036_Node000035" title=" " alt="" coords="406,1159,508,1184,507,1189,405,1165"/>
+<area shape="rect" id="Node000023" href="$classsuzerain_1_1operator__tools.html" title="Provides combined, timed B&#45;spline and parallel FFT infrastructure routines." alt="" coords="8,815,148,855"/>
+<area shape="rect" id="Node000014" href="$classsuzerain_1_1operator__base.html" title="Provides potentially heavyweight B&#45;spline and parallel FFT infrastructure." alt="" coords="227,823,405,848"/>
+<area shape="poly" id="edge68_Node000023_Node000014" title=" " alt="" coords="162,833,227,833,227,838,162,838"/>
+<area shape="poly" id="edge69_Node000014_Node000010" title=" " alt="" coords="359,815,480,769,524,756,525,761,482,774,361,820"/>
+<area shape="poly" id="edge73_Node000014_Node000022" title=" " alt="" coords="342,812,404,766,480,718,503,707,505,712,483,723,407,771,345,816"/>
+<area shape="poly" id="edge70_Node000014_Node000015" title=" " alt="" coords="370,851,404,868,435,891,452,913,459,935,467,956,483,976,505,990,502,994,480,980,462,958,454,937,447,916,431,895,401,872,368,856"/>
+<area shape="poly" id="edge71_Node000014_Node000018" title=" " alt="" coords="420,845,488,854,487,859,419,851"/>
+<area shape="poly" id="edge72_Node000014_Node000020" title=" " alt="" coords="363,851,508,909,506,914,361,856"/>
+<area shape="poly" id="edge74_Node000014_Node000021" title=" " alt="" coords="419,820,483,812,484,817,419,825"/>
+<area shape="rect" id="Node000032" href="$classsuzerain_1_1perfect_1_1slowgrowth_1_1physical__cons.html" title="Abstract data source for gather_physical_cons." alt="" coords="218,1371,414,1411"/>
+<area shape="poly" id="edge75_Node000032_Node000031" title=" " alt="" coords="416,1366,506,1345,508,1350,417,1371"/>
+<area shape="rect" id="Node000033" href="$classsuzerain_1_1perfect_1_1slowgrowth_1_1physical__rqq.html" title="Abstract data source for gather_physical_rqq." alt="" coords="223,1307,409,1347"/>
+<area shape="poly" id="edge76_Node000033_Node000031" title=" " alt="" coords="423,1326,507,1328,507,1333,423,1332"/>
+<area shape="rect" id="Node000034" title=" " alt="" coords="287,1255,345,1280"/>
+<area shape="poly" id="edge78_Node000034_Node000031" title=" " alt="" coords="359,1274,434,1293,508,1311,506,1316,433,1298,357,1280"/>
+<area shape="poly" id="edge77_Node000034_Node000035" title=" " alt="" coords="357,1255,433,1237,506,1218,508,1223,434,1242,359,1260"/>
+<area shape="rect" id="Node000037" href="$classsuzerain_1_1perfect_1_1references.html" title="Storage for holding quantities at collocation points computed during nonlinear operator application w..." alt="" coords="507,1247,646,1287"/>
+<area shape="poly" id="edge79_Node000034_Node000037" title=" " alt="" coords="359,1265,507,1265,507,1270,359,1270"/>
+</map>

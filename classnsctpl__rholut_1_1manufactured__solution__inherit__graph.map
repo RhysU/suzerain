@@ -1,0 +1,7 @@
+<map id="nsctpl_rholut::manufactured_solution&lt; Scalar, IndexBase, Primitive &gt;" name="nsctpl_rholut::manufactured_solution&lt; Scalar, IndexBase, Primitive &gt;">
+<area shape="rect" id="Node000001" title="Template that, given a primitive function for rho, u, v, w, and T along with a floating point type,..." alt="" coords="5,5,213,860"/>
+<area shape="rect" id="Node000002" href="$classnsctpl__rholut_1_1manufactured__solution.html" title=" " alt="" coords="11,923,208,1763"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="112,874,112,923,107,923,107,874"/>
+<area shape="rect" id="Node000003" href="$classsuzerain_1_1perfect_1_1manufactured__solution.html" title="Manufactured solution employed throughout the perfect gas code." alt="" coords="15,1812,204,2052"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="112,1776,112,1812,107,1812,107,1776"/>
+</map>

@@ -1,0 +1,9 @@
+<map id="suzerain::contiguous_memory&lt; Element, Allocator &gt;" name="suzerain::contiguous_memory&lt; Element, Allocator &gt;">
+<area shape="rect" id="Node000001" title="At construction, allocates a contiguous block of memory containing Elements allocated using Allocator..." alt="" coords="74,120,301,320"/>
+<area shape="rect" id="Node000003" href="$classsuzerain_1_1pencil.html" title="Encapsulates a pencil&#45;storage&#45;based scalar field to be in&#45;place transformed between physical and from..." alt="" coords="5,412,164,732"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="157,334,134,412,129,411,152,332"/>
+<area shape="rect" id="Node000004" href="$classsuzerain_1_1contiguous__memory.html" title=" " alt="" coords="189,457,391,687"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="223,332,259,456,254,458,218,334"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="119,5,256,71"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="190,85,190,120,185,120,185,85"/>
+</map>

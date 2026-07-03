@@ -1,0 +1,7 @@
+<map id="apps/perfect/operator_nonlinear.hpp" name="apps/perfect/operator_nonlinear.hpp">
+<area shape="rect" id="Node000001" title="A nonlinear Navier–Stokes spatial operator." alt="" coords="148,5,311,45"/>
+<area shape="rect" id="Node000002" href="$perfect_2main__advance_8cpp.html" title="Application executing suzerain::perfect::driver_advance::run." alt="" coords="5,101,235,126"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="196,56,137,102,133,98,193,52"/>
+<area shape="rect" id="Node000003" href="$operator__nonlinear_8cpp.html" title="A nonlinear Navier–Stokes spatial operator." alt="" coords="259,93,421,133"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="266,52,317,91,314,95,263,56"/>
+</map>

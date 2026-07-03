@@ -1,0 +1,5 @@
+<map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
+<area shape="rect" id="Node000000" href="$structsuzerain_1_1pencilfft_1_1internal_1_1transform__traits_3_01fftw__complex_01_4.html" title="FFT traits specialized for fftw_complex." alt="" coords="5,13,187,67"/>
+<area shape="rect" id="Node000001" href="$structsuzerain_1_1pencilfft_1_1internal_1_1transform__traits_3_01std_1_1complex_3_01double_01_4_01_4.html" title="FFT traits specialized for std::complex&lt;double&gt;" alt="" coords="235,5,397,75"/>
+<area shape="poly" id="edge206_Node000000_Node000001" title=" " alt="" coords="200,37,235,37,235,43,200,43"/>
+</map>

@@ -1,0 +1,17 @@
+<map id="apps/perfect/perfect.hpp" name="apps/perfect/perfect.hpp">
+<area shape="rect" id="Node000001" title="Support logic for the perfect gas application." alt="" coords="331,5,512,31"/>
+<area shape="rect" id="Node000002" href="$perfect_2driver_8cpp.html" title="A driver for nondimensional perfect gas simulations." alt="" coords="5,86,176,111"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="361,36,139,89,138,83,360,31"/>
+<area shape="rect" id="Node000003" href="$perfect_2main__advance_8cpp.html" title="Application executing suzerain::perfect::driver_advance::run." alt="" coords="200,86,429,111"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="396,41,332,88,329,84,393,37"/>
+<area shape="rect" id="Node000004" href="$navier__stokes_8hpp.html" title="Implementation of nonlinear Navier–Stokes spatial operators." alt="" coords="454,79,602,119"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="450,37,504,76,501,81,447,41"/>
+<area shape="rect" id="Node000008" href="$perfect_8cpp.html" title="Support logic for the perfect gas application." alt="" coords="626,86,806,111"/>
+<area shape="poly" id="edge7_Node000001_Node000008" title=" " alt="" coords="478,32,674,83,672,89,477,37"/>
+<area shape="rect" id="Node000005" href="$navier__stokes_8cpp.html" title="Implementation of nonlinear Navier–Stokes spatial operators." alt="" coords="269,167,417,207"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="476,127,384,169,382,164,474,122"/>
+<area shape="rect" id="Node000006" href="$operator__hybrid__isothermal_8cpp.html" title="A hybrid implicit/explicit Navier–Stokes operator for isothermal wall(s)." alt="" coords="441,167,615,207"/>
+<area shape="poly" id="edge5_Node000004_Node000006" title=" " alt="" coords="531,133,531,166,525,166,525,133"/>
+<area shape="rect" id="Node000007" href="$operator__nonlinear_8cpp.html" title="A nonlinear Navier–Stokes spatial operator." alt="" coords="640,167,803,207"/>
+<area shape="poly" id="edge6_Node000004_Node000007" title=" " alt="" coords="584,122,680,164,678,169,582,127"/>
+</map>

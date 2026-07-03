@@ -1,0 +1,7 @@
+<map id="suzerain/ar.hpp" name="suzerain/ar.hpp">
+<area shape="rect" id="Node000001" title="Autoregressive process modeling tools in header&#45;only C++." alt="" coords="103,5,224,31"/>
+<area shape="rect" id="Node000002" href="$arsel_8cpp.html" title="Automatically fit autoregressive models to input signals." alt="" coords="5,86,145,111"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="142,42,90,88,87,84,139,38"/>
+<area shape="rect" id="Node000003" href="$specification__arsel_8cpp.html" title="Provides suzerain::specification_arsel." alt="" coords="170,79,333,119"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="188,38,232,77,228,81,185,42"/>
+</map>

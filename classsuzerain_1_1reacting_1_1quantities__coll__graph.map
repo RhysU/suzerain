@@ -1,0 +1,7 @@
+<map id="suzerain::reacting::quantities" name="suzerain::reacting::quantities">
+<area shape="rect" id="Node000001" title=" " alt="" coords="78,308,211,588"/>
+<area shape="rect" id="Node000002" href="$classsuzerain_1_1reacting_1_1quantities__base.html" title="Encapsulate the mean quantities detailed in the &quot;Sampling logistics&quot; section of writeups/perfectgas...." alt="" coords="5,5,159,245"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="110,258,120,307,115,308,105,259"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="183,93,235,158"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="205,159,178,292,173,291,200,158"/>
+</map>

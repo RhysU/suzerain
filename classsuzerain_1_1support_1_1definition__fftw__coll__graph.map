@@ -1,0 +1,9 @@
+<map id="suzerain::support::definition_fftw" name="suzerain::support::definition_fftw">
+<area shape="rect" id="Node000001" title="Holds FFTW&#45;usage parameters, e.g." alt="" coords="27,297,192,437"/>
+<area shape="rect" id="Node000002" href="$classsuzerain_1_1support_1_1definition__base.html" title="An abstract base class for defining a collection of related options." alt="" coords="5,135,171,235"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="98,248,104,297,99,298,93,249"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="195,152,274,217"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="215,219,169,285,165,282,211,216"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="169,5,300,85"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="237,99,237,152,232,152,232,99"/>
+</map>

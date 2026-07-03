@@ -1,0 +1,26 @@
+var classsuzerain_1_1bsplineop =
+[
+    [ "bsplineop", "classsuzerain_1_1bsplineop.html#ad9663595eb351a3603cefd18b5a4cf25", null ],
+    [ "~bsplineop", "classsuzerain_1_1bsplineop.html#a8d020632825c9ec3207771d6eebef71d", null ],
+    [ "k", "classsuzerain_1_1bsplineop.html#aeb285ca3a428c85588b2e96fe1cbe45d", null ],
+    [ "n", "classsuzerain_1_1bsplineop.html#ae85bcc62a271fced716ec9f22ab1308c", null ],
+    [ "nderiv", "classsuzerain_1_1bsplineop.html#ac722dbf44671c246e852db166dd5d29a", null ],
+    [ "kl", "classsuzerain_1_1bsplineop.html#a6b7501b9f84f3a0eb622b01eaa3a33e7", null ],
+    [ "ku", "classsuzerain_1_1bsplineop.html#a4acbfcfff138f95ad4e24fdad5516df0", null ],
+    [ "max_kl", "classsuzerain_1_1bsplineop.html#a68dfdd005194c36c1ac427725d85e540", null ],
+    [ "max_ku", "classsuzerain_1_1bsplineop.html#a608ec55a34e82304a7228b3f116d12e5", null ],
+    [ "ld", "classsuzerain_1_1bsplineop.html#a0a30a12ee6be430963e7b2c142d24979", null ],
+    [ "D_T", "classsuzerain_1_1bsplineop.html#a5f41dbd6723c5fc47c14b5496c92278f", null ],
+    [ "D_T", "classsuzerain_1_1bsplineop.html#ac399a2f229bd27c725825d17d4822fb8", null ],
+    [ "get", "classsuzerain_1_1bsplineop.html#a01d313c5bd9a6eb83e43618ac408d82f", null ],
+    [ "accumulate", "classsuzerain_1_1bsplineop.html#a709c2dc8d453549697cd6829d5d9155b", null ],
+    [ "accumulate", "classsuzerain_1_1bsplineop.html#ac69b6cc20db41441f68696a69f1251ae", null ],
+    [ "apply", "classsuzerain_1_1bsplineop.html#a7bc4ec84b9765b0205d867264fa1d743", null ],
+    [ "apply", "classsuzerain_1_1bsplineop.html#aca8c05e613ee61e199b75ea801079d3e", null ],
+    [ "interpolation_rhs", "classsuzerain_1_1bsplineop.html#a273324bc6490142050deab02caddea96", null ],
+    [ "accumulate", "classsuzerain_1_1bsplineop.html#afd0f6885af5e72aae5e87a2b4218ae97", null ],
+    [ "accumulate", "classsuzerain_1_1bsplineop.html#a49b8b604ac6b414c7ea3458c74a39865", null ],
+    [ "apply", "classsuzerain_1_1bsplineop.html#a16b62a3570fa879888b518bcab158eeb", null ],
+    [ "apply", "classsuzerain_1_1bsplineop.html#a64a565ae1423ff63c89d1854b0768ee8", null ],
+    [ "interpolation_rhs", "classsuzerain_1_1bsplineop.html#ab9c1a40ce37762bc16322362ba0a62fd", null ]
+];

@@ -1,0 +1,11 @@
+<map id="suzerain::state_base&lt; Derived &gt;" name="suzerain::state_base&lt; Derived &gt;">
+<area shape="rect" id="Node000001" title="Base class for all of Suzerain&#39;s state implementations." alt="" coords="122,5,270,385"/>
+<area shape="rect" id="Node000002" href="$structsuzerain_1_1state__base.html" title=" " alt="" coords="5,463,192,857"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="126,399,124,410,114,463,109,462,119,409,121,398"/>
+<area shape="rect" id="Node000004" href="$structsuzerain_1_1state__base.html" title=" " alt="" coords="217,463,372,857"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="256,398,259,409,269,462,264,463,253,410,251,399"/>
+<area shape="rect" id="Node000003" href="$classsuzerain_1_1contiguous__state.html" title="A state class storing elements with the first index slowest followed by the other indices in Fortran ..." alt="" coords="11,907,184,1467"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="101,871,101,906,95,906,95,871"/>
+<area shape="rect" id="Node000005" href="$classsuzerain_1_1interleaved__state.html" title="A state class storing elements in Fortran order except that the first two indices are exchanged." alt="" coords="208,927,381,1447"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="297,871,297,926,292,926,292,871"/>
+</map>

@@ -1,0 +1,9 @@
+<map id="suzerain::constraint::coefficient" name="suzerain::constraint::coefficient">
+<area shape="rect" id="Node000001" title="A building block preparing a forcing profile in shape targeting the i&#45;th B&#45;spline coefficient." alt="" coords="157,193,299,273"/>
+<area shape="rect" id="Node000003" href="$structsuzerain_1_1constraint_1_1constant__lower__derivative.html" title="Constrain the nderiv&#45;th derivative at &#160;to be some target value by manipulating the (nderiv+1)&#45;th B&#45;sp..." alt="" coords="5,321,216,401"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="184,285,149,323,145,319,180,282"/>
+<area shape="rect" id="Node000004" href="$structsuzerain_1_1constraint_1_1constant__upper__derivative.html" title="Constrain the nderiv&#45;th derivative at &#160;to be some target value by manipulating the (nderiv+1)&#45;th B&#45;sp..." alt="" coords="239,321,451,401"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="276,282,311,319,307,323,272,285"/>
+<area shape="rect" id="Node000002" href="$classsuzerain_1_1constraint_1_1base.html" title="Abstract base class for constraints expressible as a functional." alt="" coords="157,5,299,145"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="231,159,231,193,225,193,225,159"/>
+</map>

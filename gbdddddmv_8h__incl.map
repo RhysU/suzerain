@@ -1,0 +1,9 @@
+<map id="suzerain/blas_et_al/gbdddddmv.h" name="suzerain/blas_et_al/gbdddddmv.h">
+<area shape="rect" id="Node000001" title="Provides custom, BLAS&#45;like diagonal matrix times general band matrix&#45;vector operations." alt="" coords="10,5,157,45"/>
+<area shape="rect" id="Node000002" href="$complex_8h.html" title="Compatibility file for C99 _Complex and C++ std::complex types." alt="" coords="9,93,158,119"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="86,46,86,79,81,79,81,46"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="5,167,68,192"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="78,120,54,157,50,154,73,118"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="92,167,171,192"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="93,118,118,154,114,157,89,121"/>
+</map>

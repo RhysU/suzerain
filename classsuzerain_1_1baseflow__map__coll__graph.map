@@ -1,0 +1,17 @@
+<map id="suzerain::baseflow_map" name="suzerain::baseflow_map">
+<area shape="rect" id="Node000001" title="Provides map&#45;based lookup of arbitrary baseflow profiles established at runtime." alt="" coords="67,888,237,1033"/>
+<area shape="rect" id="Node000002" href="$classsuzerain_1_1baseflow__interface.html" title="Abstract interface for providing slow&#45;growth&#45;ready baseflow information." alt="" coords="5,645,179,825"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="122,838,135,887,130,889,117,840"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="203,703,373,768"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="271,769,207,875,202,872,267,767"/>
+<area shape="rect" id="Node000004" href="$structsuzerain_1_1baseflow__map_1_1row.html" title="Each entry in the table consists of this information." alt="" coords="138,503,273,583"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="225,582,270,686,265,688,220,584"/>
+<area shape="rect" id="Node000005" href="$unionsuzerain_1_1largo__state.html" title="A Largo&#45;related convenience class for manipulating double&#45;valued buffers containing ,..." alt="" coords="130,5,281,411"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="208,411,208,486,203,486,203,411"/>
+<area shape="rect" id="Node000006" title=" " alt="" coords="297,510,423,575"/>
+<area shape="poly" id="edge5_Node000003_Node000006" title=" " alt="" coords="346,589,302,704,297,702,341,587"/>
+<area shape="rect" id="Node000007" title=" " alt="" coords="326,175,349,241"/>
+<area shape="poly" id="edge6_Node000006_Node000007" title=" " alt="" coords="337,241,332,347,334,413,341,478,345,494,340,495,336,479,329,413,327,347,332,241"/>
+<area shape="rect" id="Node000008" title=" " alt="" coords="402,175,425,241"/>
+<area shape="poly" id="edge7_Node000006_Node000008" title=" " alt="" coords="415,241,408,347,399,413,387,479,382,495,377,494,381,478,394,413,403,347,410,241"/>
+</map>

@@ -1,0 +1,17 @@
+<map id="suzerain::perfect::definition_scenario" name="suzerain::perfect::definition_scenario">
+<area shape="rect" id="Node000001" title="Holds nondimensional parameters like the Reynolds and Prandtl numbers as well as nondimensional probl..." alt="" coords="349,332,523,712"/>
+<area shape="rect" id="Node000002" href="$classsuzerain_1_1support_1_1definition__base.html" title="An abstract base class for defining a collection of related options." alt="" coords="5,175,171,275"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="158,282,351,445,348,449,155,286"/>
+<area shape="rect" id="Node000003" href="$classsuzerain_1_1support_1_1loadable.html" title="Abstract interface indicating details may be loaded from an ESIO handle." alt="" coords="195,175,330,275"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="301,286,352,372,347,375,296,289"/>
+<area shape="rect" id="Node000004" href="$classsuzerain_1_1support_1_1overridable.html" title=" " alt="" coords="354,168,518,283"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="439,297,439,332,433,332,433,297"/>
+<area shape="rect" id="Node000005" href="$classsuzerain_1_1support_1_1overridable.html" title="Abstract interface indicating data may be overridden from another instance." alt="" coords="349,5,518,105"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="437,119,438,168,432,168,432,119"/>
+<area shape="rect" id="Node000006" href="$classsuzerain_1_1support_1_1populatable.html" title=" " alt="" coords="542,168,709,283"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="584,296,525,387,521,384,579,293"/>
+<area shape="rect" id="Node000007" href="$classsuzerain_1_1support_1_1populatable.html" title="Abstract interface indicating data may be populated from another instance." alt="" coords="542,5,714,105"/>
+<area shape="poly" id="edge6_Node000006_Node000007" title=" " alt="" coords="630,119,629,168,624,168,624,119"/>
+<area shape="rect" id="Node000008" href="$classsuzerain_1_1support_1_1savable.html" title="Abstract interface indicating details may be saved into an ESIO handle." alt="" coords="733,175,867,275"/>
+<area shape="poly" id="edge7_Node000001_Node000008" title=" " alt="" coords="730,286,525,453,521,448,727,282"/>
+</map>

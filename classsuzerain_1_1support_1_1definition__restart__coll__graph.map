@@ -1,0 +1,11 @@
+<map id="suzerain::support::definition_restart" name="suzerain::support::definition_restart">
+<area shape="rect" id="Node000001" title="Encapsulates flags related to restart file behavior for the simulation." alt="" coords="132,327,297,467"/>
+<area shape="rect" id="Node000002" href="$classsuzerain_1_1support_1_1definition__base.html" title="An abstract base class for defining a collection of related options." alt="" coords="5,135,171,235"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="127,245,175,325,171,328,122,248"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="195,152,274,217"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="227,218,219,259,215,311,210,310,213,258,222,217"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="169,5,300,85"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="237,99,237,152,232,152,232,99"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="318,152,370,217"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="344,218,335,260,317,304,310,315,306,312,312,301,330,259,338,217"/>
+</map>

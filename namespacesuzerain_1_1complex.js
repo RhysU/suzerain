@@ -1,0 +1,28 @@
+var namespacesuzerain_1_1complex =
+[
+    [ "traits", "namespacesuzerain_1_1complex_1_1traits.html", "namespacesuzerain_1_1complex_1_1traits" ],
+    [ "NaN", "namespacesuzerain_1_1complex.html#adb3744f7d7acb2bdc87d5f47bb88f92d", null ],
+    [ "NaN", "namespacesuzerain_1_1complex.html#a4013caa2f627e5aa39a4d5b8f6bcfdfa", null ],
+    [ "real", "namespacesuzerain_1_1complex.html#a320143447910dc017aeaa60b7999c086", null ],
+    [ "real", "namespacesuzerain_1_1complex.html#af5b3f38e233443b3e7036fe6c93bc623", null ],
+    [ "imag", "namespacesuzerain_1_1complex.html#abab23aa99c3f4d066ec02dad6fa54ad1", null ],
+    [ "imag", "namespacesuzerain_1_1complex.html#ae0e1e58c9f85d00cae0c1c1a6fbfa3d5", null ],
+    [ "real", "namespacesuzerain_1_1complex.html#aebcd641b193b0249073b4ad6225556eb", null ],
+    [ "real", "namespacesuzerain_1_1complex.html#aadea7549d70923b75d7cf905cac98c37", null ],
+    [ "imag", "namespacesuzerain_1_1complex.html#a0a5a05440f59211e52d1408b61148131", null ],
+    [ "imag", "namespacesuzerain_1_1complex.html#ae1c0c1712f221ac5057076b4c9c64f0e", null ],
+    [ "real", "namespacesuzerain_1_1complex.html#aad744531f2e98e45a1967b7417c5c32b", null ],
+    [ "real", "namespacesuzerain_1_1complex.html#a63c6b717dbc410dd40c290ef4dea3bb0", null ],
+    [ "imag", "namespacesuzerain_1_1complex.html#a50e62e52fdaa409a5b85dd1fe6fdc242", null ],
+    [ "real_ipower", "namespacesuzerain_1_1complex.html#aa20cf33df5fead5f530f87f32ee9513c", null ],
+    [ "imag_ipower", "namespacesuzerain_1_1complex.html#a4a21c8993f4d13a79ccb6334c0818301", null ],
+    [ "assign_complex", "namespacesuzerain_1_1complex.html#acc728ff0d4eeac2e44b4407e42e31d8e", null ],
+    [ "assign_complex", "namespacesuzerain_1_1complex.html#aeab8b9981397eff24cc27f888a7aee42", null ],
+    [ "accumulate_complex", "namespacesuzerain_1_1complex.html#a7e661542d084616c66406731d521b178", null ],
+    [ "accumulate_complex", "namespacesuzerain_1_1complex.html#a6e92f04700198916ed7cfbe123b47fe6", null ],
+    [ "accumulate_complex", "namespacesuzerain_1_1complex.html#af4cb5ae1a97f3b39fdcbf5b224680d9e", null ],
+    [ "accumulate_complex", "namespacesuzerain_1_1complex.html#a94c3b2654457f991cf8c18f89fa42f77", null ],
+    [ "assign_components", "namespacesuzerain_1_1complex.html#a74294533c1022dce9c03d3029ba7044c", null ],
+    [ "assign_complex_scaled", "namespacesuzerain_1_1complex.html#a4b5cf3fe4f816a3ffbe35d6b44a5addb", null ],
+    [ "assign_complex_scaled_ipower", "namespacesuzerain_1_1complex.html#a9ccbb4aa7b7aef8af1aa8f16f7947f40", null ]
+];

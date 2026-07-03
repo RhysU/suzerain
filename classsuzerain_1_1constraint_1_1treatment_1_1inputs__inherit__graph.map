@@ -1,0 +1,7 @@
+<map id="suzerain::constraint::treatment::inputs" name="suzerain::constraint::treatment::inputs">
+<area shape="rect" id="Node000001" title="Abstract interface for tracking instantaneous collocation point profiles taken to be inputs to constr..." alt="" coords="102,5,245,265"/>
+<area shape="rect" id="Node000002" href="$classsuzerain_1_1perfect_1_1instantaneous.html" title="Storage for holding quantities at collocation points computed during nonlinear operator application w..." alt="" coords="5,543,147,823"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="151,279,103,543,98,543,145,278"/>
+<area shape="rect" id="Node000003" href="$classsuzerain_1_1reacting_1_1operator__common__block.html" title="Storage for holding quantities computed during nonlinear operator application which either are requir..." alt="" coords="171,313,371,1053"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="201,278,207,313,202,314,196,279"/>
+</map>

@@ -1,0 +1,27 @@
+var searchData=
+[
+  ['dchar_0',['dchar',['../lapackext_8c.html#a87362566db24bbdd2e27f29fde2542e5',1,'DCHAR:&#160;lapackext.c'],['../lapackext_8c.html#a87362566db24bbdd2e27f29fde2542e5',1,'DCHAR:&#160;lapackext.c']]],
+  ['debug_1',['DEBUG',['../logging_8hpp.html#a96dd473db0b3d10bd43390cdacb00120',1,'logging.hpp']]],
+  ['debug0_2',['DEBUG0',['../logging_8hpp.html#a2c46370fbaad0bb470128b0094867612',1,'logging.hpp']]],
+  ['debug0_5farity1_3',['DEBUG0_ARITY1',['../logging_8hpp.html#aacff7778b7d82d312f58596494180f4e',1,'logging.hpp']]],
+  ['debug0_5farity2_4',['DEBUG0_ARITY2',['../logging_8hpp.html#aa1b8b99f457d265276fe393e3a3e1b2e',1,'logging.hpp']]],
+  ['debug0_5fenable_5',['DEBUG0_ENABLE',['../logging_8hpp.html#a3a6da16353e70d0b68096273f3794d3d',1,'logging.hpp']]],
+  ['debug0_5fenable_5farity1_6',['DEBUG0_ENABLE_ARITY1',['../logging_8hpp.html#a0d84161b1a36643072ecbd415d97c596',1,'logging.hpp']]],
+  ['debug0_5fenable_5farity2_7',['DEBUG0_ENABLE_ARITY2',['../logging_8hpp.html#a9d72b8d800d79013eb6457449d61dcd2',1,'logging.hpp']]],
+  ['debug0_5fenabled_8',['DEBUG0_ENABLED',['../logging_8hpp.html#a9204ccb6f618d0cfdb6547d4ed39834d',1,'logging.hpp']]],
+  ['debug0_5fenabled_5farity1_9',['DEBUG0_ENABLED_ARITY1',['../logging_8hpp.html#aabf3c95b66fc33bda8b9163575bb794f',1,'logging.hpp']]],
+  ['debug0_5fenabled_5farity2_10',['DEBUG0_ENABLED_ARITY2',['../logging_8hpp.html#a1322ccdd4a9f4a8eb4a55fccbb4acaf3',1,'logging.hpp']]],
+  ['debug_5farity1_11',['DEBUG_ARITY1',['../logging_8hpp.html#acd2a86acea361f95c4a76d0b1bca389a',1,'logging.hpp']]],
+  ['debug_5farity2_12',['DEBUG_ARITY2',['../logging_8hpp.html#a9db643651097a13d38dddd1ccf332588',1,'logging.hpp']]],
+  ['debug_5fenable_13',['DEBUG_ENABLE',['../logging_8hpp.html#a233b0854056d566c7dd2a8903a4d8189',1,'logging.hpp']]],
+  ['debug_5fenable_5farity1_14',['DEBUG_ENABLE_ARITY1',['../logging_8hpp.html#a9606fab7cbef1a45f41d540eb26ee68a',1,'logging.hpp']]],
+  ['debug_5fenable_5farity2_15',['DEBUG_ENABLE_ARITY2',['../logging_8hpp.html#a53d04c7c5ae6ab19b5b08443e6a8f160',1,'logging.hpp']]],
+  ['debug_5fenabled_16',['DEBUG_ENABLED',['../logging_8hpp.html#a455e2e035e3cc1a817d46fe9e779d894',1,'logging.hpp']]],
+  ['debug_5fenabled_5farity1_17',['DEBUG_ENABLED_ARITY1',['../logging_8hpp.html#af372f55d1d4fdf8a8c5acb226c48ef46',1,'logging.hpp']]],
+  ['debug_5fenabled_5farity2_18',['DEBUG_ENABLED_ARITY2',['../logging_8hpp.html#aacc8cf0a132b87cca9231c32b31288cf',1,'logging.hpp']]],
+  ['declare_19',['declare',['../perfect_8cpp.html#af56527aba8dd3eb623bc9505cb156a7d',1,'DECLARE:&#160;perfect.cpp'],['../summary_8hpp.html#ab56456862140fcbe13437febcf38b972',1,'DECLARE:&#160;summary.hpp'],['../summary_8hpp.html#ab56456862140fcbe13437febcf38b972',1,'DECLARE:&#160;summary.hpp'],['../summary_8hpp.html#ab56456862140fcbe13437febcf38b972',1,'DECLARE:&#160;summary.hpp'],['../samples_8hpp.html#af56527aba8dd3eb623bc9505cb156a7d',1,'DECLARE:&#160;samples.hpp'],['../samples_8hpp.html#af56527aba8dd3eb623bc9505cb156a7d',1,'DECLARE:&#160;samples.hpp'],['../profile_8hpp.html#af56527aba8dd3eb623bc9505cb156a7d',1,'DECLARE:&#160;profile.hpp'],['../profile_8hpp.html#af56527aba8dd3eb623bc9505cb156a7d',1,'DECLARE:&#160;profile.hpp'],['../quantities_8hpp.html#af56527aba8dd3eb623bc9505cb156a7d',1,'DECLARE:&#160;quantities.hpp'],['../quantities_8hpp.html#af56527aba8dd3eb623bc9505cb156a7d',1,'DECLARE:&#160;quantities.hpp'],['../quantities_8cpp.html#af56527aba8dd3eb623bc9505cb156a7d',1,'DECLARE:&#160;quantities.cpp']]],
+  ['description_20',['DESCRIPTION',['../summary_8cpp.html#a80a558e658542db05e578c2c0fb2fcab',1,'summary.cpp']]],
+  ['dirsep_21',['DIRSEP',['../svnrev_8c.html#a2c89f3449c0cc91f289ecbef54188d8d',1,'svnrev.c']]],
+  ['dnrm2_22',['dnrm2',['../lapackext_8c.html#af09bfa6948303940c581cbbca96055fb',1,'DNRM2:&#160;lapackext.c'],['../lapackext_8c.html#af09bfa6948303940c581cbbca96055fb',1,'DNRM2:&#160;lapackext.c']]],
+  ['double_23',['double',['../lapackext_8c.html#a8747af38b86aa2bbcda2f1b1aa0888c2',1,'DOUBLE:&#160;lapackext.c'],['../lapackext_8c.html#a8747af38b86aa2bbcda2f1b1aa0888c2',1,'DOUBLE:&#160;lapackext.c']]]
+];

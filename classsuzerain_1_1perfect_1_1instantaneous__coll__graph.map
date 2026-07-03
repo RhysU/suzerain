@@ -1,0 +1,11 @@
+<map id="suzerain::perfect::instantaneous" name="suzerain::perfect::instantaneous">
+<area shape="rect" id="Node000001" title="Storage for holding quantities at collocation points computed during nonlinear operator application w..." alt="" coords="299,313,441,593"/>
+<area shape="rect" id="Node000002" href="$classsuzerain_1_1constraint_1_1treatment_1_1inputs.html" title="Abstract interface for tracking instantaneous collocation point profiles taken to be inputs to constr..." alt="" coords="5,5,148,265"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="159,260,161,264,231,335,301,396,297,400,227,339,157,267,154,264"/>
+<area shape="rect" id="Node000003" href="$classsuzerain_1_1perfect_1_1slowgrowth_1_1physical__cons.html" title="Abstract data source for gather_physical_cons." alt="" coords="172,25,360,245"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="309,258,327,312,322,314,304,259"/>
+<area shape="rect" id="Node000004" href="$classsuzerain_1_1perfect_1_1slowgrowth_1_1physical__rqq.html" title="Abstract data source for gather_physical_rqq." alt="" coords="385,45,563,225"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="443,239,418,314,413,312,438,238"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="587,103,659,168"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="615,182,600,224,578,267,547,306,513,343,443,404,439,400,509,339,543,303,573,264,595,222,610,180"/>
+</map>

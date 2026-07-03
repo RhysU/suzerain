@@ -1,0 +1,14 @@
+<map id="suzerain/support/logging.hpp" name="suzerain/support/logging.hpp">
+<area shape="rect" id="Node000001" title="MPI&#45;aware logging built atop log4cxx." alt="" coords="143,5,354,31"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="5,79,95,104"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="218,33,96,76,95,71,216,28"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="119,79,195,104"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="236,33,184,72,181,68,232,29"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="219,79,278,104"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="251,31,251,65,246,65,246,31"/>
+<area shape="rect" id="Node000005" href="$mpi_8h.html" title="Provides a small wrapper over the MPI vendor&#39;s mpi.h that hides incompatibilities as much as possible..." alt="" coords="302,79,361,104"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="264,29,309,67,306,72,260,33"/>
+<area shape="rect" id="Node000006" title=" " alt="" coords="409,79,539,104"/>
+<area shape="poly" id="edge6_Node000001_Node000006" title=" " alt="" coords="286,28,425,72,424,77,284,33"/>
+<area shape="poly" id="edge5_Node000005_Node000005" title=" " alt="" coords="357,76,377,77,384,83,387,91,382,102,371,107,369,102,379,98,382,91,380,86,375,82,356,81"/>
+</map>

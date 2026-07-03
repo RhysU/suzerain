@@ -1,0 +1,7 @@
+<map id="suzerain::pencilfft::internal::complex_copy_scale&lt; ComplexDestination &gt;" name="suzerain::pencilfft::internal::complex_copy_scale&lt; ComplexDestination &gt;">
+<area shape="rect" id="Node000001" title="A copy&#45;and&#45;scale functor for manipulating complex values." alt="" coords="5,320,261,435"/>
+<area shape="rect" id="Node000002" href="$structsuzerain_1_1pencilfft_1_1internal_1_1transform__traits.html" title=" " alt="" coords="24,163,243,257"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="136,258,136,303,131,303,131,258"/>
+<area shape="rect" id="Node000003" href="$structsuzerain_1_1pencilfft_1_1internal_1_1transform__traits.html" title="Primary template declaration for FFT traits." alt="" coords="61,5,205,100"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="136,114,136,162,131,162,131,114"/>
+</map>

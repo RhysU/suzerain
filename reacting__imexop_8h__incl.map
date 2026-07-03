@@ -1,0 +1,31 @@
+<map id="suzerain/reacting_imexop.h" name="suzerain/reacting_imexop.h">
+<area shape="rect" id="Node000001" title="Provides implicit operator apply and solve routines for a single wall&#45;normal pencil of state informat..." alt="" coords="515,5,716,31"/>
+<area shape="rect" id="Node000002" href="$bsmbsm_8h.html" title="Routines for blocked square matrices with banded submatrices." alt="" coords="293,79,442,104"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="576,33,421,77,420,72,575,28"/>
+<area shape="rect" id="Node000006" href="$complex_8h.html" title="Compatibility file for C99 _Complex and C++ std::complex types." alt="" coords="566,225,715,251"/>
+<area shape="poly" id="edge16_Node000001_Node000006" title=" " alt="" coords="619,31,640,211,635,211,614,31"/>
+<area shape="rect" id="Node000011" href="$bsplineop_8h.html" title="Logic for working with B&#45;spline operators." alt="" coords="672,79,828,104"/>
+<area shape="poly" id="edge11_Node000001_Node000011" title=" " alt="" coords="638,28,717,70,715,74,636,33"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="134,225,209,251"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="293,97,215,102,132,112,60,129,34,140,16,154,9,167,10,178,19,189,34,199,75,215,121,226,120,231,73,220,31,203,15,193,5,181,4,166,12,150,31,136,58,124,131,106,214,96,292,92"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="26,152,189,177"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="326,107,163,151,162,146,325,101"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="213,152,351,177"/>
+<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="355,106,308,145,305,141,352,102"/>
+<area shape="poly" id="edge5_Node000002_Node000006" title=" " alt="" coords="416,102,477,121,541,150,586,181,622,214,619,218,582,185,538,154,475,126,414,107"/>
+<area shape="rect" id="Node000009" href="$gbmatrix_8h.html" title="General band storage matrix helpers." alt="" coords="375,152,527,177"/>
+<area shape="poly" id="edge8_Node000002_Node000009" title=" " alt="" coords="382,102,429,141,425,145,379,106"/>
+<area shape="rect" id="Node000007" title=" " alt="" coords="561,299,624,324"/>
+<area shape="poly" id="edge6_Node000006_Node000007" title=" " alt="" coords="635,253,610,289,606,286,630,250"/>
+<area shape="rect" id="Node000008" title=" " alt="" coords="648,299,727,324"/>
+<area shape="poly" id="edge7_Node000006_Node000008" title=" " alt="" coords="651,250,674,286,670,289,646,252"/>
+<area shape="poly" id="edge9_Node000009_Node000003" title=" " alt="" coords="407,180,223,226,221,221,406,175"/>
+<area shape="rect" id="Node000010" title=" " alt="" coords="414,225,489,251"/>
+<area shape="poly" id="edge10_Node000009_Node000010" title=" " alt="" coords="454,178,454,212,449,212,449,178"/>
+<area shape="poly" id="edge13_Node000011_Node000006" title=" " alt="" coords="739,106,693,154,655,215,650,212,689,150,735,102"/>
+<area shape="rect" id="Node000012" title=" " alt="" coords="703,152,834,177"/>
+<area shape="poly" id="edge12_Node000011_Node000012" title=" " alt="" coords="756,104,765,138,760,140,750,105"/>
+<area shape="rect" id="Node000013" href="$function_8h.html" title="Provides a function evaluation interface compatible with the GNU Scientific Library&#39;s gsl_function." alt="" coords="858,152,1005,177"/>
+<area shape="poly" id="edge14_Node000011_Node000013" title=" " alt="" coords="780,102,890,144,888,149,778,107"/>
+<area shape="poly" id="edge15_Node000013_Node000006" title=" " alt="" coords="885,180,701,225,700,219,884,175"/>
+</map>

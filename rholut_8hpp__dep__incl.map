@@ -1,0 +1,33 @@
+<map id="suzerain/rholut.hpp" name="suzerain/rholut.hpp">
+<area shape="rect" id="Node000001" title="Provides compute kernels for formulations using a reference density , length , velocity ,..." alt="" coords="1095,5,1241,31"/>
+<area shape="rect" id="Node000002" href="$perfect_2driver_8cpp.html" title="A driver for nondimensional perfect gas simulations." alt="" coords="5,86,176,111"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="1081,24,693,38,442,55,188,81,144,89,143,83,188,76,442,50,693,33,1081,18"/>
+<area shape="rect" id="Node000003" href="$perfect_2main__advance_8cpp.html" title="Application executing suzerain::perfect::driver_advance::run." alt="" coords="200,86,429,111"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="1081,27,797,48,442,81,387,89,386,83,441,76,796,42,1081,22"/>
+<area shape="rect" id="Node000004" href="$main__initial_8cpp.html" title="Application executing suzerain::perfect::driver_initial::run." alt="" coords="453,86,664,111"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="1081,31,675,81,627,89,626,83,674,76,1081,26"/>
+<area shape="rect" id="Node000005" href="$navier__stokes_8hpp.html" title="Implementation of nonlinear Navier–Stokes spatial operators." alt="" coords="687,79,835,119"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="1090,36,847,81,836,84,835,78,846,76,1089,31"/>
+<area shape="rect" id="Node000009" href="$perfect_8cpp.html" title="Support logic for the perfect gas application." alt="" coords="859,86,1039,111"/>
+<area shape="poly" id="edge8_Node000001_Node000009" title=" " alt="" coords="1124,38,982,88,980,83,1122,33"/>
+<area shape="rect" id="Node000010" href="$slowgrowth_8cpp.html" title="Provides suzerain::perfect::slowgrowth to facilitate slow growth forcing usage." alt="" coords="1063,86,1273,111"/>
+<area shape="poly" id="edge9_Node000001_Node000010" title=" " alt="" coords="1171,44,1171,86,1165,86,1165,44"/>
+<area shape="rect" id="Node000011" href="$reacting_2driver_8cpp.html" title="A driver for reacting flow simulations." alt="" coords="1297,86,1476,111"/>
+<area shape="poly" id="edge10_Node000001_Node000011" title=" " alt="" coords="1214,33,1356,83,1354,88,1212,38"/>
+<area shape="rect" id="Node000012" href="$reacting_2operator__nonlinear_8hpp.html" title="Implementation of Nonlinear Navier–Stokes spatial operators declared within operator_nonlinear_fwd...." alt="" coords="1501,79,1670,119"/>
+<area shape="poly" id="edge11_Node000001_Node000012" title=" " alt="" coords="1244,31,1488,76,1501,78,1500,84,1488,81,1243,36"/>
+<area shape="rect" id="Node000014" href="$quantities_8cpp.html" title="Sampling logistics for mean quantity profiles." alt="" coords="1694,86,1901,111"/>
+<area shape="poly" id="edge13_Node000001_Node000014" title=" " alt="" coords="1255,25,1451,47,1683,76,1731,83,1730,89,1682,81,1451,52,1254,31"/>
+<area shape="rect" id="Node000015" href="$reacting_8cpp.html" title="Support logic for the reacting flow application." alt="" coords="1925,86,2120,111"/>
+<area shape="poly" id="edge14_Node000001_Node000015" title=" " alt="" coords="1255,21,1548,40,1730,56,1914,76,1962,83,1962,89,1913,81,1730,61,1547,46,1255,26"/>
+<area shape="rect" id="Node000016" href="$support_8cpp.html" title="Support logic with complex prerequisites spanning multiple applications." alt="" coords="2144,86,2355,111"/>
+<area shape="poly" id="edge15_Node000001_Node000016" title=" " alt="" coords="1255,19,1636,36,1883,53,2132,76,2185,83,2185,89,2132,81,1883,58,1636,42,1255,25"/>
+<area shape="rect" id="Node000006" href="$navier__stokes_8cpp.html" title="Implementation of nonlinear Navier–Stokes spatial operators." alt="" coords="502,167,650,207"/>
+<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="709,127,618,169,615,164,707,122"/>
+<area shape="rect" id="Node000007" href="$operator__hybrid__isothermal_8cpp.html" title="A hybrid implicit/explicit Navier–Stokes operator for isothermal wall(s)." alt="" coords="674,167,849,207"/>
+<area shape="poly" id="edge6_Node000005_Node000007" title=" " alt="" coords="764,133,764,166,759,166,759,133"/>
+<area shape="rect" id="Node000008" href="$operator__nonlinear_8cpp.html" title="A nonlinear Navier–Stokes spatial operator." alt="" coords="873,167,1036,207"/>
+<area shape="poly" id="edge7_Node000005_Node000008" title=" " alt="" coords="817,122,913,164,911,169,815,127"/>
+<area shape="rect" id="Node000013" href="$operator__explicit_8cpp.html" title="Fully explicit, linearization&#45;ready Navier–Stokes operators." alt="" coords="1501,167,1670,207"/>
+<area shape="poly" id="edge12_Node000012_Node000013" title=" " alt="" coords="1588,133,1588,166,1583,166,1583,133"/>
+</map>

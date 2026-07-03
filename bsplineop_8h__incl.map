@@ -1,0 +1,14 @@
+<map id="suzerain/bsplineop.h" name="suzerain/bsplineop.h">
+<area shape="rect" id="Node000001" title="Logic for working with B&#45;spline operators." alt="" coords="95,5,251,31"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="5,79,136,104"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="158,33,100,73,97,68,155,28"/>
+<area shape="rect" id="Node000003" href="$complex_8h.html" title="Compatibility file for C99 _Complex and C++ std::complex types." alt="" coords="153,152,303,177"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="179,30,201,103,218,139,213,141,196,105,174,32"/>
+<area shape="rect" id="Node000006" href="$function_8h.html" title="Provides a function evaluation interface compatible with the GNU Scientific Library&#39;s gsl_function." alt="" coords="211,79,357,104"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="193,28,256,69,253,73,190,33"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="150,225,213,251"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="223,179,199,215,194,212,218,176"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="237,225,315,251"/>
+<area shape="poly" id="edge4_Node000003_Node000005" title=" " alt="" coords="238,176,263,213,258,216,234,179"/>
+<area shape="poly" id="edge6_Node000006_Node000003" title=" " alt="" coords="277,106,248,143,243,140,273,103"/>
+</map>

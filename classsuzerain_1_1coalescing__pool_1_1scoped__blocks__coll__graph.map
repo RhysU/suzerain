@@ -1,0 +1,10 @@
+<map id="suzerain::coalescing_pool&lt; T, ArenaAllocator, Policy &gt;::scoped_blocks" name="suzerain::coalescing_pool&lt; T, ArenaAllocator, Policy &gt;::scoped_blocks">
+<area shape="rect" id="Node000001" title="A &quot;scoped&quot; blocks instance to facilitate the resource acquisition is initialization pattern." alt="" coords="98,917,278,1552"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="5,5,147,71"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="75,85,68,216,63,407,68,629,75,743,88,854,101,926,95,927,83,855,70,743,62,629,58,407,63,216,70,85"/>
+<area shape="rect" id="Node000004" href="$classsuzerain_1_1coalescing__pool.html" title="A free list&#45;based memory pool designed for memory&#45;constrained situations where large,..." alt="" coords="98,120,278,855"/>
+<area shape="poly" id="edge4_Node000004_Node000002" title=" " alt="" coords="90,83,101,126,95,128,85,84"/>
+<area shape="rect" id="Node000003" href="$classsuzerain_1_1coalescing__pool_1_1blocks.html" title="A contiguous sequence of blocks acquired from a coalescing_pool." alt="" coords="302,180,482,795"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="307,809,277,918,272,916,302,807"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="191,855,191,901,185,901,185,855"/>
+</map>

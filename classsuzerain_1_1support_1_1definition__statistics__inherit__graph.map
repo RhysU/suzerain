@@ -1,0 +1,5 @@
+<map id="suzerain::support::definition_statistics" name="suzerain::support::definition_statistics">
+<area shape="rect" id="Node000001" title="Encapsulates flags related to statistics output behavior for the simulation." alt="" coords="5,153,171,353"/>
+<area shape="rect" id="Node000002" href="$classsuzerain_1_1support_1_1definition__base.html" title="An abstract base class for defining a collection of related options." alt="" coords="5,5,171,105"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="91,119,91,153,85,153,85,119"/>
+</map>

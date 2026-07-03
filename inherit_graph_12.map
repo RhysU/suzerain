@@ -1,0 +1,11 @@
+<map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
+<area shape="rect" id="Node000000" title=" " alt="" coords="5,139,140,164"/>
+<area shape="rect" id="Node000001" href="$structsuzerain_1_1complex_1_1traits_1_1is__complex__double.html" title="An type trait similar to is_complex which additionally checks that the underlying real type is double..." alt="" coords="188,5,377,60"/>
+<area shape="poly" id="edge16_Node000000_Node000001" title=" " alt="" coords="99,128,139,99,187,69,209,58,211,63,189,74,142,103,102,132"/>
+<area shape="rect" id="Node000002" href="$structsuzerain_1_1complex_1_1traits_1_1is__complex__float.html" title="An type trait similar to is_complex which additionally checks that the underlying real type is float." alt="" coords="195,84,370,139"/>
+<area shape="poly" id="edge17_Node000000_Node000002" title=" " alt="" coords="153,133,195,125,196,131,154,139"/>
+<area shape="rect" id="Node000003" href="$structsuzerain_1_1complex_1_1traits_1_1is__complex__long__double.html" title="An type trait similar to is_complex which additionally checks that the underlying real type is long d..." alt="" coords="196,163,369,217"/>
+<area shape="poly" id="edge18_Node000000_Node000003" title=" " alt="" coords="154,164,196,171,195,177,153,169"/>
+<area shape="rect" id="Node000004" href="$structsuzerain_1_1complex_1_1traits_1_1is__complex__t.html" title="An type trait similar to is_complex which additionally checks that the underlying real type is suzera..." alt="" coords="207,241,358,296"/>
+<area shape="poly" id="edge19_Node000000_Node000004" title=" " alt="" coords="103,170,143,198,189,226,215,239,212,244,187,231,140,203,100,174"/>
+</map>

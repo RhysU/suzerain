@@ -1,0 +1,17 @@
+<map id="suzerain::perfect::operator_hybrid_isothermal" name="suzerain::perfect::operator_hybrid_isothermal">
+<area shape="rect" id="Node000001" title="A hybrid implicit/explicit operator that providing isothermal wall conditions and possibly a nonrefle..." alt="" coords="289,1124,519,1443"/>
+<area shape="rect" id="Node000002" href="$classsuzerain_1_1perfect_1_1treatment__nonreflecting.html" title="When necessary, provides explicitly&#45;implemented, Giles&#45;like nonreflecting boundary conditions at the ..." alt="" coords="198,800,394,1075"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="345,1087,357,1123,352,1125,340,1089"/>
+<area shape="rect" id="Node000003" href="$classsuzerain_1_1operator__base.html" title="Provides potentially heavyweight B&#45;spline and parallel FFT infrastructure." alt="" coords="19,403,189,708"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="189,719,229,798,224,801,184,721"/>
+<area shape="rect" id="Node000004" href="$classsuzerain_1_1operator__tools.html" title="Provides combined, timed B&#45;spline and parallel FFT infrastructure routines." alt="" coords="5,5,197,325"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="105,340,106,402,100,402,100,340"/>
+<area shape="rect" id="Node000005" href="$classsuzerain_1_1lowstorage_1_1operator__nonlinear.html" title=" " alt="" coords="219,491,392,620"/>
+<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="306,634,302,800,297,800,301,634"/>
+<area shape="rect" id="Node000006" href="$classsuzerain_1_1lowstorage_1_1operator__nonlinear.html" title="Defines the nonlinear operator interface required for timestepping." alt="" coords="221,108,395,223"/>
+<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="310,236,308,491,303,491,305,236"/>
+<area shape="rect" id="Node000007" href="$classsuzerain_1_1lowstorage_1_1linear__operator.html" title=" " alt="" coords="419,813,611,1061"/>
+<area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="473,1075,457,1125,452,1123,468,1074"/>
+<area shape="rect" id="Node000008" href="$classsuzerain_1_1lowstorage_1_1linear__operator.html" title="Defines the linear operator interface required for low storage timestepping." alt="" coords="419,446,611,665"/>
+<area shape="poly" id="edge7_Node000007_Node000008" title=" " alt="" coords="517,679,517,813,512,813,512,679"/>
+</map>

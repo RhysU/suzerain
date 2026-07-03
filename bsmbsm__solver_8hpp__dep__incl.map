@@ -1,0 +1,9 @@
+<map id="suzerain/bsmbsm_solver.hpp" name="suzerain/bsmbsm_solver.hpp">
+<area shape="rect" id="Node000001" title="Encapsulates solving BSMBSM problems per a suzerain::specification_zgbsv." alt="" coords="183,5,394,31"/>
+<area shape="rect" id="Node000002" href="$operator__hybrid__isothermal_8cpp.html" title="A hybrid implicit/explicit Navier–Stokes operator for isothermal wall(s)." alt="" coords="5,79,180,119"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="248,38,141,81,139,76,246,33"/>
+<area shape="rect" id="Node000003" href="$operator__hybrid_8cpp.html" title="Hybrid implicit/explicit Navier–Stokes operators." alt="" coords="204,79,373,119"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="291,44,291,79,286,79,286,44"/>
+<area shape="rect" id="Node000004" href="$bsmbsm__solver_8cpp.html" title="Encapsulates solving BSMBSM problems per a suzerain::specification_zgbsv." alt="" coords="398,86,609,111"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="334,33,473,83,471,88,332,38"/>
+</map>

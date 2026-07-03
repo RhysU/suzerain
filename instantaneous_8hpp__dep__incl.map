@@ -1,0 +1,35 @@
+<map id="apps/perfect/instantaneous.hpp" name="apps/perfect/instantaneous.hpp">
+<area shape="rect" id="Node000001" title="Implementation of suzerain::perfect::instantaneous." alt="" coords="915,5,1141,31"/>
+<area shape="rect" id="Node000002" href="$perfect_2driver_8cpp.html" title="A driver for nondimensional perfect gas simulations." alt="" coords="5,262,176,287"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="901,31,750,49,668,63,587,81,444,126,306,178,192,228,115,264,113,260,189,224,304,174,442,121,586,76,667,58,749,44,901,26"/>
+<area shape="rect" id="Node000003" href="$instantaneous_8cpp.html" title="Implementation of suzerain::perfect::instantaneous." alt="" coords="1133,86,1360,111"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="1074,33,1216,83,1214,88,1072,38"/>
+<area shape="rect" id="Node000004" href="$main__summary_8cpp.html" title="Application executing suzerain::support::driver_base::summary_run." alt="" coords="200,262,435,287"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="936,35,836,54,717,82,590,120,466,169,426,192,388,218,331,264,328,260,384,214,423,187,464,164,588,115,715,77,835,49,935,30"/>
+<area shape="rect" id="Node000005" href="$operator__common__block_8hpp.html" title="Implements suzerain::perfect::operator_common_block." alt="" coords="947,79,1109,119"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="1031,44,1031,79,1025,79,1025,44"/>
+<area shape="rect" id="Node000015" href="$perfect_8cpp.html" title="Support logic for the perfect gas application." alt="" coords="1385,86,1565,111"/>
+<area shape="poly" id="edge18_Node000001_Node000015" title=" " alt="" coords="1109,30,1372,76,1413,83,1412,89,1372,81,1108,36"/>
+<area shape="rect" id="Node000006" href="$perfect_2driver_8hpp.html" title="A driver for nondimensional perfect gas simulations." alt="" coords="478,174,650,199"/>
+<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="934,120,626,177,625,171,933,115"/>
+<area shape="rect" id="Node000009" href="$navier__stokes_8hpp.html" title="Implementation of nonlinear Navier–Stokes spatial operators." alt="" coords="1010,167,1158,207"/>
+<area shape="poly" id="edge10_Node000005_Node000009" title=" " alt="" coords="1050,129,1074,165,1069,168,1046,132"/>
+<area shape="rect" id="Node000011" href="$operator__hybrid__isothermal_8cpp.html" title="A hybrid implicit/explicit Navier–Stokes operator for isothermal wall(s)." alt="" coords="1306,255,1481,295"/>
+<area shape="poly" id="edge15_Node000005_Node000011" title=" " alt="" coords="1088,122,1171,164,1197,185,1223,204,1278,231,1333,252,1332,257,1276,236,1220,209,1194,189,1168,169,1086,127"/>
+<area shape="rect" id="Node000012" href="$operator__nonlinear_8cpp.html" title="A nonlinear Navier–Stokes spatial operator." alt="" coords="947,255,1109,295"/>
+<area shape="poly" id="edge17_Node000005_Node000012" title=" " alt="" coords="1013,132,1000,167,997,187,1000,206,1008,231,1019,253,1014,255,1003,233,995,207,992,187,995,166,1008,130"/>
+<area shape="rect" id="Node000013" href="$operator__common__block_8cpp.html" title="Implements suzerain::perfect::operator_common_block." alt="" coords="1233,167,1396,207"/>
+<area shape="poly" id="edge14_Node000005_Node000013" title=" " alt="" coords="1105,120,1253,164,1251,169,1103,125"/>
+<area shape="rect" id="Node000014" href="$apps_2perfect_2operator__mass__isothermal_8cpp.html" title="Provides suzerain::perfect::operator_mass_isothermal." alt="" coords="1420,167,1588,207"/>
+<area shape="poly" id="edge16_Node000005_Node000014" title=" " alt="" coords="1123,116,1408,164,1420,166,1419,171,1408,169,1122,122"/>
+<area shape="poly" id="edge6_Node000006_Node000002" title=" " alt="" coords="486,204,188,257,150,265,149,259,188,252,485,199"/>
+<area shape="poly" id="edge9_Node000006_Node000004" title=" " alt="" coords="519,207,351,264,350,259,517,201"/>
+<area shape="rect" id="Node000007" href="$perfect_2main__advance_8cpp.html" title="Application executing suzerain::perfect::driver_advance::run." alt="" coords="693,262,923,287"/>
+<area shape="poly" id="edge7_Node000006_Node000007" title=" " alt="" coords="611,201,776,259,774,264,609,207"/>
+<area shape="rect" id="Node000008" href="$main__initial_8cpp.html" title="Application executing suzerain::perfect::driver_initial::run." alt="" coords="459,262,669,287"/>
+<area shape="poly" id="edge8_Node000006_Node000008" title=" " alt="" coords="567,213,567,261,561,261,561,213"/>
+<area shape="rect" id="Node000010" href="$navier__stokes_8cpp.html" title="Implementation of nonlinear Navier–Stokes spatial operators." alt="" coords="1134,255,1282,295"/>
+<area shape="poly" id="edge11_Node000009_Node000010" title=" " alt="" coords="1124,212,1182,252,1179,257,1121,217"/>
+<area shape="poly" id="edge12_Node000009_Node000011" title=" " alt="" coords="1166,208,1326,252,1325,257,1164,213"/>
+<area shape="poly" id="edge13_Node000009_Node000012" title=" " alt="" coords="1066,220,1043,256,1038,253,1062,217"/>
+</map>

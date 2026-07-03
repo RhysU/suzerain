@@ -1,0 +1,5 @@
+<map id="suzerain::perfect::slowgrowth::physical_rqq" name="suzerain::perfect::slowgrowth::physical_rqq">
+<area shape="rect" id="Node000001" title="Abstract data source for gather_physical_rqq." alt="" coords="5,5,184,185"/>
+<area shape="rect" id="Node000002" href="$classsuzerain_1_1perfect_1_1instantaneous.html" title="Storage for holding quantities at collocation points computed during nonlinear operator application w..." alt="" coords="24,233,165,513"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="97,199,97,233,92,233,92,199"/>
+</map>

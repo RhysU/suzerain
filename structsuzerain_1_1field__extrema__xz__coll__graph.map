@@ -1,0 +1,10 @@
+<map id="suzerain::field_extrema_xz" name="suzerain::field_extrema_xz">
+<area shape="rect" id="Node000001" title="Holds information on the pointwise extrema within a scalar field as a function of wall&#45;normal $y$ col..." alt="" coords="88,335,277,400"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="5,148,176,228"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="113,227,161,319,156,321,108,229"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="158,5,207,71"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="148,62,130,78,114,96,103,121,96,148,91,147,98,120,110,93,126,74,145,58"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="201,148,351,228"/>
+<area shape="poly" id="edge4_Node000004_Node000003" title=" " alt="" coords="220,68,241,93,256,120,267,147,262,149,251,122,236,96,216,72"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="258,229,209,321,205,319,253,227"/>
+</map>

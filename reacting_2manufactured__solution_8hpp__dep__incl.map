@@ -1,0 +1,18 @@
+<map id="apps/reacting/manufactured_solution.hpp" name="apps/reacting/manufactured_solution.hpp">
+<area shape="rect" id="Node000001" title="Method of manufactured solution details for the reacting flow application." alt="" coords="376,5,581,45"/>
+<area shape="rect" id="Node000002" href="$reacting_2driver_8hpp.html" title="A driver for reacting flow simulations." alt="" coords="173,101,352,126"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="420,53,292,103,290,98,418,48"/>
+<area shape="rect" id="Node000006" href="$reacting_2manufactured__solution_8cpp.html" title="Method of manufactured solution details for the reacting flow application." alt="" coords="376,93,581,133"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="481,59,481,93,476,93,476,59"/>
+<area shape="rect" id="Node000007" href="$operator__explicit_8hpp.html" title="Fully explicit, linearization&#45;ready Navier–Stokes operators." alt="" coords="606,93,775,133"/>
+<area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="539,48,645,91,643,96,537,53"/>
+<area shape="rect" id="Node000003" href="$reacting_2driver_8cpp.html" title="A driver for reacting flow simulations." alt="" coords="5,189,184,214"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="229,135,119,191,116,186,227,130"/>
+<area shape="rect" id="Node000004" href="$reacting_2main__advance_8cpp.html" title="Application executing suzerain::reacting::driver_advance::run." alt="" coords="416,181,563,221"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="307,128,440,179,438,184,305,133"/>
+<area shape="rect" id="Node000005" href="$main__init_8cpp.html" title="Application executing suzerain::reacting::driver_init::run." alt="" coords="208,181,355,221"/>
+<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="271,139,280,180,275,181,266,140"/>
+<area shape="poly" id="edge7_Node000007_Node000004" title=" " alt="" coords="635,141,534,184,532,179,633,136"/>
+<area shape="rect" id="Node000008" href="$operator__explicit_8cpp.html" title="Fully explicit, linearization&#45;ready Navier–Stokes operators." alt="" coords="606,181,775,221"/>
+<area shape="poly" id="edge8_Node000007_Node000008" title=" " alt="" coords="693,147,693,181,688,181,688,147"/>
+</map>

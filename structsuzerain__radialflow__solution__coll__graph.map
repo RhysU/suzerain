@@ -1,0 +1,7 @@
+<map id="suzerain_radialflow_solution" name="suzerain_radialflow_solution">
+<area shape="rect" id="Node000001" title="A radial nozzle solution produced by suzerain_radialflow_solver." alt="" coords="21,288,161,388"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="5,83,57,148"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="43,147,76,271,71,273,37,149"/>
+<area shape="rect" id="Node000003" href="$structsuzerain__radialflow__state.html" title="Stores pointwise radial nozzle extended state at some point ." alt="" coords="81,5,221,225"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="131,226,121,265,118,273,113,272,115,263,126,225"/>
+</map>

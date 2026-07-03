@@ -1,0 +1,9 @@
+<map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
+<area shape="rect" id="Node000000" href="$classsuzerain_1_1support_1_1application__base.html" title="An concrete base class for managing a Suzerain application." alt="" coords="5,37,148,77"/>
+<area shape="rect" id="Node000001" href="$classsuzerain_1_1support_1_1driver__base.html" title="A driver base class for managing a Suzerain application." alt="" coords="196,37,339,77"/>
+<area shape="poly" id="edge224_Node000000_Node000001" title=" " alt="" coords="161,55,196,55,196,60,161,60"/>
+<area shape="rect" id="Node000002" href="$classsuzerain_1_1perfect_1_1driver.html" title="A driver class for managing a nondimensional perfect gas application using details from suzerain::rho..." alt="" coords="387,5,525,45"/>
+<area shape="poly" id="edge225_Node000001_Node000002" title=" " alt="" coords="352,40,386,35,387,40,353,46"/>
+<area shape="rect" id="Node000003" href="$classsuzerain_1_1reacting_1_1driver.html" title="A driver class for managing a reacting application using details from suzerain::rholut." alt="" coords="387,69,525,109"/>
+<area shape="poly" id="edge226_Node000001_Node000003" title=" " alt="" coords="353,69,387,75,386,80,352,74"/>
+</map>

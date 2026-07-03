@@ -1,0 +1,214 @@
+<map id="suzerain/support/logging.hpp" name="suzerain/support/logging.hpp">
+<area shape="rect" id="Node000001" title="MPI&#45;aware logging built atop log4cxx." alt="" coords="3907,5,4117,31"/>
+<area shape="rect" id="Node000002" href="$conservation_8cpp.html" title="Compute discrete conservation error for given basis." alt="" coords="5,86,173,111"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="3893,23,3111,28,1953,38,838,56,428,68,186,81,139,89,138,83,185,76,428,62,838,51,1953,33,3111,22,3893,17"/>
+<area shape="rect" id="Node000003" href="$operators_8cpp.html" title="Compute discrete conservation error for given basis." alt="" coords="197,86,344,111"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="3893,23,3143,28,2041,39,982,56,593,68,363,81,319,89,318,83,362,76,593,62,982,51,2041,33,3143,22,3893,17"/>
+<area shape="rect" id="Node000004" href="$pencil__grid__bench_8cpp.html" title="A suzerain::pencil_grid test based on Dmitry Pekurovsky&#39;s P3DFFT work." alt="" coords="1530,350,1731,375"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="3893,22,3282,25,2428,34,2009,42,1647,52,1383,65,1300,73,1255,81,1215,99,1176,120,1140,145,1111,172,1091,200,1082,230,1086,261,1106,293,1119,304,1137,314,1182,327,1238,334,1299,337,1423,337,1518,340,1565,347,1564,353,1517,345,1423,342,1299,342,1237,339,1181,332,1135,318,1116,309,1102,296,1081,263,1077,230,1086,198,1107,168,1137,141,1173,116,1213,94,1254,76,1299,67,1382,60,1647,47,2009,36,2428,29,3282,20,3893,17"/>
+<area shape="rect" id="Node000005" href="$definition__scenario_8cpp.html" title="Provides classes handling problem scenario parameters which are either reference quantities or nondim..." alt="" coords="1143,255,1311,295"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="3893,22,3318,26,2524,35,2135,43,1801,53,1556,66,1479,73,1438,81,1405,98,1373,118,1317,167,1272,216,1242,256,1238,253,1268,213,1313,163,1370,114,1402,93,1436,76,1478,68,1556,60,1800,47,2135,37,2524,30,3318,21,3893,17"/>
+<area shape="rect" id="Node000006" href="$perfect_2driver_8cpp.html" title="A driver for nondimensional perfect gas simulations." alt="" coords="472,526,643,551"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="3893,22,3107,27,1970,37,933,54,593,66,493,74,449,81,419,101,399,123,387,150,384,185,384,364,387,397,397,422,413,444,437,469,457,487,480,502,526,524,523,528,478,506,454,491,433,473,409,447,392,424,382,398,379,364,379,185,382,148,394,120,415,97,447,76,492,68,593,61,933,49,1970,31,3107,21,3893,17"/>
+<area shape="rect" id="Node000007" href="$perfect_2main__advance_8cpp.html" title="Application executing suzerain::perfect::driver_advance::run." alt="" coords="843,526,1072,551"/>
+<area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="3893,23,3119,27,2001,38,982,55,648,67,550,74,506,81,474,101,452,122,439,149,435,185,435,364,435,397,439,424,450,446,472,468,490,477,522,485,617,501,843,525,842,530,616,506,521,490,488,482,469,473,446,449,434,425,430,398,429,364,429,185,434,147,448,119,471,97,504,76,549,69,648,62,982,50,2001,32,3119,22,3893,17"/>
+<area shape="rect" id="Node000008" href="$main__initial_8cpp.html" title="Application executing suzerain::perfect::driver_initial::run." alt="" coords="2543,526,2753,551"/>
+<area shape="poly" id="edge7_Node000001_Node000008" title=" " alt="" coords="4131,18,4462,22,4895,32,5323,50,5500,62,5635,76,5707,81,5779,77,5914,68,5969,72,5993,79,6014,90,6031,105,6043,126,6051,153,6053,185,6053,364,6049,382,6036,398,6015,412,5987,425,5912,445,5814,461,5698,473,5567,481,5278,487,4981,486,4708,480,4492,474,4365,473,4124,481,3920,485,3573,486,3226,493,3022,503,2782,521,2719,529,2718,523,2781,516,3022,498,3226,488,3573,481,3920,480,4124,476,4365,468,4492,469,4708,474,4981,480,5278,482,5567,475,5697,468,5813,456,5911,440,5985,420,6012,407,6032,394,6044,380,6048,364,6048,185,6045,153,6038,128,6026,109,6011,94,5991,84,5968,78,5913,73,5780,83,5707,86,5634,81,5500,67,5323,55,4895,38,4462,28,4131,23"/>
+<area shape="rect" id="Node000009" href="$perfect_2manufactured__solution_8cpp.html" title="Method of manufactured solution details for the perfect gas application." alt="" coords="1335,255,1534,295"/>
+<area shape="poly" id="edge8_Node000001_Node000009" title=" " alt="" coords="3893,23,3600,27,3188,37,2713,55,2229,81,2161,84,2096,81,1975,67,1864,47,1762,30,1713,26,1666,26,1620,30,1574,41,1528,59,1483,86,1437,122,1390,168,1384,178,1382,188,1387,211,1401,233,1417,253,1413,256,1396,236,1382,212,1377,188,1379,176,1386,165,1433,118,1480,82,1526,55,1572,36,1619,25,1666,20,1714,21,1763,25,1865,42,1975,61,2096,76,2161,78,2229,76,2713,49,3188,32,3600,22,3893,18"/>
+<area shape="rect" id="Node000010" href="$operator__hybrid__isothermal_8cpp.html" title="A hybrid implicit/explicit Navier–Stokes operator for isothermal wall(s)." alt="" coords="483,431,658,471"/>
+<area shape="poly" id="edge9_Node000001_Node000010" title=" " alt="" coords="3893,23,2155,41,1208,58,885,69,782,75,727,81,683,88,640,92,562,100,530,109,506,124,491,149,485,186,485,276,493,321,511,364,534,401,556,429,552,432,530,404,506,367,488,323,480,276,480,185,486,147,503,120,528,104,561,94,640,87,683,83,726,76,782,70,884,64,1207,53,2155,35,3893,18"/>
+<area shape="rect" id="Node000011" href="$perfect_8cpp.html" title="Support logic for the perfect gas application." alt="" coords="2758,262,2938,287"/>
+<area shape="poly" id="edge10_Node000001_Node000011" title=" " alt="" coords="3990,42,3949,80,3892,148,3859,185,3829,209,3794,222,3753,233,3655,248,3542,255,3421,257,3184,254,3083,254,3002,257,2934,265,2933,259,3001,252,3083,248,3184,249,3421,251,3542,249,3654,242,3752,228,3792,217,3827,204,3856,182,3888,145,3945,77,3987,38"/>
+<area shape="rect" id="Node000012" href="$slowgrowth_8cpp.html" title="Provides suzerain::perfect::slowgrowth to facilitate slow growth forcing usage." alt="" coords="6190,86,6399,111"/>
+<area shape="poly" id="edge11_Node000001_Node000012" title=" " alt="" coords="4131,18,5148,35,5738,53,5984,64,6171,76,6230,83,6229,89,6170,81,5984,69,5738,58,5147,41,4131,23"/>
+<area shape="rect" id="Node000013" href="$antioch__constitutive_8cpp.html" title="Class wrapping libantioch functionality for chemically reacting flow." alt="" coords="5253,255,5416,295"/>
+<area shape="poly" id="edge12_Node000001_Node000013" title=" " alt="" coords="4131,21,4541,41,4752,57,4904,76,4982,92,5041,109,5099,131,5171,164,5249,209,5312,252,5309,257,5246,214,5168,169,5097,136,5040,114,4981,98,4904,81,4751,62,4541,46,4131,26"/>
+<area shape="rect" id="Node000014" href="$definition__channel_8cpp.html" title="Provides classes handling problem definition for channel flow, e.g., bulk density and momentum." alt="" coords="4353,255,4527,295"/>
+<area shape="poly" id="edge13_Node000001_Node000014" title=" " alt="" coords="4132,20,4216,32,4306,58,4350,77,4390,100,4427,130,4458,165,4467,188,4467,212,4453,255,4448,254,4462,211,4462,189,4454,168,4423,134,4387,105,4347,81,4304,63,4215,37,4131,25"/>
+<area shape="rect" id="Node000015" href="$definition__filter_8cpp.html" title="Provides classes handling problem definition for filter source term, e.g., strength coefficient." alt="" coords="3654,255,3829,295"/>
+<area shape="poly" id="edge14_Node000001_Node000015" title=" " alt="" coords="4018,44,4020,80,4017,124,4006,169,3996,190,3982,209,3961,220,3923,232,3826,257,3825,252,3922,227,3959,215,3978,205,3991,187,4001,167,4012,123,4015,80,4013,45"/>
+<area shape="rect" id="Node000016" href="$reacting_2driver_8cpp.html" title="A driver for reacting flow simulations." alt="" coords="5212,526,5391,551"/>
+<area shape="poly" id="edge15_Node000001_Node000016" title=" " alt="" coords="4131,17,4609,18,5247,26,5555,34,5819,44,6011,58,6071,67,6103,76,6130,98,6146,122,6153,150,6155,185,6155,364,6153,399,6145,427,6129,451,6103,473,6063,487,5994,499,5798,518,5577,530,5391,538,5391,532,5577,525,5798,513,5993,494,6062,482,6100,468,6125,447,6140,425,6148,398,6149,364,6149,185,6148,151,6141,124,6126,102,6100,81,6070,72,6010,63,5819,49,5555,39,5247,32,4609,24,4131,22"/>
+<area shape="rect" id="Node000017" href="$reacting_2main__advance_8cpp.html" title="Application executing suzerain::reacting::driver_advance::run." alt="" coords="4191,519,4337,559"/>
+<area shape="poly" id="edge16_Node000001_Node000017" title=" " alt="" coords="4131,16,4603,17,5232,24,5535,31,5794,42,5982,56,6040,66,6071,76,6093,100,6103,124,6105,152,6104,185,6104,364,6105,397,6103,425,6093,450,6071,473,6048,478,5999,484,5831,494,5316,513,4338,538,4338,533,5316,508,5831,489,5998,478,6047,473,6068,468,6089,447,6097,424,6099,397,6099,364,6099,185,6099,152,6097,125,6089,103,6068,81,6039,71,5981,62,5794,47,5535,36,5232,29,4603,22,4131,22"/>
+<area shape="rect" id="Node000018" href="$main__init_8cpp.html" title="Application executing suzerain::reacting::driver_init::run." alt="" coords="2793,519,2940,559"/>
+<area shape="poly" id="edge17_Node000001_Node000018" title=" " alt="" coords="3893,22,3496,29,3242,37,2980,49,2731,68,2516,93,2429,109,2357,127,2305,147,2275,168,2254,204,2245,237,2249,269,2264,299,2288,327,2320,354,2359,379,2404,402,2504,443,2610,476,2710,503,2794,521,2793,526,2709,508,2609,482,2503,448,2402,407,2357,383,2317,358,2284,331,2259,301,2244,270,2240,237,2249,202,2271,165,2303,142,2356,122,2427,104,2516,88,2731,63,2980,44,3242,31,3496,23,3893,17"/>
+<area shape="rect" id="Node000019" href="$reacting_2manufactured__solution_8cpp.html" title="Method of manufactured solution details for the reacting flow application." alt="" coords="4973,343,5179,383"/>
+<area shape="poly" id="edge18_Node000001_Node000019" title=" " alt="" coords="4131,19,4397,25,4733,35,5058,52,5193,63,5295,76,5425,92,5481,99,5533,110,5579,128,5620,155,5656,196,5685,254,5691,275,5690,293,5682,308,5669,319,5627,332,5568,337,5412,337,5322,338,5230,345,5179,351,5179,346,5229,340,5322,333,5412,332,5568,331,5626,326,5666,314,5678,304,5685,292,5686,276,5680,256,5651,199,5617,159,5577,132,5532,115,5481,104,5424,97,5294,81,5192,69,5058,58,4732,41,4397,30,4131,24"/>
+<area shape="rect" id="Node000020" href="$operator__hybrid_8cpp.html" title="Hybrid implicit/explicit Navier–Stokes operators." alt="" coords="4305,343,4474,383"/>
+<area shape="poly" id="edge19_Node000001_Node000020" title=" " alt="" coords="4132,22,4289,39,4374,55,4458,76,4571,104,4662,128,4703,145,4741,170,4777,205,4812,253,4847,305,4869,332,4874,343,4855,341,4813,333,4742,327,4638,328,4496,345,4475,349,4474,344,4496,340,4637,323,4742,321,4814,328,4856,336,4870,340,4865,335,4843,308,4807,256,4773,208,4737,174,4700,149,4661,133,4569,109,4457,81,4373,60,4288,44,4131,27"/>
+<area shape="rect" id="Node000021" href="$reacting_2operator__nonlinear_8hpp.html" title="Implementation of Nonlinear Navier–Stokes spatial operators declared within operator_nonlinear_fwd...." alt="" coords="3339,343,3509,383"/>
+<area shape="poly" id="edge20_Node000001_Node000021" title=" " alt="" coords="3893,23,3655,27,3362,36,3080,53,2964,66,2876,81,2749,105,2695,114,2646,125,2601,142,2558,167,2518,204,2478,256,2470,276,2472,284,2477,292,2582,303,2824,320,3339,353,3339,359,2823,326,2581,308,2475,297,2467,286,2465,275,2474,253,2514,200,2555,163,2598,137,2644,120,2694,109,2748,100,2876,76,2964,61,3080,48,3361,31,3655,21,3893,17"/>
+<area shape="rect" id="Node000023" href="$quantities_8cpp.html" title="Sampling logistics for mean quantity profiles." alt="" coords="5781,350,5987,375"/>
+<area shape="poly" id="edge22_Node000001_Node000023" title=" " alt="" coords="4131,17,4426,21,4803,31,5172,48,5324,61,5440,76,5528,88,5607,94,5679,98,5745,105,5807,119,5865,146,5894,165,5922,189,5977,253,5983,268,5983,283,5976,297,5965,311,5937,334,5908,352,5905,348,5934,330,5962,307,5972,295,5977,282,5978,269,5972,256,5918,193,5890,169,5863,150,5805,124,5744,110,5678,103,5607,99,5527,93,5440,81,5324,66,5172,53,4803,36,4425,27,4131,23"/>
+<area shape="rect" id="Node000024" href="$reacting_8cpp.html" title="Support logic for the reacting flow application." alt="" coords="6424,86,6619,111"/>
+<area shape="poly" id="edge23_Node000001_Node000024" title=" " alt="" coords="4131,17,4602,21,5261,31,5925,49,6202,61,6412,76,6465,83,6464,89,6412,81,6202,66,5925,54,5260,37,4602,27,4131,23"/>
+<area shape="rect" id="Node000025" href="$test__antioch__constitutive_8cpp.html" title=" " alt="" coords="5441,255,5629,295"/>
+<area shape="poly" id="edge24_Node000001_Node000025" title=" " alt="" coords="4131,20,4589,37,4828,54,4926,64,5001,76,5147,115,5288,164,5410,213,5497,252,5494,257,5408,218,5286,169,5146,120,4999,81,4925,69,4827,59,4589,43,4131,25"/>
+<area shape="rect" id="Node000026" href="$reacting_2treatment__nonreflecting_8cpp.html" title="A physics&#45;agnostic, low&#45;storage B&#45;spline mass operator." alt="" coords="4632,343,4811,383"/>
+<area shape="poly" id="edge25_Node000001_Node000026" title=" " alt="" coords="4131,19,4635,37,4901,54,5010,64,5094,76,5183,88,5264,94,5338,98,5406,104,5469,118,5529,144,5558,164,5587,188,5615,217,5643,253,5657,267,5673,280,5716,300,5765,313,5818,320,5912,322,5945,319,5960,315,5961,315,5958,314,5929,309,5776,304,5466,314,4962,345,4811,357,4811,352,4961,340,5466,308,5776,299,5930,303,5959,308,5966,313,5964,318,5946,324,5913,327,5817,325,5764,318,5714,305,5671,284,5653,271,5639,256,5611,221,5583,192,5555,168,5526,149,5467,123,5405,109,5337,103,5264,99,5183,94,5093,81,5009,69,4900,59,4634,43,4131,25"/>
+<area shape="rect" id="Node000027" href="$application__base_8cpp.html" title="Building blocks for basic Suzerain&#45;based applications." alt="" coords="1755,343,1962,383"/>
+<area shape="poly" id="edge26_Node000001_Node000027" title=" " alt="" coords="3893,23,3304,27,2487,37,1741,55,1488,67,1408,74,1366,81,1286,110,1225,141,1200,161,1177,186,1155,217,1133,256,1105,301,1087,322,1085,324,1087,324,1118,320,1189,312,1310,309,1492,316,1743,340,1755,342,1755,347,1742,345,1491,321,1310,314,1189,318,1118,325,1086,329,1080,326,1083,319,1101,298,1128,253,1150,214,1173,182,1196,157,1222,137,1284,105,1365,76,1408,69,1488,62,1741,50,2487,32,3304,22,3893,17"/>
+<area shape="rect" id="Node000028" href="$definition__arsel_8cpp.html" title="Routines for adding noise/perturbations to state fields." alt="" coords="6643,79,6837,119"/>
+<area shape="poly" id="edge27_Node000001_Node000028" title=" " alt="" coords="4131,17,4639,20,5362,29,6094,47,6399,60,6631,76,6643,77,6642,83,6630,81,6399,65,6094,52,5362,35,4639,26,4131,22"/>
+<area shape="rect" id="Node000029" href="$definition__grid_8cpp.html" title="Provides classes handling problem grid definitions." alt="" coords="2488,255,2683,295"/>
+<area shape="poly" id="edge28_Node000001_Node000029" title=" " alt="" coords="3977,39,3943,58,3910,81,3849,146,3811,187,3785,209,3757,218,3714,225,3594,236,3269,248,2943,253,2747,257,2683,264,2683,258,2747,252,2942,247,3269,242,3594,230,3714,219,3756,212,3783,204,3807,183,3845,142,3906,77,3940,53,3974,35"/>
+<area shape="rect" id="Node000030" href="$definition__helm_8cpp.html" title="Routines for adding noise/perturbations to state fields." alt="" coords="3013,255,3208,295"/>
+<area shape="poly" id="edge29_Node000001_Node000030" title=" " alt="" coords="4001,44,3944,136,3910,181,3880,209,3850,216,3790,224,3608,241,3208,270,3208,264,3608,235,3790,219,3849,211,3877,204,3906,178,3939,133,3996,42"/>
+<area shape="rect" id="Node000031" href="$definition__isothermal_8cpp.html" title="Provides suzerain::support::definition_isothermal." alt="" coords="3751,431,3945,471"/>
+<area shape="poly" id="edge30_Node000001_Node000031" title=" " alt="" coords="4131,16,4248,19,4384,27,4526,42,4660,66,4720,82,4773,101,4817,123,4851,150,4872,180,4879,214,4869,253,4842,296,4818,320,4794,334,4769,340,4743,341,4686,338,4655,339,4621,345,4554,366,4487,385,4340,410,4193,428,3946,447,3945,442,4192,423,4340,405,4486,380,4553,361,4619,340,4654,334,4686,333,4743,336,4768,335,4792,329,4815,316,4838,293,4864,251,4873,214,4867,182,4847,153,4814,128,4771,106,4719,87,4659,71,4525,48,4384,33,4248,25,4131,22"/>
+<area shape="rect" id="Node000032" href="$definition__largo_8cpp.html" title="Provides suzerain::support::definition_largo." alt="" coords="4603,255,4797,295"/>
+<area shape="poly" id="edge31_Node000001_Node000032" title=" " alt="" coords="4131,22,4262,39,4332,55,4400,76,4486,117,4566,166,4633,214,4680,253,4677,257,4629,219,4563,170,4483,121,4398,81,4331,60,4261,44,4131,27"/>
+<area shape="rect" id="Node000033" href="$definition__radialflow_8cpp.html" title="Routines for adding noise/perturbations to state fields." alt="" coords="3435,255,3629,295"/>
+<area shape="poly" id="edge32_Node000001_Node000033" title=" " alt="" coords="4011,45,4003,82,3988,127,3965,171,3949,192,3931,209,3894,233,3860,247,3828,254,3796,255,3727,252,3688,252,3643,257,3630,259,3629,254,3642,252,3687,247,3727,247,3796,250,3827,248,3859,242,3892,228,3928,205,3945,188,3961,169,3983,125,3998,81,4006,44"/>
+<area shape="rect" id="Node000034" href="$definition__time_8cpp.html" title="Classes handling time advancement settings." alt="" coords="6861,79,7056,119"/>
+<area shape="poly" id="edge33_Node000001_Node000034" title=" " alt="" coords="4131,17,4677,19,5463,27,6262,45,6597,59,6850,76,6861,77,6861,83,6849,81,6596,64,6262,50,5463,33,4677,25,4131,22"/>
+<area shape="rect" id="Node000035" href="$driver__base_8cpp.html" title="Suzerain&#45;based driver logic reusable across multiple applications." alt="" coords="747,431,919,471"/>
+<area shape="poly" id="edge34_Node000001_Node000035" title=" " alt="" coords="3893,22,3200,26,2210,36,1298,54,987,66,889,73,837,81,741,116,696,138,658,164,630,192,615,223,613,239,615,256,622,274,634,293,653,311,673,319,694,320,717,318,764,317,787,324,810,341,824,362,832,386,837,430,832,431,827,387,819,364,806,345,785,329,763,322,717,324,694,325,672,324,650,315,630,296,617,277,610,257,608,239,610,221,626,189,655,160,693,134,738,111,835,76,888,68,987,61,1298,48,2210,31,3200,21,3893,17"/>
+<area shape="rect" id="Node000036" href="$driver__base__summary_8cpp.html" title="Implementation of suzerain::support::driver_base::summary_run." alt="" coords="1429,431,1601,471"/>
+<area shape="poly" id="edge35_Node000001_Node000036" title=" " alt="" coords="3893,22,3293,25,2444,34,1639,52,1345,65,1240,73,1171,81,1087,93,1011,99,942,104,879,112,821,127,767,153,714,195,662,256,640,292,636,312,639,317,646,320,670,324,749,324,800,328,854,340,908,361,962,380,1088,405,1215,423,1428,443,1428,448,1214,429,1087,411,961,385,906,366,853,345,799,333,749,329,669,329,644,325,636,321,631,313,635,290,658,253,710,191,764,148,820,122,878,107,942,99,1011,94,1086,88,1170,76,1240,67,1344,60,1639,47,2444,29,3293,20,3893,17"/>
+<area shape="rect" id="Node000037" href="$field_8cpp.html" title="Logic for saving and loading distributed state fields." alt="" coords="7080,86,7269,111"/>
+<area shape="poly" id="edge36_Node000001_Node000037" title=" " alt="" coords="4131,17,4714,18,5564,25,6011,32,6431,43,6794,57,7068,76,7119,83,7119,89,7068,81,6794,63,6431,48,6011,38,5564,30,4714,23,4131,22"/>
+<area shape="rect" id="Node000038" href="$logging_8cpp.html" title="MPI&#45;aware logging built atop log4cxx." alt="" coords="7294,86,7503,111"/>
+<area shape="poly" id="edge37_Node000001_Node000038" title=" " alt="" coords="4131,17,4750,18,5662,25,6143,33,6595,43,6986,58,7282,76,7338,83,7337,89,7281,81,6986,63,6595,49,6142,38,5662,31,4750,23,4131,22"/>
+<area shape="rect" id="Node000039" href="$overridable_8hpp.html" title="Provides suzerain::support::overridable and suzerain::support::maybe_override." alt="" coords="2887,86,3123,111"/>
+<area shape="poly" id="edge38_Node000001_Node000039" title=" " alt="" coords="3893,31,3228,81,3124,90,3124,85,3228,76,3892,25"/>
+<area shape="rect" id="Node000067" href="$populatable_8hpp.html" title="Provides suzerain::support::populatable and suzerain::support::maybe_populate." alt="" coords="3239,86,3478,111"/>
+<area shape="poly" id="edge131_Node000001_Node000067" title=" " alt="" coords="3904,35,3454,89,3453,83,3903,30"/>
+<area shape="rect" id="Node000069" href="$support_8cpp.html" title="Support logic with complex prerequisites spanning multiple applications." alt="" coords="7528,86,7739,111"/>
+<area shape="poly" id="edge143_Node000001_Node000069" title=" " alt="" coords="4131,16,4790,17,5769,24,6287,31,6776,42,7198,56,7516,76,7572,83,7572,89,7516,81,7197,62,6776,47,6287,36,5769,29,4790,22,4131,22"/>
+<area shape="rect" id="Node000022" href="$operator__explicit_8cpp.html" title="Fully explicit, linearization&#45;ready Navier–Stokes operators." alt="" coords="3417,431,3586,471"/>
+<area shape="poly" id="edge21_Node000021_Node000022" title=" " alt="" coords="3452,391,3486,429,3482,432,3448,395"/>
+<area shape="rect" id="Node000040" href="$definition__scenario_8hpp.html" title="Provides classes handling problem scenario parameters which are either reference quantities or nondim..." alt="" coords="1659,167,1827,207"/>
+<area shape="poly" id="edge39_Node000039_Node000040" title=" " alt="" coords="2874,111,2000,169,1827,182,1826,176,2000,164,2874,106"/>
+<area shape="rect" id="Node000050" href="$perfect_2manufactured__solution_8hpp.html" title="Method of manufactured solution details for the perfect gas application." alt="" coords="2013,167,2211,207"/>
+<area shape="poly" id="edge62_Node000039_Node000050" title=" " alt="" coords="2874,114,2274,169,2212,176,2211,171,2273,164,2873,108"/>
+<area shape="rect" id="Node000051" href="$antioch__constitutive_8hpp.html" title="Class wrapping libantioch functionality for chemically reacting flow." alt="" coords="4995,167,5157,207"/>
+<area shape="poly" id="edge66_Node000039_Node000051" title=" " alt="" coords="3137,109,3228,116,3609,134,4127,153,4994,180,4994,186,4127,158,3609,139,3228,121,3137,115"/>
+<area shape="rect" id="Node000056" href="$definition__channel_8hpp.html" title="Provides classes handling problem definition for channel flow, e.g., bulk density and momentum." alt="" coords="4050,167,4225,207"/>
+<area shape="poly" id="edge84_Node000039_Node000056" title=" " alt="" coords="3138,109,3228,116,4050,177,4049,182,3228,121,3137,114"/>
+<area shape="rect" id="Node000057" href="$definition__filter_8hpp.html" title="Provides classes handling problem definition for filter source term, e.g., strength coefficient." alt="" coords="3334,167,3509,207"/>
+<area shape="poly" id="edge89_Node000039_Node000057" title=" " alt="" coords="3075,112,3334,165,3333,170,3074,117"/>
+<area shape="rect" id="Node000059" href="$definition__grid_8hpp.html" title="Provides classes handling problem grid definitions." alt="" coords="2285,167,2480,207"/>
+<area shape="poly" id="edge100_Node000039_Node000059" title=" " alt="" coords="2909,116,2481,175,2480,169,2908,111"/>
+<area shape="rect" id="Node000062" href="$definition__helm_8hpp.html" title="Provides suzerain::support::definition_helm." alt="" coords="2744,167,2939,207"/>
+<area shape="poly" id="edge113_Node000039_Node000062" title=" " alt="" coords="2972,120,2879,169,2876,164,2970,115"/>
+<area shape="rect" id="Node000063" href="$definition__isothermal_8hpp.html" title="Provides suzerain::support::definition_isothermal." alt="" coords="2879,343,3073,383"/>
+<area shape="poly" id="edge117_Node000039_Node000063" title=" " alt="" coords="3005,125,2981,343,2975,342,3000,125"/>
+<area shape="rect" id="Node000064" href="$definition__largo_8hpp.html" title="Provides suzerain::support::definition_largo." alt="" coords="4249,167,4444,207"/>
+<area shape="poly" id="edge123_Node000039_Node000064" title=" " alt="" coords="3137,109,3228,116,3512,129,3733,133,3954,140,4084,149,4238,164,4249,165,4249,171,4237,169,4084,155,3954,145,3733,138,3512,134,3228,121,3137,115"/>
+<area shape="rect" id="Node000065" href="$definition__radialflow_8hpp.html" title="Routines for adding noise/perturbations to state fields." alt="" coords="3064,167,3259,207"/>
+<area shape="poly" id="edge127_Node000039_Node000065" title=" " alt="" coords="3040,116,3128,164,3126,169,3037,120"/>
+<area shape="rect" id="Node000066" href="$overridable_8cpp.html" title="Provides an abstract base class for handling problem definitions." alt="" coords="1400,174,1635,199"/>
+<area shape="poly" id="edge130_Node000039_Node000066" title=" " alt="" coords="2874,105,2642,111,2337,123,1994,142,1647,169,1588,177,1587,171,1646,164,1993,136,2337,118,2642,106,2873,100"/>
+<area shape="poly" id="edge40_Node000040_Node000005" title=" " alt="" coords="1645,210,1482,234,1323,257,1311,259,1310,254,1322,252,1482,228,1645,204"/>
+<area shape="poly" id="edge46_Node000040_Node000009" title=" " alt="" coords="1663,213,1503,257,1501,252,1661,208"/>
+<area shape="poly" id="edge51_Node000040_Node000010" title=" " alt="" coords="1645,209,1438,216,1130,221,833,232,724,243,686,249,661,257,632,273,612,291,597,313,582,344,575,366,572,389,571,430,566,430,567,389,570,365,578,342,592,310,608,287,629,269,659,252,685,244,723,237,832,227,1130,216,1438,210,1645,204"/>
+<area shape="poly" id="edge54_Node000040_Node000011" title=" " alt="" coords="1841,193,2000,204,2348,225,2500,235,2695,252,2762,259,2761,265,2694,257,2499,241,2347,231,2000,209,1840,198"/>
+<area shape="rect" id="Node000041" href="$perfect_2driver_8hpp.html" title="A driver for nondimensional perfect gas simulations." alt="" coords="2234,438,2406,463"/>
+<area shape="poly" id="edge41_Node000040_Node000041" title=" " alt="" coords="1841,187,1906,193,1978,205,2051,224,2121,252,2166,286,2221,339,2312,436,2308,440,2218,343,2163,290,2119,257,2050,229,1976,210,1905,198,1840,192"/>
+<area shape="rect" id="Node000043" href="$navier__stokes_8hpp.html" title="Implementation of nonlinear Navier–Stokes spatial operators." alt="" coords="869,255,1017,295"/>
+<area shape="poly" id="edge47_Node000040_Node000043" title=" " alt="" coords="1645,209,1500,228,1387,237,1131,257,1017,269,1017,263,1130,252,1386,232,1500,222,1645,204"/>
+<area shape="rect" id="Node000045" href="$operator__nonlinear_8cpp.html" title="A nonlinear Navier–Stokes spatial operator." alt="" coords="1343,343,1505,383"/>
+<area shape="poly" id="edge53_Node000040_Node000045" title=" " alt="" coords="1706,217,1648,257,1620,278,1591,297,1535,324,1480,345,1478,340,1532,319,1588,292,1617,274,1645,253,1703,212"/>
+<area shape="rect" id="Node000046" href="$apps_2perfect_2operator__mass__isothermal_8cpp.html" title="Provides suzerain::perfect::operator_mass_isothermal." alt="" coords="1659,255,1827,295"/>
+<area shape="poly" id="edge52_Node000040_Node000046" title=" " alt="" coords="1745,221,1745,254,1740,254,1740,221"/>
+<area shape="rect" id="Node000047" href="$perfect_2treatment__nonreflecting_8cpp.html" title="A physics&#45;agnostic, low&#45;storage B&#45;spline mass operator." alt="" coords="1146,343,1318,383"/>
+<area shape="poly" id="edge55_Node000040_Node000047" title=" " alt="" coords="1677,214,1633,233,1591,257,1570,277,1561,287,1546,297,1462,317,1319,347,1318,342,1461,312,1544,292,1557,283,1566,274,1588,253,1631,228,1674,209"/>
+<area shape="rect" id="Node000048" href="$perfect_2treatment__nonreflecting_8hpp.html" title="A physics&#45;agnostic, low&#45;storage B&#45;spline mass operator." alt="" coords="673,255,845,295"/>
+<area shape="poly" id="edge56_Node000040_Node000048" title=" " alt="" coords="1645,209,1525,222,1423,229,1249,233,1076,238,975,245,856,257,845,259,845,254,856,252,974,239,1075,232,1249,228,1422,224,1524,217,1645,204"/>
+<area shape="poly" id="edge42_Node000041_Node000006" title=" " alt="" coords="2221,458,1632,482,831,521,643,534,643,528,831,516,1632,477,2220,453"/>
+<area shape="poly" id="edge43_Node000041_Node000007" title=" " alt="" coords="2250,468,2215,473,1891,503,1569,523,1285,534,1072,539,1072,533,1285,528,1569,517,1890,498,2214,468,2249,463"/>
+<area shape="poly" id="edge44_Node000041_Node000008" title=" " alt="" coords="2378,464,2605,523,2604,529,2376,469"/>
+<area shape="rect" id="Node000042" href="$main__summary_8cpp.html" title="Application executing suzerain::support::driver_base::summary_run." alt="" coords="2115,526,2349,551"/>
+<area shape="poly" id="edge45_Node000041_Node000042" title=" " alt="" coords="2300,475,2246,527,2242,524,2297,471"/>
+<area shape="poly" id="edge49_Node000043_Node000010" title=" " alt="" coords="855,297,781,303,721,302,694,304,667,311,640,324,611,345,595,364,584,387,575,431,569,430,579,385,591,361,608,341,637,319,666,306,693,299,721,297,781,298,855,292"/>
+<area shape="rect" id="Node000044" href="$navier__stokes_8cpp.html" title="Implementation of nonlinear Navier–Stokes spatial operators." alt="" coords="974,343,1122,383"/>
+<area shape="poly" id="edge48_Node000043_Node000044" title=" " alt="" coords="978,301,1026,340,1023,345,975,305"/>
+<area shape="poly" id="edge50_Node000043_Node000045" title=" " alt="" coords="1031,291,1036,292,1330,340,1343,342,1342,348,1329,345,1036,297,1030,296"/>
+<area shape="poly" id="edge57_Node000048_Node000007" title=" " alt="" coords="804,300,837,324,873,354,906,389,933,429,951,482,959,525,954,526,946,483,928,432,902,392,869,357,834,328,801,304"/>
+<area shape="poly" id="edge61_Node000048_Node000047" title=" " alt="" coords="859,292,1134,340,1146,342,1145,348,1133,345,858,298"/>
+<area shape="rect" id="Node000049" href="$operator__hybrid__isothermal_8hpp.html" title="A hybrid implicit/explicit Navier–Stokes operator for isothermal wall(s)." alt="" coords="622,343,797,383"/>
+<area shape="poly" id="edge58_Node000048_Node000049" title=" " alt="" coords="743,308,723,344,718,341,739,305"/>
+<area shape="poly" id="edge59_Node000049_Node000007" title=" " alt="" coords="711,396,718,434,725,453,737,469,759,488,786,504,844,524,842,529,783,509,756,493,733,472,721,455,713,436,706,397"/>
+<area shape="poly" id="edge60_Node000049_Node000010" title=" " alt="" coords="669,392,602,433,600,428,666,387"/>
+<area shape="poly" id="edge64_Node000050_Node000009" title=" " alt="" coords="1999,205,1534,263,1534,258,1999,200"/>
+<area shape="poly" id="edge63_Node000050_Node000041" title=" " alt="" coords="2146,214,2206,270,2267,341,2298,393,2318,436,2313,439,2293,396,2263,344,2202,273,2143,217"/>
+<area shape="poly" id="edge65_Node000050_Node000045" title=" " alt="" coords="2010,213,1949,232,1891,257,1876,267,1866,277,1856,288,1840,297,1793,315,1753,325,1682,334,1609,335,1518,345,1506,347,1505,342,1517,340,1609,330,1681,328,1752,320,1792,310,1838,292,1852,283,1862,273,1873,263,1888,252,1948,227,2008,208"/>
+<area shape="poly" id="edge67_Node000051_Node000013" title=" " alt="" coords="5147,209,5279,252,5277,257,5145,214"/>
+<area shape="poly" id="edge79_Node000051_Node000020" title=" " alt="" coords="5034,216,4953,258,4904,280,4854,297,4754,323,4651,341,4475,360,4474,354,4651,335,4753,317,4853,292,4902,275,4950,253,5032,211"/>
+<area shape="poly" id="edge83_Node000051_Node000025" title=" " alt="" coords="5171,203,5441,253,5440,258,5170,208"/>
+<area shape="rect" id="Node000052" href="$reacting_2driver_8hpp.html" title="A driver for reacting flow simulations." alt="" coords="4175,438,4353,463"/>
+<area shape="poly" id="edge68_Node000051_Node000052" title=" " alt="" coords="5146,211,5172,229,5193,253,5211,289,5219,321,5213,353,5193,385,5176,396,5148,405,5068,421,4960,433,4834,441,4570,450,4353,452,4353,447,4570,445,4834,436,4959,428,5067,416,5147,400,5173,391,5189,381,5209,351,5213,322,5206,291,5188,256,5169,233,5143,215"/>
+<area shape="rect" id="Node000053" href="$reacting_2manufactured__solution_8hpp.html" title="Method of manufactured solution details for the reacting flow application." alt="" coords="4973,255,5179,295"/>
+<area shape="poly" id="edge72_Node000051_Node000053" title=" " alt="" coords="5079,221,5079,254,5073,254,5073,221"/>
+<area shape="rect" id="Node000054" href="$operator__explicit_8hpp.html" title="Fully explicit, linearization&#45;ready Navier–Stokes operators." alt="" coords="3883,343,4053,383"/>
+<area shape="poly" id="edge78_Node000051_Node000054" title=" " alt="" coords="4981,193,4406,217,4129,235,4038,246,3996,257,3982,275,3973,298,3969,343,3964,342,3968,297,3977,273,3993,252,4037,241,4128,230,4406,211,4981,188"/>
+<area shape="rect" id="Node000055" href="$quantities_8hpp.html" title="Sampling logistics for mean quantity profiles." alt="" coords="5755,262,5962,287"/>
+<area shape="poly" id="edge80_Node000051_Node000055" title=" " alt="" coords="5171,196,5755,259,5755,265,5171,201"/>
+<area shape="poly" id="edge69_Node000052_Node000016" title=" " alt="" coords="4367,458,5212,527,5212,533,4367,463"/>
+<area shape="poly" id="edge70_Node000052_Node000017" title=" " alt="" coords="4267,477,4267,518,4261,518,4261,477"/>
+<area shape="poly" id="edge71_Node000052_Node000018" title=" " alt="" coords="4161,461,2940,535,2940,530,4161,456"/>
+<area shape="poly" id="edge74_Node000053_Node000019" title=" " alt="" coords="5079,309,5079,342,5073,342,5073,309"/>
+<area shape="poly" id="edge73_Node000053_Node000052" title=" " alt="" coords="5029,303,4936,346,4880,368,4823,385,4697,413,4569,431,4451,443,4354,449,4353,444,4451,437,4569,426,4696,407,4822,380,4878,363,4934,341,5027,298"/>
+<area shape="poly" id="edge75_Node000053_Node000054" title=" " alt="" coords="4960,288,4053,357,4053,352,4960,282"/>
+<area shape="poly" id="edge76_Node000054_Node000017" title=" " alt="" coords="4013,387,4233,516,4230,521,4011,392"/>
+<area shape="poly" id="edge77_Node000054_Node000022" title=" " alt="" coords="3870,385,3587,436,3586,431,3869,379"/>
+<area shape="poly" id="edge82_Node000055_Node000023" title=" " alt="" coords="5869,300,5883,349,5878,350,5863,301"/>
+<area shape="poly" id="edge81_Node000055_Node000052" title=" " alt="" coords="5791,293,5546,338,5391,364,5235,385,4985,411,4737,429,4354,449,4353,444,4737,424,4985,405,5234,380,5391,359,5545,333,5790,287"/>
+<area shape="poly" id="edge85_Node000056_Node000014" title=" " alt="" coords="4218,208,4374,252,4373,257,4216,213"/>
+<area shape="poly" id="edge88_Node000056_Node000020" title=" " alt="" coords="4203,210,4244,229,4284,253,4337,298,4376,341,4372,344,4333,301,4281,257,4242,233,4201,214"/>
+<area shape="poly" id="edge86_Node000056_Node000052" title=" " alt="" coords="4191,212,4215,230,4234,253,4247,277,4256,304,4266,357,4269,404,4268,438,4262,438,4263,404,4261,357,4251,305,4242,280,4230,256,4211,234,4188,216"/>
+<area shape="poly" id="edge87_Node000056_Node000054" title=" " alt="" coords="4044,213,3987,233,3965,245,3952,256,3944,277,3944,299,3951,322,3959,341,3955,344,3946,324,3939,300,3938,276,3947,253,3962,240,3984,228,4042,208"/>
+<area shape="poly" id="edge90_Node000057_Node000015" title=" " alt="" coords="3506,208,3672,252,3671,257,3504,213"/>
+<area shape="poly" id="edge93_Node000057_Node000021" title=" " alt="" coords="3399,219,3381,256,3378,275,3381,294,3393,319,3409,341,3405,344,3389,322,3376,295,3372,275,3376,254,3395,217"/>
+<area shape="poly" id="edge91_Node000057_Node000052" title=" " alt="" coords="3523,204,3668,209,3878,216,4077,228,4148,238,4189,252,4202,266,4214,286,4235,340,4264,437,4259,438,4230,341,4209,289,4198,269,4187,257,4147,243,4076,233,3878,221,3668,215,3522,209"/>
+<area shape="poly" id="edge92_Node000057_Node000054" title=" " alt="" coords="3414,221,3411,259,3415,277,3425,293,3446,304,3487,315,3610,333,3754,346,3883,354,3883,360,3754,351,3609,338,3486,320,3444,309,3421,297,3410,279,3406,259,3409,220"/>
+<area shape="rect" id="Node000058" href="$operator__nonlinear__fwd_8hpp.html" title="Declarations of Nonlinear Navier–Stokes spatial operators implemented within operator_nonlinear...." alt="" coords="4006,255,4175,295"/>
+<area shape="poly" id="edge94_Node000057_Node000058" title=" " alt="" coords="3523,204,3791,239,4006,263,4005,268,3790,245,3522,209"/>
+<area shape="poly" id="edge97_Node000058_Node000020" title=" " alt="" coords="4170,296,4325,340,4323,345,4169,301"/>
+<area shape="poly" id="edge98_Node000058_Node000021" title=" " alt="" coords="3993,291,3509,353,3508,348,3992,286"/>
+<area shape="poly" id="edge99_Node000058_Node000026" title=" " alt="" coords="4189,287,4632,347,4631,352,4189,292"/>
+<area shape="poly" id="edge95_Node000058_Node000052" title=" " alt="" coords="4120,303,4197,381,4253,436,4250,440,4193,385,4116,306"/>
+<area shape="poly" id="edge96_Node000058_Node000054" title=" " alt="" coords="4054,305,3997,345,3994,340,4051,300"/>
+<area shape="poly" id="edge101_Node000059_Node000008" title=" " alt="" coords="2378,220,2376,257,2384,294,2407,335,2436,374,2469,409,2504,441,2574,491,2627,524,2624,528,2571,496,2501,445,2465,413,2432,378,2402,338,2379,296,2371,257,2373,220"/>
+<area shape="poly" id="edge102_Node000059_Node000018" title=" " alt="" coords="2394,219,2410,257,2434,293,2477,335,2526,372,2577,406,2629,436,2729,484,2811,516,2809,521,2727,489,2626,441,2574,411,2522,377,2474,339,2430,296,2405,259,2389,221"/>
+<area shape="poly" id="edge112_Node000059_Node000029" title=" " alt="" coords="2441,209,2542,252,2540,257,2438,214"/>
+<area shape="rect" id="Node000060" href="$application__base_8hpp.html" title="Building blocks for basic Suzerain&#45;based applications." alt="" coords="1902,255,2109,295"/>
+<area shape="poly" id="edge103_Node000059_Node000060" title=" " alt="" coords="2287,212,2089,257,2087,252,2286,207"/>
+<area shape="poly" id="edge104_Node000060_Node000004" title=" " alt="" coords="1910,300,1681,353,1680,347,1909,295"/>
+<area shape="poly" id="edge105_Node000060_Node000027" title=" " alt="" coords="1962,304,1892,345,1889,340,1960,299"/>
+<area shape="rect" id="Node000061" href="$driver__base_8hpp.html" title="Suzerain&#45;based driver logic reusable across multiple applications." alt="" coords="1986,343,2158,383"/>
+<area shape="poly" id="edge106_Node000060_Node000061" title=" " alt="" coords="2031,304,2059,341,2055,344,2026,307"/>
+<area shape="poly" id="edge110_Node000061_Node000035" title=" " alt="" coords="1972,385,1665,416,1366,435,1107,446,920,451,919,445,1107,441,1366,430,1665,410,1972,380"/>
+<area shape="poly" id="edge111_Node000061_Node000036" title=" " alt="" coords="1973,385,1601,441,1601,435,1972,380"/>
+<area shape="poly" id="edge107_Node000061_Node000041" title=" " alt="" coords="2140,385,2288,435,2286,440,2139,390"/>
+<area shape="poly" id="edge108_Node000061_Node000042" title=" " alt="" coords="2101,391,2223,524,2219,527,2097,395"/>
+<area shape="poly" id="edge109_Node000061_Node000052" title=" " alt="" coords="2171,364,2914,387,3430,405,3957,428,4175,441,4174,446,3957,433,3430,411,2913,392,2171,369"/>
+<area shape="poly" id="edge115_Node000062_Node000007" title=" " alt="" coords="2731,205,2608,226,2477,257,2389,289,2324,322,2258,354,2170,385,2016,423,1894,443,1612,473,1321,507,1073,530,1072,525,1320,501,1612,468,1893,438,2015,418,2169,380,2256,349,2322,317,2387,284,2475,252,2607,220,2730,199"/>
+<area shape="poly" id="edge116_Node000062_Node000030" title=" " alt="" coords="2914,208,3053,252,3051,257,2913,213"/>
+<area shape="poly" id="edge114_Node000062_Node000041" title=" " alt="" coords="2804,217,2748,257,2723,278,2696,297,2650,315,2612,324,2573,331,2526,345,2420,395,2340,440,2337,436,2417,391,2524,340,2572,325,2611,318,2648,310,2693,292,2720,274,2745,253,2801,213"/>
+<area shape="poly" id="edge119_Node000063_Node000008" title=" " alt="" coords="2930,392,2671,528,2668,524,2927,387"/>
+<area shape="poly" id="edge121_Node000063_Node000018" title=" " alt="" coords="2959,396,2881,520,2876,517,2954,393"/>
+<area shape="poly" id="edge122_Node000063_Node000031" title=" " alt="" coords="3087,372,3751,437,3750,442,3087,378"/>
+<area shape="poly" id="edge118_Node000063_Node000041" title=" " alt="" coords="2865,381,2407,441,2406,435,2865,376"/>
+<area shape="poly" id="edge120_Node000063_Node000052" title=" " alt="" coords="3087,369,4175,441,4174,446,3087,374"/>
+<area shape="poly" id="edge126_Node000064_Node000032" title=" " alt="" coords="4438,207,4623,252,4622,257,4437,212"/>
+<area shape="poly" id="edge124_Node000064_Node000041" title=" " alt="" coords="4236,210,3966,257,3905,278,3878,289,3842,297,3695,320,3570,330,3459,333,3355,331,3141,327,3015,331,2867,345,2723,367,2582,393,2367,441,2366,435,2581,388,2722,361,2866,340,3014,326,3141,321,3356,326,3459,328,3569,325,3694,314,3841,292,3876,283,3903,273,3965,252,4235,204"/>
+<area shape="poly" id="edge125_Node000064_Node000052" title=" " alt="" coords="4459,199,4505,219,4525,234,4542,253,4548,264,4548,274,4543,295,4525,346,4510,365,4488,385,4457,405,4423,420,4354,441,4353,435,4421,415,4455,400,4485,381,4507,362,4520,343,4537,294,4543,273,4542,265,4538,256,4522,238,4502,224,4457,204"/>
+<area shape="poly" id="edge129_Node000065_Node000033" title=" " alt="" coords="3257,207,3451,252,3450,257,3255,212"/>
+<area shape="poly" id="edge128_Node000065_Node000041" title=" " alt="" coords="3197,214,3214,233,3227,254,3231,276,3222,296,3209,305,3188,312,3126,322,2954,334,2779,339,2675,345,2581,367,2490,393,2351,440,2349,435,2488,388,2580,362,2674,340,2779,334,2954,329,3126,317,3187,307,3207,300,3218,293,3226,276,3222,256,3209,237,3193,218"/>
+<area shape="poly" id="edge132_Node000067_Node000040" title=" " alt="" coords="3226,115,3136,121,2817,138,2568,146,2320,154,2000,169,1827,181,1827,176,2000,164,2319,149,2568,141,2817,133,3136,116,3226,109"/>
+<area shape="poly" id="edge133_Node000067_Node000050" title=" " alt="" coords="3226,114,3136,121,2894,135,2705,143,2516,152,2274,169,2212,176,2211,170,2273,164,2516,146,2704,138,2893,130,3136,116,3225,109"/>
+<area shape="poly" id="edge134_Node000067_Node000051" title=" " alt="" coords="3492,104,4994,179,4994,184,3492,109"/>
+<area shape="poly" id="edge135_Node000067_Node000056" title=" " alt="" coords="3476,110,4050,173,4050,178,3476,116"/>
+<area shape="poly" id="edge136_Node000067_Node000057" title=" " alt="" coords="3377,121,3409,165,3405,168,3373,124"/>
+<area shape="poly" id="edge137_Node000067_Node000059" title=" " alt="" coords="3226,114,2480,179,2480,174,3225,109"/>
+<area shape="poly" id="edge138_Node000067_Node000062" title=" " alt="" coords="3276,116,2939,172,2938,167,3275,111"/>
+<area shape="poly" id="edge139_Node000067_Node000063" title=" " alt="" coords="3348,125,3325,168,3311,206,3304,238,3292,267,3266,297,3222,325,3172,344,3122,356,3074,363,3073,357,3121,351,3171,339,3219,320,3262,293,3287,264,3299,236,3306,204,3320,166,3343,122"/>
+<area shape="poly" id="edge140_Node000067_Node000064" title=" " alt="" coords="3492,104,3831,125,4034,142,4238,164,4249,166,4249,171,4237,169,4034,147,3830,130,3492,109"/>
+<area shape="poly" id="edge141_Node000067_Node000065" title=" " alt="" coords="3321,119,3206,169,3204,164,3319,114"/>
+<area shape="rect" id="Node000068" href="$populatable_8cpp.html" title="Provides suzerain::support::populatable and suzerain::support::maybe_populate." alt="" coords="3533,174,3771,199"/>
+<area shape="poly" id="edge142_Node000067_Node000068" title=" " alt="" coords="3412,113,3613,171,3612,176,3410,118"/>
+</map>

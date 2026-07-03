@@ -1,0 +1,5 @@
+<map id="suzerain::coalescing_pool&lt; T, ArenaAllocator, Policy &gt;" name="suzerain::coalescing_pool&lt; T, ArenaAllocator, Policy &gt;">
+<area shape="rect" id="Node000001" title="A free list&#45;based memory pool designed for memory&#45;constrained situations where large,..." alt="" coords="5,119,185,853"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="25,5,166,71"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="98,85,98,118,93,118,93,85"/>
+</map>

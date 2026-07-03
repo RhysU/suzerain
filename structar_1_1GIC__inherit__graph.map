@@ -1,0 +1,9 @@
+<map id="ar::GIC&lt; AlphaNumerator, AlphaDenominator &gt;" name="ar::GIC&lt; AlphaNumerator, AlphaDenominator &gt;">
+<area shape="rect" id="Node000001" title="Represents the generalized information criterion (GIC)." alt="" coords="5,120,189,200"/>
+<area shape="rect" id="Node000003" href="$structar_1_1GIC.html" title=" " alt="" coords="29,263,166,328"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="100,214,100,263,95,263,95,214"/>
+<area shape="rect" id="Node000002" href="$structar_1_1criterion.html" title="Criteria for autoregressive model order selection following Broersen." alt="" coords="25,5,170,71"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="100,84,100,120,95,120,95,84"/>
+<area shape="rect" id="Node000004" href="$structar_1_1AIC.html" title="Represents the Akaike information criterion (AIC)." alt="" coords="69,377,126,443"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="100,342,100,377,95,377,95,342"/>
+</map>

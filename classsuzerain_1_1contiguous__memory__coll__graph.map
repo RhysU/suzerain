@@ -1,0 +1,7 @@
+<map id="suzerain::contiguous_memory&lt; Element, Allocator &gt;" name="suzerain::contiguous_memory&lt; Element, Allocator &gt;">
+<area shape="rect" id="Node000001" title="At construction, allocates a contiguous block of memory containing Elements allocated using Allocator..." alt="" coords="5,248,232,448"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="50,133,187,199"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="121,213,121,248,116,248,116,213"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="107,5,130,71"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="121,71,121,117,116,117,116,71"/>
+</map>

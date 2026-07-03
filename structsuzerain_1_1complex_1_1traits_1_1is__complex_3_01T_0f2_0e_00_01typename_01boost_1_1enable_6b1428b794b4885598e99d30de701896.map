@@ -1,0 +1,5 @@
+<map id="suzerain::complex::traits::is_complex&lt; T[2], typename boost::enable_if&lt; boost::is_arithmetic&lt; T &gt; &gt;::type &gt;" name="suzerain::complex::traits::is_complex&lt; T[2], typename boost::enable_if&lt; boost::is_arithmetic&lt; T &gt; &gt;::type &gt;">
+<area shape="rect" id="Node000001" title="A specialization of is_complex extended to recognize FFTW&#45;like complex types." alt="" coords="5,119,199,243"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="42,5,162,71"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="105,84,105,118,99,118,99,84"/>
+</map>

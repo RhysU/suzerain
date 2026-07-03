@@ -1,0 +1,4 @@
+<map id="suzerain/mpi.h" name="suzerain/mpi.h">
+<area shape="rect" id="Node000001" title="Provides a small wrapper over the MPI vendor&#39;s mpi.h that hides incompatibilities as much as possible..." alt="" coords="5,5,124,31"/>
+<area shape="poly" id="edge1_Node000001_Node000001" title=" " alt="" coords="125,11,151,18,139,24,137,19,145,18,124,16"/>
+</map>

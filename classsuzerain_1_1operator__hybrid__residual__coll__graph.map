@@ -1,0 +1,23 @@
+<map id="suzerain::operator_hybrid_residual" name="suzerain::operator_hybrid_residual">
+<area shape="rect" id="Node000001" title="Builds a hybrid implicit/explicit&#45;ready lowstorage::operator_nonlinear from an implicit&#45;agnostic lows..." alt="" coords="162,899,363,999"/>
+<area shape="rect" id="Node000002" href="$classsuzerain_1_1lowstorage_1_1operator__nonlinear.html" title=" " alt="" coords="5,573,179,703"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="100,716,113,776,123,806,137,835,162,868,193,897,189,901,158,871,132,837,118,809,107,778,95,717"/>
+<area shape="rect" id="Node000003" href="$classsuzerain_1_1lowstorage_1_1operator__nonlinear.html" title="Defines the nonlinear operator interface required for timestepping." alt="" coords="65,57,239,172"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="100,185,82,216,69,249,59,291,54,335,54,423,64,505,77,573,72,574,58,505,49,423,49,334,54,290,64,247,78,214,96,182"/>
+<area shape="rect" id="Node000010" href="$classsuzerain_1_1lowstorage_1_1operator__nonlinear.html" title=" " alt="" coords="135,368,308,497"/>
+<area shape="poly" id="edge10_Node000010_Node000003" title=" " alt="" coords="185,184,205,247,216,309,222,368,216,368,211,310,200,249,180,186"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="407,727,630,836"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="437,838,353,892,351,888,434,834"/>
+<area shape="rect" id="Node000005" href="$classsuzerain_1_1lowstorage_1_1linear__operator.html" title=" " alt="" coords="631,316,823,549"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="738,550,735,589,727,630,713,669,693,704,672,727,646,744,643,740,668,722,689,701,709,667,722,628,730,589,733,549"/>
+<area shape="rect" id="Node000006" href="$classsuzerain_1_1lowstorage_1_1linear__operator.html" title="Defines the linear operator interface required for low storage timestepping." alt="" coords="631,5,823,224"/>
+<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="729,237,729,316,724,316,724,237"/>
+<area shape="rect" id="Node000007" title=" " alt="" coords="396,400,545,465"/>
+<area shape="poly" id="edge6_Node000004_Node000007" title=" " alt="" coords="480,479,514,726,509,727,474,480"/>
+<area shape="rect" id="Node000009" title=" " alt="" coords="147,727,378,836"/>
+<area shape="poly" id="edge11_Node000009_Node000007" title=" " alt="" coords="424,476,321,552,297,561,287,566,278,575,262,611,254,651,253,690,255,726,250,727,247,690,249,650,257,609,274,572,284,561,294,556,319,547,421,472"/>
+<area shape="rect" id="Node000008" title=" " alt="" coords="459,82,482,147"/>
+<area shape="poly" id="edge7_Node000007_Node000008" title=" " alt="" coords="473,147,473,383,468,383,468,147"/>
+<area shape="poly" id="edge8_Node000001_Node000009" title=" " alt="" coords="265,836,265,882,260,882,260,836"/>
+<area shape="poly" id="edge9_Node000009_Node000010" title=" " alt="" coords="213,498,206,595,209,649,219,702,221,711,216,712,213,703,203,650,200,595,207,498"/>
+</map>

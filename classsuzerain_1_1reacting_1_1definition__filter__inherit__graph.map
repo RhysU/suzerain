@@ -1,0 +1,17 @@
+<map id="suzerain::reacting::definition_filter" name="suzerain::reacting::definition_filter">
+<area shape="rect" id="Node000001" title="Holds parameters defining filter source." alt="" coords="353,332,519,732"/>
+<area shape="rect" id="Node000002" href="$classsuzerain_1_1support_1_1definition__base.html" title="An abstract base class for defining a collection of related options." alt="" coords="5,175,171,275"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="156,282,355,456,351,460,152,286"/>
+<area shape="rect" id="Node000003" href="$classsuzerain_1_1support_1_1loadable.html" title="Abstract interface indicating details may be loaded from an ESIO handle." alt="" coords="195,175,330,275"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="300,286,355,384,351,387,295,289"/>
+<area shape="rect" id="Node000004" href="$classsuzerain_1_1support_1_1overridable.html" title=" " alt="" coords="354,168,518,283"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="439,296,439,331,433,331,433,296"/>
+<area shape="rect" id="Node000005" href="$classsuzerain_1_1support_1_1overridable.html" title="Abstract interface indicating data may be overridden from another instance." alt="" coords="349,5,518,105"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="437,119,438,168,432,168,432,119"/>
+<area shape="rect" id="Node000006" href="$classsuzerain_1_1support_1_1populatable.html" title=" " alt="" coords="542,168,709,283"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="586,296,521,399,516,396,581,293"/>
+<area shape="rect" id="Node000007" href="$classsuzerain_1_1support_1_1populatable.html" title="Abstract interface indicating data may be populated from another instance." alt="" coords="542,5,714,105"/>
+<area shape="poly" id="edge6_Node000006_Node000007" title=" " alt="" coords="630,119,629,168,624,168,624,119"/>
+<area shape="rect" id="Node000008" href="$classsuzerain_1_1support_1_1savable.html" title="Abstract interface indicating details may be saved into an ESIO handle." alt="" coords="733,175,867,275"/>
+<area shape="poly" id="edge7_Node000001_Node000008" title=" " alt="" coords="733,286,520,464,517,460,729,282"/>
+</map>

@@ -1,0 +1,5 @@
+<map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
+<area shape="rect" id="Node000000" href="$structsuzerain_1_1mpi_1_1datatype.html" title=" " alt="" coords="5,13,181,67"/>
+<area shape="rect" id="Node000001" href="$structsuzerain_1_1mpi_1_1datatype_3_01T_00_01typename_01boost_1_1enable__if_3_01boost_1_1is__func1d35993cdcc8c2cd59974c3d1e216be.html" title="Removes any const or volatile modifiers on a fundamental MPI_Datatype." alt="" coords="229,5,440,75"/>
+<area shape="poly" id="edge199_Node000000_Node000001" title=" " alt="" coords="195,37,229,37,229,43,195,43"/>
+</map>

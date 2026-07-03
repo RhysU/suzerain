@@ -1,0 +1,5 @@
+<map id="suzerain::coalescing_pool&lt; T, ArenaAllocator, Policy &gt;::blocks" name="suzerain::coalescing_pool&lt; T, ArenaAllocator, Policy &gt;::blocks">
+<area shape="rect" id="Node000001" title="A contiguous sequence of blocks acquired from a coalescing_pool." alt="" coords="5,5,185,620"/>
+<area shape="rect" id="Node000002" href="$classsuzerain_1_1coalescing__pool_1_1scoped__blocks.html" title="A &quot;scoped&quot; blocks instance to facilitate the resource acquisition is initialization pattern." alt="" coords="5,668,185,1303"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="98,633,98,668,93,668,93,633"/>
+</map>

@@ -1,0 +1,30 @@
+<map id="apps/reacting/definition_filter.hpp" name="apps/reacting/definition_filter.hpp">
+<area shape="rect" id="Node000001" title="Provides classes handling problem definition for filter source term, e.g., strength coefficient." alt="" coords="403,5,578,45"/>
+<area shape="rect" id="Node000002" href="$definition__filter_8cpp.html" title="Provides classes handling problem definition for filter source term, e.g., strength coefficient." alt="" coords="227,93,402,133"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="441,54,354,96,352,91,439,49"/>
+<area shape="rect" id="Node000003" href="$reacting_2driver_8hpp.html" title="A driver for reacting flow simulations." alt="" coords="184,189,363,214"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="476,59,450,98,415,135,362,169,311,191,308,186,360,164,412,131,446,94,472,56"/>
+<area shape="rect" id="Node000007" href="$operator__explicit_8hpp.html" title="Fully explicit, linearization&#45;ready Navier–Stokes operators." alt="" coords="387,181,557,221"/>
+<area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="490,59,477,181,471,181,485,59"/>
+<area shape="rect" id="Node000009" href="$reacting_2operator__nonlinear_8hpp.html" title="Implementation of Nonlinear Navier–Stokes spatial operators declared within operator_nonlinear_fwd...." alt="" coords="978,181,1147,221"/>
+<area shape="poly" id="edge9_Node000001_Node000009" title=" " alt="" coords="584,46,749,91,892,137,1012,179,1010,184,891,142,747,96,582,51"/>
+<area shape="rect" id="Node000010" href="$operator__nonlinear__fwd_8hpp.html" title="Declarations of Nonlinear Navier–Stokes spatial operators implemented within operator_nonlinear...." alt="" coords="566,93,735,133"/>
+<area shape="poly" id="edge11_Node000001_Node000010" title=" " alt="" coords="539,49,617,91,614,96,536,54"/>
+<area shape="rect" id="Node000004" href="$reacting_2driver_8cpp.html" title="A driver for reacting flow simulations." alt="" coords="5,277,184,302"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="238,222,120,279,118,274,236,218"/>
+<area shape="rect" id="Node000005" href="$reacting_2main__advance_8cpp.html" title="Application executing suzerain::reacting::driver_advance::run." alt="" coords="392,269,539,309"/>
+<area shape="poly" id="edge4_Node000003_Node000005" title=" " alt="" coords="313,217,424,267,422,272,311,222"/>
+<area shape="rect" id="Node000006" href="$main__init_8cpp.html" title="Application executing suzerain::reacting::driver_init::run." alt="" coords="208,269,355,309"/>
+<area shape="poly" id="edge5_Node000003_Node000006" title=" " alt="" coords="278,227,282,269,277,269,273,228"/>
+<area shape="poly" id="edge7_Node000007_Node000005" title=" " alt="" coords="472,235,469,269,464,269,467,235"/>
+<area shape="rect" id="Node000008" href="$operator__explicit_8cpp.html" title="Fully explicit, linearization&#45;ready Navier–Stokes operators." alt="" coords="767,269,937,309"/>
+<area shape="poly" id="edge8_Node000007_Node000008" title=" " alt="" coords="569,222,769,267,768,272,568,227"/>
+<area shape="poly" id="edge10_Node000009_Node000008" title=" " alt="" coords="1005,229,899,272,897,267,1003,224"/>
+<area shape="poly" id="edge12_Node000010_Node000003" title=" " alt="" coords="555,139,324,191,323,186,554,134"/>
+<area shape="poly" id="edge13_Node000010_Node000007" title=" " alt="" coords="600,142,512,184,510,179,598,137"/>
+<area shape="poly" id="edge15_Node000010_Node000009" title=" " alt="" coords="749,132,978,180,977,185,748,138"/>
+<area shape="rect" id="Node000011" href="$operator__hybrid_8cpp.html" title="Hybrid implicit/explicit Navier–Stokes operators." alt="" coords="785,181,954,221"/>
+<area shape="poly" id="edge14_Node000010_Node000011" title=" " alt="" coords="712,136,822,179,820,184,711,141"/>
+<area shape="rect" id="Node000012" href="$reacting_2treatment__nonreflecting_8cpp.html" title="A physics&#45;agnostic, low&#45;storage B&#45;spline mass operator." alt="" coords="581,181,760,221"/>
+<area shape="poly" id="edge16_Node000010_Node000012" title=" " alt="" coords="661,146,669,181,664,182,656,148"/>
+</map>

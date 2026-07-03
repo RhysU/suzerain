@@ -1,0 +1,7 @@
+<map id="suzerain::running_statistics&lt; Real, N &gt;" name="suzerain::running_statistics&lt; Real, N &gt;">
+<area shape="rect" id="Node000001" title="Accumulates running minimum, maximum, mean, and variance details from a data stream." alt="" coords="113,5,305,285"/>
+<area shape="rect" id="Node000002" href="$classsuzerain_1_1running__statistics.html" title=" " alt="" coords="5,348,197,628"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="164,299,148,349,143,347,159,298"/>
+<area shape="rect" id="Node000003" href="$classsuzerain_1_1running__statistics.html" title=" " alt="" coords="221,348,413,628"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="260,298,276,347,271,349,255,299"/>
+</map>

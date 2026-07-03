@@ -1,0 +1,24 @@
+<map id="suzerain::pencil&lt; FPT, Allocator &gt;" name="suzerain::pencil&lt; FPT, Allocator &gt;">
+<area shape="rect" id="Node000001" title="Encapsulates a pencil&#45;storage&#45;based scalar field to be in&#45;place transformed between physical and from..." alt="" coords="306,1288,465,1548"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="5,928,147,993"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="86,1006,112,1103,133,1158,161,1209,193,1252,230,1292,308,1359,304,1363,227,1296,189,1256,156,1212,128,1160,107,1105,81,1008"/>
+<area shape="rect" id="Node000003" href="$classsuzerain_1_1contiguous__memory.html" title="At construction, allocates a contiguous block of memory containing Elements allocated using Allocator..." alt="" coords="171,861,397,1061"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="312,1074,359,1287,354,1288,306,1075"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="213,365,350,431"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="284,444,286,861,281,861,279,445"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="270,13,293,78"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="284,78,284,349,279,349,279,78"/>
+<area shape="rect" id="Node000006" href="$classsuzerain_1_1multi__array_1_1ref.html" title=" " alt="" coords="421,711,592,1211"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="443,1212,427,1272,422,1271,438,1211"/>
+<area shape="rect" id="Node000007" title=" " alt="" coords="375,358,577,438"/>
+<area shape="poly" id="edge6_Node000006_Node000007" title=" " alt="" coords="482,452,496,710,490,711,476,452"/>
+<area shape="rect" id="Node000008" href="$classsuzerain_1_1multi__array_1_1ref.html" title="A boost::multi_array_ref&#45;like class for strided indexing into a contiguous region of memory provided ..." alt="" coords="602,148,811,648"/>
+<area shape="poly" id="edge7_Node000006_Node000008" title=" " alt="" coords="600,652,592,673,579,711,574,709,587,671,595,650"/>
+<area shape="rect" id="Node000010" href="$classsuzerain_1_1multi__array_1_1ref.html" title=" " alt="" coords="617,711,796,1211"/>
+<area shape="poly" id="edge11_Node000010_Node000008" title=" " alt="" coords="709,662,709,710,704,710,704,662"/>
+<area shape="rect" id="Node000009" title=" " alt="" coords="603,5,811,85"/>
+<area shape="poly" id="edge8_Node000008_Node000009" title=" " alt="" coords="709,99,709,148,704,148,704,99"/>
+<area shape="poly" id="edge9_Node000001_Node000010" title=" " alt="" coords="619,1190,606,1212,578,1251,547,1287,480,1349,476,1346,543,1283,574,1247,602,1209,615,1187"/>
+<area shape="rect" id="Node000011" title=" " alt="" coords="835,351,986,445"/>
+<area shape="poly" id="edge10_Node000010_Node000011" title=" " alt="" coords="907,460,890,567,875,628,857,688,830,753,798,815,794,813,825,750,852,686,870,627,884,566,902,459"/>
+</map>

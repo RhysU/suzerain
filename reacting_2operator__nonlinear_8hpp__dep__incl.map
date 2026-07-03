@@ -1,0 +1,5 @@
+<map id="apps/reacting/operator_nonlinear.hpp" name="apps/reacting/operator_nonlinear.hpp">
+<area shape="rect" id="Node000001" title="Implementation of Nonlinear Navier–Stokes spatial operators declared within operator_nonlinear_fwd...." alt="" coords="5,5,175,45"/>
+<area shape="rect" id="Node000002" href="$operator__explicit_8cpp.html" title="Fully explicit, linearization&#45;ready Navier–Stokes operators." alt="" coords="5,93,175,133"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="93,59,93,93,87,93,87,59"/>
+</map>

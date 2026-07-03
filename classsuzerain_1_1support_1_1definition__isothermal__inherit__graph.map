@@ -1,0 +1,19 @@
+<map id="suzerain::support::definition_isothermal" name="suzerain::support::definition_isothermal">
+<area shape="rect" id="Node000001" title="Holds parameters defining isothermal boundary cases." alt="" coords="450,1737,627,2057"/>
+<area shape="rect" id="Node000002" href="$classsuzerain_1_1support_1_1definition__base.html" title="An abstract base class for defining a collection of related options." alt="" coords="5,878,171,978"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="81,992,69,1128,68,1215,72,1309,84,1407,105,1505,138,1599,160,1644,185,1687,211,1720,241,1750,274,1777,310,1801,383,1839,451,1867,449,1872,381,1844,307,1805,271,1781,237,1754,207,1723,180,1689,155,1647,133,1601,100,1506,78,1408,67,1309,63,1215,64,1128,76,992"/>
+<area shape="rect" id="Node000003" href="$classsuzerain_1_1support_1_1loadable.html" title="Abstract interface indicating details may be loaded from an ESIO handle." alt="" coords="195,878,330,978"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="259,992,252,1124,252,1208,256,1301,266,1398,283,1497,308,1594,344,1687,365,1726,392,1762,452,1825,448,1828,388,1765,361,1728,339,1689,303,1596,278,1498,261,1399,251,1301,246,1208,246,1124,253,992"/>
+<area shape="rect" id="Node000004" href="$classsuzerain_1_1support_1_1overridable.html" title=" " alt="" coords="354,871,539,985"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="456,999,526,1737,521,1737,451,999"/>
+<area shape="rect" id="Node000005" href="$classsuzerain_1_1support_1_1overridable.html" title="Abstract interface indicating data may be overridden from another instance." alt="" coords="355,5,525,105"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="443,119,449,870,444,870,438,119"/>
+<area shape="rect" id="Node000006" href="$classsuzerain_1_1support_1_1populatable.html" title=" " alt="" coords="563,871,751,985"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="651,999,561,1737,556,1737,646,998"/>
+<area shape="rect" id="Node000007" href="$classsuzerain_1_1support_1_1populatable.html" title="Abstract interface indicating data may be populated from another instance." alt="" coords="578,5,750,105"/>
+<area shape="poly" id="edge6_Node000006_Node000007" title=" " alt="" coords="666,119,660,870,655,870,661,119"/>
+<area shape="rect" id="Node000008" href="$classsuzerain_1_1support_1_1savable.html" title="Abstract interface indicating details may be saved into an ESIO handle." alt="" coords="775,878,910,978"/>
+<area shape="poly" id="edge7_Node000001_Node000008" title=" " alt="" coords="853,992,861,1125,862,1210,858,1303,848,1401,830,1500,803,1597,765,1689,738,1733,704,1774,667,1809,630,1840,626,1835,663,1805,700,1770,733,1730,760,1687,798,1595,825,1499,843,1400,853,1302,857,1210,856,1125,848,992"/>
+<area shape="rect" id="Node000009" href="$classsuzerain_1_1specification__isothermal.html" title="Holds parameters for specifying simple isothermal boundary conditions on the &#160;and &#160;planes." alt="" coords="935,168,1132,1688"/>
+<area shape="poly" id="edge8_Node000001_Node000009" title=" " alt="" coords="929,1683,925,1690,895,1726,861,1758,824,1786,784,1810,703,1849,628,1876,627,1871,701,1844,781,1806,821,1781,858,1753,892,1722,921,1686,925,1680"/>
+</map>

@@ -1,0 +1,5 @@
+<map id="suzerain::pencilfft::internal::transform_traits&lt; std::complex&lt; double &gt; &gt;" name="suzerain::pencilfft::internal::transform_traits&lt; std::complex&lt; double &gt; &gt;">
+<area shape="rect" id="Node000001" title="FFT traits specialized for std::complex&lt;double&gt;" alt="" coords="15,228,169,337"/>
+<area shape="rect" id="Node000002" href="$structsuzerain_1_1pencilfft_1_1internal_1_1transform__traits_3_01fftw__complex_01_4.html" title="FFT traits specialized for fftw_complex." alt="" coords="5,5,179,180"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="95,194,95,228,89,228,89,194"/>
+</map>

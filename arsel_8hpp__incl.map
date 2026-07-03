@@ -1,0 +1,17 @@
+<map id="suzerain/arsel.hpp" name="suzerain/arsel.hpp">
+<area shape="rect" id="Node000001" title="Automatically fit autoregressive models to input signals." alt="" coords="61,5,202,31"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="5,79,76,104"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="118,33,68,72,65,68,115,29"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="100,79,163,104"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="134,31,134,65,129,65,129,31"/>
+<area shape="rect" id="Node000004" href="$running__statistics_8hpp.html" title="Provides statistical accumulators for special cases of interest." alt="" coords="186,79,410,104"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="159,28,259,71,257,76,157,33"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="109,152,194,177"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="276,106,189,148,186,144,273,102"/>
+<area shape="rect" id="Node000006" title=" " alt="" coords="218,152,287,177"/>
+<area shape="poly" id="edge5_Node000004_Node000006" title=" " alt="" coords="293,106,270,142,265,139,288,103"/>
+<area shape="rect" id="Node000007" title=" " alt="" coords="312,152,375,177"/>
+<area shape="poly" id="edge6_Node000004_Node000007" title=" " alt="" coords="308,103,331,139,326,142,303,106"/>
+<area shape="rect" id="Node000008" title=" " alt="" coords="399,152,458,177"/>
+<area shape="poly" id="edge7_Node000004_Node000008" title=" " alt="" coords="320,102,397,143,394,148,318,106"/>
+</map>

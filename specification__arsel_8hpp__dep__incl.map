@@ -1,0 +1,13 @@
+<map id="suzerain/specification_arsel.hpp" name="suzerain/specification_arsel.hpp">
+<area shape="rect" id="Node000001" title="Provides suzerain::specification_arsel." alt="" coords="170,5,333,45"/>
+<area shape="rect" id="Node000002" href="$arsel_8cpp.html" title="Automatically fit autoregressive models to input signals." alt="" coords="5,101,145,126"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="202,54,100,103,98,98,199,49"/>
+<area shape="rect" id="Node000003" href="$specification__arsel_8cpp.html" title="Provides suzerain::specification_arsel." alt="" coords="170,93,333,133"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="254,59,254,93,249,93,249,59"/>
+<area shape="rect" id="Node000004" href="$definition__arsel_8hpp.html" title="Provides suzerain::support::definition_arsel." alt="" coords="357,93,551,133"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="309,48,411,91,409,96,307,53"/>
+<area shape="rect" id="Node000005" href="$definition__arsel_8cpp.html" title="Routines for adding noise/perturbations to state fields." alt="" coords="253,181,447,221"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="422,144,375,183,371,179,419,140"/>
+<area shape="rect" id="Node000006" href="$driver__base__summary_8cpp.html" title="Implementation of suzerain::support::driver_base::summary_run." alt="" coords="472,181,644,221"/>
+<area shape="poly" id="edge5_Node000004_Node000006" title=" " alt="" coords="489,140,537,179,533,183,486,144"/>
+</map>

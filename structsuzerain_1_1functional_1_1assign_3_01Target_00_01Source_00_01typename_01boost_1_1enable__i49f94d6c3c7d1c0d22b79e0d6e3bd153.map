@@ -1,0 +1,3 @@
+<map id="suzerain::functional::assign&lt; Target, Source, typename boost::enable_if&lt; suzerain::complex::traits::is_complex&lt; Target &gt; &gt;::type &gt;" name="suzerain::functional::assign&lt; Target, Source, typename boost::enable_if&lt; suzerain::complex::traits::is_complex&lt; Target &gt; &gt;::type &gt;">
+<area shape="rect" id="Node000001" title="A specialization of the assign functor to properly handle the case where Target is a recognized compl..." alt="" coords="5,5,239,149"/>
+</map>

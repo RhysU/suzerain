@@ -1,0 +1,23 @@
+<map id="suzerain::interleaved_state&lt; Dim, Element &gt;" name="suzerain::interleaved_state&lt; Dim, Element &gt;">
+<area shape="rect" id="Node000001" title="A state class storing elements in Fortran order except that the first two indices are exchanged." alt="" coords="233,1261,406,1781"/>
+<area shape="rect" id="Node000002" href="$structsuzerain_1_1state__base.html" title=" " alt="" coords="30,765,185,1159"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="189,1171,235,1291,230,1293,184,1173"/>
+<area shape="rect" id="Node000003" href="$structsuzerain_1_1state__base.html" title="Base class for all of Suzerain&#39;s state implementations." alt="" coords="5,195,153,575"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="92,588,100,764,95,764,87,589"/>
+<area shape="rect" id="Node000004" href="$classsuzerain_1_1shared__range.html" title=" " alt="" coords="237,822,402,1102"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="322,1116,322,1261,317,1261,317,1116"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="177,345,328,425"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="261,438,306,821,301,822,256,439"/>
+<area shape="rect" id="Node000006" href="$classsuzerain_1_1shared__range.html" title="A shared_range extends the functionality of iterator_range by adding smart pointer&#45;like resource owne..." alt="" coords="353,252,555,517"/>
+<area shape="poly" id="edge5_Node000004_Node000006" title=" " alt="" coords="423,532,354,822,349,821,417,530"/>
+<area shape="rect" id="Node000007" title=" " alt="" coords="379,5,529,85"/>
+<area shape="poly" id="edge6_Node000006_Node000007" title=" " alt="" coords="457,100,457,252,451,252,451,100"/>
+<area shape="rect" id="Node000008" href="$classsuzerain_1_1multi__array_1_1ref.html" title=" " alt="" coords="594,712,765,1212"/>
+<area shape="poly" id="edge7_Node000001_Node000008" title=" " alt="" coords="589,1108,408,1387,404,1384,584,1106"/>
+<area shape="rect" id="Node000009" title=" " alt="" coords="579,345,779,425"/>
+<area shape="poly" id="edge8_Node000008_Node000009" title=" " alt="" coords="682,438,682,712,677,712,677,438"/>
+<area shape="rect" id="Node000010" href="$classsuzerain_1_1multi__array_1_1ref.html" title="A boost::multi_array_ref&#45;like class for strided indexing into a contiguous region of memory provided ..." alt="" coords="804,135,1013,635"/>
+<area shape="poly" id="edge9_Node000008_Node000010" title=" " alt="" coords="807,648,767,748,762,746,802,646"/>
+<area shape="rect" id="Node000011" title=" " alt="" coords="805,5,1013,85"/>
+<area shape="poly" id="edge10_Node000010_Node000011" title=" " alt="" coords="911,100,911,134,906,134,906,100"/>
+</map>

@@ -1,0 +1,7 @@
+<map id="suzerain::lowstorage::multiplicative_operator&lt; StateA, StateB &gt;" name="suzerain::lowstorage::multiplicative_operator&lt; StateA, StateB &gt;">
+<area shape="rect" id="Node000001" title="Implements simple multiplicative operator which scales all state variables by a uniform factor." alt="" coords="108,272,300,531"/>
+<area shape="rect" id="Node000002" href="$classsuzerain_1_1lowstorage_1_1linear__operator.html" title="Defines the linear operator interface required for low storage timestepping." alt="" coords="5,5,197,224"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="148,236,160,271,155,273,143,238"/>
+<area shape="rect" id="Node000003" href="$classsuzerain_1_1lowstorage_1_1operator__nonlinear.html" title="Defines the nonlinear operator interface required for timestepping." alt="" coords="221,57,395,172"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="285,186,253,273,248,271,280,184"/>
+</map>

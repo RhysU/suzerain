@@ -1,0 +1,11 @@
+<map id="ar::estimation_method" name="ar::estimation_method">
+<area shape="rect" id="Node000001" title="A parent type for autoregressive process parameter estimation techniques." alt="" coords="335,5,497,71"/>
+<area shape="rect" id="Node000002" href="$classar_1_1Burg.html" title="Represents estimation using Burg&#39;s recursive method." alt="" coords="5,119,195,184"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="323,75,191,121,189,116,321,70"/>
+<area shape="rect" id="Node000003" href="$classar_1_1LSF.html" title="Represents forward prediction least squares minimization." alt="" coords="219,119,402,184"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="379,82,343,120,339,117,375,79"/>
+<area shape="rect" id="Node000004" href="$classar_1_1LSFB.html" title="Represents forward and backward prediction least squares minimization." alt="" coords="426,119,617,184"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="457,79,493,117,489,120,453,82"/>
+<area shape="rect" id="Node000005" href="$classar_1_1YuleWalker.html" title="Represents estimation by solving the Yule–Walker equations." alt="" coords="641,119,871,184"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="511,67,660,116,659,121,509,73"/>
+</map>

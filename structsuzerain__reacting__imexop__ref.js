@@ -1,0 +1,25 @@
+var structsuzerain__reacting__imexop__ref =
+[
+    [ "ux", "structsuzerain__reacting__imexop__ref.html#aa0808e564687699bdf1d5ba92ebbd27d", null ],
+    [ "uy", "structsuzerain__reacting__imexop__ref.html#aa9ba6729091a779fd9a1ca1d64e89bb8", null ],
+    [ "uz", "structsuzerain__reacting__imexop__ref.html#abf5112e5d2ae973dab8232108a93356d", null ],
+    [ "uxuy", "structsuzerain__reacting__imexop__ref.html#a4233d6ac7ef8d740934992071e0f8883", null ],
+    [ "uyuz", "structsuzerain__reacting__imexop__ref.html#ad7f24fc296d6b88bd57eea7313f8926d", null ],
+    [ "p_ru", "structsuzerain__reacting__imexop__ref.html#a3fb99ca4efa891fb7aeac74a18ba94c8", null ],
+    [ "p_rw", "structsuzerain__reacting__imexop__ref.html#a855521662e6d44a46f34f480e91b0fba", null ],
+    [ "p_rE", "structsuzerain__reacting__imexop__ref.html#a0ec93755438d706016e2f11b7e37fca4", null ],
+    [ "vp_ru", "structsuzerain__reacting__imexop__ref.html#a3b7d4308a962c773e259a6dbfcfa9d01", null ],
+    [ "vp_rw", "structsuzerain__reacting__imexop__ref.html#a9827f3bf1d8247020234194edfad01fb", null ],
+    [ "vp_rE", "structsuzerain__reacting__imexop__ref.html#aee6f5d199d1154ee6396252ff775c594", null ],
+    [ "Cmy_rho", "structsuzerain__reacting__imexop__ref.html#a98820a9010fe16c6f327844cdad4c23a", null ],
+    [ "Ce_rho", "structsuzerain__reacting__imexop__ref.html#a532735b82aceec3535c8d1926808a30c", null ],
+    [ "Ce_rv", "structsuzerain__reacting__imexop__ref.html#a106a8c557b4732a271baa00a4778f963", null ],
+    [ "nu", "structsuzerain__reacting__imexop__ref.html#a9a312305ece90f1855c0337fafffc7b2", null ],
+    [ "korCv", "structsuzerain__reacting__imexop__ref.html#a6141f6ee7993a5a85143076a5fdd8247", null ],
+    [ "Ds", "structsuzerain__reacting__imexop__ref.html#aea877ea06d73ce251cb185c990e93c97", null ],
+    [ "T", "structsuzerain__reacting__imexop__ref.html#aa7faa0b028201de3d4f3a6eea544b454", null ],
+    [ "gamma", "structsuzerain__reacting__imexop__ref.html#a560c53861823f25f8689f9ff60b1ddaf", null ],
+    [ "a", "structsuzerain__reacting__imexop__ref.html#aefb9612facbab60ab55c09f2eb58d2c2", null ],
+    [ "p", "structsuzerain__reacting__imexop__ref.html#aa02902d8ca5873d1c569e50befcf4019", null ],
+    [ "p2", "structsuzerain__reacting__imexop__ref.html#af80a22ecfae9d81f9be3d76c01c6aae4", null ]
+];

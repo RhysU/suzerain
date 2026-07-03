@@ -1,0 +1,5 @@
+<map id="suzerain/omsect.h" name="suzerain/omsect.h">
+<area shape="rect" id="Node000001" title="Provides omsect() adapted from https://github.com/RhysU/intersection." alt="" coords="5,5,147,31"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="39,79,113,104"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="79,31,79,65,73,65,73,31"/>
+</map>

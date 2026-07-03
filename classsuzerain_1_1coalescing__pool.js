@@ -1,0 +1,28 @@
+var classsuzerain_1_1coalescing__pool =
+[
+    [ "blocks", "classsuzerain_1_1coalescing__pool_1_1blocks.html", "classsuzerain_1_1coalescing__pool_1_1blocks" ],
+    [ "scoped_blocks", "classsuzerain_1_1coalescing__pool_1_1scoped__blocks.html", "classsuzerain_1_1coalescing__pool_1_1scoped__blocks" ],
+    [ "allocator_type", "classsuzerain_1_1coalescing__pool.html#af6582573e8fd4a357b97c86186545309", null ],
+    [ "size_type", "classsuzerain_1_1coalescing__pool.html#a89b648388f7994972679503ed72ff70f", null ],
+    [ "difference_type", "classsuzerain_1_1coalescing__pool.html#a2e9fd2362a25fcba54e32b8f8e7bae87", null ],
+    [ "value_type", "classsuzerain_1_1coalescing__pool.html#a635ce96f2d12fb0f1b59a9d1dee96974", null ],
+    [ "pointer", "classsuzerain_1_1coalescing__pool.html#ae6033738b80d082d3bedeaa260dc61bb", null ],
+    [ "const_pointer", "classsuzerain_1_1coalescing__pool.html#a0916a9873ad586980e3e4dfe87f755bb", null ],
+    [ "iterator", "classsuzerain_1_1coalescing__pool.html#aaffa6a70c29e6d7a39aba28ed700458c", null ],
+    [ "const_iterator", "classsuzerain_1_1coalescing__pool.html#aab69b6f7f95946dc6c45de184493ad6f", null ],
+    [ "reverse_iterator", "classsuzerain_1_1coalescing__pool.html#a069da264bc56ba1dcaa75215db90ab82", null ],
+    [ "const_reverse_iterator", "classsuzerain_1_1coalescing__pool.html#a42966622ccfa1c0bf21a7d6086f03394", null ],
+    [ "coalescing_pool", "classsuzerain_1_1coalescing__pool.html#a4dcba811f5224da6a30119840ab1b96f", null ],
+    [ "coalescing_pool", "classsuzerain_1_1coalescing__pool.html#a4564251965489c11cae31337b312a46c", null ],
+    [ "~coalescing_pool", "classsuzerain_1_1coalescing__pool.html#a00ac4a81a1117e9e229ef221b6e915b8", null ],
+    [ "anticipate", "classsuzerain_1_1coalescing__pool.html#a0612d5f3aae48f88de06176d4c37862a", null ],
+    [ "acquire", "classsuzerain_1_1coalescing__pool.html#a2d0337c46ac94fe170dbbde81e31cd0e", null ],
+    [ "release", "classsuzerain_1_1coalescing__pool.html#a27a596d7241c4dbb4a9fae485baccb17", null ],
+    [ "drain", "classsuzerain_1_1coalescing__pool.html#ac5838e03d2e82b1335800e1802cf3eb8", null ],
+    [ "blocksize", "classsuzerain_1_1coalescing__pool.html#a4932121ccef828e1b3d1f948702f5e4e", null ],
+    [ "blocksize", "classsuzerain_1_1coalescing__pool.html#ae710982589dfbfa5e02be2ffbcabd288", null ],
+    [ "any_blocks_used", "classsuzerain_1_1coalescing__pool.html#a7cbc3ff306c10df5e2b4ac108f448c4d", null ],
+    [ "nblocks", "classsuzerain_1_1coalescing__pool.html#a596dd74c77b87229520194df4a3cbec1", null ],
+    [ "nblocks", "classsuzerain_1_1coalescing__pool.html#a68955d7dd7235129feaa70ef5a1129c3", null ],
+    [ "narenas", "classsuzerain_1_1coalescing__pool.html#a2cc9b1afdc77823345a217317f435b44", null ]
+];

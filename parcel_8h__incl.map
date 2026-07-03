@@ -1,0 +1,9 @@
+<map id="suzerain/parcel.h" name="suzerain/parcel.h">
+<area shape="rect" id="Node000001" title="Parcels out pieces of monolithically malloc&#45;ed memory." alt="" coords="87,5,221,31"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="5,79,92,104"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="139,33,78,73,76,69,136,28"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="117,79,191,104"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="157,31,157,65,151,65,151,31"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="215,79,389,104"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="179,28,267,70,264,75,177,33"/>
+</map>

@@ -1,0 +1,11 @@
+<map id="suzerain::lowstorage::controller&lt; StateA, StateB, Reducer, LinearA, LinearB, NonlinearB &gt;" name="suzerain::lowstorage::controller&lt; StateA, StateB, Reducer, LinearA, LinearB, NonlinearB &gt;">
+<area shape="rect" id="Node000001" title="Provides higher&#45;level control mechanisms built atop low storage time integration schemes." alt="" coords="31,801,221,1011"/>
+<area shape="rect" id="Node000004" href="$classsuzerain_1_1lowstorage_1_1controller.html" title=" " alt="" coords="17,1103,235,1312"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="129,1024,129,1103,123,1103,123,1024"/>
+<area shape="rect" id="Node000002" href="$classsuzerain_1_1timecontroller.html" title=" " alt="" coords="25,417,227,752"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="129,766,129,801,123,801,123,766"/>
+<area shape="rect" id="Node000003" href="$classsuzerain_1_1timecontroller.html" title="Provides high&#45;level time advancement control, including periodic callbacks, built atop a simple time ..." alt="" coords="5,5,247,325"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="129,339,129,417,123,417,123,339"/>
+<area shape="rect" id="Node000005" href="$classsuzerain_1_1lowstorage_1_1controller_3_01StateA_00_01StateB_00_01void_00_01LinearA_00_01LinearB_00_01NonlinearB_01_4.html" title="A partial specialization of the controller template for the case when default delta_t_reducer behavio..." alt="" coords="45,1361,207,1471"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="129,1326,129,1361,123,1361,123,1326"/>
+</map>

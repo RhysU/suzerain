@@ -1,0 +1,12 @@
+<map id="apps/perfect/treatment_nonreflecting.hpp" name="apps/perfect/treatment_nonreflecting.hpp">
+<area shape="rect" id="Node000001" title="A physics&#45;agnostic, low&#45;storage B&#45;spline mass operator." alt="" coords="159,5,331,45"/>
+<area shape="rect" id="Node000002" href="$perfect_2main__advance_8cpp.html" title="Application executing suzerain::perfect::driver_advance::run." alt="" coords="5,189,235,214"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="194,54,170,72,149,95,136,119,129,145,123,189,118,188,123,144,131,117,144,92,166,68,191,50"/>
+<area shape="rect" id="Node000003" href="$operator__hybrid__isothermal_8hpp.html" title="A hybrid implicit/explicit Navier–Stokes operator for isothermal wall(s)." alt="" coords="158,93,333,133"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="248,59,248,93,243,93,243,59"/>
+<area shape="rect" id="Node000005" href="$perfect_2treatment__nonreflecting_8cpp.html" title="A physics&#45;agnostic, low&#45;storage B&#45;spline mass operator." alt="" coords="357,93,529,133"/>
+<area shape="poly" id="edge5_Node000001_Node000005" title=" " alt="" coords="302,48,401,91,398,96,300,53"/>
+<area shape="poly" id="edge3_Node000003_Node000002" title=" " alt="" coords="207,144,138,191,135,186,204,139"/>
+<area shape="rect" id="Node000004" href="$operator__hybrid__isothermal_8cpp.html" title="A hybrid implicit/explicit Navier–Stokes operator for isothermal wall(s)." alt="" coords="259,181,434,221"/>
+<area shape="poly" id="edge4_Node000003_Node000004" title=" " alt="" coords="280,140,326,179,323,183,277,144"/>
+</map>

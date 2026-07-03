@@ -1,0 +1,15 @@
+<map id="suzerain/rholut_imexop.h" name="suzerain/rholut_imexop.h">
+<area shape="rect" id="Node000001" title="Provides implicit operator apply and solve routines for a single wall&#45;normal pencil of state informat..." alt="" coords="463,5,649,31"/>
+<area shape="rect" id="Node000002" href="$operator__hybrid__isothermal_8hpp.html" title="A hybrid implicit/explicit Navier–Stokes operator for isothermal wall(s)." alt="" coords="146,79,321,119"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="497,36,312,81,310,76,495,31"/>
+<area shape="rect" id="Node000005" href="$references_8cpp.html" title="Implementation of suzerain::perfect::references." alt="" coords="345,86,548,111"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="530,41,464,88,461,84,527,37"/>
+<area shape="rect" id="Node000006" href="$rholut__imexop_8c.html" title="Provides implicit operator apply and solve routines for a single wall&#45;normal pencil of state informat..." alt="" coords="573,86,758,111"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="585,37,651,84,648,88,582,41"/>
+<area shape="rect" id="Node000007" href="$rholut__imexop00_8c.html" title="Optimized zero&#45;zero mode implementations from rholut_imexop.h." alt="" coords="782,86,983,111"/>
+<area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="617,31,836,83,834,89,616,36"/>
+<area shape="rect" id="Node000003" href="$perfect_2main__advance_8cpp.html" title="Application executing suzerain::perfect::driver_advance::run." alt="" coords="5,174,235,199"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="199,129,137,176,134,171,196,125"/>
+<area shape="rect" id="Node000004" href="$operator__hybrid__isothermal_8cpp.html" title="A hybrid implicit/explicit Navier–Stokes operator for isothermal wall(s)." alt="" coords="259,167,434,207"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="271,125,323,164,320,169,268,129"/>
+</map>

@@ -1,0 +1,26 @@
+var classsuzerain_1_1bspline =
+[
+    [ "from_abscissae", "structsuzerain_1_1bspline_1_1from__abscissae.html", null ],
+    [ "from_breakpoints", "structsuzerain_1_1bspline_1_1from__breakpoints.html", null ],
+    [ "bspline", "classsuzerain_1_1bspline.html#aaa137fc39a6c4f29eb6351d181ac735b", null ],
+    [ "bspline", "classsuzerain_1_1bspline.html#afcf3ce8557170def066842b00efadcb5", null ],
+    [ "~bspline", "classsuzerain_1_1bspline.html#a3d865ccb60a1372ea1f24b4f98bbbd8a", null ],
+    [ "k", "classsuzerain_1_1bspline.html#ae0cd1bd02c560f942632c766c283792d", null ],
+    [ "nbreak", "classsuzerain_1_1bspline.html#a08974cfc5ee46930ba8c8277c35a4e05", null ],
+    [ "nknot", "classsuzerain_1_1bspline.html#ac7a15baff6323218ea78d0e20336ba8d", null ],
+    [ "n", "classsuzerain_1_1bspline.html#a3ea6eaa10b21a97f5bb17d9c820079b8", null ],
+    [ "breakpoint", "classsuzerain_1_1bspline.html#aec67f23b2cd81a7764929cab194fc9eb", null ],
+    [ "knot", "classsuzerain_1_1bspline.html#a915941588135b6868e32875a011e5859", null ],
+    [ "collocation_point", "classsuzerain_1_1bspline.html#ae33d9cb2e83cfafa60fe5435108a5627", null ],
+    [ "spacing_collocation_point", "classsuzerain_1_1bspline.html#af80f9c4a844b4327abcfd430c54c5b15", null ],
+    [ "spacing_breakpoint", "classsuzerain_1_1bspline.html#a08c8d25c6a5777f88bdbb8b7e6b1b80b", null ],
+    [ "linear_combination", "classsuzerain_1_1bspline.html#acac702b87d403a109c8755d59b623a1f", null ],
+    [ "linear_combination", "classsuzerain_1_1bspline.html#ad53ef5a152680abe85ad4d7b86617adf", null ],
+    [ "linear_combination", "classsuzerain_1_1bspline.html#abc89ffcb1e62815f9ecf5c7410adbc14", null ],
+    [ "linear_combination", "classsuzerain_1_1bspline.html#ab0025a031b92a20f01d54257d5243cdb", null ],
+    [ "crossing", "classsuzerain_1_1bspline.html#a03d505b8e721c512fb00ae8c604924cc", null ],
+    [ "integration_coefficients", "classsuzerain_1_1bspline.html#a6d8653505fa970de47906a5b18eb653f", null ],
+    [ "integration_coefficients", "classsuzerain_1_1bspline.html#a7498509511b990f3c0dba1931962705e", null ],
+    [ "distance_to", "classsuzerain_1_1bspline.html#a3af2d47b154162c76bbf3a6d196e5dda", null ],
+    [ "bw", "classsuzerain_1_1bspline.html#a74ecccc472b7eec02feeb0e9257a2bf1", null ]
+];

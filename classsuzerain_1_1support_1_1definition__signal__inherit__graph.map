@@ -1,0 +1,5 @@
+<map id="suzerain::support::definition_signal" name="suzerain::support::definition_signal">
+<area shape="rect" id="Node000001" title="Parses and contains signal processing details to allow a program to take runtime&#45;configurable respons..." alt="" coords="5,153,171,333"/>
+<area shape="rect" id="Node000002" href="$classsuzerain_1_1support_1_1definition__base.html" title="An abstract base class for defining a collection of related options." alt="" coords="5,5,171,105"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="91,119,91,153,85,153,85,119"/>
+</map>

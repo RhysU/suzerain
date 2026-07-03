@@ -1,0 +1,10 @@
+<map id="ar::AIC" name="ar::AIC">
+<area shape="rect" id="Node000001" title="Represents the Akaike information criterion (AIC)." alt="" coords="55,377,112,443"/>
+<area shape="rect" id="Node000002" href="$structar_1_1GIC.html" title=" " alt="" coords="15,263,152,328"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="86,342,86,377,81,377,81,342"/>
+<area shape="rect" id="Node000003" href="$structar_1_1criterion.html" title="Criteria for autoregressive model order selection following Broersen." alt="" coords="5,5,151,71"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="82,85,85,263,80,263,76,85"/>
+<area shape="rect" id="Node000004" href="$structar_1_1GIC.html" title="Represents the generalized information criterion (GIC)." alt="" coords="99,120,283,200"/>
+<area shape="poly" id="edge4_Node000004_Node000003" title=" " alt="" coords="119,79,156,118,153,122,115,82"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="153,212,111,264,107,261,149,209"/>
+</map>

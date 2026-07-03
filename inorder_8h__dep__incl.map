@@ -1,0 +1,29 @@
+<map id="suzerain/inorder.h" name="suzerain/inorder.h">
+<area shape="rect" id="Node000001" title="Provides utilities for manipulating one dimensional discrete Fourier transform coefficients stored &quot;i..." alt="" coords="574,5,713,31"/>
+<area shape="rect" id="Node000002" href="$diffwave_8c.html" title="Computational kernels for differentiating in wave space." alt="" coords="320,79,468,104"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="591,37,435,81,434,76,589,32"/>
+<area shape="rect" id="Node000003" href="$filterop_8c.html" title="Discrete filtering operators." alt="" coords="493,79,631,104"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="622,42,577,80,574,76,618,38"/>
+<area shape="rect" id="Node000004" href="$inorder_8c.html" title="Provides utilities for manipulating one dimensional discrete Fourier transform coefficients stored &quot;i..." alt="" coords="656,79,793,104"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="668,38,713,76,710,80,665,42"/>
+<area shape="rect" id="Node000005" href="$inorder_8hpp.html" title="Provides C++ wrappers for the C&#45;based API in inorder.h." alt="" coords="818,79,973,104"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="698,32,855,76,854,81,696,37"/>
+<area shape="rect" id="Node000006" href="$operator__hybrid__isothermal_8cpp.html" title="A hybrid implicit/explicit Navier–Stokes operator for isothermal wall(s)." alt="" coords="5,152,180,192"/>
+<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="804,107,631,121,495,128,361,136,192,155,181,156,180,151,191,149,361,131,495,122,630,115,804,101"/>
+<area shape="rect" id="Node000007" href="$perfect_8cpp.html" title="Support logic for the perfect gas application." alt="" coords="204,159,384,185"/>
+<area shape="poly" id="edge6_Node000005_Node000007" title=" " alt="" coords="805,107,598,129,396,155,353,162,352,157,395,149,597,124,804,101"/>
+<area shape="rect" id="Node000008" href="$perfect_2treatment__nonreflecting_8cpp.html" title="A physics&#45;agnostic, low&#45;storage B&#45;spline mass operator." alt="" coords="408,152,580,192"/>
+<area shape="poly" id="edge7_Node000005_Node000008" title=" " alt="" coords="824,109,581,157,580,151,823,104"/>
+<area shape="rect" id="Node000009" href="$operator__hybrid_8cpp.html" title="Hybrid implicit/explicit Navier–Stokes operators." alt="" coords="604,152,773,192"/>
+<area shape="poly" id="edge8_Node000005_Node000009" title=" " alt="" coords="854,111,739,154,737,149,852,106"/>
+<area shape="rect" id="Node000010" href="$reacting_8cpp.html" title="Support logic for the reacting flow application." alt="" coords="798,159,993,185"/>
+<area shape="poly" id="edge9_Node000005_Node000010" title=" " alt="" coords="898,118,898,159,893,159,893,118"/>
+<area shape="rect" id="Node000011" href="$reacting_2treatment__nonreflecting_8cpp.html" title="A physics&#45;agnostic, low&#45;storage B&#45;spline mass operator." alt="" coords="1017,152,1195,192"/>
+<area shape="poly" id="edge10_Node000005_Node000011" title=" " alt="" coords="940,106,1056,149,1054,154,938,111"/>
+<area shape="rect" id="Node000012" href="$l2_8cpp.html" title="Compute &#160;norms and related quantities on distributed data." alt="" coords="1219,159,1339,185"/>
+<area shape="poly" id="edge11_Node000005_Node000012" title=" " alt="" coords="976,104,1208,149,1238,157,1237,162,1207,155,975,109"/>
+<area shape="rect" id="Node000013" href="$suzerain_2operator__mass__isothermal_8cpp.html" title="Provides suzerain::operator_mass_isothermal." alt="" coords="1363,152,1542,192"/>
+<area shape="poly" id="edge12_Node000005_Node000013" title=" " alt="" coords="987,100,1157,122,1352,149,1364,151,1363,157,1351,155,1156,127,986,106"/>
+<area shape="rect" id="Node000014" href="$field_8cpp.html" title="Logic for saving and loading distributed state fields." alt="" coords="1566,159,1755,185"/>
+<area shape="poly" id="edge13_Node000005_Node000014" title=" " alt="" coords="987,96,1243,116,1554,149,1601,157,1601,162,1554,155,1242,121,986,101"/>
+</map>

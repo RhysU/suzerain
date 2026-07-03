@@ -1,0 +1,28 @@
+var pencilfft_8hpp =
+[
+    [ "suzerain::pencilfft::internal::complex_copy", "structsuzerain_1_1pencilfft_1_1internal_1_1complex__copy.html", "structsuzerain_1_1pencilfft_1_1internal_1_1complex__copy" ],
+    [ "suzerain::pencilfft::internal::complex_copy_differentiate< ComplexDestination >", "structsuzerain_1_1pencilfft_1_1internal_1_1complex__copy__differentiate.html", "structsuzerain_1_1pencilfft_1_1internal_1_1complex__copy__differentiate" ],
+    [ "suzerain::pencilfft::internal::complex_copy_scale< ComplexDestination >", "structsuzerain_1_1pencilfft_1_1internal_1_1complex__copy__scale.html", "structsuzerain_1_1pencilfft_1_1internal_1_1complex__copy__scale" ],
+    [ "suzerain::pencilfft::internal::complex_copy_scale_differentiate< ComplexDestination >", "structsuzerain_1_1pencilfft_1_1internal_1_1complex__copy__scale__differentiate.html", "structsuzerain_1_1pencilfft_1_1internal_1_1complex__copy__scale__differentiate" ],
+    [ "suzerain::pencilfft::internal::indexed_element_magnitude_comparator< RandomAccessIterator >", "structsuzerain_1_1pencilfft_1_1internal_1_1indexed__element__magnitude__comparator.html", "structsuzerain_1_1pencilfft_1_1internal_1_1indexed__element__magnitude__comparator" ],
+    [ "suzerain::pencilfft::internal::transform_traits< fftw_complex >", "structsuzerain_1_1pencilfft_1_1internal_1_1transform__traits_3_01fftw__complex_01_4.html", "structsuzerain_1_1pencilfft_1_1internal_1_1transform__traits_3_01fftw__complex_01_4" ],
+    [ "suzerain::pencilfft::internal::transform_traits< fftwf_complex >", "structsuzerain_1_1pencilfft_1_1internal_1_1transform__traits_3_01fftwf__complex_01_4.html", "structsuzerain_1_1pencilfft_1_1internal_1_1transform__traits_3_01fftwf__complex_01_4" ],
+    [ "suzerain::pencilfft::internal::transform_traits< fftwl_complex >", "structsuzerain_1_1pencilfft_1_1internal_1_1transform__traits_3_01fftwl__complex_01_4.html", "structsuzerain_1_1pencilfft_1_1internal_1_1transform__traits_3_01fftwl__complex_01_4" ],
+    [ "suzerain::pencilfft::internal::transform_traits< std::complex< double > >", "structsuzerain_1_1pencilfft_1_1internal_1_1transform__traits_3_01std_1_1complex_3_01double_01_4_01_4.html", "structsuzerain_1_1pencilfft_1_1internal_1_1transform__traits_3_01std_1_1complex_3_01double_01_4_01_4" ],
+    [ "suzerain::pencilfft::internal::transform_traits< std::complex< float > >", "structsuzerain_1_1pencilfft_1_1internal_1_1transform__traits_3_01std_1_1complex_3_01float_01_4_01_4.html", "structsuzerain_1_1pencilfft_1_1internal_1_1transform__traits_3_01std_1_1complex_3_01float_01_4_01_4" ],
+    [ "suzerain::pencilfft::internal::transform_traits< std::complex< long double > >", "structsuzerain_1_1pencilfft_1_1internal_1_1transform__traits_3_01std_1_1complex_3_01long_01double_01_4_01_4.html", "structsuzerain_1_1pencilfft_1_1internal_1_1transform__traits_3_01std_1_1complex_3_01long_01double_01_4_01_4" ],
+    [ "increment", "pencilfft_8hpp.html#a41fdd77267b8c1da6ebd8dca59f5d856", null ],
+    [ "decrement", "pencilfft_8hpp.html#acd6ab55d511ff5c4c60ab82581478f57", null ],
+    [ "crement", "pencilfft_8hpp.html#a7e7c931c01266f531f2c0f4e3dec5242", null ],
+    [ "increment", "pencilfft_8hpp.html#ace7decd4dd390733c0b1bad944e9519f", null ],
+    [ "decrement", "pencilfft_8hpp.html#afa42f3403b682f34233ef9e9bb3960a7", null ],
+    [ "crement", "pencilfft_8hpp.html#a45501acdf2d1f7c67717a588b4907da1", null ],
+    [ "make_indexed_element_magnitude_comparator", "pencilfft_8hpp.html#a88d741e3ed4abf0222e7fb1ec21ca81c", null ],
+    [ "c2c_fullbuffer_process", "pencilfft_8hpp.html#aa9360d65aedd90b7a5466d6bd5b86ee7", null ],
+    [ "c2c_halfbuffer_process", "pencilfft_8hpp.html#a4cffa6968c700ebee4a177dd986ecb2c", null ],
+    [ "transform_c2c", "pencilfft_8hpp.html#a7e243dbeaaa703bedf746fc4f69e6bd6", null ],
+    [ "forward_c2c", "pencilfft_8hpp.html#ace89bd9446e683ce1e41a979cf677222", null ],
+    [ "backward_c2c", "pencilfft_8hpp.html#ad9a0b32c0b053401da060a720951c761", null ],
+    [ "forward_r2c", "pencilfft_8hpp.html#a6fe1fbe8d52d6f823b688c598f25690b", null ],
+    [ "backward_c2r", "pencilfft_8hpp.html#adf4b95d5efd38a470edea0c8b2e31107", null ]
+];
